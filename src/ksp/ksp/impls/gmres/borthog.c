@@ -49,5 +49,5 @@ PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it
     PetscCall(VecAXPY(VEC_VV(it + 1), -(*hh++), VEC_VV(j)));
   }
   PetscCall(PetscLogEventEnd(KSP_GMRESOrthogonalization, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

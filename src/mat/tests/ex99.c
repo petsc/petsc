@@ -18,7 +18,7 @@ static PetscErrorCode AssembleMatrix(MPI_Comm comm, Mat *A)
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   *A = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Compare2(Vec *X, const char *test)
@@ -45,7 +45,7 @@ static PetscErrorCode Compare2(Vec *X, const char *test)
     PetscCall(VecView(Y, PETSC_VIEWER_STDOUT_WORLD));
   }
   PetscCall(VecDestroy(&Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckMatrices(Mat A, Mat B, Vec left, Vec right, Vec X, Vec Y, Vec X1, Vec Y1)
@@ -92,7 +92,7 @@ static PetscErrorCode CheckMatrices(Mat A, Mat B, Vec left, Vec right, Vec X, Ve
 
   PetscCall(VecDestroyVecs(2, &ltmp));
   PetscCall(VecDestroyVecs(2, &rtmp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -36,7 +36,7 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
 
   /* Residual and vector Alpha computed in the minimization step */
   PetscCall(MatCreateVecs(tsirm->S, &tsirm->Alpha, &tsirm->r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSolve_TSIRM(KSP ksp)
@@ -127,7 +127,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscCall(MatDestroy(&AS));
   PetscCall(PetscFree(ind_row));
   ksp->its = total;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -141,7 +141,7 @@ PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscCall(PetscOptionsInt("-ksp_tsirm_max_it_ls", "Maximum number of iterations for the minimization step", "", tsirm->maxiter_ls, &tsirm->maxiter_ls, NULL));
   PetscCall(PetscOptionsInt("-ksp_tsirm_size_ls", "Number of residuals for minimization", "", tsirm->size_ls, &tsirm->size_ls, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
@@ -153,7 +153,7 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
   PetscCall(VecDestroy(&tsirm->Alpha));
   PetscCall(VecDestroy(&tsirm->r));
   PetscCall(PetscFree(ksp->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -212,6 +212,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
 #else
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }

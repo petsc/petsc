@@ -117,7 +117,7 @@ PetscErrorCode PostStep(TS ts)
   PetscCall(TSGetSolution(ts, &X));
   PetscCall(VecSum(X, &sum));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "sum(p)*dw*dtheta at t = %3.2f = %3.6f\n", (double)t, (double)(sum * user->dx * user->dy)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ini_bou(Vec X, AppCtx *user)
@@ -157,7 +157,7 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user)
 
   PetscCall(DMDAVecRestoreArray(cda, gc, &coors));
   PetscCall(DMDAVecRestoreArray(user->da, X, &p));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* First advection term */
@@ -181,7 +181,7 @@ PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, Pets
     } else *p1 = 0.0; */
   f   = (y - user->ws);
   *p1 = f * (p[j][i + 1] - p[j][i - 1]) / (2 * user->dx);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Second advection term */
@@ -205,7 +205,7 @@ PetscErrorCode adv2(PetscScalar **p, PetscScalar x, PetscInt i, PetscInt j, Pets
     } else *p2 = 0.0; */
   f   = (user->ws / (2 * user->H)) * (user->PM_min - user->Pmax * PetscSinScalar(x));
   *p2 = f * (p[j + 1][i] - p[j - 1][i]) / (2 * user->dy);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Diffusion term */
@@ -214,7 +214,7 @@ PetscErrorCode diffuse(PetscScalar **p, PetscInt i, PetscInt j, PetscReal t, Pet
   PetscFunctionBeginUser;
 
   *p_diff = user->disper_coe * ((p[j - 1][i] - 2 * p[j][i] + p[j + 1][i]) / (user->dy * user->dy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode BoundaryConditions(PetscScalar **p, DMDACoor2d **coors, PetscInt i, PetscInt j, PetscInt M, PetscInt N, PetscScalar **f, AppCtx *user)
@@ -246,7 +246,7 @@ PetscErrorCode BoundaryConditions(PetscScalar **p, DMDACoor2d **coors, PetscInt 
       f[j][i] = fwc * (p[j][i + 1] - p[j][i - 1]) / (2 * user->dx) + fthetac * p[j][i] - user->disper_coe * (p[j][i] - p[j - 1][i]) / (user->dy);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
@@ -300,7 +300,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
   PetscCall(DMDAVecRestoreArray(user->da, F, &f));
   PetscCall(DMDAVecRestoreArrayRead(cda, gc, &coors));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, void *ctx)
@@ -463,7 +463,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Parameter_settings(AppCtx *user)
@@ -510,7 +510,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-ymax", &user->ymax, &flg));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-bc_type", &user->bc, &flg));
   user->muy = user->ws;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

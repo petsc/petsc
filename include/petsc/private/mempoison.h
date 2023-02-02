@@ -104,7 +104,7 @@ static inline PetscErrorCode PetscPoisonMemoryRegion(const void *ptr, size_t siz
     (void)ptr;
     (void)size;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -137,7 +137,7 @@ static inline PetscErrorCode PetscUnpoisonMemoryRegion(const void *ptr, size_t s
     (void)ptr;
     (void)size;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -179,6 +179,6 @@ static inline PetscErrorCode PetscIsRegionPoisoned(const void *ptr, size_t size,
     if (PetscDefined(HAVE_VALGRIND_MEMPOISON)) *poisoned = PETSC_BOOL3_UNKNOWN;
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif // PETSC_MEMORY_POISON_H

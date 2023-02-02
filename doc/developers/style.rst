@@ -126,7 +126,7 @@ Even with the use of ``clang-format`` there are still many decisions about code 
 
 #. Functions in PETSc examples including ``main()`` should have  ``PetscFunctionBeginUser`` as the very first line after the local variable declarations.
 
-#. PETSc functions should almost always return with ``PetscFunctionReturn(0)`` not ``return 0``. ``PetscFunctionReturn()`` should never return a non-zero integer value.
+#. PETSc functions should almost always return with ``PetscFunctionReturn(PETSC_SUCCESS)`` not ``return 0``. ``PetscFunctionReturn()`` should never return a non-zero integer value.
    It may, on occasion, return ``MPI_SUCCESS``, NULL, or a ``PetscObject`` such as a ``PetscViewer`` depending on the return type of the function.
 
 #. Functions that do use return should use ``return xx;`` rather than ``return(xx);``
@@ -362,7 +362,7 @@ Usage of PETSc Functions and Macros
          PetscValidScalarPointer(array,2);
          PetscValidLogicalCollectiveInt(v,collectiveInt,3);
          ...
-         PetscFunctionReturn(0);
+         PetscFunctionReturn(PETSC_SUCCESS);
        }
 
    See ``include/petsc/private/petscimpl.h`` and search for "PetscValid" to see all
@@ -400,7 +400,7 @@ Usage of PETSc Functions and Macros
        PetscFunctionReturn( somefunction(...) ); /* Incorrect */
 
 #. Do *not* put a blank line immediately after ``PetscFunctionBegin;``
-   or a blank line immediately before ``PetscFunctionReturn(0);``.
+   or a blank line immediately before ``PetscFunctionReturn(PETSC_SUCCESS);``.
 
 #. Do not use ``sqrt()``, ``pow()``, ``sin()``, and so on directly in
    PETSc C/C++ source code or examples (usage is fine in Fortran source

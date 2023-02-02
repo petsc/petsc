@@ -181,41 +181,41 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char
     cnt = 0;
     if (dim == 1) {
       if (dof0 != 0) {
-        PetscStrallocpy("vertex", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("vertex", &(*namelist)[cnt]));
         ++cnt;
       }
       if (dof1 != 0) {
-        PetscStrallocpy("element", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("element", &(*namelist)[cnt]));
         ++cnt;
       }
     } else if (dim == 2) {
       if (dof0 != 0) {
-        PetscStrallocpy("vertex", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("vertex", &(*namelist)[cnt]));
         ++cnt;
       }
       if (dof1 != 0) {
-        PetscStrallocpy("face", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("face", &(*namelist)[cnt]));
         ++cnt;
       }
       if (dof2 != 0) {
-        PetscStrallocpy("element", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("element", &(*namelist)[cnt]));
         ++cnt;
       }
     } else if (dim == 3) {
       if (dof0 != 0) {
-        PetscStrallocpy("vertex", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("vertex", &(*namelist)[cnt]));
         ++cnt;
       }
       if (dof1 != 0) {
-        PetscStrallocpy("edge", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("edge", &(*namelist)[cnt]));
         ++cnt;
       }
       if (dof2 != 0) {
-        PetscStrallocpy("face", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("face", &(*namelist)[cnt]));
         ++cnt;
       }
       if (dof3 != 0) {
-        PetscStrallocpy("element", &(*namelist)[cnt]);
+        PetscCall(PetscStrallocpy("element", &(*namelist)[cnt]));
         ++cnt;
       }
     }
@@ -244,7 +244,7 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char
   PetscCall(PetscFree(stencil1));
   if (dim >= 2) PetscCall(PetscFree(stencil2));
   if (dim >= 3) PetscCall(PetscFree(stencil3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMClone_Stag(DM dm, DM *newdm)
@@ -254,7 +254,7 @@ static PetscErrorCode DMClone_Stag(DM dm, DM *newdm)
   if (*newdm) PetscCall(DMDestroy(newdm));
   PetscCall(DMStagDuplicateWithoutSetup(dm, PetscObjectComm((PetscObject)dm), newdm));
   PetscCall(DMSetUp(*newdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc)
@@ -308,7 +308,7 @@ static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc)
       }
     } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown coordinate DM type");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmc)
@@ -333,7 +333,7 @@ static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmc)
   }
   PetscCall(DMSetUp(*dmc));
   /* Note: For now, we do not refine coordinates */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDestroy_Stag(DM dm)
@@ -350,7 +350,7 @@ static PetscErrorCode DMDestroy_Stag(DM dm)
   PetscCall(PetscFree(stag->locationOffsets));
   PetscCall(PetscFree(stag->coordinateDMType));
   PetscCall(PetscFree(stag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateGlobalVector_Stag(DM dm, Vec *vec)
@@ -365,7 +365,7 @@ static PetscErrorCode DMCreateGlobalVector_Stag(DM dm, Vec *vec)
   PetscCall(VecSetDM(*vec, dm));
   /* Could set some ops, as DMDA does */
   PetscCall(VecSetLocalToGlobalMapping(*vec, dm->ltogmap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec)
@@ -379,7 +379,7 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec)
   PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetBlockSize(*vec, stag->entriesPerElement));
   PetscCall(VecSetDM(*vec, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Helper function to check for the limited situations for which interpolation
@@ -402,7 +402,7 @@ static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf)
   PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
   for (PetscInt d = 0; d < dim + 1; ++d)
     PetscCheck(dofc[d] == doff[d], PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No support for different numbers of dof per stratum between coarse and fine DMStag objects: dof%" PetscInt_FMT " is %" PetscInt_FMT " (fine) but %" PetscInt_FMT "(coarse))", d, doff[d], dofc[d]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Since the interpolation uses MATMAIJ for dof > 0 we convert requests for non-MATAIJ baseded matrices to MATAIJ.
@@ -431,7 +431,7 @@ static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *vec)
@@ -473,7 +473,7 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
 
   if (vec) *vec = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A)
@@ -514,7 +514,7 @@ static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A)
 
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat)
@@ -591,7 +591,7 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat)
   } else if (is_shell) {
     /* nothing more to do */
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for Mattype %s", mat_type);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatible, PetscBool *set)
@@ -610,7 +610,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
   if (!sameType) {
     PetscCall(PetscInfo((PetscObject)dm, "DMStag compatibility check not implemented with DM of type %s\n", type2));
     *set = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -618,7 +618,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
   if (sameComm != MPI_IDENT) {
     PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different communicators: %" PETSC_INTPTR_T_FMT " != %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)comm, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)dm2)));
     *set = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetDimension(dm2, &dim2));
@@ -626,26 +626,26 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
     PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different dimensions"));
     *set        = PETSC_TRUE;
     *compatible = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (i = 0; i < dim; ++i) {
     if (stag->N[i] != stag2->N[i]) {
       PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different global numbers of elements in dimension %" PetscInt_FMT ": %" PetscInt_FMT " != %" PetscInt_FMT "\n", i, stag->n[i], stag2->n[i]));
       *set        = PETSC_TRUE;
       *compatible = PETSC_FALSE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (stag->n[i] != stag2->n[i]) {
       PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different local numbers of elements in dimension %" PetscInt_FMT ": %" PetscInt_FMT " != %" PetscInt_FMT "\n", i, stag->n[i], stag2->n[i]));
       *set        = PETSC_TRUE;
       *compatible = PETSC_FALSE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (stag->boundaryType[i] != stag2->boundaryType[i]) {
       PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different boundary types in dimension %" PetscInt_FMT ": %s != %s\n", i, DMBoundaryTypes[stag->boundaryType[i]], DMBoundaryTypes[stag2->boundaryType[i]]));
       *set        = PETSC_TRUE;
       *compatible = PETSC_FALSE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   /* Note: we include stencil type and width in the notion of compatibility, as this affects
@@ -656,17 +656,17 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
     PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different ghost stencil types: %s != %s\n", DMStagStencilTypes[stag->stencilType], DMStagStencilTypes[stag2->stencilType]));
     *set        = PETSC_TRUE;
     *compatible = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (stag->stencilWidth != stag2->stencilWidth) {
     PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different ghost stencil widths: %" PetscInt_FMT " != %" PetscInt_FMT "\n", stag->stencilWidth, stag->stencilWidth));
     *set        = PETSC_TRUE;
     *compatible = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   *set        = PETSC_TRUE;
   *compatible = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMHasCreateInjection_Stag(DM dm, PetscBool *flg)
@@ -675,7 +675,7 @@ static PetscErrorCode DMHasCreateInjection_Stag(DM dm, PetscBool *flg)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -702,7 +702,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Stag(DM dm, Vec l, InsertMode mode, V
       PetscCall(VecScatterBegin(stag->gtol, l, g, mode, SCATTER_REVERSE_LOCAL));
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported InsertMode");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLocalToGlobalEnd_Stag(DM dm, Vec l, InsertMode mode, Vec g)
@@ -719,7 +719,7 @@ static PetscErrorCode DMLocalToGlobalEnd_Stag(DM dm, Vec l, InsertMode mode, Vec
       PetscCall(VecScatterEnd(stag->gtol, l, g, mode, SCATTER_REVERSE_LOCAL));
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported InsertMode");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGlobalToLocalBegin_Stag(DM dm, Vec g, InsertMode mode, Vec l)
@@ -728,7 +728,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Stag(DM dm, Vec g, InsertMode mode, V
 
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(stag->gtol, g, l, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGlobalToLocalEnd_Stag(DM dm, Vec g, InsertMode mode, Vec l)
@@ -737,7 +737,7 @@ static PetscErrorCode DMGlobalToLocalEnd_Stag(DM dm, Vec g, InsertMode mode, Vec
 
   PetscFunctionBegin;
   PetscCall(VecScatterEnd(stag->gtol, g, l, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -767,7 +767,7 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc)
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dmc, prefix));
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*dmc, "cdm_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGetNeighbors_Stag(DM dm, PetscInt *nRanks, const PetscMPIInt *ranks[])
@@ -791,7 +791,7 @@ static PetscErrorCode DMGetNeighbors_Stag(DM dm, PetscInt *nRanks, const PetscMP
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Get neighbors not implemented for dim = %" PetscInt_FMT, dim);
   }
   *ranks = stag->neighbors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer)
@@ -865,7 +865,7 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "(Per-rank information omitted since >%" PetscInt_FMT " ranks used)\n", maxRanksToView));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOptionsObject)
@@ -892,7 +892,7 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
   PetscCall(PetscOptionsInt("-stag_dof_2", "Number of dof per 2-cell (element in 2D, face in 3D)", "DMStagSetDOF", stag->dof[2], &stag->dof[2], NULL));
   PetscCall(PetscOptionsInt("-stag_dof_3", "Number of dof per 3-cell (element in 3D)", "DMStagSetDOF", stag->dof[3], &stag->dof[3], NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -978,5 +978,5 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   dm->ops->view                     = DMView_Stag;
   dm->ops->getcompatibility         = DMGetCompatibility_Stag;
   dm->ops->createfielddecomposition = DMCreateFieldDecomposition_Stag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

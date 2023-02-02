@@ -8,6 +8,7 @@
 #include <petscdm.h>
 #include <petscdmshell.h>
 #include <petscksp.h>
+
 int main(int argc, char **argv)
 {
   Mat      A;
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
   PetscCall(DMDestroy(&shell));
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&A));
-  PetscFinalize();
+  PetscCall(PetscFinalize());
   return 0;
 }
 

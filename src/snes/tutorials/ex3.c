@@ -325,7 +325,7 @@ PetscErrorCode FormInitialGuess(Vec x)
 
   PetscFunctionBeginUser;
   PetscCall(VecSet(x, pfive));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -409,7 +409,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
   PetscCall(DMDAVecRestoreArray(da, f, &ff));
   PetscCall(DMDAVecRestoreArrayRead(da, user->F, (void *)&FF));
   PetscCall(DMRestoreLocalVector(da, &xlocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -436,7 +436,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
   PetscFunctionBeginUser;
   if (user->sjerr) {
     PetscCall(SNESSetJacobianDomainError(snes));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /*
      Get pointer to vector data
@@ -497,7 +497,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
   PetscCall(DMDAVecRestoreArrayRead(da, x, &xx));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -525,7 +525,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iter = %" PetscInt_FMT ",SNES Function norm %g\n", its, (double)fnorm));
   PetscCall(SNESGetSolution(snes, &x));
   PetscCall(VecView(x, monP->viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -546,7 +546,7 @@ PetscErrorCode PreCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, PetscBoo
 {
   PetscFunctionBeginUser;
   *changed_y = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -616,7 +616,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec x, 
     PetscCall(DMDAVecRestoreArray(da, x, &xa));
   }
   PetscCall(VecCopy(x, check->last_step));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -666,7 +666,7 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "    ...ksp_ratio %g, new maxit %" PetscInt_FMT "\n\n", (double)ksp_ratio, maxit));
   }
   check->its0 = its; /* save current outer KSP iteration number */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -684,8 +684,9 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec
 */
 PetscErrorCode MatrixFreePreconditioner(PC pc, Vec x, Vec y)
 {
+  PetscFunctionBeginUser;
   PetscCall(VecCopy(x, y));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

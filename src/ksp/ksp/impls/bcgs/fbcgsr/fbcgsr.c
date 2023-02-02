@@ -12,7 +12,7 @@ static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 8));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
@@ -91,7 +91,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
   PetscCall(KSPMonitor(ksp, 0, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Initialize iterates */
   PetscCall(VecCopy(R, RP)); /* rp <- r */
@@ -198,7 +198,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
   }
 
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -238,5 +238,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

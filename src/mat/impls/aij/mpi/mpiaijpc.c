@@ -5,5 +5,5 @@ PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat A, Mat *a)
 {
   PetscFunctionBegin;
   *a = ((Mat_MPIAIJ *)A->data)->A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

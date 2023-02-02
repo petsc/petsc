@@ -668,7 +668,7 @@ static PetscErrorCode CreateSystem(DM dm, Mat *pA, Vec *pRhs)
     PetscCall(VecAssemblyEnd(rhs));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* A custom monitor function for analysis purposes. Computes and dumps
@@ -856,7 +856,7 @@ PetscErrorCode DMStagAnalysisKSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm, v
   PetscCall(VecCopy(sol, ctx->solPrev));
 
   PetscCall(VecDestroy(&r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Use a direct solver to create an "exact" solution to the discrete system
@@ -880,7 +880,7 @@ static PetscErrorCode CreateNumericalReferenceSolution(Mat A, Vec rhs, Vec *px)
   x = *px;
   PetscCall(KSPSolve(ksp, rhs, x));
   PetscCall(KSPDestroy(&ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -11,7 +11,7 @@ static PetscErrorCode DMDAGhostedDestroyGLVisViewerCtx_Private(void **vctx)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(*vctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -25,7 +25,7 @@ static PetscErrorCode DMDAFieldDestroyGLVisViewerCtx_Private(void *vctx)
   PetscFunctionBegin;
   PetscCall(VecDestroy(&ctx->xlocal));
   PetscCall(PetscFree(vctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -62,7 +62,7 @@ static PetscErrorCode DMDAGetNumElementsGhosted(DM da, PetscInt *nex, PetscInt *
   if (nex) *nex = ien;
   if (ney) *ney = jen;
   if (nez) *nez = ken;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* inherits number of vertices from DMDAGetNumElementsGhosted */
@@ -83,7 +83,7 @@ static PetscErrorCode DMDAGetNumVerticesGhosted(DM da, PetscInt *nvx, PetscInt *
   if (nvx) *nvx = ien;
   if (nvy) *nvy = jen;
   if (nvz) *nvz = ken;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXf[], void *vctx)
@@ -133,7 +133,7 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
   for (f = 0; f < nf; f++) PetscCall(VecRestoreArray((Vec)oXf[f], &arrayf[f]));
   PetscCall(VecRestoreArrayRead(ctx->xlocal, &array));
   PetscCall(PetscFree2(arrayf, bss));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer viewer)
@@ -313,7 +313,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     }
     PetscCall(PetscFree6(fec_type, nlocal, bss, dims, fieldname, Ufield));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
@@ -366,7 +366,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "\nvertices\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "0\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", sdim));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(DMDAGetNumElementsGhosted(da, &ien, &jen, &ken));
@@ -486,12 +486,12 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     }
     PetscCall(VecRestoreArrayRead(xcoorl, &array));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMView_DA_GLVis(DM dm, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscCall(DMView_GLVis(dm, viewer, DMDAView_GLVis_ASCII));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

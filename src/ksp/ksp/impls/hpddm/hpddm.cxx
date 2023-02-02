@@ -98,7 +98,7 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOp
              ksp->nmax);
   data->icntl[1] = static_cast<int>(ksp->nmax);
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer)
@@ -124,7 +124,7 @@ static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer)
     }
     if (data->icntl[1] != static_cast<int>(PETSC_DECIDE)) PetscCall(PetscViewerASCIIPrintf(viewer, "  block size is %d\n", data->icntl[1]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
@@ -173,7 +173,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM",
              ksp->nmax);
   data->icntl[1] = static_cast<int>(ksp->nmax);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSPReset_HPDDM_Private(KSP ksp)
@@ -187,7 +187,7 @@ static inline PetscErrorCode KSPReset_HPDDM_Private(KSP ksp)
   std::fill_n(data->scntl, PETSC_STATIC_ARRAY_LENGTH(data->scntl), static_cast<unsigned short>(PETSC_DECIDE));
   std::fill_n(data->cntl, PETSC_STATIC_ARRAY_LENGTH(data->cntl), static_cast<char>(PETSC_DECIDE));
   data->precision = PETSC_KSPHPDDM_DEFAULT_PRECISION;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPReset_HPDDM(KSP ksp)
@@ -198,7 +198,7 @@ static PetscErrorCode KSPReset_HPDDM(KSP ksp)
   delete data->op;
   data->op = NULL;
   PetscCall(KSPReset_HPDDM_Private(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
@@ -210,7 +210,7 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetType_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <PetscMemType type = PETSC_MEMTYPE_HOST>
@@ -321,7 +321,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
     else ksp->reason = KSP_CONVERGED_RTOL; /* early exit by HPDDM, which only happens on breakdowns or convergence */
   }
   ksp->its = PetscMin(ksp->its, ksp->max_it);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
@@ -377,7 +377,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   }
   PetscCall(VecRestoreArrayReadAndMemType(ksp->vec_rhs, &b));
   PetscCall(VecRestoreArrayWriteAndMemType(ksp->vec_sol, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -399,7 +399,7 @@ PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
   PetscValidHeaderSpecific(U, MAT_CLASSID, 2);
   PetscCheckSameComm(ksp, 1, U, 2);
   PetscUseMethod(ksp, "KSPHPDDMSetDeflationMat_C", (KSP, Mat), (ksp, U));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -424,7 +424,7 @@ PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U)
     PetscValidPointer(U, 2);
     PetscUseMethod(ksp, "KSPHPDDMGetDeflationMat_C", (KSP, Mat *), (ksp, U));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U)
@@ -457,7 +457,7 @@ static PetscErrorCode KSPHPDDMSetDeflationMat_HPDDM(KSP ksp, Mat U)
   PetscCall(MatDenseGetLDA(U, &ldu));
   HPDDM::Wrapper<PetscScalar>::omatcopy<'N'>(N2, m2, array, ldu, copy, m2);
   PetscCall(MatDenseRestoreArrayRead(U, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
@@ -487,7 +487,7 @@ static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
     PetscCall(PetscArraycpy(copy, array, m1 * N2));
     PetscCall(MatDenseRestoreArrayWrite(*U, &copy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
@@ -520,7 +520,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   }
   PetscCall(MatDenseRestoreArrayReadAndMemType(B, &b));
   PetscCall(MatDenseRestoreArrayWriteAndMemType(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -555,7 +555,7 @@ PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, type, 2);
   PetscUseMethod(ksp, "KSPHPDDMSetType_C", (KSP, KSPHPDDMType), (ksp, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -579,7 +579,7 @@ PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type)
     PetscValidPointer(type, 2);
     PetscUseMethod(ksp, "KSPHPDDMGetType_C", (KSP, KSPHPDDMType *), (ksp, type));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
@@ -596,7 +596,7 @@ static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
   PetscCheck(i != PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown KSPHPDDMType %d", type);
   if (data->cntl[0] != static_cast<char>(PETSC_DECIDE) && data->cntl[0] != i) PetscCall(KSPReset_HPDDM_Private(ksp));
   data->cntl[0] = i;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
@@ -607,7 +607,7 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
   PetscCheck(data->cntl[0] != static_cast<char>(PETSC_DECIDE), PETSC_COMM_SELF, PETSC_ERR_ORDER, "KSPHPDDMType not set yet");
   /* need to shift by -1 for HPDDM_KRYLOV_METHOD_NONE */
   *type = static_cast<KSPHPDDMType>(PetscMin(data->cntl[0], static_cast<char>(PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes) - 1)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -683,5 +683,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   if (!loadedDL) PetscCall(HPDDMLoadDL_Private(&loadedDL));
 #endif
   data->precision = PETSC_KSPHPDDM_DEFAULT_PRECISION;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

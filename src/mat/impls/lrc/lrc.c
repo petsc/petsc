@@ -83,21 +83,21 @@ static PetscErrorCode MatMult_LRC_kernel(Mat N, Vec x, Vec y, PetscBool transpos
 
     PetscCall(VecRestoreLocalVector(y, yl));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_LRC(Mat N, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMult_LRC_kernel(N, x, y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_LRC(Mat N, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMult_LRC_kernel(N, x, y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_LRC(Mat N)
@@ -115,7 +115,7 @@ static PetscErrorCode MatDestroy_LRC(Mat N)
   PetscCall(VecDestroy(&Na->yl));
   PetscCall(PetscFree(N->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatLRCGetMats_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
@@ -127,7 +127,7 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
   if (U) *U = Na->U;
   if (c) *c = Na->c;
   if (V) *V = Na->V;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -155,7 +155,7 @@ PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
 {
   PetscFunctionBegin;
   PetscUseMethod(N, "MatLRCGetMats_C", (Mat, Mat *, Mat *, Vec *, Mat *), (N, A, U, c, V));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -315,5 +315,5 @@ PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatLRCGetMats_C", MatLRCGetMats_LRC));
   PetscCall(MatSetUp(*N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

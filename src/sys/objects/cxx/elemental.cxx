@@ -20,17 +20,17 @@
 @*/
 PetscErrorCode PetscElementalInitializePackage(void)
 {
-  if (El::Initialized()) return 0;
+  if (El::Initialized()) return PETSC_SUCCESS;
   if (PETSC_COMM_WORLD != MPI_COMM_NULL) { /* MPI has been initialized and PETSC_COMM_WORLD has been set */
     PetscMPIInt result;
     PetscCallMPI(MPI_Comm_compare(PETSC_COMM_WORLD, MPI_COMM_WORLD, &result));
-    if (result == MPI_UNEQUAL) return result; /* cannot use Elemental with PETSC_COMM_WORLD and MPI_COMM_WORLD comparing to MPI_UNEQUAL, call PetscElementalInitializePackage()/PetscElementalFinalizePackage() collectively */
+    if (result == MPI_UNEQUAL) return PETSC_ERR_MPI; /* cannot use Elemental with PETSC_COMM_WORLD and MPI_COMM_WORLD comparing to MPI_UNEQUAL, call PetscElementalInitializePackage()/PetscElementalFinalizePackage() collectively */
   }
   El::Initialize();            /* called by PetscInitialize_DynamicLibraries(void) or users */
   if (PetscInitializeCalled) { /* true if MPI is initialized by PETSc, false if MPI has been initialized outside and thus PETSC_COMM_WORLD can't be set to something else than MPI_COMM_NULL, see src/sys/objects/pinit.c */
     PetscCall(PetscRegisterFinalize(PetscElementalFinalizePackage));
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -48,7 +48,7 @@ PetscErrorCode PetscElementalInitializePackage(void)
 PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized)
 {
   if (isInitialized) *isInitialized = (PetscBool)El::Initialized();
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -67,5 +67,5 @@ PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized)
 PetscErrorCode PetscElementalFinalizePackage(void)
 {
   if (El::Initialized()) El::Finalize();
-  return 0;
+  return PETSC_SUCCESS;
 }

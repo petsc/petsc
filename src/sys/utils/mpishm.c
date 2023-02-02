@@ -43,7 +43,7 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
   PetscFunctionBegin;
   for (i = 0; i < num_dupped_comms; i++) PetscCall(PetscCommDestroy(&shmcomm_dupped_comms[i]));
   num_dupped_comms = 0; /* reset so that PETSc can be reinitialized */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -100,7 +100,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
 
   /* Check if globcomm already has an attached pshmcomm. If no, create one */
   PetscCallMPI(MPI_Comm_get_attr(globcomm, Petsc_ShmComm_keyval, pshmcomm, &flg));
-  if (flg) PetscFunctionReturn(0);
+  if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscNew(pshmcomm));
   (*pshmcomm)->globcomm = globcomm;
@@ -120,7 +120,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
 
   for (i = 0; i < (*pshmcomm)->shmsize; i++) PetscCall(PetscInfo(NULL, "Shared memory rank %d global rank %d\n", i, (*pshmcomm)->globranks[i]));
   PetscCallMPI(MPI_Comm_set_attr(globcomm, Petsc_ShmComm_keyval, *pshmcomm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(globcomm, PETSC_ERR_SUP, "Shared memory communicators need MPI-3 package support.\nPlease upgrade your MPI or reconfigure with --download-mpich.");
 #endif
@@ -154,10 +154,10 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
   PetscValidPointer(pshmcomm, 1);
   PetscValidIntPointer(lrank, 3);
   *lrank = MPI_PROC_NULL;
-  if (grank < pshmcomm->globranks[0]) PetscFunctionReturn(0);
-  if (grank > pshmcomm->globranks[pshmcomm->shmsize - 1]) PetscFunctionReturn(0);
+  if (grank < pshmcomm->globranks[0]) PetscFunctionReturn(PETSC_SUCCESS);
+  if (grank > pshmcomm->globranks[pshmcomm->shmsize - 1]) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-noshared", &flg, NULL));
-  if (flg) PetscFunctionReturn(0);
+  if (flg) PetscFunctionReturn(PETSC_SUCCESS);
   low  = 0;
   high = pshmcomm->shmsize;
   while (high - low > 5) {
@@ -166,13 +166,13 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
     else low = t;
   }
   for (i = low; i < high; i++) {
-    if (pshmcomm->globranks[i] > grank) PetscFunctionReturn(0);
+    if (pshmcomm->globranks[i] > grank) PetscFunctionReturn(PETSC_SUCCESS);
     if (pshmcomm->globranks[i] == grank) {
       *lrank = i;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -196,7 +196,7 @@ PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lran
   PetscValidIntPointer(grank, 3);
   PetscCheck(lrank >= 0 && lrank < pshmcomm->shmsize, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No rank %d in the shared memory communicator", lrank);
   *grank = pshmcomm->globranks[lrank];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -218,7 +218,7 @@ PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm pshmcomm, MPI_Comm *comm)
   PetscValidPointer(pshmcomm, 1);
   PetscValidPointer(comm, 2);
   *comm = pshmcomm->shmcomm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
@@ -316,7 +316,7 @@ static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 
   /* this MPI_Barrier is to make sure the omp barrier is initialized before slaves use it */
   PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Destroy the pthread barrier in the PETSc OpenMP controller */
@@ -332,7 +332,7 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
   #else
   PetscCallMPI(MPI_Win_free(&ctrl->omp_win));
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -469,7 +469,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
   }
   PetscCall(PetscFree(cpu_ulongs));
   *pctrl = ctrl;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -489,14 +489,14 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
   PetscFunctionBegin;
   hwloc_bitmap_free(ctrl->cpuset);
   hwloc_topology_destroy(ctrl->topology);
-  PetscOmpCtrlDestroyBarrier(ctrl);
+  PetscCall(PetscOmpCtrlDestroyBarrier(ctrl));
   PetscCallMPI(MPI_Comm_free(&ctrl->omp_comm));
   if (ctrl->is_omp_master) {
     hwloc_bitmap_free(ctrl->omp_cpuset);
     PetscCallMPI(MPI_Comm_free(&ctrl->omp_master_comm));
   }
   PetscCall(PetscFree(ctrl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -524,7 +524,7 @@ PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl, MPI_Comm *omp_comm, MP
   if (omp_comm) *omp_comm = ctrl->omp_comm;
   if (omp_master_comm) *omp_master_comm = ctrl->omp_master_comm;
   if (is_omp_master) *is_omp_master = ctrl->is_omp_master;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -559,7 +559,7 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
   PetscFunctionBegin;
   err = pthread_barrier_wait(ctrl->barrier);
   PetscCheck(!err || err == PTHREAD_BARRIER_SERIAL_THREAD, PETSC_COMM_SELF, PETSC_ERR_LIB, "pthread_barrier_wait failed within PetscOmpCtrlBarrier with return code %d", err);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -581,7 +581,7 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
   PetscFunctionBegin;
   PetscCall(hwloc_set_cpubind(ctrl->topology, ctrl->omp_cpuset, HWLOC_CPUBIND_PROCESS));
   omp_set_num_threads(ctrl->omp_comm_size); /* may override the OMP_NUM_THREAD env var */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -603,7 +603,7 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl)
   PetscFunctionBegin;
   PetscCall(hwloc_set_cpubind(ctrl->topology, ctrl->cpuset, HWLOC_CPUBIND_PROCESS));
   omp_set_num_threads(1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #undef USE_MMAP_ALLOCATE_SHARED_MEMORY

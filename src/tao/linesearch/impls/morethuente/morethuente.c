@@ -17,13 +17,13 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
   PetscCall(PetscObjectDereference((PetscObject)mt->x));
   PetscCall(VecDestroy(&mt->work));
   PetscCall(PetscFree(ls->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchMonitor_MT(TaoLineSearch ls)
@@ -33,7 +33,7 @@ static PetscErrorCode TaoLineSearchMonitor_MT(TaoLineSearch ls)
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(ls->viewer, "stx: %g, fx: %g, dgx: %g\n", (double)mt->stx, (double)mt->fx, (double)mt->dgx));
   PetscCall(PetscViewerASCIIPrintf(ls->viewer, "sty: %g, fy: %g, dgy: %g\n", (double)mt->sty, (double)mt->fy, (double)mt->dgy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
@@ -86,12 +86,12 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   if (PetscIsInfOrNanReal(dginit)) {
     PetscCall(PetscInfo(ls, "Initial Line Search step * g is Inf or Nan (%g)\n", (double)dginit));
     ls->reason = TAOLINESEARCH_FAILED_INFORNAN;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (dginit >= 0.0) {
     PetscCall(PetscInfo(ls, "Initial Line Search step * g is not descent direction (%g)\n", (double)dginit));
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Initialization */
@@ -262,7 +262,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   /* Set new solution vector and compute gradient if needed */
   PetscCall(VecCopy(mt->work, x));
   if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, mt->work, g));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -298,7 +298,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ls->ops->destroy        = TaoLineSearchDestroy_MT;
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_MT;
   ls->ops->monitor        = TaoLineSearchMonitor_MT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -511,5 +511,5 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls, PetscReal *stx, PetscReal *fx
     if (*sty > *stx) *stp = PetscMin(*stx + 0.66 * (*sty - *stx), *stp);
     else *stp = PetscMax(*stx + 0.66 * (*sty - *stx), *stp);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

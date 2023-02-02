@@ -97,7 +97,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*  Initialize trust-region radius */
   switch (tr->init_type) {
@@ -201,7 +201,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
         PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
         PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0));
         PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-        if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+        if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     tao->trust = PetscMax(tao->trust, max_radius);
@@ -424,7 +424,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -439,7 +439,7 @@ static PetscErrorCode TaoSetUp_NTR(Tao tao)
 
   tr->bfgs_pre = NULL;
   tr->M        = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -451,7 +451,7 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
   if (tao->setupcalled) PetscCall(VecDestroy(&tr->W));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -491,7 +491,7 @@ static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsReal("-tao_ntr_epsilon", "tolerance used when computing actual and predicted reduction", "", tr->epsilon, &tr->epsilon, NULL));
   PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -599,5 +599,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
   PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
   PetscCall(KSPAppendOptionsPrefix(tao->ksp, "tao_ntr_"));
   PetscCall(KSPSetType(tao->ksp, KSPSTCG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

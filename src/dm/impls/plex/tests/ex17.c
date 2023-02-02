@@ -18,7 +18,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-centroids", "Locate cell centroids", "ex17.c", options->centroids, &options->centroids, NULL));
   PetscCall(PetscOptionsBool("-custom", "Locate user-defined points", "ex17.c", options->custom, &options->custom, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
@@ -28,7 +28,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestCentroidLocation(DM dm, AppCtx *user)
@@ -41,7 +41,7 @@ static PetscErrorCode TestCentroidLocation(DM dm, AppCtx *user)
   PetscInt           cStart, cEnd, c;
 
   PetscFunctionBeginUser;
-  if (!user->centroids) PetscFunctionReturn(0);
+  if (!user->centroids) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -68,7 +68,7 @@ static PetscErrorCode TestCentroidLocation(DM dm, AppCtx *user)
   }
   for (c = cStart; c < cEnd; ++c) PetscCheck(cells[c - cStart].index == c, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %" PetscInt_FMT ", instead found %" PetscInt_FMT, c, cells[c - cStart].index);
   PetscCall(PetscSFDestroy(&cellSF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestCustomLocation(DM dm, AppCtx *user)
@@ -83,7 +83,7 @@ static PetscErrorCode TestCustomLocation(DM dm, AppCtx *user)
   MPI_Comm           comm;
 
   PetscFunctionBeginUser;
-  if (!user->custom) PetscFunctionReturn(0);
+  if (!user->custom) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetCoordinateDim(dm, &cdim));
 
   // Locate serially on each process
@@ -125,7 +125,7 @@ static PetscErrorCode TestCustomLocation(DM dm, AppCtx *user)
 
   PetscCall(PetscSFDestroy(&cellSF));
   PetscCall(VecDestroy(&points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

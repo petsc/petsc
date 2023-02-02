@@ -54,7 +54,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscCall(PetscOptionsName("-psubcomm_view", "Triggers display of PetscSubcomm context", "PetscSubcommView", &flg));
   if (flg) PetscCall(PetscSubcommView(psubcomm, PETSC_VIEWER_STDOUT_(psubcomm->parent)));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -80,7 +80,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm, const char pr
     PetscCall(PetscFree(psubcomm->subcommprefix));
     PetscCall(PetscStrallocpy(pre, &(psubcomm->subcommprefix)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -121,7 +121,7 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported yet");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -149,7 +149,7 @@ PetscErrorCode PetscSubcommSetNumber(PetscSubcomm psubcomm, PetscInt nsubcomm)
   PetscCheck(msub >= 1 && msub <= size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %d cannot be < 1 or > input comm size %d", msub, size);
 
   psubcomm->n = msub;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -177,7 +177,7 @@ PetscErrorCode PetscSubcommSetType(PetscSubcomm psubcomm, PetscSubcommType subco
   } else if (subcommtype == PETSC_SUBCOMM_INTERLACED) {
     PetscCall(PetscSubcommCreate_interlaced(psubcomm));
   } else SETERRQ(psubcomm->parent, PETSC_ERR_SUP, "PetscSubcommType %s is not supported yet", PetscSubcommTypes[subcommtype]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -241,7 +241,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm, PetscMPIInt col
   psubcomm->color   = color;
   psubcomm->subsize = subsize;
   psubcomm->type    = PETSC_SUBCOMM_GENERAL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -259,13 +259,13 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm, PetscMPIInt col
 PetscErrorCode PetscSubcommDestroy(PetscSubcomm *psubcomm)
 {
   PetscFunctionBegin;
-  if (!*psubcomm) PetscFunctionReturn(0);
+  if (!*psubcomm) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscCommDestroy(&(*psubcomm)->dupparent));
   PetscCall(PetscCommDestroy(&(*psubcomm)->child));
   PetscCall(PetscFree((*psubcomm)->subsize));
   if ((*psubcomm)->subcommprefix) PetscCall(PetscFree((*psubcomm)->subcommprefix));
   PetscCall(PetscFree((*psubcomm)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -302,7 +302,7 @@ PetscErrorCode PetscSubcommCreate(MPI_Comm comm, PetscSubcomm *psubcomm)
   (*psubcomm)->color     = rank;
   (*psubcomm)->subsize   = NULL;
   (*psubcomm)->type      = PETSC_SUBCOMM_INTERLACED;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -324,7 +324,7 @@ PetscErrorCode PetscSubcommCreate(MPI_Comm comm, PetscSubcomm *psubcomm)
 PetscErrorCode PetscSubcommGetParent(PetscSubcomm scomm, MPI_Comm *pcomm)
 {
   *pcomm = PetscSubcommParent(scomm);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -347,7 +347,7 @@ PetscErrorCode PetscSubcommGetParent(PetscSubcomm scomm, MPI_Comm *pcomm)
 PetscErrorCode PetscSubcommGetContiguousParent(PetscSubcomm scomm, MPI_Comm *pcomm)
 {
   *pcomm = PetscSubcommContiguousParent(scomm);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -369,7 +369,7 @@ PetscErrorCode PetscSubcommGetContiguousParent(PetscSubcomm scomm, MPI_Comm *pco
 PetscErrorCode PetscSubcommGetChild(PetscSubcomm scomm, MPI_Comm *ccomm)
 {
   *ccomm = PetscSubcommChild(scomm);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
@@ -415,7 +415,7 @@ static PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   psubcomm->color   = color;
   psubcomm->subsize = subsize;
   psubcomm->type    = PETSC_SUBCOMM_CONTIGUOUS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -490,5 +490,5 @@ static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   psubcomm->color   = color;
   psubcomm->subsize = subsize;
   psubcomm->type    = PETSC_SUBCOMM_INTERLACED;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

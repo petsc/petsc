@@ -92,7 +92,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::VecCreate_IMPL_Private_(Vec v, PetscBool *
   // for VecMPI since we always want to either allocate it ourselves with pinned memory or set
   // it in Initialize_CUPMBase()
   PetscCall(VecCreate_MPI_Private(v, PETSC_FALSE, nghost, nullptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -101,7 +101,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::creatempicupm_(Vec v, PetscDeviceContext d
   PetscFunctionBegin;
   PetscCall(base_type::VecCreate_IMPL_Private(v, nullptr, nghost));
   PetscCall(Initialize_CUPMBase(v, allocate_missing, host_array, device_array, dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ================================================================================== //
@@ -119,7 +119,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::creatempicupm(MPI_Comm comm, PetscInt bs, 
 {
   PetscFunctionBegin;
   PetscCall(Create_CUPMBase(comm, bs, n, N, v, call_set_type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // VecCreateMPICUPMWithArray[s]()
@@ -134,7 +134,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::creatempicupmwitharrays(MPI_Comm comm, Pet
   // creatempicupm_() is called!
   PetscCall(creatempicupm(comm, bs, n, N, v, PETSC_FALSE));
   PetscCall(creatempicupm_(*v, dctx, PETSC_FALSE, 0, PetscRemoveConstCast(host_array), PetscRemoveConstCast(device_array)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->duplicate
@@ -162,7 +162,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::duplicate(Vec v, Vec *y) noexcept
     PetscCall(PetscArraycpy(ylocrep->ops, locrep->ops, 1));
     if (auto &scatter = (yimpl->localupdate = vimpl->localupdate)) PetscCall(PetscObjectReference(PetscObjectCast(scatter)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->bintocpu
@@ -183,7 +183,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::bindtocpu(Vec v, PetscBool usehost) noexce
   VecSetOp_CUPM(placearray, VecPlaceArray_MPI, base_type::template placearray<PETSC_MEMTYPE_HOST>);
   VecSetOp_CUPM(max, VecMax_MPI, max);
   VecSetOp_CUPM(min, VecMin_MPI, min);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ================================================================================== //
@@ -194,7 +194,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::norm(Vec v, NormType type, PetscReal *z) n
 {
   PetscFunctionBegin;
   PetscCall(VecNorm_MPI_Default(v, type, z, VecSeq_T::norm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -202,7 +202,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::dot(Vec x, Vec y, PetscScalar *z) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecXDot_MPI_Default(x, y, z, VecSeq_T::dot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -210,7 +210,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::tdot(Vec x, Vec y, PetscScalar *z) noexcep
 {
   PetscFunctionBegin;
   PetscCall(VecXDot_MPI_Default(x, y, z, VecSeq_T::tdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -218,7 +218,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::mdot(Vec x, PetscInt nv, const Vec y[], Pe
 {
   PetscFunctionBegin;
   PetscCall(VecMXDot_MPI_Default(x, nv, y, z, VecSeq_T::mdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -226,7 +226,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::dotnorm2(Vec x, Vec y, PetscScalar *dp, Pe
 {
   PetscFunctionBegin;
   PetscCall(VecDotNorm2_MPI_Default(x, y, dp, nm, VecSeq_T::dotnorm2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -236,7 +236,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::max(Vec x, PetscInt *idx, PetscReal *z) no
 
   PetscFunctionBegin;
   PetscCall(VecMinMax_MPI_Default(x, idx, z, VecSeq_T::max, ops));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -246,7 +246,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::min(Vec x, PetscInt *idx, PetscReal *z) no
 
   PetscFunctionBegin;
   PetscCall(VecMinMax_MPI_Default(x, idx, z, VecSeq_T::min, ops));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -278,7 +278,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::setpreallocationcoo(Vec x, PetscCount ncoo
     );
     // clang-format on
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace kernels
@@ -345,7 +345,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::setvaluescoo(Vec x, const PetscScalar v[],
     if (PetscMemTypeHost(v_memtype)) PetscCall(PetscDeviceFree(dctx, vv));
     PetscCall(PetscDeviceContextSynchronize(dctx));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace impl

@@ -37,7 +37,7 @@ PetscErrorCode MatView_MPIAIJ_PtAP(Mat A, PetscViewer viewer)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_MPIAIJ_PtAP(void *data)
@@ -91,7 +91,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(void *data)
   PetscCall(PetscFree(ptap->c_othi));
   PetscCall(PetscFree(ptap->c_rmti));
   PetscCall(PetscFree(ptap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, Mat C)
@@ -212,7 +212,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, Mat C)
 
   PetscCall(ISGlobalToLocalMappingApply(ptap->ltog, IS_GTOLM_DROP, c_seq->i[C_oth->rmap->n], c_seq->j, &nout, c_seq->j));
   PetscCheck(c_seq->i[C_oth->rmap->n] == nout, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT, c_seq->i[C_loc->rmap->n], nout);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fill, Mat Cmpi)
@@ -578,7 +578,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat P, Mat P_oth, const PetscInt *map, PetscInt dof, PetscInt i, PetscHSetI dht, PetscHSetI oht)
@@ -637,7 +637,7 @@ static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat
       }
     }
   } /* end if (ao) */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat P, Mat P_oth, const PetscInt *map, PetscInt dof, PetscInt i, PetscHMapIV hmap)
@@ -699,7 +699,7 @@ static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat 
     }
   } /* end if (ao) */
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat, Mat, PetscInt dof, MatReuse, Mat *);
@@ -846,7 +846,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
   ptap->reuse = MAT_REUSE_MATRIX;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A, Mat P, Mat C)
@@ -854,7 +854,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A, Mat P, Mat C)
   PetscFunctionBegin;
 
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A, P, 1, C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, PetscInt dof, Mat C)
@@ -982,7 +982,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
   ptap->reuse = MAT_REUSE_MATRIX;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A, Mat P, Mat C)
@@ -990,7 +990,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A, Mat P, Mat C
   PetscFunctionBegin;
 
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A, P, 1, C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: move algorithm selection to MatProductSetFromOptions */
@@ -1250,14 +1250,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt d
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, " Unsupported allatonce numerical algorithm ");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce(Mat A, Mat P, PetscReal fill, Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(A, P, 1, fill, C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, PetscInt dof, PetscReal fill, Mat Cmpi)
@@ -1506,14 +1506,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pet
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, " Unsupported allatonce numerical algorithm ");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A, Mat P, PetscReal fill, Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(A, P, 1, fill, C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat Cmpi)
@@ -1875,7 +1875,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
 
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
@@ -1990,7 +1990,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
   ptap->reuse = MAT_REUSE_MATRIX;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ(Mat C)
@@ -2035,7 +2035,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ(Mat C)
   PetscCall(PetscStrcmp(alg, "backend", &flg));
   if (flg) {
     PetscCall(MatProductSymbolic_MPIAIJBACKEND(C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* hypre */
@@ -2044,12 +2044,12 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ(Mat C)
   if (flg) {
     PetscCall(MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A, P, fill, C));
     C->ops->productnumeric = MatProductNumeric_PtAP;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
   SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "Mat Product Algorithm is not supported");
 
 next:
   C->ops->productnumeric = MatProductNumeric_PtAP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

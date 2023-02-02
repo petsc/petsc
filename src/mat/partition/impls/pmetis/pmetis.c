@@ -207,7 +207,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
   }
   PetscCall(MatDestroy(&pmat));
   PetscCall(MatDestroy(&amat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -217,7 +217,7 @@ static PetscErrorCode MatPartitioningApplyND_Parmetis(MatPartitioning part, IS *
 {
   PetscFunctionBegin;
   PetscCall(MatPartitioningApply_Parmetis_Private(part, PETSC_TRUE, PETSC_FALSE, partitioning));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -227,7 +227,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part, IS *pa
 {
   PetscFunctionBegin;
   PetscCall(MatPartitioningApply_Parmetis_Private(part, PETSC_FALSE, PETSC_FALSE, partitioning));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -237,7 +237,7 @@ static PetscErrorCode MatPartitioningImprove_Parmetis(MatPartitioning part, IS *
 {
   PetscFunctionBegin;
   PetscCall(MatPartitioningApply_Parmetis_Private(part, PETSC_FALSE, PETSC_TRUE, partitioning));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer viewer)
@@ -261,7 +261,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer vi
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -283,7 +283,7 @@ PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 
   PetscFunctionBegin;
   pmetis->parallel = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -305,7 +305,7 @@ PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part)
 
   PetscFunctionBegin;
   pmetis->repartition = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -327,7 +327,7 @@ PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt 
 
   PetscFunctionBegin;
   *cut = pmetis->cuts;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
@@ -341,7 +341,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, Pets
   PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_repartition", "", "MatPartitioningParmetisSetRepartition", flag, &flag, NULL));
   if (flag) PetscCall(MatPartitioningParmetisSetRepartition(part));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
@@ -350,7 +350,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(pmetis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   part->ops->view           = MatPartitioningView_Parmetis;
   part->ops->destroy        = MatPartitioningDestroy_Parmetis;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -443,5 +443,5 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh, PetscInt ncommonnodes, Mat *dual)
   newadj = (Mat_MPIAdj *)(*dual)->data;
 
   newadj->freeaijwithfree = PETSC_TRUE; /* signal the matrix should be freed with system free since space was allocated by ParMETIS */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

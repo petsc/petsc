@@ -13,7 +13,7 @@ PetscErrorCode PCBDDCDestroyGraphCandidatesIS(void *ctx)
   PetscCall(PetscFree(cand->Edges));
   PetscCall(ISDestroy(&cand->Vertices));
   PetscCall(PetscFree(cand));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph graph, IS *dirdofs)
@@ -39,7 +39,7 @@ PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph graph, IS *dirdofs)
     PetscCall(PetscObjectReference((PetscObject)graph->dirdofsB));
   }
   *dirdofs = graph->dirdofsB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph, IS *dirdofs)
@@ -65,7 +65,7 @@ PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph, IS *dirdofs)
     PetscCall(PetscObjectReference((PetscObject)graph->dirdofs));
   }
   *dirdofs = graph->dirdofs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level, PetscViewer viewer)
@@ -150,7 +150,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   }
   PetscCall(PetscFree(queue_in_global_numbering));
   PetscCall(PetscViewerFlush(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
@@ -182,7 +182,7 @@ PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_fac
     *n_edges = 0;
   }
   if (VerticesIS) PetscCall(ISDestroy(VerticesIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
@@ -202,7 +202,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     if (n_edges) *n_edges = cand->nec;
     if (EdgesIS) *EdgesIS = cand->Edges;
     if (VerticesIS) *VerticesIS = cand->Vertices;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscCalloc1(graph->ncc, &mark));
   /* loop on ccs to evalute number of faces, edges and vertices */
@@ -276,7 +276,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   if (n_edges) *n_edges = nec;
   if (EdgesIS) *EdgesIS = ISForEdges;
   if (VerticesIS) *VerticesIS = ISForVertices;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
@@ -681,7 +681,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     PetscCall(MPIU_Allreduce(&twodim, &graph->twodim, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)graph->l2gmap)));
     graph->twodimset = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph graph, PetscInt pid, PetscInt *queue_tip, PetscInt n_prev, PetscInt *n_added)
@@ -764,7 +764,7 @@ static inline PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph graph, Pet
     }
   }
   *n_added = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
@@ -775,7 +775,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   PetscFunctionBegin;
   PetscCheck(graph->setupcalled, PetscObjectComm((PetscObject)graph->l2gmap), PETSC_ERR_ORDER, "PCBDDCGraphSetUp should be called first");
   /* quiet return if there isn't any local info */
-  if (!graph->xadj && !graph->n_local_subs) PetscFunctionReturn(0);
+  if (!graph->xadj && !graph->n_local_subs) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* reset any previous search of connected components */
   PetscCall(PetscBTMemzero(graph->nvtxs, graph->touched));
@@ -822,7 +822,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   }
   graph->ncc          = ncc;
   graph->queue_sorted = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size, IS neumann_is, IS dirichlet_is, PetscInt n_ISForDofs, IS ISForDofs[], IS custom_primal_vertices)
@@ -1169,24 +1169,24 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
   /* free workspace */
   graph->setupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphResetCoords(PCBDDCGraph graph)
 {
   PetscFunctionBegin;
-  if (!graph) PetscFunctionReturn(0);
+  if (!graph) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(graph->coords));
   graph->cdim  = 0;
   graph->cnloc = 0;
   graph->cloc  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
 {
   PetscFunctionBegin;
-  if (!graph) PetscFunctionReturn(0);
+  if (!graph) PetscFunctionReturn(PETSC_SUCCESS);
   if (graph->freecsr) {
     PetscCall(PetscFree(graph->xadj));
     PetscCall(PetscFree(graph->adjncy));
@@ -1196,13 +1196,13 @@ PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
   }
   graph->freecsr   = PETSC_FALSE;
   graph->nvtxs_csr = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
 {
   PetscFunctionBegin;
-  if (!graph) PetscFunctionReturn(0);
+  if (!graph) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(ISLocalToGlobalMappingDestroy(&graph->l2gmap));
   PetscCall(PetscFree(graph->subset_ncc));
   PetscCall(PetscFree(graph->subset_ref_node));
@@ -1227,7 +1227,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   graph->n_local_subs        = 0;
   graph->maxcount            = PETSC_MAX_INT;
   graph->setupcalled         = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap, PetscInt N, PetscInt maxcount)
@@ -1263,7 +1263,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   graph->subset_ref_node = NULL;
   /* maxcount for cc */
   graph->maxcount = maxcount;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph *graph)
@@ -1273,7 +1273,7 @@ PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph *graph)
   PetscCall(PCBDDCGraphResetCoords(*graph));
   PetscCall(PCBDDCGraphReset(*graph));
   PetscCall(PetscFree(*graph));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
@@ -1285,5 +1285,5 @@ PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
   new_graph->custom_minimal_size = 1;
   new_graph->commsizelimit       = 1;
   *graph                         = new_graph;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -38,7 +38,7 @@ PetscErrorCode SNESSetErrorIfNotConverged(SNES snes, PetscBool flg)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveBool(snes, flg, 2);
   snes->errorifnotconverged = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -62,7 +62,7 @@ PetscErrorCode SNESGetErrorIfNotConverged(SNES snes, PetscBool *flag)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidBoolPointer(flag, 2);
   *flag = snes->errorifnotconverged;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -87,7 +87,7 @@ PetscErrorCode SNESSetAlwaysComputesFinalResidual(SNES snes, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->alwayscomputesfinalresidual = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -110,7 +110,7 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *flg = snes->alwayscomputesfinalresidual;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -137,7 +137,7 @@ PetscErrorCode SNESSetFunctionDomainError(SNES snes)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscCheck(!snes->errorifnotconverged, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "User code indicates input vector is not in the function domain");
   snes->domainerror = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -163,7 +163,7 @@ PetscErrorCode SNESSetJacobianDomainError(SNES snes)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscCheck(!snes->errorifnotconverged, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "User code indicates computeJacobian does not make sense");
   snes->jacobiandomainerror = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -188,7 +188,7 @@ PetscErrorCode SNESSetCheckJacobianDomainError(SNES snes, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->checkjacdomainerror = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -212,7 +212,7 @@ PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   *flg = snes->checkjacdomainerror;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -236,7 +236,7 @@ PetscErrorCode SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidBoolPointer(domainerror, 2);
   *domainerror = snes->domainerror;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -260,7 +260,7 @@ PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidBoolPointer(domainerror, 2);
   *domainerror = snes->jacobiandomainerror;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -305,7 +305,7 @@ PetscErrorCode SNESLoad(SNES snes, PetscViewer viewer)
   PetscCall(DMSNESLoad(dmsnes, viewer));
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPLoad(ksp, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -332,7 +332,7 @@ PetscErrorCode SNESViewFromOptions(SNES A, PetscObject obj, const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, SNES_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *);
@@ -532,7 +532,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
     PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
     PetscCall(PetscDrawPopCurrentPoint(draw));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -560,7 +560,7 @@ PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*snescheck)(SNES))
   PetscFunctionBegin;
   PetscCheck(numberofsetfromoptions < MAXSETFROMOPTIONS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many options checkers, only %d allowed", MAXSETFROMOPTIONS);
   othersetfromoptions[numberofsetfromoptions++] = snescheck;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperator, PetscInt version)
@@ -624,7 +624,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     }
   }
   PetscCall(MatDestroy(&J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine, Mat Restrict, Vec Rscale, Mat Inject, DM dmcoarse, void *ctx)
@@ -655,14 +655,14 @@ static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine, Mat Restrict, Vec Rsc
   }
   PetscCall(DMRestoreNamedGlobalVector(dmcoarse, "SNESVecSol", &Xcoarse));
   if (Xfine_named) PetscCall(DMRestoreNamedGlobalVector(dmfine, "SNESVecSol", &Xfine_named));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm, DM dmc, void *ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCoarsenHookAdd(dmc, DMCoarsenHook_SNESVecSol, DMRestrictHook_SNESVecSol, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This may be called to rediscretize the operator on levels of linear multigrid. The DM shuffle is so the user can
@@ -699,7 +699,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
 
   if (Xnamed) PetscCall(DMRestoreNamedGlobalVector(snes->dm, "SNESVecSol", &Xnamed));
   snes->dm = dmsave;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -762,7 +762,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     PetscCall(KSPSetComputeOperators(ksp, KSPComputeOperators_SNES, snes));
     PetscCall(DMCoarsenHookAdd(snes->dm, DMCoarsenHook_SNESVecSol, DMRestrictHook_SNESVecSol, snes));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
@@ -770,7 +770,7 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
   PetscInt i;
 
   PetscFunctionBegin;
-  if (!snes->pauseFinal) PetscFunctionReturn(0);
+  if (!snes->pauseFinal) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 0; i < snes->numbermonitors; ++i) {
     PetscViewerAndFormat *vf = (PetscViewerAndFormat *)snes->monitorcontext[i];
     PetscDraw             draw;
@@ -799,7 +799,7 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
       PetscCall(PetscDrawSetPause(draw, lpause));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -843,7 +843,7 @@ PetscErrorCode SNESMonitorSetFromOptions(SNES snes, const char name[], const cha
     if (monitorsetup) PetscCall((*monitorsetup)(snes, vf));
     PetscCall(SNESMonitorSet(snes, (PetscErrorCode(*)(SNES, PetscInt, PetscReal, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, MPI_Comm comm, const char *prefix)
@@ -865,7 +865,7 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, MPI_Comm comm, cons
   PetscCall(PetscOptionsReal("-ksp_ew_v4_m3", "Threshold for successive rtol (0.1 in Eq.7)", NULL, kctx->v4_m3, &kctx->v4_m3, NULL));
   PetscCall(PetscOptionsReal("-ksp_ew_v4_m4", "Adaptation scaling (0.5 in Eq.7)", NULL, kctx->v4_m4, &kctx->v4_m4, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1142,7 +1142,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
   if (pcset && (!snes->npc)) PetscCall(SNESGetNPC(snes, &snes->npc));
   if (snes->npc) PetscCall(SNESSetFromOptions(snes->npc));
   snes->setfromoptionscalled++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1161,7 +1161,7 @@ PetscErrorCode SNESResetFromOptions(SNES snes)
 {
   PetscFunctionBegin;
   if (snes->setfromoptionscalled) PetscCall(SNESSetFromOptions(snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1193,7 +1193,7 @@ PetscErrorCode SNESSetComputeApplicationContext(SNES snes, PetscErrorCode (*comp
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->ops->usercompute = compute;
   snes->ops->userdestroy = destroy;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1228,7 +1228,7 @@ PetscErrorCode SNESSetApplicationContext(SNES snes, void *usrP)
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPSetApplicationContext(ksp, usrP));
   snes->user = usrP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1256,7 +1256,7 @@ PetscErrorCode SNESGetApplicationContext(SNES snes, void *usrP)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *(void **)usrP = snes->user;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1292,7 +1292,7 @@ PetscErrorCode SNESSetUseMatrixFree(SNES snes, PetscBool mf_operator, PetscBool 
   PetscValidLogicalCollectiveBool(snes, mf, 3);
   snes->mf          = mf_operator ? PETSC_TRUE : mf;
   snes->mf_operator = mf_operator;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1317,7 +1317,7 @@ PetscErrorCode SNESGetUseMatrixFree(SNES snes, PetscBool *mf_operator, PetscBool
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (mf) *mf = snes->mf;
   if (mf_operator) *mf_operator = snes->mf_operator;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1358,7 +1358,7 @@ PetscErrorCode SNESGetIterationNumber(SNES snes, PetscInt *iter)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidIntPointer(iter, 2);
   *iter = snes->iter;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1381,7 +1381,7 @@ PetscErrorCode SNESSetIterationNumber(SNES snes, PetscInt iter)
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter = iter;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1410,7 +1410,7 @@ PetscErrorCode SNESGetNonlinearStepFailures(SNES snes, PetscInt *nfails)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidIntPointer(nfails, 2);
   *nfails = snes->numFailures;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1433,7 +1433,7 @@ PetscErrorCode SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->maxFailures = maxFails;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1459,7 +1459,7 @@ PetscErrorCode SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidIntPointer(maxFails, 2);
   *maxFails = snes->maxFailures;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1487,7 +1487,7 @@ PetscErrorCode SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidIntPointer(nfuncs, 2);
   *nfuncs = snes->nfuncs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1518,7 +1518,7 @@ PetscErrorCode SNESGetLinearSolveFailures(SNES snes, PetscInt *nfails)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidIntPointer(nfails, 2);
   *nfails = snes->numLinearSolveFailures;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1547,7 +1547,7 @@ PetscErrorCode SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveInt(snes, maxFails, 2);
   snes->maxLinearSolveFailures = maxFails;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1575,7 +1575,7 @@ PetscErrorCode SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidIntPointer(maxFails, 2);
   *maxFails = snes->maxLinearSolveFailures;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1606,7 +1606,7 @@ PetscErrorCode SNESGetLinearSolveIterations(SNES snes, PetscInt *lits)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidIntPointer(lits, 2);
   *lits = snes->linear_its;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1629,7 +1629,7 @@ PetscErrorCode SNESSetCountersReset(SNES snes, PetscBool reset)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveBool(snes, reset, 2);
   snes->counters_reset = reset;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1661,7 +1661,7 @@ PetscErrorCode SNESSetKSP(SNES snes, KSP ksp)
   PetscCall(PetscObjectReference((PetscObject)ksp));
   if (snes->ksp) PetscCall(PetscObjectDereference((PetscObject)snes->ksp));
   snes->ksp = ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1815,7 +1815,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
   kctx->v4_m4       = 0.5;
 
   *outsnes = snes;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1874,7 +1874,7 @@ PetscErrorCode SNESSetFunction(SNES snes, Vec r, PetscErrorCode (*f)(SNES, Vec, 
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESSetFunction(dm, f, ctx));
   if (f == SNESPicardComputeFunction) PetscCall(DMSNESSetMFFunction(dm, SNESPicardComputeMFFunction, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1909,13 +1909,13 @@ PetscErrorCode SNESSetInitialFunction(SNES snes, Vec f)
   PetscCheckSameComm(snes, 1, f, 2);
   if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     snes->vec_func_init_set = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(SNESGetFunction(snes, &vec_func, NULL, NULL));
   PetscCall(VecCopy(f, vec_func));
 
   snes->vec_func_init_set = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1949,7 +1949,7 @@ PetscErrorCode SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->normschedule = normschedule;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1971,7 +1971,7 @@ PetscErrorCode SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *normschedule = snes->normschedule;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1992,7 +1992,7 @@ PetscErrorCode SNESSetFunctionNorm(SNES snes, PetscReal norm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->norm = norm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2016,7 +2016,7 @@ PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidRealPointer(norm, 2);
   *norm = snes->norm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2043,7 +2043,7 @@ PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidRealPointer(ynorm, 2);
   *ynorm = snes->ynorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2067,7 +2067,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidRealPointer(xnorm, 2);
   *xnorm = snes->xnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2097,7 +2097,7 @@ PetscErrorCode SNESSetFunctionType(SNES snes, SNESFunctionType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->functype = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2119,7 +2119,7 @@ PetscErrorCode SNESGetFunctionType(SNES snes, SNESFunctionType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *type = snes->functype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -2179,7 +2179,7 @@ PetscErrorCode SNESSetNGS(SNES snes, PetscErrorCode (*f)(SNES, Vec, Vec, void *)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESSetNGS(dm, f, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -2206,7 +2206,7 @@ PetscErrorCode SNESPicardComputeMFFunction(SNES snes, Vec x, Vec f, void *ctx)
     PetscCallBack("SNES Picard callback Jacobian", (*sdm->ops->computepjacobian)(snes, x, snes->picard, snes->picard, sdm->pctx));
     PetscCall(MatMult(snes->picard, x, f));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESPicardComputeFunction(SNES snes, Vec x, Vec f, void *ctx)
@@ -2227,7 +2227,7 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes, Vec x, Vec f, void *ctx)
     PetscCallBack("SNES Picard callback Jacobian", (*sdm->ops->computepjacobian)(snes, x, snes->jacobian, snes->jacobian_pre, sdm->pctx));
     PetscCall(MatMult(snes->jacobian_pre, x, f));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
@@ -2237,7 +2237,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
   /* must assembly if matrix-free to get the last SNES solution */
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2297,7 +2297,7 @@ PetscErrorCode SNESSetPicard(SNES snes, Vec r, PetscErrorCode (*bp)(SNES, Vec, V
   PetscCall(DMSNESSetMFFunction(dm, SNESPicardComputeMFFunction, ctx));
   PetscCall(SNESSetFunction(snes, r, SNESPicardComputeFunction, ctx));
   PetscCall(SNESSetJacobian(snes, Amat, Pmat, SNESPicardComputeJacobian, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2330,7 +2330,7 @@ PetscErrorCode SNESGetPicard(SNES snes, Vec *r, PetscErrorCode (**f)(SNES, Vec, 
   PetscCall(SNESGetJacobian(snes, Amat, Pmat, NULL, NULL));
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESGetPicard(dm, f, J, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2360,7 +2360,7 @@ PetscErrorCode SNESSetComputeInitialGuess(SNES snes, PetscErrorCode (*func)(SNES
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (func) snes->ops->computeinitialguess = func;
   if (ctx) snes->initialguessP = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2385,7 +2385,7 @@ PetscErrorCode SNESGetRhs(SNES snes, Vec *rhs)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(rhs, 2);
   *rhs = snes->vec_rhs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2447,7 +2447,7 @@ PetscErrorCode SNESComputeFunction(SNES snes, Vec x, Vec y)
      propagate the value to all processes
   */
   if (snes->domainerror) PetscCall(VecSetInf(y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2502,7 +2502,7 @@ PetscErrorCode SNESComputeMFFunction(SNES snes, Vec x, Vec y)
      propagate the value to all processes
   */
   if (snes->domainerror) PetscCall(VecSetInf(y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2547,7 +2547,7 @@ PetscErrorCode SNESComputeNGS(SNES snes, Vec b, Vec x)
   PetscCallBack("SNES callback NGS", (*sdm->ops->computegs)(snes, x, b, sdm->gsctx));
   if (b) PetscCall(VecLockReadPop(b));
   PetscCall(PetscLogEventEnd(SNES_NGSEval, snes, x, b, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESTestJacobian(SNES snes)
@@ -2579,7 +2579,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   PetscCall(PetscOptionsDeprecated("-snes_test_jacobian_display_threshold", "-snes_test_jacobian", "3.13", "-snes_test_jacobian accepts an optional threshold (since v3.10)"));
   PetscCall(PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print));
   PetscOptionsEnd();
-  if (!test) PetscFunctionReturn(0);
+  if (!test) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
   PetscCall(PetscViewerASCIIGetStdout(comm, &viewer));
@@ -2708,7 +2708,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   if (complete_print) PetscCall(PetscViewerPopFormat(mviewer));
   if (mviewer) PetscCall(PetscViewerDestroy(&mviewer));
   PetscCall(PetscViewerASCIISetTab(viewer, tabs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2780,7 +2780,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
       PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (snes->lagjacobian > 1 && (snes->iter + snes->jac_iter) % snes->lagjacobian) {
     PetscCall(PetscInfo(snes, "Reusing Jacobian/preconditioner because lag is %" PetscInt_FMT " and SNES iteration is %" PetscInt_FMT "\n", snes->lagjacobian, snes->iter));
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMFFD, &flag));
@@ -2788,12 +2788,12 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
       PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (snes->npc && snes->npcside == PC_LEFT) {
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscLogEventBegin(SNES_JacobianEval, snes, X, A, B));
@@ -2991,7 +2991,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
       PetscCall(MatDestroy(&Bfd));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -3072,7 +3072,7 @@ PetscErrorCode SNESSetJacobian(SNES snes, Mat Amat, Mat Pmat, PetscErrorCode (*J
 
     snes->jacobian_pre = Pmat;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3104,7 +3104,7 @@ PetscErrorCode SNESGetJacobian(SNES snes, Mat *Amat, Mat *Pmat, PetscErrorCode (
   if (Pmat) *Pmat = snes->jacobian_pre;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESGetJacobian(dm, J, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSetDefaultComputeJacobian(SNES snes)
@@ -3128,7 +3128,7 @@ static PetscErrorCode SNESSetDefaultComputeJacobian(SNES snes)
       PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobianDefaultColor, NULL));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3169,7 +3169,7 @@ PetscErrorCode SNESSetUp(SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  if (snes->setupcalled) PetscFunctionReturn(0);
+  if (snes->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(SNES_Setup, snes, 0, 0, 0));
 
   if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, SNESNEWTONLS));
@@ -3253,7 +3253,7 @@ PetscErrorCode SNESSetUp(SNES snes)
   }
   PetscCall(PetscLogEventEnd(SNES_Setup, snes, 0, 0, 0));
   snes->setupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3302,7 +3302,7 @@ PetscErrorCode SNESReset(SNES snes)
 
   snes->nwork = snes->nvwork = 0;
   snes->setupcalled          = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3327,7 +3327,7 @@ PetscErrorCode SNESConvergedReasonViewCancel(SNES snes)
     if (snes->reasonviewdestroy[i]) PetscCall((*snes->reasonviewdestroy[i])(&snes->reasonviewcontext[i]));
   }
   snes->numberreasonviews = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3346,11 +3346,11 @@ PetscErrorCode SNESConvergedReasonViewCancel(SNES snes)
 PetscErrorCode SNESDestroy(SNES *snes)
 {
   PetscFunctionBegin;
-  if (!*snes) PetscFunctionReturn(0);
+  if (!*snes) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*snes), SNES_CLASSID, 1);
   if (--((PetscObject)(*snes))->refct > 0) {
     *snes = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(SNESReset((*snes)));
@@ -3371,7 +3371,7 @@ PetscErrorCode SNESDestroy(SNES *snes)
   PetscCall(SNESMonitorCancel((*snes)));
   PetscCall(SNESConvergedReasonViewCancel((*snes)));
   PetscCall(PetscHeaderDestroy(snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------- Routines to set solver parameters ---------- */
@@ -3411,7 +3411,7 @@ PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
   PetscCheck(lag, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Lag cannot be 0");
   PetscValidLogicalCollectiveInt(snes, lag, 2);
   snes->lagpreconditioner = lag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3439,7 +3439,7 @@ PetscErrorCode SNESSetGridSequence(SNES snes, PetscInt steps)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveInt(snes, steps, 2);
   snes->gridsequence = steps;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3468,7 +3468,7 @@ PetscErrorCode SNESGetGridSequence(SNES snes, PetscInt *steps)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *steps = snes->gridsequence;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3503,7 +3503,7 @@ PetscErrorCode SNESGetLagPreconditioner(SNES snes, PetscInt *lag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *lag = snes->lagpreconditioner;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3543,7 +3543,7 @@ PetscErrorCode SNESSetLagJacobian(SNES snes, PetscInt lag)
   PetscCheck(lag, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Lag cannot be 0");
   PetscValidLogicalCollectiveInt(snes, lag, 2);
   snes->lagjacobian = lag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3573,7 +3573,7 @@ PetscErrorCode SNESGetLagJacobian(SNES snes, PetscInt *lag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *lag = snes->lagjacobian;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3608,7 +3608,7 @@ PetscErrorCode SNESSetLagJacobianPersists(SNES snes, PetscBool flg)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveBool(snes, flg, 2);
   snes->lagjac_persist = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3643,7 +3643,7 @@ PetscErrorCode SNESSetLagPreconditionerPersists(SNES snes, PetscBool flg)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveBool(snes, flg, 2);
   snes->lagpre_persist = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3670,7 +3670,7 @@ PetscErrorCode SNESSetForceIteration(SNES snes, PetscBool force)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->forceiteration = force;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3693,7 +3693,7 @@ PetscErrorCode SNESGetForceIteration(SNES snes, PetscBool *force)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *force = snes->forceiteration;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3751,7 +3751,7 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
     snes->max_funcs = maxf;
   }
   snes->tolerancesset = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3781,7 +3781,7 @@ PetscErrorCode SNESSetDivergenceTolerance(SNES snes, PetscReal divtol)
   } else {
     snes->divtol = 1.0e4;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3814,7 +3814,7 @@ PetscErrorCode SNESGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol, Pe
   if (stol) *stol = snes->stol;
   if (maxit) *maxit = snes->max_its;
   if (maxf) *maxf = snes->max_funcs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3835,7 +3835,7 @@ PetscErrorCode SNESGetDivergenceTolerance(SNES snes, PetscReal *divtol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (divtol) *divtol = snes->divtol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3860,7 +3860,7 @@ PetscErrorCode SNESSetTrustRegionTolerance(SNES snes, PetscReal tol)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveReal(snes, tol, 2);
   snes->deltatol = tol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode SNESMonitorRange_Private(SNES, PetscInt, PetscReal *);
@@ -3930,7 +3930,7 @@ PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, void *
     PetscCall(PetscDrawLGSave(lg));
   }
   prev = rnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3959,7 +3959,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
   PetscCall(VecLockReadPush(snes->vec_sol));
   for (i = 0; i < n; i++) PetscCall((*snes->monitor[i])(snes, iter, rnorm, snes->monitorcontext[i]));
   PetscCall(VecLockReadPop(snes->vec_sol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------ Routines to set performance monitoring options ----------- */
@@ -4029,13 +4029,13 @@ PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES, PetscInt, Pet
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   for (i = 0; i < snes->numbermonitors; i++) {
     PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))f, mctx, monitordestroy, (PetscErrorCode(*)(void))snes->monitor[i], snes->monitorcontext[i], snes->monitordestroy[i], &identical));
-    if (identical) PetscFunctionReturn(0);
+    if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(snes->numbermonitors < MAXSNESMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
   snes->monitor[snes->numbermonitors]          = f;
   snes->monitordestroy[snes->numbermonitors]   = monitordestroy;
   snes->monitorcontext[snes->numbermonitors++] = (void *)mctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4068,7 +4068,7 @@ PetscErrorCode SNESMonitorCancel(SNES snes)
     if (snes->monitordestroy[i]) PetscCall((*snes->monitordestroy[i])(&snes->monitorcontext[i]));
   }
   snes->numbermonitors = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -4121,7 +4121,7 @@ PetscErrorCode SNESSetConvergenceTest(SNES snes, PetscErrorCode (*SNESConvergenc
   snes->ops->converged        = SNESConvergenceTestFunction;
   snes->ops->convergeddestroy = destroy;
   snes->cnvP                  = cctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4151,7 +4151,7 @@ PetscErrorCode SNESGetConvergedReason(SNES snes, SNESConvergedReason *reason)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(reason, 2);
   *reason = snes->reason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4175,7 +4175,7 @@ PetscErrorCode SNESGetConvergedReasonString(SNES snes, const char **strreason)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(strreason, 2);
   *strreason = SNESConvergedReasons[snes->reason];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4200,7 +4200,7 @@ PetscErrorCode SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->reason = reason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4244,7 +4244,7 @@ PetscErrorCode SNESSetConvergenceHistory(SNES snes, PetscReal a[], PetscInt its[
   snes->conv_hist_max   = (size_t)na;
   snes->conv_hist_len   = 0;
   snes->conv_hist_reset = reset;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_MATLAB)
@@ -4297,7 +4297,7 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes, PetscReal *a[], PetscInt *it
   if (a) *a = snes->conv_hist;
   if (its) *its = snes->conv_hist_its;
   if (na) *na = (PetscInt)snes->conv_hist_len;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4333,7 +4333,7 @@ PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, PetscInt))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   snes->ops->update = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -4379,7 +4379,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes, Vec y, PetscReal *fnorm, PetscRe
     *gpnorm = 0.0;
     *ynorm  = nrm;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4452,7 +4452,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4495,13 +4495,13 @@ PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES, v
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   for (i = 0; i < snes->numberreasonviews; i++) {
     PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))f, vctx, reasonviewdestroy, (PetscErrorCode(*)(void))snes->reasonview[i], snes->reasonviewcontext[i], snes->reasonviewdestroy[i], &identical));
-    if (identical) PetscFunctionReturn(0);
+    if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(snes->numberreasonviews < MAXSNESREASONVIEWS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many SNES reasonview set");
   snes->reasonview[snes->numberreasonviews]          = f;
   snes->reasonviewdestroy[snes->numberreasonviews]   = reasonviewdestroy;
   snes->reasonviewcontext[snes->numberreasonviews++] = (void *)vctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4527,7 +4527,7 @@ PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
+  if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
 
   /* All user-provided viewers are called first, if they exist. */
@@ -4542,7 +4542,7 @@ PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
     PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4733,7 +4733,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 
   PetscCall(VecDestroy(&xcreated));
   PetscCall(PetscObjectSAWsBlock((PetscObject)snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------- Internal routines for SNES Package --------- */
@@ -4787,7 +4787,7 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)snes, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(SNESList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested SNES type %s", type);
@@ -4808,7 +4808,7 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)snes, type));
   PetscCall((*r)(snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4832,7 +4832,7 @@ PetscErrorCode SNESGetType(SNES snes, SNESType *type)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)snes)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4862,7 +4862,7 @@ PetscErrorCode SNESSetSolution(SNES snes, Vec u)
 
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMShellSetGlobalVector(dm, u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4887,7 +4887,7 @@ PetscErrorCode SNESGetSolution(SNES snes, Vec *x)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(x, 2);
   *x = snes->vec_sol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4912,7 +4912,7 @@ PetscErrorCode SNESGetSolutionUpdate(SNES snes, Vec *x)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(x, 2);
   *x = snes->vec_sol_update;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4955,7 +4955,7 @@ PetscErrorCode SNESGetFunction(SNES snes, Vec *r, PetscErrorCode (**f)(SNES, Vec
   }
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESGetFunction(dm, f, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4981,7 +4981,7 @@ PetscErrorCode SNESGetNGS(SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void *
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESGetNGS(dm, f, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5013,7 +5013,7 @@ PetscErrorCode SNESSetOptionsPrefix(SNES snes, const char prefix[])
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)snes->linesearch, prefix));
   }
   PetscCall(KSPSetOptionsPrefix(snes->ksp, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5045,7 +5045,7 @@ PetscErrorCode SNESAppendOptionsPrefix(SNES snes, const char prefix[])
     PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)snes->linesearch, prefix));
   }
   PetscCall(KSPAppendOptionsPrefix(snes->ksp, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5073,7 +5073,7 @@ PetscErrorCode SNESGetOptionsPrefix(SNES snes, const char *prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)snes, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5107,7 +5107,7 @@ PetscErrorCode SNESRegister(const char sname[], PetscErrorCode (*function)(SNES)
   PetscFunctionBegin;
   PetscCall(SNESInitializePackage());
   PetscCall(PetscFunctionListAdd(&SNESList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESTestLocalMin(SNES snes)
@@ -5140,7 +5140,7 @@ PetscErrorCode SNESTestLocalMin(SNES snes)
   }
   PetscCall(VecDestroy(&uh));
   PetscCall(VecDestroy(&fh));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5184,7 +5184,7 @@ PetscErrorCode SNESKSPSetUseEW(SNES snes, PetscBool flag)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveBool(snes, flag, 2);
   snes->ksp_ewconv = flag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5210,7 +5210,7 @@ PetscErrorCode SNESKSPGetUseEW(SNES snes, PetscBool *flag)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidBoolPointer(flag, 2);
   *flag = snes->ksp_ewconv;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5270,7 +5270,7 @@ PetscErrorCode SNESKSPSetParametersEW(SNES snes, PetscInt version, PetscReal rto
   PetscCheck(kctx->gamma >= 0.0 && kctx->gamma <= 1.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "0.0 <= gamma (%g) <= 1.0", (double)kctx->gamma);
   PetscCheck(kctx->alpha > 1.0 && kctx->alpha <= 2.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "1.0 < alpha (%g) <= 2.0", (double)kctx->alpha);
   PetscCheck(kctx->threshold > 0.0 && kctx->threshold < 1.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "0.0 < threshold (%g) < 1.0", (double)kctx->threshold);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5311,7 +5311,7 @@ PetscErrorCode SNESKSPGetParametersEW(SNES snes, PetscInt *version, PetscReal *r
   if (alpha) *alpha = kctx->alpha;
   if (alpha2) *alpha2 = kctx->alpha2;
   if (threshold) *threshold = kctx->threshold;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
@@ -5320,7 +5320,7 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
   PetscReal  rtol = PETSC_DEFAULT, stol;
 
   PetscFunctionBegin;
-  if (!snes->ksp_ewconv) PetscFunctionReturn(0);
+  if (!snes->ksp_ewconv) PetscFunctionReturn(PETSC_SUCCESS);
   if (!snes->iter) {
     rtol = kctx->rtol_0; /* first time in, so use the original user rtol */
     PetscCall(VecNorm(snes->vec_func, NORM_2, &kctx->norm_first));
@@ -5369,7 +5369,7 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
   rtol = PetscMin(rtol, kctx->rtol_max);
   PetscCall(KSPSetTolerances(ksp, rtol, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
   PetscCall(PetscInfo(snes, "iter %" PetscInt_FMT ", Eisenstat-Walker (version %" PetscInt_FMT ") KSP rtol=%g\n", snes->iter, kctx->version, (double)rtol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
@@ -5379,7 +5379,7 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
   Vec        lres;
 
   PetscFunctionBegin;
-  if (!snes->ksp_ewconv) PetscFunctionReturn(0);
+  if (!snes->ksp_ewconv) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(KSPGetTolerances(ksp, &kctx->rtol_last, NULL, NULL, NULL));
   kctx->norm_last = snes->norm;
   if (kctx->version == 1 || kctx->version == 4) {
@@ -5409,7 +5409,7 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
       PetscCall(VecDestroy(&lres));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5451,7 +5451,7 @@ PetscErrorCode SNESGetKSP(SNES snes, KSP *ksp)
     PetscCall(PetscObjectSetOptions((PetscObject)snes->ksp, ((PetscObject)snes)->options));
   }
   *ksp = snes->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petsc/private/dmimpl.h>
@@ -5501,7 +5501,7 @@ PetscErrorCode SNESSetDM(SNES snes, DM dm)
     PetscCall(SNESSetDM(snes->npc, snes->dm));
     PetscCall(SNESSetNPCSide(snes, snes->npcside));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5528,7 +5528,7 @@ PetscErrorCode SNESGetDM(SNES snes, DM *dm)
     snes->dmAuto = PETSC_TRUE;
   }
   *dm = snes->dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5559,7 +5559,7 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES npc)
   PetscCall(PetscObjectReference((PetscObject)npc));
   PetscCall(SNESDestroy(&snes->npc));
   snes->npc = npc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5602,7 +5602,7 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
     PetscCall(SNESSetCountersReset(snes->npc, PETSC_FALSE));
   }
   *pc = snes->npc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5625,7 +5625,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *has_npc = (PetscBool)(snes->npc ? PETSC_TRUE : PETSC_FALSE);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5661,7 +5661,7 @@ PetscErrorCode SNESSetNPCSide(SNES snes, PCSide side)
   if (side == PC_SIDE_DEFAULT) side = PC_RIGHT;
   PetscCheck((side == PC_LEFT) || (side == PC_RIGHT), PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONG, "Only PC_LEFT and PC_RIGHT are supported");
   snes->npcside = side;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5689,7 +5689,7 @@ PetscErrorCode SNESGetNPCSide(SNES snes, PCSide *side)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(side, 2);
   *side = snes->npcside;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5720,7 +5720,7 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 
   snes->linesearch = linesearch;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5754,5 +5754,5 @@ PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->linesearch, (PetscObject)snes, 1));
   }
   *linesearch = snes->linesearch;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

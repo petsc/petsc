@@ -24,7 +24,7 @@ PetscErrorCode AdolcMalloc2(PetscInt m, PetscInt n, T **A[])
 {
   PetscFunctionBegin;
   *A = myalloc2(m, n);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -40,7 +40,7 @@ PetscErrorCode AdolcFree2(T **A)
 {
   PetscFunctionBegin;
   myfree2(A);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -68,7 +68,7 @@ PetscErrorCode GiveGhostPoints(DM da, T *cgs, void *array)
   } else if (dim == 2) {
     PetscCall(GiveGhostPoints2d(da, cgs, (T ***)array));
   } else PetscCheck(dim != 3, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "GiveGhostPoints3d not yet implemented"); // TODO
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -89,7 +89,7 @@ PetscErrorCode GiveGhostPoints1d(DM da, T *a1d[])
   PetscFunctionBegin;
   PetscCall(DMDAGetGhostCorners(da, &gxs, NULL, NULL, NULL, NULL, NULL));
   *a1d -= gxs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -114,7 +114,7 @@ PetscErrorCode GiveGhostPoints2d(DM da, T *cgs, T **a2d[])
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, NULL, &gxm, &gym, NULL));
   for (PetscInt j = 0; j < gym; j++) (*a2d)[j] = cgs + j * gxm - gxs;
   *a2d -= gys;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -134,7 +134,7 @@ PetscErrorCode Subidentity(PetscInt n, PetscInt s, T **S)
 
   PetscFunctionBegin;
   for (i = 0; i < n; i++) S[i][i + s] = 1.;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -149,5 +149,5 @@ PetscErrorCode Identity(PetscInt n, T **I)
 {
   PetscFunctionBegin;
   PetscCall(Subidentity(n, 0, I));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

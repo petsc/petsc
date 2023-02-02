@@ -39,7 +39,7 @@ PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch ls)
     if (ls->monitordestroy[i]) PetscCall((*ls->monitordestroy[i])(&ls->monitorcontext[i]));
   }
   ls->numbermonitors = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -64,7 +64,7 @@ PetscErrorCode SNESLineSearchMonitor(SNESLineSearch ls)
 
   PetscFunctionBegin;
   for (i = 0; i < n; i++) PetscCall((*ls->monitorftns[i])(ls, ls->monitorcontext[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -103,13 +103,13 @@ PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch ls, PetscErrorCode (*f)(S
   PetscValidHeaderSpecific(ls, SNESLINESEARCH_CLASSID, 1);
   for (i = 0; i < ls->numbermonitors; i++) {
     PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))f, mctx, monitordestroy, (PetscErrorCode(*)(void))ls->monitorftns[i], ls->monitorcontext[i], ls->monitordestroy[i], &identical));
-    if (identical) PetscFunctionReturn(0);
+    if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ls->numbermonitors < MAXSNESLSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
   ls->monitorftns[ls->numbermonitors]      = f;
   ls->monitordestroy[ls->numbermonitors]   = monitordestroy;
   ls->monitorcontext[ls->numbermonitors++] = (void *)mctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -140,7 +140,7 @@ PetscErrorCode SNESLineSearchMonitorSolutionUpdate(SNESLineSearch ls, PetscViewe
   PetscCall(PetscViewerASCIIPrintf(viewer, "LineSearch attempted updated function value\n"));
   PetscCall(VecView(G, viewer));
   PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -198,7 +198,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   linesearch->setupcalled  = PETSC_FALSE;
   linesearch->monitor      = NULL;
   *outlinesearch           = linesearch;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -234,7 +234,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
     linesearch->lambda      = linesearch->damping;
     linesearch->setupcalled = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -265,7 +265,7 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
 
   linesearch->nwork       = 0;
   linesearch->setupcalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -284,7 +284,7 @@ PetscErrorCode SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorCo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   linesearch->ops->snesfunc = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -317,7 +317,7 @@ PetscErrorCode SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorCo
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (func) linesearch->ops->precheck = func;
   if (ctx) linesearch->precheckctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -340,7 +340,7 @@ PetscErrorCode SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorCo
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (func) *func = linesearch->ops->precheck;
   if (ctx) *ctx = linesearch->precheckctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -371,7 +371,7 @@ PetscErrorCode SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscErrorC
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (func) linesearch->ops->postcheck = func;
   if (ctx) linesearch->postcheckctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -394,7 +394,7 @@ PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscErrorC
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (func) *func = linesearch->ops->postcheck;
   if (ctx) *ctx = linesearch->postcheckctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -426,7 +426,7 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, Vec X, Vec Y, P
     PetscUseTypeMethod(linesearch, precheck, X, Y, changed, linesearch->precheckctx);
     PetscValidLogicalCollectiveBool(linesearch, *changed, 4);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -461,7 +461,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, 
     PetscValidLogicalCollectiveBool(linesearch, *changed_Y, 5);
     PetscValidLogicalCollectiveBool(linesearch, *changed_W, 6);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -519,7 +519,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch, Vec X, Ve
   if (iter < 2) {
     PetscCall(VecCopy(Y, Ylast));
     *changed = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecDot(Y, Ylast, &dot));
@@ -543,7 +543,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch, Vec X, Ve
     PetscCall(VecCopy(Y, Ylast));
     *changed = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -609,7 +609,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
   PetscCall(PetscLogEventEnd(SNESLINESEARCH_Apply, linesearch, X, F, Y));
 
   if (fnorm) *fnorm = linesearch->fnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -627,19 +627,19 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
 PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *linesearch)
 {
   PetscFunctionBegin;
-  if (!*linesearch) PetscFunctionReturn(0);
+  if (!*linesearch) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*linesearch), SNESLINESEARCH_CLASSID, 1);
   if (--((PetscObject)(*linesearch))->refct > 0) {
     *linesearch = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*linesearch));
   PetscCall(SNESLineSearchReset(*linesearch));
-  if ((*linesearch)->ops->destroy) (*linesearch)->ops->destroy(*linesearch);
+  PetscTryTypeMethod(*linesearch, destroy);
   PetscCall(PetscViewerDestroy(&(*linesearch)->monitor));
   PetscCall(SNESLineSearchMonitorCancel((*linesearch)));
   PetscCall(PetscHeaderDestroy(linesearch));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -670,7 +670,7 @@ PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, PetscV
   if (viewer) PetscCall(PetscObjectReference((PetscObject)viewer));
   PetscCall(PetscViewerDestroy(&linesearch->monitor));
   linesearch->monitor = viewer;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -693,7 +693,7 @@ PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, PetscV
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   *monitor = linesearch->monitor;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -734,7 +734,7 @@ PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls, const char
     if (monitorsetup) PetscCall((*monitorsetup)(ls, vf));
     PetscCall(SNESLineSearchMonitorSet(ls, (PetscErrorCode(*)(SNESLineSearch, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -825,7 +825,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
 
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)linesearch, PetscOptionsObject));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -868,7 +868,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
     }
     if (linesearch->ops->postcheck) PetscCall(PetscViewerASCIIPrintf(viewer, "  using user-defined postcheck step\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -892,7 +892,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)linesearch)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -929,7 +929,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)linesearch, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(SNESLineSearchList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested Line Search type %s", type);
@@ -946,7 +946,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)linesearch, type));
   PetscCall((*r)(linesearch));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -973,7 +973,7 @@ PetscErrorCode SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes)
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
   linesearch->snes = snes;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1000,7 +1000,7 @@ PetscErrorCode SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes)
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscValidPointer(snes, 2);
   *snes = linesearch->snes;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1030,7 +1030,7 @@ PetscErrorCode SNESLineSearchGetLambda(SNESLineSearch linesearch, PetscReal *lam
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscValidRealPointer(lambda, 2);
   *lambda = linesearch->lambda;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1055,7 +1055,7 @@ PetscErrorCode SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lamb
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   linesearch->lambda = lambda;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1113,7 +1113,7 @@ PetscErrorCode SNESLineSearchGetTolerances(SNESLineSearch linesearch, PetscReal 
     PetscValidIntPointer(max_its, 7);
     *max_its = linesearch->max_its;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1181,7 +1181,7 @@ PetscErrorCode SNESLineSearchSetTolerances(SNESLineSearch linesearch, PetscReal 
     PetscCheck(max_its >= 0, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations %" PetscInt_FMT " must be non-negative", max_its);
     linesearch->max_its = max_its;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1204,7 +1204,7 @@ PetscErrorCode SNESLineSearchGetDamping(SNESLineSearch linesearch, PetscReal *da
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscValidRealPointer(damping, 2);
   *damping = linesearch->damping;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1233,7 +1233,7 @@ PetscErrorCode SNESLineSearchSetDamping(SNESLineSearch linesearch, PetscReal dam
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   linesearch->damping = damping;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1261,7 +1261,7 @@ PetscErrorCode SNESLineSearchGetOrder(SNESLineSearch linesearch, PetscInt *order
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscValidIntPointer(order, 2);
   *order = linesearch->order;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1290,7 +1290,7 @@ PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch linesearch, PetscInt order)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   linesearch->order = order;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1317,7 +1317,7 @@ PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal *xnor
   if (xnorm) *xnorm = linesearch->xnorm;
   if (fnorm) *fnorm = linesearch->fnorm;
   if (ynorm) *ynorm = linesearch->ynorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1342,7 +1342,7 @@ PetscErrorCode SNESLineSearchSetNorms(SNESLineSearch linesearch, PetscReal xnorm
   linesearch->xnorm = xnorm;
   linesearch->fnorm = fnorm;
   linesearch->ynorm = ynorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1378,7 +1378,7 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
       PetscCall(VecNormEnd(linesearch->vec_update, NORM_2, &linesearch->ynorm));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1402,7 +1402,7 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 {
   PetscFunctionBegin;
   linesearch->norms = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1456,7 +1456,7 @@ PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch linesearch, Vec *X, Vec *F, 
     PetscValidPointer(G, 6);
     *G = linesearch->vec_func_new;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1500,7 +1500,7 @@ PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch linesearch, Vec X, Vec F, Ve
     PetscValidHeaderSpecific(G, VEC_CLASSID, 6);
     linesearch->vec_func_new = G;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1526,7 +1526,7 @@ PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch linesearch, cons
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)linesearch, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1554,7 +1554,7 @@ PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch, const c
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)linesearch, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1573,7 +1573,7 @@ PetscErrorCode SNESLineSearchSetWorkVecs(SNESLineSearch linesearch, PetscInt nwo
   PetscFunctionBegin;
   PetscCheck(linesearch->vec_sol, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "Cannot get linesearch work-vectors without setting a solution vec!");
   PetscCall(VecDuplicateVecs(linesearch->vec_sol, nwork, &linesearch->work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1599,7 +1599,7 @@ PetscErrorCode SNESLineSearchGetReason(SNESLineSearch linesearch, SNESLineSearch
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   PetscValidPointer(result, 2);
   *result = linesearch->result;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1622,7 +1622,7 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   linesearch->result = result;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1676,7 +1676,7 @@ PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineS
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (projectfunc) linesearch->ops->viproject = projectfunc;
   if (normfunc) linesearch->ops->vinorm = normfunc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1700,7 +1700,7 @@ PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineS
   PetscFunctionBegin;
   if (projectfunc) *projectfunc = linesearch->ops->viproject;
   if (normfunc) *normfunc = linesearch->ops->vinorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1715,5 +1715,5 @@ PetscErrorCode SNESLineSearchRegister(const char sname[], PetscErrorCode (*funct
   PetscFunctionBegin;
   PetscCall(SNESInitializePackage());
   PetscCall(PetscFunctionListAdd(&SNESLineSearchList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -83,7 +83,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -107,7 +107,7 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RegisterMyARK2(void)
@@ -123,7 +123,7 @@ static PetscErrorCode RegisterMyARK2(void)
                     At[3][3] = {{0, 0, 0}, {0.12132034355964257320, 0.29289321881345247560, 0}, {0.20710678118654752440, 0.50000000000000000000, 0.29289321881345247560}}, *bembedt = NULL, *bembed = NULL;
     PetscCall(TSARKIMEXRegister("myark2", 2, 3, &At[0][0], NULL, NULL, &A[0][0], NULL, NULL, bembedt, bembed, 0, NULL, NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
@@ -147,7 +147,7 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ct
     PetscCall(VecDestroy(&interpolatedX));
     user->next_output += PetscRealConstant(0.1);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

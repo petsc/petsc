@@ -17,6 +17,7 @@ configure_options = [
   '--with-precision=__float128',
   '--with-clanguage=cxx',
   '--with-mpi-f90module-visibility=0',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

@@ -496,7 +496,7 @@ int main(int argc, char **argv)
  */
 PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
 {
-  PetscInt     i, Nvlocal;
+  PetscInt     Nvlocal;
   PetscInt    *gloInd;
   PetscScalar *x;
 #if defined(UNUSED_VARIABLES)
@@ -510,6 +510,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
   alpha    = user->lin_param;
 #endif
 
+  PetscFunctionBeginUser;
   Nvlocal = user->Nvlocal;
   gloInd  = user->gloInd;
 
@@ -525,13 +526,13 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
   /*
      Compute initial guess over the locally owned part of the grid
   */
-  for (i = 0; i < Nvlocal; i++) x[i] = (PetscReal)gloInd[i];
+  for (PetscInt i = 0; i < Nvlocal; i++) x[i] = (PetscReal)gloInd[i];
 
   /*
      Restore vector
   */
   PetscCall(VecRestoreArray(X, &x));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 /*
@@ -548,7 +549,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
 PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
 {
   AppCtx      *user = (AppCtx *)ptr;
-  PetscInt     i, j, Nvlocal;
+  PetscInt     Nvlocal;
   PetscReal    alpha, lambda;
   PetscScalar *x, *f;
   VecScatter   scatter;
@@ -565,6 +566,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   gloInd   = user->gloInd;
 #endif
 
+  PetscFunctionBeginUser;
   Nvlocal = user->Nvlocal;
   lambda  = user->non_lin_param;
   alpha   = user->lin_param;
@@ -594,9 +596,9 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
     is that this is a local (completly parallel) calculation. In practical application
     codes, function calculation time is a dominat portion of the overall execution time.
   */
-  for (i = 0; i < Nvlocal; i++) {
+  for (PetscInt i = 0; i < Nvlocal; i++) {
     f[i] = (user->itot[i] - alpha) * x[i] - lambda * x[i] * x[i];
-    for (j = 0; j < user->itot[i]; j++) f[i] -= x[user->AdjM[i][j]];
+    for (PetscInt j = 0; j < user->itot[i]; j++) f[i] -= x[user->AdjM[i][j]];
   }
 
   /*
@@ -606,7 +608,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscCall(VecRestoreArray(F, &f));
   /* PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD)); */
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -627,7 +629,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
 {
   AppCtx      *user = (AppCtx *)ptr;
-  PetscInt     i, j, Nvlocal, col[50];
+  PetscInt     Nvlocal, col[50];
   PetscScalar  alpha, lambda, value[50];
   Vec          localX = user->localX;
   VecScatter   scatter;
@@ -642,6 +644,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   gloInd   = user->gloInd;
 #endif
 
+  PetscFunctionBeginUser;
   /*printf("Entering into FormJacobian \n");*/
   Nvlocal = user->Nvlocal;
   lambda  = user->non_lin_param;
@@ -665,10 +668,10 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   */
   PetscCall(VecGetArray(localX, &x));
 
-  for (i = 0; i < Nvlocal; i++) {
+  for (PetscInt i = 0; i < Nvlocal; i++) {
     col[0]   = i;
     value[0] = user->itot[i] - 2.0 * lambda * x[i] - alpha;
-    for (j = 0; j < user->itot[i]; j++) {
+    for (PetscInt j = 0; j < user->itot[i]; j++) {
       col[j + 1]   = user->AdjM[i][j];
       value[j + 1] = -1.0;
     }
@@ -697,7 +700,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   */
   PetscCall(MatSetOption(jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   /* MatView(jac,PETSC_VIEWER_STDOUT_SELF); */
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

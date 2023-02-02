@@ -55,22 +55,22 @@ PetscErrorCode PetscStackViewSAWs(void)
   PetscMPIInt rank;
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  if (rank) return 0;
+  if (rank) return PETSC_SUCCESS;
   #if PetscDefined(USE_DEBUG)
   PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/functions", petscstack.function, 20, SAWs_READ, SAWs_STRING));
   PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/__current_size", &petscstack.currentsize, 1, SAWs_READ, SAWs_INT));
   #endif
   amsmemstack = PETSC_TRUE;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;
-  if (!amsmemstack) PetscFunctionReturn(0);
+  if (!amsmemstack) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallSAWs(SAWs_Delete, ("/PETSc/Stack"));
   amsmemstack = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSC_HAVE_SAWS */
 
@@ -78,13 +78,13 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 PetscErrorCode PetscStackSetCheck(PetscBool check)
 {
   petscstack.check = check;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode PetscStackReset(void)
 {
   memset(&petscstack, 0, sizeof(petscstack));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -116,7 +116,7 @@ PetscErrorCode PetscStackView(FILE *file)
     fprintf(file, "PetscStack is definitely corrupted with stack size %d\n", petscstack.currentsize);
   } else if (petscstack.currentsize == 0) {
     if (file == PETSC_STDOUT) {
-      (*PetscErrorPrintf)("No error traceback is available, the problem could be in the main program. \n");
+      PetscCall((*PetscErrorPrintf)("No error traceback is available, the problem could be in the main program. \n"));
     } else {
       fprintf(file, "No error traceback is available, the problem could be in the main program. \n");
     }
@@ -124,13 +124,13 @@ PetscErrorCode PetscStackView(FILE *file)
     char *ptr;
 
     if (file == PETSC_STDOUT) {
-      (*PetscErrorPrintf)("The line numbers in the error traceback are not always exact.\n");
+      PetscCall((*PetscErrorPrintf)("The line numbers in the error traceback are not always exact.\n"));
       for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
-        if (petscstack.file[i]) (*PetscErrorPrintf)("#%d %s() at %s:%d\n", j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i]));
+        if (petscstack.file[i]) PetscCall((*PetscErrorPrintf)("#%d %s() at %s:%d\n", j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i])));
         else {
-          PetscStrstr(petscstack.function[i], " ", &ptr);
-          if (!ptr) (*PetscErrorPrintf)("#%d %s()\n", j, petscstack.function[i]);
-          else (*PetscErrorPrintf)("#%d %s\n", j, petscstack.function[i]);
+          PetscCall(PetscStrstr(petscstack.function[i], " ", &ptr));
+          if (!ptr) PetscCall((*PetscErrorPrintf)("#%d %s()\n", j, petscstack.function[i]));
+          else PetscCall((*PetscErrorPrintf)("#%d %s\n", j, petscstack.function[i]));
         }
       }
     } else {
@@ -138,14 +138,14 @@ PetscErrorCode PetscStackView(FILE *file)
       for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
         if (petscstack.file[i]) fprintf(file, "[%d] #%d %s() at %s:%d\n", PetscGlobalRank, j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i]));
         else {
-          PetscStrstr(petscstack.function[i], " ", &ptr);
+          PetscCall(PetscStrstr(petscstack.function[i], " ", &ptr));
           if (!ptr) fprintf(file, "[%d] #%d %s()\n", PetscGlobalRank, j, petscstack.function[i]);
           else fprintf(file, "[%d] #%d %s\n", PetscGlobalRank, j, petscstack.function[i]);
         }
       }
     }
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -181,7 +181,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
   } else {
     sout->currentsize = 0;
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -215,6 +215,6 @@ PetscErrorCode PetscStackPrint(PetscStack *sint, FILE *fp)
       else fprintf(fp, "      [%d]  %s()\n", PetscGlobalRank, sint->function[i]);
     }
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 #endif /* PetscDefined(USE_DEBUG) */

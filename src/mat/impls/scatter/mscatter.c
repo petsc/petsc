@@ -34,7 +34,7 @@ PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter)
   PetscValidPointer(scatter, 2);
   mscatter = (Mat_Scatter *)mat->data;
   *scatter = mscatter->scatter;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_Scatter(Mat mat)
@@ -44,7 +44,7 @@ PetscErrorCode MatDestroy_Scatter(Mat mat)
   PetscFunctionBegin;
   PetscCall(VecScatterDestroy(&scatter->scatter));
   PetscCall(PetscFree(mat->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y)
@@ -56,7 +56,7 @@ PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y)
   PetscCall(VecZeroEntries(y));
   PetscCall(VecScatterBegin(scatter->scatter, x, y, ADD_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(scatter->scatter, x, y, ADD_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
@@ -68,7 +68,7 @@ PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
   if (z != y) PetscCall(VecCopy(y, z));
   PetscCall(VecScatterBegin(scatter->scatter, x, z, ADD_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(scatter->scatter, x, z, ADD_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y)
@@ -80,7 +80,7 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y)
   PetscCall(VecZeroEntries(y));
   PetscCall(VecScatterBegin(scatter->scatter, x, y, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(scatter->scatter, x, y, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTransposeAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
@@ -92,7 +92,7 @@ PetscErrorCode MatMultTransposeAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
   if (z != y) PetscCall(VecCopy(y, z));
   PetscCall(VecScatterBegin(scatter->scatter, x, z, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(scatter->scatter, x, z, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _MatOps MatOps_Values = {NULL,
@@ -273,7 +273,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
   A->preallocated = PETSC_FALSE;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSCATTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petsc/private/sfimpl.h>
@@ -314,7 +314,7 @@ PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
   PetscCall(MatSetType(*A, MATSCATTER));
   PetscCall(MatScatterSetVecScatter(*A, scatter));
   PetscCall(MatSetUp(*A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -345,5 +345,5 @@ PetscErrorCode MatScatterSetVecScatter(Mat mat, VecScatter scatter)
   PetscCall(VecScatterDestroy(&mscatter->scatter));
 
   mscatter->scatter = scatter;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -38,7 +38,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 PetscErrorCode TSRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(TSRegister(TSEULER, TSCreate_Euler));
@@ -67,5 +67,5 @@ PetscErrorCode TSRegisterAll(void)
   PetscCall(TSRegister(TSMPRK, TSCreate_MPRK));
   PetscCall(TSRegister(TSDISCGRAD, TSCreate_DiscGrad));
   PetscCall(TSRegister(TSIRK, TSCreate_IRK));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

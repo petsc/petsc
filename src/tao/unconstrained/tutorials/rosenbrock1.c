@@ -172,7 +172,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
   *f = ff;
 
   PetscCall(PetscLogFlops(15.0 * nn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -236,7 +236,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
   PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogFlops(9.0 * user->n / 2.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

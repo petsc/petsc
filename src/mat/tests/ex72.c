@@ -35,7 +35,8 @@ int main(int argc, char **argv)
   IS          rowperm = NULL, colperm = NULL;
   PetscMPIInt size;
 
-  PetscInitialize(&argc, &argv, (char *)0, help);
+  PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -52,10 +53,10 @@ int main(int argc, char **argv)
 
   PetscCall(MatCreateFromMTX(&A, filein, aijonly));
   PetscCall(PetscFOpen(PETSC_COMM_SELF, filein, "r", &file));
-  PetscCall(mm_read_banner(file, &matcode));
+  PetscCallExternal(mm_read_banner, file, &matcode);
   if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;
-  PetscCall(mm_write_banner(stdout, matcode));
-  PetscCall(mm_read_mtx_crd_size(file, &M, &N, &nz));
+  PetscCallExternal(mm_write_banner, stdout, matcode);
+  PetscCallExternal(mm_read_mtx_crd_size, file, &M, &N, &nz);
   PetscCall(PetscFClose(PETSC_COMM_SELF, file));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "M: %d, N: %d, nnz: %d\n", M, N, nz));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Reading matrix completes.\n"));

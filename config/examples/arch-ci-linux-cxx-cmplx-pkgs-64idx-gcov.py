@@ -34,6 +34,7 @@ configure_options = [
   '--download-strumpack',
   '--with-zlib=1',
   '--with-coverage=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

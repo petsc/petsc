@@ -13,13 +13,13 @@ static PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(part->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Simple_ASCII(PetscPartitioner part, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer viewer)
@@ -31,7 +31,7 @@ static PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscVi
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscPartitionerView_Simple_ASCII(part, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
@@ -57,7 +57,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner par
     else PetscCheck(p->gridDim == num, PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_INCOMP, "Process grid dimension %" PetscInt_FMT " != %" PetscInt_FMT " node grid dimension", num, p->gridDim);
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
@@ -130,7 +130,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner par
   for (np = 1; np < nparts; ++np) PetscCheck(offsets[np] - offsets[np - 1] == numVertices / nparts, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Offset %" PetscInt_FMT " != %" PetscInt_FMT " partition size", offsets[np], numVertices / nparts);
   PetscCall(PetscFree(offsets));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numVertices, cellproc, PETSC_OWN_POINTER, partition));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
@@ -143,7 +143,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
   PetscFunctionBegin;
   if (p->useGrid) {
     PetscCall(PetscPartitionerPartition_Simple_Grid(part, nparts, numVertices, start, adjacency, vertSection, targetSection, partSection, partition));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (vertSection) PetscCall(PetscInfo(part, "PETSCPARTITIONERSIMPLE ignores vertex weights\n"));
   PetscCall(PetscObjectGetComm((PetscObject)part, &comm));
@@ -251,7 +251,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
     }
   }
   PetscCall(PetscFree(tpwgts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part)
@@ -262,7 +262,7 @@ static PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part)
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_Simple;
   part->ops->destroy        = PetscPartitionerDestroy_Simple;
   part->ops->partition      = PetscPartitionerPartition_Simple;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -284,5 +284,5 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part)
   part->data = p;
 
   PetscCall(PetscPartitionerInitialize_Simple(part));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

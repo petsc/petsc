@@ -576,8 +576,7 @@ simplehtml: chk_c2html
               idir=`dirname $$i`;\
               if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               ${RM} $${loc}/$$i.html; \
-              sed -E -e "/PetscCallBack|PetscCallBLAS|PetscCallExternal|PetscCallP4est|PetscCallP4estReturn|PetscCallHDF5|PetscCallHDF5Return|PetscCallParmetis|PetscCallMKLSparse/!s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
-                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
+              sed -E "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' > $${loc}/$$i.html ; \
 	    fi; \
          done
@@ -604,15 +603,11 @@ html: chk_c2html
               fi;\
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"https://gitlab.com/petsc/petsc/-/blob/$$current_git_sha/$$rel_dir/$$i\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
-              sed -E -e "/PetscCallBack|PetscCallBLAS|PetscCallExternal|PetscCallP4est|PetscCallHDF5|PetscCallParmetis|PetscCallMKLSparse/!s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
-                     -e "s/\;ierr\;/;/g" \
-                     -e "/\s*PetscFunctionBegin\;/d" \
-                     -e "s/PetscFunctionReturn\(([-a-zA-Z_0-9]+)\)/return \1/g" \
-                     -e "s/PetscFunctionReturnVoid\(\)/return/g" \
-                     -e "s/ierr\s+=\s+//g" \
-                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
-              awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
-              grep -E -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
+              sed -E "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | \
+              ${C2HTML} -n | \
+              awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | \
+              ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
+              grep -E -v '(PetscValid|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
             fi; \
           done ;\

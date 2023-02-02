@@ -42,7 +42,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePPM(const char filename[], unsigne
   PetscCall(PetscBinaryWrite(fd, rgb, 3 * w * h, PETSC_CHAR));
   PetscCall(PetscBinaryClose(fd));
   if (palette) PetscCall(PetscFree(rgb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawImageSave_PPM(const char filename[], unsigned char palette[][3], unsigned int w, unsigned int h, const unsigned char pixels[])
@@ -104,7 +104,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePNG(const char filename[], unsigne
   /* destroy libpng structures and close file */
   png_destroy_write_struct(&png_ptr, &info_ptr);
   PetscCall(PetscFClose(PETSC_COMM_SELF, fp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawImageSave_PNG(const char filename[], unsigned char palette[][3], unsigned int w, unsigned int h, const unsigned char pixels[])
@@ -166,7 +166,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[], unsigne
 
   #undef SETERRGIF
   #undef CHKERRGIF
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawImageSave_GIF(const char filename[], unsigned char palette[][3], unsigned int w, unsigned int h, const unsigned char pixels[])
@@ -185,7 +185,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieSaveGIF(const char pattern[], PetscInt
   PetscFunctionBegin;
   PetscValidCharPointer(pattern, 1);
   PetscValidCharPointer(movie, 3);
-  if (count < 1) PetscFunctionReturn(0);
+  if (count < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   for (i = 0; i < count; i++) {
     PetscCall(PetscSNPrintf(image, sizeof(image), pattern, (int)i));
@@ -214,7 +214,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieSaveGIF(const char pattern[], PetscInt
   if (EGifCloseFile(GifMovie, NULL) != GIF_OK) SETERRGIF("Closing output", movie);
 
   #undef SETERRGIF
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /*!PETSC_HAVE_GIFLIB*/
@@ -291,7 +291,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveJPG(const char filename[], unsigne
 
   PetscCall(PetscFClose(PETSC_COMM_SELF, fp));
   if (palette) PetscCall(PetscFree(rgbpixels));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawImageSave_JPG(const char filename[], unsigned char palette[][3], unsigned int w, unsigned int h, const unsigned char pixels[])
@@ -327,13 +327,13 @@ PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
   PetscValidPointer(ext, 1);
   if (!*ext || !**ext) {
     *ext = PetscDrawImageSaveTable[0].extension;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* check the extension matches a supported format */
   PetscValidCharPointer(*ext, 1);
   for (k = 0; k < PETSC_STATIC_ARRAY_LENGTH(PetscDrawImageSaveTable); k++) {
     PetscCall(PetscStrcasecmp(*ext, PetscDrawImageSaveTable[k].extension, &match));
-    if (match && PetscDrawImageSaveTable[k].SaveImage) PetscFunctionReturn(0);
+    if (match && PetscDrawImageSaveTable[k].SaveImage) PetscFunctionReturn(PETSC_SUCCESS);
   }
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Image extension %s not supported, use .ppm or see PetscDrawSetSave() for what ./configure option you may need", *ext);
 }
@@ -356,7 +356,7 @@ PetscErrorCode PetscDrawImageSave(const char basename[], const char ext[], unsig
     PetscCall(PetscStrcasecmp(ext, PetscDrawImageSaveTable[k].extension, &match));
     if (match && PetscDrawImageSaveTable[k].SaveImage) {
       PetscCall(PetscDrawImageSaveTable[k].SaveImage(filename, palette, w, h, pixels));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Image extension %s not supported, use .ppm", ext);
@@ -367,7 +367,7 @@ PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])
   PetscFunctionBegin;
   PetscValidPointer(ext, 1);
   if (!*ext || !**ext) *ext = ".m4v";
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const char imext[], PetscInt fps, const char mvext[])
@@ -380,7 +380,7 @@ PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const c
   PetscValidCharPointer(basename, 1);
   PetscValidCharPointer(imext, 3);
   if (mvext) PetscValidCharPointer(mvext, 5);
-  if (count < 1) PetscFunctionReturn(0);
+  if (count < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscStrcasecmp(imext, ".gif", &gifinput));
   PetscCall(PetscDrawMovieCheckFormat(&mvext));
@@ -417,5 +417,5 @@ PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const c
     PetscCall(PetscPClose(PETSC_COMM_SELF, fd));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

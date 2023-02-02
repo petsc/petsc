@@ -241,7 +241,7 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat Pmat, void *ptr)
@@ -271,7 +271,7 @@ static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat P
     PetscCall(MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
@@ -309,7 +309,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
   PetscCall(MoleFractionToMassFraction((User)ctx, X, &y));
   PetscCall(VecCopy(y, X));
   PetscCall(VecDestroy(&y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -328,7 +328,7 @@ PetscErrorCode MassFractionToMoleFraction(User user, Vec massf, Vec *molef)
   TC_getMs2Ml((double *)maf + 1, user->Nspec, mof + 1);
   PetscCall(VecRestoreArray(*molef, &mof));
   PetscCall(VecRestoreArrayRead(massf, &maf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -347,14 +347,14 @@ PetscErrorCode MoleFractionToMassFraction(User user, Vec molef, Vec *massf)
   TC_getMl2Ms((double *)mof + 1, user->Nspec, maf + 1);
   PetscCall(VecRestoreArrayRead(molef, &mof));
   PetscCall(VecRestoreArray(*massf, &maf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeMassConservation(Vec x, PetscReal *mass, void *ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecSum(x, mass));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MonitorMassConservation(TS ts, PetscInt step, PetscReal time, Vec x, void *ctx)
@@ -368,7 +368,7 @@ PetscErrorCode MonitorMassConservation(TS ts, PetscInt step, PetscReal time, Vec
   mass -= PetscAbsScalar(T[0]);
   PetscCall(VecRestoreArrayRead(x, &T));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep %" PetscInt_FMT " time %g percent mass lost or gained %g\n", step, (double)time, (double)(100. * (1.0 - mass))));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MonitorTempature(TS ts, PetscInt step, PetscReal time, Vec x, void *ctx)
@@ -380,7 +380,7 @@ PetscErrorCode MonitorTempature(TS ts, PetscInt step, PetscReal time, Vec x, voi
   PetscCall(VecGetArrayRead(x, &T));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep %" PetscInt_FMT " time %g temperature %g\n", step, (double)time, (double)(T[0] * user->Tini)));
   PetscCall(VecRestoreArrayRead(x, &T));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -399,7 +399,7 @@ PETSC_UNUSED PetscErrorCode PrintSpecies(User user, Vec molef)
   for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%6s %g\n", user->snames[idx[n - i - 1]], (double)PetscRealPart(mof[idx[n - i - 1]])));
   PetscCall(PetscFree(idx));
   PetscCall(VecRestoreArrayRead(molef, &mof));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

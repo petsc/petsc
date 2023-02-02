@@ -19,10 +19,10 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
   /*
         Is triangle even visible in window?
   */
-  if (x1 < 0 && x2 < 0 && x3 < 0) PetscFunctionReturn(0);
-  if (y_1 < 0 && y2 < 0 && y3 < 0) PetscFunctionReturn(0);
-  if (x1 > win->w && x2 > win->w && x3 > win->w) PetscFunctionReturn(0);
-  if (y_1 > win->h && y2 > win->h && y3 > win->h) PetscFunctionReturn(0);
+  if (x1 < 0 && x2 < 0 && x3 < 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (y_1 < 0 && y2 < 0 && y3 < 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (x1 > win->w && x2 > win->w && x3 > win->w) PetscFunctionReturn(PETSC_SUCCESS);
+  if (y_1 > win->h && y2 > win->h && y3 > win->h) PetscFunctionReturn(PETSC_SUCCESS);
 
   t1 = t1 << SHIFT_VAL;
   t2 = t2 << SHIFT_VAL;
@@ -96,7 +96,7 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
 
   /* For simplicity,"move" t1 to the intersection of t1-t3 with the line y=y2.
      We take advantage of the previous iteration. */
-  if (y2 >= y3) PetscFunctionReturn(0);
+  if (y2 >= y3) PetscFunctionReturn(PETSC_SUCCESS);
   if (y_1 < y2) {
     t1  = rc;
     y_1 = y2;
@@ -143,5 +143,5 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
       XDrawPoint(win->disp, PetscDrawXiDrawable(win), win->gc.set, lx, y);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

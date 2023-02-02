@@ -156,7 +156,7 @@ PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], 
   } else {
     u[0] = user->constants[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -168,7 +168,7 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
   } else {
     u[0] = user->constants[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = x */
@@ -182,7 +182,7 @@ PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], Pe
   } else {
     u[0] = coords[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -198,7 +198,7 @@ PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[],
   } else {
     u[0] = n[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
@@ -219,7 +219,7 @@ PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[],
   } else {
     u[0] = coords[d] * coords[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -238,7 +238,7 @@ PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords
   } else {
     u[0] = 2.0 * coords[d] * n[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
@@ -259,7 +259,7 @@ PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], Pet
   } else {
     u[0] = coords[d] * coords[d] * coords[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -278,7 +278,7 @@ PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], 
   } else {
     u[0] = 3.0 * coords[d] * coords[d] * n[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = x^4 or u = (x^4, x^2y^2) or u = (x^2y^2, y^2z^2, z^2x^2) */
@@ -299,7 +299,7 @@ PetscErrorCode quartic(PetscInt dim, PetscReal time, const PetscReal coords[], P
   } else {
     u[0] = coords[d] * coords[d] * coords[d] * coords[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode quarticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -318,7 +318,7 @@ PetscErrorCode quarticDer(PetscInt dim, PetscReal time, const PetscReal coords[]
   } else {
     u[0] = 4.0 * coords[d] * coords[d] * coords[d] * n[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -331,7 +331,7 @@ PetscErrorCode mytanh(PetscInt dim, PetscReal time, const PetscReal coords[], Pe
   } else {
     u[0] = PetscTanhReal(coords[d] - 0.5);
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode mytanhDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -343,7 +343,7 @@ PetscErrorCode mytanhDer(PetscInt dim, PetscReal time, const PetscReal coords[],
   } else {
     u[0] = 1.0 / PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -356,7 +356,7 @@ PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], Pets
   } else {
     u[0] = PetscSinReal(PETSC_PI * m * coords[d]);
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -368,7 +368,7 @@ PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], c
   } else {
     u[0] = PETSC_PI * m * PetscCosReal(PETSC_PI * m * coords[d]) * n[d];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -389,7 +389,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsInt("-K", "The number of coarse modes used in optimization", "ex8.c", options->K, &options->K, NULL));
   PetscCall(PetscOptionsBool("-use_poly", "Use polynomials (or harmonics) to adapt interpolator", "ex8.c", options->usePoly, &options->usePoly, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -399,7 +399,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Setup functions to approximate */
@@ -440,7 +440,7 @@ static PetscErrorCode SetupFunctions(DM dm, PetscBool usePoly, PetscInt order, P
     exactFuncs[0]    = trig;
     exactFuncDers[0] = trigDer;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *), void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
@@ -457,7 +457,7 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   PetscCall(DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error));
   PetscCall(DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer));
   PetscCall(DMRestoreGlobalVector(dm, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
@@ -483,7 +483,7 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   else PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " at tolerance %g\n", order, (double)tol));
   if (errorDer > tol) PetscCall(PetscPrintf(comm, "Function tests FAIL for order %" PetscInt_FMT " derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer));
   else PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", order, (double)tol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Compare approximation to exact in L_2 */
@@ -512,7 +512,7 @@ static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt ord
   else PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " at tolerance %g\n", testname, order, (double)tol));
   if (errorDer > tol) PetscCall(PetscPrintf(comm, "%s tests FAIL for order %" PetscInt_FMT " derivatives at tolerance %g error %g\n", testname, order, (double)tol, (double)errorDer));
   else PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", testname, order, (double)tol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, AppCtx *user)
@@ -638,7 +638,7 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
   PetscCall(MatDestroy(&Interp));
   PetscCall(VecDestroy(&scaling));
   PetscCall(DMDestroy(&rdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

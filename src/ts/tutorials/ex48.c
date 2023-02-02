@@ -186,7 +186,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   PetscCall(PetscPrintf(comm, "DeltaPrime=%g\n", (double)options->DeltaPrime));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void f_n(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
@@ -204,7 +204,7 @@ static PetscErrorCode PostStep(TS ts)
 
   PetscFunctionBeginUser;
   PetscCall(TSGetApplicationContext(ts, &ctx));
-  if (ctx->debug < 1) PetscFunctionReturn(0);
+  if (ctx->debug < 1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(TSGetSolution(ts, &X));
   PetscCall(VecGetDM(X, &dm));
   PetscCall(TSGetStepNumber(ts, &stepi));
@@ -225,7 +225,7 @@ static PetscErrorCode PostStep(TS ts)
     PetscCall(DMDestroy(&plex));
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "%" PetscInt_FMT ") total perturbed mass = %g\n", stepi, (double)PetscRealPart(den)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
@@ -239,20 +239,20 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   PetscCall(DMGetBoundingBox(*dm, ctx->lower, ctx->upper));
   ctx->a = (ctx->upper[0] - ctx->lower[0]) / 2.0;
   ctx->b = (ctx->upper[1] - ctx->lower[1]) / 2.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode log_n_0(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx *lctx = (AppCtx *)ctx;
   u[0]         = 2. * lctx->a + x[0];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode Omega_0(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode psi_0(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
@@ -265,19 +265,19 @@ static PetscErrorCode psi_0(PetscInt dim, PetscReal time, const PetscReal x[], P
   } else {
     u[0] = 1.0 - PetscPowScalar((x[0] - lctx->a) / lctx->a, 2);
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode initialSolution_n(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode initialSolution_Omega(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode initialSolution_psi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *a_ctx)
@@ -287,19 +287,19 @@ static PetscErrorCode initialSolution_psi(PetscInt dim, PetscReal time, const Pe
   if (x[0] == ctx->lower[0] || x[0] == ctx->upper[0]) r = 0;
   u[0] = r;
   /* PetscPrintf(PETSC_COMM_WORLD, "rand psi %lf\n",u[0]); */
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode initialSolution_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode initialSolution_jz(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
@@ -326,7 +326,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
     PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, f, 0, NULL, (void (*)(void))ctx->initialFuncs[f], NULL, ctx, NULL));
   }
   PetscCall(PetscDSSetContext(ds, 0, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
@@ -377,7 +377,7 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
     PetscCall(VecDestroy(&global));
   }
   PetscCall(VecDestroy(&eq));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user)
@@ -388,14 +388,14 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx 
   PetscFunctionBeginUser;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
   PetscCall(DMGetCoordinateDM(dm, &coordDM));
-  if (!feAux) PetscFunctionReturn(0);
+  if (!feAux) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMClone(dm, &dmAux));
   PetscCall(DMSetCoordinateDM(dmAux, coordDM));
   for (f = 0; f < NfAux; ++f) PetscCall(DMSetField(dmAux, f, NULL, (PetscObject)feAux[f]));
   PetscCall(DMCreateDS(dmAux));
   PetscCall(SetupEquilibriumFields(dm, dmAux, user));
   PetscCall(DMDestroy(&dmAux));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
@@ -446,7 +446,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   }
   for (f = 0; f < Nf; ++f) PetscCall(PetscFEDestroy(&fe[f]));
   for (f = 0; f < NfAux; ++f) PetscCall(PetscFEDestroy(&feAux[f]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

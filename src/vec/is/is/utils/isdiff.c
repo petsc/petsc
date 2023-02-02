@@ -40,7 +40,7 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
   PetscValidPointer(isout, 3);
   if (!is2) {
     PetscCall(ISDuplicate(is1, isout));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
 
@@ -90,7 +90,7 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
   PetscCall(ISCreateGeneral(comm, nout, iout, PETSC_OWN_POINTER, isout));
 
   PetscCall(PetscBTDestroy(&mask));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -140,7 +140,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
   PetscCall(ISGetLocalSize(is2, &n2));
   if (!n2) {
     PetscCall(ISDuplicate(is1, is3));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(ISGetIndices(is1, &i1));
   PetscCall(ISGetIndices(is2, &i2));
@@ -196,7 +196,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
     PetscCall(ISRestoreIndices(is1, &i1));
     PetscCall(ISRestoreIndices(is2, &i2));
     PetscCall(ISDuplicate(is1, is3));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscMalloc1(n3, &iout));
 
@@ -239,7 +239,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
   PetscCall(ISRestoreIndices(is1, &i1));
   PetscCall(ISRestoreIndices(is2, &i2));
   PetscCall(ISCreateGeneral(comm, n3, iout, PETSC_OWN_POINTER, is3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -283,11 +283,11 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
   PetscCheck(is1 || is2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both arguments cannot be NULL");
   if (!is1) {
     PetscCall(ISDuplicate(is2, isout));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!is2) {
     PetscCall(ISDuplicate(is1, isout));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(ISGetIndices(is1, &i1));
   PetscCall(ISGetLocalSize(is1, &n1));
@@ -331,7 +331,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
   PetscCall(ISCreateGeneral(comm, nout, iout, PETSC_OWN_POINTER, isout));
 
   PetscCall(PetscBTDestroy(&mask));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -427,7 +427,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
   PetscCall(ISDestroy(&is2sorted));
   PetscCall(ISRestoreIndices(is1sorted, &i1));
   PetscCall(ISDestroy(&is1sorted));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
@@ -448,7 +448,7 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
       PetscCall(PetscObjectReference((PetscObject)*isect));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -486,7 +486,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   PetscValidPointer(isout, 4);
   if (!len) {
     PetscCall(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, isout));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(len >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length: %" PetscInt_FMT, len);
   N = 0;
@@ -508,7 +508,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     }
   }
   PetscCall(ISCreateGeneral(comm, N, idx, PETSC_OWN_POINTER, isout));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -572,7 +572,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
   PetscCall(PetscFree(colors));
   PetscCall(ISCreateGeneral(comm, len, xinds, PETSC_OWN_POINTER, xis));
   PetscCall(ISCreateGeneral(comm, len, yinds, PETSC_OWN_POINTER, yis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -700,7 +700,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
     } /* for (l = low; l < high; ++l) */
   }   /* if (low <= high) */
   PetscCall(PetscFree2(inds, colors));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -755,7 +755,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
     PetscCall(PetscFree(cindices2));
   }
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, clen, cindices, PETSC_OWN_POINTER, c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -803,7 +803,7 @@ PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h)
     }
     if (isincreasing) {
       PetscCall(ISRestoreIndices(f, &findices));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   PetscCall(PetscMalloc1(fsize, &hindices));
@@ -812,5 +812,5 @@ PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h)
   PetscCall(ISRestoreIndices(f, &findices));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, fsize, hindices, PETSC_OWN_POINTER, h));
   PetscCall(ISSetInfo(*h, IS_PERMUTATION, IS_LOCAL, PETSC_FALSE, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

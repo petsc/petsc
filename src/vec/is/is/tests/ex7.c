@@ -21,7 +21,7 @@ static PetscErrorCode TestGeneral(void)
   PetscCall(ISLocate(is, nonkey, &location));
   PetscCheck(location < 0, comm, PETSC_ERR_PLIB, "Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT, nonkey, location);
   PetscCall(ISDestroy(&is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestBlock(void)
@@ -45,7 +45,7 @@ static PetscErrorCode TestBlock(void)
   PetscCall(ISLocate(is, nonkey, &location));
   PetscCheck(location < 0, comm, PETSC_ERR_PLIB, "Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT, nonkey, location);
   PetscCall(ISDestroy(&is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestStride(void)
@@ -64,7 +64,7 @@ static PetscErrorCode TestStride(void)
     PetscCheck(location < 0, comm, PETSC_ERR_PLIB, "Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT, nonkey[i], location);
   }
   PetscCall(ISDestroy(&is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

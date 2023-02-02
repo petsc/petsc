@@ -12,14 +12,14 @@ PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
 {
   PetscFunctionBegin;
   PetscTryMethod((ksp), "KSPLGMRESSetAugDim_C", (KSP, PetscInt), (ksp, dim));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPLGMRESSetConstant(KSP ksp)
 {
   PetscFunctionBegin;
   PetscTryMethod((ksp), "KSPLGMRESSetConstant_C", (KSP), (ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -55,7 +55,7 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp)
   PetscCall(KSPCreateVecs(ksp, lgmres->aug_vv_allocated, &lgmres->augvecs_user_work[0], 0, NULL));
   PetscCall(PetscMalloc1(max_k + 1, &lgmres->hwork));
   for (k = 0; k < lgmres->aug_vv_allocated; k++) lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -126,7 +126,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
     PetscCall(PetscInfo(ksp, "Converged due to zero residual norm on entry\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* scale VEC_VV (the initial residual) */
@@ -290,7 +290,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
     PetscCall(VecCopy(VEC_TEMP, A_AUGVEC(spot)));
     PetscCall(VecScale(A_AUGVEC(spot), inv_tmp_norm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -339,7 +339,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -358,7 +358,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLGMRESSetConstant_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLGMRESSetAugDim_C", NULL));
   PetscCall(KSPDestroy_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -389,7 +389,7 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   /* If it is < 0, no lgmres steps have been performed */
   if (it < 0) {
     PetscCall(VecCopy(vguess, vdest)); /* VecCopy() is smart, exists immediately if vguess == vdest */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* so (it+1) lgmres steps HAVE been performed */
@@ -459,7 +459,7 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   /* put updated solution into vdest.*/
   PetscCall(VecCopy(vguess, vdest));
   PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -517,7 +517,7 @@ static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
     tt = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh + 1)) * *(hh + 1));
     if (tt == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     *cc = *hh / tt;       /* new cosine value */
     *ss = *(hh + 1) / tt; /* new sine value */
@@ -539,7 +539,7 @@ static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
     *res = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -562,7 +562,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it)
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (lgmres->vecs_allocated)*/
   if (it + VEC_OFFSET + nalloc >= lgmres->vecs_allocated) nalloc = lgmres->vecs_allocated - it - VEC_OFFSET;
-  if (!nalloc) PetscFunctionReturn(0);
+  if (!nalloc) PetscFunctionReturn(PETSC_SUCCESS);
 
   lgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
@@ -577,7 +577,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it)
 
   /* increment the number of work vector chunks */
   lgmres->nwork_alloc++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -610,7 +610,7 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result)
 
   PetscCall(KSPLGMRESBuildSoln(lgmres->nrs, ksp->vec_sol, ptr, ksp, lgmres->it));
   if (result) *result = ptr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer)
@@ -627,7 +627,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer)
     if (lgmres->approx_constant) PetscCall(PetscViewerASCIIPrintf(viewer, "  approx. space size was kept constant.\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of matvecs=%" PetscInt_FMT "\n", lgmres->matvecs));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -643,7 +643,7 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
   PetscCall(PetscOptionsInt("-ksp_lgmres_augment", "Number of error approximations to augment the Krylov space with", "KSPLGMRESSetAugDim", lgmres->aug_dim, &aug, &flg));
   if (flg) PetscCall(KSPLGMRESSetAugDim(ksp, aug));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*functions for extra lgmres options here*/
@@ -653,7 +653,7 @@ static PetscErrorCode KSPLGMRESSetConstant_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   lgmres->approx_constant = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
@@ -664,7 +664,7 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
   PetscCheck(aug_dim >= 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Augmentation dimension must be positive");
   PetscCheck(aug_dim <= (lgmres->max_k - 1), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Augmentation dimension must be <= (restart size-1)");
   lgmres->aug_dim = aug_dim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -761,5 +761,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   lgmres->aug_ct          = 0; /* start with no aug vectors */
   lgmres->approx_constant = PETSC_FALSE;
   lgmres->matvecs         = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

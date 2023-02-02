@@ -501,10 +501,10 @@ PETSC_EXTERN void  matgetrowmaxabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr)
   *ierr = MatGetRowMaxAbs(*mat,*v,idx);
 }
 
-static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
+static PetscErrorCode ournullfunction(MatNullSpace sp, Vec x, void *ctx)
 {
-  PetscCallFortranVoidFunction((*(void (*)(MatNullSpace*,Vec*,void*,PetscErrorCode*))(((PetscObject)sp)->fortran_func_pointers[0]))(&sp,&x,ctx,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(MatNullSpace *, Vec *, void *, PetscErrorCode *))(((PetscObject)sp)->fortran_func_pointers[0]))(&sp, &x, ctx, &ierr));
+  return PETSC_SUCCESS;
 }
 
 PETSC_EXTERN void matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx,PetscErrorCode *ierr)
@@ -545,48 +545,57 @@ PETSC_EXTERN void matrestorerowij_(Mat *B,PetscInt *shift,PetscBool *sym,PetscBo
   Fortran programmers can only have one outstanding MatGetRows()
   at a time.
 */
-static PetscErrorCode    matgetrowactive = 0;
-static const PetscInt    *my_ocols       = 0;
-static const PetscScalar *my_ovals       = 0;
+static int                matgetrowactive = 0;
+static const PetscInt    *my_ocols        = 0;
+static const PetscScalar *my_ovals        = 0;
 
-PETSC_EXTERN void matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
+PETSC_EXTERN void matgetrow_(Mat *mat, PetscInt *row, PetscInt *ncols, PetscInt *cols, PetscScalar *vals, PetscErrorCode *ierr)
 {
   const PetscInt    **oocols = &my_ocols;
   const PetscScalar **oovals = &my_ovals;
 
   if (matgetrowactive) {
-    PetscError(PETSC_COMM_SELF,__LINE__,"MatGetRow_Fortran",__FILE__,PETSC_ERR_ARG_WRONGSTATE,PETSC_ERROR_INITIAL,
-               "Cannot have two MatGetRow() active simultaneously\n\
+    *ierr = PetscError(PETSC_COMM_SELF, __LINE__, "MatGetRow_Fortran", __FILE__, PETSC_ERR_ARG_WRONGSTATE, PETSC_ERROR_INITIAL, "Cannot have two MatGetRow() active simultaneously\n\
                call MatRestoreRow() before calling MatGetRow() a second time");
-    *ierr = 1;
+    *ierr = PETSC_ERR_ARG_WRONGSTATE;
     return;
   }
 
-  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = NULL;
-  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = NULL;
+  CHKFORTRANNULLINTEGER(cols);
+  if (!cols) oocols = NULL;
+  CHKFORTRANNULLSCALAR(vals);
+  if (!vals) oovals = NULL;
 
-  *ierr = MatGetRow(*mat,*row,ncols,oocols,oovals);
+  *ierr = MatGetRow(*mat, *row, ncols, oocols, oovals);
   if (*ierr) return;
 
-  if (oocols) { *ierr = PetscArraycpy(cols,my_ocols,*ncols); if (*ierr) return;}
-  if (oovals) { *ierr = PetscArraycpy(vals,my_ovals,*ncols); if (*ierr) return;}
+  if (oocols) {
+    *ierr = PetscArraycpy(cols, my_ocols, *ncols);
+    if (*ierr) return;
+  }
+  if (oovals) {
+    *ierr = PetscArraycpy(vals, my_ovals, *ncols);
+    if (*ierr) return;
+  }
   matgetrowactive = 1;
 }
 
-PETSC_EXTERN void matrestorerow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
+PETSC_EXTERN void matrestorerow_(Mat *mat, PetscInt *row, PetscInt *ncols, PetscInt *cols, PetscScalar *vals, PetscErrorCode *ierr)
 {
   const PetscInt    **oocols = &my_ocols;
   const PetscScalar **oovals = &my_ovals;
+
   if (!matgetrowactive) {
-    PetscError(PETSC_COMM_SELF,__LINE__,"MatRestoreRow_Fortran",__FILE__,PETSC_ERR_ARG_WRONGSTATE,PETSC_ERROR_INITIAL,
-               "Must call MatGetRow() first");
-    *ierr = 1;
+    *ierr = PetscError(PETSC_COMM_SELF, __LINE__, "MatRestoreRow_Fortran", __FILE__, PETSC_ERR_ARG_WRONGSTATE, PETSC_ERROR_INITIAL, "Must call MatGetRow() first");
+    *ierr = PETSC_ERR_ARG_WRONGSTATE;
     return;
   }
-  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = NULL;
-  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = NULL;
+  CHKFORTRANNULLINTEGER(cols);
+  if (!cols) oocols = NULL;
+  CHKFORTRANNULLSCALAR(vals);
+  if (!vals) oovals = NULL;
 
-  *ierr           = MatRestoreRow(*mat,*row,ncols,oocols,oovals);
+  *ierr           = MatRestoreRow(*mat, *row, ncols, oocols, oovals);
   matgetrowactive = 0;
 }
 

@@ -45,7 +45,7 @@ static PetscErroCode setupConnection(MLENV *env, MLINK *link, const char *linkho
   for (lerr = 0; lerr < argc; lerr++) printf("argv[%ld] = %s\n", lerr, argv[lerr]);
   *link = MLOpenInEnv(*env, argc, argv, &lerr);
   printf("lerr = %ld\n", lerr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode printIndent(int indent)
@@ -54,7 +54,7 @@ static PetscErrorCode printIndent(int indent)
 
   PetscFunctionBegin;
   for (i = 0; i < indent; i++) printf(" ");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode processPacket(MLINK link, int indent, int *result)
@@ -76,7 +76,7 @@ static PetscErrorCode processPacket(MLINK link, int indent, int *result)
     printf("  Head:\n");
     isHead = 1;
     PetscCall(processPacket(link, indent + 4, result));
-    if (*result) PetscFunctionReturn(0);
+    if (*result) PetscFunctionReturn(PETSC_SUCCESS);
     isHead = 0;
     /* Process arguments */
     printf("  Arguments:\n");
@@ -90,7 +90,7 @@ static PetscErrorCode processPacket(MLINK link, int indent, int *result)
     if (isHead && !strcmp(symbol, "Shutdown")) {
       MLDisownSymbol(link, symbol);
       *result = 2;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     MLDisownSymbol(link, symbol);
   } break;
@@ -118,9 +118,9 @@ static PetscErrorCode processPacket(MLINK link, int indent, int *result)
     MLClearError(link);
     fprintf(stderr, "ERROR: %s\n", (char *)MLErrorMessage(link));
     *result = 1;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode processPackets(MLINK link)
@@ -212,7 +212,7 @@ static PetscErrorCode processPackets(MLINK link)
     }
     if (errors > 10) loop = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode cleanupConnection(MLENV env, MLINK link)
@@ -220,7 +220,7 @@ static PetscErrorCode cleanupConnection(MLENV env, MLINK link)
   PetscFunctionBegin;
   MLClose(link);
   MLDeinitialize(env);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

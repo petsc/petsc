@@ -262,7 +262,7 @@ PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
   if (n) PetscValidIntPointer(X, 2);
   PetscValidBoolPointer(sorted, 3);
   PetscSorted(n, X, *sorted);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -287,7 +287,7 @@ PetscErrorCode PetscSortedInt64(PetscInt n, const PetscInt64 X[], PetscBool *sor
   if (n) PetscValidInt64Pointer(X, 2);
   PetscValidBoolPointer(sorted, 3);
   PetscSorted(n, X, *sorted);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -315,7 +315,7 @@ PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[])
   PetscFunctionBegin;
   if (n) PetscValidIntPointer(X, 2);
   QuickSort1(PetscSortInt, X, n, pivot, t1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -341,7 +341,7 @@ PetscErrorCode PetscSortInt64(PetscInt n, PetscInt64 X[])
   PetscFunctionBegin;
   if (n) PetscValidInt64Pointer(X, 2);
   QuickSort1(PetscSortInt64, X, n, pivot, t1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -367,7 +367,7 @@ PetscErrorCode PetscSortCount(PetscInt n, PetscCount X[])
   PetscFunctionBegin;
   if (n) PetscValidCountPointer(X, 2);
   QuickSort1(PetscSortCount, X, n, pivot, t1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -390,7 +390,7 @@ PetscErrorCode PetscSortReverseInt(PetscInt n, PetscInt X[])
   PetscFunctionBegin;
   if (n) PetscValidIntPointer(X, 2);
   QuickSortReverse1(PetscSortReverseInt, X, n, pivot, t1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -423,7 +423,7 @@ PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[])
     } else s++;
   }
   *n = N - s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -455,7 +455,7 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -480,7 +480,7 @@ PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[])
   PetscValidIntPointer(n, 1);
   PetscCall(PetscSortInt(*n, X));
   PetscCall(PetscSortedRemoveDupsInt(n, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -508,7 +508,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
   PetscValidIntPointer(loc, 4);
   if (!n) {
     *loc = -1;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscValidIntPointer(X, 3);
   PetscCheckSorted(n, X);
@@ -518,7 +518,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
     else lo = mid;
   }
   *loc = key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -559,7 +559,7 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
     }
     PetscCall(PetscHSetIDestroy(&ht));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -587,7 +587,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
   PetscValidIntPointer(loc, 4);
   if (!n) {
     *loc = -1;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscValidIntPointer(X, 3);
   PetscCheckSorted(n, X);
@@ -597,7 +597,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
     else lo = mid;
   }
   *loc = key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -621,7 +621,7 @@ PetscErrorCode PetscSortIntWithArray(PetscInt n, PetscInt X[], PetscInt Y[])
 
   PetscFunctionBegin;
   QuickSort2(PetscSortIntWithArray, X, Y, n, pivot, t1, t2);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -646,7 +646,7 @@ PetscErrorCode PetscSortIntWithArrayPair(PetscInt n, PetscInt X[], PetscInt Y[],
 
   PetscFunctionBegin;
   QuickSort3(PetscSortIntWithArrayPair, X, Y, Z, n, pivot, t1, t2, t3);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -671,7 +671,7 @@ PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount
 
   PetscFunctionBegin;
   QuickSort2(PetscSortIntWithCountArray, X, Y, n, pivot, t1, t2);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -700,7 +700,7 @@ PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], Pet
 
   PetscFunctionBegin;
   QuickSort3(PetscSortIntWithIntCountArrayPair, X, Y, Z, n, pivot, t1, t2, t3);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -723,7 +723,7 @@ PetscErrorCode PetscSortedMPIInt(PetscInt n, const PetscMPIInt X[], PetscBool *s
 {
   PetscFunctionBegin;
   PetscSorted(n, X, *sorted);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -750,7 +750,7 @@ PetscErrorCode PetscSortMPIInt(PetscInt n, PetscMPIInt X[])
 
   PetscFunctionBegin;
   QuickSort1(PetscSortMPIInt, X, n, pivot, t1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -782,7 +782,7 @@ PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *n, PetscMPIInt X[])
     } else s++;
   }
   *n = N - s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -806,7 +806,7 @@ PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt n, PetscMPIInt X[], PetscMPI
 
   PetscFunctionBegin;
   QuickSort2(PetscSortMPIIntWithArray, X, Y, n, pivot, t1, t2);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -834,7 +834,7 @@ PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n, PetscMPIInt X[], Petsc
 
   PetscFunctionBegin;
   QuickSort2(PetscSortMPIIntWithIntArray, X, Y, n, pivot, t1, t2);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -859,7 +859,7 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar
 
   PetscFunctionBegin;
   QuickSort2(PetscSortIntWithScalarArray, X, Y, n, pivot, t1, t2);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -915,7 +915,7 @@ PetscErrorCode PetscSortIntWithDataArray(PetscInt n, PetscInt X[], void *Y, size
     PetscCall(PetscSortIntWithDataArray(l, X, Y, size, t2));
     PetscCall(PetscSortIntWithDataArray(hi - r + 1, X + r, YY + size * r, size, t2));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -972,7 +972,7 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
     k += (bn - bk);
   }
   *n = k;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1038,7 +1038,7 @@ PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const Pe
     PetscCall(PetscArraycpy(L_ + k, bI + bk, bn - bk));
     PetscCall(PetscArraycpy(J_ + k, bJ + bk, bn - bk));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1076,7 +1076,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
       ;
   }
   *n = k;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1179,7 +1179,7 @@ PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscI
   *Levelcnt  = levelcnt;
   *Idbylevel = idbylevel;
   *Column    = column;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1225,5 +1225,5 @@ PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt 
   if (rank == 0) prevmax = PETSC_MIN_INT;
   if (prevmax > min) sorted = PETSC_FALSE;
   PetscCallMPI(MPI_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

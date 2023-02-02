@@ -47,7 +47,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
     pipefcg->chunksizes[pipefcg->nchunks] = nnewvecs;
     ++pipefcg->nchunks;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
@@ -75,7 +75,7 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
 
   /* Preallocate additional work vectors */
   PetscCall(KSPAllocateVectors_PIPEFCG(ksp, pipefcg->nprealloc, pipefcg->nprealloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
@@ -176,7 +176,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     PetscCall(KSPLogResidualHistory(ksp, dp));
     PetscCall(KSPMonitor(ksp, ksp->its, dp));
     PetscCall((*ksp->converged)(ksp, ksp->its, dp, &ksp->reason, ksp->cnvP));
-    if (ksp->reason) PetscFunctionReturn(0);
+    if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
     /* Computations of current iteration done */
     ++i;
@@ -255,7 +255,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 
   } while (ksp->its < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
@@ -312,14 +312,14 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
   PetscCall(KSPMonitor(ksp, 0, dp));
   ksp->rnorm = dp;
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   do {
     /* A cycle is broken only if a norm breakdown occurs. If not the entire solve happens in a single cycle.
        This is coded this way to allow both truncation and truncation-restart strategy
        (see KSPFCDGetNumOldDirections()) */
     PetscCall(KSPSolve_PIPEFCG_cycle(ksp));
-    if (ksp->reason) PetscFunctionReturn(0);
+    if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
     if (pipefcg->norm_breakdown) {
       pipefcg->n_restarts++;
       pipefcg->norm_breakdown = PETSC_FALSE;
@@ -327,7 +327,7 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
   } while (ksp->its < ksp->max_it);
 
   if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
@@ -339,7 +339,7 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
   pipefcg = (KSP_PIPEFCG *)ksp->data;
 
   /* Destroy "standard" work vecs */
-  VecDestroyVecs(ksp->nwork, &ksp->work);
+  PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
 
   /* Destroy vectors of old directions and the arrays that manage pointers to them */
   if (pipefcg->nvecs) {
@@ -356,7 +356,7 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
   PetscCall(PetscFree(pipefcg->chunksizes));
   PetscCall(PetscFree3(pipefcg->dots, pipefcg->etas, pipefcg->redux));
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
@@ -385,7 +385,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, "max previous directions = %" PetscInt_FMT ", preallocated %" PetscInt_FMT " directions, %s truncation strategy", pipefcg->mmax, pipefcg->nprealloc, truncstr));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -416,7 +416,7 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ksp, mmax, 2);
   pipefcg->mmax = mmax;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -444,7 +444,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *mmax = pipefcg->mmax;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -471,7 +471,7 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ksp, nprealloc, 2);
   pipefcg->nprealloc = nprealloc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -496,7 +496,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *nprealloc = pipefcg->nprealloc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -527,7 +527,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, truncstrat, 2);
   pipefcg->truncstrat = truncstrat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -555,7 +555,7 @@ PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncs
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *truncstrat = pipefcg->truncstrat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -572,7 +572,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *Petsc
   if (flg) PetscCall(KSPPIPEFCGSetNprealloc(ksp, nprealloc));
   PetscCall(PetscOptionsEnum("-ksp_pipefcg_truncation_type", "Truncation approach for directions", "KSPFCGSetTruncationType", KSPFCDTruncationTypes, (PetscEnum)pipefcg->truncstrat, (PetscEnum *)&pipefcg->truncstrat, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -638,5 +638,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_PIPEFCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

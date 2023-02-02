@@ -23,7 +23,7 @@ static PetscErrorCode DMDAGetFieldsNamed(DM da, PetscBool *fieldsnamed)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
@@ -244,7 +244,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fp, "\n </AppendedData>\n"));
   PetscCall(PetscFPrintf(comm, fp, "</VTKFile>\n"));
   PetscCall(PetscFClose(comm, fp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
@@ -479,7 +479,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fp, "\n </AppendedData>\n"));
   PetscCall(PetscFPrintf(comm, fp, "</VTKFile>\n"));
   PetscCall(PetscFClose(comm, fp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -523,5 +523,5 @@ PetscErrorCode DMDAVTKWriteAll(PetscObject odm, PetscViewer viewer)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

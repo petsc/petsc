@@ -58,7 +58,7 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes, Vec x, void **outneP)
   PetscCall(PetscInfo(snes, "Creating Jorge's differencing parameter context\n"));
 
   *outneP = neP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
@@ -72,7 +72,7 @@ PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
   err = fclose(neP->fp);
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fclose() failed on file");
   PetscCall(PetscFree(neP));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESDiffParameterCompute_More(SNES snes, void *nePv, Vec x, Vec p, double *fnoise, double *hopt)
@@ -203,7 +203,7 @@ theend:
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-noise_test", &noise_test, NULL));
   if (noise_test) PetscCall(JacMatMultCompare(snes, x, p, *hopt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
@@ -275,7 +275,7 @@ PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
     PetscCall(PetscFPrintf(comm, stdout, "h = %g: relative error = %g\n", (double)h, (double)enorm));
     h *= 10.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscInt lin_its_total = 0;
@@ -290,5 +290,5 @@ PetscErrorCode SNESNoiseMonitor(SNES snes, PetscInt its, double fnorm, void *dum
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "iter = %" PetscInt_FMT ", SNES Function norm = %g, lin_its = %" PetscInt_FMT ", total_lin_its = %" PetscInt_FMT "\n", its, (double)fnorm, lin_its, lin_its_total));
 
   PetscCall(SNESUnSetMatrixFreeParameter(snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

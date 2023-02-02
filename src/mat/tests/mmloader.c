@@ -11,6 +11,7 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
   PetscBool    sametype, symmetric = PETSC_FALSE, skew = PETSC_FALSE;
 
   /* Read in matrix */
+  PetscFunctionBeginUser;
   PetscCall(PetscFOpen(PETSC_COMM_SELF, filein, "r", &file));
   PetscCheck(mm_read_banner(file, &matcode) == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not process Matrix Market banner.");
   /*  This is how one can screen matrix types if their application */
@@ -78,5 +79,5 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree4(ia, ja, val, rownz));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

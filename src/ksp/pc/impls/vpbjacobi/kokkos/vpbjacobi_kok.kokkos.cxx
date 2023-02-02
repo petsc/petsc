@@ -44,7 +44,7 @@ struct PC_VPBJacobi_Kokkos {
     PetscCallCXX(matIdx_dual.sync_device());
     PetscCallCXX(diag_dual.sync_device());
     PetscCall(PetscLogCpuToGpu(sizeof(PetscInt) * (2 * nblocks + 2 + n) + sizeof(MatScalar) * nsize));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 private:
@@ -61,7 +61,7 @@ private:
       bs2_h[i + 1] = bs2_h[i] + bsizes[i] * bsizes[i];
       for (PetscInt j = 0; j < bsizes[i]; j++) matIdx_h[bs_h[i] + j] = i;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 
@@ -107,7 +107,7 @@ static PetscErrorCode PCApplyOrTranspose_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
   PetscCall(VecRestoreKokkosViewWrite(y, &yv));
   PetscCall(PetscLogGpuFlops(pckok->nsize * 2)); /* FMA on entries in all blocks */
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc)
@@ -117,7 +117,7 @@ static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc)
   PetscFunctionBegin;
   PetscCallCXX(delete static_cast<PC_VPBJacobi_Kokkos *>(jac->spptr));
   PetscCall(PCDestroy_VPBJacobi(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
@@ -148,5 +148,5 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
   pc->ops->apply          = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_FALSE>;
   pc->ops->applytranspose = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_TRUE>;
   pc->ops->destroy        = PCDestroy_VPBJacobi_Kokkos;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

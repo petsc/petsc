@@ -151,7 +151,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
   *offsets = restr_indices;
   PetscCall(PetscSectionGetStorageSize(section, l_size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_LIBCEED)
@@ -191,7 +191,7 @@ PetscErrorCode DMPlexGetCeedRestriction(DM dm, DMLabel domain_label, PetscInt la
     dm->ceedERestrict = elem_restr;
   }
   *ERestrict = dm->ceedERestrict;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

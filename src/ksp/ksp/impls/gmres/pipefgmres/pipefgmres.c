@@ -54,7 +54,7 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->zvecs_user_work[0], 0, NULL));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->zvecs[k] = pipefgmres->zvecs_user_work[0][k];
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -128,7 +128,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
   if (ksp->reason) {
     if (itcount) *itcount = 0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* scale VEC_VV (the initial residual) */
@@ -324,7 +324,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
 
   PetscCall(KSPPIPEFGMRESBuildSoln(RS(0), ksp->vec_sol, ksp->vec_sol, ksp, loc_it - 1));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -368,7 +368,7 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
@@ -376,7 +376,7 @@ static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPReset_PIPEFGMRES(ksp));
   PetscCall(KSPDestroy_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -403,7 +403,7 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
 
   if (it < 0) {                        /* no pipefgmres steps have been performed */
     PetscCall(VecCopy(vguess, vdest)); /* VecCopy() is smart, exits immediately if vguess == vdest */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* solve the upper triangular system - RS is the right side and HH is
@@ -427,7 +427,7 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
   } else {
     PetscCall(VecWAXPY(vdest, 1.0, VEC_TEMP, vguess));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -499,7 +499,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
     PetscReal delta = PetscSqrtReal(PetscSqr(PetscAbsScalar(hh[it])) + PetscSqr(PetscAbsScalar(hh[it + 1])));
     if (delta == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     cc[it] = hh[it] / delta;     /* new cosine value */
@@ -518,7 +518,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
 
     *res = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -551,7 +551,7 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
 
   PetscCall(KSPPIPEFGMRESBuildSoln(pipefgmres->nrs, ksp->vec_sol, ptr, ksp, pipefgmres->it));
   if (result) *result = ptr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -566,7 +566,7 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsScalar("-ksp_pipefgmres_shift", "shift parameter", "KSPPIPEFGMRESSetShift", pipefgmres->shift, &shift, &flg));
   if (flg) PetscCall(KSPPIPEFGMRESSetShift(ksp, shift));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
@@ -594,7 +594,7 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
     PetscCall(PetscViewerStringSPrintf(viewer, "   shift=%g\n", (double)pipefgmres->shift));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
@@ -613,7 +613,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
   PetscCall(PetscFree(pipefgmres->zvecs_user_work));
   PetscCall(PetscFree(pipefgmres->redux));
   PetscCall(KSPReset_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -692,7 +692,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   pipefgmres->orthogwork     = NULL;
   pipefgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   pipefgmres->shift          = 1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
@@ -709,7 +709,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (pipefgmres->vecs_allocated)*/
   if (it + VEC_OFFSET + nalloc >= pipefgmres->vecs_allocated) nalloc = pipefgmres->vecs_allocated - it - VEC_OFFSET;
-  if (!nalloc) PetscFunctionReturn(0);
+  if (!nalloc) PetscFunctionReturn(PETSC_SUCCESS);
 
   pipefgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
@@ -728,7 +728,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
 
   /* increment the number of work vector chunks */
   pipefgmres->nwork_alloc++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -760,5 +760,5 @@ PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp, PetscScalar shift)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveScalar(ksp, shift, 2);
   pipefgmres->shift = shift;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

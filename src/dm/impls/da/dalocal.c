@@ -39,7 +39,7 @@ static PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj, void *mengine)
   engPutVariable((Engine *)mengine, obj->name, mat);
 
   PetscCall(VecRestoreArray(vec, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -62,7 +62,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
 #if defined(PETSC_HAVE_MATLAB)
   if (dd->w == 1 && da->dim == 2) PetscCall(PetscObjectComposeFunction((PetscObject)*g, "PetscMatlabEnginePut_C", VecMatlabEnginePut_DA2d));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -106,7 +106,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
     PetscValidIntPointer(numCells, 5);
     *numCells = nC;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -136,7 +136,7 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   if (dim > 1) PetscCheck(!(j < info.gys) && !(j >= info.gys + info.gym), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %" PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", j, info.gys, info.gys + info.gym);
   if (dim > 2) PetscCheck(!(k < info.gzs) && !(k >= info.gzs + info.gzm), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %" PetscInt_FMT PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", k, info.gzs, info.gzs + info.gzm);
   *point = i + (dim > 1 ? (j + (dim > 2 ? k * info.gym : 0)) * info.gxm : 0);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
@@ -166,7 +166,7 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
     PetscValidIntPointer(numVertices, 5);
     *numVertices = nV;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
@@ -206,7 +206,7 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
     PetscValidIntPointer(numZFaces, 7);
     *numZFaces = nZF;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
@@ -237,7 +237,7 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
     if (pStart) *pStart = 0;
     if (pEnd) *pEnd = nC + nV + nXF + nYF + nZF;
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of height %" PetscInt_FMT " in the DA", height);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd)
@@ -268,7 +268,7 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
     if (pStart) *pStart = 0;
     if (pEnd) *pEnd = nC + nV + nXF + nYF + nZF;
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of depth %" PetscInt_FMT " in the DA", depth);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
@@ -296,7 +296,7 @@ PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
   case 3:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
@@ -340,14 +340,14 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
   case 3:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
 {
   PetscFunctionBegin;
   PetscCall(DMGetWorkArray(dm, 6, MPIU_INT, cone));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu)
@@ -400,7 +400,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(PetscSectionDestroy(&section));
   PetscCall(VecDestroy(&coordinates));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -525,7 +525,7 @@ done:
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -581,5 +581,5 @@ PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -49,7 +49,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]));
   PetscCall(PetscLogStageRegister("MeshRefine", &options->stages[STAGE_REFINE]));
   PetscCall(PetscLogStageRegister("MeshOverlap", &options->stages[STAGE_OVERLAP]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -227,7 +227,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   if (user->final_diagnostics) PetscCall(DMPlexCheck(*dm));
   PetscCall(PetscLogEventEnd(user->createMeshEvent, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

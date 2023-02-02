@@ -36,7 +36,7 @@ static PetscErrorCode TSEvaluateStep_EIMEX(TS ts, PetscInt order, Vec X, PetscBo
   const PetscInt ns  = ext->nstages;
   PetscFunctionBegin;
   PetscCall(VecCopy(ext->T[Map(ext->row_ind, ext->col_ind, ns)], X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStage_EIMEX(TS ts, PetscInt istage)
@@ -67,7 +67,7 @@ static PetscErrorCode TSStage_EIMEX(TS ts, PetscInt istage)
     PetscCall(TSGetAdapt(ts, &adapt));
     PetscCall(TSAdaptCheckStage(adapt, ts, ext->ctime, Y, &accept));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStep_EIMEX(TS ts)
@@ -142,7 +142,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   ext->status = TS_STEP_COMPLETE;
 
   if (ext->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* cubic Hermit spline */
@@ -168,7 +168,7 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts, PetscReal itime, Vec X)
   b = -(t * t * t - t * t) * h;
   PetscCall(VecAXPBYPCZ(X, a, b, 1.0, Y1, YdotI));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_EIMEX(TS ts)
@@ -186,7 +186,7 @@ static PetscErrorCode TSReset_EIMEX(TS ts)
   PetscCall(VecDestroy(&ext->Ydot));
   PetscCall(VecDestroy(&ext->VecSolPrev));
   PetscCall(PetscFree(ext->N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_EIMEX(TS ts)
@@ -197,7 +197,7 @@ static PetscErrorCode TSDestroy_EIMEX(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSEIMEXSetMaxRows_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSEIMEXSetRowCol_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSEIMEXSetOrdAdapt_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSEIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot, Vec *YdotI, Vec *YdotRHS)
@@ -225,7 +225,7 @@ static PetscErrorCode TSEIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot, Vec *YdotI
       PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_YdotRHS", YdotRHS));
     } else *YdotRHS = ext->YdotRHS;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSEIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot, Vec *YdotI, Vec *YdotRHS)
@@ -243,7 +243,7 @@ static PetscErrorCode TSEIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot, Vec *Y
   if (YdotRHS) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSEIMEX_YdotRHS", YdotRHS));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -272,7 +272,7 @@ static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes, Vec X, Vec G, TS ts)
   ts->dm = dmsave;
   PetscCall(TSEIMEXRestoreVecs(ts, dm, &Z, &Ydot, NULL, NULL));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -293,13 +293,13 @@ static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes, Vec X, Mat A, Mat B, T
   PetscCall(TSComputeIJacobian(ts, ts->ptime, X, Ydot, ext->shift, A, B, PETSC_TRUE));
   ts->dm = dmsave;
   PetscCall(TSEIMEXRestoreVecs(ts, dm, NULL, &Ydot, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsenHook_TSEIMEX(DM fine, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
@@ -314,7 +314,7 @@ static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine, Mat restrct, Vec rscale, M
   PetscCall(VecPointwiseMult(Z_c, rscale, Z_c));
   PetscCall(TSEIMEXRestoreVecs(ts, fine, &Z, NULL, NULL, NULL));
   PetscCall(TSEIMEXRestoreVecs(ts, coarse, &Z_c, NULL, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_EIMEX(TS ts)
@@ -350,7 +350,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
   PetscCall(VecDuplicate(ts->vec_sol, &ext->Z));
   PetscCall(TSGetDM(ts, &dm));
   if (dm) PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_TSEIMEX, DMRestrictHook_TSEIMEX, ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetFromOptions_EIMEX(TS ts, PetscOptionItems *PetscOptionsObject)
@@ -372,13 +372,13 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts, PetscOptionItems *PetscOptio
     PetscCall(PetscOptionsBool("-ts_eimex_order_adapt", "Solve the problem with adaptive order", "TSEIMEXSetOrdAdapt", ext->ord_adapt, &ext->ord_adapt, NULL));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_EIMEX(TS ts, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -399,7 +399,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSEIMEXSetMaxRows_C", (TS, PetscInt), (ts, nrows));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -420,7 +420,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSEIMEXSetRowCol_C", (TS, PetscInt, PetscInt), (ts, row, col));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -441,7 +441,7 @@ PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSEIMEXSetOrdAdapt_C", (TS, PetscBool), (ts, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts, PetscInt nrows)
@@ -455,7 +455,7 @@ static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts, PetscInt nrows)
   ext->max_rows = nrows;
   PetscCall(PetscMalloc1(nrows, &ext->N));
   for (i = 0; i < nrows; i++) ext->N[i] = i + 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSEIMEXSetRowCol_EIMEX(TS ts, PetscInt row, PetscInt col)
@@ -470,7 +470,7 @@ static PetscErrorCode TSEIMEXSetRowCol_EIMEX(TS ts, PetscInt row, PetscInt col)
 
   ext->row_ind = row - 1;
   ext->col_ind = col - 1; /* Array index in C starts from 0 */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
@@ -478,7 +478,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
   TS_EIMEX *ext = (TS_EIMEX *)ts->data;
   PetscFunctionBegin;
   ext->ord_adapt = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -548,5 +548,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSEIMEXSetMaxRows_C", TSEIMEXSetMaxRows_EIMEX));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSEIMEXSetRowCol_C", TSEIMEXSetRowCol_EIMEX));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSEIMEXSetOrdAdapt_C", TSEIMEXSetOrdAdapt_EIMEX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -28,7 +28,7 @@ static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], 
   PetscFunctionBeginUser;
   u[0] = PetscSinReal(50. * xy);
   if (PetscAbsReal(xy) > 2. * PETSC_PI / 50.) u[0] *= 0.01;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -48,7 +48,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL));
   PetscOptionsEnd();
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
@@ -59,7 +59,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(PetscObjectSetName((PetscObject)*dm, "DMinit"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-init_dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
@@ -112,7 +112,7 @@ static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
   PetscCall(DMDestroy(&dmHess));
   PetscCall(DMDestroy(&dmGrad));
   PetscCall(DMDestroy(&dmSensor));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
@@ -168,7 +168,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     PetscCall(VecRestoreArray(*metric, &met));
     PetscCall(VecRestoreArrayRead(coordinates, &coords));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -254,7 +254,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   PetscCall(DMRestoreGlobalVector(dmaProj, &uproj));
   PetscCall(DMDestroy(&dmProj));
   PetscCall(DMDestroy(&dmaProj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

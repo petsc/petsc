@@ -330,7 +330,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
      Restore vector
   */
   PetscCall(VecRestoreArray(X, &x));
-  return 0;
+  return PETSC_SUCCESS;
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -404,7 +404,7 @@ PetscErrorCode ComputeFunction(AppCtx *user, Vec X, Vec F)
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(PetscLogFlops(11.0 * ym * xm));
-  return 0;
+  return PETSC_SUCCESS;
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -517,7 +517,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user, Vec X, Mat jac)
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*TEST

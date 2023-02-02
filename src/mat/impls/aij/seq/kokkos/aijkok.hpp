@@ -187,7 +187,7 @@ struct Mat_SeqAIJKokkos {
     PetscFunctionBegin;
     csrmatT = KokkosCsrMatrix(); /* Overwrite with empty matrices */
     csrmatH = KokkosCsrMatrix();
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 

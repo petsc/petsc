@@ -59,5 +59,5 @@ PetscErrorCode PCMGACycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
     }
     if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

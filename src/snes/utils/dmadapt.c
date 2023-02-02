@@ -14,7 +14,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 {
   PetscFunctionBeginUser;
   PetscCall(DMProjectFunction(adm, 0.0, adaptor->exactSol, adaptor->exactCtx, INSERT_ALL_VALUES, au));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -57,7 +57,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)(*adaptor)->coarsenTag, "coarsen_"));
   PetscCall(VecTaggerSetType((*adaptor)->coarsenTag, VECTAGGERABSOLUTE));
   PetscCall(VecTaggerAbsoluteSetBox((*adaptor)->coarsenTag, &coarsenBox));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -75,17 +75,17 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 {
   PetscFunctionBegin;
-  if (!*adaptor) PetscFunctionReturn(0);
+  if (!*adaptor) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*adaptor), DM_CLASSID, 1);
   if (--((PetscObject)(*adaptor))->refct > 0) {
     *adaptor = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecTaggerDestroy(&(*adaptor)->refineTag));
   PetscCall(VecTaggerDestroy(&(*adaptor)->coarsenTag));
   PetscCall(PetscFree2((*adaptor)->exactSol, (*adaptor)->exactCtx));
   PetscCall(PetscHeaderDestroy(adaptor));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -117,7 +117,7 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
   PetscOptionsEnd();
   PetscCall(VecTaggerSetFromOptions(adaptor->refineTag));
   PetscCall(VecTaggerSetFromOptions(adaptor->coarsenTag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -141,7 +141,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "  sequence length: %" PetscInt_FMT "\n", adaptor->numSeq));
   PetscCall(VecTaggerView(adaptor->refineTag, viewer));
   PetscCall(VecTaggerView(adaptor->coarsenTag, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -165,7 +165,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidPointer(snes, 2);
   *snes = adaptor->snes;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -191,7 +191,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
   adaptor->snes = snes;
   PetscCall(SNESGetDM(adaptor->snes, &adaptor->idm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -215,7 +215,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidIntPointer(num, 2);
   *num = adaptor->numSeq;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -236,7 +236,7 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   adaptor->numSeq = num;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -267,21 +267,21 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
     /* TODO Have a flag that forces projection rather than using the exact solution */
     if (adaptor->exactSol[0]) PetscCall(DMAdaptorSetTransferFunction(adaptor, DMAdaptorTransferSolution_Exact_Private));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (**tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
 {
   PetscFunctionBegin;
   *tfunc = adaptor->ops->transfersolution;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
 {
   PetscFunctionBegin;
   adaptor->ops->transfersolution = tfunc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
@@ -357,7 +357,7 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
     PetscCall(VecGetArrayRead(adaptor->cellGrad, &adaptor->cellGradArray));
   }
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax)
@@ -385,7 +385,7 @@ PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm
       SETERRQ(PetscObjectComm((PetscObject)adaptor), PETSC_ERR_SUP, "No built-in projection for this adaptation criterion: %d", adaptor->adaptCriterion);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
@@ -409,7 +409,7 @@ PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
     PetscCall(VecRestoreArrayRead(adaptor->cellGrad, &adaptor->cellGradArray));
     PetscCall(DMRestoreLocalVector(adaptor->gradDM, &adaptor->cellGrad));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -442,7 +442,7 @@ static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, P
     for (d = 0; d < dim; ++d) err += PetscSqr(PetscRealPart(gradient[c * dim + d]));
   }
   *errInd = cg->volume * err;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, DM plex, PetscInt cell, Vec locX, PetscReal *errInd)
@@ -523,7 +523,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     PetscUseTypeMethod(adaptor, computeerrorindicator, dim, Nc, field, gradient, &cg, errInd, ctx);
     PetscCall(PetscFree6(field, gradient, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void identityFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
@@ -766,7 +766,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   }
   PetscCall(DMViewFromOptions(*adm, NULL, "-dm_adapt_view"));
   PetscCall(VecViewFromOptions(*ax, NULL, "-sol_adapt_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -811,5 +811,5 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy str
   default:
     SETERRQ(PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_WRONG, "Unrecognized adaptation strategy %d", strategy);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

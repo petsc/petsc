@@ -153,5 +153,5 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
   }
   snes->max_funcs = max_funcs;
   snes->nfuncs -= N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

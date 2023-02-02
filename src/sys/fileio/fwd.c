@@ -49,5 +49,5 @@ PetscErrorCode PetscGetWorkingDirectory(char path[], size_t len)
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Could not find getcwd() or getwd()");
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

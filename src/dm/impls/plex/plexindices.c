@@ -70,5 +70,5 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
   PetscCall(PetscSectionSetClosureIndex(section, (PetscObject)dm, closureSection, closureIS));
   PetscCall(PetscSectionDestroy(&closureSection));
   PetscCall(ISDestroy(&closureIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

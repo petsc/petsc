@@ -40,7 +40,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsInt("-output_step", "Number of time steps between output", "ex28.c", options->ostep, &options->ostep, NULL));
   PetscOptionsEnd();
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Create the mesh for velocity space */
@@ -51,7 +51,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Since we are putting the same number of particles in each cell, this amounts to a uniform distribution of v */
@@ -114,7 +114,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&vals));
   PetscCall(PetscFree5(centroid, xi0, v0, J, invJ));
   PetscCall(PetscRandomDestroy(&rnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* The intiial conditions are just the initial particle weights */
@@ -144,7 +144,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
   }
   PetscCall(VecRestoreArray(u, &initialConditions));
   PetscCall(DMSwarmRestoreField(dmSw, "w_q", NULL, NULL, (void **)&vals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
@@ -175,7 +175,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -264,7 +264,7 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
   Teq = Teq * m / neq - PetscSqr(veq);
   PetscCheck(PetscAbsReal(Teq - T) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int v^2 f %g != %g temperature (%g)", (double)Teq, (double)T, (double)(Teq - T));
   PetscCall(PetscFree2(xq, wq));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
@@ -342,7 +342,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
   PetscCall(DMSwarmRestoreField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(R, &r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
@@ -353,7 +353,7 @@ static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
   PetscInt           dim, Np, p;
 
   PetscFunctionBeginUser;
-  if (step < 0) PetscFunctionReturn(0);
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (((user->ostep > 0) && (!(step % user->ostep)))) {
     PetscDrawAxis axis;
 
@@ -373,7 +373,7 @@ static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
     PetscCall(PetscDrawHGDraw(user->drawhg));
     PetscCall(VecRestoreArrayRead(U, &u));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
@@ -386,7 +386,7 @@ static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
 
   PetscFunctionBeginUser;
 
-  if (step < 0) PetscFunctionReturn(0);
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (((user->ostep > 0) && (!(step % user->ostep)))) {
     PetscDrawAxis axis;
 
@@ -406,7 +406,7 @@ static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
     PetscCall(DMSwarmRestoreField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
     PetscCall(PetscFree(v));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
@@ -419,7 +419,7 @@ static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx
   DM                 sw, plex;
 
   PetscFunctionBeginUser;
-  if (step < 0) PetscFunctionReturn(0);
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (((user->ostep > 0) && (!(step % user->ostep)))) {
     PetscDrawAxis axis;
     PetscCall(PetscDrawSPGetAxis(user->drawks, &axis));
@@ -456,7 +456,7 @@ static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx
     PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
     PetscCall(PetscFree(v));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode InitializeSolve(TS ts, Vec u)
@@ -469,7 +469,7 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
   PetscCall(DMGetApplicationContext(dm, &user));
   PetscCall(SetInitialCoordinates(dm));
   PetscCall(SetInitialConditions(dm, u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
      A single particle is generated for each velocity space cell using the dmswarmpicfield_coor and is used to evaluate collisions in that cell.

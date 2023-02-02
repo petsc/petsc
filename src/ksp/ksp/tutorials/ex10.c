@@ -41,7 +41,7 @@ PetscErrorCode CheckResult(KSP *ksp, Mat *A, Vec *b, Vec *x, IS *rowperm)
   PetscCall(VecDestroy(x));
   PetscCall(VecDestroy(b));
   PetscCall(ISDestroy(rowperm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhstype, MatOrderingType ordering, PetscBool permute, IS *colperm_out, Mat *A_out, Vec *b_out, Vec *x_out)
@@ -123,7 +123,7 @@ PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhs
   *A_out       = A;
   *colperm_out = colperm;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ATTENTION: this is the example used in the Profiling chaper of the PETSc manual,

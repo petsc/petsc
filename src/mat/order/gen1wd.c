@@ -57,7 +57,7 @@ PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns, const PetscInt *xadj, con
     if (!mask[i]) goto L400;
     /*             FIND A ONE-WAY DISSECTOR FOR EACH COMPONENT.*/
     root = i;
-    SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &nlvl, &xls[1], &ls[1]);
+    PetscCall(SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &nlvl, &xls[1], &ls[1]));
     num += nsep;
     ++(*nblks);
     xblk[*nblks] = *neqns - num + 1;
@@ -69,7 +69,7 @@ PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns, const PetscInt *xadj, con
     for (j = 1; j <= i__2; ++j) {
       node = ls[j];
       if (!mask[node]) goto L300;
-      SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[num + 1]);
+      PetscCall(SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[num + 1]));
       lnum = num + 1;
       num  = num + xls[nlvl + 1] - 1;
       ++(*nblks);
@@ -88,8 +88,8 @@ PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns, const PetscInt *xadj, con
 /*       ROUTINE REVRSE IS CALLED TO ADJUST THE ORDERING*/
 /*       VECTOR, AND THE BLOCK INDEX VECTOR.*/
 L500:
-  SPARSEPACKrevrse(neqns, &perm[1]);
-  SPARSEPACKrevrse(nblks, &xblk[1]);
+  PetscCall(SPARSEPACKrevrse(neqns, &perm[1]));
+  PetscCall(SPARSEPACKrevrse(nblks, &xblk[1]));
   xblk[*nblks + 1] = *neqns + 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

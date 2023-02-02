@@ -1,6 +1,5 @@
-
-#ifndef __AIJ_H
-#define __AIJ_H
+#ifndef PETSC_MATAIJ_IMPL_H
+#define PETSC_MATAIJ_IMPL_H
 
 #include <petsc/private/matimpl.h>
 #include <petsc/private/hashmapi.h>
@@ -172,6 +171,8 @@ typedef struct {
 static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt **j, PetscInt **i)
 {
   Mat_SeqAIJ *A = (Mat_SeqAIJ *)AA->data;
+
+  PetscFunctionBegin;
   if (A->singlemalloc) {
     PetscCall(PetscFree3(*a, *j, *i));
   } else {
@@ -179,7 +180,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
     if (A->free_ij) PetscCall(PetscFree(*j));
     if (A->free_ij) PetscCall(PetscFree(*i));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
     Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types

@@ -29,7 +29,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
   PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*  Set initial direction to -gradient */
   PetscCall(VecCopy(tao->gradient, tao->stepdirection));
@@ -188,7 +188,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
     delta = PetscMax(delta, cgP->delta_min);
     delta = PetscMin(delta, cgP->delta_max);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetUp_CG(Tao tao)
@@ -200,7 +200,7 @@ static PetscErrorCode TaoSetUp_CG(Tao tao)
   if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
   if (!cgP->X_old) PetscCall(VecDuplicate(tao->solution, &cgP->X_old));
   if (!cgP->G_old) PetscCall(VecDuplicate(tao->gradient, &cgP->G_old));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_CG(Tao tao)
@@ -214,7 +214,7 @@ static PetscErrorCode TaoDestroy_CG(Tao tao)
   }
   PetscCall(TaoLineSearchDestroy(&tao->linesearch));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_CG(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -229,7 +229,7 @@ static PetscErrorCode TaoSetFromOptions_CG(Tao tao, PetscOptionItems *PetscOptio
   PetscCall(PetscOptionsReal("-tao_cg_delta_min", "minimum delta value", "", cgP->delta_min, &cgP->delta_min, NULL));
   PetscCall(PetscOptionsReal("-tao_cg_delta_max", "maximum delta value", "", cgP->delta_max, &cgP->delta_max, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
@@ -246,7 +246,7 @@ static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Reset steps: %" PetscInt_FMT "\n", cgP->nresetsteps));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -301,5 +301,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
   cgP->delta_min = 1e-7;
   cgP->delta_max = 100;
   cgP->cg_type   = CG_PolakRibierePlus;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

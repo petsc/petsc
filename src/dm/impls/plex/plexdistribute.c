@@ -26,7 +26,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm, PetscErrorCode (*user)(DM, PetscInt
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->useradjacency    = user;
   mesh->useradjacencyctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -51,7 +51,7 @@ PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM, PetscIn
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (user) *user = mesh->useradjacency;
   if (ctx) *ctx = mesh->useradjacencyctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -72,7 +72,7 @@ PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->useAnchors = useAnchors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -96,7 +96,7 @@ PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(useAnchors, 2);
   *useAnchors = mesh->useAnchors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscInt *adjSize, PetscInt adj[])
@@ -122,7 +122,7 @@ static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscI
     }
   }
   *adjSize = numAdj;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, PetscInt *adjSize, PetscInt adj[])
@@ -148,7 +148,7 @@ static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, Pet
     }
   }
   *adjSize = numAdj;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, PetscBool useClosure, PetscInt *adjSize, PetscInt adj[])
@@ -173,7 +173,7 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
   }
   PetscCall(DMPlexRestoreTransitiveClosure(dm, p, useClosure, &starSize, &star));
   *adjSize = numAdj;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscBool useAnchors, PetscInt *adjSize, PetscInt *adj[])
@@ -254,7 +254,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
     *adjSize = numAdj;
     PetscCall(ISRestoreIndices(aIS, &anchors));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -288,7 +288,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
   PetscCall(DMGetBasicAdjacency(dm, &useCone, &useClosure));
   PetscCall(DMPlexGetAdjacencyUseAnchors(dm, &useAnchors));
   PetscCall(DMPlexGetAdjacency_Internal(dm, p, useCone, useClosure, useAnchors, adjSize, adj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -356,9 +356,9 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
   }
   PetscCall(ISRestoreIndices(leafRanks, &nranks));
   /* Compute leaf-to-root process connectivity */
-  for (l = 0; l < numLeaves; ++l) PetscBTSet(neighbors, remotePoints[l].rank);
+  for (l = 0; l < numLeaves; ++l) PetscCall(PetscBTSet(neighbors, remotePoints[l].rank));
   /* Calculate edges */
-  PetscBTClear(neighbors, rank);
+  PetscCall(PetscBTClear(neighbors, rank));
   for (proc = 0, numNeighbors = 0; proc < size; ++proc) {
     if (PetscBTLookup(neighbors, proc)) ++numNeighbors;
   }
@@ -383,7 +383,7 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
     PetscCall(PetscSFSetFromOptions(*sfProcess));
     PetscCall(PetscSFSetGraph(*sfProcess, size, numNeighbors, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -437,7 +437,7 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
   /* Distribute remote ranks to leaves */
   PetscCall(PetscObjectSetName((PetscObject)leafSection, "Leaf Section"));
   PetscCall(DMPlexDistributeFieldIS(dm, sfPoint, rootSection, *rootrank, leafSection, leafrank));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if 0
@@ -461,7 +461,7 @@ static PetscErrorCode DMPlexCopyOverlapLabels(DM dm, DM ndm)
     PetscCall(DMGetLabel(ndm, name, &nmesh->ovExLabel));
     nmesh->ovExValue = mesh->ovExValue;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -503,14 +503,14 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetPointSF(dm, &sfPoint));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   if (!levels) {
     /* Add owned points */
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Overlap label", ovLabel));
     for (p = pStart; p < pEnd; ++p) PetscCall(DMLabelSetValue(*ovLabel, p, rank));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscSectionGetChart(leafSection, &sStart, &sEnd));
   PetscCall(PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote));
@@ -583,7 +583,7 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
   }
   /* Clean up */
   PetscCall(DMLabelDestroy(&ovAdjByRank));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode HandlePoint_Private(DM dm, PetscInt p, PetscSection section, const PetscInt ranks[], PetscInt numExLabels, const DMLabel exLabel[], const PetscInt exValue[], DMLabel ovAdjByRank)
@@ -620,7 +620,7 @@ static PetscErrorCode HandlePoint_Private(DM dm, PetscInt p, PetscSection sectio
     }
     PetscCall(PetscFree(adj));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -669,7 +669,7 @@ PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, con
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetPointSF(dm, &sfPoint));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscSectionGetChart(leafSection, &sStart, &sEnd));
@@ -714,10 +714,10 @@ PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, con
           }
         }
         /* Some leaves share a root with other leaves on different processes */
-        HandlePoint_Private(dm, p, leafSection, nrank, numExLabels, exLabel, exValue, ovAdjByRank);
+        PetscCall(HandlePoint_Private(dm, p, leafSection, nrank, numExLabels, exLabel, exValue, ovAdjByRank));
       }
       /* Roots are shared with leaves */
-      HandlePoint_Private(dm, p, rootSection, rrank, numExLabels, exLabel, exValue, ovAdjByRank);
+      PetscCall(HandlePoint_Private(dm, p, rootSection, rrank, numExLabels, exLabel, exValue, ovAdjByRank));
     }
     PetscCall(ISRestoreIndices(valIS, &points));
     PetscCall(ISDestroy(&valIS));
@@ -744,7 +744,7 @@ PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, con
   }
   /* Clean up */
   PetscCall(DMLabelDestroy(&ovAdjByRank));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -854,7 +854,7 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
   PetscCall(PetscSFSetGraph(*migrationSF, pEnd - pStart, newLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
 
   PetscCall(PetscFree3(depthRecv, depthShift, depthIdx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -979,7 +979,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   PetscCall(PetscFree2(pointDepths, remoteDepths));
   PetscCall(PetscFree6(depthRecv, depthShift, depthIdx, ctRecv, ctShift, ctIdx));
   PetscCall(PetscLogEventEnd(DMPLEX_PartStratSF, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1025,7 +1025,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
   PetscCall(VecRestoreArray(newVec, &newValues));
   PetscCall(VecRestoreArray(originalVec, &originalValues));
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeField, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1069,7 +1069,7 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
   PetscCall(ISRestoreIndices(originalIS, &originalValues));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pointSF), fieldSize, newValues, PETSC_OWN_POINTER, newIS));
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeField, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1112,7 +1112,7 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
   PetscCall(PetscSFBcastEnd(fieldSF, datatype, originalData, *newData, MPI_REPLACE));
   PetscCall(PetscSFDestroy(&fieldSF));
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeData, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
@@ -1195,7 +1195,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
     PetscCall(DMPlexGetAdjacencyUseAnchors(dm, &useAnchors));
     PetscCall(DMPlexSetAdjacencyUseAnchors(dmParallel, useAnchors));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmParallel)
@@ -1257,7 +1257,7 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
     }
     PetscCall(PetscSectionDestroy(&newCoordSection));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
@@ -1336,7 +1336,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
   }
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeLabels, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
@@ -1412,7 +1412,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
     PetscCall(PetscSFDestroy(&parentSF));
   }
   pmesh->useAnchors = mesh->useAnchors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
@@ -1488,7 +1488,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
     PetscCall(DMPlexSetAdjacencyUseAnchors(dmParallel, useAnchors));
   }
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeSF, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1508,7 +1508,7 @@ PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg)
 
   PetscFunctionBegin;
   mesh->partitionBalance = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1532,7 +1532,7 @@ PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   *flg = mesh->partitionBalance;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -1687,7 +1687,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   PetscCall(PetscFree2(rootNodes, leafNodes));
   PetscCall(PetscLogEventEnd(DMPLEX_CreatePointSF, dm, 0, 0, 0));
   if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, *pointSF, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1762,7 +1762,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   PetscCall(ISLocalToGlobalMappingDestroy(&ltogOriginal));
   PetscCall(ISLocalToGlobalMappingDestroy(&ltogMigration));
   PetscCall(PetscLogEventEnd(DMPLEX_Migrate, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1810,7 +1810,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscLogEventBegin(DMPLEX_Distribute, dm, 0, 0, 0));
   /* Create cell partition */
@@ -1965,7 +1965,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   } else PetscCall(PetscSFDestroy(&sfMigration));
   PetscCall(PetscSFDestroy(&sfPoint));
   PetscCall(PetscLogEventEnd(DMPLEX_Distribute, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2019,7 +2019,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
   {
     // We need to get options for the _already_distributed mesh, so it must be done here
     PetscInt    overlap;
@@ -2077,7 +2077,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   if (sf) *sf = sfOverlap;
   else PetscCall(PetscSFDestroy(&sfOverlap));
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeOverlap, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
@@ -2086,7 +2086,7 @@ PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
 
   PetscFunctionBegin;
   *overlap = mesh->overlap;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexSetOverlap_Plex(DM dm, DM dmSrc, PetscInt overlap)
@@ -2103,7 +2103,7 @@ PetscErrorCode DMPlexSetOverlap_Plex(DM dm, DM dmSrc, PetscInt overlap)
     meshSrc = (DM_Plex *)dmSrc->data;
     mesh->overlap += meshSrc->overlap;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2127,7 +2127,7 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(overlap, 2);
   PetscUseMethod(dm, "DMPlexGetOverlap_C", (DM, PetscInt *), (dm, overlap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2153,7 +2153,7 @@ PetscErrorCode DMPlexSetOverlap(DM dm, DM dmSrc, PetscInt overlap)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, overlap, 3);
   PetscTryMethod(dm, "DMPlexSetOverlap_C", (DM, DM, PetscInt), (dm, dmSrc, overlap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist)
@@ -2162,7 +2162,7 @@ PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist)
 
   PetscFunctionBegin;
   mesh->distDefault = dist;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2184,7 +2184,7 @@ PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveBool(dm, dist, 2);
   PetscTryMethod(dm, "DMPlexDistributeSetDefault_C", (DM, PetscBool), (dm, dist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist)
@@ -2193,7 +2193,7 @@ PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist)
 
   PetscFunctionBegin;
   *dist = mesh->distDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2217,7 +2217,7 @@ PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(dist, 2);
   PetscUseMethod(dm, "DMPlexDistributeGetDefault_C", (DM, PetscBool *), (dm, dist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2250,7 +2250,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
   if (sf) *sf = NULL;
   comm = PetscObjectComm((PetscObject)dm);
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetPartitioner(dm, &oldPart));
   PetscCall(PetscObjectReference((PetscObject)oldPart));
   PetscCall(PetscPartitionerCreate(comm, &gatherPart));
@@ -2261,7 +2261,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
   PetscCall(DMPlexSetPartitioner(dm, oldPart));
   PetscCall(PetscPartitionerDestroy(&gatherPart));
   PetscCall(PetscPartitionerDestroy(&oldPart));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2300,10 +2300,10 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
     PetscCall(PetscObjectReference((PetscObject)dm));
     *redundantMesh = dm;
     if (sf) *sf = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMPlexGetGatherDM(dm, &gatherSF, &gatherDM));
-  if (!gatherDM) PetscFunctionReturn(0);
+  if (!gatherDM) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexGetChart(gatherDM, &pStart, &pEnd));
   numPoints = pEnd - pStart;
@@ -2337,7 +2337,7 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   PetscCall(DMDestroy(&gatherDM));
   PetscCall(DMCopyDisc(dm, *redundantMesh));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *redundantMesh));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2373,13 +2373,13 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) {
     *distributed = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   count = (pEnd - pStart) > 0 ? 1 : 0;
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm));
   *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2408,7 +2408,7 @@ PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[])
   if (name) PetscValidCharPointer(name, 2);
   PetscCall(PetscFree(mesh->distributionName));
   PetscCall(PetscStrallocpy(name, &mesh->distributionName));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2438,5 +2438,5 @@ PetscErrorCode DMPlexDistributionGetName(DM dm, const char *name[])
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
   PetscValidPointer(name, 2);
   *name = mesh->distributionName;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

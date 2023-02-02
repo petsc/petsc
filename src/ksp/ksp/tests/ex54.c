@@ -32,32 +32,40 @@ PetscErrorCode fill(Mat m, Vec v)
     PetscScalar values2[12] = {1, 2, 0, 1, 2, 1, 1, 3, 0, 1, 3, 1};
 
     PetscCall(MatSetValues(m, 4, idxm1, 3, idxn, values1, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 0, 1.1, INSERT_VALUES); VecSetValue(v, 1, 2.5, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 2, 3, INSERT_VALUES); VecSetValue(v, 3, 4, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 0, 1.1, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 1, 2.5, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 2, 3, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 3, 4, INSERT_VALUES));
 
     PetscCall(MatSetValues(m, 4, idxm2, 3, idxn, values2, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 4, 5, INSERT_VALUES); VecSetValue(v, 5, 6, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 6, 7, INSERT_VALUES); VecSetValue(v, 7, 8, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 4, 5, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 5, 6, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 6, 7, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 7, 8, INSERT_VALUES));
   } else if (rank == 1) {
     PetscInt    idxm[4]    = {0, 1, 2, 3};
     PetscScalar values[12] = {1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1};
 
     PetscCall(MatSetValues(m, 4, idxm, 3, idxn, values, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 0, 1.1, INSERT_VALUES); VecSetValue(v, 1, 2.5, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 2, 3, INSERT_VALUES); VecSetValue(v, 3, 4, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 0, 1.1, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 1, 2.5, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 2, 3, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 3, 4, INSERT_VALUES));
   } else if (rank == 2) {
     PetscInt    idxm[4]    = {4, 5, 6, 7};
     PetscScalar values[12] = {1, 2, 0, 1, 2, 1, 1, 3, 0, 1, 3, 1};
 
     PetscCall(MatSetValues(m, 4, idxm, 3, idxn, values, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 4, 5, INSERT_VALUES); VecSetValue(v, 5, 6, INSERT_VALUES));
-    PetscCall(VecSetValue(v, 6, 7, INSERT_VALUES); VecSetValue(v, 7, 8, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 4, 5, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 5, 6, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 6, 7, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 7, 8, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyBegin(v));
   PetscCall(VecAssemblyEnd(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

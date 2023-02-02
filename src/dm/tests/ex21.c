@@ -89,7 +89,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   }
   PetscCall(DMDestroy(&dac));
   PetscCall(DMDestroy(&daf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

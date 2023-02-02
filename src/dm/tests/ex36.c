@@ -64,7 +64,7 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
 
   PetscFunctionBeginUser;
   if (idx == 0) {
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (idx == 1) { /* dam break */
     PetscCall(DMDASetUniformCoordinates(da, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0));
   } else if (idx == 2) { /* stagnation in a corner */
@@ -190,7 +190,7 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
     }
   }
   PetscCall(VecRestoreArray(Gcoords, &XX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DAApplyTrilinearMapping(DM da)
@@ -245,7 +245,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
     }
   }
   PetscCall(DMDAVecRestoreArrayRead(cda, Gcoords, &XX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DADefineXLinearField2D(DM da, Vec field)
@@ -272,7 +272,7 @@ PetscErrorCode DADefineXLinearField2D(DM da, Vec field)
 
   PetscCall(DMDAVecRestoreArray(da, field, &FF));
   PetscCall(DMDAVecRestoreArrayRead(cda, Gcoords, &XX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DADefineXLinearField3D(DM da, Vec field)
@@ -304,7 +304,7 @@ PetscErrorCode DADefineXLinearField3D(DM da, Vec field)
 
   PetscCall(DMDAVecRestoreArray(da, field, &FF));
   PetscCall(DMDAVecRestoreArrayRead(cda, Gcoords, &XX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
@@ -384,7 +384,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscCall(DMDestroy(&daf));
   PetscCall(VecDestroy(&ac));
   PetscCall(VecDestroy(&af));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my)
@@ -470,7 +470,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my)
   PetscCall(DMDestroy(&daf));
   PetscCall(VecDestroy(&ac));
   PetscCall(VecDestroy(&af));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz)
@@ -563,7 +563,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz)
   PetscCall(DMDestroy(&daf));
   PetscCall(VecDestroy(&ac));
   PetscCall(VecDestroy(&af));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

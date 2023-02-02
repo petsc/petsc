@@ -16,7 +16,7 @@ static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const Pe
       ptr[j + M * k] = 1.0 / (1.0e-2 + PetscSqrtReal(diff));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 class MyIMatrix : public htool::VirtualGenerator<PetscScalar> {
 private:

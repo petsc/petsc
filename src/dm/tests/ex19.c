@@ -29,7 +29,7 @@ PetscErrorCode doit(DM da, Vec global)
     }
     PetscCall(DMDAVecRestoreArrayRead(da, global, (void *)&mystruct));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -74,7 +74,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, t
   PetscFunctionBegin;
   PetscValidDevicePointer(xinout, 4);
   PetscCallThrust(THRUST_CALL(thrust::transform, stream, xptr, xptr + n, retptr, std::forward<FunctorType>(functor)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // actual implementation that calls thrust, 3 argument version
@@ -88,7 +88,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, t
   PetscValidDevicePointer(yin, 5);
   PetscValidDevicePointer(zin, 6);
   PetscCallThrust(THRUST_CALL(thrust::transform, stream, xptr, xptr + n, thrust::device_pointer_cast(yin), thrust::device_pointer_cast(zin), std::forward<FunctorType>(functor)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // one last intermediate function to check n, and log flops for everything
@@ -101,7 +101,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(typename Interface<DT>
     PetscCall(ThrustApplyPointwise<DT>(detail::private_tag{}, stream, std::forward<F>(functor), n, std::forward<T>(rest)...));
     PetscCall(PetscLogGpuFlops(n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // serves as setup to the real implementation above
@@ -115,7 +115,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(PetscDeviceContext dct
   PetscValidDeviceContext(dctx, 1);
   PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, &stream));
   PetscCall(ThrustApplyPointwise<T>(stream, std::forward<F>(functor), n, std::forward<Args>(rest)...));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #define PetscCallCUPM_(...) \
@@ -151,7 +151,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustSet(typename Interface<DT>::cupmStrea
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #undef PetscCallCUPM_
@@ -166,7 +166,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustSet(PetscDeviceContext dctx, PetscInt
   PetscValidDeviceContext(dctx, 1);
   PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, &stream));
   PetscCall(ThrustSet(stream, n, ptr, val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace impl

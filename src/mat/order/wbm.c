@@ -83,7 +83,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
   PetscCall(ISCreateStride(PETSC_COMM_SELF, nrow, 0, 1, row));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nrow, perm, PETSC_COPY_VALUES, col));
   PetscCall(PetscFree3(iw, dw, perm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "WBM using MC64 does not support complex numbers");
 #endif

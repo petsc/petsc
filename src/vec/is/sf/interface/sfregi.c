@@ -28,7 +28,7 @@ PetscBool         PetscSFRegisterAllCalled;
 PetscErrorCode PetscSFRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscSFRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscSFRegisterAllCalled = PETSC_TRUE;
   PetscCall(PetscSFRegister(PETSCSFBASIC, PetscSFCreate_Basic));
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
@@ -42,7 +42,7 @@ PetscErrorCode PetscSFRegisterAll(void)
 #if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
   PetscCall(PetscSFRegister(PETSCSFNEIGHBOR, PetscSFCreate_Neighbor));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -76,5 +76,5 @@ PetscErrorCode PetscSFRegister(const char name[], PetscErrorCode (*create)(Petsc
   PetscFunctionBegin;
   PetscCall(PetscSFInitializePackage());
   PetscCall(PetscFunctionListAdd(&PetscSFList, name, create));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -27,7 +27,7 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCheck(slot < dim && slot >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "slot number must be in range 0-%" PetscInt_FMT, dim - 1);
   *subdm = product->dm[slot];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -59,7 +59,7 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
   PetscCall(PetscObjectReference((PetscObject)subdm));
   PetscCall(DMDestroy(&product->dm[slot]));
   product->dm[slot] = subdm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -86,5 +86,5 @@ PETSC_EXTERN PetscErrorCode DMProductSetDimensionIndex(DM dm, PetscInt slot, Pet
   PetscCall(DMGetDimension(dm, &dim));
   PetscCheck(slot < dim && slot >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "slot number must be in range 0-%" PetscInt_FMT, dim - 1);
   product->dim[slot] = idx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

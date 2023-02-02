@@ -41,7 +41,7 @@ PetscErrorCode UserMonitor(SNES snes, PetscInt its, PetscReal fnorm, void *appct
   PetscCall(SNESGetDM(snes, &networkdm));
   PetscCall(DMGlobalToLocalBegin(networkdm, X, INSERT_VALUES, localXold));
   PetscCall(DMGlobalToLocalEnd(networkdm, X, INSERT_VALUES, localXold));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobian_subPower(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx)
@@ -88,7 +88,7 @@ PetscErrorCode FormJacobian_subPower(SNES snes, Vec X, Mat J, Mat Jpre, void *ap
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
 
   PetscCall(DMRestoreLocalVector(networkdm, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Dummy equation localF(X) = localX - localXold */
@@ -118,7 +118,7 @@ PetscErrorCode FormFunction_Dummy(DM networkdm, Vec localX, Vec localF, PetscInt
   PetscCall(VecRestoreArrayRead(localX, &xarr));
   PetscCall(VecRestoreArrayRead(localXold, &xoldarr));
   PetscCall(VecRestoreArray(localF, &farr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx)
@@ -215,7 +215,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx)
   if (rank == 0) printf("F:\n");
   PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx)
@@ -280,7 +280,7 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx)
 
   PetscCall(DMLocalToGlobalBegin(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMLocalToGlobalEnd(networkdm, localX, ADD_VALUES, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -359,7 +359,7 @@ int main(int argc, char **argv)
     numEdges[1]    = waterdata->nedge;
     numVertices[1] = waterdata->nvertex;
   }
-  PetscLogStagePop();
+  PetscCall(PetscLogStagePop());
 
   /* (2) Create a network consist of two subnetworks */
   PetscCall(PetscLogStageRegister("Net Setup", &stage[1]));
@@ -506,7 +506,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(networkdm, &X));
   PetscCall(VecDuplicate(X, &F));
   PetscCall(DMGetLocalVector(networkdm, &user.localXold));
-  PetscLogStagePop();
+  PetscCall(PetscLogStagePop());
 
   /* (3) Setup Solvers */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewJ", &viewJ, NULL));

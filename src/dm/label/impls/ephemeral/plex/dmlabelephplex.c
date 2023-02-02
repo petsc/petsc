@@ -23,7 +23,7 @@ PetscErrorCode DMLabelEphemeralGetTransform(DMLabel label, DMPlexTransform *tr)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)label, "__transform__", (PetscObject *)tr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -46,5 +46,5 @@ PetscErrorCode DMLabelEphemeralSetTransform(DMLabel label, DMPlexTransform tr)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)label, "__transform__", (PetscObject)tr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

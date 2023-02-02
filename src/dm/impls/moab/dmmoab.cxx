@@ -69,7 +69,7 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
   PetscValidPointer(dmb, 2);
   PetscCall(DMCreate(comm, dmb));
   PetscCall(DMSetType(*dmb, DMMOAB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -154,7 +154,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   /* set the local range of entities (vertices) of interest */
   if (range) PetscCall(DMMoabSetLocalVertices(dmmb, range));
   *dmb = dmmb;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #ifdef MOAB_HAVE_MPI
@@ -178,7 +178,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *pcomm = ((DM_Moab *)(dm)->data)->pcomm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* MOAB_HAVE_MPI */
@@ -207,7 +207,7 @@ PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 #endif
   dmmoab->mbiface          = mbiface;
   dmmoab->icreatedinstance = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -234,7 +234,7 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
                                    "K. and Stimpson, C. and Ernst, C.},\n  year = {2004},  note = {Report}\n}\n",
                                    &cite));
   *mbiface = ((DM_Moab *)dm->data)->mbiface;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -285,7 +285,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 #else
   dmmoab->n       = dmmoab->nloc;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -307,7 +307,7 @@ PetscErrorCode DMMoabGetAllVertices(DM dm, moab::Range *local)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (local) *local = *((DM_Moab *)dm->data)->vlocal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -331,7 +331,7 @@ PetscErrorCode DMMoabGetLocalVertices(DM dm, const moab::Range **owned, const mo
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (owned) *owned = ((DM_Moab *)dm->data)->vowned;
   if (ghost) *ghost = ((DM_Moab *)dm->data)->vghost;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -353,7 +353,7 @@ PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (range) *range = ((DM_Moab *)dm->data)->elocal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -387,11 +387,11 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
   dmmoab->neleghost = dmmoab->eghost->size();
 #ifdef MOAB_HAVE_MPI
   PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
-  PetscInfo(dm, "Created %" PetscInt_FMT " local and %" PetscInt_FMT " global elements.\n", dmmoab->neleloc, dmmoab->nele);
+  PetscCall(PetscInfo(dm, "Created %" PetscInt_FMT " local and %" PetscInt_FMT " global elements.\n", dmmoab->neleloc, dmmoab->nele));
 #else
   dmmoab->nele    = dmmoab->neleloc;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -411,7 +411,7 @@ PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm, moab::Tag ltogtag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ((DM_Moab *)dm->data)->ltog_tag = ltogtag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -433,7 +433,7 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *ltog_tag = ((DM_Moab *)dm->data)->ltog_tag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -453,7 +453,7 @@ PetscErrorCode DMMoabSetBlockSize(DM dm, PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ((DM_Moab *)dm->data)->bs = bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -475,7 +475,7 @@ PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *bs = ((DM_Moab *)dm->data)->bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -499,7 +499,7 @@ PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (neg) *neg = ((DM_Moab *)dm->data)->nele;
   if (nvg) *nvg = ((DM_Moab *)dm->data)->n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -527,7 +527,7 @@ PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *nel, PetscInt *neg, PetscInt 
   if (neg) *neg = ((DM_Moab *)dm->data)->neleghost;
   if (nvl) *nvl = ((DM_Moab *)dm->data)->nloc;
   if (nvg) *nvg = ((DM_Moab *)dm->data)->nghost;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -549,7 +549,7 @@ PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *offset)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *offset = ((DM_Moab *)dm->data)->vstart;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -571,7 +571,7 @@ PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *dim = ((DM_Moab *)dm->data)->dim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -594,7 +594,7 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (nlevel) *nlevel = ((DM_Moab *)dm->data)->hlevel;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -622,7 +622,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, P
     dmmoab = (DM_Moab *)(dm)->data;
     *mat   = dmmoab->materials[dmmoab->elocal->index(ehandle)];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -661,7 +661,7 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
     merr = dmmoab->mbiface->get_coords(conn, nconn, vpos);
     MBERRNM(merr);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -703,7 +703,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
     PetscCall(PetscArraycpy(*conn, &connect[0], connect.size()));
   }
   if (nconn) *nconn = connect.size();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -729,7 +729,7 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
 
   if (conn) PetscCall(PetscFree(*conn));
   if (nconn) *nconn = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -767,7 +767,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
   MBERRNM(merr);
   if (conn) *conn = connect;
   if (nconn) *nconn = nnodes;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -814,7 +814,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
       if (dmmoab->bndyfaces->index(ent) >= 0) *ent_on_boundary = PETSC_TRUE;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -844,7 +844,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
   dmmoab = (DM_Moab *)(dm)->data;
 
   for (i = 0; i < nconn; ++i) isbdvtx[i] = (dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE : PETSC_FALSE);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -873,7 +873,7 @@ PetscErrorCode DMMoabGetBoundaryMarkers(DM dm, const moab::Range **bdvtx, const 
   if (bdvtx) *bdvtx = dmmoab->bndyvtx;
   if (bdfaces) *bdfaces = dmmoab->bndyfaces;
   if (bdelems) *bdfaces = dmmoab->bndyelems;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
@@ -927,7 +927,7 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
     PetscCall(ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map));
     PetscCall(PetscFree(dm->data));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm, PetscOptionItems *PetscOptionsObject)
@@ -944,7 +944,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm, PetscOptionItems *Petsc
   PetscCall(PetscOptionsEnum("-dm_moab_read_mode", "MOAB parallel read mode", "DMView", MoabReadModes, (PetscEnum)dmmoab->read_mode, (PetscEnum *)&dmmoab->read_mode, NULL));
   PetscCall(PetscOptionsEnum("-dm_moab_write_mode", "MOAB parallel write mode", "DMView", MoabWriteModes, (PetscEnum)dmmoab->write_mode, (PetscEnum *)&dmmoab->write_mode, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
@@ -993,7 +993,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
 #ifdef MOAB_HAVE_MPI
     PetscCall(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
-    PetscInfo(NULL, "Filset ID: %lu, Vertices: local - %zu, owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost);
+    PetscCall(PetscInfo(NULL, "Filset ID: %lu, Vertices: local - %zu, owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost));
 #else
     dmmoab->n       = dmmoab->nloc;
 #endif
@@ -1031,7 +1031,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
 #ifdef MOAB_HAVE_MPI
     PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
-    PetscInfo(NULL, "%d-dim elements: owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost);
+    PetscCall(PetscInfo(NULL, "%d-dim elements: owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost));
 #else
     dmmoab->nele    = dmmoab->neleloc;
 #endif
@@ -1073,7 +1073,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->lminmax[0] -= dmmoab->gminmax[0];
     dmmoab->lminmax[1] -= dmmoab->gminmax[0];
 
-    PetscInfo(NULL, "GLOBAL_ID: Local [min, max] - [%" PetscInt_FMT ", %" PetscInt_FMT "], Global [min, max] - [%" PetscInt_FMT ", %" PetscInt_FMT "]\n", dmmoab->lminmax[0], dmmoab->lminmax[1], dmmoab->gminmax[0], dmmoab->gminmax[1]);
+    PetscCall(PetscInfo(NULL, "GLOBAL_ID: Local [min, max] - [%" PetscInt_FMT ", %" PetscInt_FMT "], Global [min, max] - [%" PetscInt_FMT ", %" PetscInt_FMT "]\n", dmmoab->lminmax[0], dmmoab->lminmax[1], dmmoab->gminmax[0], dmmoab->gminmax[1]));
   }
   PetscCheck(dmmoab->bs == dmmoab->numFields || dmmoab->bs == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %" PetscInt_FMT " != 1 OR %" PetscInt_FMT " != %" PetscInt_FMT ".", dmmoab->bs, dmmoab->bs,
              dmmoab->numFields);
@@ -1081,7 +1081,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   {
     dmmoab->seqstart = dmmoab->mbiface->id_from_handle(dmmoab->vlocal->front());
     dmmoab->seqend   = dmmoab->mbiface->id_from_handle(dmmoab->vlocal->back());
-    PetscInfo(NULL, "SEQUENCE: Local [min, max] - [%" PetscInt_FMT ", %" PetscInt_FMT "]\n", dmmoab->seqstart, dmmoab->seqend);
+    PetscCall(PetscInfo(NULL, "SEQUENCE: Local [min, max] - [%" PetscInt_FMT ", %" PetscInt_FMT "]\n", dmmoab->seqstart, dmmoab->seqend));
 
     PetscCall(PetscMalloc2(dmmoab->seqend - dmmoab->seqstart + 1, &dmmoab->gidmap, dmmoab->seqend - dmmoab->seqstart + 1, &dmmoab->lidmap));
     PetscCall(PetscMalloc1(totsize * dmmoab->numFields, &lgmap));
@@ -1194,7 +1194,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     MBERRNM(merr);
 #endif
   }
-  PetscInfo(NULL, "Found %zu boundary vertices, %zu boundary faces and %zu boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyfaces->size(), dmmoab->bndyelems->size());
+  PetscCall(PetscInfo(NULL, "Found %zu boundary vertices, %zu boundary faces and %zu boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyfaces->size(), dmmoab->bndyelems->size()));
 
   /* Get the material sets and populate the data for all locally owned elements */
   {
@@ -1203,13 +1203,13 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
        -- Then, for each non-zero type, loop through and query the fileset to get the material tag data */
     moab::Range msets;
     merr = dmmoab->mbiface->get_entities_by_type_and_tag(dmmoab->fileset, moab::MBENTITYSET, &dmmoab->material_tag, NULL, 1, msets, moab::Interface::UNION);
-    MB_CHK_ERR(merr);
-    if (msets.size() == 0) PetscInfo(NULL, "No material sets found in the fileset.");
+    MBERRNM(merr);
+    if (msets.size() == 0) PetscCall(PetscInfo(NULL, "No material sets found in the fileset."));
 
     for (unsigned i = 0; i < msets.size(); ++i) {
       moab::Range msetelems;
       merr = dmmoab->mbiface->get_entities_by_dimension(msets[i], dmmoab->dim, msetelems, true);
-      MB_CHK_ERR(merr);
+      MBERRNM(merr);
 #ifdef MOAB_HAVE_MPI
       /* filter all the non-owned and shared entities out of the list */
       merr = dmmoab->pcomm->filter_pstatus(msetelems, PSTATUS_NOT_OWNED, PSTATUS_NOT);
@@ -1219,13 +1219,13 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
       int                partID;
       moab::EntityHandle mset = msets[i];
       merr                    = dmmoab->mbiface->tag_get_data(dmmoab->material_tag, &mset, 1, &partID);
-      MB_CHK_ERR(merr);
+      MBERRNM(merr);
 
       for (unsigned j = 0; j < msetelems.size(); ++j) dmmoab->materials[dmmoab->elocal->index(msetelems[j])] = partID;
     }
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1265,7 +1265,7 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal *coords, PetscInt nve
   MBERRNM(merr);
 
   if (overts) *overts = verts;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1305,7 +1305,7 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
   MBERRNM(merr);
 
   if (oelem) *oelem = elem;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1357,7 +1357,7 @@ PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm)
 
   /* preserve the field association between the parent and sub-mesh objects */
   PetscCall(DMMoabSetFieldNames(*newdm, dmmoab->numFields, dmmoab->fieldNames));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMMoabView_Ascii(DM dm, PetscViewer viewer)
@@ -1396,17 +1396,17 @@ PETSC_EXTERN PetscErrorCode DMMoabView_Ascii(DM dm, PetscViewer viewer)
   }
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerFlush(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMMoabView_VTK(DM dm, PetscViewer v)
 {
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMMoabView_HDF5(DM dm, PetscViewer v)
 {
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
@@ -1432,7 +1432,7 @@ PETSC_EXTERN PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
   } else if (isvtk) {
     PetscCall(DMMoabView_VTK(dm, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
@@ -1466,7 +1466,7 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->createsubdm              = NULL /* DMCreateSubDM_Moab */;
   dm->ops->getdimpoints             = NULL /* DMGetDimPoints_Moab */;
   dm->ops->locatepoints             = NULL /* DMLocatePoints_Moab */;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMClone_Moab(DM dm, DM *newdm)
@@ -1478,7 +1478,7 @@ PETSC_EXTERN PetscErrorCode DMClone_Moab(DM dm, DM *newdm)
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)*newdm, DMMOAB));
   PetscCall(DMInitialize_Moab(*newdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
@@ -1507,5 +1507,5 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   ((DM_Moab *)dm->data)->eghost = new moab::Range();
 
   PetscCall(DMInitialize_Moab(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

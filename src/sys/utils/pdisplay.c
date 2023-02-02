@@ -66,7 +66,7 @@ PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], 
   } else {
     PetscCall(PetscOptionsHasName(NULL, NULL, work, flag));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -93,7 +93,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
   PetscCall(MPIU_Allreduce(&localmatch, &allmatch, 1, MPI_INT, MPI_LAND, PETSC_COMM_WORLD));
 
   *onehost = (PetscBool)allmatch;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSetDisplay(void)
@@ -105,7 +105,7 @@ PetscErrorCode PetscSetDisplay(void)
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetString(NULL, NULL, "-display", PetscDisplay, sizeof(PetscDisplay), &flag));
-  if (flag) PetscFunctionReturn(0);
+  if (flag) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -136,7 +136,7 @@ PetscErrorCode PetscSetDisplay(void)
   PetscCall(PetscMemcpy(PetscDisplay, display, sizeof(PetscDisplay)));
 
   PetscDisplay[sizeof(PetscDisplay) - 1] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -161,5 +161,5 @@ PetscErrorCode PetscGetDisplay(char display[], size_t n)
 {
   PetscFunctionBegin;
   PetscCall(PetscStrncpy(display, PetscDisplay, n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

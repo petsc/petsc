@@ -11,7 +11,7 @@ static PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(mc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, PetscReal *wts, PetscInt *lperm, ISColoringValue *colors)
@@ -164,7 +164,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
     PetscCall(PetscFree2(ocolors, owts));
     PetscCall(PetscSFDestroy(&sf));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, PetscReal *wts, PetscInt *lperm, ISColoringValue *colors)
@@ -480,7 +480,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
   PetscCall(PetscFree4(d1cols, dcolors, conf, bad));
   PetscCall(PetscFree2(badidx, badnext));
   if (!gr->symmetric) PetscCall(MatDestroy(&mt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatColoringApply_Greedy(MatColoring mc, ISColoring *iscoloring)
@@ -520,7 +520,7 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc, ISColoring *iscolo
     PetscCall(PetscFree(wts));
     PetscCall(PetscFree(lperm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOptionItems *PetscOptionsObject)
@@ -531,7 +531,7 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOpti
   PetscOptionsHeadBegin(PetscOptionsObject, "Greedy options");
   PetscCall(PetscOptionsBool("-mat_coloring_greedy_symmetric", "Flag for assuming a symmetric matrix", "", gr->symmetric, &gr->symmetric, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -571,5 +571,5 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc)
   mc->ops->setfromoptions = MatColoringSetFromOptions_Greedy;
 
   gr->symmetric = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

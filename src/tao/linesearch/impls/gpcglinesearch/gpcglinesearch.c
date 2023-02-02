@@ -13,7 +13,7 @@ static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
   PetscCall(VecDestroy(&ctx->Gold));
   PetscCall(VecDestroy(&ctx->x));
   PetscCall(PetscFree(ls->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -24,7 +24,7 @@ static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewe
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, " GPCG Line search"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -72,7 +72,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   if (gdx > 0) {
     PetscCall(PetscInfo(ls, "Line search error: search direction is not descent direction. dot(g,s) = %g\n", (double)gdx));
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecCopy(x, neP->W2));
   PetscCall(VecCopy(g, neP->Gold));
@@ -87,7 +87,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   if (ls->step < 0) {
     PetscCall(PetscInfo(ls, "Line search error: initial step parameter %g< 0\n", (double)ls->step));
     ls->reason = TAOLINESEARCH_HALTED_OTHER;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Initialization */
@@ -176,7 +176,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   PetscCall(VecCopy(neP->W2, x));
   if (ls->reason == TAOLINESEARCH_CONTINUE_ITERATING) ls->reason = TAOLINESEARCH_SUCCESS;
   if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, x, g));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -215,5 +215,5 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   ls->ops->destroy        = TaoLineSearchDestroy_GPCG;
   ls->ops->setfromoptions = NULL;
   ls->ops->monitor        = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

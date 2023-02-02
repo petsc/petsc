@@ -24,7 +24,7 @@ static PetscErrorCode TSReset_RK_MultirateNonsplit(TS ts)
   PetscFunctionBegin;
   PetscCall(VecDestroy(&rk->X0));
   PetscCall(VecDestroyVecs(tab->s, &rk->YdotRHS_slow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts, PetscReal itime, Vec X)
@@ -47,7 +47,7 @@ static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts, PetscReal itime,
   PetscCall(VecCopy(rk->X0, X));
   PetscCall(VecMAXPY(X, s, b, rk->YdotRHS_slow));
   PetscCall(PetscFree(b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts)
@@ -112,7 +112,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts)
     }
   }
   PetscCall(VecDestroy(&vec_fast));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStep_RK_MultirateNonsplit(TS ts)
@@ -167,7 +167,7 @@ static PetscErrorCode TSStep_RK_MultirateNonsplit(TS ts)
   /* free memory of work vectors */
   PetscCall(VecDestroy(&stage_slow));
   PetscCall(VecDestroy(&sol_slow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_RK_MultirateNonsplit(TS ts)
@@ -188,7 +188,7 @@ static PetscErrorCode TSSetUp_RK_MultirateNonsplit(TS ts)
 
   ts->ops->step        = TSStep_RK_MultirateNonsplit;
   ts->ops->interpolate = TSInterpolate_RK_MultirateNonsplit;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -206,7 +206,7 @@ static PetscErrorCode TSCopyDM(TS tssrc, TS tsdest)
   PetscCall(DMCopyDMSNES(dmdest, newdm));
   PetscCall(TSSetDM(tsdest, newdm));
   PetscCall(DMDestroy(&newdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_RK_MultirateSplit(TS ts)
@@ -226,7 +226,7 @@ static PetscErrorCode TSReset_RK_MultirateSplit(TS ts)
     PetscCall(PetscFree(rk->subts_fast->data));
     rk->subts_fast = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Vec X)
@@ -267,7 +267,7 @@ static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Ve
   PetscCall(VecRestoreSubVector(X, rk->is_slow, &Xslow));
   for (i = 0; i < s; i++) PetscCall(VecRestoreSubVector(rk->YdotRHS[i], rk->is_slow, &rk->YdotRHS_slow[i]));
   PetscCall(PetscFree(b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -299,7 +299,7 @@ static PetscErrorCode TSEvaluateStep_RK_MultirateSplit(TS ts, PetscInt order, Ve
     PetscCall(VecMAXPY(Xfast, s, w, rk->YdotRHS_fast));
     PetscCall(VecRestoreSubVector(X, rk->is_fast, &Xfast));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts)
@@ -358,7 +358,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts)
     PetscCall(VecISCopy(rk->X0, rk->is_fast, SCATTER_FORWARD, Xfast));
     PetscCall(VecRestoreSubVector(ts->vec_sol, rk->is_fast, &Xfast));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
@@ -411,7 +411,7 @@ static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
   ts->ptime     = t + ts->time_step;
   ts->time_step = next_time_step;
   rk->status    = TS_STEP_COMPLETE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts)
@@ -472,7 +472,7 @@ static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts)
   ts->ops->step         = TSStep_RK_MultirateSplit;
   ts->ops->evaluatestep = TSEvaluateStep_RK_MultirateSplit;
   ts->ops->interpolate  = TSInterpolate_RK_MultirateSplit;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSRKSetMultirate_RK(TS ts, PetscBool use_multirate)
@@ -495,7 +495,7 @@ PetscErrorCode TSRKSetMultirate_RK(TS ts, PetscBool use_multirate)
     PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSetUp_RK_MultirateNonsplit_C", NULL));
     PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSReset_RK_MultirateNonsplit_C", NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSRKGetMultirate_RK(TS ts, PetscBool *use_multirate)
@@ -505,5 +505,5 @@ PetscErrorCode TSRKGetMultirate_RK(TS ts, PetscBool *use_multirate)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   *use_multirate = rk->use_multirate;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -17,7 +17,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsInt("-check_face", "Face set to report on", "ex49.c", options->check_face, &options->check_face, NULL));
   PetscCall(PetscOptionsBool("-closure_tensor", "Use DMPlexSetClosurePermutationTensor()", "ex49.c", options->closure_tensor, &options->closure_tensor, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -28,7 +28,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
@@ -49,7 +49,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     PetscCall(DMCopyDisc(dm, cdm));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name, PetscInt label_value, PetscInt height)
@@ -65,7 +65,7 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
   PetscFunctionBeginUser;
   if (domain_name) PetscCall(DMGetLabel(dm, domain_name, &domain_label));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "## %s: '%s' {%" PetscInt_FMT "}%s\n", height_name[height], domain_name ? domain_name : "default", label_value, domain_name && !domain_label ? " (null label)" : ""));
-  if (domain_name && !domain_label) PetscFunctionReturn(0);
+  if (domain_name && !domain_label) PetscFunctionReturn(PETSC_SUCCESS);
   if (user->closure_tensor) PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
   // Offsets for cell closures
   PetscCall(DMGetNumFields(dm, &Nf));
@@ -101,7 +101,7 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
       cname = "DG Coordinates";
       PetscCall(DMGetCellCoordinatesLocal(dm, &X));
     }
-    if (isDG && height) PetscFunctionReturn(0);
+    if (isDG && height) PetscFunctionReturn(PETSC_SUCCESS);
     if (domain_name) PetscCall(DMGetLabel(cdm, domain_name, &domain_label));
     if (user->closure_tensor) PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
     PetscCall(DMPlexGetLocalOffsets(cdm, domain_label, label_value, height, 0, &Ncell, &Ncl, &Nc, &n, &offsets));
@@ -137,7 +137,7 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
     PetscCall(DMGetLocalToGlobalMapping(cdm, &ltog));
     PetscCall(ISLocalToGlobalMappingViewFromOptions(ltog, NULL, "-coord_ltog_view"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

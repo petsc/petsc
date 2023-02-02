@@ -54,7 +54,7 @@ PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled)
   PetscValidBoolPointer(enabled, 2);
   PetscCheck(classid >= PETSC_SMALLEST_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Classid (current: %d) must be equal to or greater than PETSC_SMALLEST_CLASSID", classid);
   *enabled = (PetscBool)(PetscLogPrintInfo && PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -73,7 +73,7 @@ PetscErrorCode PetscInfoAllow(PetscBool flag)
 {
   PetscFunctionBegin;
   PetscLogPrintInfo = flag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -121,7 +121,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
     }
     PetscCall(PetscInfo(NULL, "Opened PetscInfo file %s\n", fname));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -148,7 +148,7 @@ PetscErrorCode PetscInfoGetFile(char **filename, FILE **InfoFile)
   PetscValidPointer(InfoFile, 2);
   PetscCall(PetscStrallocpy(PetscInfoFilename, filename));
   *InfoFile = PetscInfoFile;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -194,7 +194,7 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt n, const char *co
     PetscCall(PetscInfoProcessClass("sys", 1, &id));
   }
   PetscInfoClassesSet = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -224,7 +224,7 @@ PetscErrorCode PetscInfoGetClass(const char *classname, PetscBool *found)
   PetscValidBoolPointer(found, 2);
   PetscCall(PetscEListFind(PetscInfoNumClasses, (const char *const *)PetscInfoClassnames, classname ? classname : "sys", &unused, found));
   PetscInfoClassesLocked = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -260,7 +260,7 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
   if (exclude) *exclude = PetscInfoInvertClasses;
   if (locked) *locked = PetscInfoClassesLocked;
   if (commSelfFlag) *commSelfFlag = PetscInfoCommFilter;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -312,7 +312,7 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
   } else {
     for (PetscInt i = 0; i < numClassID; ++i) PetscCall(PetscInfoActivateClass(classIDs[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -331,7 +331,7 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag)
 {
   PetscFunctionBegin;
   PetscInfoCommFilter = commSelfFlag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -407,7 +407,7 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
     PetscCall(PetscStrToArrayDestroy(nLoc1_, loc1_array));
     PetscCall(PetscFree(loc0_));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -445,7 +445,7 @@ PetscErrorCode PetscInfoDestroy(void)
   PetscInfoClassesSet    = PETSC_FALSE;
   PetscInfoNumClasses    = -1;
   PetscInfoCommFilter    = PETSC_INFO_COMM_ALL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, int value)
@@ -453,7 +453,7 @@ static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, 
   PetscFunctionBegin;
   if (!classid) classid = PETSC_SMALLEST_CLASSID;
   PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID] = value;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -475,7 +475,7 @@ PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid)
 {
   PetscFunctionBegin;
   PetscCall(PetscInfoSetClassActivation_Private(classid, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -497,7 +497,7 @@ PetscErrorCode PetscInfoActivateClass(PetscClassId classid)
 {
   PetscFunctionBegin;
   PetscCall(PetscInfoSetClassActivation_Private(classid, 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -587,19 +587,19 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
   }
   PetscValidCharPointer(message, 3);
   PetscCall(PetscInfoEnabled(classid, &enabled));
-  if (!enabled) PetscFunctionReturn(0);
+  if (!enabled) PetscFunctionReturn(PETSC_SUCCESS);
   if (obj) PetscCall(PetscObjectGetComm(obj, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* rank > 0 always jumps out */
-  if (rank) PetscFunctionReturn(0);
+  if (rank) PetscFunctionReturn(PETSC_SUCCESS);
   else {
     PetscMPIInt size;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
     /* If no self printing is allowed, and size too small, get out */
-    if ((PetscInfoCommFilter == PETSC_INFO_COMM_NO_SELF) && (size < 2)) PetscFunctionReturn(0);
+    if ((PetscInfoCommFilter == PETSC_INFO_COMM_NO_SELF) && (size < 2)) PetscFunctionReturn(PETSC_SUCCESS);
     /* If ONLY self printing, and size too big, get out */
-    if ((PetscInfoCommFilter == PETSC_INFO_COMM_ONLY_SELF) && (size > 1)) PetscFunctionReturn(0);
+    if ((PetscInfoCommFilter == PETSC_INFO_COMM_ONLY_SELF) && (size > 1)) PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Mute info messages within this function */
   {
@@ -626,5 +626,5 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
     va_end(Argp);
     PetscLogPrintInfo = oldflag;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

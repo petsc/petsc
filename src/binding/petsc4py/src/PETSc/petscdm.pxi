@@ -44,144 +44,144 @@ cdef extern from * nogil:
         DM_POLYTOPE_UNKNOWN
         DM_NUM_POLYTOPES
 
-    ctypedef int (*PetscDMCoarsenHook)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMCoarsenHook)(PetscDM,
                                        PetscDM,
                                        void*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMRestrictHook)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMRestrictHook)(PetscDM,
                                         PetscMat,
                                         PetscVec,
                                         PetscMat,
                                         PetscDM,
                                         void*) except PETSC_ERR_PYTHON
 
-    int DMCreate(MPI_Comm,PetscDM*)
-    int DMClone(PetscDM,PetscDM*)
-    int DMDestroy(PetscDM*)
-    int DMView(PetscDM,PetscViewer)
-    int DMLoad(PetscDM,PetscViewer)
-    int DMSetType(PetscDM,PetscDMType)
-    int DMGetType(PetscDM,PetscDMType*)
-    int DMGetDimension(PetscDM,PetscInt*)
-    int DMSetDimension(PetscDM,PetscInt)
-    int DMSetOptionsPrefix(PetscDM,char[])
-    int DMGetOptionsPrefix(PetscDM,char*[])
-    int DMAppendOptionsPrefix(PetscDM,char[])
-    int DMSetFromOptions(PetscDM)
-    int DMViewFromOptions(PetscDM,PetscObject,char[])
-    int DMSetUp(PetscDM)
+    PetscErrorCode DMCreate(MPI_Comm,PetscDM*)
+    PetscErrorCode DMClone(PetscDM,PetscDM*)
+    PetscErrorCode DMDestroy(PetscDM*)
+    PetscErrorCode DMView(PetscDM,PetscViewer)
+    PetscErrorCode DMLoad(PetscDM,PetscViewer)
+    PetscErrorCode DMSetType(PetscDM,PetscDMType)
+    PetscErrorCode DMGetType(PetscDM,PetscDMType*)
+    PetscErrorCode DMGetDimension(PetscDM,PetscInt*)
+    PetscErrorCode DMSetDimension(PetscDM,PetscInt)
+    PetscErrorCode DMSetOptionsPrefix(PetscDM,char[])
+    PetscErrorCode DMGetOptionsPrefix(PetscDM,char*[])
+    PetscErrorCode DMAppendOptionsPrefix(PetscDM,char[])
+    PetscErrorCode DMSetFromOptions(PetscDM)
+    PetscErrorCode DMViewFromOptions(PetscDM,PetscObject,char[])
+    PetscErrorCode DMSetUp(PetscDM)
 
-    int DMGetAdjacency(PetscDM,PetscInt,PetscBool*,PetscBool*)
-    int DMSetAdjacency(PetscDM,PetscInt,PetscBool,PetscBool)
-    int DMGetBasicAdjacency(PetscDM,PetscBool*,PetscBool*)
-    int DMSetBasicAdjacency(PetscDM,PetscBool,PetscBool)
+    PetscErrorCode DMGetAdjacency(PetscDM,PetscInt,PetscBool*,PetscBool*)
+    PetscErrorCode DMSetAdjacency(PetscDM,PetscInt,PetscBool,PetscBool)
+    PetscErrorCode DMGetBasicAdjacency(PetscDM,PetscBool*,PetscBool*)
+    PetscErrorCode DMSetBasicAdjacency(PetscDM,PetscBool,PetscBool)
 
-    int DMSetNumFields(PetscDM,PetscInt)
-    int DMGetNumFields(PetscDM,PetscInt*)
-    int DMSetField(PetscDM,PetscInt,PetscDMLabel,PetscObject)
-    int DMAddField(PetscDM,PetscDMLabel,PetscObject)
-    int DMGetField(PetscDM,PetscInt,PetscDMLabel*,PetscObject*)
-    int DMClearFields(PetscDM)
-    int DMCopyFields(PetscDM,PetscDM)
-    int DMCreateDS(PetscDM)
-    int DMClearDS(PetscDM)
-    int DMGetDS(PetscDM,PetscDS*)
-    int DMCopyDS(PetscDM,PetscDM)
-    int DMCopyDisc(PetscDM,PetscDM)
+    PetscErrorCode DMSetNumFields(PetscDM,PetscInt)
+    PetscErrorCode DMGetNumFields(PetscDM,PetscInt*)
+    PetscErrorCode DMSetField(PetscDM,PetscInt,PetscDMLabel,PetscObject)
+    PetscErrorCode DMAddField(PetscDM,PetscDMLabel,PetscObject)
+    PetscErrorCode DMGetField(PetscDM,PetscInt,PetscDMLabel*,PetscObject*)
+    PetscErrorCode DMClearFields(PetscDM)
+    PetscErrorCode DMCopyFields(PetscDM,PetscDM)
+    PetscErrorCode DMCreateDS(PetscDM)
+    PetscErrorCode DMClearDS(PetscDM)
+    PetscErrorCode DMGetDS(PetscDM,PetscDS*)
+    PetscErrorCode DMCopyDS(PetscDM,PetscDM)
+    PetscErrorCode DMCopyDisc(PetscDM,PetscDM)
 
-    int DMGetBlockSize(PetscDM,PetscInt*)
-    int DMSetVecType(PetscDM,PetscVecType)
-    int DMCreateLocalVector(PetscDM,PetscVec*)
-    int DMCreateGlobalVector(PetscDM,PetscVec*)
-    int DMGetLocalVector(PetscDM,PetscVec*)
-    int DMRestoreLocalVector(PetscDM,PetscVec*)
-    int DMGetGlobalVector(PetscDM,PetscVec*)
-    int DMRestoreGlobalVector(PetscDM,PetscVec*)
-    int DMSetMatType(PetscDM,PetscMatType)
-    int DMCreateMatrix(PetscDM,PetscMat*)
-    int DMCreateMassMatrix(PetscDM,PetscDM,PetscMat*)
+    PetscErrorCode DMGetBlockSize(PetscDM,PetscInt*)
+    PetscErrorCode DMSetVecType(PetscDM,PetscVecType)
+    PetscErrorCode DMCreateLocalVector(PetscDM,PetscVec*)
+    PetscErrorCode DMCreateGlobalVector(PetscDM,PetscVec*)
+    PetscErrorCode DMGetLocalVector(PetscDM,PetscVec*)
+    PetscErrorCode DMRestoreLocalVector(PetscDM,PetscVec*)
+    PetscErrorCode DMGetGlobalVector(PetscDM,PetscVec*)
+    PetscErrorCode DMRestoreGlobalVector(PetscDM,PetscVec*)
+    PetscErrorCode DMSetMatType(PetscDM,PetscMatType)
+    PetscErrorCode DMCreateMatrix(PetscDM,PetscMat*)
+    PetscErrorCode DMCreateMassMatrix(PetscDM,PetscDM,PetscMat*)
 
-    int DMGetCoordinateDM(PetscDM,PetscDM*)
-    int DMGetCoordinateSection(PetscDM,PetscSection*)
-    int DMSetCoordinates(PetscDM,PetscVec)
-    int DMGetCoordinates(PetscDM,PetscVec*)
-    int DMSetCoordinatesLocal(PetscDM,PetscVec)
-    int DMGetCoordinatesLocal(PetscDM,PetscVec*)
-    int DMGetCoordinateDim(PetscDM,PetscInt*)
-    int DMSetCoordinateDim(PetscDM,PetscInt)
-    int DMLocalizeCoordinates(PetscDM)
-    int DMProjectCoordinates(PetscDM, PetscFE)
+    PetscErrorCode DMGetCoordinateDM(PetscDM,PetscDM*)
+    PetscErrorCode DMGetCoordinateSection(PetscDM,PetscSection*)
+    PetscErrorCode DMSetCoordinates(PetscDM,PetscVec)
+    PetscErrorCode DMGetCoordinates(PetscDM,PetscVec*)
+    PetscErrorCode DMSetCoordinatesLocal(PetscDM,PetscVec)
+    PetscErrorCode DMGetCoordinatesLocal(PetscDM,PetscVec*)
+    PetscErrorCode DMGetCoordinateDim(PetscDM,PetscInt*)
+    PetscErrorCode DMSetCoordinateDim(PetscDM,PetscInt)
+    PetscErrorCode DMLocalizeCoordinates(PetscDM)
+    PetscErrorCode DMProjectCoordinates(PetscDM, PetscFE)
 
-    int DMCreateInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
-    int DMCreateInjection(PetscDM,PetscDM,PetscMat*)
-    int DMCreateRestriction(PetscDM,PetscDM,PetscMat*)
+    PetscErrorCode DMCreateInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
+    PetscErrorCode DMCreateInjection(PetscDM,PetscDM,PetscMat*)
+    PetscErrorCode DMCreateRestriction(PetscDM,PetscDM,PetscMat*)
 
-    int DMConvert(PetscDM,PetscDMType,PetscDM*)
-    int DMRefine(PetscDM,MPI_Comm,PetscDM*)
-    int DMCoarsen(PetscDM,MPI_Comm,PetscDM*)
-    int DMRefineHierarchy(PetscDM,PetscInt,PetscDM[])
-    int DMCoarsenHierarchy(PetscDM,PetscInt,PetscDM[])
-    int DMGetRefineLevel(PetscDM,PetscInt*)
-    int DMSetRefineLevel(PetscDM,PetscInt)
-    int DMGetCoarsenLevel(PetscDM,PetscInt*)
+    PetscErrorCode DMConvert(PetscDM,PetscDMType,PetscDM*)
+    PetscErrorCode DMRefine(PetscDM,MPI_Comm,PetscDM*)
+    PetscErrorCode DMCoarsen(PetscDM,MPI_Comm,PetscDM*)
+    PetscErrorCode DMRefineHierarchy(PetscDM,PetscInt,PetscDM[])
+    PetscErrorCode DMCoarsenHierarchy(PetscDM,PetscInt,PetscDM[])
+    PetscErrorCode DMGetRefineLevel(PetscDM,PetscInt*)
+    PetscErrorCode DMSetRefineLevel(PetscDM,PetscInt)
+    PetscErrorCode DMGetCoarsenLevel(PetscDM,PetscInt*)
 
-    int DMAdaptLabel(PetscDM,PetscDMLabel,PetscDM*)
-    int DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDMLabel,PetscDM*)
+    PetscErrorCode DMAdaptLabel(PetscDM,PetscDMLabel,PetscDM*)
+    PetscErrorCode DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDMLabel,PetscDM*)
 
-    int DMGlobalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMGlobalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMLocalToGlobalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMLocalToGlobalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMLocalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMLocalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMGlobalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMGlobalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMLocalToGlobalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMLocalToGlobalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMLocalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMLocalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
 
-    int DMGetLocalToGlobalMapping(PetscDM,PetscLGMap*)
+    PetscErrorCode DMGetLocalToGlobalMapping(PetscDM,PetscLGMap*)
 
-    int DMSetSection(PetscDM,PetscSection)
-    int DMGetSection(PetscDM,PetscSection*)
-    int DMSetGlobalSection(PetscDM,PetscSection)
-    int DMGetGlobalSection(PetscDM,PetscSection*)
-    int DMCreateSectionSF(PetscDM,PetscSection,PetscSection)
-    int DMGetSectionSF(PetscDM,PetscSF*)
-    int DMSetSectionSF(PetscDM,PetscSF)
-    int DMGetPointSF(PetscDM,PetscSF*)
-    int DMSetPointSF(PetscDM,PetscSF)
+    PetscErrorCode DMSetSection(PetscDM,PetscSection)
+    PetscErrorCode DMGetSection(PetscDM,PetscSection*)
+    PetscErrorCode DMSetGlobalSection(PetscDM,PetscSection)
+    PetscErrorCode DMGetGlobalSection(PetscDM,PetscSection*)
+    PetscErrorCode DMCreateSectionSF(PetscDM,PetscSection,PetscSection)
+    PetscErrorCode DMGetSectionSF(PetscDM,PetscSF*)
+    PetscErrorCode DMSetSectionSF(PetscDM,PetscSF)
+    PetscErrorCode DMGetPointSF(PetscDM,PetscSF*)
+    PetscErrorCode DMSetPointSF(PetscDM,PetscSF)
 
-    int DMCreateSubDM(PetscDM, PetscInt, const PetscInt[], PetscIS*, PetscDM*)
-    int DMSetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec)
-    int DMGetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec*)
+    PetscErrorCode DMCreateSubDM(PetscDM, PetscInt, const PetscInt[], PetscIS*, PetscDM*)
+    PetscErrorCode DMSetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec)
+    PetscErrorCode DMGetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec*)
 
-    int DMCreateLabel(PetscDM,const char[])
-    int DMGetLabelValue(PetscDM,const char[],PetscInt,PetscInt*)
-    int DMSetLabelValue(PetscDM,const char[],PetscInt,PetscInt)
-    int DMHasLabel(PetscDM,const char[],PetscBool*)
-    int DMClearLabelValue(PetscDM,const char[],PetscInt,PetscInt)
-    int DMGetLabelSize(PetscDM,const char[],PetscInt*)
-    int DMGetLabelIdIS(PetscDM,const char[],PetscIS*)
-    int DMGetStratumSize(PetscDM,const char[],PetscInt,PetscInt*)
-    int DMGetStratumIS(PetscDM,const char[],PetscInt,PetscIS*)
-    int DMClearLabelStratum(PetscDM,const char[],PetscInt)
-    int DMSetLabelOutput(PetscDM,const char[],PetscBool)
-    int DMGetLabelOutput(PetscDM,const char[],PetscBool*)
-    int DMGetNumLabels(PetscDM,PetscInt*)
-    int DMGetLabelName(PetscDM,PetscInt,const char**)
-    int DMHasLabel(PetscDM,const char[],PetscBool*)
-    int DMGetLabel(PetscDM,const char*,PetscDMLabel*)
-    int DMAddLabel(PetscDM,PetscDMLabel)
-    int DMRemoveLabel(PetscDM,const char[],PetscDMLabel*)
-    int DMLabelDestroy(PetscDMLabel *)
+    PetscErrorCode DMCreateLabel(PetscDM,const char[])
+    PetscErrorCode DMGetLabelValue(PetscDM,const char[],PetscInt,PetscInt*)
+    PetscErrorCode DMSetLabelValue(PetscDM,const char[],PetscInt,PetscInt)
+    PetscErrorCode DMHasLabel(PetscDM,const char[],PetscBool*)
+    PetscErrorCode DMClearLabelValue(PetscDM,const char[],PetscInt,PetscInt)
+    PetscErrorCode DMGetLabelSize(PetscDM,const char[],PetscInt*)
+    PetscErrorCode DMGetLabelIdIS(PetscDM,const char[],PetscIS*)
+    PetscErrorCode DMGetStratumSize(PetscDM,const char[],PetscInt,PetscInt*)
+    PetscErrorCode DMGetStratumIS(PetscDM,const char[],PetscInt,PetscIS*)
+    PetscErrorCode DMClearLabelStratum(PetscDM,const char[],PetscInt)
+    PetscErrorCode DMSetLabelOutput(PetscDM,const char[],PetscBool)
+    PetscErrorCode DMGetLabelOutput(PetscDM,const char[],PetscBool*)
+    PetscErrorCode DMGetNumLabels(PetscDM,PetscInt*)
+    PetscErrorCode DMGetLabelName(PetscDM,PetscInt,const char**)
+    PetscErrorCode DMHasLabel(PetscDM,const char[],PetscBool*)
+    PetscErrorCode DMGetLabel(PetscDM,const char*,PetscDMLabel*)
+    PetscErrorCode DMAddLabel(PetscDM,PetscDMLabel)
+    PetscErrorCode DMRemoveLabel(PetscDM,const char[],PetscDMLabel*)
+    PetscErrorCode DMLabelDestroy(PetscDMLabel *)
     #int DMCopyLabels(PetscDM,PetscDM)
 
-    int DMShellSetGlobalVector(PetscDM,PetscVec)
-    int DMShellSetLocalVector(PetscDM,PetscVec)
+    PetscErrorCode DMShellSetGlobalVector(PetscDM,PetscVec)
+    PetscErrorCode DMShellSetLocalVector(PetscDM,PetscVec)
 
-    int DMKSPSetComputeOperators(PetscDM,PetscKSPComputeOpsFunction,void*)
+    PetscErrorCode DMKSPSetComputeOperators(PetscDM,PetscKSPComputeOpsFunction,void*)
 
-    int DMCreateFieldDecomposition(PetscDM,PetscInt*,char***,PetscIS**,PetscDM**)
+    PetscErrorCode DMCreateFieldDecomposition(PetscDM,PetscInt*,char***,PetscIS**,PetscDM**)
 
-    int DMSNESSetFunction(PetscDM,PetscSNESFunctionFunction,void*)
-    int DMSNESSetJacobian(PetscDM,PetscSNESJacobianFunction,void*)
+    PetscErrorCode DMSNESSetFunction(PetscDM,PetscSNESFunctionFunction,void*)
+    PetscErrorCode DMSNESSetJacobian(PetscDM,PetscSNESJacobianFunction,void*)
 
-    int DMCoarsenHookAdd(PetscDM,PetscDMCoarsenHook,PetscDMRestrictHook,void*)
+    PetscErrorCode DMCoarsenHookAdd(PetscDM,PetscDMCoarsenHook,PetscDMRestrictHook,void*)
 
 # --------------------------------------------------------------------
 
@@ -250,7 +250,7 @@ cdef inline DM ref_DM(PetscDM dm):
 
 # --------------------------------------------------------------------
 
-cdef int DM_PyCoarsenHook(
+cdef PetscErrorCode DM_PyCoarsenHook(
     PetscDM fine,
     PetscDM coarse,
     void*   ctx,
@@ -263,9 +263,9 @@ cdef int DM_PyCoarsenHook(
     for hook in hooks:
         (hookop, args, kargs) = hook
         hookop(Fine, Coarse, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DM_PyRestrictHook(
+cdef PetscErrorCode DM_PyRestrictHook(
     PetscDM fine,
     PetscMat mrestrict,
     PetscVec rscale,
@@ -284,5 +284,5 @@ cdef int DM_PyRestrictHook(
     for hook in hooks:
         (hookop, args, kargs) = hook
         hookop(Fine, Mrestrict, Rscale, Inject, Coarse, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 # -----------------------------------------------------------------------------

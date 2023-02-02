@@ -47,7 +47,7 @@ static PetscErrorCode DrawFunction(PetscDraw draw, void *ctx)
 
   PetscCall(PetscDrawGetPopup(draw, &popup));
   PetscCall(PetscDrawScalePopup(popup, -8, +8));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

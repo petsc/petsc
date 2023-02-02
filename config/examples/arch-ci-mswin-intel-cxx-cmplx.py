@@ -26,5 +26,6 @@ if __name__ == '__main__':
     '--with-mpiexec='+mpiexec,
     '--with-shared-libraries=0',
     '--with-mpi-f90module-visibility=0',
+    '--with-strict-petscerrorcode',
   ]
   configure.petsc_configure(configure_options)

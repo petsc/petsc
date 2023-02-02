@@ -29,7 +29,7 @@ PetscErrorCode PetscSSEHardwareTest(PetscBool *flag)
       if (myedx & SSE_FEATURE_FLAG) *flag = PETSC_TRUE;
       else *flag = PETSC_FALSE;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 }
 
@@ -65,7 +65,7 @@ PetscErrorCode PetscSSEOSEnabledTest_Linux(PetscBool *flag)
   } else wait(&status);
   if (!status) *flag = PETSC_TRUE;
   else *flag = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #else
@@ -80,7 +80,7 @@ PetscErrorCode PetscSSEOSEnabledTest_TRUE(PetscBool *flag)
 {
   PetscFunctionBegin;
   if (flag) *flag = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #else /* Not defined PETSC_HAVE_SSE */
@@ -92,7 +92,7 @@ PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag)
 {
   PetscFunctionBegin;
   if (flag) *flag = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* defined PETSC_HAVE_SSE */
@@ -154,5 +154,5 @@ PetscErrorCode   PetscSSEIsEnabled(MPI_Comm comm, PetscBool *lflag, PetscBool *g
 
   if (lflag) *lflag = petsc_sse_enabled_local;
   if (gflag) *gflag = petsc_sse_enabled_global;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

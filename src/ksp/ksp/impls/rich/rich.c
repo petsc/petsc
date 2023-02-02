@@ -14,7 +14,7 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   } else {
     PetscCall(KSPSetWorkVecs(ksp, 2));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSolve_Richardson(KSP ksp)
@@ -62,7 +62,7 @@ PetscErrorCode KSPSolve_Richardson(KSP ksp)
     PCRichardsonConvergedReason reason;
     PetscCall(PCApplyRichardson(ksp->pc, b, x, r, ksp->rtol, ksp->abstol, ksp->divtol, maxit, ksp->guess_zero, &ksp->its, &reason));
     ksp->reason = (KSPConvergedReason)reason;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscInfo(ksp, "KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson()\n"));
   }
@@ -144,7 +144,7 @@ PetscErrorCode KSPSolve_Richardson(KSP ksp)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
@@ -161,7 +161,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  damping factor=%g\n", (double)richardsonP->scale));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -177,7 +177,7 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsBool("-ksp_richardson_self_scale", "dynamically determine optimal damping factor", "KSPRichardsonSetSelfScale", rich->selfscale, &flg2, &flg));
   if (flg) PetscCall(KSPRichardsonSetSelfScale(ksp, flg2));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPDestroy_Richardson(KSP ksp)
@@ -186,7 +186,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPRichardsonSetScale_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPRichardsonSetSelfScale_C", NULL));
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPRichardsonSetScale_Richardson(KSP ksp, PetscReal scale)
@@ -196,7 +196,7 @@ static PetscErrorCode KSPRichardsonSetScale_Richardson(KSP ksp, PetscReal scale)
   PetscFunctionBegin;
   richardsonP        = (KSP_Richardson *)ksp->data;
   richardsonP->scale = scale;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPRichardsonSetSelfScale_Richardson(KSP ksp, PetscBool selfscale)
@@ -206,7 +206,7 @@ static PetscErrorCode KSPRichardsonSetSelfScale_Richardson(KSP ksp, PetscBool se
   PetscFunctionBegin;
   richardsonP            = (KSP_Richardson *)ksp->data;
   richardsonP->selfscale = selfscale;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
@@ -218,7 +218,7 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
     PetscCall(VecCopy(ksp->work[0], v));
     *V = v;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -285,5 +285,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPRichardsonSetSelfScale_C", KSPRichardsonSetSelfScale_Richardson));
 
   richardsonP->scale = 1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

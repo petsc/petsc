@@ -39,7 +39,7 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   }
   PetscCall(PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ));
   *geom = g;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -55,13 +55,13 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
 PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 {
   PetscFunctionBegin;
-  if (!*geom) PetscFunctionReturn(0);
+  if (!*geom) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree3((*geom)->v, (*geom)->J, (*geom)->detJ));
   PetscCall(PetscFree((*geom)->invJ));
   PetscCall(PetscFree2((*geom)->face, (*geom)->n));
   PetscCall(PetscFree6((*geom)->suppJ[0], (*geom)->suppJ[1], (*geom)->suppInvJ[0], (*geom)->suppInvJ[1], (*geom)->suppDetJ[0], (*geom)->suppDetJ[1]));
   PetscCall(PetscFree(*geom));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -111,7 +111,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   (*chunkGeom)->suppDetJ[0] = geom->suppDetJ[0] ? &geom->suppDetJ[0][Nq * cStart] : NULL;
   (*chunkGeom)->suppDetJ[1] = geom->suppDetJ[1] ? &geom->suppDetJ[1][Nq * cStart] : NULL;
   (*chunkGeom)->isAffine    = geom->isAffine;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -131,7 +131,7 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(*chunkGeom));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -182,7 +182,7 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
     pgeom->detJ = &geom->detJ[c * Np + p];
     pgeom->n    = geom->n ? &geom->n[(c * Np + p) * dE] : NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -238,7 +238,7 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
       pgeom->detJ = &geom->detJ[c * Np + p];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -283,5 +283,5 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
       for (j = 0; j < dE; j++) geom->n[dE * i + j] = geom->J[dE * dE * i + dE * j + dE - 1] * ((dE == 2) ? -1. : 1.);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

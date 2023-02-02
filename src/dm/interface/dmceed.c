@@ -33,7 +33,7 @@ PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
     PetscCallCEED(CeedInit(ceedresource, &dm->ceed));
   }
   *ceed = dm->ceed;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

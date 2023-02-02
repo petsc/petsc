@@ -36,7 +36,7 @@ static inline PetscErrorCode PetscHMapIVAddValue(PetscHMapIV ht, PetscInt key, P
   PetscHashAssert(ret >= 0);
   if (ret) kh_val(ht, iter) = val;
   else kh_val(ht, iter) += val;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* _PETSC_HASHMAPIV_H */

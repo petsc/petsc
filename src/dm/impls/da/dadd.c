@@ -255,7 +255,7 @@ PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS
 
 createis:
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)da), idx, indices, PETSC_OWN_POINTER, is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
@@ -410,7 +410,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
     zs += zm;
   }
   *sdm = da;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -493,7 +493,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm, PetscInt nsubdms, D
 
     PetscCall(ISDestroy(&gdis));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, IS **ois)
@@ -532,7 +532,7 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm, PetscInt n, DM *subdm, IS **iis, I
       PetscCall(DMDACreatePatchIS(dm, &lower, &upper, &(*ois)[i], patchis_offproc));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateDomainDecomposition_DA(DM dm, PetscInt *len, char ***names, IS **iis, IS **ois, DM **subdm)
@@ -552,5 +552,5 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm, PetscInt *len, char ***name
     for (i = 0; i < n; i++) PetscCall(DMDestroy(&sdm[i]));
   }
   if (len) *len = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

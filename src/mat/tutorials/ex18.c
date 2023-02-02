@@ -33,7 +33,7 @@ static PetscErrorCode CreateFEStruct(FEStruct *fe)
   fe->vertices[6 + 1] = 4;
   fe->vertices[6 + 2] = 3;
   fe->n               = 5;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DestroyFEStruct(FEStruct *fe)
@@ -41,7 +41,7 @@ static PetscErrorCode DestroyFEStruct(FEStruct *fe)
   PetscFunctionBeginUser;
   PetscCall(PetscFree(fe->vertices));
   PetscCall(PetscFree(fe->coo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A)
@@ -72,7 +72,7 @@ static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A)
   PetscCall(PetscMalloc1(fe->Ne, &fe->coo));
   fe->coo[0] = 0;
   for (PetscInt e = 1; e < fe->Ne; e++) fe->coo[e] = fe->coo[e - 1] + 3 * 3;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FillMatrixCPU(FEStruct *fe, Mat A)
@@ -89,7 +89,7 @@ static PetscErrorCode FillMatrixCPU(FEStruct *fe, Mat A)
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -111,7 +111,7 @@ static PetscErrorCode FillMatrixCPUCOO(FEStruct *fe, Mat A)
   }
   PetscCall(MatSetValuesCOO(A, v, ADD_VALUES));
   PetscCall(PetscFree(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -132,7 +132,7 @@ static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe, Mat A)
   }
   PetscCall(MatSetValuesCOO(A, (PetscScalar *)s, INSERT_VALUES));
   PetscCall(PetscFree(s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

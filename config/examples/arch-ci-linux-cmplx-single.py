@@ -11,6 +11,7 @@ configure_options = [
   '--with-scalar-type=complex',
   '--with-precision=single',
   '--with-petsc4py=1',
+  '--with-strict-petscerrorcode',
    ]
 
 if __name__ == '__main__':

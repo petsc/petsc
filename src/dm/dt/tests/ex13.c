@@ -39,7 +39,7 @@ static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, Pet
   *_Nk = Nk;
   *B   = p_trimmed;
   *M   = M_trimmed;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt jetDegree, PetscBool cond)
@@ -280,7 +280,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(PetscFree(p_trimmed));
   PetscCall(PetscFree(p_scalar));
   PetscCall(PetscQuadratureDestroy(&q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

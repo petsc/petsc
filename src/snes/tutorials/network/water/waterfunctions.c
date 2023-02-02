@@ -94,7 +94,7 @@ PetscErrorCode FormFunction_Water(DM networkdm, Vec localX, Vec localF, PetscInt
 
   PetscCall(VecRestoreArrayRead(localX, &xarr));
   PetscCall(VecRestoreArray(localF, &farr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode WaterFormFunction(SNES snes, Vec X, Vec F, void *user)
@@ -130,7 +130,7 @@ PetscErrorCode WaterFormFunction(SNES snes, Vec X, Vec F, void *user)
   PetscCall(DMLocalToGlobalEnd(networkdm, localF, ADD_VALUES, F));
 
   PetscCall(DMRestoreLocalVector(networkdm, &localF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode WaterSetInitialGuess(DM networkdm, Vec X)
@@ -153,7 +153,7 @@ PetscErrorCode WaterSetInitialGuess(DM networkdm, Vec X)
   PetscCall(DMLocalToGlobalBegin(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMLocalToGlobalEnd(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMRestoreLocalVector(networkdm, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode GetListofEdges_Water(WATERDATA *water, PetscInt *edgelist)
@@ -192,7 +192,7 @@ PetscErrorCode GetListofEdges_Water(WATERDATA *water, PetscInt *edgelist)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialGuess_Water(DM networkdm, Vec localX, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
@@ -220,5 +220,5 @@ PetscErrorCode SetInitialGuess_Water(DM networkdm, Vec localX, PetscInt nv, Pets
     }
   }
   PetscCall(VecRestoreArray(localX, &xarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

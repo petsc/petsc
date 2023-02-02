@@ -10175,5 +10175,5 @@ PetscErrorCode SolKxData5(PetscReal x[], PetscReal z[], PetscReal *kn, PetscReal
   szz[40][38] = -1.25978821198909261463e-03;
   szz[40][39] = 0.00000000000000000000e+00;
   szz[40][40] = 1.25978821198909261463e-03;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

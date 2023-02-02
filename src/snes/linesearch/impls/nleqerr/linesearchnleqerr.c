@@ -27,7 +27,7 @@ static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
   nleqerr->mu_curr               = 0.0;
   nleqerr->norm_delta_x_prev     = -1.0;
   nleqerr->norm_bar_delta_x_prev = -1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
@@ -79,7 +79,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     PetscCall(VecCopy(F, G));
     PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm));
     PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* At this point, we've solved the Newton system for delta_x, and we assume that
@@ -132,7 +132,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     /* Now comes the Regularity Test. */
@@ -237,7 +237,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   if (changed_y || changed_w) {
     PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_USER));
     PetscCall(PetscInfo(snes, "Changing the search direction here doesn't make sense.\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* copy the solution and information from this iteration over */
@@ -251,7 +251,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscCall(VecNorm(F, NORM_2, &fnorm));
   PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, (ynorm < 0 ? PETSC_INFINITY : ynorm)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer)
@@ -266,14 +266,14 @@ PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer
     PetscCall(PetscViewerASCIIPrintf(viewer, "  NLEQ-ERR affine-covariant linesearch"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  current local Lipschitz estimate omega=%e\n", (double)nleqerr->mu_curr));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(linesearch->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -314,6 +314,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesear
 
   linesearch->data    = (void *)nleqerr;
   linesearch->max_its = 40;
-  SNESLineSearchReset_NLEQERR(linesearch);
-  PetscFunctionReturn(0);
+  PetscCall(SNESLineSearchReset_NLEQERR(linesearch));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

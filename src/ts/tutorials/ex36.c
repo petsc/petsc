@@ -39,7 +39,7 @@ PetscErrorCode Ue(PetscScalar t, PetscScalar *U)
 {
   PetscFunctionBeginUser;
   *U = 0.4 * PetscSinReal(200 * PETSC_PI * t);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -65,7 +65,7 @@ static PetscErrorCode IFunctionImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec
   PetscCall(VecRestoreArrayRead(Y, &y));
   PetscCall(VecRestoreArrayRead(Ydot, &ydot));
   PetscCall(VecRestoreArrayWrite(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -108,7 +108,7 @@ static PetscErrorCode IJacobianImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, Pet
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

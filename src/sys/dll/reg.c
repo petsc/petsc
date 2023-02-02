@@ -30,7 +30,7 @@ static PetscErrorCode PetscLoadDynamicLibrary(const char *name, PetscBool *found
     PetscCall(PetscDLLibraryRetrieve(PETSC_COMM_WORLD, libs, dlib, 1024, found));
     if (*found) PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD, &PetscDLLibrariesLoaded, dlib));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -148,7 +148,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
   PetscCall(PetscElementalInitializePackage());
   PetscInitializeCalled = PetscInitialized;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -163,7 +163,7 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
   if (flg) PetscCall(PetscDLLibraryPrintPath(PetscDLLibrariesLoaded));
   PetscCall(PetscDLLibraryClose(PetscDLLibrariesLoaded));
   PetscDLLibrariesLoaded = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------------------*/
@@ -193,7 +193,7 @@ static PetscErrorCode PetscFunctionListDLAllPush_Private(PetscFunctionList fl)
     head->next = dlallhead;
     dlallhead  = head;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFunctionListDLAllPop_Private(PetscFunctionList fl)
@@ -221,7 +221,7 @@ static PetscErrorCode PetscFunctionListDLAllPop_Private(PetscFunctionList fl)
       current = next;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char name[], PetscVoidFunction fnc)
@@ -249,17 +249,17 @@ static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char 
     PetscCall(PetscFree(tmp_name));
     PetscCall(PetscHMapFuncIterDel(map, it));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFunctionList *fl)
 {
   PetscFunctionBegin;
-  if (*fl) PetscFunctionReturn(0);
+  if (*fl) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscNew(fl));
   PetscCall(PetscHMapFuncCreateWithSize(size, &(*fl)->map));
   PetscCall(PetscFunctionListDLAllPush_Private(*fl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -298,7 +298,7 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
   if (fnc) PetscValidFunction(fnc, 3);
   PetscCall(PetscFunctionListCreate_Private(0, fl));
   PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fnc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -314,13 +314,13 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
 PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
 {
   PetscFunctionBegin;
-  if (!*fl) PetscFunctionReturn(0);
+  if (!*fl) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListDLAllPop_Private(*fl));
   /* free this list */
   PetscCall(PetscFunctionListClear(*fl));
   PetscCall(PetscHMapFuncDestroy(&(*fl)->map));
   PetscCall(PetscFree(*fl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define PetscHMapFuncForEach(__func_list__, __key_name__, __val_name__, ...) \
@@ -364,7 +364,7 @@ PetscErrorCode PetscFunctionListClear(PetscFunctionList fl)
     PetscHMapFuncForEach(fl, name, func, PetscCall(PetscFree(name)));
     PetscCall(PetscHMapFuncClear(fl->map));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -380,7 +380,7 @@ PetscErrorCode PetscFunctionListPrintAll(void)
     PetscCall(PetscFunctionListPrintNonEmpty(current->data));
     current = current->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -405,7 +405,7 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
     );
     // clang-format on
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -433,7 +433,7 @@ PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char na
   PetscValidPointer(r, 3);
   *r = NULL;
   if (fl) PetscCall(PetscHMapFuncGet(fl->map, name, r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -477,7 +477,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -517,7 +517,7 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
     PetscCall(PetscHMapFuncGetKeys(map, &off, *array));
   }
   *n = (int)size;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -552,7 +552,7 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
 
   PetscHMapFuncForEach(list, name, func, PetscCall((*PetscHelpPrintf)(comm, " %s", name)));
   PetscCall((*PetscHelpPrintf)(comm, " (%s)\n", man));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -583,5 +583,5 @@ PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList fl, PetscFunctionLis
     dup_map = (*nl)->map;
     PetscHMapFuncForEach(fl, name, func, PetscCall(PetscHMapFuncInsert_Private(dup_map, name, func)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

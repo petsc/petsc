@@ -81,7 +81,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   /* Setup fields related to packing, such as rootbuflen[] */
   PetscCall(PetscSFSetUpPackFields(sf));
   PetscCall(PetscFree2(rootreqs, leafreqs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
@@ -108,7 +108,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   }
   bas->avail = NULL;
   PetscCall(PetscSFResetPackFields(sf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
@@ -116,7 +116,7 @@ PETSC_INTERN PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscFunctionBegin;
   PetscCall(PetscSFReset_Basic(sf));
   PetscCall(PetscFree(sf->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
@@ -156,7 +156,7 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic_PatternAndSizes(PetscSF sf, PetscV
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatView(A, viewer));
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -175,7 +175,7 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF sf, PetscViewer viewer)
     if ((isascii && viewer->format == PETSC_VIEWER_ASCII_MATLAB) || isdraw || isbinary) PetscCall(PetscSFView_Basic_PatternAndSizes(sf, viewer));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
@@ -191,7 +191,7 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf, MPI_Datatype unit, Pet
   PetscCall(PetscSFLinkStartCommunication(sf, link, PETSCSF_ROOT2LEAF));
   /* Do local scatter (i.e., self to self communication), which overlaps with the remote communication above */
   PetscCall(PetscSFLinkScatterLocal(sf, link, PETSCSF_ROOT2LEAF, (void *)rootdata, leafdata, op));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
@@ -207,7 +207,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf, MPI_Datatype unit,
   PetscCall(PetscSFLinkUnpackLeafData(sf, link, PETSCSF_REMOTE, leafdata, op));
   /* Recycle the link */
   PetscCall(PetscSFLinkReclaim(sf, &link));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Shared by ReduceBegin and FetchAndOpBegin */
@@ -220,7 +220,7 @@ static inline PetscErrorCode PetscSFLeafToRootBegin_Basic(PetscSF sf, MPI_Dataty
   PetscCall(PetscSFLinkPackLeafData(sf, link, PETSCSF_REMOTE, leafdata));
   PetscCall(PetscSFLinkStartCommunication(sf, link, PETSCSF_LEAF2ROOT));
   *out = link;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* leaf -> root with reduction */
@@ -231,7 +231,7 @@ static PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf, MPI_Datatype unit, Pe
   PetscFunctionBegin;
   PetscCall(PetscSFLeafToRootBegin_Basic(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op, PETSCSF_REDUCE, &link));
   PetscCall(PetscSFLinkScatterLocal(sf, link, PETSCSF_LEAF2ROOT, rootdata, (void *)leafdata, op));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf, MPI_Datatype unit, const void *leafdata, void *rootdata, MPI_Op op)
@@ -243,7 +243,7 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf, MPI_Datatype unit
   PetscCall(PetscSFLinkFinishCommunication(sf, link, PETSCSF_LEAF2ROOT));
   PetscCall(PetscSFLinkUnpackRootData(sf, link, PETSCSF_REMOTE, rootdata, op));
   PetscCall(PetscSFLinkReclaim(sf, &link));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op)
@@ -253,7 +253,7 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF sf, MPI_Datatyp
   PetscFunctionBegin;
   PetscCall(PetscSFLeafToRootBegin_Basic(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op, PETSCSF_FETCH, &link));
   PetscCall(PetscSFLinkFetchAndOpLocal(sf, link, rootdata, leafdata, leafupdate, op));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf, MPI_Datatype unit, void *rootdata, const void *leafdata, void *leafupdate, MPI_Op op)
@@ -272,7 +272,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf, MPI_Datatype unit, 
   /* Unpack and insert fetched data into leaves */
   PetscCall(PetscSFLinkUnpackLeafData(sf, link, PETSCSF_REMOTE, leafupdate, MPI_REPLACE));
   PetscCall(PetscSFLinkReclaim(sf, &link));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF sf, PetscInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc)
@@ -284,7 +284,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF sf, PetscInt *nira
   if (iranks) *iranks = bas->iranks;
   if (ioffset) *ioffset = bas->ioffset;
   if (irootloc) *irootloc = bas->irootloc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* An optimized PetscSFCreateEmbeddedRootSF. We aggresively make use of the established communication on sf.
@@ -430,7 +430,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf, PetscI
   esf->setupcalled = PETSC_TRUE; /* We have done setup ourselves! */
   PetscCall(PetscFree2(rootdata, leafmem));
   *newsf = esf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
@@ -453,5 +453,5 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

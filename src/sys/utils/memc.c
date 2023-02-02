@@ -38,7 +38,7 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
   if (!len) {
     // if e is a bad ptr I guess we just die here then?
     *e = PETSC_TRUE;
-    return 0;
+    return PETSC_SUCCESS;
   }
 
   PetscFunctionBegin;
@@ -46,7 +46,7 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
   PetscValidPointer(str2, 2);
   PetscValidBoolPointer(e, 4);
   *e = memcmp((char *)str1, (char *)str2, len) ? PETSC_FALSE : PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_HWLOC)
@@ -87,6 +87,6 @@ PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
   PetscCall(PetscViewerFlush(viewer));
   hwloc_bitmap_free(set);
   hwloc_topology_destroy(topology);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

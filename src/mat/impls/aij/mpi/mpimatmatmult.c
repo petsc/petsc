@@ -24,7 +24,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_ABt_MPIAIJ_MPIAIJ(Mat C)
   PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &product->B));
   PetscCall(MatDestroy(&B));
   PetscCall(MatProductSymbolic_AB_MPIAIJ_MPIAIJ(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
@@ -40,35 +40,35 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
   PetscCall(PetscStrcmp(alg, "scalable", &flg));
   if (flg) {
     PetscCall(MatMatMultSymbolic_MPIAIJ_MPIAIJ(A, B, fill, C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* nonscalable */
   PetscCall(PetscStrcmp(alg, "nonscalable", &flg));
   if (flg) {
     PetscCall(MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A, B, fill, C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* seqmpi */
   PetscCall(PetscStrcmp(alg, "seqmpi", &flg));
   if (flg) {
     PetscCall(MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(A, B, fill, C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* backend general code */
   PetscCall(PetscStrcmp(alg, "backend", &flg));
   if (flg) {
     PetscCall(MatProductSymbolic_MPIAIJBACKEND(C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(PetscStrcmp(alg, "hypre", &flg));
   if (flg) {
     PetscCall(MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A, B, fill, C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
   SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "Mat Product Algorithm is not supported");
@@ -88,7 +88,7 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(void *data)
   PetscCall(PetscFree(ptap->apj));
   PetscCall(PetscFree(ptap->apa));
   PetscCall(PetscFree(ptap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
@@ -180,7 +180,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
   }
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscReal fill, Mat C)
@@ -330,7 +330,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
     PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------- */
@@ -348,7 +348,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense_AB(Mat C)
 
   C->ops->matmultsymbolic = MatMatMultSymbolic_MPIAIJ_MPIDense;
   C->ops->productsymbolic = MatProductSymbolic_AB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* -------------------------------------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense_AtB(Mat C)
@@ -362,7 +362,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense_AtB(Mat C)
 
   C->ops->transposematmultsymbolic = MatTransposeMatMultSymbolic_MPIAIJ_MPIDense;
   C->ops->productsymbolic          = MatProductSymbolic_AtB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------- */
@@ -381,7 +381,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense(Mat C)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------- */
 
@@ -405,7 +405,7 @@ PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
   for (i = 0; i < contents->nrecvs; i++) PetscCallMPI(MPI_Type_free(&contents->rtype[i]));
   PetscCall(PetscFree4(contents->stype, contents->rtype, contents->rwaits, contents->swaits));
   PetscCall(PetscFree(contents));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
@@ -513,7 +513,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   C->product->data       = contents;
   C->product->destroy    = MatMPIAIJ_MPIDenseDestroy;
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat, Mat, Mat, const PetscBool);
@@ -576,7 +576,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Mat *outw
   PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL));
   PetscCall(MatDenseRestoreArrayRead(B, &b));
   PetscCall(MatDenseRestoreArray(workB, &rvalues));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
@@ -626,7 +626,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
     }
     PetscCall(MatBindToCPU(C, ccpu));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
@@ -772,7 +772,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   }
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* same as MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(), except using LLCondensed to avoid O(BN) memory requirement */
@@ -938,7 +938,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
     PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This function is needed for the seqMPI matrix-matrix multiplication.  */
@@ -1218,7 +1218,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   PetscCall(PetscFree(j_temp));
   PetscCall(PetscFree(adpoj));
   PetscCall(PetscFree(adpoi));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1238,7 +1238,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P, Mat A,
   PetscCall(MatTransposeSetPrecursor(P, Pt));
   PetscCall(MatTranspose(P, MAT_REUSE_MATRIX, &Pt));
   PetscCall(MatMatMultNumeric_MPIAIJ_MPIAIJ(Pt, A, C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
@@ -1504,7 +1504,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   /* attach the supporting struct to C for reuse */
   C->product->data    = ptap;
   C->product->destroy = MatDestroy_MPIAIJ_PtAP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat A, Mat C)
@@ -1574,7 +1574,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat A
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
@@ -1746,7 +1746,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   PetscCall(PetscFree(abuf_r[0]));
   PetscCall(PetscFree(abuf_r));
   PetscCall(PetscFree3(buf_ri_k, nextrow, nextci));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal fill, Mat C)
@@ -2086,7 +2086,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
     PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -2133,14 +2133,14 @@ static PetscErrorCode MatProductSymbolic_AtB_MPIAIJ_MPIAIJ(Mat C)
   PetscCall(PetscStrcmp(product->alg, "backend", &flg));
   if (flg) {
     PetscCall(MatProductSymbolic_MPIAIJBACKEND(C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MatProduct type is not supported");
 
 next:
   C->ops->productnumeric = MatProductNumeric_AtB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -2207,7 +2207,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_AB_MPIAIJ_MPIAIJ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABt(Mat C)
@@ -2215,7 +2215,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABt(Mat C)
   PetscFunctionBegin;
   PetscCall(MatProductSetFromOptions_MPIAIJ_AB(C));
   C->ops->productsymbolic = MatProductSymbolic_ABt_MPIAIJ_MPIAIJ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Set options for MatTransposeMatMultXXX_MPIAIJ_MPIAIJ */
@@ -2272,7 +2272,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
   if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_AtB_MPIAIJ_MPIAIJ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
@@ -2337,7 +2337,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
   if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_MPIAIJ_RARt(Mat C)
@@ -2351,7 +2351,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_RARt(Mat C)
              A->rmap->n, R->rmap->n, R->cmap->n);
 
   C->ops->productsymbolic = MatProductSymbolic_RARt_MPIAIJ_MPIAIJ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -2384,7 +2384,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABC(Mat C)
 
   C->ops->matmatmultsymbolic = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ;
   C->ops->productsymbolic    = MatProductSymbolic_ABC;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ(Mat C)
@@ -2414,5 +2414,5 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ(Mat C)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

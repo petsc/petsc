@@ -1,77 +1,77 @@
-ctypedef int (*PetscDMShellXToYFunction)(PetscDM,
+ctypedef PetscErrorCode (*PetscDMShellXToYFunction)(PetscDM,
                                          PetscVec,
                                          PetscInsertMode,
                                          PetscVec) except PETSC_ERR_PYTHON
 cdef extern from * nogil:
-    ctypedef int (*PetscDMShellCreateVectorFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateVectorFunction)(PetscDM,
                                                      PetscVec*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateMatrixFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateMatrixFunction)(PetscDM,
                                                      PetscMat*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellTransferFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellTransferFunction)(PetscDM,
                                                  MPI_Comm,
                                                  PetscDM*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateInterpolationFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateInterpolationFunction)(PetscDM,
                                                             PetscDM,
                                                             PetscMat*,
                                                             PetscVec*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateInjectionFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateInjectionFunction)(PetscDM,
                                                         PetscDM,
                                                         PetscMat*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateRestrictionFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateRestrictionFunction)(PetscDM,
                                                           PetscDM,
                                                           PetscMat*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateFieldDecompositionFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateFieldDecompositionFunction)(PetscDM,
                                                                  PetscInt*,
                                                                  char***,
                                                                  PetscIS**,
                                                                  PetscDM**) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateDomainDecompositionFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateDomainDecompositionFunction)(PetscDM,
                                                                  PetscInt*,
                                                                  char***,
                                                                  PetscIS**,
                                                                  PetscIS**,
                                                                  PetscDM**) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateDomainDecompositionScattersFunction)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateDomainDecompositionScattersFunction)(PetscDM,
                                                                  PetscInt,
                                                                  PetscDM*,
                                                                  PetscScatter**,
                                                                  PetscScatter**,
                                                                  PetscScatter**) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscDMShellCreateSubDM)(PetscDM,
+    ctypedef PetscErrorCode (*PetscDMShellCreateSubDM)(PetscDM,
                                             PetscInt,
                                             PetscInt[],
                                             PetscIS*,
                                             PetscDM*) except PETSC_ERR_PYTHON
-    int DMShellCreate(MPI_Comm,PetscDM*)
-    int DMShellSetMatrix(PetscDM,PetscMat)
-    int DMShellSetGlobalVector(PetscDM,PetscVec)
-    int DMShellSetLocalVector(PetscDM,PetscVec)
-    int DMShellSetCreateGlobalVector(PetscDM,PetscDMShellCreateVectorFunction)
-    int DMShellSetCreateLocalVector(PetscDM,PetscDMShellCreateVectorFunction)
-    int DMShellSetGlobalToLocal(PetscDM,PetscDMShellXToYFunction,PetscDMShellXToYFunction)
-    int DMShellSetGlobalToLocalVecScatter(PetscDM,PetscScatter)
-    int DMShellSetLocalToGlobal(PetscDM,PetscDMShellXToYFunction,PetscDMShellXToYFunction)
-    int DMShellSetLocalToGlobalVecScatter(PetscDM,PetscScatter)
-    int DMShellSetLocalToLocal(PetscDM,PetscDMShellXToYFunction,PetscDMShellXToYFunction)
-    int DMShellSetLocalToLocalVecScatter(PetscDM,PetscScatter)
-    int DMShellSetCreateMatrix(PetscDM,PetscDMShellCreateMatrixFunction)
-    int DMShellSetCoarsen(PetscDM,PetscDMShellTransferFunction)
-    int DMShellSetRefine(PetscDM,PetscDMShellTransferFunction)
-    int DMShellSetCreateInterpolation(PetscDM,PetscDMShellCreateInterpolationFunction)
-    int DMShellSetCreateInjection(PetscDM,PetscDMShellCreateInjectionFunction)
-    int DMShellSetCreateRestriction(PetscDM,PetscDMShellCreateRestrictionFunction)
-    int DMShellSetCreateFieldDecomposition(PetscDM,PetscDMShellCreateFieldDecompositionFunction)
-    int DMShellSetCreateDomainDecomposition(PetscDM,PetscDMShellCreateDomainDecompositionFunction)
-    int DMShellSetCreateDomainDecompositionScatters(PetscDM,PetscDMShellCreateDomainDecompositionScattersFunction)
-    int DMShellSetCreateSubDM(PetscDM,PetscDMShellCreateSubDM)
+    PetscErrorCode DMShellCreate(MPI_Comm,PetscDM*)
+    PetscErrorCode DMShellSetMatrix(PetscDM,PetscMat)
+    PetscErrorCode DMShellSetGlobalVector(PetscDM,PetscVec)
+    PetscErrorCode DMShellSetLocalVector(PetscDM,PetscVec)
+    PetscErrorCode DMShellSetCreateGlobalVector(PetscDM,PetscDMShellCreateVectorFunction)
+    PetscErrorCode DMShellSetCreateLocalVector(PetscDM,PetscDMShellCreateVectorFunction)
+    PetscErrorCode DMShellSetGlobalToLocal(PetscDM,PetscDMShellXToYFunction,PetscDMShellXToYFunction)
+    PetscErrorCode DMShellSetGlobalToLocalVecScatter(PetscDM,PetscScatter)
+    PetscErrorCode DMShellSetLocalToGlobal(PetscDM,PetscDMShellXToYFunction,PetscDMShellXToYFunction)
+    PetscErrorCode DMShellSetLocalToGlobalVecScatter(PetscDM,PetscScatter)
+    PetscErrorCode DMShellSetLocalToLocal(PetscDM,PetscDMShellXToYFunction,PetscDMShellXToYFunction)
+    PetscErrorCode DMShellSetLocalToLocalVecScatter(PetscDM,PetscScatter)
+    PetscErrorCode DMShellSetCreateMatrix(PetscDM,PetscDMShellCreateMatrixFunction)
+    PetscErrorCode DMShellSetCoarsen(PetscDM,PetscDMShellTransferFunction)
+    PetscErrorCode DMShellSetRefine(PetscDM,PetscDMShellTransferFunction)
+    PetscErrorCode DMShellSetCreateInterpolation(PetscDM,PetscDMShellCreateInterpolationFunction)
+    PetscErrorCode DMShellSetCreateInjection(PetscDM,PetscDMShellCreateInjectionFunction)
+    PetscErrorCode DMShellSetCreateRestriction(PetscDM,PetscDMShellCreateRestrictionFunction)
+    PetscErrorCode DMShellSetCreateFieldDecomposition(PetscDM,PetscDMShellCreateFieldDecompositionFunction)
+    PetscErrorCode DMShellSetCreateDomainDecomposition(PetscDM,PetscDMShellCreateDomainDecompositionFunction)
+    PetscErrorCode DMShellSetCreateDomainDecompositionScatters(PetscDM,PetscDMShellCreateDomainDecompositionScattersFunction)
+    PetscErrorCode DMShellSetCreateSubDM(PetscDM,PetscDMShellCreateSubDM)
 
-    int VecGetDM(PetscVec,PetscDM*)
-    int VecSetDM(PetscVec,PetscDM)
-    int MatGetDM(PetscMat,PetscDM*)
-    int MatSetDM(PetscMat,PetscDM)
+    PetscErrorCode VecGetDM(PetscVec,PetscDM*)
+    PetscErrorCode VecSetDM(PetscVec,PetscDM)
+    PetscErrorCode MatGetDM(PetscMat,PetscDM*)
+    PetscErrorCode MatSetDM(PetscMat,PetscDM)
 
 
-cdef int DMSHELL_CreateGlobalVector(
+cdef PetscErrorCode DMSHELL_CreateGlobalVector(
     PetscDM dm,
     PetscVec *v) except PETSC_ERR_PYTHON with gil:
     cdef DM Dm = subtype_DM(dm)()
@@ -88,9 +88,9 @@ cdef int DMSHELL_CreateGlobalVector(
     CHKERR( VecGetDM(v[0], &odm) )
     if odm == NULL:
         CHKERR( VecSetDM(v[0], dm) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateLocalVector(
+cdef PetscErrorCode DMSHELL_CreateLocalVector(
     PetscDM dm,
     PetscVec *v) except PETSC_ERR_PYTHON with gil:
     cdef DM Dm = subtype_DM(dm)()
@@ -107,9 +107,9 @@ cdef int DMSHELL_CreateLocalVector(
     CHKERR( VecGetDM(v[0], &odm) )
     if odm == NULL:
         CHKERR( VecSetDM(v[0], dm) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_GlobalToLocalBegin(
+cdef PetscErrorCode DMSHELL_GlobalToLocalBegin(
     PetscDM dm,
     PetscVec g,
     PetscInsertMode mode,
@@ -123,9 +123,9 @@ cdef int DMSHELL_GlobalToLocalBegin(
     assert context is not None and type(context) is tuple
     (begin, args, kargs) = context
     begin(Dm, gvec, mode, lvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_GlobalToLocalEnd(
+cdef PetscErrorCode DMSHELL_GlobalToLocalEnd(
     PetscDM dm,
     PetscVec g,
     PetscInsertMode mode,
@@ -139,9 +139,9 @@ cdef int DMSHELL_GlobalToLocalEnd(
     assert context is not None and type(context) is tuple
     (end, args, kargs) = context
     end(Dm, gvec, mode, lvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_LocalToGlobalBegin(
+cdef PetscErrorCode DMSHELL_LocalToGlobalBegin(
     PetscDM dm,
     PetscVec g,
     PetscInsertMode mode,
@@ -155,9 +155,9 @@ cdef int DMSHELL_LocalToGlobalBegin(
     assert context is not None and type(context) is tuple
     (begin, args, kargs) = context
     begin(Dm, gvec, mode, lvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_LocalToGlobalEnd(
+cdef PetscErrorCode DMSHELL_LocalToGlobalEnd(
     PetscDM dm,
     PetscVec g,
     PetscInsertMode mode,
@@ -171,9 +171,9 @@ cdef int DMSHELL_LocalToGlobalEnd(
     assert context is not None and type(context) is tuple
     (end, args, kargs) = context
     end(Dm, gvec, mode, lvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_LocalToLocalBegin(
+cdef PetscErrorCode DMSHELL_LocalToLocalBegin(
     PetscDM dm,
     PetscVec g,
     PetscInsertMode mode,
@@ -187,9 +187,9 @@ cdef int DMSHELL_LocalToLocalBegin(
     assert context is not None and type(context) is tuple
     (begin, args, kargs) = context
     begin(Dm, gvec, mode, lvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_LocalToLocalEnd(
+cdef PetscErrorCode DMSHELL_LocalToLocalEnd(
     PetscDM dm,
     PetscVec g,
     PetscInsertMode mode,
@@ -203,9 +203,9 @@ cdef int DMSHELL_LocalToLocalEnd(
     assert context is not None and type(context) is tuple
     (end, args, kargs) = context
     end(Dm, gvec, mode, lvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateMatrix(
+cdef PetscErrorCode DMSHELL_CreateMatrix(
     PetscDM dm,
     PetscMat *cmat) except PETSC_ERR_PYTHON with gil:
     cdef DM Dm = subtype_DM(dm)()
@@ -222,9 +222,9 @@ cdef int DMSHELL_CreateMatrix(
     CHKERR( MatGetDM(cmat[0], &odm) )
     if odm == NULL:
         CHKERR( MatSetDM(cmat[0], dm) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_Coarsen(
+cdef PetscErrorCode DMSHELL_Coarsen(
     PetscDM dm,
     MPI_Comm comm,
     PetscDM *dmc) except PETSC_ERR_PYTHON with gil:
@@ -239,9 +239,9 @@ cdef int DMSHELL_Coarsen(
     Dmc = coarsen(Dm, Comm, *args, **kargs)
     PetscINCREF(Dmc.obj)
     dmc[0] = Dmc.dm
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_Refine(
+cdef PetscErrorCode DMSHELL_Refine(
     PetscDM dm,
     MPI_Comm comm,
     PetscDM *dmf) except PETSC_ERR_PYTHON with gil:
@@ -256,9 +256,9 @@ cdef int DMSHELL_Refine(
     Dmf = refine(Dm, Comm, *args, **kargs)
     PetscINCREF(Dmf.obj)
     dmf[0] = Dmf.dm
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateInterpolation(
+cdef PetscErrorCode DMSHELL_CreateInterpolation(
     PetscDM dmc,
     PetscDM dmf,
     PetscMat *cmat,
@@ -278,15 +278,15 @@ cdef int DMSHELL_CreateInterpolation(
     PetscINCREF(mat.obj)
     cmat[0] = mat.mat
     if cvec == NULL:
-        return 0
+        return PETSC_SUCCESS
     if vec is None:
         cvec[0] = NULL
     else:
         PetscINCREF(vec.obj)
         cvec[0] = vec.vec
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateInjection(
+cdef PetscErrorCode DMSHELL_CreateInjection(
     PetscDM dmc,
     PetscDM dmf,
     PetscMat *cmat) except PETSC_ERR_PYTHON with gil:
@@ -303,9 +303,9 @@ cdef int DMSHELL_CreateInjection(
     mat = injection(Dmc, Dmf, *args, **kargs)
     PetscINCREF(mat.obj)
     cmat[0] = mat.mat
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateRestriction(
+cdef PetscErrorCode DMSHELL_CreateRestriction(
     PetscDM dmf,
     PetscDM dmc,
     PetscMat *cmat) except PETSC_ERR_PYTHON with gil:
@@ -322,9 +322,9 @@ cdef int DMSHELL_CreateRestriction(
     mat = restriction(Dmf, Dmc, *args, **kargs)
     PetscINCREF(mat.obj)
     cmat[0] = mat.mat
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateFieldDecomposition(
+cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
     PetscDM dm,
     PetscInt *clen,
     char ***namelist,
@@ -367,9 +367,9 @@ cdef int DMSHELL_CreateFieldDecomposition(
         for i in range(len(dms)):
             dmlist[0][i] = (<DM?>dms[i]).dm
             PetscINCREF((<DM?>dms[i]).obj)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateDomainDecomposition(
+cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
     PetscDM dm,
     PetscInt *clen,
     char ***namelist,
@@ -421,9 +421,9 @@ cdef int DMSHELL_CreateDomainDecomposition(
         for i in range(len(dms)):
             dmlist[0][i] = (<DM?>dms[i]).dm
             PetscINCREF((<DM?>dms[i]).obj)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateDomainDecompositionScatters(
+cdef PetscErrorCode DMSHELL_CreateDomainDecompositionScatters(
     PetscDM dm,
     PetscInt clen,
     PetscDM *subdms,
@@ -469,9 +469,9 @@ cdef int DMSHELL_CreateDomainDecompositionScatters(
         gscat[0][i] = (<Scatter?>gscatter[i]).sct
         PetscINCREF((<Scatter?>gscatter[i]).obj)
 
-    return 0
+    return PETSC_SUCCESS
 
-cdef int DMSHELL_CreateSubDM(
+cdef PetscErrorCode DMSHELL_CreateSubDM(
     PetscDM cdm,
     PetscInt numFields,
     const PetscInt cfields[],
@@ -494,3 +494,4 @@ cdef int DMSHELL_CreateSubDM(
     PetscINCREF(subdm.obj)
     ciset[0] = iset.iset
     csubdm[0] = subdm.dm
+    return PETSC_SUCCESS

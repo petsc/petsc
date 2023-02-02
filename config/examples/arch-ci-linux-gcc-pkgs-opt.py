@@ -31,6 +31,7 @@ configure_options = [
   '--download-ks',
   '--with-ssl=1',
   '--with-tau-perfstubs=0',
+  '--with-strict-petscerrorcode',
 ]
 
 if __name__ == '__main__':

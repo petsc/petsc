@@ -40,7 +40,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat, MatOrderingType, IS *, I
 PetscErrorCode MatOrderingRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (MatOrderingRegisterAllCalled) PetscFunctionReturn(0);
+  if (MatOrderingRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(MatOrderingRegister(MATORDERINGNATURAL, MatGetOrdering_Natural));
@@ -59,5 +59,5 @@ PetscErrorCode MatOrderingRegisterAll(void)
 #if defined(PETSC_HAVE_METIS)
   PetscCall(MatOrderingRegister(MATORDERINGMETISND, MatGetOrdering_METISND));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

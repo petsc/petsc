@@ -41,7 +41,7 @@ PetscErrorCode Prime(PetscInt64 **set, PetscInt n)
   (*set)[0] = count;
   for (ii = 1; ii < count + 1; ii++) { (*set)[ii] = prime[ii - 1]; }
   PetscCall(PetscFree(prime));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Print out the contents of a set */
@@ -58,7 +58,7 @@ PetscErrorCode PrintSet(MPI_Comm comm, PetscInt64 *set)
   }
   PetscCall(PetscSynchronizedPrintf(comm, "]\n"));
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Check set equality */
@@ -69,7 +69,7 @@ PetscErrorCode AssertSetsEqual(PetscInt64 *set, PetscInt64 *true_set)
   PetscFunctionBeginUser;
   PetscAssert((set[0] == true_set[0]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets of different sizes");
   for (ii = 1; ii < set[0] + 1; ii++) { PetscAssert((set[ii] == true_set[ii]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets are different"); }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Parallel implementation of the sieve of Eratosthenes */
@@ -139,7 +139,7 @@ PetscErrorCode test_sieve(MPI_Comm comm)
 
   PetscCall(PetscFree(local_set));
   PetscCall(PetscFree(truth));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Main executes the individual tests in a predefined order */

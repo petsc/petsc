@@ -79,7 +79,7 @@ PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
         PetscCall(PetscStrncpy(rpath, tmp1, PETSC_MAX_PATH_LEN));
         PetscCall(PetscStrlcat(rpath, path + N, PETSC_MAX_PATH_LEN));
       }
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscStrchr(tmp1, '/', &tmp2));
     if (tmp2) {
@@ -101,5 +101,5 @@ PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
     PetscCall(PetscStrcpy(tmp3, rpath + 8));
     PetscCall(PetscStrcpy(rpath, tmp3));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

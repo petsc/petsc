@@ -111,7 +111,7 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
     PetscCall(KSPSetOperators(subksp[1], s->myS, s->myS));
     PetscCall(PetscFree(subksp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesWriteSolution(Stokes *s)
@@ -137,7 +137,7 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
     PetscCall(VecRestoreArrayRead(s->x, &array));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupIndexSets(Stokes *s)
@@ -145,7 +145,7 @@ PetscErrorCode StokesSetupIndexSets(Stokes *s)
   PetscFunctionBeginUser;
   /* the two index sets */
   PetscCall(MatNestGetISs(s->A, s->isg, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupVectors(Stokes *s)
@@ -163,7 +163,7 @@ PetscErrorCode StokesSetupVectors(Stokes *s)
   /* rhs vector b */
   PetscCall(VecDuplicate(s->x, &s->b));
   PetscCall(StokesRhs(s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt *j)
@@ -175,7 +175,7 @@ PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt 
   n  = row % (s->nx * s->ny);
   *i = n % s->nx;
   *j = (n - (*i)) / s->nx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesExactSolution(Stokes *s)
@@ -208,7 +208,7 @@ PetscErrorCode StokesExactSolution(Stokes *s)
     PetscCall(VecSetValue(y1, row, val, INSERT_VALUES));
   }
   PetscCall(VecRestoreSubVector(s->y, s->isg[1], &y1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesRhs(Stokes *s)
@@ -242,7 +242,7 @@ PetscErrorCode StokesRhs(Stokes *s)
     PetscCall(VecSetValue(b1, row, val, INSERT_VALUES));
   }
   PetscCall(VecRestoreSubVector(s->b, s->isg[1], &b1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupMatBlock00(Stokes *s)
@@ -273,7 +273,7 @@ PetscErrorCode StokesSetupMatBlock00(Stokes *s)
   }
   PetscCall(MatAssemblyBegin(s->subA[0], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(s->subA[0], MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupMatBlock01(Stokes *s)
@@ -305,7 +305,7 @@ PetscErrorCode StokesSetupMatBlock01(Stokes *s)
   }
   PetscCall(MatAssemblyBegin(s->subA[1], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(s->subA[1], MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupMatBlock10(Stokes *s)
@@ -315,7 +315,7 @@ PetscErrorCode StokesSetupMatBlock10(Stokes *s)
   PetscCall(MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]));
   if (!s->matsymmetric) PetscCall(MatScale(s->subA[2], -1.0));
   PetscCall(MatSetOptionsPrefix(s->subA[2], "a10_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupMatBlock11(Stokes *s)
@@ -329,7 +329,7 @@ PetscErrorCode StokesSetupMatBlock11(Stokes *s)
   PetscCall(MatMPIAIJSetPreallocation(s->subA[3], 0, NULL, 0, NULL));
   PetscCall(MatAssemblyBegin(s->subA[3], MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(s->subA[3], MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupApproxSchur(Stokes *s)
@@ -358,7 +358,7 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
   PetscCall(MatGetDiagonal(s->subA[0], diag));
   PetscCall(MatDiagonalScale(s->subA[1], diag, NULL));
   PetscCall(VecDestroy(&diag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesSetupMatrix(Stokes *s)
@@ -370,7 +370,7 @@ PetscErrorCode StokesSetupMatrix(Stokes *s)
   PetscCall(StokesSetupMatBlock11(s));
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, s->subA, &s->A));
   PetscCall(StokesSetupApproxSchur(s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals)
@@ -467,7 +467,7 @@ PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscIn
     cols[4] = n;
     vals[4] = an;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals)
@@ -538,7 +538,7 @@ PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscIn
     cols[2] = e;
     vals[2] = ae;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscInt *sz, PetscInt *cols, PetscScalar *vals)
@@ -609,7 +609,7 @@ PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscIn
     cols[2] = n;
     vals[2] = an;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val)
@@ -623,14 +623,14 @@ PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val
   } else {
     *val = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val)
 {
   PetscFunctionBeginUser;
   *val = 0.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val)
@@ -644,7 +644,7 @@ PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val
   } else {
     *val = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesCalcResidual(Stokes *s)
@@ -672,7 +672,7 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
   /* total residual */
   PetscCall(VecNorm(s->b, NORM_2, &val));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, " residual [u,p] = %g\n", (double)val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StokesCalcError(Stokes *s)
@@ -700,7 +700,7 @@ PetscErrorCode StokesCalcError(Stokes *s)
   /* total error */
   PetscCall(VecNorm(s->y, NORM_2, &val));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error [u,p] = %g\n", (double)PetscRealPart((val / scale))));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

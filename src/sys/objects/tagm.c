@@ -37,7 +37,7 @@ PetscErrorCode PetscObjectGetNewTag(PetscObject obj, PetscMPIInt *tag)
 {
   PetscFunctionBegin;
   PetscCall(PetscCommGetNewTag(obj->comm, tag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -83,7 +83,7 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag)
      */
     PetscCallMPI(MPI_Barrier(comm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -129,7 +129,7 @@ PetscErrorCode PetscCommGetComm(MPI_Comm comm_in, MPI_Comm *comm_out)
     PetscCallMPI(MPI_Comm_dup(comm_in, comm_out));
   }
   PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -168,7 +168,7 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out)
   }
   *comm_out = 0;
   PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -259,7 +259,7 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in, MPI_Comm *comm_out, PetscMPI
 
   counter->refcount++; /* number of references to this comm */
   PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -288,7 +288,7 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
   } ucomm;
 
   PetscFunctionBegin;
-  if (*comm == MPI_COMM_NULL) PetscFunctionReturn(0);
+  if (*comm == MPI_COMM_NULL) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscSpinlockLock(&PetscCommSpinLock));
   PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Counter_keyval, &counter, &flg));
   if (!flg) { /* not a PETSc comm, check if it has an inner comm */
@@ -329,7 +329,7 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
   }
   *comm = MPI_COMM_NULL;
   PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -361,7 +361,7 @@ PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, P
 
   PetscFunctionBegin;
   PetscValidPointer(objlist, 3);
-  if (!count && !numbering) PetscFunctionReturn(0);
+  if (!count && !numbering) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -400,5 +400,5 @@ PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, P
       if (!srank) ++roots;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

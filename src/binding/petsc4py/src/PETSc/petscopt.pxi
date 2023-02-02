@@ -3,35 +3,35 @@ cdef extern from * nogil:
     ctypedef struct _n_PetscOptions
     ctypedef _n_PetscOptions* PetscOptions
 
-    int PetscOptionsCreate(PetscOptions*)
-    int PetscOptionsDestroy(PetscOptions*)
-    int PetscOptionsView(PetscOptions,PetscViewer)
-    int PetscOptionsClear(PetscOptions)
+    PetscErrorCode PetscOptionsCreate(PetscOptions*)
+    PetscErrorCode PetscOptionsDestroy(PetscOptions*)
+    PetscErrorCode PetscOptionsView(PetscOptions,PetscViewer)
+    PetscErrorCode PetscOptionsClear(PetscOptions)
 
-    int PetscOptionsPrefixPush(PetscOptions,char[])
-    int PetscOptionsPrefixPop(PetscOptions)
+    PetscErrorCode PetscOptionsPrefixPush(PetscOptions,char[])
+    PetscErrorCode PetscOptionsPrefixPop(PetscOptions)
 
-    int PetscOptionsHasName(PetscOptions,char[],char[],PetscBool*)
-    int PetscOptionsSetAlias(PetscOptions,char[],char[])
-    int PetscOptionsSetValue(PetscOptions,char[],char[])
-    int PetscOptionsClearValue(PetscOptions,char[])
+    PetscErrorCode PetscOptionsHasName(PetscOptions,char[],char[],PetscBool*)
+    PetscErrorCode PetscOptionsSetAlias(PetscOptions,char[],char[])
+    PetscErrorCode PetscOptionsSetValue(PetscOptions,char[],char[])
+    PetscErrorCode PetscOptionsClearValue(PetscOptions,char[])
 
-    int PetscOptionsInsertString(PetscOptions,char[])
-    int PetscOptionsInsertFile(PetscOptions,char[])
-    int PetscOptionsGetAll(PetscOptions,char*[])
+    PetscErrorCode PetscOptionsInsertString(PetscOptions,char[])
+    PetscErrorCode PetscOptionsInsertFile(PetscOptions,char[])
+    PetscErrorCode PetscOptionsGetAll(PetscOptions,char*[])
 
-    int PetscOptionsGetBool(PetscOptions,char[],char[],PetscBool*,PetscBool*)
-    int PetscOptionsGetInt(PetscOptions,char[],char[],PetscInt*,PetscBool*)
-    int PetscOptionsGetReal(PetscOptions,char[],char[],PetscReal*,PetscBool*)
-    int PetscOptionsGetScalar(PetscOptions,char[],char[],PetscScalar*,PetscBool*)
-    int PetscOptionsGetString(PetscOptions,char[],char[],char[],size_t,PetscBool*)
+    PetscErrorCode PetscOptionsGetBool(PetscOptions,char[],char[],PetscBool*,PetscBool*)
+    PetscErrorCode PetscOptionsGetInt(PetscOptions,char[],char[],PetscInt*,PetscBool*)
+    PetscErrorCode PetscOptionsGetReal(PetscOptions,char[],char[],PetscReal*,PetscBool*)
+    PetscErrorCode PetscOptionsGetScalar(PetscOptions,char[],char[],PetscScalar*,PetscBool*)
+    PetscErrorCode PetscOptionsGetString(PetscOptions,char[],char[],char[],size_t,PetscBool*)
 
     ctypedef struct _p_PetscToken
     ctypedef _p_PetscToken* PetscToken
-    int PetscTokenCreate(char[],char,PetscToken*)
-    int PetscTokenDestroy(PetscToken*)
-    int PetscTokenFind(PetscToken,char*[])
-    int PetscOptionsValidKey(char[],PetscBool*)
+    PetscErrorCode PetscTokenCreate(char[],char,PetscToken*)
+    PetscErrorCode PetscTokenDestroy(PetscToken*)
+    PetscErrorCode PetscTokenFind(PetscToken,char*[])
+    PetscErrorCode PetscOptionsValidKey(char[],PetscBool*)
 
 #
 

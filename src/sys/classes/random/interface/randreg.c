@@ -33,7 +33,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)rnd, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PetscRandomList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
@@ -45,7 +45,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   PetscCall(PetscRandomSeed(rnd));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)rnd, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -69,7 +69,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)rnd)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -110,7 +110,7 @@ PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function
   PetscFunctionBegin;
   PetscCall(PetscRandomInitializePackage());
   PetscCall(PetscFunctionListAdd(&PetscRandomList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_RAND)
@@ -142,7 +142,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 PetscErrorCode PetscRandomRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscRandomRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscRandomRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
   PetscCall(PetscRandomRegister(PETSCRAND, PetscRandomCreate_Rand));
@@ -160,5 +160,5 @@ PetscErrorCode PetscRandomRegisterAll(void)
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscRandomRegister(PETSCCURAND, PetscRandomCreate_CURAND));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

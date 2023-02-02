@@ -30,7 +30,7 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPIAIJ));
   PetscCall(MatDestroy_MPIAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
@@ -81,7 +81,7 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
 
   aijcrl->array = array;
   aijcrl->xscat = a->Mvctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
@@ -94,11 +94,11 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
   Bij->inode.use = PETSC_FALSE;
 
   PetscCall(MatAssemblyEnd_MPIAIJ(A, mode));
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Now calculate the permutation and grouping information. */
   PetscCall(MatMPIAIJCRL_create_aijcrl(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode MatMult_AIJCRL(Mat, Vec, Vec);
@@ -130,7 +130,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
   if (A->assembled) PetscCall(MatMPIAIJCRL_create_aijcrl(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIAIJCRL));
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -171,7 +171,7 @@ PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATMPIAIJCRL));
   PetscCall(MatMPIAIJSetPreallocation_MPIAIJ(*A, nz, (PetscInt *)nnz, onz, (PetscInt *)onnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A)
@@ -179,5 +179,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATMPIAIJ));
   PetscCall(MatConvert_MPIAIJ_MPIAIJCRL(A, MATMPIAIJCRL, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

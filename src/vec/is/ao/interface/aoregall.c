@@ -15,10 +15,10 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 PetscErrorCode AORegisterAll(void)
 {
   PetscFunctionBegin;
-  if (AORegisterAllCalled) PetscFunctionReturn(0);
+  if (AORegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   AORegisterAllCalled = PETSC_TRUE;
 
   PetscCall(AORegister(AOBASIC, AOCreate_Basic));
   PetscCall(AORegister(AOMEMORYSCALABLE, AOCreate_MemoryScalable));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

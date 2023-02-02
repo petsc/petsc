@@ -47,7 +47,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
   f[1] = user->mu * ((1. - u[0] * u[0]) * u[1] - u[0]);
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
@@ -72,7 +72,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void 
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
@@ -101,7 +101,7 @@ static PetscErrorCode RHSHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Ve
   PetscCall(VecRestoreArrayRead(Vl[0], &vl));
   PetscCall(VecRestoreArrayRead(Vr, &vr));
   PetscCall(VecRestoreArray(VHV[0], &vhv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------- Implicit form of the ODE  -------------------- */
@@ -121,7 +121,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArrayRead(Udot, &udot));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -145,7 +145,7 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
@@ -169,7 +169,7 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ct
     PetscCall(VecDestroy(&interpolatedU));
     user->next_output += 0.1;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode IHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
@@ -197,7 +197,7 @@ static PetscErrorCode IHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec 
   PetscCall(VecRestoreArrayRead(Vl[0], &vl));
   PetscCall(VecRestoreArrayRead(Vr, &vr));
   PetscCall(VecRestoreArray(VHV[0], &vhv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------ User-defined routines for TAO -------------------------- */
@@ -229,7 +229,7 @@ static PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G,
   PetscCall(TSSetCostGradients(ts, 1, user_ptr->Lambda, NULL));
   PetscCall(TSAdjointSolve(ts));
   PetscCall(VecCopy(user_ptr->Lambda[0], G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormHessian(Tao tao, Vec U, Mat H, Mat Hpre, void *ctx)
@@ -265,7 +265,7 @@ static PetscErrorCode FormHessian(Tao tao, Vec U, Mat H, Mat Hpre, void *ctx)
     PetscCall(MatAssemblyBegin(Hpre, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Hpre, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatrixFreeHessian(Tao tao, Vec U, Mat H, Mat Hpre, void *ctx)
@@ -274,7 +274,7 @@ static PetscErrorCode MatrixFreeHessian(Tao tao, Vec U, Mat H, Mat Hpre, void *c
 
   PetscFunctionBeginUser;
   PetscCall(VecCopy(U, user_ptr->U));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------ Routines calculating second-order derivatives -------------- */
@@ -329,7 +329,7 @@ PetscErrorCode Adjoint2(Vec U, PetscScalar arr[], User ctx)
 
   PetscCall(TSAdjointReset(ts));
   PetscCall(TSAdjointResetForward(ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FiniteDiff(Vec U, PetscScalar arr[], User ctx)
@@ -374,7 +374,7 @@ PetscErrorCode FiniteDiff(Vec U, PetscScalar arr[], User ctx)
   PetscCall(VecDestroy(&G));
   PetscCall(VecDestroy(&Gp));
   PetscCall(VecDestroy(&Up));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode HessianProductMat(Mat mat, Vec svec, Vec y)
@@ -388,7 +388,7 @@ static PetscErrorCode HessianProductMat(Mat mat, Vec svec, Vec y)
   PetscCall(VecGetArray(y, &y_ptr));
   PetscCall(Adjoint2(user_ptr->U, y_ptr, user_ptr));
   PetscCall(VecRestoreArray(y, &y_ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

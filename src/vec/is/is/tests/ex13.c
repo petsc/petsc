@@ -32,7 +32,7 @@ static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt type, PetscInt n, PetscIn
     PetscCall(ISCreateBlock(comm, 1, n, idx, PETSC_OWN_POINTER, is));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

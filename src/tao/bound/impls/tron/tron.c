@@ -21,7 +21,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
   PetscCall(MatDestroy(&tron->Hpre_sub));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -35,7 +35,7 @@ static PetscErrorCode TaoSetFromOptions_TRON(Tao tao, PetscOptionItems *PetscOpt
   PetscCall(PetscOptionsInt("-tao_tron_maxgpits", "maximum number of gradient projections per TRON iterate", "TaoSetMaxGPIts", tron->maxgpits, &tron->maxgpits, &flg));
   PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -50,7 +50,7 @@ static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Total PG its: %" PetscInt_FMT ",", tron->total_gp_its));
     PetscCall(PetscViewerASCIIPrintf(viewer, "PG tolerance: %g \n", (double)tron->pg_ftol));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -66,7 +66,7 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
   PetscCall(VecDuplicate(tao->solution, &tron->Work));
   PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_TRON(Tao tao)
@@ -228,7 +228,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, stepsize));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   } /* END MAIN LOOP  */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TronGradientProjections(Tao tao, TAO_TRON *tron)
@@ -266,7 +266,7 @@ static PetscErrorCode TronGradientProjections(Tao tao, TAO_TRON *tron)
     actred_max = PetscMax(actred_max, -(f_new - tron->f));
     tron->f    = f_new;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU)
@@ -289,7 +289,7 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU)
   PetscCall(VecAXPY(DXU, -1.0, tron->Work));
   PetscCall(VecSet(tron->Work, 0.0));
   PetscCall(VecPointwiseMin(DXU, tron->Work, DXU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -362,5 +362,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
   PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
   PetscCall(KSPSetType(tao->ksp, KSPSTCG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

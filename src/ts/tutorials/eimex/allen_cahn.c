@@ -121,7 +121,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
   f[mx - 1] = 2. * eps * (x[mx - 2] - x[mx - 1]) / (hx * hx); /*boundary*/
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ptr)
@@ -142,7 +142,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
@@ -168,7 +168,7 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscRe
     PetscCall(MatAssemblyEnd(Jpre, MAT_FINAL_ASSEMBLY));
   }
   /*  MatView(J,PETSC_VIEWER_STDOUT_WORLD);*/
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
@@ -196,7 +196,7 @@ static PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
     }
   }
   PetscCall(VecRestoreArray(U, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

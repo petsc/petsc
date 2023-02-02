@@ -209,7 +209,7 @@ static inline PetscErrorCode KSPLogResidualHistory(KSP ksp, PetscReal norm)
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) ksp->res_hist[ksp->res_hist_len++] = norm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
@@ -244,7 +244,7 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
     ksp->err_hist[ksp->err_hist_len++] = error;
   }
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscScalar KSPNoisyHash_Private(PetscInt xx)
@@ -267,7 +267,7 @@ static inline PetscErrorCode KSPSetNoisy_Private(Vec v)
   PetscCall(VecGetArrayWrite(v, &a));
   for (PetscInt i = 0; i < n; ++i) a[i] = KSPNoisyHash_Private(i + istart);
   PetscCall(VecRestoreArrayWrite(v, &a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP, PetscBool, KSPNormType *, PCSide *);
@@ -320,7 +320,7 @@ static inline PetscErrorCode KSP_RemoveNullSpace(KSP ksp, Vec y)
     PetscCall(MatGetNullSpace(A, &nullsp));
     if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp, Vec y)
@@ -334,7 +334,7 @@ static inline PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp, Vec y)
     PetscCall(MatGetTransposeNullSpace(A, &nullsp));
     if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_MatMult(KSP ksp, Mat A, Vec x, Vec y)
@@ -342,7 +342,7 @@ static inline PetscErrorCode KSP_MatMult(KSP ksp, Mat A, Vec x, Vec y)
   PetscFunctionBegin;
   if (ksp->transpose_solve) PetscCall(MatMultTranspose(A, x, y));
   else PetscCall(MatMult(A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_MatMultTranspose(KSP ksp, Mat A, Vec x, Vec y)
@@ -350,7 +350,7 @@ static inline PetscErrorCode KSP_MatMultTranspose(KSP ksp, Mat A, Vec x, Vec y)
   PetscFunctionBegin;
   if (ksp->transpose_solve) PetscCall(MatMult(A, x, y));
   else PetscCall(MatMultTranspose(A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp, Mat A, Vec x, Vec y)
@@ -367,7 +367,7 @@ static inline PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp, Mat A, Vec x
     PetscCall(VecDestroy(&w));
     PetscCall(VecConjugate(y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_PCApply(KSP ksp, Vec x, Vec y)
@@ -380,7 +380,7 @@ static inline PetscErrorCode KSP_PCApply(KSP ksp, Vec x, Vec y)
     PetscCall(PCApply(ksp->pc, x, y));
     PetscCall(KSP_RemoveNullSpace(ksp, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_PCApplyTranspose(KSP ksp, Vec x, Vec y)
@@ -393,7 +393,7 @@ static inline PetscErrorCode KSP_PCApplyTranspose(KSP ksp, Vec x, Vec y)
     PetscCall(PCApplyTranspose(ksp->pc, x, y));
     PetscCall(KSP_RemoveNullSpaceTranspose(ksp, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp, Vec x, Vec y)
@@ -403,7 +403,7 @@ static inline PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp, Vec x, Vec y
   PetscCall(KSP_PCApplyTranspose(ksp, x, y));
   PetscCall(VecConjugate(x));
   PetscCall(VecConjugate(y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_PCApplyBAorAB(KSP ksp, Vec x, Vec y, Vec w)
@@ -416,7 +416,7 @@ static inline PetscErrorCode KSP_PCApplyBAorAB(KSP ksp, Vec x, Vec y, Vec w)
     PetscCall(PCApplyBAorAB(ksp->pc, ksp->pc_side, x, y, w));
     PetscCall(KSP_RemoveNullSpace(ksp, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp, Vec x, Vec y, Vec w)
@@ -424,7 +424,7 @@ static inline PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp, Vec x, Vec y, V
   PetscFunctionBegin;
   if (ksp->transpose_solve) PetscCall(PCApplyBAorAB(ksp->pc, ksp->pc_side, x, y, w));
   else PetscCall(PCApplyBAorABTranspose(ksp->pc, ksp->pc_side, x, y, w));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization;
@@ -482,7 +482,7 @@ M*/
           } else { \
             ksp->reason = KSP_DIVERGED_NANORINF; \
           } \
-          PetscFunctionReturn(0); \
+          PetscFunctionReturn(PETSC_SUCCESS); \
         } \
       } \
     } while (0)
@@ -528,7 +528,7 @@ M*/
             ksp->reason = KSP_DIVERGED_NANORINF; \
             ksp->rnorm  = beta; \
           } \
-          PetscFunctionReturn(0); \
+          PetscFunctionReturn(PETSC_SUCCESS); \
         } \
       } \
     } while (0)

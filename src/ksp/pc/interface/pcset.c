@@ -61,7 +61,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PCList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested PC type %s", type);
@@ -81,7 +81,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc, type));
   PetscCall((*r)(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -107,7 +107,7 @@ PetscErrorCode PCGetType(PC pc, PCType *type)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)pc)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
@@ -166,7 +166,7 @@ skipoptions:
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)pc, PetscOptionsObject));
   PetscOptionsEnd();
   pc->setfromoptionscalled++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -193,7 +193,7 @@ PetscErrorCode PCSetDM(PC pc, DM dm)
   if (dm) PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(DMDestroy(&pc->dm));
   pc->dm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -216,7 +216,7 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *dm = pc->dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -237,7 +237,7 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->user = usrP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -260,5 +260,5 @@ PetscErrorCode PCGetApplicationContext(PC pc, void *usrP)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *(void **)usrP = pc->user;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

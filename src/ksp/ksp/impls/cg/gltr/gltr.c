@@ -28,7 +28,7 @@ PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPGLTRGetMinEig_C", (KSP, PetscReal *), (ksp, e_min));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -51,7 +51,7 @@ PetscErrorCode KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPGLTRGetLambda_C", (KSP, PetscReal *), (ksp, lambda));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
@@ -171,7 +171,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (rz < 0.0) {
@@ -206,7 +206,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /***************************************************************************/
@@ -286,7 +286,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /***************************************************************************/
@@ -370,7 +370,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /***************************************************************************/
@@ -654,7 +654,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
     /* There is no radius.  Therefore, we cannot move along the boundary.    */
     /*************************************************************************/
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (KSP_CONVERGED_CG_NEG_CURVE != ksp->reason) {
@@ -663,7 +663,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /* the trust-region without encountering a direction of negative         */
     /* curvature or the iteration limit was reached.                         */
     /*************************************************************************/
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /***************************************************************************/
@@ -838,7 +838,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvalue.\n"));
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   cg->e_min = e_valu[0];
@@ -885,7 +885,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   norm_t = 0.;
@@ -919,7 +919,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvector.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
 
       coef1 = 0.0;
@@ -999,7 +999,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
 
       /***********************************************************************/
@@ -1030,7 +1030,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: factorization failed.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
 
       /***********************************************************************/
@@ -1050,7 +1050,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
 
       norm_t = 0.;
@@ -1069,7 +1069,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to converge.\n"));
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
 
@@ -1159,7 +1159,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   /***************************************************************************/
 
   ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1190,7 +1190,7 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp)
   } else {
     PetscCall(PetscCalloc5(max_its, &cg->diag, max_its, &cg->offd, max_its, &cg->alpha, max_its, &cg->beta, max_its, &cg->norm_r));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
@@ -1219,7 +1219,7 @@ static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
   /* Destroy KSP object.                                                     */
   /***************************************************************************/
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGSetRadius_GLTR(KSP ksp, PetscReal radius)
@@ -1228,7 +1228,7 @@ static PetscErrorCode KSPCGSetRadius_GLTR(KSP ksp, PetscReal radius)
 
   PetscFunctionBegin;
   cg->radius = radius;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
@@ -1237,7 +1237,7 @@ static PetscErrorCode KSPCGGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
 
   PetscFunctionBegin;
   *norm_d = cg->norm_d;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
@@ -1246,7 +1246,7 @@ static PetscErrorCode KSPCGGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
 
   PetscFunctionBegin;
   *o_fcn = cg->o_fcn;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
@@ -1255,7 +1255,7 @@ static PetscErrorCode KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
 
   PetscFunctionBegin;
   *e_min = cg->e_min;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
@@ -1264,7 +1264,7 @@ static PetscErrorCode KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 
   PetscFunctionBegin;
   *lambda = cg->lambda;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -1286,7 +1286,7 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscO
   PetscCall(PetscOptionsInt("-ksp_cg_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, NULL));
 
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1375,5 +1375,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_GLTR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetMinEig_C", KSPGLTRGetMinEig_GLTR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetLambda_C", KSPGLTRGetLambda_GLTR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

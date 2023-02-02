@@ -85,14 +85,14 @@ PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat, MatOrderingType type, IS *iro
   PetscCall(PetscObjectReference((PetscObject)*irow));
   PetscCall(PetscFree(done));
   PetscCall(PetscFree(order));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatFactorGetSolverType_petsc(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERPETSC;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat A, MatFactorType ftype, Mat *B)
@@ -130,7 +130,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat A, MatFactorType ftype
   PetscCall(PetscStrallocpy(MATSOLVERPETSC, &(*B)->solvertype));
   (*B)->canuseordering = PETSC_TRUE;
   PetscCall(PetscObjectComposeFunction((PetscObject)*B, "MatFactorGetSolverType_C", MatFactorGetSolverType_petsc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
@@ -277,7 +277,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B, Mat A, IS isrow, IS isc
   }
   (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_inplace;
   if (a->inode.size) (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
@@ -424,7 +424,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B, Mat A, IS isrow, IS iscol, cons
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ;
   if (a->inode.size) B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   PetscCall(MatSeqAIJCheckInode_FactorLU(B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -445,7 +445,7 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
     PetscCall(MatView(A, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo *info)
@@ -613,7 +613,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo *info
       PetscCall(PetscInfo(A, "number of shift_inblocks applied %" PetscInt_FMT ", each shift_amount %g\n", sctx.nshift, (double)info->shiftamount));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFactorInfo *info)
@@ -752,7 +752,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFactorIn
   (C)->ops->solvetranspose = MatSolveTranspose_SeqAIJ_inplace;
 
   PetscCall(MatSeqAIJCheckInode(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -926,7 +926,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B, Mat A, const Mat
       PetscCall(PetscInfo(A, "number of shift_nz tries %" PetscInt_FMT ", shift_amount %g\n", sctx.nshift, (double)sctx.shift_amount));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------- */
@@ -943,7 +943,7 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A, IS row, IS col, const MatFactorInfo *in
   A->ops->solvetranspose = C->ops->solvetranspose;
 
   PetscCall(MatHeaderMerge(A, &C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ----------------------------------------------------------- */
 
@@ -959,7 +959,7 @@ PetscErrorCode MatSolve_SeqAIJ_inplace(Mat A, Vec bb, Vec xx)
   const MatScalar   *aa = a->a, *v;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArrayWrite(xx, &x));
@@ -997,7 +997,7 @@ PetscErrorCode MatSolve_SeqAIJ_inplace(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArrayWrite(xx, &x));
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A, Mat B, Mat X)
@@ -1012,7 +1012,7 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A, Mat B, Mat X)
   PetscBool          isdense;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSE, &isdense));
   PetscCheck(isdense, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "B matrix must be a SeqDense matrix");
   if (X != B) {
@@ -1056,7 +1056,7 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A, Mat B, Mat X)
   PetscCall(MatDenseRestoreArrayRead(B, &b));
   PetscCall(MatDenseRestoreArray(X, &x));
   PetscCall(PetscLogFlops(B->cmap->n * (2.0 * a->nz - n)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatSolve_SeqAIJ(Mat A, Mat B, Mat X)
@@ -1071,7 +1071,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A, Mat B, Mat X)
   PetscBool          isdense;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSE, &isdense));
   PetscCheck(isdense, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "B matrix must be a SeqDense matrix");
   if (X != B) {
@@ -1116,7 +1116,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A, Mat B, Mat X)
   PetscCall(MatDenseRestoreArrayRead(B, &b));
   PetscCall(MatDenseRestoreArray(X, &x));
   PetscCall(PetscLogFlops(B->cmap->n * (2.0 * a->nz - n)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A, Vec bb, Vec xx)
@@ -1131,7 +1131,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A, Vec bb, Vec xx)
   const MatScalar   *aa = a->a, *v;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArrayWrite(xx, &x));
@@ -1171,7 +1171,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArrayWrite(xx, &x));
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------- */
@@ -1192,7 +1192,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
 #endif
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArrayWrite(xx, &x));
@@ -1226,7 +1226,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArrayWrite(xx, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolveAdd_SeqAIJ_inplace(Mat A, Vec bb, Vec yy, Vec xx)
@@ -1279,7 +1279,7 @@ PetscErrorCode MatSolveAdd_SeqAIJ_inplace(Mat A, Vec bb, Vec yy, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * a->nz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolveAdd_SeqAIJ(Mat A, Vec bb, Vec yy, Vec xx)
@@ -1336,7 +1336,7 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A, Vec bb, Vec yy, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * a->nz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolveTranspose_SeqAIJ_inplace(Mat A, Vec bb, Vec xx)
@@ -1392,7 +1392,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ_inplace(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayWrite(xx, &x));
 
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A, Vec bb, Vec xx)
@@ -1448,7 +1448,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayWrite(xx, &x));
 
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolveTransposeAdd_SeqAIJ_inplace(Mat A, Vec bb, Vec zz, Vec xx)
@@ -1505,7 +1505,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ_inplace(Mat A, Vec bb, Vec zz, Vec xx
   PetscCall(VecRestoreArray(xx, &x));
 
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A, Vec bb, Vec zz, Vec xx)
@@ -1562,7 +1562,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A, Vec bb, Vec zz, Vec xx)
   PetscCall(VecRestoreArray(xx, &x));
 
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------*/
@@ -1642,7 +1642,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact, Mat A, IS isrow, IS is
   PetscCall(PetscMalloc1(fact->rmap->n + 1, &b->solve_work));
   PetscCall(PetscObjectReference((PetscObject)isrow));
   PetscCall(PetscObjectReference((PetscObject)iscol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
@@ -1674,7 +1674,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
     /* special case: ilu(0) with natural ordering */
     PetscCall(MatILUFactorSymbolic_SeqAIJ_ilu0(fact, A, isrow, iscol, info));
     if (a->inode.size) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(ISInvertPermutation(iscol, PETSC_DECIDE, &isicol));
@@ -1810,7 +1810,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
   (fact)->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ;
   if (a->inode.size) (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   PetscCall(MatSeqAIJCheckInode_FactorLU(fact));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
@@ -1861,7 +1861,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS isrow, IS
     PetscCall(PetscMalloc1((fact)->rmap->n + 1, &b->solve_work));
     PetscCall(PetscObjectReference((PetscObject)isrow));
     PetscCall(PetscObjectReference((PetscObject)iscol));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(ISGetIndices(isrow, &r));
@@ -1996,7 +1996,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS isrow, IS
   (fact)->info.fill_ratio_needed = ((PetscReal)bi[n]) / ((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_inplace;
   if (a->inode.size) (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo *info)
@@ -2158,7 +2158,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo
       PetscCall(PetscInfo(A, "number of shift_inblocks applied %" PetscInt_FMT ", each shift_amount %g\n", sctx.nshift, (double)info->shiftamount));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFactorInfo *info)
@@ -2317,7 +2317,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFa
       PetscCall(PetscInfo(A, "number of shiftpd tries %" PetscInt_FMT ", shift_amount %g\n", sctx.nshift, (double)sctx.shift_amount));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -2538,7 +2538,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS perm, const MatFa
   }
 #endif
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
@@ -2741,7 +2741,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS perm, con
     fact->info.fill_ratio_needed = 0.0;
   }
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_inplace;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
@@ -2912,7 +2912,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS perm, const 
   }
 #endif
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
@@ -3080,7 +3080,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS perm
     fact->info.fill_ratio_needed = 0.0;
   }
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_inplace;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A, Vec bb, Vec xx)
@@ -3094,7 +3094,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscInt           i, nz;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArrayWrite(xx, &x));
@@ -3125,7 +3125,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArrayWrite(xx, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SeqAIJ(Mat A, Vec bb, Vec xx)
@@ -3139,7 +3139,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A, Vec bb, Vec xx)
   const MatScalar   *aa = a->a, *v;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArrayWrite(xx, &x));
@@ -3178,7 +3178,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArrayWrite(xx, &x));
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -3409,7 +3409,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A, IS isrow, IS iscol, const MatFactorI
   B->ops->matsolve          = NULL;
   B->assembled              = PETSC_TRUE;
   B->preallocated           = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* a wraper of MatILUDTFactor_SeqAIJ() */
@@ -3421,7 +3421,7 @@ PetscErrorCode MatILUDTFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS row, IS col, co
 {
   PetscFunctionBegin;
   PetscCall(MatILUDTFactor_SeqAIJ(A, row, col, info, &fact));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -3523,5 +3523,5 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat fact, Mat A, const MatFactorInfo
   C->preallocated           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(C->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -80,7 +80,7 @@ PetscErrorCode PCTelescopeSetUp_scatters_CoarseDM(PC pc, PC_Telescope sred, PC_T
   sred->xtmp    = xtmp;
   ctx->xp       = xp;
   PetscCall(VecDestroy(&x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc, PC_Telescope sred)
@@ -217,7 +217,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc, PC_Telescope sred)
 
   /* PetscCall(PCTelescopeSetUp_permutation_CoarseDM(pc,sred,ctx)); */
   PetscCall(PCTelescopeSetUp_scatters_CoarseDM(pc, sred, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCApply_Telescope_CoarseDM(PC pc, Vec x, Vec y)
@@ -241,7 +241,7 @@ PetscErrorCode PCApply_Telescope_CoarseDM(PC pc, Vec x, Vec y)
   if (PCTelescope_isActiveRank(sred)) PetscCall(KSPSolve(sred->ksp, xred, yred));
 
   PetscCall(ctx->fp_dm_field_scatter(ctx->dm_fine, y, SCATTER_REVERSE, ctx->dm_coarse, yred));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc, PC_Telescope sred, MatNullSpace nullspace, MatNullSpace *sub_nullspace)
@@ -271,7 +271,7 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_CoarseDM(PC pc, PC_Telescope sred, 
     PetscCall(MatNullSpaceCreate(subcomm, has_const, n, sub_vecs, sub_nullspace));
     PetscCall(VecDestroyVecs(n, &sub_vecs));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc, PC_Telescope sred, Mat sub_mat)
@@ -340,7 +340,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc, PC_Telescope sred, 
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCReset_Telescope_CoarseDM(PC pc)
@@ -358,7 +358,7 @@ PetscErrorCode PCReset_Telescope_CoarseDM(PC pc)
   ctx->fp_dm_state_scatter      = NULL;
   ctx->dmksp_context_determined = NULL;
   ctx->dmksp_context_user       = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc, Vec x, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool zeroguess, PetscInt *outits, PCRichardsonConvergedReason *reason)
@@ -392,5 +392,5 @@ PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc, Vec x, Vec y, Vec w, 
 
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
   *outits = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

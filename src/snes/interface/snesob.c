@@ -48,7 +48,7 @@ PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, Pets
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESSetObjective(dm, obj, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -75,7 +75,7 @@ PetscErrorCode SNESGetObjective(SNES snes, PetscErrorCode (**obj)(SNES, Vec, Pet
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMSNESGetObjective(dm, obj, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -109,7 +109,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   PetscCall(PetscLogEventBegin(SNES_ObjectiveEval, snes, X, 0, 0));
   PetscCall((sdm->ops->computeobjective)(snes, X, ob, sdm->objectivectx));
   PetscCall(PetscLogEventEnd(SNES_ObjectiveEval, snes, X, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -212,5 +212,5 @@ PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes, Vec X, Vec F, vo
 
   PetscCall(VecAssemblyBegin(F));
   PetscCall(VecAssemblyEnd(F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

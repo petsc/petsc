@@ -11,7 +11,7 @@ PETSC_EXTERN PetscViewer    PETSC_VIEWER_SAWS_(MPI_Comm);
 
 #define PetscCallSAWs(func, args) \
   do { \
-    PetscErrorCode _ierr; \
+    int _ierr; \
     PetscStackPushExternal(#func); \
     _ierr = func args; \
     PetscStackPop; \

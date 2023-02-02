@@ -31,7 +31,7 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
   }
   PetscCall(MatAXPY(A, a, F, str));
   PetscCall(MatDestroy(&F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -71,10 +71,10 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscCheck(m1 == m2 && n1 == n2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Non conforming matrix add: local sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT, m1, n1, m2, n2);
   PetscCheck(Y->assembled, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix (Y)");
   PetscCheck(X->assembled, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix (X)");
-  if (a == (PetscScalar)0.0) PetscFunctionReturn(0);
+  if (a == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
   if (Y == X) {
     PetscCall(MatScale(Y, 1.0 + a));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscObjectObjectTypeCompare((PetscObject)X, (PetscObject)Y, &sametype));
   PetscCall(PetscLogEventBegin(MAT_AXPY, Y, 0, 0, 0));
@@ -94,7 +94,7 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
     }
   }
   PetscCall(PetscLogEventEnd(MAT_AXPY, Y, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
@@ -144,7 +144,7 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
     PetscCall(MatPreallocatorPreallocate(preallocator, PETSC_FALSE, *B));
     PetscCall(MatDestroy(&preallocator));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -159,7 +159,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
     PetscCall(MatGetOperation(Y, MATOP_AXPY, (void (**)(void)) & f));
     if (f) {
       PetscCall((*f)(Y, a, X, str));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   /* no need to preallocate if Y is dense */
@@ -168,7 +168,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
     PetscCall(PetscObjectTypeCompare((PetscObject)X, MATNEST, &isnest));
     if (isnest) {
       PetscCall(MatAXPY_Dense_Nest(Y, a, X));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN) str = SUBSET_NONZERO_PATTERN;
   }
@@ -213,7 +213,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
     PetscCall(MatAXPY_BasicWithPreallocation(B, Y, a, X, str));
     PetscCall(MatHeaderMerge(Y, &B));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -262,7 +262,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
   PetscCall(MatRestoreRowUpperTriangular(X));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -294,13 +294,13 @@ PetscErrorCode MatShift(Mat Y, PetscScalar a)
   PetscCheck(Y->assembled, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!Y->factortype, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(Y, 1);
-  if (a == 0.0) PetscFunctionReturn(0);
+  if (a == 0.0) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (Y->ops->shift) PetscUseTypeMethod(Y, shift, a);
   else PetscCall(MatShift_Basic(Y, a));
 
   PetscCall(PetscObjectStateIncrease((PetscObject)Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is)
@@ -315,7 +315,7 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is)
   PetscCall(VecRestoreArrayRead(D, &v));
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -352,7 +352,7 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
   if (Y->ops->diagonalset) PetscUseTypeMethod(Y, diagonalset, D, is);
   else PetscCall(MatDiagonalSet_Default(Y, D, is));
   PetscCall(PetscObjectStateIncrease((PetscObject)Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -375,7 +375,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionBegin;
   PetscCall(MatScale(Y, a));
   PetscCall(MatAXPY(Y, 1.0, X, str));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -404,7 +404,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
   PetscValidHeaderSpecific(inmat, MAT_CLASSID, 1);
   PetscValidPointer(mat, 3);
   PetscCall(MatConvert_Shell(inmat, mattype ? mattype : MATDENSE, MAT_INITIAL_MATRIX, mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -438,7 +438,7 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
   PetscCall(MatCreateTranspose(inmat, &A));
   PetscCall(MatConvert_Shell(A, mattype ? mattype : MATDENSE, MAT_INITIAL_MATRIX, mat));
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -512,5 +512,5 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     PetscCall(PetscFree2(newCols, newVals));
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg)); /* reset option to its user-defined value */
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

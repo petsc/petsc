@@ -52,7 +52,7 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
     }
     PetscCall(DMDAVecRestoreArray(da, gvec, &g));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

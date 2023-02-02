@@ -58,7 +58,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
   PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetDM(*vec, dm));
   /* PetscCall(VecSetLocalToGlobalMapping(*vec, dm->ltogmap)); */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
@@ -82,7 +82,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
   PetscCall(VecSetBlockSize(*vec, blockSize));
   PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetDM(*vec, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -113,7 +113,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
   PetscInt     subSize = 0, subOff = 0, Nf, f, pStart, pEnd, p;
 
   PetscFunctionBegin;
-  if (!numFields) PetscFunctionReturn(0);
+  if (!numFields) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(DMGetGlobalSection(dm, &sectionGlobal));
   PetscCheck(section, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
@@ -295,7 +295,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
     }
     if (dm->coarseMesh) PetscCall(DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -423,5 +423,5 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
   }
   PetscCall(PetscSectionDestroy(&supersection));
   PetscCall(PetscFree3(Nfs, sections, sectionGlobals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -21,7 +21,7 @@ static PetscErrorCode CheckVecShift(Vec v, PetscInt n, PetscScalar *array_copy, 
     PetscCheck(PetscIsCloseAtTolScalar(actual, expected, 1e-12, 0.0), PETSC_COMM_SELF, PETSC_ERR_PLIB, "VecShift() returned array[%" PetscInt_FMT "] %g + %gi != expected_array[%" PetscInt_FMT "] %g + %gi", i, (double)PetscRealPart(actual), (double)PetscImaginaryPart(actual), i, (double)PetscRealPart(expected), (double)PetscImaginaryPart(expected));
   }
   PetscCall(VecRestoreArrayRead(v, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

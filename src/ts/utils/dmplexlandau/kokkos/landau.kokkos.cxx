@@ -97,7 +97,7 @@ PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps maps[], pointInterpolat
     maps[grid].d_self = d_maps_k->data();
     maps[grid].vp3    = (void *)d_maps_k;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps maps[], PetscInt num_grids)
 {
@@ -110,7 +110,7 @@ PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps maps[], PetscInt num_g
     delete b;
     delete c;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal a_nu_alpha[], PetscReal a_nu_beta[], PetscReal a_invMass[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
@@ -244,7 +244,7 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
     SData_d->coo_vals               = static_cast<void *>(coo_vals);
   }
   SData_d->maps = NULL; // not used
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *SData_d)
@@ -307,7 +307,7 @@ PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *SData_d)
     auto coo_vals                   = static_cast<Kokkos::View<PetscScalar *, Kokkos::LayoutRight, Kokkos::DefaultExecutionSpace> *>((void *)SData_d->coo_vals);
     delete coo_vals;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define KOKKOS_SHARED_LEVEL 0 // 0 is shared, 1 is global
@@ -382,9 +382,9 @@ PetscErrorCode landau_mat_assemble(PetscSplitCSRDataStructure d_mat, PetscScalar
     for (q = 0; q < nr; q++) {
       for (d = 0; d < nc; d++) vals[q * nc + d] = row_scale[q] * col_scale[d] * Aij;
     }
-    MatSetValuesDevice(d_mat, nr, rows, nc, cols, vals, ADD_VALUES);
+    static_cast<void>(MatSetValuesDevice(d_mat, nr, rows, nc, cols, vals, ADD_VALUES));
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[], const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift, const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP)
@@ -725,7 +725,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                   d_elem_mats(b_id, grid, loc_elem, fOff) = t;
 #endif
                 } else {
-                  landau_mat_assemble(d_mat, d_coo_vals, t, f, g, Nb, moffset, loc_elem, fieldA, maps[grid], d_coo_elem_offsets, d_coo_elem_fullNb, d_coo_elem_point_offsets, b_elem_idx, b_id * coo_sz_batch);
+                  static_cast<void>(landau_mat_assemble(d_mat, d_coo_vals, t, f, g, Nb, moffset, loc_elem, fieldA, maps[grid], d_coo_elem_offsets, d_coo_elem_fullNb, d_coo_elem_point_offsets, b_elem_idx, b_id * coo_sz_batch));
                 }
               });
             });
@@ -777,7 +777,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                   d_elem_mats(b_id, grid, loc_elem, fOff) = t;
 #endif
                 } else {
-                  landau_mat_assemble(d_mat, d_coo_vals, t, f, g, Nb, moffset, loc_elem, fieldA, maps[grid], d_coo_elem_offsets, d_coo_elem_fullNb, d_coo_elem_point_offsets, b_elem_idx, b_id * coo_sz_batch);
+                  static_cast<void>(landau_mat_assemble(d_mat, d_coo_vals, t, f, g, Nb, moffset, loc_elem, fieldA, maps[grid], d_coo_elem_offsets, d_coo_elem_fullNb, d_coo_elem_point_offsets, b_elem_idx, b_id * coo_sz_batch));
                 }
               });
             });
@@ -846,6 +846,6 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "CPU assembly not supported");
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 } // extern "C"

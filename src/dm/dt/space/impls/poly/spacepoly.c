@@ -8,7 +8,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp, PetscOp
   PetscOptionsHeadBegin(PetscOptionsObject, "PetscSpace polynomial options");
   PetscCall(PetscOptionsBool("-petscspace_poly_tensor", "Use the tensor product polynomials", "PetscSpacePolynomialSetTensor", poly->tensor, &poly->tensor, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer v)
@@ -17,7 +17,7 @@ static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer 
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(v, "%s space of degree %" PetscInt_FMT "\n", poly->tensor ? "Tensor polynomial" : "Polynomial", sp->degree));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
@@ -29,7 +29,7 @@ static PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewe
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscSpacePolynomialView_Ascii(sp, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
@@ -46,7 +46,7 @@ static PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
   }
   PetscCall(PetscFree(poly->subspaces));
   PetscCall(PetscFree(poly));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
@@ -54,7 +54,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscSpace_Poly *poly = (PetscSpace_Poly *)sp->data;
 
   PetscFunctionBegin;
-  if (poly->setupCalled) PetscFunctionReturn(0);
+  if (poly->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
   if (sp->Nv <= 1) poly->tensor = PETSC_FALSE;
   if (sp->Nc != 1) {
     PetscInt    Nc     = sp->Nc;
@@ -86,18 +86,18 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
     for (PetscInt i = 0; i < Nc; i++) PetscCall(PetscSpaceSumSetSubspace(sp, i, subsp));
     PetscCall(PetscSpaceDestroy(&subsp));
     PetscCall(PetscSpaceSetUp(sp));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (poly->tensor) {
     sp->maxDegree = PETSC_DETERMINE;
     PetscCall(PetscSpaceSetType(sp, PETSCSPACETENSOR));
     PetscCall(PetscSpaceSetUp(sp));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(sp->degree >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT " invalid", sp->degree);
   sp->maxDegree     = sp->degree;
   poly->setupCalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
@@ -108,7 +108,7 @@ static PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt 
   PetscFunctionBegin;
   PetscCall(PetscDTBinomialInt(n + deg, n, dim));
   *dim *= sp->Nc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CoordinateBasis(PetscInt dim, PetscInt npoints, const PetscReal points[], PetscInt jet, PetscInt Njet, PetscReal pScalar[])
@@ -128,7 +128,7 @@ static PetscErrorCode CoordinateBasis(PetscInt dim, PetscInt npoints, const Pets
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
@@ -143,7 +143,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
   if (!poly->setupCalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(!poly->tensor && sp->Nc == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "tensor and multicomponent spaces should have been converted");
   PetscCall(PetscDTBinomialInt(dim + sp->degree, dim, &Nb));
@@ -221,7 +221,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
     PetscCall(PetscFree(derivs));
   }
   PetscCall(DMRestoreWorkArray(dm, Nb * Njet * npoints, MPIU_REAL, &pScalar));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -245,7 +245,7 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscTryMethod(sp, "PetscSpacePolynomialSetTensor_C", (PetscSpace, PetscBool), (sp, tensor));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -269,7 +269,7 @@ PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidBoolPointer(tensor, 2);
   PetscTryMethod(sp, "PetscSpacePolynomialGetTensor_C", (PetscSpace, PetscBool *), (sp, tensor));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpacePolynomialSetTensor_Polynomial(PetscSpace sp, PetscBool tensor)
@@ -278,7 +278,7 @@ static PetscErrorCode PetscSpacePolynomialSetTensor_Polynomial(PetscSpace sp, Pe
 
   PetscFunctionBegin;
   poly->tensor = tensor;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, PetscBool *tensor)
@@ -289,7 +289,7 @@ static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, Pe
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidBoolPointer(tensor, 2);
   *tensor = poly->tensor;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, PetscInt height, PetscSpace *subsp)
@@ -325,7 +325,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   } else {
     *subsp = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
@@ -340,7 +340,7 @@ static PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
   sp->ops->getheightsubspace = PetscSpaceGetHeightSubspace_Polynomial;
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePolynomialGetTensor_C", PetscSpacePolynomialGetTensor_Polynomial));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePolynomialSetTensor_C", PetscSpacePolynomialSetTensor_Polynomial));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -365,5 +365,5 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
   poly->subspaces = NULL;
 
   PetscCall(PetscSpaceInitialize_Polynomial(sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

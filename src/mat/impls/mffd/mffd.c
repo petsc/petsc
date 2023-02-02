@@ -23,7 +23,7 @@ PetscErrorCode MatMFFDFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&MatMFFDList));
   MatMFFDPackageInitialized = PETSC_FALSE;
   MatMFFDRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -40,7 +40,7 @@ PetscErrorCode MatMFFDInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (MatMFFDPackageInitialized) PetscFunctionReturn(0);
+  if (MatMFFDPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   MatMFFDPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("MatMFFD", &MATMFFD_CLASSID));
@@ -63,7 +63,7 @@ PetscErrorCode MatMFFDInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(MatMFFDFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype)
@@ -79,7 +79,7 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype)
 
   /* already set, so just return */
   PetscCall(PetscObjectTypeCompare((PetscObject)ctx, ftype, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* destroy the old one if it exists */
   PetscTryTypeMethod(ctx, destroy);
@@ -88,7 +88,7 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype)
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown MatMFFD type %s given", ftype);
   PetscCall((*r)(ctx));
   PetscCall(PetscObjectChangeTypeName((PetscObject)ctx, ftype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -118,7 +118,7 @@ PetscErrorCode MatMFFDSetType(Mat mat, MatMFFDType ftype)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidCharPointer(ftype, 2);
   PetscTryMethod(mat, "MatMFFDSetType_C", (Mat, MatMFFDType), (mat, ftype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonal_MFFD(Mat, Vec);
@@ -131,7 +131,7 @@ static PetscErrorCode MatMFFDSetFunctioniBase_MFFD(Mat mat, FCN1 func)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
   ctx->funcisetbase = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef PetscErrorCode (*FCN2)(void *, PetscInt, Vec, PetscScalar *); /* force argument to next function to not be extern C*/
@@ -143,7 +143,7 @@ static PetscErrorCode MatMFFDSetFunctioni_MFFD(Mat mat, FCN2 funci)
   PetscCall(MatShellGetContext(mat, &ctx));
   ctx->funci = funci;
   PetscCall(MatShellSetOperation(mat, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_MFFD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMFFDGetH_MFFD(Mat mat, PetscScalar *h)
@@ -153,7 +153,7 @@ static PetscErrorCode MatMFFDGetH_MFFD(Mat mat, PetscScalar *h)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
   *h = ctx->currenth;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J)
@@ -163,7 +163,7 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(J, &ctx));
   ctx->ncurrenth = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -197,7 +197,7 @@ PetscErrorCode MatMFFDRegister(const char sname[], PetscErrorCode (*function)(Ma
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatMFFDList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------------------------*/
@@ -226,7 +226,7 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMFFDGetH_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatSNESMFSetReuseBase_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatSNESMFGetReuseBase_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -269,7 +269,7 @@ static PetscErrorCode MatView_MFFD(Mat J, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -289,7 +289,7 @@ PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat J, MatAssemblyType mt)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(J, &j));
   PetscCall(MatMFFDResetHHistory(J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -330,7 +330,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y)
   if (zeroa) {
     PetscCall(VecSet(y, 0.0));
     PetscCall(PetscLogEventEnd(MATMFFD_Mult, a, y, 0, 0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCheck(!mat->erroriffailure || !PetscIsInfOrNanScalar(h), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Computed Nan differencing parameter h");
@@ -371,7 +371,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y)
   if (mat->nullsp) PetscCall(MatNullSpaceRemove(mat->nullsp, y));
 
   PetscCall(PetscLogEventEnd(MATMFFD_Mult, a, y, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -420,7 +420,7 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat, Vec a)
     PetscCall(VecRestoreArray(w, &ww));
   }
   PetscCall(VecRestoreArray(a, &aa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J, Vec U, Vec F)
@@ -447,7 +447,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J, Vec U, Vec F)
   }
   if (!ctx->w) PetscCall(VecDuplicate(ctx->current_u, &ctx->w));
   J->assembled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef PetscErrorCode (*FCN3)(void *, Vec, Vec, PetscScalar *); /* force argument to next function to not be extern C*/
@@ -460,7 +460,7 @@ static PetscErrorCode MatMFFDSetCheckh_MFFD(Mat J, FCN3 fun, void *ectx)
   PetscCall(MatShellGetContext(J, &ctx));
   ctx->checkh    = fun;
   ctx->checkhctx = ectx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -490,7 +490,7 @@ PetscErrorCode MatMFFDSetOptionsPrefix(Mat mat, const char prefix[])
   PetscCall(MatShellGetContext(mat, &mfctx));
   PetscValidHeaderSpecific(mfctx, MATMFFD_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)mfctx, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetFromOptions_MFFD(Mat mat, PetscOptionItems *PetscOptionsObject)
@@ -517,7 +517,7 @@ static PetscErrorCode MatSetFromOptions_MFFD(Mat mat, PetscOptionItems *PetscOpt
 #endif
   PetscTryTypeMethod(mfctx, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMFFDSetPeriod_MFFD(Mat mat, PetscInt period)
@@ -527,7 +527,7 @@ static PetscErrorCode MatMFFDSetPeriod_MFFD(Mat mat, PetscInt period)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
   ctx->recomputeperiod = period;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMFFDSetFunction_MFFD(Mat mat, PetscErrorCode (*func)(void *, Vec, Vec), void *funcctx)
@@ -538,7 +538,7 @@ static PetscErrorCode MatMFFDSetFunction_MFFD(Mat mat, PetscErrorCode (*func)(vo
   PetscCall(MatShellGetContext(mat, &ctx));
   ctx->func    = func;
   ctx->funcctx = funcctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMFFDSetFunctionError_MFFD(Mat mat, PetscReal error)
@@ -548,7 +548,7 @@ static PetscErrorCode MatMFFDSetFunctionError_MFFD(Mat mat, PetscReal error)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
   if (error != PETSC_DEFAULT) ctx->error_rel = error;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], PetscInt nhistory)
@@ -560,7 +560,7 @@ PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], PetscInt nh
   ctx->historyh    = history;
   ctx->maxcurrenth = nhistory;
   ctx->currenth    = 0.;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -630,7 +630,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMFFDSetType_C", MatMFFDSetType_MFFD));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMFFDGetH_C", MatMFFDGetH_MFFD));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMFFD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -699,7 +699,7 @@ PetscErrorCode MatCreateMFFD(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
   PetscCall(MatSetSizes(*J, m, n, M, N));
   PetscCall(MatSetType(*J, MATMFFD));
   PetscCall(MatSetUp(*J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -724,7 +724,7 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidScalarPointer(h, 2);
   PetscUseMethod(mat, "MatMFFDGetH_C", (Mat, PetscScalar *), (mat, h));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -760,7 +760,7 @@ PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *, Vec, V
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscTryMethod(mat, "MatMFFDSetFunction_C", (Mat, PetscErrorCode(*)(void *, Vec, Vec), void *), (mat, func, funcctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -788,7 +788,7 @@ PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscTryMethod(mat, "MatMFFDSetFunctioni_C", (Mat, PetscErrorCode(*)(void *, PetscInt, Vec, PetscScalar *)), (mat, funci));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -816,7 +816,7 @@ PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, V
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscTryMethod(mat, "MatMFFDSetFunctioniBase_C", (Mat, PetscErrorCode(*)(void *, Vec)), (mat, func));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -842,7 +842,7 @@ PetscErrorCode MatMFFDSetPeriod(Mat mat, PetscInt period)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(mat, period, 2);
   PetscTryMethod(mat, "MatMFFDSetPeriod_C", (Mat, PetscInt), (mat, period));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -876,7 +876,7 @@ PetscErrorCode MatMFFDSetFunctionError(Mat mat, PetscReal error)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(mat, error, 2);
   PetscTryMethod(mat, "MatMFFDSetFunctionError_C", (Mat, PetscReal), (mat, error));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -907,7 +907,7 @@ PetscErrorCode MatMFFDSetHHistory(Mat J, PetscScalar history[], PetscInt nhistor
   if (history) PetscValidScalarPointer(history, 2);
   PetscValidLogicalCollectiveInt(J, nhistory, 3);
   PetscUseMethod(J, "MatMFFDSetHHistory_C", (Mat, PetscScalar[], PetscInt), (J, history, nhistory));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -932,7 +932,7 @@ PetscErrorCode MatMFFDResetHHistory(Mat J)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
   PetscTryMethod(J, "MatMFFDResetHHistory_C", (Mat), (J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -963,7 +963,7 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F)
   PetscValidHeaderSpecific(U, VEC_CLASSID, 2);
   if (F) PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
   PetscTryMethod(J, "MatMFFDSetBase_C", (Mat, Vec, Vec), (J, U, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -996,7 +996,7 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, PetscErrorCode (*fun)(void *, Vec, Vec, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
   PetscTryMethod(J, "MatMFFDSetCheckh_C", (Mat, PetscErrorCode(*)(void *, Vec, Vec, PetscScalar *), void *), (J, fun, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1052,5 +1052,5 @@ PetscErrorCode MatMFFDCheckPositivity(void *dummy, Vec U, Vec a, PetscScalar *h)
     if (PetscRealPart(*h) > 0.0) *h = 0.99 * val;
     else *h = -0.99 * val;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

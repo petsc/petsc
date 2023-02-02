@@ -9,11 +9,11 @@
 
 typedef void (*FCN)(PetscDraw*,void*,PetscErrorCode*); /* force argument to next function to not be extern C*/
 
-static PetscErrorCode ourdrawzoom(PetscDraw draw,void *ctx)
+static PetscErrorCode ourdrawzoom(PetscDraw draw, void *ctx)
 {
-  PetscErrorCode ierr = 0;
+  PetscErrorCode ierr = PETSC_SUCCESS;
 
-  (*(void (*)(PetscDraw*,void*,PetscErrorCode*))(((PetscObject)draw)->fortran_func_pointers[0]))(&draw,ctx,&ierr);
+  (*(void (*)(PetscDraw *, void *, PetscErrorCode *))(((PetscObject)draw)->fortran_func_pointers[0]))(&draw, ctx, &ierr);
   return ierr;
 }
 

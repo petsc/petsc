@@ -52,5 +52,5 @@ PetscErrorCode PetscSleep(PetscReal s)
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "No support for sleep() on this machine");
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

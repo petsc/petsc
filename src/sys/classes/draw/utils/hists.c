@@ -90,7 +90,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   PetscCall(PetscDrawAxisCreate(draw, &h->axis));
 
   *hist = h;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -118,7 +118,7 @@ PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
     hist->maxBins = bins;
   }
   hist->numBins = bins;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -143,7 +143,7 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
   hist->ymin      = 0.0;
   hist->ymax      = 0.0;
   hist->numValues = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -161,11 +161,11 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
 PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
 {
   PetscFunctionBegin;
-  if (!*hist) PetscFunctionReturn(0);
+  if (!*hist) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*hist, PETSC_DRAWHG_CLASSID, 1);
   if (--((PetscObject)(*hist))->refct > 0) {
     *hist = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscFree((*hist)->bins));
@@ -173,7 +173,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
   PetscCall(PetscDrawAxisDestroy(&(*hist)->axis));
   PetscCall(PetscDrawDestroy(&(*hist)->win));
   PetscCall(PetscHeaderDestroy(hist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -231,7 +231,7 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
   }
 
   hist->values[hist->numValues++] = value;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -259,11 +259,11 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
   PetscCall(PetscDrawIsNull(hist->win, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)hist), &rank));
 
-  if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
-  if (hist->numValues < 1) PetscFunctionReturn(0);
+  if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (hist->numValues < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   color = hist->color;
   if (color == PETSC_DRAW_ROTATE) bcolor = PETSC_DRAW_BLACK + 1;
@@ -376,7 +376,7 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawPause(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -396,7 +396,7 @@ PetscErrorCode PetscDrawHGSave(PetscDrawHG hg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hg, PETSC_DRAWHG_CLASSID, 1);
   PetscCall(PetscDrawSave(hg->win));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -419,8 +419,8 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
-  if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
-  if (hist->numValues < 1) PetscFunctionReturn(0);
+  if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (hist->numValues < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist), &viewer));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)hist, viewer));
@@ -486,7 +486,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Mean: %g  Var: %g\n", (double)mean, (double)var));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Total: %" PetscInt_FMT "\n", numValues));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -509,7 +509,7 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
   hist->color = color;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -536,7 +536,7 @@ PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal
   hist->xmax = x_max;
   hist->ymin = y_min;
   hist->ymax = y_max;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -558,7 +558,7 @@ PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
   hist->calcStats = calc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -580,7 +580,7 @@ PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
   hist->integerBins = ints;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -607,7 +607,7 @@ PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
   PetscValidPointer(axis, 2);
   *axis = hist->axis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -631,5 +631,5 @@ PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *draw)
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
   PetscValidPointer(draw, 2);
   *draw = hist->win;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

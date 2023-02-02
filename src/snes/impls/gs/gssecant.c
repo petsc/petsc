@@ -120,5 +120,5 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
     }
   }
   PetscCall(ISColoringRestoreIS(coloring, PETSC_USE_POINTER, &coloris));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -9,7 +9,7 @@ PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 9));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
@@ -61,13 +61,13 @@ PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
     PetscCall(PetscInfo(ksp, "Detected happy breakdown %g tolerance %g\n", (double)PetscAbsScalar(dp), (double)symmlq->haptol));
     ksp->rnorm  = 0.0;                           /* what should we really put here? */
     ksp->reason = KSP_CONVERGED_HAPPY_BREAKDOWN; /* bugfix proposed by Lourens (lourens.vanzanen@shell.com) */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 #if !defined(PETSC_USE_COMPLEX)
   if (dp < 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
   dp     = PetscSqrtScalar(dp);
@@ -89,7 +89,7 @@ PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
   PetscCall(KSPMonitor(ksp, 0, np));
   ksp->rnorm = np;
   PetscCall((*ksp->converged)(ksp, 0, np, &ksp->reason, ksp->cnvP)); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   i    = 0;
   ceta = 0.;
@@ -179,7 +179,7 @@ PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
   PetscCall(VecAXPY(X, ceta_bar, Wbar)); /* x <- x + ceta_bar*w_bar */
 
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -221,5 +221,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

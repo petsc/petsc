@@ -31,7 +31,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
 PetscErrorCode VecRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (VecRegisterAllCalled) PetscFunctionReturn(0);
+  if (VecRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   VecRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(VecRegister(VECSEQ, VecCreate_Seq));
@@ -58,5 +58,5 @@ PetscErrorCode VecRegisterAll(void)
   PetscCall(VecRegister(VECMPIHIP, VecCreate_MPIHIP));
   PetscCall(VecRegister(VECHIP, VecCreate_HIP));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

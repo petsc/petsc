@@ -227,7 +227,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X)
      Restore vector
   */
   PetscCall(DMDAVecRestoreArrayWrite(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr)
@@ -359,7 +359,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
      Flop count (multiply-adds are counted as 2 operations)
   */
   PetscCall(PetscLogFlops(84.0 * info->ym * info->xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -635,7 +635,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   PetscCall(PetscLogFlops(tot_its * (84.0 + 41.0 + 26.0)));
   PetscCall(DMRestoreLocalVector(da, &localX));
   if (B) PetscCall(DMRestoreLocalVector(da, &localB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

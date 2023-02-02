@@ -42,7 +42,7 @@ static PetscErrorCode PetscP4estFinalize(void)
     PetscCallP4est(sc_finalize, ());
   }
   PetscCall(PetscHeaderDestroy(&P4estLoggingObject));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscP4estInitialize(void)
@@ -55,7 +55,7 @@ PetscErrorCode PetscP4estInitialize(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscP4estInitialized) PetscFunctionReturn(0);
+  if (PetscP4estInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscP4estInitialized = PETSC_TRUE;
 
   /* Register Classes */
@@ -104,5 +104,5 @@ PetscErrorCode PetscP4estInitialize(void)
   PetscCall(DMForestRegisterType(DMP4EST));
   PetscCall(DMForestRegisterType(DMP8EST));
   PetscCall(PetscRegisterFinalize(PetscP4estFinalize));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

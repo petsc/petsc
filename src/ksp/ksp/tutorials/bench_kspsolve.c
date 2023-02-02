@@ -109,7 +109,7 @@ static PetscErrorCode PreallocateCOO(Mat A, void *ctx)
   if (user->debug)
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d: xyzstart = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", xvzend = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n", user->rank, xstart, ystart, zstart, xend, yend, zend,
                           user->nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FillCOO(Mat A, void *ctx)
@@ -301,7 +301,7 @@ PetscErrorCode FillCOO(Mat A, void *ctx)
   PetscCall(MatSetPreallocationCOO(A, user->nnz, coo_i, coo_j));
   PetscCall(MatSetValuesCOO(A, coo_v, INSERT_VALUES));
   PetscCall(PetscFree3(coo_i, coo_j, coo_v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -319,8 +319,8 @@ int main(int argc, char **argv)
   PETSC_UNUSED PetscLogStage stage;
 
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
-  PetscCall(MPI_Comm_size(PETSC_COMM_WORLD, &user.size));
-  PetscCall(MPI_Comm_rank(PETSC_COMM_WORLD, &user.rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &user.size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &user.rank));
 
   user.n        = 100;         /* Default grid points per dimension */
   user.matmult  = PETSC_FALSE; /* Test MatMult only */

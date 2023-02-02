@@ -35,7 +35,7 @@ static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerStringSPrintf(viewer, " Redistribute preconditioner"));
     PetscCall(KSPView(red->ksp, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_Redistribute(PC pc)
@@ -238,7 +238,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscCall(VecRestoreArrayRead(diag, &d));
   PetscCall(VecDestroy(&diag));
   PetscCall(KSPSetUp(red->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
@@ -279,7 +279,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
   PetscCall(KSPCheckSolve(red->ksp, pc, red->x));
   PetscCall(VecScatterBegin(red->scatter, red->x, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(red->scatter, red->x, x, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_Redistribute(PC pc)
@@ -296,7 +296,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   PetscCall(PetscFree(red->drows));
   PetscCall(PetscFree(red->diag));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -305,7 +305,7 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions(red->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -331,7 +331,7 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(innerksp, 2);
   *innerksp = red->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -378,5 +378,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(KSPSetOptionsPrefix(red->ksp, prefix));
   PetscCall(KSPAppendOptionsPrefix(red->ksp, "redistribute_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

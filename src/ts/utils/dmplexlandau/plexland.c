@@ -46,7 +46,7 @@ static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
   }
   PetscCall(PetscFree(maps));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode energy_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
 {
@@ -56,7 +56,7 @@ static PetscErrorCode energy_f(PetscInt dim, PetscReal time, const PetscReal x[]
   for (int i = 0; i < dim; ++i) v2 += x[i] * x[i];
   /* evaluate the Maxwellian */
   u[0] = v2 / 2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* needs double */
@@ -75,7 +75,7 @@ static PetscErrorCode gamma_m1_f(PetscInt dim, PetscReal time, const PetscReal x
 #else
   u[0] = xx / (PetscSqrtReal(1. + xx) + 1.) - 1.; // better conditioned. -1 might help condition and only used for derivative
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -604,7 +604,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   /* clean up */
   if (cellClosure) PetscCall(PetscFree(cellClosure));
   if (xdata) PetscCall(VecRestoreArrayReadAndMemType(a_X, &xdata));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(LANDAU_ADD_BCS)
@@ -730,7 +730,7 @@ static PetscErrorCode GeometryDMLandau(DM base, PetscInt point, PetscInt dim, co
   xyz[1] = z;
   if (dim == 3) xyz[2] = abc[2];
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* create DMComposite of meshes for each species group */
@@ -916,7 +916,7 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
   PetscCall(PetscObjectSetName((PetscObject)pack, "Mesh"));
   PetscCall(DMSetApplicationContext(pack, ctx));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDS(DM pack, PetscInt dim, PetscInt grid, LandauCtx *ctx)
@@ -941,7 +941,7 @@ static PetscErrorCode SetupDS(DM pack, PetscInt dim, PetscInt grid, LandauCtx *c
     else PetscCall(PetscSNPrintf(buf, sizeof(buf), "si%" PetscInt_FMT, ii));
     PetscCall(PetscSectionSetComponentName(section, i0, 0, buf));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Define a Maxwellian function for testing out the operator. */
@@ -985,7 +985,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
     /* evaluate the shifted Maxwellian */
     u[0] += mctx->n * PetscPowReal(PETSC_PI * theta, -1.5) * (PetscExpReal(-v2 / theta));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1032,7 +1032,7 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
   data[0].shift = ctx->electronShift;
   /* need to make ADD_ALL_VALUES work - TODO */
   PetscCall(DMProjectFunction(dm, time, initu, (void **)mctxs, INSERT_ALL_VALUES, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1062,7 +1062,7 @@ static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, Pet
   if (!ctx) PetscCall(DMGetApplicationContext(dm, &ctx));
   PetscCall(VecZeroEntries(X));
   PetscCall(DMPlexLandauAddMaxwellians(dm, X, 0.0, ctx->thermal_temps, ctx->n, grid, b_id, n_batch, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // adapt a level once. Forest in/out
@@ -1190,7 +1190,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
     PetscCall(PetscInfo(sol, "\tPhase: adaptToleranceFEM: %" PetscInt_FMT " cells, %" PetscInt_FMT " total quadrature points\n", cEnd - cStart, Nq * (cEnd - cStart)));
     PetscCall(DMDestroy(&plex));
   } else *newForest = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // forest goes in (ctx->plex[grid]), plex comes out
@@ -1216,7 +1216,7 @@ static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
@@ -1511,7 +1511,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
       PetscCall(PetscOptionsClearValue(NULL, "-info"));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], LandauCtx *ctx)
@@ -1917,7 +1917,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     }
     PetscCall(PetscLogEventEnd(ctx->events[7], 0, 0, 0, 0));
   } // initialize
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* < v, u > */
@@ -1944,7 +1944,7 @@ static PetscErrorCode MatrixNfDestroy(void *ptr)
   PetscInt *nf = (PetscInt *)ptr;
   PetscFunctionBegin;
   PetscCall(PetscFree(nf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1959,7 +1959,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
 
   PetscFunctionBegin;
   if (!ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   // get the RCM for this grid to separate out species into blocks -- create 'idxs' & 'ctx->batch_is' -- not used
   if (ctx->gpu_assembly && ctx->jacobian_field_major_order) PetscCall(PetscMalloc1(ctx->mat_offset[ctx->num_grids] * ctx->batch_sz, &idxs));
@@ -2049,7 +2049,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
     PetscCall(VecDuplicate(X, &ctx->work_vec));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
@@ -2219,7 +2219,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     PetscCall(PetscContainerDestroy(&container));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2276,7 +2276,7 @@ PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec
       PetscCall(DMDestroy(&vdm));
     }
   } // grid
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2342,7 +2342,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(DMDestroy(&ctx->plex[grid]));
   PetscFree(ctx);
   PetscCall(DMDestroy(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* < v, ru > */
@@ -2385,7 +2385,7 @@ static PetscErrorCode gamma_n_f(PetscInt dim, PetscReal time, const PetscReal x[
     }
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* < v, ru > */
@@ -2551,7 +2551,7 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
         energytot += energy[ii];
         densitytot += density[ii];
       }
-      if (ctx->num_species > 1) PetscPrintf(ctx->comm, "\n");
+      if (ctx->num_species > 1) PetscCall(PetscPrintf(ctx->comm, "\n"));
     }
   }
   PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, globXArray));
@@ -2568,7 +2568,7 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
     }
   } else PetscCall(PetscPrintf(ctx->comm, " -- %" PetscInt_FMT " cells", cEnd - cStart));
   PetscCall(PetscPrintf(ctx->comm, "\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2684,7 +2684,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
   ctx->M = packM;
   if (Amat) *Amat = packM;
   PetscCall(PetscLogEventEnd(ctx->events[14], 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2755,7 +2755,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   PetscCall(PetscLogEventEnd(ctx->events[0], 0, 0, 0, 0));
   PetscCall(PetscLogEventEnd(ctx->events[11], 0, 0, 0, 0));
   if (ctx->stage) PetscCall(PetscLogStagePop());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2823,5 +2823,5 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   PetscCall(PetscLogEventEnd(ctx->events[9], 0, 0, 0, 0));
   PetscCall(PetscLogEventEnd(ctx->events[11], 0, 0, 0, 0));
   if (ctx->stage) PetscCall(PetscLogStagePop());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

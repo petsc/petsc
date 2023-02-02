@@ -54,7 +54,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   *nrecvs = recv_buf[rank];
 
   PetscCall(PetscFree2(recv_buf, iflags_localm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -131,7 +131,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 #endif
   }
   PetscCall(PetscFree2(r_waits, w_status));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Same as PetscGatherNumberOfMessages(), except using PetscInt for ilengths[] */
@@ -160,7 +160,7 @@ PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPI
   *nrecvs = recv_buf[rank];
 
   PetscCall(PetscFree2(recv_buf, iflags_localm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Same as PetscGatherMessageLengths(), except using PetscInt for message lengths */
@@ -201,7 +201,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
     if (w_status[i].MPI_SOURCE == rank) (*olengths)[i] = ilengths[rank]; /* See comments in PetscGatherMessageLengths */
   }
   PetscCall(PetscFree2(r_waits, w_status));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -282,7 +282,7 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
   }
 
   PetscCall(PetscFree4(r_waits, buf_r, buf_s, w_status));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -309,7 +309,7 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nre
 
   *rbuf    = rbuf_t;
   *r_waits = r_waits_t;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nrecvs, const PetscMPIInt onodes[], const PetscMPIInt olengths[], PetscScalar ***rbuf, MPI_Request **r_waits)
@@ -334,5 +334,5 @@ PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt 
 
   *rbuf    = rbuf_t;
   *r_waits = r_waits_t;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

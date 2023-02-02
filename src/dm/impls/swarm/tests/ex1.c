@@ -18,7 +18,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -26,7 +26,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   PetscInt d;
   u[0] = 0.0;
   for (d = 0; d < dim; ++d) u[0] += x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
@@ -80,14 +80,14 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
       PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
       cellid[c * Nq + q] = c;
       CoordinatesRefToReal(dim, dim, xi0, v0, J, &qpoints[q * dim], &coords[(c * Nq + q) * dim]);
-      linear(dim, 0.0, &coords[(c * Nq + q) * dim], 1, &vals[c * Nq + q], NULL);
+      PetscCall(linear(dim, 0.0, &coords[(c * Nq + q) * dim], 1, &vals[c * Nq + q], NULL));
     }
   }
   PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
   PetscCall(DMSwarmRestoreField(*sw, "f_q", NULL, NULL, (void **)&vals));
   PetscCall(PetscFree4(xi0, v0, J, invJ));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
@@ -125,7 +125,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   PetscCall(MatDestroy(&mass));
   PetscCall(DMRestoreGlobalVector(dm, &rhs));
   PetscCall(DMRestoreGlobalVector(dm, &uproj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
   PetscCall(TestL2Projection(dm, sw, &user));
   PetscCall(DMDestroy(&dm));
   PetscCall(DMDestroy(&sw));
-  PetscFinalize();
+  PetscCall(PetscFinalize());
   return 0;
 }
 

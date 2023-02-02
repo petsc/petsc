@@ -30,6 +30,7 @@ configure_options = [
   '--download-triangle=1',
   '--download-mmg=1',
   '--with-tau-perfstubs=0',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

@@ -56,7 +56,7 @@ static inline PetscErrorCode PetscBTMemzero(PetscInt m, PetscBT array)
 
 static inline PetscErrorCode PetscBTDestroy(PetscBT *array)
 {
-  return (*array) ? PetscFree(*array) : 0;
+  return (*array) ? PetscFree(*array) : PETSC_SUCCESS;
 }
 
 static inline PetscErrorCode PetscBTCreate(PetscInt m, PetscBT *array)
@@ -73,21 +73,21 @@ static inline PetscErrorCode PetscBTSet(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
   array[PetscBTIndex_Internal(index)] |= PetscBTMask_Internal(index);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscBTNegate(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
   array[PetscBTIndex_Internal(index)] ^= PetscBTMask_Internal(index);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscBTClear(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
   array[PetscBTIndex_Internal(index)] &= (char)~PetscBTMask_Internal(index);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline char PetscBTLookupSet(PetscBT array, PetscInt index)
@@ -107,12 +107,12 @@ static inline char PetscBTLookupClear(PetscBT array, PetscInt index)
 static inline PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  if (m < 1) PetscFunctionReturn(0);
+  if (m < 1) PetscFunctionReturn(PETSC_SUCCESS);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   for (PetscInt i = 0; i < m; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %d\n", i, (int)PetscBTLookup(bt, i)));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSCBT_H */

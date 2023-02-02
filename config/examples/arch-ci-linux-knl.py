@@ -25,6 +25,7 @@ if __name__ == '__main__':
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--download-metis=1',
     '--download-parmetis=1',
-    '--download-superlu_dist=1'
+    '--download-superlu_dist=1',
+    '--with-strict-petscerrorcode',
   ]
   configure.petsc_configure(configure_options)

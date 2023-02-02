@@ -37,7 +37,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
     }
     /* Broken in parallel */
     if (rank) PetscCheck(!*numVertices, PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Always use FVM adjacency to create partitioner graph */
   PetscCall(DMGetBasicAdjacency(dm, &useCone, &useClosure));
@@ -105,7 +105,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
   if (adjacency) {
     *adjacency = vAdj;
   } else PetscCall(PetscFree(vAdj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
@@ -139,7 +139,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
     }
     /* Broken in parallel */
     if (rank) PetscCheck(!*numVertices, PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMGetPointSF(dm, &sfPoint));
   PetscCall(DMPlexGetHeightStratum(dm, height, &pStart, &pEnd));
@@ -310,7 +310,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
   PetscCall(PetscSectionDestroy(&section));
   PetscCall(ISRestoreIndices(cellNumbering, &cellNum));
   PetscCall(ISDestroy(&cellNumbering));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
@@ -340,7 +340,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
     }
     /* Broken in parallel */
     if (rank) PetscCheck(!*numVertices, PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Interpolated and parallel case */
 
@@ -471,7 +471,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscCall(MatRestoreRowIJ(conn, 0, PETSC_FALSE, PETSC_FALSE, &m, &ii, &jj, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No IJ format");
   PetscCall(MatDestroy(&conn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -517,7 +517,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     PetscCall(DMPlexCreatePartitionerGraph_Overlap(dm, height, numVertices, offsets, adjacency, globalNumbering));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -560,7 +560,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
     if (numVertices) *numVertices = 0;
     if (offsets) *offsets = NULL;
     if (adjacency) *adjacency = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   numCells  = cEnd - cStart;
   faceDepth = depth - cellHeight;
@@ -615,7 +615,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
     if (numVertices) *numVertices = numCells;
     if (offsets) *offsets = off;
     if (adjacency) *adjacency = adj;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Setup face recognition */
   if (faceDepth == 1) {
@@ -716,7 +716,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   if (numVertices) *numVertices = numCells;
   if (offsets) *offsets = off;
   if (adjacency) *adjacency = adj;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -769,7 +769,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
     PetscCall(PetscMalloc1(cEnd - cStart, &points));
     for (c = cStart; c < cEnd; ++c) points[c] = c;
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part), cEnd - cStart, points, PETSC_OWN_POINTER, partition));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (part->height == 0) {
     PetscInt  numVertices = 0;
@@ -866,7 +866,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
     }
   } else SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_OUTOFRANGE, "Invalid height %" PetscInt_FMT " for points to partition", part->height);
   PetscCall(PetscSectionDestroy(&vertSection));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -895,7 +895,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(part, 2);
   *part = mesh->partitioner;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -924,7 +924,7 @@ PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
   PetscCall(PetscObjectReference((PetscObject)part));
   PetscCall(PetscPartitionerDestroy(&mesh->partitioner));
   mesh->partitioner = part;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexAddClosure_Private(DM dm, PetscHSetI ht, PetscInt point)
@@ -940,7 +940,7 @@ static PetscErrorCode DMPlexAddClosure_Private(DM dm, PetscHSetI ht, PetscInt po
     PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
     for (c = 0; c < coneSize; c++) PetscCall(DMPlexAddClosure_Private(dm, ht, cone[c]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_UNUSED static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, PetscInt point, PetscBool up, PetscBool down)
@@ -979,7 +979,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, P
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexAddClosureTree_Up_Private(DM dm, PetscHSetI ht, PetscInt point)
@@ -1002,7 +1002,7 @@ static PetscErrorCode DMPlexAddClosureTree_Up_Private(DM dm, PetscHSetI ht, Pets
       PetscCall(DMPlexAddClosureTree_Up_Private(dm, ht, cp));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexAddClosureTree_Down_Private(DM dm, PetscHSetI ht, PetscInt point)
@@ -1013,7 +1013,7 @@ static PetscErrorCode DMPlexAddClosureTree_Down_Private(DM dm, PetscHSetI ht, Pe
   PetscFunctionBeginHot;
   PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, &children));
   for (i = 0; i < numChildren; i++) PetscCall(PetscHSetIAdd(ht, children[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexAddClosureTree_Private(DM dm, PetscHSetI ht, PetscInt point)
@@ -1028,7 +1028,7 @@ static PetscErrorCode DMPlexAddClosureTree_Private(DM dm, PetscHSetI ht, PetscIn
   PetscCall(DMPlexGetCone(dm, point, &cone));
   PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
   for (c = 0; c < coneSize; c++) PetscCall(DMPlexAddClosureTree_Private(dm, ht, cone[c]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const PetscInt points[], IS *closureIS)
@@ -1064,7 +1064,7 @@ PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const Pets
   PetscCall(PetscHSetIDestroy(&ht));
   PetscCall(PetscSortInt(nelems, elems));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nelems, elems, PETSC_OWN_POINTER, closureIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1101,7 +1101,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
   }
   PetscCall(ISRestoreIndices(rankIS, &ranks));
   PetscCall(ISDestroy(&rankIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1143,7 +1143,7 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
   PetscCall(ISRestoreIndices(rankIS, &ranks));
   PetscCall(ISDestroy(&rankIS));
   PetscCall(PetscFree(adj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1205,7 +1205,7 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
   PetscCall(ISRestoreIndices(rankIS, &ranks));
   PetscCall(ISDestroy(&rankIS));
   PetscCall(DMLabelDestroy(&lblRoots));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1352,7 +1352,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
   PetscCall(PetscFree(rootPoints));
   PetscCall(PetscFree(leafPoints));
   PetscCall(PetscLogEventEnd(DMPLEX_PartLabelInvert, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1436,7 +1436,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
   PetscCall(PetscSFSetUp(*sf));
   PetscCall(ISDestroy(&neighborsIS));
   PetscCall(PetscLogEventEnd(DMPLEX_PartLabelCreateSF, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_PARMETIS)
@@ -1584,7 +1584,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   PetscCall(PetscFree(newOwners));
   PetscCall(PetscFree(newNumbers));
   PetscCall(PetscFree(isLeaf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt skip, PetscInt *vtxwgt, PetscInt *part, PetscViewer viewer)
@@ -1611,7 +1611,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
   }
   PetscCall(PetscViewerASCIIPrintf(viewer, "Min: %" PetscInt_FMT ", Avg: %" PetscInt_FMT ", Max: %" PetscInt_FMT ", Balance: %f\n", min, sum / size, max, (max * 1. * size) / sum));
   PetscCall(PetscFree(distribution));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif
@@ -1678,7 +1678,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) {
     if (success) *success = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (success) *success = PETSC_FALSE;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -1959,7 +1959,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscCall(PetscViewerDestroy(&viewer));
     }
     PetscCall(PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Check how well we did distributing points*/
@@ -2022,7 +2022,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   }
   if (success) *success = PETSC_TRUE;
   PetscCall(PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
 #endif

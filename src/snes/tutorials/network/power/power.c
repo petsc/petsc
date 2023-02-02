@@ -35,7 +35,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx)
   PetscCall(DMLocalToGlobalBegin(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(networkdm, &localF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx)
@@ -60,7 +60,7 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx)
   PetscCall(DMLocalToGlobalBegin(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMLocalToGlobalEnd(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMRestoreLocalVector(networkdm, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _p_LOAD), &User.compkey_load));
 
     PetscCall(PetscLogStageRegister("Read Data", &stage1));
-    PetscLogStagePush(stage1);
+    PetscCall(PetscLogStagePush(stage1));
     /* READ THE DATA */
     if (!crank) {
       /*    READ DATA */
@@ -117,10 +117,10 @@ int main(int argc, char **argv)
     /* If external option activated. Introduce error in jacobian */
     PetscCall(PetscOptionsHasName(NULL, NULL, "-jac_error", &User.jac_error));
 
-    PetscLogStagePop();
+    PetscCall(PetscLogStagePop());
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     PetscCall(PetscLogStageRegister("Create network", &stage2));
-    PetscLogStagePush(stage2);
+    PetscCall(PetscLogStagePush(stage2));
     /* Set number of nodes/edges */
     PetscCall(DMNetworkSetNumSubNetworks(networkdm, PETSC_DECIDE, 1));
     PetscCall(DMNetworkAddSubnetwork(networkdm, "", numEdges, edges, NULL));
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
     /* Distribute networkdm to multiple processes */
     PetscCall(DMNetworkDistribute(&networkdm, 0));
 
-    PetscLogStagePop();
+    PetscCall(PetscLogStagePop());
     PetscCall(DMNetworkGetEdgeRange(networkdm, &eStart, &eEnd));
     PetscCall(DMNetworkGetVertexRange(networkdm, &vStart, &vEnd));
 

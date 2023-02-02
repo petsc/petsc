@@ -24,7 +24,7 @@ static PetscErrorCode PCSetUp_NN(PC pc)
     /* Create the coarse matrix. */
     PetscCall(PCNNCreateCoarseMatrix(pc));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -90,7 +90,7 @@ static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
   PetscCall(VecScale(pcis->vec2_D, m_one));
   PetscCall(VecScatterBegin(pcis->global_to_D, pcis->vec2_D, z, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(pcis->global_to_D, pcis->vec2_D, z, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -123,7 +123,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
       Free the private data structure that was hanging off the PC
   */
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -193,7 +193,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
   pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = NULL;
   pc->ops->applysymmetricright = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -376,7 +376,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   pcnn->factor_coarse_rhs = (pcis->pure_neumann) ? 1.0 : 0.0;
 
   /* See historical note 02, at the bottom of this file. */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -407,7 +407,7 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
   PetscCall(PCISScatterArrayNToVecB(array_N, vec2_B, INSERT_VALUES, SCATTER_FORWARD, pc));
   PetscCall(PCISApplySchur(pc, vec2_B, vec1_B, (Vec)0, vec1_D, vec2_D));
   PetscCall(PCISScatterArrayNToVecB(array_N, vec1_B, INSERT_VALUES, SCATTER_REVERSE, pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -474,7 +474,7 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
       PetscCall(VecScatterEnd(pcis->global_to_B, vec2_B, z, ADD_VALUES, SCATTER_REVERSE));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -559,7 +559,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscCall(VecScatterBegin(pcis->global_to_B, vec1_B, z, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(pcis->global_to_B, vec1_B, z, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(PetscLogEventEnd(PC_ApplyCoarse, pc, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*                                                     */

@@ -6,7 +6,7 @@ static PetscErrorCode x(PetscInt dim, PetscReal time, const PetscReal x[], Petsc
 {
   PetscFunctionBegin;
   u[0] = x[0];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

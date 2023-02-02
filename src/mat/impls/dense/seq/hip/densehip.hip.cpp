@@ -45,7 +45,7 @@ PetscErrorCode MatSeqDenseHIPSetPreallocation(Mat A, PetscScalar *d_data)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSEHIP, &iship));
-  if (!iship) PetscFunctionReturn(0);
+  if (!iship) PetscFunctionReturn(PETSC_SUCCESS);
   /* it may happen CPU preallocation has not been performed */
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
@@ -65,7 +65,7 @@ PetscErrorCode MatSeqDenseHIPSetPreallocation(Mat A, PetscScalar *d_data)
   A->offloadmask  = PETSC_OFFLOAD_GPU;
   A->preallocated = PETSC_TRUE;
   A->assembled    = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqDenseHIPCopyFromGPU(Mat A)
@@ -91,7 +91,7 @@ PetscErrorCode MatSeqDenseHIPCopyFromGPU(Mat A)
 
     A->offloadmask = PETSC_OFFLOAD_BOTH;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqDenseHIPCopyToGPU(Mat A)
@@ -102,7 +102,7 @@ PetscErrorCode MatSeqDenseHIPCopyToGPU(Mat A)
 
   PetscFunctionBegin;
   PetscCheckTypeName(A, MATSEQDENSEHIP);
-  if (A->boundtocpu) PetscFunctionReturn(0);
+  if (A->boundtocpu) PetscFunctionReturn(PETSC_SUCCESS);
   copy = (PetscBool)(A->offloadmask == PETSC_OFFLOAD_CPU || A->offloadmask == PETSC_OFFLOAD_UNALLOCATED);
   PetscCall(PetscInfo(A, "%s matrix %" PetscInt_FMT " x %" PetscInt_FMT "\n", copy ? "Copy" : "Reusing", A->rmap->n, A->cmap->n));
   if (copy) {
@@ -120,7 +120,7 @@ PetscErrorCode MatSeqDenseHIPCopyToGPU(Mat A)
 
     A->offloadmask = PETSC_OFFLOAD_BOTH;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCopy_SeqDenseHIP(Mat A, Mat B, MatStructure str)
@@ -133,7 +133,7 @@ static PetscErrorCode MatCopy_SeqDenseHIP(Mat A, Mat B, MatStructure str)
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
   if (A->ops->copy != B->ops->copy) {
     PetscCall(MatCopy_Basic(A, B, str));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(m == B->rmap->n && n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "size(B) != size(A)");
   PetscCall(MatDenseHIPGetArrayRead(A, &va));
@@ -149,7 +149,7 @@ static PetscErrorCode MatCopy_SeqDenseHIP(Mat A, Mat B, MatStructure str)
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatDenseHIPRestoreArrayWrite(B, &vb));
   PetscCall(MatDenseHIPRestoreArrayRead(A, &va));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroEntries_SeqDenseHIP(Mat A)
@@ -169,7 +169,7 @@ static PetscErrorCode MatZeroEntries_SeqDenseHIP(Mat A)
   PetscCallHIP(WaitForHIP());
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatDenseHIPRestoreArrayWrite(A, &va));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPPlaceArray_SeqDenseHIP(Mat A, const PetscScalar *a)
@@ -186,7 +186,7 @@ static PetscErrorCode MatDenseHIPPlaceArray_SeqDenseHIP(Mat A, const PetscScalar
   dA->unplaced_user_alloc = dA->user_alloc;
   dA->d_v                 = (PetscScalar *)a;
   dA->user_alloc          = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPResetArray_SeqDenseHIP(Mat A)
@@ -201,7 +201,7 @@ static PetscErrorCode MatDenseHIPResetArray_SeqDenseHIP(Mat A)
   dA->d_v           = dA->unplacedarray;
   dA->user_alloc    = dA->unplaced_user_alloc;
   dA->unplacedarray = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPReplaceArray_SeqDenseHIP(Mat A, const PetscScalar *a)
@@ -216,7 +216,7 @@ static PetscErrorCode MatDenseHIPReplaceArray_SeqDenseHIP(Mat A, const PetscScal
   if (!dA->user_alloc) PetscCallHIP(hipFree(dA->d_v));
   dA->d_v        = (PetscScalar *)a;
   dA->user_alloc = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPGetArrayWrite_SeqDenseHIP(Mat A, PetscScalar **a)
@@ -226,14 +226,14 @@ static PetscErrorCode MatDenseHIPGetArrayWrite_SeqDenseHIP(Mat A, PetscScalar **
   PetscFunctionBegin;
   if (!dA->d_v) PetscCall(MatSeqDenseHIPSetPreallocation(A, NULL));
   *a = dA->d_v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPRestoreArrayWrite_SeqDenseHIP(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   if (a) *a = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPGetArrayRead_SeqDenseHIP(Mat A, const PetscScalar **a)
@@ -243,14 +243,14 @@ static PetscErrorCode MatDenseHIPGetArrayRead_SeqDenseHIP(Mat A, const PetscScal
   PetscFunctionBegin;
   PetscCall(MatSeqDenseHIPCopyToGPU(A));
   *a = dA->d_v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPRestoreArrayRead_SeqDenseHIP(Mat A, const PetscScalar **a)
 {
   PetscFunctionBegin;
   if (a) *a = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPGetArray_SeqDenseHIP(Mat A, PetscScalar **a)
@@ -260,14 +260,14 @@ static PetscErrorCode MatDenseHIPGetArray_SeqDenseHIP(Mat A, PetscScalar **a)
   PetscFunctionBegin;
   PetscCall(MatSeqDenseHIPCopyToGPU(A));
   *a = dA->d_v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseHIPRestoreArray_SeqDenseHIP(Mat A, PetscScalar **a)
 {
   PetscFunctionBegin;
   if (a) *a = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSeqDenseHIPInvertFactors_Private(Mat A)
@@ -282,7 +282,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseHIPInvertFactors_Private(Mat A)
 #endif
 
   PetscFunctionBegin;
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscHIPSOLVERGetHandle(&handle));
   PetscCall(PetscHipBLASIntCast(A->cmap->n, &n));
   PetscCall(PetscHipBLASIntCast(a->lda, &lda));
@@ -319,7 +319,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseHIPInvertFactors_Private(Mat A)
   A->factortype          = MAT_FACTOR_NONE;
 
   PetscCall(PetscFree(A->solvertype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDenseHIP_Internal(Mat A, Vec xx, Vec yy, PetscBool transpose, PetscErrorCode (*matsolve)(Mat, PetscScalar *, PetscHipBLASInt, PetscHipBLASInt, PetscHipBLASInt, PetscHipBLASInt, PetscBool))
@@ -372,7 +372,7 @@ static PetscErrorCode MatSolve_SeqDenseHIP_Internal(Mat A, Vec xx, Vec yy, Petsc
     else PetscCall(VecRestoreArray(yy, &yv));
     PetscCall(VecHIPRestoreArrayWrite(dA->workvec, &y));
   } else PetscCall(VecHIPRestoreArrayWrite(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDenseHIP_Internal(Mat A, Mat B, Mat X, PetscBool transpose, PetscErrorCode (*matsolve)(Mat, PetscScalar *, PetscHipBLASInt, PetscHipBLASInt, PetscHipBLASInt, PetscHipBLASInt, PetscBool))
@@ -438,7 +438,7 @@ static PetscErrorCode MatMatSolve_SeqDenseHIP_Internal(Mat A, Mat B, Mat X, Pets
     else PetscCall(MatDenseRestoreArray(X, &x));
     PetscCallHIP(hipFree(y));
   } else PetscCall(MatDenseHIPRestoreArrayWrite(X, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDenseHIP_Internal_LU(Mat A, PetscScalar *x, PetscHipBLASInt ldx, PetscHipBLASInt m, PetscHipBLASInt nrhs, PetscHipBLASInt k, PetscBool T)
@@ -465,7 +465,7 @@ static PetscErrorCode MatSolve_SeqDenseHIP_Internal_LU(Mat A, PetscScalar *x, Pe
     PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong argument to hipSolver %d", -info);
   }
   PetscCall(PetscLogGpuFlops(nrhs * (2.0 * m * m - m)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDenseHIP_Internal_Cholesky(Mat A, PetscScalar *x, PetscHipBLASInt ldx, PetscHipBLASInt m, PetscHipBLASInt nrhs, PetscHipBLASInt k, PetscBool T)
@@ -495,7 +495,7 @@ static PetscErrorCode MatSolve_SeqDenseHIP_Internal_Cholesky(Mat A, PetscScalar 
     PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong argument to hipSolver %d", -info);
   }
   PetscCall(PetscLogGpuFlops(nrhs * (2.0 * m * m - m)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDenseHIP_Internal_QR(Mat A, PetscScalar *x, PetscHipBLASInt ldx, PetscHipBLASInt m, PetscHipBLASInt nrhs, PetscHipBLASInt k, PetscBool T)
@@ -538,91 +538,91 @@ static PetscErrorCode MatSolve_SeqDenseHIP_Internal_QR(Mat A, PetscScalar *x, Pe
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatDenseHIPRestoreArrayRead(A, &da));
   PetscCall(PetscLogFlops(nrhs * (4.0 * m * mat->rank - PetscSqr(mat->rank))));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDenseHIP_LU(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatSolve_SeqDenseHIP_Internal(A, xx, yy, PETSC_FALSE, MatSolve_SeqDenseHIP_Internal_LU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SeqDenseHIP_LU(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatSolve_SeqDenseHIP_Internal(A, xx, yy, PETSC_TRUE, MatSolve_SeqDenseHIP_Internal_LU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDenseHIP_Cholesky(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatSolve_SeqDenseHIP_Internal(A, xx, yy, PETSC_FALSE, MatSolve_SeqDenseHIP_Internal_Cholesky));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SeqDenseHIP_Cholesky(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatSolve_SeqDenseHIP_Internal(A, xx, yy, PETSC_TRUE, MatSolve_SeqDenseHIP_Internal_Cholesky));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDenseHIP_QR(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatSolve_SeqDenseHIP_Internal(A, xx, yy, PETSC_FALSE, MatSolve_SeqDenseHIP_Internal_QR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SeqDenseHIP_QR(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatSolve_SeqDenseHIP_Internal(A, xx, yy, PETSC_TRUE, MatSolve_SeqDenseHIP_Internal_QR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDenseHIP_LU(Mat A, Mat B, Mat X)
 {
   PetscFunctionBegin;
   PetscCall(MatMatSolve_SeqDenseHIP_Internal(A, B, X, PETSC_FALSE, MatSolve_SeqDenseHIP_Internal_LU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDenseHIP_LU(Mat A, Mat B, Mat X)
 {
   PetscFunctionBegin;
   PetscCall(MatMatSolve_SeqDenseHIP_Internal(A, B, X, PETSC_TRUE, MatSolve_SeqDenseHIP_Internal_LU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDenseHIP_Cholesky(Mat A, Mat B, Mat X)
 {
   PetscFunctionBegin;
   PetscCall(MatMatSolve_SeqDenseHIP_Internal(A, B, X, PETSC_FALSE, MatSolve_SeqDenseHIP_Internal_Cholesky));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDenseHIP_Cholesky(Mat A, Mat B, Mat X)
 {
   PetscFunctionBegin;
   PetscCall(MatMatSolve_SeqDenseHIP_Internal(A, B, X, PETSC_TRUE, MatSolve_SeqDenseHIP_Internal_Cholesky));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDenseHIP_QR(Mat A, Mat B, Mat X)
 {
   PetscFunctionBegin;
   PetscCall(MatMatSolve_SeqDenseHIP_Internal(A, B, X, PETSC_FALSE, MatSolve_SeqDenseHIP_Internal_QR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDenseHIP_QR(Mat A, Mat B, Mat X)
 {
   PetscFunctionBegin;
   PetscCall(MatMatSolve_SeqDenseHIP_Internal(A, B, X, PETSC_TRUE, MatSolve_SeqDenseHIP_Internal_QR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactor_SeqDenseHIP(Mat A, IS rperm, IS cperm, const MatFactorInfo *factinfo)
@@ -637,7 +637,7 @@ static PetscErrorCode MatLUFactor_SeqDenseHIP(Mat A, IS rperm, IS cperm, const M
 #endif
 
   PetscFunctionBegin;
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscHIPSOLVERGetHandle(&handle));
   PetscCall(MatDenseHIPGetArray(A, &da));
   PetscCall(PetscHipBLASIntCast(A->cmap->n, &n));
@@ -669,7 +669,7 @@ static PetscErrorCode MatLUFactor_SeqDenseHIP(Mat A, IS rperm, IS cperm, const M
 
   PetscCall(PetscFree(A->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERHIP, &A->solvertype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCholeskyFactor_SeqDenseHIP(Mat A, IS perm, const MatFactorInfo *factinfo)
@@ -684,7 +684,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseHIP(Mat A, IS perm, const MatFac
 #endif
 
   PetscFunctionBegin;
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscHIPSOLVERGetHandle(&handle));
   PetscCall(PetscHipBLASIntCast(A->rmap->n, &n));
   PetscCall(PetscInfo(A, "Cholesky factor %d x %d on backend\n", n, n));
@@ -728,7 +728,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseHIP(Mat A, IS perm, const MatFac
   A->ops->matsolvetranspose = MatMatSolveTranspose_SeqDenseHIP_Cholesky;
   PetscCall(PetscFree(A->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERHIP, &A->solvertype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatQRFactor_SeqDenseHIP(Mat A, IS col, const MatFactorInfo *factinfo)
@@ -743,7 +743,7 @@ static PetscErrorCode MatQRFactor_SeqDenseHIP(Mat A, IS col, const MatFactorInfo
 #endif
 
   PetscFunctionBegin;
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscHIPSOLVERGetHandle(&handle));
   PetscCall(MatDenseHIPGetArray(A, &da));
   PetscCall(PetscHipBLASIntCast(A->cmap->n, &n));
@@ -779,7 +779,7 @@ static PetscErrorCode MatQRFactor_SeqDenseHIP(Mat A, IS col, const MatFactorInfo
 
   PetscCall(PetscFree(A->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERHIP, &A->solvertype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* GEMM kernel: C = op(A)*op(B), tA, tB flag transposition */
@@ -803,7 +803,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(Ma
   PetscCall(PetscHipBLASIntCast(C->cmap->n, &n));
   if (tA) PetscCall(PetscHipBLASIntCast(A->rmap->n, &k));
   else PetscCall(PetscHipBLASIntCast(A->cmap->n, &k));
-  if (!m || !n || !k) PetscFunctionReturn(0);
+  if (!m || !n || !k) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscInfo(C, "Matrix-Matrix product %d x %d x %d on backend\n", m, k, n));
   PetscCall(MatDenseHIPGetArrayRead(A, &da));
   PetscCall(MatDenseHIPGetArrayRead(B, &db));
@@ -821,35 +821,35 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(Ma
   PetscCall(MatDenseHIPRestoreArrayWrite(C, &dc));
   if (!Aiship) PetscCall(MatConvert(A, MATSEQDENSE, MAT_INPLACE_MATRIX, &A));
   if (!Biship) PetscCall(MatConvert(B, MATSEQDENSE, MAT_INPLACE_MATRIX, &B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeMatMultNumeric_SeqDenseHIP_SeqDenseHIP(Mat A, Mat B, Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(A, B, C, PETSC_TRUE, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP(Mat A, Mat B, Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(A, B, C, PETSC_FALSE, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatTransposeMultNumeric_SeqDenseHIP_SeqDenseHIP(Mat A, Mat B, Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(A, B, C, PETSC_FALSE, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatProductSetFromOptions_SeqDenseHIP(Mat C)
 {
   PetscFunctionBegin;
   PetscCall(MatProductSetFromOptions_SeqDense(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* zz = op(A)*xx + yy
@@ -867,7 +867,7 @@ static PetscErrorCode MatMultAdd_SeqDenseHIP_Private(Mat A, Vec xx, Vec yy, Vec 
   if (yy && yy != zz) PetscCall(VecSeq_HIP::copy(yy, zz)); /* mult add */
   if (!A->rmap->n || !A->cmap->n) {
     if (!yy) PetscCall(VecSeq_HIP::set(zz, 0.0)); /* mult only */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscInfo(A, "Matrix-vector product %d x %d on backend\n", A->rmap->n, A->cmap->n));
   PetscCall(PetscHipBLASIntCast(A->rmap->n, &m));
@@ -884,35 +884,35 @@ static PetscErrorCode MatMultAdd_SeqDenseHIP_Private(Mat A, Vec xx, Vec yy, Vec 
   PetscCall(VecHIPRestoreArrayRead(xx, &xarray));
   PetscCall(VecHIPRestoreArray(zz, &zarray));
   PetscCall(MatDenseHIPRestoreArrayRead(A, &da));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqDenseHIP(Mat A, Vec xx, Vec yy, Vec zz)
 {
   PetscFunctionBegin;
   PetscCall(MatMultAdd_SeqDenseHIP_Private(A, xx, yy, zz, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTransposeAdd_SeqDenseHIP(Mat A, Vec xx, Vec yy, Vec zz)
 {
   PetscFunctionBegin;
   PetscCall(MatMultAdd_SeqDenseHIP_Private(A, xx, yy, zz, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqDenseHIP(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatMultAdd_SeqDenseHIP_Private(A, xx, NULL, yy, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_SeqDenseHIP(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatMultAdd_SeqDenseHIP_Private(A, xx, NULL, yy, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetArrayRead_SeqDenseHIP(Mat A, const PetscScalar **array)
@@ -922,7 +922,7 @@ static PetscErrorCode MatDenseGetArrayRead_SeqDenseHIP(Mat A, const PetscScalar 
   PetscFunctionBegin;
   PetscCall(MatSeqDenseHIPCopyFromGPU(A));
   *array = mat->v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetArrayWrite_SeqDenseHIP(Mat A, PetscScalar **array)
@@ -933,7 +933,7 @@ static PetscErrorCode MatDenseGetArrayWrite_SeqDenseHIP(Mat A, PetscScalar **arr
   if (!mat->v) PetscCall(MatSeqDenseSetPreallocation(A, NULL)); /* MatCreateSeqDenseHIP may not allocate CPU memory. Allocate if needed */
   *array         = mat->v;
   A->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetArray_SeqDenseHIP(Mat A, PetscScalar **array)
@@ -944,7 +944,7 @@ static PetscErrorCode MatDenseGetArray_SeqDenseHIP(Mat A, PetscScalar **array)
   PetscCall(MatSeqDenseHIPCopyFromGPU(A));
   *array         = mat->v;
   A->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetArrayAndMemType_SeqDenseHIP(Mat A, PetscScalar **array, PetscMemType *mtype)
@@ -955,7 +955,7 @@ static PetscErrorCode MatDenseGetArrayAndMemType_SeqDenseHIP(Mat A, PetscScalar 
   PetscCall(MatSeqDenseHIPCopyToGPU(A)); // Since we will read the array on device, we sync the GPU data if necessary
   *array = dA->d_v;
   if (mtype) *mtype = PETSC_MEMTYPE_HIP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseRestoreArrayAndMemType_SeqDenseHIP(Mat A, PetscScalar **array)
@@ -963,7 +963,7 @@ static PetscErrorCode MatDenseRestoreArrayAndMemType_SeqDenseHIP(Mat A, PetscSca
   PetscFunctionBegin;
   *array         = nullptr;
   A->offloadmask = PETSC_OFFLOAD_GPU; // Since we've written to the array on device
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode (*MatDenseGetArrayReadAndMemType_SeqDenseHIP)(Mat, PetscScalar **, PetscMemType *) = MatDenseGetArrayAndMemType_SeqDenseHIP;
@@ -977,7 +977,7 @@ static PetscErrorCode MatDenseGetArrayWriteAndMemType_SeqDenseHIP(Mat A, PetscSc
   if (!dA->d_v) PetscCall(MatSeqDenseHIPSetPreallocation(A, NULL)); // Allocate GPU memory if not present
   *array = dA->d_v;
   if (mtype) *mtype = PETSC_MEMTYPE_HIP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode (*MatDenseRestoreArrayWriteAndMemType_SeqDenseHIP)(Mat, PetscScalar **) = MatDenseRestoreArrayAndMemType_SeqDenseHIP; // Since we've written to the array on device
@@ -1003,7 +1003,7 @@ PetscErrorCode MatScale_SeqDenseHIP(Mat Y, PetscScalar alpha)
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(N));
   PetscCall(MatDenseHIPRestoreArray(Y, &dy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 struct petscshift : public thrust::unary_function<PetscScalar, PetscScalar> {
@@ -1054,7 +1054,7 @@ PetscErrorCode MatShift_DenseHIP_Private(PetscScalar *da, PetscScalar alpha, Pet
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(rend2 - rstart));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatShift_SeqDenseHIP(Mat A, PetscScalar alpha)
@@ -1068,7 +1068,7 @@ PetscErrorCode MatShift_SeqDenseHIP(Mat A, PetscScalar alpha)
   PetscCall(PetscInfo(A, "Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
   PetscCall(MatShift_DenseHIP_Private(da, alpha, lda, 0, m, n));
   PetscCall(MatDenseHIPRestoreArray(A, &da));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_SeqDenseHIP(Mat Y, PetscScalar alpha, Mat X, MatStructure str)
@@ -1081,7 +1081,7 @@ PetscErrorCode MatAXPY_SeqDenseHIP(Mat Y, PetscScalar alpha, Mat X, MatStructure
   hipblasHandle_t    hipblasv2handle;
 
   PetscFunctionBegin;
-  if (!X->rmap->n || !X->cmap->n) PetscFunctionReturn(0);
+  if (!X->rmap->n || !X->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscHIPBLASGetHandle(&hipblasv2handle));
   PetscCall(MatDenseHIPGetArrayRead(X, &dx));
   if (alpha == 0.0) PetscCall(MatDenseHIPGetArrayWrite(Y, &dy));
@@ -1100,7 +1100,7 @@ PetscErrorCode MatAXPY_SeqDenseHIP(Mat Y, PetscScalar alpha, Mat X, MatStructure
   PetscCall(MatDenseHIPRestoreArrayRead(X, &dx));
   if (alpha == 0.0) PetscCall(MatDenseHIPRestoreArrayWrite(Y, &dy));
   else PetscCall(MatDenseHIPRestoreArray(Y, &dy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatReset_SeqDenseHIP(Mat A)
@@ -1118,7 +1118,7 @@ static PetscErrorCode MatReset_SeqDenseHIP(Mat A)
     PetscCall(VecDestroy(&dA->workvec));
   }
   PetscCall(PetscFree(A->spptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqDenseHIP(Mat A)
@@ -1130,7 +1130,7 @@ PetscErrorCode MatDestroy_SeqDenseHIP(Mat A)
   if (!a->user_alloc) A->offloadmask = PETSC_OFFLOAD_CPU;
   PetscCall(MatConvert_SeqDenseHIP_SeqDense(A, MATSEQDENSE, MAT_INPLACE_MATRIX, &A));
   PetscCall(MatDestroy_SeqDense(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_SeqDenseHIP(Mat A, MatDuplicateOption cpvalues, Mat *B)
@@ -1147,7 +1147,7 @@ PetscErrorCode MatDuplicate_SeqDenseHIP(Mat A, MatDuplicateOption cpvalues, Mat 
     Mat_SeqDenseHIP *dB = (Mat_SeqDenseHIP *)(*B)->spptr;
     if (!dB->d_v) PetscCall(MatSeqDenseHIPSetPreallocation(*B, NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetColumnVector_SeqDenseHIP(Mat A, Vec v, PetscInt col)
@@ -1170,7 +1170,7 @@ static PetscErrorCode MatGetColumnVector_SeqDenseHIP(Mat A, Vec v, PetscInt col)
     else if (A->offloadmask & PETSC_OFFLOAD_GPU) PetscCallHIP(hipMemcpy(x, dA->d_v + col * a->lda, A->rmap->n * sizeof(PetscScalar), hipMemcpyDeviceToHost));
     PetscCall(VecRestoreArrayWrite(v, &x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_hip(Mat A, MatFactorType ftype, Mat *fact)
@@ -1195,7 +1195,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_hip(Mat A, MatFactorType ftype
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&(*fact)->preferredordering[MAT_FACTOR_ILU]));
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&(*fact)->preferredordering[MAT_FACTOR_CHOLESKY]));
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&(*fact)->preferredordering[MAT_FACTOR_ICC]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetColumnVec_SeqDenseHIP(Mat A, PetscInt col, Vec *v)
@@ -1213,7 +1213,7 @@ static PetscErrorCode MatDenseGetColumnVec_SeqDenseHIP(Mat A, PetscInt col, Vec 
   a->vecinuse = col + 1;
   PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
   *v = a->cvec;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseRestoreColumnVec_SeqDenseHIP(Mat A, PetscInt col, Vec *v)
@@ -1227,7 +1227,7 @@ static PetscErrorCode MatDenseRestoreColumnVec_SeqDenseHIP(Mat A, PetscInt col, 
   PetscCall(VecHIPResetArray(a->cvec));
   PetscCall(MatDenseHIPRestoreArray(A, (PetscScalar **)&a->ptrinuse));
   if (v) *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetColumnVecRead_SeqDenseHIP(Mat A, PetscInt col, Vec *v)
@@ -1246,7 +1246,7 @@ static PetscErrorCode MatDenseGetColumnVecRead_SeqDenseHIP(Mat A, PetscInt col, 
   PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
   PetscCall(VecLockReadPush(a->cvec));
   *v = a->cvec;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseRestoreColumnVecRead_SeqDenseHIP(Mat A, PetscInt col, Vec *v)
@@ -1261,7 +1261,7 @@ static PetscErrorCode MatDenseRestoreColumnVecRead_SeqDenseHIP(Mat A, PetscInt c
   PetscCall(VecHIPResetArray(a->cvec));
   PetscCall(MatDenseHIPRestoreArrayRead(A, &a->ptrinuse));
   if (v) *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetColumnVecWrite_SeqDenseHIP(Mat A, PetscInt col, Vec *v)
@@ -1279,7 +1279,7 @@ static PetscErrorCode MatDenseGetColumnVecWrite_SeqDenseHIP(Mat A, PetscInt col,
   a->vecinuse = col + 1;
   PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
   *v = a->cvec;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDenseHIP(Mat A, PetscInt col, Vec *v)
@@ -1293,7 +1293,7 @@ static PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDenseHIP(Mat A, PetscInt 
   PetscCall(VecHIPResetArray(a->cvec));
   PetscCall(MatDenseHIPRestoreArrayWrite(A, (PetscScalar **)&a->ptrinuse));
   if (v) *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetSubMatrix_SeqDenseHIP(Mat A, PetscInt rbegin, PetscInt rend, PetscInt cbegin, PetscInt cend, Mat *v)
@@ -1317,7 +1317,7 @@ static PetscErrorCode MatDenseGetSubMatrix_SeqDenseHIP(Mat A, PetscInt rbegin, P
   a->cmat->offloadmask = A->offloadmask;
   a->matinuse          = cbegin + 1;
   *v                   = a->cmat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseHIP(Mat A, Mat *v)
@@ -1344,7 +1344,7 @@ static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseHIP(Mat A, Mat *v)
   } else A->offloadmask = (suboff == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
   a->cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   if (v) *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseSetLDA_SeqDenseHIP(Mat A, PetscInt lda)
@@ -1358,7 +1358,7 @@ static PetscErrorCode MatDenseSetLDA_SeqDenseHIP(Mat A, PetscInt lda)
   PetscCheck(dA->user_alloc || data || cA->lda == lda, PETSC_COMM_SELF, PETSC_ERR_ORDER, "LDA cannot be changed after allocation of internal storage");
   PetscCheck(lda >= A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "LDA %" PetscInt_FMT " must be at least matrix dimension %" PetscInt_FMT, lda, A->rmap->n);
   cA->lda = lda;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetUp_SeqDenseHIP(Mat A)
@@ -1367,7 +1367,7 @@ static PetscErrorCode MatSetUp_SeqDenseHIP(Mat A)
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   if (!A->preallocated) PetscCall(MatSeqDenseHIPSetPreallocation(A, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatBindToCPU_SeqDenseHIP(Mat A, PetscBool flg)
@@ -1469,7 +1469,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseHIP(Mat A, PetscBool flg)
     A->ops->zeroentries             = MatZeroEntries_SeqDense;
   }
   if (a->cmat) { PetscCall(MatBindToCPU(a->cmat, flg)); }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConvert_SeqDenseHIP_SeqDense(Mat M, MatType type, MatReuse reuse, Mat *newmat)
@@ -1481,7 +1481,7 @@ PetscErrorCode MatConvert_SeqDenseHIP_SeqDense(Mat M, MatType type, MatReuse reu
   if (reuse == MAT_REUSE_MATRIX || reuse == MAT_INITIAL_MATRIX) {
     /* TODO these cases should be optimized */
     PetscCall(MatConvert_Basic(M, type, reuse, newmat));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   B = *newmat;
@@ -1506,7 +1506,7 @@ PetscErrorCode MatConvert_SeqDenseHIP_SeqDense(Mat M, MatType type, MatReuse reu
   B->ops->bindtocpu = NULL;
   B->ops->destroy   = MatDestroy_SeqDense;
   B->offloadmask    = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConvert_SeqDense_SeqDenseHIP(Mat M, MatType type, MatReuse reuse, Mat *newmat)
@@ -1520,7 +1520,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseHIP(Mat M, MatType type, MatReuse reu
   if (reuse == MAT_REUSE_MATRIX || reuse == MAT_INITIAL_MATRIX) {
     /* TODO these cases should be optimized */
     PetscCall(MatConvert_Basic(M, type, reuse, newmat));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   B = *newmat;
@@ -1546,7 +1546,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseHIP(Mat M, MatType type, MatReuse reu
   PetscCall(MatBindToCPU_SeqDenseHIP(B, PETSC_FALSE));
   B->ops->bindtocpu = MatBindToCPU_SeqDenseHIP;
   B->ops->destroy   = MatDestroy_SeqDenseHIP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1581,7 +1581,7 @@ PetscErrorCode MatCreateSeqDenseHIP(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQDENSEHIP));
   PetscCall(MatSeqDenseHIPSetPreallocation(*A, data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1600,5 +1600,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseHIP(Mat B)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
   PetscCall(MatCreate_SeqDense(B));
   PetscCall(MatConvert_SeqDense_SeqDenseHIP(B, MATSEQDENSEHIP, MAT_INPLACE_MATRIX, &B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

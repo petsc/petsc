@@ -39,13 +39,13 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A, PetscInt nr
   PetscInt      buf[4096], *irowm = NULL, *icolm; /* suppress maybe-uninitialized warning */
 
   PetscFunctionBegin;
-  if (!nrow || !ncol) PetscFunctionReturn(0);
+  if (!nrow || !ncol) PetscFunctionReturn(PETSC_SUCCESS);
   IndexSpaceGet(buf, nrow, ncol, irowm, icolm);
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping, nrow, irow, irowm));
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping, ncol, icol, icolm));
   PetscCall((*lr->SetValuesBlocked)(lr->Top, nrow, irowm, ncol, icolm, y, addv));
   IndexSpaceRestore(buf, nrow, ncol, irowm, icolm);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
@@ -62,7 +62,7 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A, PetscInt n
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping, ncol * cbs, icolm, icolm));
   PetscCall((*lr->SetValues)(lr->Top, nrow * rbs, irowm, ncol * cbs, icolm, y, addv));
   IndexSpaceRestore(buf, nrow * rbs, ncol * cbs, irowm, icolm);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
@@ -87,7 +87,7 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A, PetscInt nrow, co
   }
   PetscCall((*lr->SetValues)(lr->Top, nrow, irowm, ncol, icolm, y, addv));
   IndexSpaceRestore(buf, nrow, ncol, irowm, icolm);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Compose an IS with an ISLocalToGlobalMapping to map from IS source indices to global indices */
@@ -116,7 +116,7 @@ static PetscErrorCode ISL2GCompose(IS is, ISLocalToGlobalMapping ltog, ISLocalTo
       PetscCall(ISLocalToGlobalMappingApplyBlock(ltog, m, idx, idxm));
       PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is), bs, m, idxm, PETSC_OWN_POINTER, cltog));
       PetscCall(ISBlockRestoreIndices(is, &idx));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   PetscCall(ISGetLocalSize(is, &m));
@@ -130,7 +130,7 @@ static PetscErrorCode ISL2GCompose(IS is, ISLocalToGlobalMapping ltog, ISLocalTo
   }
   PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is), bs, m, idxm, PETSC_OWN_POINTER, cltog));
   PetscCall(ISRestoreIndices(is, &idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLocalToGlobalMapping *cltog)
@@ -153,14 +153,14 @@ static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLo
   }
   PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is), bs, m, idxm, PETSC_OWN_POINTER, cltog));
   PetscCall(ISBlockRestoreIndices(is, &idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_LocalRef(Mat B)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(B->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -273,5 +273,5 @@ PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat)
     }
   }
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -238,7 +238,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
   PetscCall(VecRestoreArray(X, &x));
   PetscCall(VecRestoreArray(G, &g));
   PetscCall(PetscLogFlops(67 * mx * my));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -406,7 +406,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
   PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogFlops(199 * mx * my));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -493,7 +493,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -537,7 +537,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
     /* Restore vectors */
     PetscCall(VecRestoreArray(X, &x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

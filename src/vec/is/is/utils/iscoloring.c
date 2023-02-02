@@ -9,7 +9,7 @@ PetscErrorCode ISColoringReference(ISColoring coloring)
 {
   PetscFunctionBegin;
   coloring->refct++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -34,7 +34,7 @@ PetscErrorCode ISColoringSetType(ISColoring coloring, ISColoringType type)
 {
   PetscFunctionBegin;
   coloring->ctype = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -57,7 +57,7 @@ PetscErrorCode ISColoringGetType(ISColoring coloring, ISColoringType *type)
 {
   PetscFunctionBegin;
   *type = coloring->ctype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -77,11 +77,11 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   PetscInt i;
 
   PetscFunctionBegin;
-  if (!*iscoloring) PetscFunctionReturn(0);
+  if (!*iscoloring) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidPointer((*iscoloring), 1);
   if (--(*iscoloring)->refct > 0) {
     *iscoloring = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if ((*iscoloring)->is) {
@@ -91,7 +91,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   if ((*iscoloring)->allocated) PetscCall(PetscFree((*iscoloring)->colors));
   PetscCall(PetscCommDestroy(&(*iscoloring)->comm));
   PetscCall(PetscFree((*iscoloring)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -127,7 +127,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -173,7 +173,7 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
   PetscCall(ISColoringGetIS(iscoloring, PETSC_USE_POINTER, PETSC_IGNORE, &is));
   for (i = 0; i < iscoloring->n; i++) PetscCall(ISView(iscoloring->is[i], viewer));
   PetscCall(ISColoringRestoreIS(iscoloring, PETSC_USE_POINTER, &is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -206,7 +206,7 @@ PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt 
   if (n) *n = iscoloring->N;
   if (nc) *nc = iscoloring->n;
   if (colors) *colors = iscoloring->colors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -274,7 +274,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
       *isis = iscoloring->is;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -297,7 +297,7 @@ PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring, PetscCopyMode mode, IS
   PetscValidPointer(iscoloring, 1);
 
   /* currently nothing is done here */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -381,7 +381,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
   }
   PetscCall(ISColoringViewFromOptions(*iscoloring, NULL, "-is_coloring_view"));
   PetscCall(PetscInfo(0, "Number of colors %" PetscInt_FMT "\n", nc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -489,7 +489,7 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows)
   } else {
     PetscCall(PetscFree(recv_indices));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -528,7 +528,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
   if (ndorder) {
     PetscCall(PetscObjectReference((PetscObject)ndorder));
     *is = ndorder;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscObjectGetComm((PetscObject)part, &comm));
@@ -566,7 +566,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
   PetscCall(ISRestoreIndices(part, &indices));
   PetscCall(ISCreateGeneral(comm, n, newi, PETSC_OWN_POINTER, is));
   PetscCall(ISSetPermutation(*is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -637,7 +637,7 @@ PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
   PetscCall(PetscMPIIntCast(len, &npp));
   PetscCall(MPIU_Allreduce(lsizes, count, npp, MPIU_INT, MPI_SUM, comm));
   PetscCall(PetscFree(lsizes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -707,7 +707,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, N, indices, PETSC_OWN_POINTER, isout));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -753,7 +753,7 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lin
 
   *outindices = indices;
   if (outN) *outN = N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -820,5 +820,5 @@ PetscErrorCode ISComplement(IS is, PetscInt nmin, PetscInt nmax, IS *isout)
   PetscCheck(cnt == nmax - nmin - unique, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of entries found in complement %" PetscInt_FMT " does not match expected %" PetscInt_FMT, cnt, nmax - nmin - unique);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is), cnt, nindices, PETSC_OWN_POINTER, isout));
   PetscCall(ISRestoreIndices(is, &indices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

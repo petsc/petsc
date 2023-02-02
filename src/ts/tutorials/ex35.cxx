@@ -68,14 +68,14 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscOptionsEnd();
 
   *puser = user;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Destroy_AppContext(UserCtx *user)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(*user));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormInitialSolution(TS, Vec, void *);
@@ -244,7 +244,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
@@ -282,7 +282,7 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   /* Restore vectors */
   PetscCall(DMMoabVecRestoreArrayRead(dm, X, &x));
   PetscCall(DMMoabVecRestoreArray(dm, F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
@@ -344,7 +344,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(DMMoabVecRestoreArrayRead(dm, Xdot, &xdot));
   PetscCall(DMMoabVecRestoreArray(dm, F, &f));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
@@ -383,7 +383,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
 
   /* Restore vectors */
   PetscCall(DMMoabVecRestoreArray(dm, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

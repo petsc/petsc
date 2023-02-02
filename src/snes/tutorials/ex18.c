@@ -127,7 +127,7 @@ PetscErrorCode FormInitialGuess(SNES snes, Vec X, void *ctx)
     for (i = xs; i < xs + xm; i++) x[j][i] = tleft;
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
@@ -287,7 +287,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &localX));
   PetscCall(PetscLogFlops((22.0 + 4.0 * POWFLOP) * ym * xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat jac, Mat B, void *ptr)
@@ -633,7 +633,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat jac, Mat B, void *ptr)
   }
 
   PetscCall(PetscLogFlops((41.0 + 8.0 * POWFLOP) * xm * ym));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

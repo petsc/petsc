@@ -45,7 +45,7 @@ static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer, FILE *fp,
     }
     PetscCall(PetscViewerVTKFWrite(viewer, fp, buffer, count, mpidatatype));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, PieceInfo *piece, PetscVTKInt **oconn, PetscVTKInt **ooffsets, PetscVTKType **otypes)
@@ -117,7 +117,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
   *oconn    = conn;
   *ooffsets = offsets;
   *otypes   = types;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -824,5 +824,5 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fp, "\n  </AppendedData>\n"));
   PetscCall(PetscFPrintf(comm, fp, "</VTKFile>\n"));
   PetscCall(PetscFClose(comm, fp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

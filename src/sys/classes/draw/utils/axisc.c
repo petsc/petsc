@@ -49,7 +49,7 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis)
   ad->toplabel  = NULL;
 
   *axis = ad;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -67,11 +67,11 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis)
 PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (!*axis) PetscFunctionReturn(0);
+  if (!*axis) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*axis, PETSC_DRAWAXIS_CLASSID, 1);
   if (--((PetscObject)(*axis))->refct > 0) {
     *axis = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscFree((*axis)->toplabel));
@@ -79,7 +79,7 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis)
   PetscCall(PetscFree((*axis)->ylabel));
   PetscCall(PetscDrawDestroy(&(*axis)->win));
   PetscCall(PetscHeaderDestroy(axis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -108,7 +108,7 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
   axis->ac = ac;
   axis->tc = tc;
   axis->cc = cc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -140,7 +140,7 @@ PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], cons
   PetscCall(PetscStrallocpy(xlabel, &axis->xlabel));
   PetscCall(PetscStrallocpy(ylabel, &axis->ylabel));
   PetscCall(PetscStrallocpy(top, &axis->toplabel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -164,13 +164,13 @@ PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis, PetscReal xmin, PetscR
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
-  if (axis->hold) PetscFunctionReturn(0);
+  if (axis->hold) PetscFunctionReturn(PETSC_SUCCESS);
   axis->xlow  = xmin;
   axis->xhigh = xmax;
   axis->ylow  = ymin;
   axis->yhigh = ymax;
   PetscCall(PetscOptionsHasName(((PetscObject)axis)->options, ((PetscObject)axis)->prefix, "-drawaxis_hold", &axis->hold));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -195,7 +195,7 @@ PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis axis, PetscReal *xmin, Petsc
   if (xmax) *xmax = axis->xhigh;
   if (ymin) *ymin = axis->ylow;
   if (ymax) *ymax = axis->yhigh;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -222,7 +222,7 @@ PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold)
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
   PetscValidLogicalCollectiveBool(axis, hold, 2);
   axis->hold = hold;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -257,7 +257,7 @@ PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
   PetscCall(PetscDrawIsNull(axis->win, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)axis), &rank));
 
   draw = axis->win;
@@ -377,7 +377,7 @@ finally:
   PetscDrawCollectiveEnd(draw);
   PetscCallMPI(MPI_Bcast(coors, 4, MPIU_REAL, 0, PetscObjectComm((PetscObject)draw)));
   PetscCall(PetscDrawSetCoordinates(draw, coors[0], coors[1], coors[2], coors[3]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -403,7 +403,7 @@ PetscErrorCode PetscStripe0(char *buf)
     buf[n - 2] = buf[n - 1];
     buf[n - 1] = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -415,13 +415,13 @@ PetscErrorCode PetscStripAllZeros(char *buf)
 
   PetscFunctionBegin;
   PetscCall(PetscStrlen(buf, &n));
-  if (buf[0] != '.') PetscFunctionReturn(0);
+  if (buf[0] != '.') PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 1; i < n; i++) {
-    if (buf[i] != '0') PetscFunctionReturn(0);
+    if (buf[i] != '0') PetscFunctionReturn(PETSC_SUCCESS);
   }
   buf[0] = '0';
   buf[1] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -435,7 +435,7 @@ PetscErrorCode PetscStripTrailingZeros(char *buf)
   PetscFunctionBegin;
   /* if there is an e in string DO NOT strip trailing zeros */
   PetscCall(PetscStrchr(buf, 'e', &found));
-  if (found) PetscFunctionReturn(0);
+  if (found) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscStrlen(buf, &n));
   /* locate decimal point */
@@ -446,13 +446,13 @@ PetscErrorCode PetscStripTrailingZeros(char *buf)
     }
   }
   /* if not decimal point then no zeros to remove */
-  if (m == PETSC_MAX_INT) PetscFunctionReturn(0);
+  if (m == PETSC_MAX_INT) PetscFunctionReturn(PETSC_SUCCESS);
   /* start at right end of string removing 0s */
   for (i = n - 1; i > m; i++) {
-    if (buf[i] != '0') PetscFunctionReturn(0);
+    if (buf[i] != '0') PetscFunctionReturn(PETSC_SUCCESS);
     buf[i] = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -469,7 +469,7 @@ PetscErrorCode PetscStripInitialZero(char *buf)
   } else if (buf[0] == '-' && buf[1] == '0') {
     for (i = 1; i < n; i++) buf[i] = buf[i + 1];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -481,15 +481,15 @@ PetscErrorCode PetscStripZeros(char *buf)
 
   PetscFunctionBegin;
   PetscCall(PetscStrlen(buf, &n));
-  if (n < 5) PetscFunctionReturn(0);
+  if (n < 5) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 1; i < n - 1; i++) {
     if (buf[i] == 'e' && buf[i - 1] == '0') {
       for (j = i; j < n + 1; j++) buf[j - 1] = buf[j];
       PetscCall(PetscStripZeros(buf));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -501,22 +501,22 @@ PetscErrorCode PetscStripZerosPlus(char *buf)
 
   PetscFunctionBegin;
   PetscCall(PetscStrlen(buf, &n));
-  if (n < 5) PetscFunctionReturn(0);
+  if (n < 5) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 1; i < n - 2; i++) {
     if (buf[i] == '+') {
       if (buf[i + 1] == '0') {
         for (j = i + 1; j < n; j++) buf[j - 1] = buf[j + 1];
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       } else {
         for (j = i + 1; j < n + 1; j++) buf[j - 1] = buf[j];
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     } else if (buf[i] == '-') {
       if (buf[i + 1] == '0') {
         for (j = i + 1; j < n; j++) buf[j] = buf[j + 1];
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

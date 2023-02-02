@@ -22,7 +22,7 @@ PetscErrorCode PetscDrawFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&PetscDrawList));
   PetscDrawPackageInitialized = PETSC_FALSE;
   PetscDrawRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -40,7 +40,7 @@ PetscErrorCode PetscDrawInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscDrawPackageInitialized) PetscFunctionReturn(0);
+  if (PetscDrawPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscDrawPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Draw", &PETSC_DRAW_CLASSID));
@@ -78,7 +78,7 @@ PetscErrorCode PetscDrawInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PetscDrawFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -101,7 +101,7 @@ PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h)
   PetscValidLogicalCollectiveInt(draw, w, 2);
   PetscValidLogicalCollectiveInt(draw, h, 3);
   PetscTryTypeMethod(draw, resizewindow, w, h);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -127,7 +127,7 @@ PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h)
   if (h) PetscValidPointer(h, 3);
   if (w) *w = draw->w;
   if (h) *h = draw->h;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -147,7 +147,7 @@ PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, checkresizedwindow);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -171,7 +171,7 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[])
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidPointer(title, 2);
   *title = draw->title;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -204,7 +204,7 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
   PetscCall(PetscFree(draw->title));
   PetscCall(PetscStrallocpy(title, &draw->title));
   PetscTryTypeMethod(draw, settitle, draw->title);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -229,7 +229,7 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   if (title) PetscValidCharPointer(title, 2);
-  if (!title || !title[0]) PetscFunctionReturn(0);
+  if (!title || !title[0]) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (draw->title) {
     size_t len1, len2;
@@ -245,13 +245,13 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
     PetscCall(PetscStrallocpy(title, &draw->title));
   }
   PetscTryTypeMethod(draw, settitle, draw->title);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 {
   PetscFunctionBegin;
-  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
+  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDrawSaveMovie(draw));
   if (draw->savefinalfilename) {
     draw->savesinglefile = PETSC_TRUE;
@@ -259,7 +259,7 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
     PetscCall(PetscDrawSave(draw));
   }
   PetscCall(PetscBarrier((PetscObject)draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -277,9 +277,9 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 PetscErrorCode PetscDrawDestroy(PetscDraw *draw)
 {
   PetscFunctionBegin;
-  if (!*draw) PetscFunctionReturn(0);
+  if (!*draw) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*draw, PETSC_DRAW_CLASSID, 1);
-  if (--((PetscObject)(*draw))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*draw))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   if ((*draw)->pause == -2) {
     (*draw)->pause = -1;
@@ -300,7 +300,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw)
   PetscCall(PetscFree((*draw)->savemovieext));
   PetscCall(PetscFree((*draw)->savefinalfilename));
   PetscCall(PetscHeaderDestroy(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -333,7 +333,7 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup)
       PetscCall(PetscDrawSetFromOptions(*popup));
     }
   } else *popup = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -352,7 +352,7 @@ PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[])
   PetscFunctionBegin;
   PetscCall(PetscFree(draw->display));
   PetscCall(PetscStrallocpy(display, &draw->display));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -372,7 +372,7 @@ PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, setdoublebuffer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -408,7 +408,7 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw)
       PetscUseTypeMethod(draw, getsingleton, sdraw);
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot get singleton for this type %s of draw object", ((PetscObject)draw)->type_name);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -441,5 +441,5 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
       *sdraw = NULL;
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot restore singleton, it is not the parent draw");
   } else PetscUseTypeMethod(draw, restoresingleton, sdraw);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -48,7 +48,7 @@ PetscErrorCode PCApply_Noise(PC pc, Vec xin, Vec xout)
   PetscCall(VecNorm(xin, NORM_2, &nrmin));
   PetscCall(VecNorm(xout, NORM_2, &nrmnoise));
   PetscCall(VecScale(xout, ctx->eta * (nrmin / nrmnoise)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCSetup_Noise(PC pc)
@@ -59,7 +59,7 @@ PetscErrorCode PCSetup_Noise(PC pc)
   PetscCall(PCShellGetContext(pc, &ctx));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &ctx->random));
   PetscCall(PetscRandomSetInterval(ctx->random, -1.0, 1.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDestroy_Noise(PC pc)
@@ -69,7 +69,7 @@ PetscErrorCode PCDestroy_Noise(PC pc)
   PetscFunctionBeginUser;
   PetscCall(PCShellGetContext(pc, &ctx));
   PetscCall(PetscRandomDestroy(&ctx->random));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscScalar diagFunc1(PetscInt i, PetscInt n)
@@ -108,7 +108,7 @@ static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(Pets
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

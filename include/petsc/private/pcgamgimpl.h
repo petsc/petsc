@@ -115,7 +115,7 @@ static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscIn
     }
   }
   PetscCheck(kk != a_tab->size, PETSC_COMM_SELF, PETSC_ERR_USER, "key %" PetscInt_FMT " not found in table", a_key);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif // PETSC_PCGAMGIMPL_H

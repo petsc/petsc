@@ -72,7 +72,7 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp)
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -158,7 +158,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   ksp->rnorm = dp;
 
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) { PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                           */ }
   if (ksp->normtype != KSP_NORM_NATURAL) {
@@ -238,7 +238,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -320,7 +320,7 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
   ksp->rnorm = dp;
 
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) { PetscCall(KSP_PCApply(ksp, R, Z)); /*    z <- Br                           */ }
   if (ksp->normtype != KSP_NORM_NATURAL) {
@@ -420,7 +420,7 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -438,7 +438,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   PetscCall(KSPDestroyDefault(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -459,7 +459,7 @@ PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer)
 #endif
     if (cg->singlereduction) PetscCall(PetscViewerASCIIPrintf(viewer, "  using single-reduction variant\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -479,7 +479,7 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems *PetscOptionsObjec
   PetscCall(PetscOptionsBool("-ksp_cg_single_reduction", "Merge inner products into single MPI_Allreduce()", "KSPCGUseSingleReduction", cg->singlereduction, &cg->singlereduction, &flg));
   if (flg) PetscCall(KSPCGUseSingleReduction(ksp, cg->singlereduction));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -493,7 +493,7 @@ PetscErrorCode KSPCGSetType_CG(KSP ksp, KSPCGType type)
 
   PetscFunctionBegin;
   cg->type = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -514,7 +514,7 @@ static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg)
   } else {
     ksp->ops->solve = KSPSolve_CG;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
@@ -522,7 +522,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
   PetscFunctionBegin;
   PetscCall(VecCopy(ksp->work[0], v));
   *V = v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -608,5 +608,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", KSPCGSetType_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", KSPCGUseSingleReduction_CG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

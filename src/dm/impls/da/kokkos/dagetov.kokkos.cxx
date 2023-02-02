@@ -39,7 +39,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKok
   else PetscCall(VecGetKokkosView(vec, &kv));
   /* Construct the unmanaged OffsetView with {begin0,begin1,begins2},{end0,end1,end2} */
   *ov = PetscScalarKokkosOffsetView1DType<MemorySpace>(kv.data(), {gxs * dof}, {(gxs + gxm) * dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -54,7 +54,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScala
   kv = ov->view(); /* OffsetView to View */
   if (overwrite) PetscCall(VecRestoreKokkosViewWrite(vec, &kv));
   else PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -71,7 +71,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkos
   PetscCheck(dim == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "KokkosOffsetView is 1D but DMDA is %dD", (int)dim);
   PetscCall(VecGetKokkosView(vec, &kv));
   *ov = ConstPetscScalarKokkosOffsetView1DType<MemorySpace>(kv.data(), {gxs * dof}, {(gxs + gxm) * dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -85,7 +85,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKo
   PetscValidPointer(ov, 3);
   kv = ov->view();
   PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ============================== 2D ================================= */
@@ -104,7 +104,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKok
   if (overwrite) PetscCall(VecGetKokkosViewWrite(vec, &kv));
   else PetscCall(VecGetKokkosView(vec, &kv));
   *ov = PetscScalarKokkosOffsetView2DType<MemorySpace>(kv.data(), {gys * dof, gxs * dof}, {(gys + gym) * dof, (gxs + gxm) * dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -120,7 +120,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScala
   kv = PetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1));
   if (overwrite) PetscCall(VecRestoreKokkosViewWrite(vec, &kv));
   else PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -137,7 +137,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkos
   PetscCheck(dim == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "KokkosOffsetView is 2D but DMDA is %dD", (int)dim);
   PetscCall(VecGetKokkosView(vec, &kv));
   *ov = ConstPetscScalarKokkosOffsetView2DType<MemorySpace>(kv.data(), {gys * dof, gxs * dof}, {(gys + gym) * dof, (gxs + gxm) * dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -151,7 +151,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKo
   PetscValidPointer(ov, 3);
   kv = ConstPetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1));
   PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ============================== 3D ================================= */
@@ -170,7 +170,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetView_Private(DM da, Vec vec, PetscScalarKok
   if (overwrite) PetscCall(VecGetKokkosViewWrite(vec, &kv));
   else PetscCall(VecGetKokkosView(vec, &kv));
   *ov = PetscScalarKokkosOffsetView3DType<MemorySpace>(kv.data(), {gzs * dof, gys * dof, gxs * dof}, {(gzs + gzm) * dof, (gys + gym) * dof, (gxs + gxm) * dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -185,7 +185,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView_Private(DM da, Vec vec, PetscScala
   kv = PetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1) * ov->extent(2));
   if (overwrite) PetscCall(VecRestoreKokkosViewWrite(vec, &kv));
   else PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -202,7 +202,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKokkos
   PetscCheck(dim == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "KokkosOffsetView is 3D but DMDA is %dD", (int)dim);
   PetscCall(VecGetKokkosView(vec, &kv));
   *ov = ConstPetscScalarKokkosOffsetView3DType<MemorySpace>(kv.data(), {gzs * dof, gys * dof, gxs * dof}, {(gzs + gzm) * dof, (gys + gym) * dof, (gxs + gxm) * dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -216,7 +216,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da, Vec vec, ConstPetscScalarKo
   PetscValidPointer(ov, 3);
   kv = ConstPetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1) * ov->extent(2));
   PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Function template explicit instantiation */
@@ -376,7 +376,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalar
   if (overwrite) PetscCall(VecGetKokkosViewWrite(vec, &kv));
   else PetscCall(VecGetKokkosView(vec, &kv));
   *ov = PetscScalarKokkosOffsetView2DType<MemorySpace>(kv.data(), {gxs, 0}, {gxs + gxm, dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -391,7 +391,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscSc
   kv = PetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1));
   if (overwrite) PetscCall(VecRestoreKokkosViewWrite(vec, &kv));
   else PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -408,7 +408,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKok
   PetscCheck(dim == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "KokkosOffsetView is 2D but DMDA is %dD", (int)dim);
   PetscCall(VecGetKokkosView(vec, &kv));
   *ov = ConstPetscScalarKokkosOffsetView2DType<MemorySpace>(kv.data(), {gxs, 0}, {gxs + gxm, dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -422,7 +422,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScala
   PetscValidPointer(ov, 3);
   kv = ConstPetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1));
   PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ============================== 3D including DOF ================================= */
@@ -441,7 +441,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalar
   if (overwrite) PetscCall(VecGetKokkosViewWrite(vec, &kv));
   else PetscCall(VecGetKokkosView(vec, &kv));
   *ov = PetscScalarKokkosOffsetView3DType<MemorySpace>(kv.data(), {gys, gxs, 0}, {gys + gym, gxs + gxm, dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -456,7 +456,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscSc
   kv = PetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1) * ov->extent(2));
   if (overwrite) PetscCall(VecRestoreKokkosViewWrite(vec, &kv));
   else PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -473,7 +473,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKok
   PetscCheck(dim == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "KokkosOffsetView is 3D but DMDA is %dD", (int)dim);
   PetscCall(VecGetKokkosView(vec, &kv));
   *ov = ConstPetscScalarKokkosOffsetView3DType<MemorySpace>(kv.data(), {gys, gxs, 0}, {gys + gym, gxs + gxm, dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -487,7 +487,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScala
   PetscValidPointer(ov, 3);
   kv = ConstPetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1) * ov->extent(2));
   PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ============================== 4D including DOF ================================= */
@@ -506,7 +506,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscScalar
   if (overwrite) PetscCall(VecGetKokkosViewWrite(vec, &kv));
   else PetscCall(VecGetKokkosView(vec, &kv));
   *ov = PetscScalarKokkosOffsetView4DType<MemorySpace>(kv.data(), {gzs, gys, gxs, 0}, {gzs + gzm, gys + gym, gxs + gxm, dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -521,7 +521,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF_Private(DM da, Vec vec, PetscSc
   kv = PetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1) * ov->extent(2) * ov->extent(3));
   if (overwrite) PetscCall(VecRestoreKokkosViewWrite(vec, &kv));
   else PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -538,7 +538,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScalarKok
   PetscCheck(dim == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "KokkosOffsetView is 4D but DMDA is %dD", (int)dim);
   PetscCall(VecGetKokkosView(vec, &kv));
   *ov = ConstPetscScalarKokkosOffsetView4DType<MemorySpace>(kv.data(), {gzs, gys, gxs, 0}, {gzs + gzm, gys + gym, gxs + gxm, dof});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -552,7 +552,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM da, Vec vec, ConstPetscScala
   PetscValidPointer(ov, 3);
   kv = ConstPetscScalarKokkosViewType<MemorySpace>(ov->data(), ov->extent(0) * ov->extent(1) * ov->extent(2) * ov->extent(3));
   PetscCall(VecRestoreKokkosView(vec, &kv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView2D *);

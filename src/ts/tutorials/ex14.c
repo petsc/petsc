@@ -298,7 +298,7 @@ static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2], PetscReal h
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscReal StaggeredMidpoint2D(PetscScalar a, PetscScalar b, PetscScalar c, PetscScalar d)
@@ -475,18 +475,18 @@ static PetscErrorCode PRangeMinMax(PRange *p, PetscReal min, PetscReal max)
   p->cmax = max;
   if (min < p->min) p->min = min;
   if (max > p->max) p->max = max;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscFunctionBeginUser;
-  if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*thi)->units));
   PetscCall(PetscFree((*thi)->mattype));
   PetscCall(PetscFree((*thi)->monitor_basename));
   PetscCall(PetscHeaderDestroy(thi));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi)
@@ -641,7 +641,7 @@ static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi)
   }
 
   *inthi = thi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Our problem is periodic, but the domain has a mean slope of alpha so the bed does not line up between the upstream
@@ -663,7 +663,7 @@ static PetscErrorCode THIFixGhosts(THI thi, DM da3, DM da2, Vec X3, Vec X2)
   }
   PetscCall(DMDAVecRestoreArray(da2, X2, &x2));
   /* PetscCall(VecView(X2,PETSC_VIEWER_STDOUT_WORLD)); */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIInitializePrm(THI thi, DM da2prm, PrmNode **p)
@@ -679,7 +679,7 @@ static PetscErrorCode THIInitializePrm(THI thi, DM da2prm, PrmNode **p)
       thi->initialize(thi, xx, yy, &p[i][j]);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIInitial(THI thi, DM pack, Vec X)
@@ -723,7 +723,7 @@ static PetscErrorCode THIInitial(THI thi, DM pack, Vec X)
   PetscCall(DMRestoreLocalVector(da2, &X2));
 
   PetscCall(DMCompositeRestoreAccess(pack, X, &X3g, &X2g));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void PointwiseNonlinearity(THI thi, const Node n[restrict 8], const PetscReal phi[restrict 3], PetscReal dphi[restrict 8][3], PetscScalar *restrict u, PetscScalar *restrict v, PetscScalar du[restrict 3], PetscScalar dv[restrict 3], PetscReal *eta, PetscReal *deta)
@@ -852,7 +852,7 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info, const Node ***x, 
 
   PetscCall(PRangeMinMax(&thi->eta, etamin, etamax));
   PetscCall(PRangeMinMax(&thi->beta2, beta2min, beta2max));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info, const Node ***x, const PrmNode **prm, const PrmNode **prmdot, PrmNode **f, THI thi)
@@ -888,7 +888,7 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info, const Node ***x, 
       f[i][j].beta2 = prmdot[i][j].beta2;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
@@ -960,7 +960,7 @@ static PetscErrorCode THIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, vo
 
   PetscCall(DMRestoreLocalVector(da3, &F3));
   PetscCall(DMRestoreLocalVector(da2, &F2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIMatrixStatistics(THI thi, Mat B, PetscViewer viewer)
@@ -980,7 +980,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi, Mat B, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix dim %8" PetscInt_FMT "  norm %8.2e, (0,0) %8.2e  (2,2) %8.2e, eta [%8.2e,%8.2e] beta2 [%8.2e,%8.2e]\n", m, (double)nrm, (double)PetscRealPart(val0), (double)PetscRealPart(val2), (double)thi->eta.cmin,
                                      (double)thi->eta.cmax, (double)thi->beta2.cmin, (double)thi->beta2.cmax));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THISurfaceStatistics(DM pack, Vec X, PetscReal *min, PetscReal *max, PetscReal *mean)
@@ -1014,7 +1014,7 @@ static PetscErrorCode THISurfaceStatistics(DM pack, Vec X, PetscReal *min, Petsc
   PetscCallMPI(MPI_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da3)));
   PetscCallMPI(MPI_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da3)));
   *mean = PetscRealPart(gusum) / (mx * my);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THISolveStatistics(THI thi, TS ts, PetscInt coarsened, const char name[])
@@ -1079,7 +1079,7 @@ static PetscErrorCode THISolveStatistics(THI thi, TS ts, PetscInt coarsened, con
   }
   PetscCall(PetscPrintf(comm, "\n"));
   PetscCall(DMCompositeRestoreAccess(pack, X, &X3, &X2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscInt DMDALocalIndex3D(DMDALocalInfo *info, PetscInt i, PetscInt j, PetscInt k)
@@ -1221,7 +1221,7 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info, const Node 
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info, const Node ***x3, const PrmNode **x2, const PrmNode **xdot2, PetscReal a, Mat B22, Mat B21, THI thi)
@@ -1265,7 +1265,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info, const Node ***x3,
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -1331,7 +1331,7 @@ static PetscErrorCode THIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
   if (thi->verbose) PetscCall(THIMatrixStatistics(thi, B, PETSC_VIEWER_STDOUT_WORLD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* VTK's XML formats are so brain-dead that they can't handle multiple grids in the same file.  Since the communication
@@ -1467,7 +1467,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
   PetscCall(PetscViewerASCIIPrintf(viewer2, "</VTKFile>\n"));
   PetscCall(PetscViewerDestroy(&viewer3));
   PetscCall(PetscViewerDestroy(&viewer2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THITSMonitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
@@ -1477,14 +1477,14 @@ static PetscErrorCode THITSMonitor(TS ts, PetscInt step, PetscReal t, Vec X, voi
   char filename3[PETSC_MAX_PATH_LEN], filename2[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  if (step < 0) PetscFunctionReturn(0); /* negative one is used to indicate an interpolated solution */
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* negative one is used to indicate an interpolated solution */
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%3" PetscInt_FMT ": t=%g\n", step, (double)t));
-  if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(0);
+  if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(TSGetDM(ts, &pack));
   PetscCall(PetscSNPrintf(filename3, sizeof(filename3), "%s-3d-%03" PetscInt_FMT ".vts", thi->monitor_basename, step));
   PetscCall(PetscSNPrintf(filename2, sizeof(filename2), "%s-2d-%03" PetscInt_FMT ".vts", thi->monitor_basename, step));
   PetscCall(THIDAVecView_VTK_XML(thi, pack, X, filename3, filename2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode THICreateDM3d(THI thi, DM *dm3d)
@@ -1509,7 +1509,7 @@ static PetscErrorCode THICreateDM3d(THI thi, DM *dm3d)
   PetscCall(DMDASetFieldName(da, 0, "x-velocity"));
   PetscCall(DMDASetFieldName(da, 1, "y-velocity"));
   *dm3d = da;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

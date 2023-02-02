@@ -17,7 +17,7 @@ PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy)
   for (i = 0; i < m; i++) y[i] = x[i] - mean;
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -64,5 +64,5 @@ PetscErrorCode MatCreateCentering(MPI_Comm comm, PetscInt n, PetscInt N, Mat *C)
   (*C)->symmetry_eternal            = PETSC_TRUE;
   (*C)->structural_symmetry_eternal = PETSC_TRUE;
   PetscCall(MatSetUp(*C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -41,7 +41,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
 PetscErrorCode DMRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (DMRegisterAllCalled) PetscFunctionReturn(0);
+  if (DMRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   DMRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(DMRegister(DMDA, DMCreate_DA));
@@ -63,7 +63,7 @@ PetscErrorCode DMRegisterAll(void)
 #endif
   PetscCall(DMRegister(DMPRODUCT, DMCreate_Product));
   PetscCall(DMRegister(DMSTAG, DMCreate_Stag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscfe.h> /*I  "petscfe.h"  I*/
@@ -91,7 +91,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace);
 PetscErrorCode PetscSpaceRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscSpaceRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscSpaceRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscSpaceRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial));
@@ -101,7 +101,7 @@ PetscErrorCode PetscSpaceRegisterAll(void)
   PetscCall(PetscSpaceRegister(PETSCSPACEPOINT, PetscSpaceCreate_Point));
   PetscCall(PetscSpaceRegister(PETSCSPACESUBSPACE, PetscSpaceCreate_Subspace));
   PetscCall(PetscSpaceRegister(PETSCSPACEWXY, PetscSpaceCreate_WXY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
@@ -124,14 +124,14 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace);
 PetscErrorCode PetscDualSpaceRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscDualSpaceRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscDualSpaceRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange));
   PetscCall(PetscDualSpaceRegister(PETSCDUALSPACEBDM, PetscDualSpaceCreate_Lagrange));
   PetscCall(PetscDualSpaceRegister(PETSCDUALSPACESIMPLE, PetscDualSpaceCreate_Simple));
   PetscCall(PetscDualSpaceRegister(PETSCDUALSPACEREFINED, PetscDualSpaceCreate_Refined));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE);
@@ -156,7 +156,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 PetscErrorCode PetscFERegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscFERegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscFERegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscFERegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscFERegister(PETSCFEBASIC, PetscFECreate_Basic));
@@ -164,7 +164,7 @@ PetscErrorCode PetscFERegisterAll(void)
 #if defined(PETSC_HAVE_OPENCL)
   PetscCall(PetscFERegister(PETSCFEOPENCL, PetscFECreate_OpenCL));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #include <petscfv.h> /*I  "petscfv.h"  I*/
 
@@ -192,7 +192,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 PetscErrorCode PetscLimiterRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscLimiterRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscLimiterRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscLimiterRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscLimiterRegister(PETSCLIMITERSIN, PetscLimiterCreate_Sin));
@@ -203,7 +203,7 @@ PetscErrorCode PetscLimiterRegisterAll(void)
   PetscCall(PetscLimiterRegister(PETSCLIMITERVANALBADA, PetscLimiterCreate_VanAlbada));
   PetscCall(PetscLimiterRegister(PETSCLIMITERSUPERBEE, PetscLimiterCreate_Superbee));
   PetscCall(PetscLimiterRegister(PETSCLIMITERMC, PetscLimiterCreate_MC));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
@@ -224,12 +224,12 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 PetscErrorCode PetscFVRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscFVRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscFVRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscFVRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscFVRegister(PETSCFVUPWIND, PetscFVCreate_Upwind));
   PetscCall(PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #include <petscds.h> /*I  "petscds.h"  I*/
 
@@ -250,9 +250,9 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 PetscErrorCode PetscDSRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscDSRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscDSRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscDSRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscDSRegister(PETSCDSBASIC, PetscDSCreate_Basic));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

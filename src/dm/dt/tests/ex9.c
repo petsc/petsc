@@ -27,7 +27,7 @@ static PetscErrorCode testOrthogonality(PetscInt dim, PetscInt deg)
   }
   PetscCall(PetscFree(p));
   PetscCall(PetscQuadratureDestroy(&q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscInt k)
@@ -157,7 +157,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
   PetscCall(PetscFree(proj));
   PetscCall(PetscRandomDestroy(&rand));
   PetscCall(PetscQuadratureDestroy(&q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

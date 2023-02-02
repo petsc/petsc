@@ -32,7 +32,7 @@ static PetscErrorCode MatLoadComputeNorms(Mat data_mat, PetscViewer inp_viewer, 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Autocorrelation matrix norms: %g %g %g\n", (double)norms[3], (double)norms[4], (double)norms[5]));
 
   PetscCall(MatDestroy(&corr_mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer *r, PetscViewerFormat *fmt)
@@ -47,7 +47,7 @@ static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer 
     flg = (PetscBool)(mode == FILE_MODE_READ);
   }
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Need to specify %s viewer_type:file:format:read", option);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

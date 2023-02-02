@@ -24,14 +24,14 @@ static PetscErrorCode oursneslinesearchprecheck(SNESLineSearch linesearch, Vec X
 {
   PetscFunctionBegin;
   PetscCallFortranVoidFunction((*(void (*)(SNESLineSearch*,Vec*, Vec*, PetscBool*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[1]))(&linesearch,&X,&Y,changed,ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode oursneslinesearchpostcheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool * changed_Y, PetscBool * changed_W, void * ctx)
 {
   PetscFunctionBegin;
   PetscCallFortranVoidFunction((*(void (*)(SNESLineSearch*,Vec*,Vec*,Vec*,PetscBool*,PetscBool*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[2]))(&linesearch,&X,&Y,&W,changed_Y,changed_W,ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN void sneslinesearchgettype_(SNESLineSearch *linesearch,char* name, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)

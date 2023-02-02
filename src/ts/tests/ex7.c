@@ -28,7 +28,7 @@ PetscErrorCode f(PetscReal t, Vec UV, Vec F)
   for (i = 0; i < n; i++) f[i] = u[i] + v[i];
   PetscCall(VecRestoreArrayRead(UV, &u));
   PetscCall(VecRestoreArrayWrite(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -49,7 +49,7 @@ PetscErrorCode F(PetscReal t, Vec UV, Vec F)
   for (i = 0; i < n; i++) f[i] = u[i] - v[i];
   PetscCall(VecRestoreArrayRead(UV, &u));
   PetscCall(VecRestoreArrayWrite(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -136,7 +136,7 @@ PetscErrorCode TSFunction(TS ts, PetscReal t, Vec U, Vec F, void *actx)
   PetscCall(VecScatterBegin(ctx->scatterV, ctx->V, ctx->UV, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(ctx->scatterV, ctx->V, ctx->UV, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall((*ctx->f)(t, ctx->UV, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -151,7 +151,7 @@ PetscErrorCode SNESFunction(SNES snes, Vec V, Vec F, void *actx)
   PetscCall(VecScatterBegin(ctx->scatterV, V, ctx->UV, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(ctx->scatterV, V, ctx->UV, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall((*ctx->F)(ctx->t, ctx->UV, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

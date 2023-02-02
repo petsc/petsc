@@ -44,7 +44,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-h", "Velocity-space resolution", "ex27.c", options->h, &options->h, NULL));
   PetscCall(PetscOptionsReal("-epsilon", "Mollifier regularization parameter", "ex27.c", options->epsilon, &options->epsilon, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
@@ -54,7 +54,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetInitialCoordinates(DM sw)
@@ -127,7 +127,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   PetscCall(PetscFree5(centroid, xi0, v0, J, invJ));
   PetscCall(PetscRandomDestroy(&rnd));
   PetscCall(PetscRandomDestroy(&rndv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Get velocities from swarm and place in solution vector */
@@ -156,7 +156,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
   }
   PetscCall(VecRestoreArray(u, &initialConditions));
   PetscCall(DMSwarmRestoreField(dmSw, "velocity", NULL, NULL, (void **)&velocity));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
@@ -194,7 +194,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Internal dmplex function, same as found in dmpleximpl.h */
@@ -303,7 +303,7 @@ static PetscErrorCode ComputeGradS(PetscInt dim, PetscInt Np, const PetscReal vp
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Q = 1/|xi| (I - xi xi^T / |xi|^2), xi = vp - vq */
@@ -321,7 +321,7 @@ static PetscErrorCode QCompute(PetscInt dim, const PetscReal vp[], const PetscRe
     for (e = 0; e < dim; ++e) Q[d * dim + e] = -xi[d] * xi[e] / xi3;
     Q[d * dim + d] += 1. / mag;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
@@ -374,7 +374,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
   PetscCall(VecRestoreArray(R, &r));
   PetscCall(VecRestoreArray(sol, &velocity));
   PetscCall(VecViewFromOptions(R, NULL, "-residual_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -399,7 +399,7 @@ static PetscErrorCode UpdateSwarm(TS ts)
   for (idx = 0; idx < n; ++idx) velocity[idx] = u[idx];
   PetscCall(VecRestoreArrayRead(sol, &u));
   PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&velocity));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode InitializeSolve(TS ts, Vec u)
@@ -412,7 +412,7 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
   PetscCall(DMGetApplicationContext(dm, &user));
   PetscCall(SetInitialCoordinates(dm));
   PetscCall(SetInitialConditions(dm, u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

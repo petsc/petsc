@@ -25,11 +25,11 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v)
   int i;
 
   PetscFunctionBegin;
-  if (!*v) PetscFunctionReturn(0);
+  if (!*v) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 0; i < (*v)->n; i++) PetscCall(PetscViewerDestroy(&(*v)->viewer[i]));
   PetscCall(PetscFree((*v)->viewer));
   PetscCall(PetscFree(*v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -56,7 +56,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
   (*v)->comm = comm;
 
   PetscCall(PetscCalloc1(64, &(*v)->viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -93,7 +93,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
   }
   if (!viewers->viewer[n]) PetscCall(PetscViewerCreate(viewers->comm, &viewers->viewer[n]));
   *viewer = viewers->viewer[n];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -131,5 +131,5 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, Pe
       if (mdestroy) PetscCall((*mdestroy)(&nmctx));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

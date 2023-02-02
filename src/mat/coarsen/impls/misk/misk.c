@@ -31,7 +31,7 @@ static PetscErrorCode PetscCoarsenDataView_private(PetscCoarsenData *agg_lists, 
     }
     if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -344,7 +344,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     PetscCall(PetscCDSetMat(agg_lists, mat));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -369,7 +369,7 @@ static PetscErrorCode MatCoarsenApply_MISK(MatCoarsen coarse)
   } else {
     PetscCall(MatCoarsenApply_MISK_private(coarse->perm, (PetscInt)k, mat, &coarse->agg_lists));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
@@ -387,7 +387,7 @@ static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOptionItems *PetscOptionsObject)
@@ -399,7 +399,7 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
   PetscCall(PetscOptionsInt("-mat_coarsen_misk_distance", "k distance for MIS", "", k, &k, &flg));
   if (flg) coarse->subctx = (void *)(size_t)k;
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -420,7 +420,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)
   coarse->ops->view           = MatCoarsenView_MISK;
   coarse->subctx              = (void *)(size_t)1;
   coarse->ops->setfromoptions = MatCoarsenSetFromOptions_MISK;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -445,7 +445,7 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)
 {
   PetscFunctionBegin;
   crs->subctx = (void *)(size_t)k;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -469,5 +469,5 @@ PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k)
 {
   PetscFunctionBegin;
   *k = (PetscInt)(size_t)crs->subctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

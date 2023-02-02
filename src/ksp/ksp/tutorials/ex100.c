@@ -61,7 +61,7 @@ PetscErrorCode RunTest(void)
   PetscCall(MatDestroy(&A));
   PetscCall(KSPDestroy(&ksp));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------- */

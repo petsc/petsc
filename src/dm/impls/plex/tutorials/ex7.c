@@ -20,7 +20,7 @@ static PetscErrorCode SetupSection(DM dm)
   PetscCall(PetscSectionSetUp(s));
   PetscCall(DMSetLocalSection(dm, s));
   PetscCall(PetscSectionDestroy(&s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

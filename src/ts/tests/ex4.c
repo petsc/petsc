@@ -222,7 +222,7 @@ PetscErrorCode Initial(Vec global, void *ctx)
   }
 
   PetscCall(VecRestoreArrayWrite(global, &localptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx)
@@ -237,7 +237,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *c
   PetscCall(TSGetStepNumber(ts, &nsteps));
   /* display output at selected time steps */
   PetscCall(TSGetMaxSteps(ts, &maxsteps));
-  if (nsteps % 10 != 0) PetscFunctionReturn(0);
+  if (nsteps % 10 != 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Get the size of the vector */
   PetscCall(VecGetSize(global, &n));
@@ -265,7 +265,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *c
   PetscCall(ISDestroy(&to));
   PetscCall(VecScatterDestroy(&scatter));
   PetscCall(VecDestroy(&tmp_vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ptr)
@@ -395,7 +395,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ptr)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* globalout = -a*(u_x+u_y) + epsilon*(u_xx+u_yy) */
@@ -483,7 +483,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   PetscCall(VecScatterDestroy(&scatter));
 
   PetscCall(PetscFree(idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PostStep(TS ts)
@@ -493,7 +493,7 @@ PetscErrorCode PostStep(TS ts)
   PetscFunctionBeginUser;
   PetscCall(TSGetTime(ts, &t));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "  PostStep, t: %g\n", (double)t));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

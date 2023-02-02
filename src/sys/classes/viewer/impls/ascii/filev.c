@@ -32,7 +32,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
     }
   }
   PetscCall(PetscFree(vascii->filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetMode_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
@@ -94,7 +94,7 @@ PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerRestoreSubViewer(vascii->bviewer, 0, &viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
@@ -176,7 +176,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     }
     PetscCall(PetscCommDestroy(&comm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -204,7 +204,7 @@ PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer viewer, FILE **fd)
 
   PetscFunctionBegin;
   *fd = vascii->fd;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *mode)
@@ -213,7 +213,7 @@ PetscErrorCode PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *m
 
   PetscFunctionBegin;
   *mode = vascii->mode;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
@@ -222,7 +222,7 @@ PetscErrorCode PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mo
 
   PetscFunctionBegin;
   vascii->mode = mode;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -255,7 +255,7 @@ PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer, PetscInt tabs)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) ascii->tab = tabs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -284,7 +284,7 @@ PetscErrorCode PetscViewerASCIIGetTab(PetscViewer viewer, PetscInt *tabs)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii && tabs) *tabs = ascii->tab;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -311,7 +311,7 @@ PetscErrorCode PetscViewerASCIIAddTab(PetscViewer viewer, PetscInt tabs)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) ascii->tab += tabs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -338,7 +338,7 @@ PetscErrorCode PetscViewerASCIISubtractTab(PetscViewer viewer, PetscInt tabs)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) ascii->tab -= tabs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -368,7 +368,7 @@ PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer viewer)
   PetscCheck(!ascii->sviewer, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) ascii->allowsynchronized++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -401,7 +401,7 @@ PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer viewer)
     ascii->allowsynchronized--;
     PetscCheck(ascii->allowsynchronized >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called more times than PetscViewerASCIIPushSynchronized()");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -428,7 +428,7 @@ PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) ascii->tab++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -457,7 +457,7 @@ PetscErrorCode PetscViewerASCIIPopTab(PetscViewer viewer)
     PetscCheck(ascii->tab > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "More tabs popped than pushed");
     ascii->tab--;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -490,7 +490,7 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
       ascii->tab       = 0;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -531,7 +531,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCheck(iascii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not ASCII PetscViewer");
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
-  if (rank) PetscFunctionReturn(0);
+  if (rank) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (ascii->bviewer) { /* pass string up to parent viewer */
     char   *string;
@@ -575,7 +575,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     }
     va_end(Argp);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -601,7 +601,7 @@ PetscErrorCode PetscViewerFileSetName(PetscViewer viewer, const char name[])
   PetscValidCharPointer(name, 2);
   PetscCall(PetscStrreplace(PetscObjectComm((PetscObject)viewer), name, filename, sizeof(filename)));
   PetscTryMethod(viewer, "PetscViewerFileSetName_C", (PetscViewer, const char[]), (viewer, filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -625,7 +625,7 @@ PetscErrorCode PetscViewerFileGetName(PetscViewer viewer, const char **name)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidPointer(name, 2);
   PetscUseMethod(viewer, "PetscViewerFileGetName_C", (PetscViewer, const char **), (viewer, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileGetName_ASCII(PetscViewer viewer, const char **name)
@@ -634,7 +634,7 @@ PetscErrorCode PetscViewerFileGetName_ASCII(PetscViewer viewer, const char **nam
 
   PetscFunctionBegin;
   *name = vascii->filename;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[])
@@ -647,7 +647,7 @@ PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[
 
   PetscFunctionBegin;
   PetscCall(PetscViewerFileClose_ASCII(viewer));
-  if (!name) PetscFunctionReturn(0);
+  if (!name) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscStrallocpy(name, &vascii->filename));
 
   /* Is this file to be compressed */
@@ -692,7 +692,10 @@ PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[
         */
         vascii->fd = fopen(fname, "r+");
         if (!vascii->fd) vascii->fd = fopen(fname, "w+");
-        else PetscCall(fseek(vascii->fd, 0, SEEK_END));
+        else {
+          int ret = fseek(vascii->fd, 0, SEEK_END);
+          PetscCheck(!ret, PETSC_COMM_SELF, PETSC_ERR_LIB, "fseek() failed with error code %d", ret);
+        }
         break;
       default:
         SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[vascii->mode]);
@@ -701,9 +704,9 @@ PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[
     }
   }
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)viewer, "File: %s", name);
+  PetscCall(PetscLogObjectState((PetscObject)viewer, "File: %s", name));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm subcomm, PetscViewer *outviewer)
@@ -734,7 +737,7 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm subcom
   (*outviewer)->format                                 = viewer->format;
   ((PetscViewer_ASCII *)((*outviewer)->data))->bviewer = viewer;
   (*outviewer)->ops->destroy                           = PetscViewerDestroy_ASCII_SubViewer;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer)
@@ -750,7 +753,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer, MPI_Comm co
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   PetscCall(PetscViewerDestroy(outviewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer)
@@ -759,7 +762,7 @@ PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer)
 
   PetscFunctionBegin;
   if (ascii->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", ascii->filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -801,7 +804,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", PetscViewerFileGetName_ASCII));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", PetscViewerFileGetMode_ASCII));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetMode_C", PetscViewerFileSetMode_ASCII));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -939,7 +942,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
       va_end(Argp);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -997,5 +1000,5 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer, void *data, PetscInt num
   }
   if (count) *count = i;
   else PetscCheck(ret >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficient data, read only %" PetscInt_FMT " < %" PetscInt_FMT " items", i, num);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

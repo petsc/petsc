@@ -93,7 +93,7 @@ PetscErrorCode TestInitialMatrix(void)
   PetscCall(MatDestroy(&Atranspose));
   PetscCall(VecDestroy(&ATy));
   PetscCall(PetscRandomDestroy(&rctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestReuseMatrix(void)
@@ -128,7 +128,7 @@ PetscErrorCode TestReuseMatrix(void)
   for (i = 0; i < (n * n); i++) PetscCall(MatDestroy(&subs[i]));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscRandomDestroy(&rctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

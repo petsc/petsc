@@ -36,6 +36,7 @@ static PetscErrorCode Destroy(void *);
 
 static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell)
 {
+  PetscFunctionBeginUser;
   PetscCall(DMShellCreate(comm, shell));
   PetscCall(DMShellSetContext(*shell, da));
   PetscCall(DMShellSetCreateMatrix(*shell, CreateMatrix));
@@ -46,7 +47,7 @@ static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell)
   PetscCall(DMShellSetCreateInterpolation(*shell, CreateInterpolation));
   PetscCall(DMShellSetCreateRestriction(*shell, CreateRestriction));
   PetscCall(DMShellSetDestroyContext(*shell, Destroy));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -80,27 +81,30 @@ int main(int argc, char **argv)
 
 static PetscErrorCode Destroy(void *ctx)
 {
+  PetscFunctionBeginUser;
   PetscCall(DMDestroy((DM *)&ctx));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMatrix(DM shell, Mat *A)
 {
   DM da;
 
+  PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(shell, &da));
   PetscCall(DMCreateMatrix(da, A));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateInterpolation(DM dm1, DM dm2, Mat *mat, Vec *vec)
 {
   DM da1, da2;
 
+  PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(dm1, &da1));
   PetscCall(DMShellGetContext(dm2, &da2));
   PetscCall(DMCreateInterpolation(da1, da2, mat, vec));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateRestriction(DM dm1, DM dm2, Mat *mat)
@@ -108,52 +112,57 @@ static PetscErrorCode CreateRestriction(DM dm1, DM dm2, Mat *mat)
   DM  da1, da2;
   Mat tmat;
 
+  PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(dm1, &da1));
   PetscCall(DMShellGetContext(dm2, &da2));
   PetscCall(DMCreateInterpolation(da1, da2, &tmat, NULL));
   PetscCall(MatTranspose(tmat, MAT_INITIAL_MATRIX, mat));
   PetscCall(MatDestroy(&tmat));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateGlobalVector(DM shell, Vec *x)
 {
   DM da;
 
+  PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(shell, &da));
   PetscCall(DMCreateGlobalVector(da, x));
   PetscCall(VecSetDM(*x, shell));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateLocalVector(DM shell, Vec *x)
 {
   DM da;
 
+  PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(shell, &da));
   PetscCall(DMCreateLocalVector(da, x));
   PetscCall(VecSetDM(*x, shell));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Refine(DM shell, MPI_Comm comm, DM *dmnew)
 {
   DM da, dafine;
 
+  PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(shell, &da));
   PetscCall(DMRefine(da, comm, &dafine));
   PetscCall(MyDMShellCreate(PetscObjectComm((PetscObject)shell), dafine, dmnew));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Coarsen(DM shell, MPI_Comm comm, DM *dmnew)
 {
   DM da, dacoarse;
 
+  PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(shell, &da));
   PetscCall(DMCoarsen(da, comm, &dacoarse));
   PetscCall(MyDMShellCreate(PetscObjectComm((PetscObject)shell), dacoarse, dmnew));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
@@ -174,7 +183,7 @@ static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscCall(VecSetValues(b, 2, idx, v, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(b));
   PetscCall(VecAssemblyEnd(b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
@@ -208,7 +217,7 @@ static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   }
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

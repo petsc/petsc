@@ -90,7 +90,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
   PetscCall(PetscBTDestroy(&table));
   PetscCall(PetscFree(nidx));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
@@ -154,7 +154,7 @@ PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, c
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), len, nidx, PETSC_COPY_VALUES, (is_out + i)));
   }
   PetscCall(PetscFree(nidx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -199,5 +199,5 @@ PetscErrorCode ISExpandIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, P
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), len * bs, nidx, PETSC_COPY_VALUES, is_out + i));
   }
   PetscCall(PetscFree(nidx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -9,7 +9,7 @@ static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   *u = 0.0;
   for (d = 0; d < dim; d++) *u += 0.5 * (x[d] - 0.5) * (x[d] - 0.5);
 
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi)
@@ -27,7 +27,7 @@ static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi)
   PetscCall(DMCreateDS(*dmIndi));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateLocalVector(*dmIndi, indicator));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

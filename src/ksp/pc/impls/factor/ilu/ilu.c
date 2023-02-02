@@ -12,7 +12,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal_ILU(PC pc, PetscReal z)
   ilu->nonzerosalongdiagonal = PETSC_TRUE;
   if (z == PETSC_DECIDE) ilu->nonzerosalongdiagonaltol = 1.e-10;
   else ilu->nonzerosalongdiagonaltol = z;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCReset_ILU(PC pc)
@@ -23,7 +23,7 @@ PetscErrorCode PCReset_ILU(PC pc)
   if (!ilu->hdr.inplace) PetscCall(MatDestroy(&((PC_Factor *)ilu)->fact));
   if (ilu->row && ilu->col && ilu->row != ilu->col) PetscCall(ISDestroy(&ilu->row));
   PetscCall(ISDestroy(&ilu->col));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetDropTolerance_ILU(PC pc, PetscReal dt, PetscReal dtcol, PetscInt dtcount)
@@ -38,7 +38,7 @@ PetscErrorCode PCFactorSetDropTolerance_ILU(PC pc, PetscReal dt, PetscReal dtcol
   ((PC_Factor *)ilu)->info.dtcol   = dtcol;
   ((PC_Factor *)ilu)->info.dtcount = dtcount;
   ((PC_Factor *)ilu)->info.usedt   = 1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_ILU(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -65,7 +65,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc, PetscOptionItems *PetscOptions
   }
 
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_ILU(PC pc)
@@ -114,7 +114,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     PetscCall(MatFactorGetError(pc->pmat, &err));
     if (err) { /* Factor() fails */
       pc->failedreason = (PCFailedReason)err;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     ((PC_Factor *)ilu)->fact = pc->pmat;
@@ -158,7 +158,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     PetscCall(MatFactorGetError(((PC_Factor *)ilu)->fact, &err));
     if (err) { /* FactorSymbolic() fails */
       pc->failedreason = (PCFailedReason)err;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     PetscCall(MatLUFactorNumeric(((PC_Factor *)ilu)->fact, pc->pmat, &((PC_Factor *)ilu)->info));
@@ -174,7 +174,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     PetscCall(MatFactorGetSolverType(((PC_Factor *)ilu)->fact, &solverpackage));
     PetscCall(PCFactorSetMatSolverType(pc, solverpackage));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_ILU(PC pc)
@@ -187,7 +187,7 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
   PetscCall(PetscFree(((PC_Factor *)ilu)->ordering));
   PetscCall(PetscFree(pc->data));
   PetscCall(PCFactorClearComposedFunctions(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_ILU(PC pc, Vec x, Vec y)
@@ -196,7 +196,7 @@ static PetscErrorCode PCApply_ILU(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatSolve(((PC_Factor *)ilu)->fact, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_ILU(PC pc, Mat X, Mat Y)
@@ -205,7 +205,7 @@ static PetscErrorCode PCMatApply_ILU(PC pc, Mat X, Mat Y)
 
   PetscFunctionBegin;
   PetscCall(MatMatSolve(((PC_Factor *)ilu)->fact, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_ILU(PC pc, Vec x, Vec y)
@@ -214,7 +214,7 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatSolveTranspose(((PC_Factor *)ilu)->fact, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricLeft_ILU(PC pc, Vec x, Vec y)
@@ -223,7 +223,7 @@ static PetscErrorCode PCApplySymmetricLeft_ILU(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatForwardSolve(((PC_Factor *)icc)->fact, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
@@ -232,7 +232,7 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatBackwardSolve(((PC_Factor *)icc)->fact, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -311,5 +311,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   pc->ops->applyrichardson     = NULL;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorSetDropTolerance_C", PCFactorSetDropTolerance_ILU));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorReorderForNonzeroDiagonal_C", PCFactorReorderForNonzeroDiagonal_ILU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

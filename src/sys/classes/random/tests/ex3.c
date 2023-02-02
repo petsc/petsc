@@ -35,7 +35,7 @@ static PetscErrorCode PoissonTailProbability(PetscReal lambda, PetscInt Y, Petsc
     p -= PetscExpReal(exponent);
   }
   *prob = p;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

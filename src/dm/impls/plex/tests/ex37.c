@@ -22,7 +22,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsString("-filename", "The CAD file", "ex37.c", options->filename, options->filename, sizeof(options->filename), NULL));
   PetscCall(PetscOptionsBool("-volume_mesh", "Create a volume mesh", "ex37.c", options->volumeMesh, &options->volumeMesh, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeVolume(DM dm)
@@ -35,7 +35,7 @@ static PetscErrorCode ComputeVolume(DM dm)
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
-  if (dim < 2) PetscFunctionReturn(0);
+  if (dim < 2) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetLabel(dm, "EGADS Body ID", &bodyLabel));
   PetscCall(DMGetLabel(dm, "EGADS Face ID", &faceLabel));
   PetscCall(DMGetLabel(dm, "EGADS Edge ID", &edgeLabel));
@@ -59,7 +59,7 @@ static PetscErrorCode ComputeVolume(DM dm)
 
   PetscCall(PetscObjectGetName(obj, &name));
   PetscCall(PetscPrintf(PetscObjectComm(obj), "DM %s: Surface Area = %.6e Volume = %.6e\n", name ? name : "", surface, volume));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -117,7 +117,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
   PetscCall(ISSetInfo(*is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
   PetscCall(ISSetInfo(*is, IS_UNIQUE, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -223,7 +223,7 @@ PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -280,7 +280,7 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
     *locCanonical = DMSTAG_NULL_LOCATION;
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -317,7 +317,7 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
   PetscCall(DMStagStencilToIndexLocal(dm, dim, nCol, posCol, ic));
   PetscCall(MatGetValuesLocal(mat, nRow, ir, nCol, ic, val));
   PetscCall(PetscFree2(ir, ic));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -354,7 +354,7 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
   PetscCall(DMStagStencilToIndexLocal(dm, dm->dim, nCol, posCol, ic));
   PetscCall(MatSetValuesLocal(mat, nRow, ir, nCol, ic, val, insertMode));
   PetscCall(PetscFree2(ir, ic));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -418,7 +418,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
       ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -464,7 +464,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
   for (idx = 0; idx < n; ++idx) val[idx] = arr[ix[idx]];
   PetscCall(VecRestoreArrayRead(vec, &arr));
   PetscCall(PetscFree(ix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -505,5 +505,5 @@ PetscErrorCode DMStagVecSetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
   PetscCall(DMStagStencilToIndexLocal(dm, dm->dim, n, pos, ix));
   PetscCall(VecSetValuesLocal(vec, n, ix, val, insertMode));
   PetscCall(PetscFree(ix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

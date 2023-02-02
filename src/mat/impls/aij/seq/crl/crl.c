@@ -21,7 +21,7 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
   PetscCall(PetscFree(A->spptr));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ));
   PetscCall(MatDestroy_SeqAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
@@ -59,7 +59,7 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
     }
   }
   PetscCall(PetscInfo(A, "Percentage of 0's introduced for vectorized multiply %g. Rmax= %" PetscInt_FMT "\n", 1.0 - ((double)a->nz) / ((double)(rmax * m)), rmax));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
@@ -70,11 +70,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
   a->inode.use = PETSC_FALSE;
 
   PetscCall(MatAssemblyEnd_SeqAIJ(A, mode));
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Now calculate the permutation and grouping information. */
   PetscCall(MatSeqAIJCRL_create_aijcrl(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/mat/impls/aij/seq/crl/ftn-kernels/fmultcrl.h>
@@ -138,7 +138,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogFlops(2.0 * aijcrl->nz - m));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatConvert_SeqAIJ_SeqAIJCRL converts a SeqAIJ matrix into a
@@ -154,7 +154,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
-  if (sametype) PetscFunctionReturn(0);
+  if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscNew(&aijcrl));
   B->spptr = (void *)aijcrl;
@@ -169,7 +169,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
   if (A->assembled) PetscCall(MatSeqAIJCRL_create_aijcrl(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJCRL));
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -210,7 +210,7 @@ PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQAIJCRL));
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(*A, nz, nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A)
@@ -218,5 +218,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATSEQAIJ));
   PetscCall(MatConvert_SeqAIJ_SeqAIJCRL(A, MATSEQAIJCRL, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

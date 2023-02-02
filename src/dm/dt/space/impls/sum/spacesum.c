@@ -18,7 +18,7 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp, PetscInt *numSumSpace
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(numSumSpaces, 2);
   PetscTryMethod(sp, "PetscSpaceSumGetNumSubspaces_C", (PetscSpace, PetscInt *), (sp, numSumSpaces));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -37,7 +37,7 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp, PetscInt numSumSpaces
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscTryMethod(sp, "PetscSpaceSumSetNumSubspaces_C", (PetscSpace, PetscInt), (sp, numSumSpaces));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -60,7 +60,7 @@ PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace sp, PetscBool *concatenate
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscTryMethod(sp, "PetscSpaceSumGetConcatenate_C", (PetscSpace, PetscBool *), (sp, concatenate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -81,7 +81,7 @@ PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace sp, PetscBool concatenate)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscTryMethod(sp, "PetscSpaceSumSetConcatenate_C", (PetscSpace, PetscBool), (sp, concatenate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -104,7 +104,7 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *s
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(subsp, 3);
   PetscTryMethod(sp, "PetscSpaceSumGetSubspace_C", (PetscSpace, PetscInt, PetscSpace *), (sp, s, subsp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -125,7 +125,7 @@ PetscErrorCode PetscSpaceSumSetSubspace(PetscSpace sp, PetscInt s, PetscSpace su
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (subsp) PetscValidHeaderSpecific(subsp, PETSCSPACE_CLASSID, 3);
   PetscTryMethod(sp, "PetscSpaceSumSetSubspace_C", (PetscSpace, PetscInt, PetscSpace), (sp, s, subsp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSumGetNumSubspaces_Sum(PetscSpace space, PetscInt *numSumSpaces)
@@ -134,7 +134,7 @@ static PetscErrorCode PetscSpaceSumGetNumSubspaces_Sum(PetscSpace space, PetscIn
 
   PetscFunctionBegin;
   *numSumSpaces = sum->numSumSpaces;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSumSetNumSubspaces_Sum(PetscSpace space, PetscInt numSumSpaces)
@@ -144,7 +144,7 @@ static PetscErrorCode PetscSpaceSumSetNumSubspaces_Sum(PetscSpace space, PetscIn
 
   PetscFunctionBegin;
   PetscCheck(!sum->setupCalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of subspaces after setup called");
-  if (numSumSpaces == Ns) PetscFunctionReturn(0);
+  if (numSumSpaces == Ns) PetscFunctionReturn(PETSC_SUCCESS);
   if (Ns >= 0) {
     PetscInt s;
     for (s = 0; s < Ns; ++s) PetscCall(PetscSpaceDestroy(&sum->sumspaces[s]));
@@ -153,7 +153,7 @@ static PetscErrorCode PetscSpaceSumSetNumSubspaces_Sum(PetscSpace space, PetscIn
 
   Ns = sum->numSumSpaces = numSumSpaces;
   PetscCall(PetscCalloc1(Ns, &sum->sumspaces));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSumGetConcatenate_Sum(PetscSpace sp, PetscBool *concatenate)
@@ -162,7 +162,7 @@ static PetscErrorCode PetscSpaceSumGetConcatenate_Sum(PetscSpace sp, PetscBool *
 
   PetscFunctionBegin;
   *concatenate = sum->concatenate;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSumSetConcatenate_Sum(PetscSpace sp, PetscBool concatenate)
@@ -173,7 +173,7 @@ static PetscErrorCode PetscSpaceSumSetConcatenate_Sum(PetscSpace sp, PetscBool c
   PetscCheck(!sum->setupCalled, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change space concatenation after setup called.");
 
   sum->concatenate = concatenate;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSumGetSubspace_Sum(PetscSpace space, PetscInt s, PetscSpace *subspace)
@@ -186,7 +186,7 @@ static PetscErrorCode PetscSpaceSumGetSubspace_Sum(PetscSpace space, PetscInt s,
   PetscCheck(s >= 0 && s < Ns, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_OUTOFRANGE, "Invalid subspace number %" PetscInt_FMT, s);
 
   *subspace = sum->sumspaces[s];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSumSetSubspace_Sum(PetscSpace space, PetscInt s, PetscSpace subspace)
@@ -202,7 +202,7 @@ static PetscErrorCode PetscSpaceSumSetSubspace_Sum(PetscSpace space, PetscInt s,
   PetscCall(PetscObjectReference((PetscObject)subspace));
   PetscCall(PetscSpaceDestroy(&sum->sumspaces[s]));
   sum->sumspaces[s] = subspace;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
@@ -214,7 +214,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscSpace sp, PetscOptionIte
 
   PetscFunctionBegin;
   PetscCall(PetscSpaceGetNumVariables(sp, &Nv));
-  if (!Nv) PetscFunctionReturn(0);
+  if (!Nv) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscSpaceGetNumComponents(sp, &Nc));
   PetscCall(PetscSpaceSumGetNumSubspaces(sp, &Ns));
   PetscCall(PetscSpaceGetDegree(sp, &deg, NULL));
@@ -247,7 +247,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscSpace sp, PetscOptionIte
     PetscCall(PetscSpaceSumSetSubspace(sp, i, subspace));
     PetscCall(PetscSpaceDestroy(&subspace));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
@@ -259,7 +259,7 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
   PetscInt        minNc, maxNc;
 
   PetscFunctionBegin;
-  if (sum->setupCalled) PetscFunctionReturn(0);
+  if (sum->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscSpaceGetNumVariables(sp, &Nv));
   PetscCall(PetscSpaceGetNumComponents(sp, &Nc));
@@ -314,7 +314,7 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
   sum->concatenate = concatenate;
   sum->uniform     = uniform;
   sum->setupCalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSumView_Ascii(PetscSpace sp, PetscViewer v)
@@ -331,7 +331,7 @@ static PetscErrorCode PetscSpaceSumView_Ascii(PetscSpace sp, PetscViewer v)
     PetscCall(PetscSpaceView(sum->sumspaces[i], v));
     PetscCall(PetscViewerASCIIPopTab(v));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceView_Sum(PetscSpace sp, PetscViewer viewer)
@@ -341,7 +341,7 @@ static PetscErrorCode PetscSpaceView_Sum(PetscSpace sp, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscSpaceSumView_Ascii(sp, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceDestroy_Sum(PetscSpace sp)
@@ -367,7 +367,7 @@ static PetscErrorCode PetscSpaceDestroy_Sum(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetConcatenate_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetConcatenate_C", NULL));
   PetscCall(PetscFree(sum));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceGetDimension_Sum(PetscSpace sp, PetscInt *dim)
@@ -379,7 +379,7 @@ static PetscErrorCode PetscSpaceGetDimension_Sum(PetscSpace sp, PetscInt *dim)
   if (!sum->setupCalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceGetDimension(sp, dim));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   for (i = 0; i < Ns; ++i) {
@@ -390,7 +390,7 @@ static PetscErrorCode PetscSpaceGetDimension_Sum(PetscSpace sp, PetscInt *dim)
   }
 
   *dim = d;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
@@ -406,7 +406,7 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
   if (!sum->setupCalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscSpaceGetDimension(sp, &pdimfull));
   numelB = npoints * pdimfull * Nc;
@@ -477,7 +477,7 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp, PetscInt npoints, co
   if (H) PetscCall(DMRestoreWorkArray(dm, numelH, MPIU_REAL, &sH));
   if (D || H) PetscCall(DMRestoreWorkArray(dm, numelD, MPIU_REAL, &sD));
   if (B || D || H) PetscCall(DMRestoreWorkArray(dm, numelB, MPIU_REAL, &sB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceGetHeightSubspace_Sum(PetscSpace sp, PetscInt height, PetscSpace *subsp)
@@ -519,7 +519,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Sum(PetscSpace sp, PetscInt he
   } else {
     *subsp = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceInitialize_Sum(PetscSpace sp)
@@ -539,7 +539,7 @@ static PetscErrorCode PetscSpaceInitialize_Sum(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetSubspace_C", PetscSpaceSumSetSubspace_Sum));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumGetConcatenate_C", PetscSpaceSumGetConcatenate_Sum));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpaceSumSetConcatenate_C", PetscSpaceSumSetConcatenate_Sum));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -562,7 +562,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Sum(PetscSpace sp)
   sum->numSumSpaces = PETSC_DEFAULT;
   sp->data          = sum;
   PetscCall(PetscSpaceInitialize_Sum(sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const PetscSpace subspaces[], PetscBool concatenate, PetscSpace *sumSpace)
@@ -588,5 +588,5 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const Pet
   PetscCall(PetscSpaceSetNumVariables(*sumSpace, Nv));
   PetscCall(PetscSpaceSetUp(*sumSpace));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -99,7 +99,7 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y)
   }
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(y, &yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_VPBJacobi(PC pc, Vec x, Vec y)
@@ -201,7 +201,7 @@ static PetscErrorCode PCApplyTranspose_VPBJacobi(PC pc, Vec x, Vec y)
   }
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(y, &yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
@@ -234,7 +234,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
   if (err) pc->failedreason = (PCFailedReason)err;
   pc->ops->apply          = PCApply_VPBJacobi;
   pc->ops->applytranspose = PCApplyTranspose_VPBJacobi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
@@ -262,7 +262,7 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
   {
     PetscCall(PCSetUp_VPBJacobi_Host(pc));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_VPBJacobi(PC pc, PetscViewer viewer)
@@ -276,7 +276,7 @@ static PetscErrorCode PCView_VPBJacobi(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of blocks: %" PetscInt_FMT "\n", jac->nblocks));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  block sizes: min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", jac->min_bs, jac->max_bs));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc)
@@ -289,7 +289,7 @@ PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc)
   */
   PetscCall(PetscFree(jac->diag));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -353,5 +353,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
   pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = NULL;
   pc->ops->applysymmetricright = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

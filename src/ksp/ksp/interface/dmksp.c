@@ -5,15 +5,15 @@
 static PetscErrorCode DMKSPDestroy(DMKSP *kdm)
 {
   PetscFunctionBegin;
-  if (!*kdm) PetscFunctionReturn(0);
+  if (!*kdm) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*kdm), DMKSP_CLASSID, 1);
   if (--((PetscObject)(*kdm))->refct > 0) {
     *kdm = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if ((*kdm)->ops->destroy) PetscCall(((*kdm)->ops->destroy)(kdm));
   PetscCall(PetscHeaderDestroy(kdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMKSPCreate(MPI_Comm comm, DMKSP *kdm)
@@ -21,7 +21,7 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm, DMKSP *kdm)
   PetscFunctionBegin;
   PetscCall(KSPInitializePackage());
   PetscCall(PetscHeaderCreate(*kdm, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Attaches the DMKSP to the coarse level.
@@ -31,7 +31,7 @@ static PetscErrorCode DMCoarsenHook_DMKSP(DM dm, DM dmc, void *ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMKSP(dm, dmc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Attaches the DMKSP to the coarse level.
@@ -41,7 +41,7 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, void *ctx)
 {
   PetscFunctionBegin;
   PetscCall(DMCopyDMKSP(dm, dmc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -80,7 +80,7 @@ PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
 
   /* implementation specific copy hooks */
   PetscTryTypeMethod(kdm, duplicate, nkdm);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -114,7 +114,7 @@ PetscErrorCode DMGetDMKSP(DM dm, DMKSP *kspdm)
     PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_DMKSP, NULL, NULL));
     PetscCall(DMRefineHookAdd(dm, DMRefineHook_DMKSP, NULL, NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -150,7 +150,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm, DMKSP *kspdm)
     kdm->originaldm = dm;
   }
   *kspdm = kdm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -179,7 +179,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
   PetscCall(PetscObjectReference(dmdest->dmksp));
   PetscCall(DMCoarsenHookAdd(dmdest, DMCoarsenHook_DMKSP, NULL, NULL));
   PetscCall(DMRefineHookAdd(dmdest, DMRefineHook_DMKSP, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -213,7 +213,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, 
   PetscCall(DMGetDMKSPWrite(dm, &kdm));
   if (func) kdm->ops->computeoperators = func;
   if (ctx) kdm->operatorsctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -241,7 +241,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat,
   PetscCall(DMGetDMKSP(dm, &kdm));
   if (func) *func = kdm->ops->computeoperators;
   if (ctx) *(void **)ctx = kdm->operatorsctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -275,7 +275,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *
   PetscCall(DMGetDMKSPWrite(dm, &kdm));
   if (func) kdm->ops->computerhs = func;
   if (ctx) kdm->rhsctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -305,7 +305,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Ve
   PetscCall(DMGetDMKSPWrite(dm, &kdm));
   if (func) kdm->ops->computeinitialguess = func;
   if (ctx) kdm->initialguessctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -333,7 +333,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void 
   PetscCall(DMGetDMKSP(dm, &kdm));
   if (func) *func = kdm->ops->computerhs;
   if (ctx) *(void **)ctx = kdm->rhsctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -361,5 +361,5 @@ PetscErrorCode DMKSPGetComputeInitialGuess(DM dm, PetscErrorCode (**func)(KSP, V
   PetscCall(DMGetDMKSP(dm, &kdm));
   if (func) *func = kdm->ops->computeinitialguess;
   if (ctx) *(void **)ctx = kdm->initialguessctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

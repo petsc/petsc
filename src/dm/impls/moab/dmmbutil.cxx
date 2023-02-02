@@ -246,7 +246,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   mbImpl->tag_set_data(global_id_tag, verts, &gids[0]);
   verts.swap(uverts);
   PetscCall(PetscFree(gids));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface *mbImpl, moab::ReadUtilIface *iface, DMMoabMeshGeneratorCtx &genCtx, PetscInt m, PetscInt n, PetscInt k, PetscInt a, PetscInt b, PetscInt c, moab::Tag &global_id_tag, moab::EntityHandle startv, moab::Range &cells)
@@ -335,7 +335,7 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface *mbImpl, moab::Re
   tmp.swap(cells);
   merr = mbImpl->tag_set_data(global_id_tag, cells, &gids[0]);
   MBERR("Can't set global ids to elements.", merr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx &genCtx, PetscInt dim, PetscBool simplex, PetscInt rank, PetscInt nprocs, const PetscReal *bounds, PetscInt nelems)
@@ -473,7 +473,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx &genCtx, PetscI
   PetscCall(PetscInfo(NULL, "Local nexyz:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.nex, genCtx.ney, genCtx.nez));
   PetscCall(PetscInfo(NULL, "Local delxyz:= %g, %g, %g\n", genCtx.dx, genCtx.dy, genCtx.dz));
   PetscCall(PetscInfo(NULL, "Local strides:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.xstride, genCtx.ystride, genCtx.zstride));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -778,7 +778,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
     int default_dbc = 0;
     merr = mbImpl->tag_set_data(dir_tag, &vertexset, 1, &default_dbc);MBERRNM(merr);
   */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, PetscInt nghost, MoabReadMode mode, PetscInt dbglevel, const char *dm_opts, const char *extra_opts, const char **read_opts)
@@ -808,7 +808,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 
   PetscCall(PetscSNPrintf(ropts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", ropts_par, (nghost ? ropts_pargh : ""), ropts_dbg, (extra_opts ? extra_opts : ""), (dm_opts ? dm_opts : "")));
   *read_opts = ropts;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -906,7 +906,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
 
   PetscCall(PetscInfo(*dm, "MOAB file '%s' was successfully loaded. Found %zu vertices and %zu elements.\n", filename, verts.size(), elems.size()));
   PetscCall(PetscFree(readopts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -935,5 +935,5 @@ PetscErrorCode DMMoabRenumberMeshEntities(DM dm)
   merr = ((DM_Moab *)dm->data)->pcomm->assign_global_ids(((DM_Moab *)dm->data)->fileset, 3, 0, false, true, false);
   MBERRNM(merr);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

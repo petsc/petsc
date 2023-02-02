@@ -121,7 +121,7 @@ ompi-cuda:
 mpich-cxx-py3:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11
+    CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11 --with-strict-petscerrorcode
     TEST_SEARCH: snes_tutorials-ex48%
     LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
 
@@ -135,7 +135,7 @@ uni-complex-float-int64:
 c99-mlib-static-py:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 --with-strict-petscerrorcode CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
     ENABLE_CHECK: 1
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008

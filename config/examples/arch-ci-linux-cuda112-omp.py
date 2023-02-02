@@ -19,6 +19,7 @@ if __name__ == '__main__':
     '--with-threadsafety',
     '--download-kokkos',
     '--download-kokkos-kernels',
+    '--with-strict-petscerrorcode',
   ]
 
   configure.petsc_configure(configure_options)

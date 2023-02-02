@@ -200,5 +200,5 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf, char *filename)
   pf->load = newload;
 
   PetscCall(PetscFree(busext2intmap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

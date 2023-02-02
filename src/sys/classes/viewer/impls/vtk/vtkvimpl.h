@@ -51,6 +51,6 @@ static inline PetscErrorCode PetscViewerVTKSanitizeName_Internal(char name[], si
     if (a == '\0') break;
     if (a == ' ') name[c] = '_';
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

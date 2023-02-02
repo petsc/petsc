@@ -69,7 +69,7 @@ PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation in the Krylov method */
   if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(vres));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -111,5 +111,5 @@ PetscErrorCode KSPUnwindPreconditioner(KSP ksp, Vec vsoln, Vec vt1)
   } else {
     PetscCall(PCDiagonalScaleRight(ksp->pc, vsoln, vsoln));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

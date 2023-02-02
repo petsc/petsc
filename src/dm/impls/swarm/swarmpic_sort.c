@@ -22,7 +22,7 @@ PetscErrorCode DMSwarmSortApplyCellIndexSort(DMSwarmSort ctx)
 {
   PetscFunctionBegin;
   qsort(ctx->list, ctx->npoints, sizeof(SwarmPoint), sort_CompareSwarmPoint);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
@@ -37,7 +37,7 @@ PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
   PetscCall(PetscMalloc1(1, &ctx->pcell_offsets));
   PetscCall(PetscMalloc1(1, &ctx->list));
   *_ctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
@@ -47,8 +47,8 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
   PetscInt  tmp, c, count;
 
   PetscFunctionBegin;
-  if (!ctx) PetscFunctionReturn(0);
-  if (ctx->isvalid) PetscFunctionReturn(0);
+  if (!ctx) PetscFunctionReturn(PETSC_SUCCESS);
+  if (ctx->isvalid) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscLogEventBegin(DMSWARM_Sort, 0, 0, 0, 0));
   /* check the number of cells */
@@ -88,7 +88,7 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
 
   ctx->isvalid = PETSC_TRUE;
   PetscCall(PetscLogEventEnd(DMSWARM_Sort, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
@@ -96,14 +96,14 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
   DMSwarmSort ctx;
 
   PetscFunctionBegin;
-  if (!_ctx) PetscFunctionReturn(0);
-  if (!*_ctx) PetscFunctionReturn(0);
+  if (!_ctx) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*_ctx) PetscFunctionReturn(PETSC_SUCCESS);
   ctx = *_ctx;
   if (ctx->list) PetscCall(PetscFree(ctx->list));
   if (ctx->pcell_offsets) PetscCall(PetscFree(ctx->pcell_offsets));
   PetscCall(PetscFree(ctx));
   *_ctx = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -137,7 +137,7 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *
   PetscCheck(e >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "Cell index (%" PetscInt_FMT ") cannot be negative", e);
   points_per_cell = ctx->pcell_offsets[e + 1] - ctx->pcell_offsets[e];
   *npoints        = points_per_cell;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -181,7 +181,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, Petsc
   *npoints = points_per_cell;
   *pidlist = plist;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -263,7 +263,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 
   /* setup */
   PetscCall(DMSwarmSortSetup(swarm->sort_context, dm, ncells));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -286,10 +286,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
   PetscFunctionBegin;
-  if (!swarm->sort_context) PetscFunctionReturn(0);
+  if (!swarm->sort_context) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(swarm->sort_context->isvalid, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "You must call DMSwarmSortGetAccess() before calling DMSwarmSortRestoreAccess()");
   swarm->sort_context->isvalid = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -314,10 +314,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid)
   PetscFunctionBegin;
   if (!swarm->sort_context) {
     *isvalid = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   *isvalid = swarm->sort_context->isvalid;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -344,9 +344,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm, PetscInt *ncells, PetscIn
   if (!swarm->sort_context) {
     if (ncells) *ncells = 0;
     if (npoints) *npoints = 0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (ncells) *ncells = swarm->sort_context->ncells;
   if (npoints) *npoints = swarm->sort_context->npoints;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

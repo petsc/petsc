@@ -23,7 +23,7 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
   PetscCall(ISDestroy(&gpcg->Free_Local));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -38,7 +38,7 @@ static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao, PetscOptionItems *PetscOpt
   PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -54,7 +54,7 @@ static PetscErrorCode TaoView_GPCG(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "PG tolerance: %g \n", (double)gpcg->pg_ftol));
   }
   PetscCall(TaoLineSearchView(tao->linesearch, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* GPCGObjectiveAndGradient()
@@ -73,7 +73,7 @@ static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscRea
   PetscCall(VecDot(gpcg->B, X, &f2));
   PetscCall(VecAXPY(G, 1.0, gpcg->B));
   *f = f1 / 2.0 + f2 + gpcg->c;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -107,7 +107,7 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
 
     }
   */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_GPCG(Tao tao)
@@ -220,7 +220,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
   } /* END MAIN LOOP  */
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GPCGGradProjections(Tao tao)
@@ -268,7 +268,7 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
   }
 
   gpcg->gnorm = gtg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 } /* End gradient projections */
 
 static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
@@ -286,7 +286,7 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
   PetscCall(VecAXPY(DXU, -1.0, gpcg->Work));
   PetscCall(VecSet(gpcg->Work, 0.0));
   PetscCall(VecPointwiseMin(DXU, gpcg->Work, DXU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -353,5 +353,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   PetscCall(TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG));
   PetscCall(TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao));
   PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, tao->hdr.prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

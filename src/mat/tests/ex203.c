@@ -15,7 +15,7 @@ static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &user));
   PetscCall(MatGetDiagonal(user->B, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

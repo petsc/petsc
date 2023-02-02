@@ -180,7 +180,7 @@ static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Factorial called with negative number %" PetscInt_FMT, n);
   for (PetscInt i = 1; i < n + 1; ++i) f *= (PetscReal)i;
   *factorial = f;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -212,7 +212,7 @@ static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial
     for (i = 13; i < n + 1; ++i) f *= i;
     *factorial = f;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -248,7 +248,7 @@ static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *
     for (PetscInt i = 0; i < k; i++) binom = (binom * (PetscReal)(n - i)) / (PetscReal)(i + 1);
     *binomial = binom;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -290,7 +290,7 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
     bin = binom;
   }
   *binomial = bin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -340,7 +340,7 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
     odd ^= (!!s);
   }
   if (isOdd) *isOdd = odd ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -388,7 +388,7 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
   }
   *k = idx;
   if (isOdd) *isOdd = odd ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -428,7 +428,7 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
       Nk = Nminusk;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -470,7 +470,7 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
     }
   }
   *index = j;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -516,7 +516,7 @@ static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j
   }
   for (; i < n; i++) subcomp[m++] = i;
   if (isOdd) *isOdd = odd ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 struct _p_PetscTabulation {

@@ -193,7 +193,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported PDE %d", options->pde);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

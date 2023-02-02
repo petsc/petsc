@@ -22,7 +22,7 @@ PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
   S->ops->solvetransposeadd = St->ops->solvetransposeadd;
 
   PetscCall(MatDestroy(&St));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
@@ -49,7 +49,7 @@ PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
   default:
     SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_SUP, "Unhandled MatFactorSchurStatus %d", F->schur_status);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Schur status updated in the interface */
@@ -65,7 +65,7 @@ PETSC_INTERN PetscErrorCode MatFactorFactorizeSchurComplement_Private(Mat F)
     PetscCall(MatLUFactor(F->schur, NULL, NULL, &info));
   }
   PetscCall(PetscLogEventEnd(MAT_FactorFactS, F, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Schur status updated in the interface */
@@ -92,5 +92,5 @@ PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
     } else SETERRQ(PetscObjectComm((PetscObject)S), PETSC_ERR_SUP, "Not implemented for type %s", ((PetscObject)S)->type_name);
     PetscCall(PetscLogEventEnd(MAT_FactorInvS, F, 0, 0, 0));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

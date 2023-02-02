@@ -39,7 +39,7 @@ PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
   PetscCall(VecGetArray(v, &x));
   for (i = start; i < n; i += bs) x[i] = s;
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -77,7 +77,7 @@ PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
   PetscCall(VecGetArray(v, &x));
   for (i = start; i < n; i += bs) x[i] *= scale;
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -143,7 +143,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
     PetscCall(MPIU_Allreduce(&tnorm, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)v)));
   } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
   PetscCall(VecRestoreArrayRead(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -217,7 +217,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
     *idex = out.i;
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -291,7 +291,7 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
     *idex = out.i;
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -335,7 +335,7 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
   for (i = start; i < n; i += bs) local_sum += x[i];
   PetscCall(MPIU_Allreduce(&local_sum, sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
   PetscCall(VecRestoreArrayRead(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -374,7 +374,7 @@ PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales)
     for (j = 0; j < bs; j++) x[i + j] *= scales[j];
   }
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -458,7 +458,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
     PetscCall(MPIU_Allreduce(tnorm, nrm, bs, MPIU_REAL, MPIU_MAX, comm));
   } else SETERRQ(comm, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
   PetscCall(VecRestoreArrayRead(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -517,7 +517,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
   PetscCall(MPIU_Allreduce(max, nrm, bs, MPIU_REAL, MPIU_MAX, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -576,7 +576,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
   PetscCall(MPIU_Allreduce(min, nrm, bs, MPIU_REAL, MPIU_MIN, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -625,7 +625,7 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
   PetscCall(MPIU_Allreduce(local_sums, sums, bs, MPIU_SCALAR, MPIU_SUM, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*----------------------------------------------------------------------------------------------*/
@@ -721,7 +721,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
   for (i = 0; i < nv; i++) PetscCall(VecRestoreArray(s[i], &y[i]));
 
   PetscCall(PetscFree2(y, bss));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -811,7 +811,7 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
   PetscCall(VecRestoreArray(v, &x));
   for (i = 0; i < nv; i++) PetscCall(VecRestoreArrayRead(s[i], &y[i]));
   PetscCall(PetscFree2(*(PetscScalar ***)&y, bss));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -854,7 +854,7 @@ PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv)
   PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
              v->map->bs);
   PetscUseTypeMethod(v, stridegather, start, s, addv);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -893,7 +893,7 @@ PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
   PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
              v->map->bs);
   PetscCall((*v->ops->stridescatter)(s, start, v, addv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -932,7 +932,7 @@ PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[]
   PetscValidHeaderSpecific(s, VEC_CLASSID, 5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
   PetscUseTypeMethod(v, stridesubsetgather, nidx, idxv, idxs, s, addv);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -970,7 +970,7 @@ PetscErrorCode VecStrideSubSetScatter(Vec s, PetscInt nidx, const PetscInt idxs[
   PetscValidHeaderSpecific(v, VEC_CLASSID, 5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
   PetscCall((*v->ops->stridesubsetscatter)(s, nidx, idxs, idxv, v, addv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecStrideGather_Default(Vec v, PetscInt start, Vec s, InsertMode addv)
@@ -1002,7 +1002,7 @@ PetscErrorCode VecStrideGather_Default(Vec v, PetscInt start, Vec s, InsertMode 
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscCall(VecRestoreArray(s, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecStrideScatter_Default(Vec s, PetscInt start, Vec v, InsertMode addv)
@@ -1034,7 +1034,7 @@ PetscErrorCode VecStrideScatter_Default(Vec s, PetscInt start, Vec v, InsertMode
 
   PetscCall(VecRestoreArray(v, &x));
   PetscCall(VecRestoreArrayRead(s, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecStrideSubSetGather_Default(Vec v, PetscInt nidx, const PetscInt idxv[], const PetscInt idxs[], Vec s, InsertMode addv)
@@ -1098,7 +1098,7 @@ PetscErrorCode VecStrideSubSetGather_Default(Vec v, PetscInt nidx, const PetscIn
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscCall(VecRestoreArray(s, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscInt idxs[], const PetscInt idxv[], Vec v, InsertMode addv)
@@ -1164,7 +1164,7 @@ PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscI
 
   PetscCall(VecRestoreArray(v, &x));
   PetscCall(VecRestoreArrayRead(s, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecApplyUnary_Private(Vec v, PetscErrorCode (*unary_op)(Vec), PetscScalar (*UnaryFunc)(PetscScalar))
@@ -1185,7 +1185,7 @@ static PetscErrorCode VecApplyUnary_Private(Vec v, PetscErrorCode (*unary_op)(Ve
     for (PetscInt i = 0; i < n; ++i) x[i] = UnaryFunc(x[i]);
     PetscCall(VecRestoreArray(v, &x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar ScalarReciprocal_Fn(PetscScalar x)
@@ -1199,7 +1199,7 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecApplyUnary_Private(v, NULL, ScalarReciprocal_Fn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar ScalarExp_Fn(PetscScalar x)
@@ -1228,7 +1228,7 @@ PetscErrorCode VecExp(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(VecApplyUnary_Private(v, v->ops->exp, ScalarExp_Fn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar ScalarLog_Fn(PetscScalar x)
@@ -1257,7 +1257,7 @@ PetscErrorCode VecLog(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(VecApplyUnary_Private(v, v->ops->log, ScalarLog_Fn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar ScalarAbs_Fn(PetscScalar x)
@@ -1281,7 +1281,7 @@ PetscErrorCode VecAbs(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(VecApplyUnary_Private(v, v->ops->abs, ScalarAbs_Fn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar ScalarSqrtAbs_Fn(PetscScalar x)
@@ -1312,7 +1312,7 @@ PetscErrorCode VecSqrtAbs(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(VecApplyUnary_Private(v, v->ops->sqrt, ScalarSqrtAbs_Fn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar ScalarImaginaryPart_Fn(PetscScalar x)
@@ -1343,7 +1343,7 @@ PetscErrorCode VecImaginaryPart(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(VecApplyUnary_Private(v, NULL, ScalarImaginaryPart_Fn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar ScalarRealPart_Fn(PetscScalar x)
@@ -1374,7 +1374,7 @@ PetscErrorCode VecRealPart(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(VecApplyUnary_Private(v, NULL, ScalarRealPart_Fn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1437,7 +1437,7 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
   PetscCall(PetscLogEventEnd(VEC_DotNorm2, s, t, 0, 0));
   *dp = work[0];
   *nm = PetscRealPart(work[1]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1475,7 +1475,7 @@ PetscErrorCode VecSum(Vec v, PetscScalar *sum)
   }
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &tmp, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
   *sum = tmp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1503,7 +1503,7 @@ PetscErrorCode VecMean(Vec v, PetscScalar *mean)
   PetscCall(VecGetSize(v, &n));
   PetscCall(VecSum(v, mean));
   *mean /= n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1525,7 +1525,7 @@ PetscErrorCode VecShift(Vec v, PetscScalar shift)
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveScalar(v, shift, 2);
   PetscCall(VecSetErrorIfLocked(v, 1));
-  if (shift == (PetscScalar)0.0) PetscFunctionReturn(0);
+  if (shift == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (v->ops->shift) {
     PetscUseTypeMethod(v, shift, shift);
@@ -1538,7 +1538,7 @@ PetscErrorCode VecShift(Vec v, PetscScalar shift)
     for (PetscInt i = 0; i < n; ++i) x[i] += shift;
     PetscCall(VecRestoreArray(v, &x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1581,7 +1581,7 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
   PetscCall(VecRestoreArrayRead(x, &array));
   PetscCall(ISRestoreIndices(row, &idx));
   PetscCall(VecReplaceArray(x, newArray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1630,7 +1630,7 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
     /* combine results from all processors */
     PetscCall(MPIU_Allreduce(&flg1, flg, 1, MPIU_BOOL, MPI_MIN, PetscObjectComm((PetscObject)vec1)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1693,6 +1693,6 @@ PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   }
   PetscCall(PetscFree2(vals, displs));
   PetscCall(PetscFree2(tmp, N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }

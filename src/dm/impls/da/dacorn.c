@@ -15,7 +15,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*cdm, prefix));
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*cdm, "cdm_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
@@ -36,7 +36,7 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
   PetscCall(DMClone(dm, &cdm));
   PetscCall(DMFieldCreateDA(cdm, dim, corners, field));
   PetscCall(DMDestroy(&cdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -68,7 +68,7 @@ PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[])
   PetscCheck(dd->fieldname, PetscObjectComm((PetscObject)da), PETSC_ERR_ORDER, "You should call DMSetUp() first");
   PetscCall(PetscFree(dd->fieldname[nf]));
   PetscCall(PetscStrallocpy(name, &dd->fieldname[nf]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -95,7 +95,7 @@ PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names)
 
   PetscFunctionBegin;
   *names = (const char *const *)dd->fieldname;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -130,7 +130,7 @@ PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
   PetscCall(PetscStrArrayallocpy(names, &fieldname));
   PetscCall(PetscStrArrayDestroy(&dd->fieldname));
   dd->fieldname = fieldname;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -164,7 +164,7 @@ PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name)
   PetscCheck(nf >= 0 && nf < dd->w, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid field number: %" PetscInt_FMT, nf);
   PetscCheck(dd->fieldname, PetscObjectComm((PetscObject)da), PETSC_ERR_ORDER, "You should call DMSetUp() first");
   *name = dd->fieldname[nf];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -197,7 +197,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[])
   PetscCheck(dd->coordinatename, PetscObjectComm((PetscObject)dm), PETSC_ERR_ORDER, "You should call DMSetUp() first");
   PetscCall(PetscFree(dd->coordinatename[nf]));
   PetscCall(PetscStrallocpy(name, &dd->coordinatename[nf]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -232,7 +232,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
   PetscCheck(nf >= 0 && nf < dm->dim, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid coordinate number: %" PetscInt_FMT, nf);
   PetscCheck(dd->coordinatename, PetscObjectComm((PetscObject)dm), PETSC_ERR_ORDER, "You should call DMSetUp() first");
   *name = dd->coordinatename[nf];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -280,7 +280,7 @@ PetscErrorCode DMDAGetCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, Pets
   if (m) *m = (dd->xe - dd->xs) / w;
   if (n) *n = (dd->ye - dd->ys);
   if (p) *p = (dd->ze - dd->zs);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal lmax[])
@@ -295,7 +295,7 @@ PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal
   lmax[0] = info.xs + info.xm - 1;
   lmax[1] = info.ys + info.ym - 1;
   lmax[2] = info.zs + info.zm - 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -307,7 +307,7 @@ PetscErrorCode DMDAGetReducedDMDA(DM da, PetscInt nfields, DM *nda)
 {
   PetscFunctionBegin;
   PetscCall(DMDACreateCompatibleDMDA(da, nfields, nda));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -374,7 +374,7 @@ PetscErrorCode DMDACreateCompatibleDMDA(DM da, PetscInt nfields, DM *nda)
 
   (*nda)->levelup   = rl;
   (*nda)->leveldown = cl;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -405,7 +405,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc)
   PetscCall(DMGetCoordinates(dm, &x));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMDAVecGetArray(cdm, x, xc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -434,5 +434,5 @@ PetscErrorCode DMDARestoreCoordinateArray(DM dm, void *xc)
   PetscCall(DMGetCoordinates(dm, &x));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMDAVecRestoreArray(cdm, x, xc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

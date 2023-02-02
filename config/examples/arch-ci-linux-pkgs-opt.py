@@ -50,6 +50,7 @@ configure_options = [
   '--download-htool=1',
   '--download-egads=1',
   '--download-opencascade=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

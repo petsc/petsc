@@ -105,7 +105,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (rz < 0.0) {
@@ -140,7 +140,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /***************************************************************************/
@@ -218,7 +218,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /***************************************************************************/
@@ -294,7 +294,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /***************************************************************************/
@@ -515,7 +515,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -527,7 +527,7 @@ static PetscErrorCode KSPCGSetUp_STCG(KSP ksp)
   /***************************************************************************/
 
   PetscCall(KSPSetWorkVecs(ksp, 3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGDestroy_STCG(KSP ksp)
@@ -546,7 +546,7 @@ static PetscErrorCode KSPCGDestroy_STCG(KSP ksp)
   /***************************************************************************/
 
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGSetRadius_STCG(KSP ksp, PetscReal radius)
@@ -555,7 +555,7 @@ static PetscErrorCode KSPCGSetRadius_STCG(KSP ksp, PetscReal radius)
 
   PetscFunctionBegin;
   cg->radius = radius;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
@@ -564,7 +564,7 @@ static PetscErrorCode KSPCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 
   PetscFunctionBegin;
   *norm_d = cg->norm_d;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
@@ -573,7 +573,7 @@ static PetscErrorCode KSPCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
 
   PetscFunctionBegin;
   *o_fcn = cg->o_fcn;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -585,7 +585,7 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
   PetscCall(PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL));
   PetscCall(PetscOptionsEList("-ksp_cg_dtype", "Norm used for direction", "", DType_Table, STCG_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -663,5 +663,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_STCG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", KSPCGGetNormD_STCG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_STCG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

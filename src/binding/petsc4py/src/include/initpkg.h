@@ -23,7 +23,7 @@ static PetscErrorCode PetscInitializePackageAll(void)
   PetscCall(DMInitializePackage());
   PetscCall(PetscDSInitializePackage());
   PetscCall(PetscFEInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------------- */

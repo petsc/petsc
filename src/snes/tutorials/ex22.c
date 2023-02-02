@@ -197,7 +197,7 @@ PetscErrorCode ComputeFunction(SNES snes, Vec U, Vec FU, void *ctx)
   PetscCall(DMCompositeRestoreLocalVectors(packer, &vw, &vu_lambda));
   PetscCall(DMCompositeRestoreAccess(packer, FU, &vfw, &vfu_lambda));
   PetscCall(PetscLogFlops(13.0 * N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -209,7 +209,7 @@ PetscErrorCode u_solution(void *dummy, PetscInt n, const PetscScalar *x, PetscSc
 
   PetscFunctionBeginUser;
   for (i = 0; i < n; i++) u[2 * i] = x[i] * x[i] - 1.25 * x[i] + .25;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ExactSolution(DM packer, Vec U)
@@ -236,7 +236,7 @@ PetscErrorCode ExactSolution(DM packer, Vec U)
   PetscCall(PFApplyVec(pf, x, u_global));
   PetscCall(PFDestroy(&pf));
   PetscCall(DMCompositeRestoreAccess(packer, U, &w, &u_global, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal rnorm, void *dummy)
@@ -274,7 +274,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal rnorm, void *dummy)
   PetscCall(VecView(u_lambda, user->fu_lambda_viewer));
   PetscCall(DMCompositeRestoreAccess(packer, Uexact, &dw, &u_lambda));
   PetscCall(VecDestroy(&Uexact));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_MF(DM packer, Mat *A)
@@ -289,7 +289,7 @@ PetscErrorCode DMCreateMatrix_MF(DM packer, Mat *A)
   PetscCall(MatCreateMFFD(PETSC_COMM_WORLD, m, m, PETSC_DETERMINE, PETSC_DETERMINE, A));
   PetscCall(MatSetUp(*A));
   PetscCall(MatSetDM(*A, packer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeJacobian_MF(SNES snes, Vec x, Mat A, Mat B, void *ctx)
@@ -297,7 +297,7 @@ PetscErrorCode ComputeJacobian_MF(SNES snes, Vec x, Mat A, Mat B, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(MatMFFDSetFunction(A, (PetscErrorCode(*)(void *, Vec, Vec))SNESComputeFunction, snes));
   PetscCall(MatMFFDSetBase(A, x, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

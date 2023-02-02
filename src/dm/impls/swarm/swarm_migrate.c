@@ -89,7 +89,7 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm, PetscBool remove_sent_points)
   if (debug) PetscCall(DMSwarmDataExView(de));
   PetscCall(DMSwarmDataBucketDestroyPackedArray(swarm->db, &point_buffer));
   PetscCall(DMSwarmDataExDestroy(de));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBool remove_sent_points, PetscInt *npoints_prior_migration)
@@ -172,7 +172,7 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBool remo
   }
   PetscCall(DMSwarmDataBucketDestroyPackedArray(swarm->db, &point_buffer));
   PetscCall(DMSwarmDataExDestroy(de));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
@@ -347,13 +347,13 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     PetscCall(DMSwarmGetSize(dm, &npoints2g));
     PetscCheck(npointsg == npoints2g, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Points from the DMSwarm must remain constant during migration (initial %" PetscInt_FMT " - final %" PetscInt_FMT ")", npointsg, npoints2g);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmMigrate_CellDMExact(DM dm, PetscBool remove_sent_points)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -421,7 +421,7 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm, PetscInt *globalsize)
   PetscCall(DMSwarmDataExView(de));
   PetscCall(DMSwarmDataBucketDestroyPackedArray(swarm->db, &point_buffer));
   PetscCall(DMSwarmDataExDestroy(de));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -448,12 +448,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
   PetscCall(DMSwarmGetCellDM(dm, &dmcell));
   PetscCheck(dmcell, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only valid if cell DM provided");
   isdmda = PETSC_FALSE;
-  PetscObjectTypeCompare((PetscObject)dmcell, DMDA, &isdmda);
+  PetscCall(PetscObjectTypeCompare((PetscObject)dmcell, DMDA, &isdmda));
   PetscCheck(isdmda, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only DMDA support for CollectBoundingBox");
 
   PetscCall(DMGetDimension(dm, &dim));
   sizeof_bbox_ctx = sizeof(CollectBBox);
-  PetscMalloc1(1, &bbox);
+  PetscCall(PetscMalloc1(1, &bbox));
   bbox->owner_rank = rank;
 
   /* compute the bounding box based on the overlapping / stenctil size */
@@ -569,7 +569,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
   PetscFree(bbox);
   PetscCall(DMSwarmDataExView(de));
   PetscCall(DMSwarmDataExDestroy(de));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* General collection when no order, or neighbour information is provided */
@@ -598,7 +598,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
   *globalsize = npoints;
   /* Broadcast user context */
-  PetscMalloc(ctx_size * size, &ctxlist);
+  PetscCall(PetscMalloc(ctx_size * size, &ctxlist));
   PetscCallMPI(MPI_Allgather(ctx, ctx_size, MPI_CHAR, ctxlist, ctx_size, MPI_CHAR, PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscMalloc1(size, &n2collect));
   PetscCall(PetscMalloc1(size, &collectlist));
@@ -662,7 +662,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
   PetscCall(DMSwarmDataBucketDestroyPackedArray(swarm->db, &point_buffer));
   PetscCall(DMSwarmDataExView(de));
   PetscCall(DMSwarmDataExDestroy(de));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -686,7 +686,7 @@ PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(mtype, 2);
   *mtype = ((DM_Swarm *)dm->data)->migrate_type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -708,5 +708,5 @@ PetscErrorCode DMSwarmSetMigrateType(DM dm, DMSwarmMigrateType mtype)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, mtype, 2);
   ((DM_Swarm *)dm->data)->migrate_type = mtype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -14,7 +14,7 @@ static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &user));
   PetscCall(MatMult(user->A, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCopy_User(Mat A, Mat B, MatStructure str)
@@ -28,7 +28,7 @@ static PetscErrorCode MatCopy_User(Mat A, Mat B, MatStructure str)
     PetscCall(MatDuplicate(userA->A, MAT_COPY_VALUES, &userB->A));
     PetscCall(MatShellSetContext(B, userB));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_User(Mat A)
@@ -41,7 +41,7 @@ static PetscErrorCode MatDestroy_User(Mat A)
     PetscCall(MatDestroy(&user->A));
     PetscCall(PetscFree(user));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

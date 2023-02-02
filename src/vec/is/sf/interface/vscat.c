@@ -35,7 +35,7 @@ static inline PetscErrorCode ISGetTypeID_Private(IS is, ISTypeID *id)
     goto functionend;
   }
 functionend:
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
@@ -72,7 +72,7 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, Inse
   } else { /* FORWARD indicates x to y scatter, where x is root and y is leaf */
     PetscCall(PetscSFBcastWithMemTypeBegin(wsf, sf->vscat.unit, xmtype, sf->vscat.xdata, ymtype, sf->vscat.ydata, mop));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecScatterEnd_Internal(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
@@ -102,7 +102,7 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf, Vec x, Vec y, Insert
   if (x != y) PetscCall(VecLockReadPop(x));
   PetscCall(VecRestoreArrayAndMemType(y, &sf->vscat.ydata));
   PetscCall(VecLockWriteSet(y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* VecScatterRemap provides a light way to slightly modify a VecScatter. Suppose the input sf scatters
@@ -126,10 +126,10 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
         break;
       }
     }
-    if (ident) PetscFunctionReturn(0);
+    if (ident) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(!frommap, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unable to remap the FROM in scatters yet");
-  if (!tomap) PetscFunctionReturn(0);
+  if (!tomap) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
 
@@ -173,7 +173,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
   /* Destroy and then rebuild root packing optimizations since indices are changed */
   PetscCall(PetscSFResetPackFields(sf));
   PetscCall(PetscSFSetUpPackFields(sf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -219,7 +219,7 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, P
     if (num_procs) *num_procs = 0;
     if (num_entries) *num_entries = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Given a parallel VecScatter context, return a plan that represents the remote communication.
@@ -269,7 +269,7 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscI
   }
 
   if (bs) *bs = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Given a parallel VecScatter context, return a plan that represents the remote communication. Ranks of remote
@@ -303,7 +303,7 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send,
     /* from back to front to also handle cases *n=0 */
     for (i = *n - 1; i > 0; i--) PetscCheck((*procs)[i - 1] <= (*procs)[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "procs[] are not ordered");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Given a parallel VecScatter context, restore the plan returned by VecScatterGetRemote_Private. This gives a chance for
@@ -328,7 +328,7 @@ PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, Pe
   if (starts) *starts = NULL;
   if (indices) *indices = NULL;
   if (procs) *procs = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Given a parallel VecScatter context, restore the plan returned by VecScatterGetRemoteOrdered_Private. This gives a chance for
@@ -351,7 +351,7 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool s
 {
   PetscFunctionBegin;
   PetscCall(VecScatterRestoreRemote_Private(sf, send, n, starts, indices, procs, bs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -370,7 +370,7 @@ PetscErrorCode VecScatterSetUp(VecScatter sf)
 {
   PetscFunctionBegin;
   PetscCall(PetscSFSetUp(sf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -396,7 +396,7 @@ PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
 {
   PetscFunctionBegin;
   PetscCall(PetscSFSetType(sf, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -418,7 +418,7 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
 {
   PetscFunctionBegin;
   PetscCall(PetscSFGetType(sf, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -438,7 +438,7 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 {
   PetscFunctionBegin;
   PetscCall(PetscSFRegister(sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------*/
@@ -463,7 +463,7 @@ PetscErrorCode VecScatterGetMerged(VecScatter sf, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   if (flg) *flg = sf->vscat.beginandendtogether;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@C
    VecScatterDestroy - Destroys a scatter context created by `VecScatterCreate()`
@@ -481,7 +481,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *sf)
 {
   PetscFunctionBegin;
   PetscCall(PetscSFDestroy(sf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -505,7 +505,7 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
   PetscValidPointer(newsf, 2);
   PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_GRAPH, newsf));
   PetscCall(PetscSFSetUp(*newsf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -527,7 +527,7 @@ PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const c
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)sf, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------*/
@@ -548,7 +548,7 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscCall(PetscSFView(sf, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -585,7 +585,7 @@ PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap
   /* Mark then vector lengths as unknown because we do not know the lengths of the remapped vectors */
   sf->vscat.from_n = -1;
   sf->vscat.to_n   = -1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -615,7 +615,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   PetscCall(PetscOptionsBool("-vecscatter_merge", "Use combined (merged) vector scatter begin and end", "VecScatterCreate", sf->vscat.beginandendtogether, &sf->vscat.beginandendtogether, NULL));
   if (sf->vscat.beginandendtogether) PetscCall(PetscInfo(sf, "Using combined (merged) vector scatter begin and end\n"));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -1096,7 +1096,7 @@ functionend:
   PetscCall(VecScatterSetFromOptions(sf));
 
   *newsf = sf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1168,7 +1168,7 @@ PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
   PetscCall(VecScatterCreate(vin, is, *tmpv, is, ctx));
   PetscCall(ISDestroy(&is));
   if (tmpvout) PetscCall(VecDestroy(tmpv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1244,7 +1244,7 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
   PetscCall(VecScatterCreate(vin, is, *tmpv, is, ctx));
   PetscCall(ISDestroy(&is));
   if (tmpvout) PetscCall(VecDestroy(tmpv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1320,7 +1320,7 @@ PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, Sca
   if (sf->vscat.beginandendtogether) PetscCall(VecScatterEnd_Internal(sf, x, y, addv, mode));
   PetscCall(PetscLogEventEnd(VEC_ScatterBegin, sf, x, y, 0));
   sf->vscat.logging = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1358,5 +1358,5 @@ PetscErrorCode VecScatterEnd(VecScatter sf, Vec x, Vec y, InsertMode addv, Scatt
     PetscCall(PetscLogEventEnd(VEC_ScatterEnd, sf, x, y, 0));
     sf->vscat.logging = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

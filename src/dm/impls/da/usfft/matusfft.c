@@ -74,7 +74,7 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   PetscCall(VecRestoreArray(y,&y_array));
   PetscCall(VecRestoreArray(x,&x_array));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 } /* MatApply_USFFT_Private() */
 
 #if 0
@@ -84,7 +84,7 @@ PetscErrorCode MatUSFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
   PetscScalar    *x_array, *y_array;
 
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 } /* MatUSFFT_ProjectOnBattleLemarie_Private() */
 
 PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
@@ -92,7 +92,7 @@ PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
   PetscScalar    *x_array, *y_array;
 
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 } /* MatInterpolate_USFFT_Private() */
 
 PetscErrorCode MatMult_SeqUSFFT(Mat A,Vec x,Vec y)
@@ -102,7 +102,7 @@ PetscErrorCode MatMult_SeqUSFFT(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
   PetscCall(MatApply_USFFT_Private(A, &usfft->p_forward, FFTW_FORWARD, x,y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
@@ -112,7 +112,7 @@ PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
   PetscCall(MatApply_USFFT_Private(usfft, &usfft->p_backward, FFTW_BACKWARD, x,y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
@@ -126,7 +126,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
   PetscCall(PetscFree(usfft->outdim));
   PetscCall(PetscFree(usfft));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A,0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -230,7 +230,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   PetscCall(PetscOptionsEList("-mat_usfft_fftw_plannerflags","Planner Flags","None",p_flags,4,p_flags[0],&p_flag,&flg));
   if (flg) usfft->p_flag = (unsigned)p_flag;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 } /* MatCreateSeqUSFFT() */
 
 #endif

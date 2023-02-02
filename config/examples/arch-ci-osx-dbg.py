@@ -31,6 +31,7 @@ configure_options = [
   '--download-thrust=1',
   '--download-hcephes=1',
   '--with-zlib=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

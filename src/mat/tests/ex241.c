@@ -15,7 +15,7 @@ static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const Pe
       ptr[j + M * k] = 1.0 / (1.0e-2 + PetscSqrtReal(diff));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GenEntriesRectangular(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *J, const PetscInt *K, PetscScalar *ptr, void *ctx)
@@ -31,7 +31,7 @@ static PetscErrorCode GenEntriesRectangular(PetscInt sdim, PetscInt M, PetscInt 
       ptr[j + M * k] = 1.0 / (1.0e-2 + PetscSqrtReal(diff));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     PetscCall(MatGetOwnershipRange(B, &begin, NULL));
     PetscCall(MatDenseGetArrayWrite(D, &ptr));
     for (PetscInt i = begin; i < m + begin; ++i)
-      for (PetscInt j = 0; j < M; ++j) GenEntries(dim, 1, 1, &i, &j, ptr + i - begin + j * m, gcoords);
+      for (PetscInt j = 0; j < M; ++j) PetscCall(GenEntries(dim, 1, 1, &i, &j, ptr + i - begin + j * m, gcoords));
     PetscCall(MatDenseRestoreArrayWrite(D, &ptr));
     PetscCall(MatMultEqual(A, D, 10, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Ax != Dx");

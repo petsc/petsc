@@ -40,7 +40,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part, PetscRe
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveReal(part, imb, 2);
   PetscTryMethod(part, "MatPartitioningPTScotchSetImbalance_C", (MatPartitioning, PetscReal), (part, imb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part, PetscReal imb)
@@ -53,7 +53,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
     PetscCheck(imb >= 0.0 && imb <= 1.0, PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_OUTOFRANGE, "Illegal value of imb. Must be in range [0,1]");
     scotch->imbalance = (double)imb;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -78,7 +78,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part, PetscRe
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidRealPointer(imb, 2);
   PetscUseMethod(part, "MatPartitioningPTScotchGetImbalance_C", (MatPartitioning, PetscReal *), (part, imb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part, PetscReal *imb)
@@ -87,7 +87,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
 
   PetscFunctionBegin;
   *imb = scotch->imbalance;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -123,7 +123,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part, MPPTScot
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(part, strategy, 2);
   PetscTryMethod(part, "MatPartitioningPTScotchSetStrategy_C", (MatPartitioning, MPPTScotchStrategyType), (part, strategy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part, MPPTScotchStrategyType strategy)
@@ -151,7 +151,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
     scotch->strategy = SCOTCH_STRATDEFAULT;
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -175,7 +175,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part, MPPTScot
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidPointer(strategy, 2);
   PetscUseMethod(part, "MatPartitioningPTScotchGetStrategy_C", (MatPartitioning, MPPTScotchStrategyType *), (part, strategy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part, MPPTScotchStrategyType *strategy)
@@ -203,7 +203,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,
     *strategy = MP_PTSCOTCH_DEFAULT;
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer viewer)
@@ -238,7 +238,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Strategy=%s\n", str));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Load imbalance ratio=%g\n", scotch->imbalance));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
@@ -256,7 +256,7 @@ PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part, Pets
   PetscCall(PetscOptionsReal("-mat_partitioning_ptscotch_imbalance", "Load imbalance ratio", "MatPartitioningPTScotchSetImbalance", scotch->imbalance, &r, &flag));
   if (flag) PetscCall(MatPartitioningPTScotchSetImbalance(part, r));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part, PetscBool useND, IS *partitioning)
@@ -359,22 +359,22 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
       SCOTCH_Dmapping mappdat;
       SCOTCH_Strat    stradat;
 
-      PetscCall(SCOTCH_dgraphInit(&grafdat, comm));
-      PetscCall(SCOTCH_dgraphBuild(&grafdat, 0, vertlocnbr, vertlocnbr, adj->i, adj->i + 1, veloloctab, NULL, edgelocnbr, edgelocnbr, adj->j, NULL, edloloctab));
+      PetscCallExternal(SCOTCH_dgraphInit, &grafdat, comm);
+      PetscCallExternal(SCOTCH_dgraphBuild, &grafdat, 0, vertlocnbr, vertlocnbr, adj->i, adj->i + 1, veloloctab, NULL, edgelocnbr, edgelocnbr, adj->j, NULL, edloloctab);
 
-      if (PetscDefined(USE_DEBUG)) PetscCall(SCOTCH_dgraphCheck(&grafdat));
+      if (PetscDefined(USE_DEBUG)) PetscCallExternal(SCOTCH_dgraphCheck, &grafdat);
 
-      PetscCall(SCOTCH_archInit(&archdat));
-      PetscCall(SCOTCH_stratInit(&stradat));
-      PetscCall(SCOTCH_stratDgraphMapBuild(&stradat, scotch->strategy, nparts, nparts, scotch->imbalance));
+      PetscCallExternal(SCOTCH_archInit, &archdat);
+      PetscCallExternal(SCOTCH_stratInit, &stradat);
+      PetscCallExternal(SCOTCH_stratDgraphMapBuild, &stradat, scotch->strategy, nparts, nparts, scotch->imbalance);
 
       if (velotab) {
-        PetscCall(SCOTCH_archCmpltw(&archdat, nparts, velotab));
+        PetscCallExternal(SCOTCH_archCmpltw, &archdat, nparts, velotab);
       } else {
-        PetscCall(SCOTCH_archCmplt(&archdat, nparts));
+        PetscCallExternal(SCOTCH_archCmplt, &archdat, nparts);
       }
-      PetscCall(SCOTCH_dgraphMapInit(&grafdat, &mappdat, &archdat, locals));
-      PetscCall(SCOTCH_dgraphMapCompute(&grafdat, &mappdat, &stradat));
+      PetscCallExternal(SCOTCH_dgraphMapInit, &grafdat, &mappdat, &archdat, locals);
+      PetscCallExternal(SCOTCH_dgraphMapCompute, &grafdat, &mappdat, &stradat);
 
       SCOTCH_dgraphMapExit(&grafdat, &mappdat);
       SCOTCH_archExit(&archdat);
@@ -385,19 +385,19 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
       SCOTCH_Graph grafdat;
       SCOTCH_Strat stradat;
 
-      PetscCall(SCOTCH_graphInit(&grafdat));
-      PetscCall(SCOTCH_graphBuild(&grafdat, 0, vertlocnbr, adj->i, adj->i + 1, veloloctab, NULL, edgelocnbr, adj->j, edloloctab));
-      if (PetscDefined(USE_DEBUG)) PetscCall(SCOTCH_graphCheck(&grafdat));
-      PetscCall(SCOTCH_stratInit(&stradat));
-      PetscCall(SCOTCH_stratGraphMapBuild(&stradat, scotch->strategy, nparts, scotch->imbalance));
+      PetscCallExternal(SCOTCH_graphInit, &grafdat);
+      PetscCallExternal(SCOTCH_graphBuild, &grafdat, 0, vertlocnbr, adj->i, adj->i + 1, veloloctab, NULL, edgelocnbr, adj->j, edloloctab);
+      if (PetscDefined(USE_DEBUG)) PetscCallExternal(SCOTCH_graphCheck, &grafdat);
+      PetscCallExternal(SCOTCH_stratInit, &stradat);
+      PetscCallExternal(SCOTCH_stratGraphMapBuild, &stradat, scotch->strategy, nparts, scotch->imbalance);
       if (velotab) {
         SCOTCH_Arch archdat;
-        PetscCall(SCOTCH_archInit(&archdat));
-        PetscCall(SCOTCH_archCmpltw(&archdat, nparts, velotab));
-        PetscCall(SCOTCH_graphMap(&grafdat, &archdat, &stradat, locals));
+        PetscCallExternal(SCOTCH_archInit, &archdat);
+        PetscCallExternal(SCOTCH_archCmpltw, &archdat, nparts, velotab);
+        PetscCallExternal(SCOTCH_graphMap, &grafdat, &archdat, &stradat, locals);
         SCOTCH_archExit(&archdat);
       } else {
-        PetscCall(SCOTCH_graphPart(&grafdat, nparts, &stradat, locals));
+        PetscCallExternal(SCOTCH_graphPart, &grafdat, nparts, &stradat, locals);
       }
       SCOTCH_stratExit(&stradat);
       SCOTCH_graphExit(&grafdat);
@@ -432,21 +432,21 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
   }
 
   if (!flg) PetscCall(MatDestroy(&mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part, IS *partitioning)
 {
   PetscFunctionBegin;
   PetscCall(MatPartitioningApply_PTScotch_Private(part, PETSC_FALSE, partitioning));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningApplyND_PTScotch(MatPartitioning part, IS *partitioning)
 {
   PetscFunctionBegin;
   PetscCall(MatPartitioningApply_PTScotch_Private(part, PETSC_TRUE, partitioning));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
@@ -460,7 +460,7 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "MatPartitioningPTScotchGetImbalance_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "MatPartitioningPTScotchSetStrategy_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "MatPartitioningPTScotchGetStrategy_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -496,5 +496,5 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "MatPartitioningPTScotchGetImbalance_C", MatPartitioningPTScotchGetImbalance_PTScotch));
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "MatPartitioningPTScotchSetStrategy_C", MatPartitioningPTScotchSetStrategy_PTScotch));
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "MatPartitioningPTScotchGetStrategy_C", MatPartitioningPTScotchGetStrategy_PTScotch));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

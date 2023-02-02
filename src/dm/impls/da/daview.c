@@ -36,7 +36,7 @@ PetscErrorCode DMView_DA_Matlab(DM da, PetscViewer viewer)
     PetscCall(PetscObjectName((PetscObject)da));
     PetscCall(PetscViewerMatlabPutVariable(viewer, ((PetscObject)da)->name, mx));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -73,7 +73,7 @@ PetscErrorCode DMView_DA_Binary(DM da, PetscViewer viewer)
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
   if (coordinates) PetscCall(VecView(coordinates, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
@@ -106,7 +106,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(VecDestroy(&natural));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -167,7 +167,7 @@ PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, Petsc
   if (by) *by = dd->by;
   if (bz) *bz = dd->bz;
   if (st) *st = dd->stencil_type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -229,5 +229,5 @@ PetscErrorCode DMDAGetLocalInfo(DM da, DMDALocalInfo *info)
   info->gym = (dd->Ye - dd->Ys);
   info->gzs = dd->Zs + dd->zo;
   info->gzm = (dd->Ze - dd->Zs);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

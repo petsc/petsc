@@ -72,14 +72,14 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmo
   C->packed = 1;
 
   PetscCall(MatDestroy(&AT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatFactorGetSolverType_seqaij_SPQR(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSPQR;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define GET_ARRAY_READ  0
@@ -101,11 +101,11 @@ static PetscErrorCode MatSolve_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmo
     PetscCheck(Z_handle, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
     Y_handle = SuiteSparseQR_C_solve(SPQR_RETX_EQUALS_B, chol->spqrfact, Z_handle, chol->common);
     PetscCheck(Y_handle, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
-    PetscCall(!cholmod_l_free_dense(&Z_handle, chol->common));
+    PetscCallExternal(!cholmod_l_free_dense, &Z_handle, chol->common);
   }
   *_Y_handle = Y_handle;
-  PetscCall(!cholmod_l_free_dense(&QTB_handle, chol->common));
-  PetscFunctionReturn(0);
+  PetscCallExternal(!cholmod_l_free_dense, &QTB_handle, chol->common);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SPQR(Mat F, Vec B, Vec X)
@@ -122,9 +122,9 @@ static PetscErrorCode MatSolve_SPQR(Mat F, Vec B, Vec X)
   PetscCall(VecGetArrayWrite(X, &v));
   PetscCall(PetscArraycpy(v, (PetscScalar *)(Y_handle->x), n));
   PetscCall(VecRestoreArrayWrite(X, &v));
-  PetscCall(!cholmod_l_free_dense(&Y_handle, chol->common));
+  PetscCallExternal(!cholmod_l_free_dense, &Y_handle, chol->common);
   PetscCall(VecUnWrapCholmod(B, GET_ARRAY_READ, &cholB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SPQR(Mat F, Mat B, Mat X)
@@ -145,9 +145,9 @@ static PetscErrorCode MatMatSolve_SPQR(Mat F, Mat B, Mat X)
     for (size_t j = 0; j < Y_handle->ncol; j++) PetscCall(PetscArraycpy(&v[j * lda], &(((PetscScalar *)Y_handle->x)[j * Y_handle->d]), Y_handle->nrow));
   }
   PetscCall(MatDenseRestoreArrayWrite(X, &v));
-  PetscCall(!cholmod_l_free_dense(&Y_handle, chol->common));
+  PetscCallExternal(!cholmod_l_free_dense, &Y_handle, chol->common);
   PetscCall(MatDenseUnWrapCholmod(B, GET_ARRAY_READ, &cholB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmod_dense **_Y_handle)
@@ -161,8 +161,8 @@ static PetscErrorCode MatSolveTranspose_SPQR_Internal(Mat F, cholmod_dense *chol
   Y_handle = SuiteSparseQR_C_qmult(SPQR_QX, chol->spqrfact, RTB_handle, chol->common);
   PetscCheck(Y_handle, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_qmult failed");
   *_Y_handle = Y_handle;
-  PetscCall(!cholmod_l_free_dense(&RTB_handle, chol->common));
-  PetscFunctionReturn(0);
+  PetscCallExternal(!cholmod_l_free_dense, &RTB_handle, chol->common);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SPQR(Mat F, Vec B, Vec X)
@@ -179,9 +179,9 @@ static PetscErrorCode MatSolveTranspose_SPQR(Mat F, Vec B, Vec X)
   PetscCall(VecGetArrayWrite(X, &v));
   PetscCall(PetscArraycpy(v, (PetscScalar *)Y_handle->x, n));
   PetscCall(VecRestoreArrayWrite(X, &v));
-  PetscCall(!cholmod_l_free_dense(&Y_handle, chol->common));
+  PetscCallExternal(!cholmod_l_free_dense, &Y_handle, chol->common);
   PetscCall(VecUnWrapCholmod(B, GET_ARRAY_READ, &cholB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SPQR(Mat F, Mat B, Mat X)
@@ -202,9 +202,9 @@ static PetscErrorCode MatMatSolveTranspose_SPQR(Mat F, Mat B, Mat X)
     for (size_t j = 0; j < Y_handle->ncol; j++) PetscCall(PetscArraycpy(&v[j * lda], &(((PetscScalar *)Y_handle->x)[j * Y_handle->d]), Y_handle->nrow));
   }
   PetscCall(MatDenseRestoreArrayWrite(X, &v));
-  PetscCall(!cholmod_l_free_dense(&Y_handle, chol->common));
+  PetscCallExternal(!cholmod_l_free_dense, &Y_handle, chol->common);
   PetscCall(MatDenseUnWrapCholmod(B, GET_ARRAY_READ, &cholB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F, Mat A, const MatFactorInfo *info)
@@ -233,7 +233,7 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F, Mat A, const MatFactorInfo 
     F->ops->solvetranspose    = MatSolveTranspose_SPQR;
     F->ops->matsolvetranspose = MatMatSolveTranspose_SPQR;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, const MatFactorInfo *info)
@@ -246,8 +246,8 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, cons
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMALHERMITIAN, &chol->normal));
   if (!chol->normal && !PetscDefined(USE_COMPLEX)) PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal));
   PetscCall((*chol->Wrap)(A, PETSC_TRUE, &cholA, &aijalloc, &valloc));
-  if (PetscDefined(USE_DEBUG)) PetscCall(!cholmod_l_check_sparse(&cholA, chol->common));
-  if (chol->spqrfact) PetscCall(!SuiteSparseQR_C_free(&chol->spqrfact, chol->common));
+  if (PetscDefined(USE_DEBUG)) PetscCallExternal(!cholmod_l_check_sparse, &cholA, chol->common);
+  if (chol->spqrfact) PetscCallExternal(!SuiteSparseQR_C_free, &chol->spqrfact, chol->common);
   chol->spqrfact = SuiteSparseQR_C_symbolic(SPQR_ORDERING_DEFAULT, 1, &cholA, chol->common);
   PetscCheck(chol->spqrfact, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "CHOLMOD analysis failed using internal ordering with status %d", chol->common->status);
 
@@ -255,7 +255,7 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, cons
   if (valloc) PetscCall(PetscFree(cholA.x));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)F, "MatQRFactorNumeric_C", MatQRFactorNumeric_SPQR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -314,5 +314,5 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat A, MatFactorType ftype,
   PetscCall(CholmodStart(B));
   chol->common->itype = CHOLMOD_LONG;
   *F                  = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

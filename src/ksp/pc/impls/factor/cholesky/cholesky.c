@@ -17,7 +17,7 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc, PetscOptionItems *PetscOp
   PetscOptionsHeadBegin(PetscOptionsObject, "Cholesky options");
   PetscCall(PCSetFromOptions_Factor(pc, PetscOptionsObject));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
@@ -49,7 +49,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     PetscCall(MatFactorGetError(pc->pmat, &err));
     if (err) { /* Factor() fails */
       pc->failedreason = (PCFailedReason)err;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     ((PC_Factor *)dir)->fact = pc->pmat;
@@ -115,7 +115,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     PetscCall(MatFactorGetError(((PC_Factor *)dir)->fact, &err));
     if (err) { /* FactorSymbolic() fails */
       pc->failedreason = (PCFailedReason)err;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     PetscCall(MatCholeskyFactorNumeric(((PC_Factor *)dir)->fact, pc->pmat, &((PC_Factor *)dir)->info));
@@ -131,7 +131,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     PetscCall(MatFactorGetSolverType(((PC_Factor *)dir)->fact, &solverpackage));
     PetscCall(PCFactorSetMatSolverType(pc, solverpackage));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_Cholesky(PC pc)
@@ -142,7 +142,7 @@ static PetscErrorCode PCReset_Cholesky(PC pc)
   if (!dir->hdr.inplace && ((PC_Factor *)dir)->fact) PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
   PetscCall(ISDestroy(&dir->row));
   PetscCall(ISDestroy(&dir->col));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_Cholesky(PC pc)
@@ -155,7 +155,7 @@ static PetscErrorCode PCDestroy_Cholesky(PC pc)
   PetscCall(PetscFree(((PC_Factor *)dir)->solvertype));
   PetscCall(PCFactorClearComposedFunctions(pc));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_Cholesky(PC pc, Vec x, Vec y)
@@ -168,7 +168,7 @@ static PetscErrorCode PCApply_Cholesky(PC pc, Vec x, Vec y)
   } else {
     PetscCall(MatSolve(((PC_Factor *)dir)->fact, x, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_Cholesky(PC pc, Mat X, Mat Y)
@@ -181,7 +181,7 @@ static PetscErrorCode PCMatApply_Cholesky(PC pc, Mat X, Mat Y)
   } else {
     PetscCall(MatMatSolve(((PC_Factor *)dir)->fact, X, Y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricLeft_Cholesky(PC pc, Vec x, Vec y)
@@ -194,7 +194,7 @@ static PetscErrorCode PCApplySymmetricLeft_Cholesky(PC pc, Vec x, Vec y)
   } else {
     PetscCall(MatForwardSolve(((PC_Factor *)dir)->fact, x, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricRight_Cholesky(PC pc, Vec x, Vec y)
@@ -207,7 +207,7 @@ static PetscErrorCode PCApplySymmetricRight_Cholesky(PC pc, Vec x, Vec y)
   } else {
     PetscCall(MatBackwardSolve(((PC_Factor *)dir)->fact, x, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y)
@@ -220,7 +220,7 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y)
   } else {
     PetscCall(MatSolveTranspose(((PC_Factor *)dir)->fact, x, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -247,7 +247,7 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flag, 2);
   PetscTryMethod(pc, "PCFactorSetReuseOrdering_C", (PC, PetscBool), (pc, flag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -298,5 +298,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->setfromoptions      = PCSetFromOptions_Cholesky;
   pc->ops->view                = PCView_Factor;
   pc->ops->applyrichardson     = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

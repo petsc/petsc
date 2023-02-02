@@ -14,7 +14,7 @@ static PetscErrorCode IncrementSize(PetscRandom rand, PetscInt *value)
   PetscCall(PetscRandomGetValueReal(rand, &rval));
   *value += (PetscInt)rval;
   PetscCall(DebugPrintf(PetscObjectComm((PetscObject)rand), "n: %" PetscInt_FMT "\n", *value));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, PetscMemType mtype)
@@ -28,7 +28,7 @@ static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, Pe
 
     PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
     // host device context cannot handle this
-    if (dtype == PETSC_DEVICE_HOST) PetscFunctionReturn(0);
+    if (dtype == PETSC_DEVICE_HOST) PetscFunctionReturn(PETSC_SUCCESS);
   }
   // test basic allocation, deallocation
   PetscCall(IncrementSize(rand, &n));
@@ -93,7 +93,7 @@ static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, Pe
   for (PetscInt i = 0; i < n; ++i) PetscCheck(tmp_ptr[i] == (PetscScalar)0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceArrayZero() did not not clear memory, ptr[%" PetscInt_FMT "] %g != 0", i, (double)PetscAbsScalar(tmp_ptr[i]));
   PetscCall(PetscDeviceFree(dctx, tmp_ptr));
   PetscCall(PetscDeviceFree(dctx, ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom rand)
@@ -146,7 +146,7 @@ static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom ra
   }
 
   PetscCall(PetscDeviceContextJoin(dctx, nsub, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

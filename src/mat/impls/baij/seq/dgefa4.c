@@ -152,7 +152,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar *a, PetscRe
       ay[3] = stmp;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_SSE)
@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(float *a)
 
   SSE_INLINE_END_1;
   SSE_SCOPE_END;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

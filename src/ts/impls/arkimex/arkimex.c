@@ -253,7 +253,7 @@ M*/
 PetscErrorCode TSARKIMEXRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSARKIMEXRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSARKIMEXRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSARKIMEXRegisterAllCalled = PETSC_TRUE;
 
   {
@@ -404,7 +404,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                     At[8][8] = {{0, 0, 0, 0, 0, 0, 0, 0}, {41. / 200., 41. / 200., 0, 0, 0, 0, 0, 0}, {41. / 400., -567603406766. / 11931857230679., 41. / 200., 0, 0, 0, 0, 0}, {683785636431. / 9252920307686., 0, -110385047103. / 1367015193373., 41. / 200., 0, 0, 0, 0}, {3016520224154. / 10081342136671., 0, 30586259806659. / 12414158314087., -22760509404356. / 11113319521817., 41. / 200., 0, 0, 0}, {218866479029. / 1489978393911., 0, 638256894668. / 5436446318841., -1179710474555. / 5321154724896., -60928119172. / 8023461067671., 41. / 200., 0, 0}, {1020004230633. / 5715676835656., 0, 25762820946817. / 25263940353407., -2161375909145. / 9755907335909., -211217309593. / 5846859502534., -4269925059573. / 7827059040749., 41. / 200, 0}, {-872700587467. / 9133579230613., 0, 0, 22348218063261. / 9555858737531., -1143369518992. / 8141816002931., -39379526789629. / 19018526304540., 32727382324388. / 42900044865799., 41. / 200.}}, bembedt[8] = {-975461918565. / 9796059967033., 0, 0, 78070527104295. / 32432590147079., -548382580838. / 3424219808633., -33438840321285. / 15594753105479., 3629800801594. / 4656183773603., 4035322873751. / 18575991585200.}, binterpt[8][3] = {{-17674230611817. / 10670229744614., 43486358583215. / 12773830924787., -9257016797708. / 5021505065439.}, {0, 0, 0}, {0, 0, 0}, {65168852399939. / 7868540260826., -91478233927265. / 11067650958493., 26096422576131. / 11239449250142.}, {15494834004392. / 5936557850923., -79368583304911. / 10890268929626., 92396832856987. / 20362823103730.}, {-99329723586156. / 26959484932159., -12239297817655. / 9152339842473., 30029262896817. / 10175596800299.}, {-19024464361622. / 5461577185407., 115839755401235. / 10719374521269., -26136350496073. / 3983972220547.}, {-6511271360970. / 6095937251113., 5843115559534. / 2180450260947., -5289405421727. / 3760307252460.}};
     PetscCall(TSARKIMEXRegister(TSARKIMEX5, 5, 8, &At[0][0], NULL, NULL, &A[0][0], NULL, NULL, bembedt, bembedt, 3, binterpt[0], NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -431,7 +431,7 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
     PetscCall(PetscFree(link));
   }
   TSARKIMEXRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -445,11 +445,11 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
 PetscErrorCode TSARKIMEXInitializePackage(void)
 {
   PetscFunctionBegin;
-  if (TSARKIMEXPackageInitialized) PetscFunctionReturn(0);
+  if (TSARKIMEXPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TSARKIMEXPackageInitialized = PETSC_TRUE;
   PetscCall(TSARKIMEXRegisterAll());
   PetscCall(PetscRegisterFinalize(TSARKIMEXFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -465,7 +465,7 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
   PetscFunctionBegin;
   TSARKIMEXPackageInitialized = PETSC_FALSE;
   PetscCall(TSARKIMEXRegisterDestroy());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -546,7 +546,7 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s,
   PetscCall(PetscArraycpy(t->binterp, binterp ? binterp : binterpt, s * pinterp));
   link->next     = ARKTableauList;
   ARKTableauList = link;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -599,7 +599,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, Petsc
       }
     } else PetscCall(VecCopy(ts->vec_sol, X));
     if (done) *done = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (order == tab->order - 1) {
     if (!tab->bembedt) goto unavailable;
     if (ark->status == TS_STEP_INCOMPLETE) { /* Complete with the embedded method (bet,be) */
@@ -616,14 +616,14 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, Petsc
       PetscCall(VecMAXPY(X, s, w, ark->YdotRHS));
     }
     if (done) *done = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 unavailable:
   if (done) *done = PETSC_FALSE;
   else
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "ARKIMEX '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.", tab->name,
             tab->order, order);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id)
@@ -651,7 +651,7 @@ static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id)
   PetscCall(VecDestroy(&Udot));
   PetscCall(VecDestroy(&Y1));
   PetscCall(VecDestroy(&Y2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
@@ -681,7 +681,7 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
   PetscCall(VecMAXPY(ts->vec_sol, s, w, YdotI));
   for (j = 0; j < s; j++) w[j] = -h * b[j];
   PetscCall(VecMAXPY(ts->vec_sol, s, w, YdotRHS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStep_ARKIMEX(TS ts)
@@ -853,7 +853,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, rejections));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X)
@@ -892,7 +892,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X)
   PetscCall(VecMAXPY(X, s, bt, ark->YdotI));
   PetscCall(VecMAXPY(X, s, b, ark->YdotRHS));
   PetscCall(PetscFree2(bt, b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X)
@@ -920,7 +920,7 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X)
   PetscCall(VecMAXPY(X, s, bt, ark->YdotI_prev));
   PetscCall(VecMAXPY(X, s, b, ark->YdotRHS_prev));
   PetscCall(PetscFree2(bt, b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -931,7 +931,7 @@ static PetscErrorCode TSARKIMEXTableauReset(TS ts)
   ARKTableau  tab = ark->tableau;
 
   PetscFunctionBegin;
-  if (!tab) PetscFunctionReturn(0);
+  if (!tab) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(ark->work));
   PetscCall(VecDestroyVecs(tab->s, &ark->Y));
   PetscCall(VecDestroyVecs(tab->s, &ark->YdotI));
@@ -939,7 +939,7 @@ static PetscErrorCode TSARKIMEXTableauReset(TS ts)
   PetscCall(VecDestroyVecs(tab->s, &ark->Y_prev));
   PetscCall(VecDestroyVecs(tab->s, &ark->YdotI_prev));
   PetscCall(VecDestroyVecs(tab->s, &ark->YdotRHS_prev));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_ARKIMEX(TS ts)
@@ -951,7 +951,7 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   PetscCall(VecDestroy(&ark->Ydot));
   PetscCall(VecDestroy(&ark->Ydot0));
   PetscCall(VecDestroy(&ark->Z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
@@ -969,7 +969,7 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
       PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
     } else *Ydot = ax->Ydot;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
@@ -981,7 +981,7 @@ static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
   if (Ydot) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1006,7 +1006,7 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
 
   ts->dm = dmsave;
   PetscCall(TSARKIMEXRestoreVecs(ts, dm, &Z, &Ydot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B, TS ts)
@@ -1027,13 +1027,13 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
 
   ts->dm = dmsave;
   PetscCall(TSARKIMEXRestoreVecs(ts, dm, NULL, &Ydot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
@@ -1048,13 +1048,13 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale,
   PetscCall(VecPointwiseMult(Z_c, rscale, Z_c));
   PetscCall(TSARKIMEXRestoreVecs(ts, fine, &Z, NULL));
   PetscCall(TSARKIMEXRestoreVecs(ts, coarse, &Z_c, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm, DM subdm, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
@@ -1071,7 +1071,7 @@ static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat,
 
   PetscCall(TSARKIMEXRestoreVecs(ts, dm, &Z, NULL));
   PetscCall(TSARKIMEXRestoreVecs(ts, subdm, &Z_c, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSARKIMEXTableauSetUp(TS ts)
@@ -1089,7 +1089,7 @@ static PetscErrorCode TSARKIMEXTableauSetUp(TS ts)
     PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &ark->YdotI_prev));
     PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &ark->YdotRHS_prev));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
@@ -1107,7 +1107,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_TSARKIMEX, DMRestrictHook_TSARKIMEX, ts));
   PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_TSARKIMEX, DMSubDomainRestrictHook_TSARKIMEX, ts));
   PetscCall(TSGetSNES(ts, &snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
 
@@ -1136,7 +1136,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOpt
     PetscCall(PetscOptionsBool("-ts_arkimex_initial_guess_extrapolate", "Extrapolate the initial guess for the stage solution from stage values of the previous time step", "", ark->extrapolate, &ark->extrapolate, NULL));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer)
@@ -1164,7 +1164,7 @@ static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "FSAL property: %s\n", tab->FSAL_implicit ? "yes" : "no"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Nonstiff abscissa     c = %s\n", buf));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
@@ -1180,7 +1180,7 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
   /* function and Jacobian context for SNES when used with TS is always ts object */
   PetscCall(SNESSetFunction(snes, NULL, NULL, ts));
   PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1206,7 +1206,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(arktype, 2);
   PetscTryMethod(ts, "TSARKIMEXSetType_C", (TS, TSARKIMEXType), (ts, arktype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1229,7 +1229,7 @@ PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSARKIMEXGetType_C", (TS, TSARKIMEXType *), (ts, arktype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1251,7 +1251,7 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ts, flg, 2);
   PetscTryMethod(ts, "TSARKIMEXSetFullyImplicit_C", (TS, PetscBool), (ts, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1275,7 +1275,7 @@ PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   PetscUseMethod(ts, "TSARKIMEXGetFullyImplicit_C", (TS, PetscBool *), (ts, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSARKIMEXGetType_ARKIMEX(TS ts, TSARKIMEXType *arktype)
@@ -1284,7 +1284,7 @@ static PetscErrorCode TSARKIMEXGetType_ARKIMEX(TS ts, TSARKIMEXType *arktype)
 
   PetscFunctionBegin;
   *arktype = ark->tableau->name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype)
 {
@@ -1295,7 +1295,7 @@ static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype)
   PetscFunctionBegin;
   if (ark->tableau) {
     PetscCall(PetscStrcmp(ark->tableau->name, arktype, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (link = ARKTableauList; link; link = link->next) {
     PetscCall(PetscStrcmp(link->tab.name, arktype, &match));
@@ -1304,7 +1304,7 @@ static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype)
       ark->tableau = &link->tab;
       if (ts->setupcalled) PetscCall(TSARKIMEXTableauSetUp(ts));
       ts->default_adapt_type = ark->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", arktype);
@@ -1316,7 +1316,7 @@ static PetscErrorCode TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts, PetscBool flg)
 
   PetscFunctionBegin;
   ark->imex = (PetscBool)!flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg)
@@ -1325,7 +1325,7 @@ static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg)
 
   PetscFunctionBegin;
   *flg = (PetscBool)!ark->imex;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
@@ -1341,7 +1341,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetFullyImplicit_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXGetFullyImplicit_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------ */
@@ -1399,5 +1399,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXGetFullyImplicit_C", TSARKIMEXGetFullyImplicit_ARKIMEX));
 
   PetscCall(TSARKIMEXSetType(ts, TSARKIMEXDefault));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

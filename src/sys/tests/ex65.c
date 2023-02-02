@@ -46,7 +46,7 @@ static PetscErrorCode TestPetscFunctionListCreate(PetscViewer viewer, PetscFunct
   PetscCall(PetscFunctionListView(*fl, viewer));
   // also empty
   PetscCall(PetscFunctionListView(*fl_dup, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestPetscFunctionListFind(PetscViewer viewer, PetscFunctionList fl, PetscFunctionList fl_dup, size_t *fl_size, size_t *fl_dup_size)
@@ -104,7 +104,7 @@ static PetscErrorCode TestPetscFunctionListFind(PetscViewer viewer, PetscFunctio
   PetscCall(PetscFunctionListView(fl_dup, viewer));
   *fl_size     = 0;
   *fl_dup_size = num_funcs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestPetscFunctionListGet(PetscViewer viewer, PetscFunctionList fl, PetscFunctionList fl_dup, size_t expected_fl_size, size_t expected_fl_dup_size)
@@ -126,7 +126,7 @@ static PetscErrorCode TestPetscFunctionListGet(PetscViewer viewer, PetscFunction
   PetscCall(PetscFree(array));
   // ensure that free-ing the array is OK
   PetscCall(PetscFunctionListView(fl_dup, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #undef PetscCheckArrayPointer
 }
 

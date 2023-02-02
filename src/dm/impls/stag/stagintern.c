@@ -56,7 +56,7 @@ PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
   PetscCall(DMSetVecType(*newdm, dm->vectype));
   PetscCall(DMSetMatType(*newdm, dm->mattype));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Populate data created after DMCreate_Stag() is called, which is used by DMSetUp_Stag(),
@@ -73,5 +73,5 @@ PetscErrorCode DMStagInitialize(DMBoundaryType bndx, DMBoundaryType bndy, DMBoun
   PetscCall(DMStagSetStencilWidth(dm, stencilWidth));
   PetscCall(DMStagSetDOF(dm, dof0, dof1, dof2, dof3));
   PetscCall(DMStagSetOwnershipRanges(dm, lx, ly, lz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

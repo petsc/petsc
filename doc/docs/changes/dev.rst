@@ -18,6 +18,7 @@ Changes: Development
 - Remove unused preprocessor variables ``PETSC_HAVE_VPRINTF_CHAR``, ``PETSC_HAVE_VFPRINTF_CHAR``, ``PETSC_STAT_MACROS_BROKEN``, ``PETSC_HAVE_FORTRAN_GETARG``, ``PETSC_uid_t``, ``PETSC_gid_t``, ``PETSC_HAVE_PTHREAD_BARRIER_T``, ``PETSC_HAVE_SCHED_CPU_SET_T``, and ``PETSC_HAVE_SYS_SYSCTL_H``
 - Deprecate ``--with-gcov`` configure option. Users should use ``--with-coverage`` instead
 - Add ``--with-coverage-exec`` configure option to specify the coverage-collection tool to be used e.g. ``gcov`` or ``/path/to/llvm-cov-15``
+- Add ``--with-strict-petscerrorcode`` configure option to enable compile-time checking for correct usage of ``PetscErrorCode``, see below.
 
 .. rubric:: Sys:
 
@@ -64,6 +65,41 @@ Changes: Development
 
 - Deprecate ``PETSC_NULL``. Users should prefer ``PETSC_NULLPTR`` as it does the right thing in both C and C++.
 - Significantly improve lookup and deletion performance of ``PetscFunctionList``. This also improves performance of ``PetscObjectComposeFunction()`` and ``PetscObjectQueryFunction()``.
+- Optionally define ``PetscErrorCode`` as an ``enum``, and tag it as ``PETSC_NODISCARD``. This feature may be enabled by configuring PETSc with ``--with-strict-petscerrorcode`` configure option. This feature allows catching the following logical errors at compile-time:
+
+  #. Not properly checking the return-code of PETSc calls via ``PetscCall()``. PETSc is left in an inconsistent state when errors are detected and cannot generally recover from them, so is not supported.
+  #. Using the wrong ``PetscCall()`` variant, for example using ``PetscCall()`` on MPI functions (instead of ``PetscCallMPI()``).
+  #. Returning ``PetscErrorCode`` from ``main()`` instead of ``int``.
+
+  Users should note that this comes with the following additional changes:
+
+  #. Add ``PETSC_SUCCESS`` to indicate success, always guaranteed to equal ``0``.
+  #. ``PetscFunctionReturn(0)`` should be changed to ``PetscFunctionReturn(PETSC_SUCCESS)``. While the original ``0``-form will continue to work in C, it is required for C++.
+  #. Any user-defined macros using boolean short-circuiting to chain multiple calls in the same line, which logically return a ``PetscErrorCode``, should now explicitly cast the "result" of the macro with ``PetscErrorCode``:
+
+
+     ::
+
+        // Both foo() and bar() defined as returning PetscErrorCode
+        extern PetscErrorCode foo(int);
+        extern PetscErrorCode bar(int);
+
+        // The following macros logically "return" a PetscErrorCode, i.e. can
+        // be used:
+        //
+        // PetscCall(MY_USER_MACRO(a, b));
+        //
+        // but use boolean short-circuiting to chain the calls together. bar()
+        // only executes if foo() returns PETSC_SUCCESS
+
+        // old
+        #define MY_USER_MACRO(a, b) (foo(a) || bar(b))
+
+        // new
+        #define MY_BETTER_USER_MACRO(a, b) ((PetscErrorCode)(foo(a) || bar(b)))
+
+
+  While currently opt-in, this feature **will be enabled by default in a future release**. Users are highly encourage to enable it and fix any discrepancies before that point. Note that ``PETSC_SUCCESS`` is defined whether or not the feature is enabled, so users may incrementally update.
 
 .. rubric:: Event Logging:
 

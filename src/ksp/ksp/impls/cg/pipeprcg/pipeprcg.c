@@ -17,7 +17,7 @@ static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp)
   /* get work vectors needed by PIPEPRCG */
   PetscCall(KSPSetWorkVecs(ksp, 9));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -30,7 +30,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *Pets
   PetscCall(PetscOptionsBool("-recompute_w", "-recompute w_k with Ar_k? (default = True)", "", prcg->rc_w_q, &prcg->rc_w_q, &flag));
   if (!flag) prcg->rc_w_q = PETSC_TRUE;
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -127,7 +127,7 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
     PetscCall(KSPLogResidualHistory(ksp, dp));
     PetscCall(KSPMonitor(ksp, i, dp));
     PetscCall((*ksp->converged)(ksp, i, dp, &ksp->reason, ksp->cnvP));
-    if (ksp->reason) PetscFunctionReturn(0);
+    if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
     /* update scalars */
     alpha  = nu / *mu_p;
@@ -173,7 +173,7 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
 
   } while (i <= ksp->max_it);
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -230,5 +230,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_PIPEPRCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

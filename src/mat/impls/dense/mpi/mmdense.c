@@ -18,7 +18,7 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mat), &mdn->Mvctx));
     PetscCall(PetscSFSetGraphWithPattern(mdn->Mvctx, mat->cmap, PETSCSF_PATTERN_ALLGATHER));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat *);
@@ -45,7 +45,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C, PetscInt ismax, const IS isr
     PetscCall(MatCreateSubMatrices_MPIDense_Local(C, max_no, isrow + pos, iscol + pos, scall, *submat + pos));
     pos += max_no;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* -------------------------------------------------------------------------*/
 PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
@@ -389,7 +389,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax, const 
     PetscCall(MatAssemblyBegin(submats[i], MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(submats[i], MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatScale_MPIDense(Mat inA, PetscScalar alpha)
@@ -398,5 +398,5 @@ PETSC_INTERN PetscErrorCode MatScale_MPIDense(Mat inA, PetscScalar alpha)
 
   PetscFunctionBegin;
   PetscCall(MatScale(A->A, alpha));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

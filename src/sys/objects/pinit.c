@@ -102,7 +102,7 @@ PetscErrorCode PetscInitializeNoPointers(int argc, char **args, const char *file
   PetscCall(PetscInitialize(&myargc, &myargs, filename, help));
   PetscCall(PetscPopSignalHandler());
   PetscBeganMPI = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -113,7 +113,7 @@ PetscErrorCode PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscValidPointer(comm, 1);
   *comm = PETSC_COMM_SELF;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -133,7 +133,7 @@ PetscErrorCode PetscInitializeNoArguments(void)
 
   PetscFunctionBegin;
   PetscCall(PetscInitialize(&argc, &args, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -148,7 +148,7 @@ PetscErrorCode PetscInitialized(PetscBool *isInitialized)
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscValidBoolPointer(isInitialized, 1);
   *isInitialized = PetscInitializeCalled;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -163,7 +163,7 @@ PetscErrorCode PetscFinalized(PetscBool *isFinalized)
   PetscFunctionBegin;
   if (!PetscFinalizeCalled) PetscValidBoolPointer(isFinalized, 1);
   *isFinalized = PetscFinalizeCalled;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char[]);
@@ -181,7 +181,8 @@ PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in, void *out, int *cnt, MPI_Da
 
   PetscFunctionBegin;
   if (*datatype != MPIU_2INT) {
-    (*PetscErrorPrintf)("Can only handle MPIU_2INT data types");
+    PetscErrorCode ierr = (*PetscErrorPrintf)("Can only handle MPIU_2INT data types");
+    (void)ierr;
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
 
@@ -227,7 +228,7 @@ PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt sizes[], PetscInt *max,
     PetscCall(PetscFree(work));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------------*/
@@ -273,13 +274,13 @@ PETSC_EXTERN void MPIAPI PetscSum_Local(void *in, void *out, PetscMPIInt *cnt, M
   #endif
   else {
   #if !defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_HAVE_REAL___FP16)
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
+    PetscCallAbort(MPI_COMM_SElF, (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types"));
   #elif !defined(PETSC_HAVE_REAL___FP16)
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, MPIU___FLOAT128, or MPIU___COMPLEX128 data types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, MPIU___FLOAT128, or MPIU___COMPLEX128 data types"));
   #elif !defined(PETSC_HAVE_REAL___FLOAT128)
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, or MPIU___FP16 data types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, or MPIU___FP16 data types"));
   #else
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, MPIU___FLOAT128, MPIU___COMPLEX128, or MPIU___FP16 data types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, MPIU___FLOAT128, MPIU___COMPLEX128, or MPIU___FP16 data types"));
   #endif
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
@@ -307,7 +308,7 @@ PETSC_EXTERN void MPIAPI PetscMax_Local(void *in, void *out, PetscMPIInt *cnt, M
   }
   #endif
   else {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types"));
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
@@ -329,7 +330,7 @@ PETSC_EXTERN void MPIAPI PetscMin_Local(void *in, void *out, PetscMPIInt *cnt, M
   }
   #endif
   else {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types"));
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
   PetscFunctionReturnVoid();
@@ -456,7 +457,7 @@ PetscErrorCode PetscCitationsInitialize(void)
   Year = {1997}\n}\n",
                                    NULL));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static char programname[PETSC_MAX_PATH_LEN] = ""; /* HP includes entire path in name */
@@ -465,7 +466,7 @@ PetscErrorCode PetscSetProgramName(const char name[])
 {
   PetscFunctionBegin;
   PetscCall(PetscStrncpy(programname, name, sizeof(programname)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -486,7 +487,7 @@ PetscErrorCode PetscGetProgramName(char name[], size_t len)
 {
   PetscFunctionBegin;
   PetscCall(PetscStrncpy(name, programname, len));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -515,7 +516,7 @@ PetscErrorCode PetscGetArgs(int *argc, char ***args)
   PetscCheck(PetscInitializeCalled || !PetscFinalizeCalled, PETSC_COMM_SELF, PETSC_ERR_ORDER, "You must call after PetscInitialize() but before PetscFinalize()");
   *argc = PetscGlobalArgc;
   *args = PetscGlobalArgs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -542,12 +543,12 @@ PetscErrorCode PetscGetArguments(char ***args)
   PetscCheck(PetscInitializeCalled || !PetscFinalizeCalled, PETSC_COMM_SELF, PETSC_ERR_ORDER, "You must call after PetscInitialize() but before PetscFinalize()");
   if (!argc) {
     *args = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscMalloc1(argc, args));
   for (i = 0; i < argc - 1; i++) PetscCall(PetscStrallocpy(PetscGlobalArgs[i + 1], &(*args)[i]));
   (*args)[argc - 1] = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -571,7 +572,7 @@ PetscErrorCode PetscFreeArguments(char **args)
     while (args[i]) PetscCall(PetscFree(args[i++]));
     PetscCall(PetscFree(args));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if PetscDefined(HAVE_SAWS)
@@ -682,7 +683,7 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
                                      "  Year   = 2013\n}\n",
                                      NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -694,7 +695,7 @@ PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void)
   /* see MPI.py for details on this bug */
   (void)setenv("HWLOC_COMPONENTS", "-x86", 1);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if PetscDefined(HAVE_ADIOS)
@@ -748,7 +749,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   char        hostname[256];
 
   PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscFunctionReturn(0);
+  if (PetscInitializeCalled) PetscFunctionReturn(PETSC_SUCCESS);
   /* these must be initialized in a routine, not as a constant declaration */
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
@@ -825,7 +826,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
         }
       }
       if (!flg) {
-        PetscInfo(NULL, "PETSc warning --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d.\n", mpilibraryversion, OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION);
+        PetscCall(PetscInfo(NULL, "PETSc warning --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d.\n", mpilibraryversion, OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION));
         flg = PETSC_TRUE;
       }
     }
@@ -1081,10 +1082,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   if (!flg) PetscCall(PetscOptionsPushGetViewerOff(PETSC_TRUE));
 
 #if defined(PETSC_HAVE_ADIOS)
-  PetscCall(adios_init_noxml(PETSC_COMM_WORLD));
-  PetscCall(adios_declare_group(&Petsc_adios_group, "PETSc", "", adios_stat_default));
-  PetscCall(adios_select_method(Petsc_adios_group, "MPI", "", ""));
-  PetscCall(adios_read_init_method(ADIOS_READ_METHOD_BP, PETSC_COMM_WORLD, ""));
+  PetscCallExternal(adios_init_noxml, PETSC_COMM_WORLD);
+  PetscCallExternal(adios_declare_group, &Petsc_adios_group, "PETSc", "", adios_stat_default);
+  PetscCallExternal(adios_select_method, Petsc_adios_group, "MPI", "", "");
+  PetscCallExternal(adios_read_init_method, ADIOS_READ_METHOD_BP, PETSC_COMM_WORLD, "");
 #endif
 
 #if defined(__VALGRIND_H)
@@ -1104,7 +1105,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-mpi_linear_solver_server", &flg));
   if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerBegin());
   else PetscCheck(!flg, PETSC_COMM_WORLD, PETSC_ERR_SUP, "PETSc configured using -with-single-library=0; -mpi_linear_solver_server not supported in that case");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1233,7 +1234,7 @@ PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const
   const char *prog = "Unknown Name", *mpienv;
 
   PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscFunctionReturn(0);
+  if (PetscInitializeCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Initialized(&flag));
   if (!flag) {
     PetscCheck(PETSC_COMM_WORLD == MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_SUP, "You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
@@ -1265,7 +1266,7 @@ PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const
     PetscGlobalArgs = *args;
   }
   PetscCall(PetscInitialize_Common(prog, file, help, PETSC_FALSE, PETSC_FALSE, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if PetscDefined(USE_LOG)
@@ -1307,7 +1308,7 @@ PetscErrorCode PetscFreeMPIResources(void)
   PetscCallMPI(MPI_Type_free(&MPIU_4INT));
   PetscCallMPI(MPI_Op_free(&MPIU_MAXSUM_OP));
   PetscCallMPI(MPI_Op_free(&Petsc_Garbage_SetIntersectOp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if PetscDefined(USE_LOG)
@@ -1374,8 +1375,8 @@ PetscErrorCode PetscFinalize(void)
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 #if defined(PETSC_HAVE_ADIOS)
-  PetscCall(adios_read_finalize_method(ADIOS_READ_METHOD_BP_AGGREGATE));
-  PetscCall(adios_finalize(rank));
+  PetscCallExternal(adios_read_finalize_method, ADIOS_READ_METHOD_BP_AGGREGATE);
+  PetscCallExternal(adios_finalize, rank);
 #endif
   PetscCall(PetscOptionsHasName(NULL, NULL, "-citations", &flg));
   if (flg) {
@@ -1642,7 +1643,7 @@ PetscErrorCode PetscFinalize(void)
     fname[0] = 0;
     PetscCall(PetscOptionsGetString(NULL, NULL, "-malloc_dump", fname, sizeof(fname), &flg1));
     if (flg1 && fname[0]) {
-      PetscSNPrintf(sname, sizeof(sname), "%s_%d", fname, rank);
+      PetscCall(PetscSNPrintf(sname, sizeof(sname), "%s_%d", fname, rank));
       fd = fopen(sname, "w");
       PetscCheck(fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open log file: %s", sname);
       PetscCall(PetscMallocDump(fd));
@@ -1660,7 +1661,7 @@ PetscErrorCode PetscFinalize(void)
     fname[0] = 0;
     PetscCall(PetscOptionsGetString(NULL, NULL, "-malloc_view", fname, sizeof(fname), &flg1));
     if (flg1 && fname[0]) {
-      PetscSNPrintf(sname, sizeof(sname), "%s_%d", fname, rank);
+      PetscCall(PetscSNPrintf(sname, sizeof(sname), "%s_%d", fname, rank));
       fd = fopen(sname, "w");
       PetscCheck(fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open log file: %s", sname);
       PetscCall(PetscMallocView(fd));
@@ -1790,7 +1791,7 @@ PetscErrorCode PetscFinalize(void)
 #endif
   /* To match PetscFunctionBegin() at the beginning of this function */
   PetscStackClearTop;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 #if defined(PETSC_MISSING_LAPACK_lsame_)

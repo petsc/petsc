@@ -58,7 +58,7 @@ alldone:
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -104,7 +104,7 @@ PetscErrorCode DMRestoreLocalVector(DM dm, Vec *g)
   PetscCall(VecDestroy(g));
 alldone:
   *g = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -167,7 +167,7 @@ alldone:
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -205,7 +205,7 @@ PetscErrorCode DMClearGlobalVectors(DM dm)
     }
     PetscCall(VecDestroy(&g));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -243,7 +243,7 @@ PetscErrorCode DMClearLocalVectors(DM dm)
     }
     PetscCall(VecDestroy(&g));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -290,7 +290,7 @@ PetscErrorCode DMRestoreGlobalVector(DM dm, Vec *g)
   PetscCall(VecDestroy(g));
 alldone:
   *g = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -328,7 +328,7 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm, const char *name, PetscBool *exists
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -382,7 +382,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm, const char *name, Vec *X)
 found:
   *X           = link->X;
   link->status = DMVEC_STATUS_OUT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -423,7 +423,7 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm, const char *name, Vec *X)
       link->status = DMVEC_STATUS_IN;
       PetscCall(VecSetDM(link->X, NULL));
       *X = NULL;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Could not find Vec name '%s' to restore", name);
@@ -464,7 +464,7 @@ PetscErrorCode DMHasNamedLocalVector(DM dm, const char *name, PetscBool *exists)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -518,7 +518,7 @@ PetscErrorCode DMGetNamedLocalVector(DM dm, const char *name, Vec *X)
 found:
   *X           = link->X;
   link->status = DMVEC_STATUS_OUT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -559,7 +559,7 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm, const char *name, Vec *X)
       link->status = DMVEC_STATUS_IN;
       PetscCall(VecSetDM(link->X, NULL));
       *X = NULL;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Could not find Vec name '%s' to restore", name);

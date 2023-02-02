@@ -24,7 +24,7 @@ static PetscErrorCode TestSetInf(Vec v)
     PetscCheck(PetscIsInfOrNanScalar(x), PETSC_COMM_SELF, PETSC_ERR_PLIB, "array[%" PetscInt_FMT "] %g + %gi != infinity", i, (double)PetscRealPart(x), (double)PetscImaginaryPart(x));
   }
   PetscCall(VecRestoreArrayRead(v, (const PetscScalar **)&array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

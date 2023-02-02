@@ -205,7 +205,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
     d__2 = PetscAbsScalar(f_min);
     if (f_max - f_min > PetscMin(d__1, d__2) * .1) *info = 3;
   }
-  if (*info != 0) PetscFunctionReturn(0);
+  if (*info != 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*     Determine the noise level. */
   /* Computing MIN */
@@ -225,7 +225,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
       *info = 4;
       *hopt = *h__ * 10;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Computing MIN */
@@ -245,23 +245,23 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
       *info = 4;
       *hopt = *h__ * 10;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /*     Noise not detected; decide if h is too small or too large. */
   if (!cancel[3]) {
     if (dsgn[3]) *info = 2;
     else *info = 3;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!cancel[2]) {
     if (dsgn[2]) *info = 2;
     else *info = 3;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /*     If there is cancelllation on the third and fourth column */
   /*     then h is too small */
   *info = 2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
   /*      if (cancel .or. dsgn(3)) then */
   /*         info = 2 */
   /*      else */

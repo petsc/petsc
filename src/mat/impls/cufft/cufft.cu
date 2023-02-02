@@ -48,7 +48,7 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscCallCUDA(cudaMemcpy(y_array, devArray, sizeof(cufftComplex) * dim[ndim], cudaMemcpyDeviceToHost));
   PetscCall(VecRestoreArray(y, &y_array));
   PetscCall(VecRestoreArray(x, &x_array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
@@ -85,7 +85,7 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscCallCUDA(cudaMemcpy(y_array, devArray, sizeof(cufftComplex) * dim[ndim], cudaMemcpyDeviceToHost));
   PetscCall(VecRestoreArray(y, &y_array));
   PetscCall(VecRestoreArray(x, &x_array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
@@ -99,7 +99,7 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
   PetscCallCUDA(cudaFree(cufft->devArray));
   PetscCall(PetscFree(A->data));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -160,5 +160,5 @@ PetscErrorCode MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt di
   /* get runtime options ...what options????? */
   PetscOptionsBegin(comm, ((PetscObject)(*A))->prefix, "CUFFT Options", "Mat");
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

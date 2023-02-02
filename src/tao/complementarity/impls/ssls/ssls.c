@@ -12,14 +12,14 @@ PetscErrorCode TaoSetFromOptions_SSLS(Tao tao, PetscOptionItems *PetscOptionsObj
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
 PetscErrorCode TaoView_SSLS(Tao tao, PetscViewer pv)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -33,7 +33,7 @@ PetscErrorCode Tao_SSLS_Function(TaoLineSearch ls, Vec X, PetscReal *fcn, void *
   PetscCall(VecFischer(X, tao->constraints, tao->XL, tao->XU, ssls->ff));
   PetscCall(VecNorm(ssls->ff, NORM_2, &ssls->merit));
   *fcn = 0.5 * ssls->merit * ssls->merit;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -54,5 +54,5 @@ PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn
   PetscCall(MatDiagonalScale(tao->jacobian, ssls->db, NULL));
   PetscCall(MatDiagonalSet(tao->jacobian, ssls->da, ADD_VALUES));
   PetscCall(MatMultTranspose(tao->jacobian, ssls->ff, G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -43,7 +43,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex55.c", options->second_write_read, &options->second_write_read, NULL));
   PetscCall(PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", "ex55.c", options->use_low_level_functions, &options->use_low_level_functions, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckDistributed(DM dm, PetscBool expectedDistributed)
@@ -55,10 +55,10 @@ static PetscErrorCode CheckDistributed(DM dm, PetscBool expectedDistributed)
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
-  if (size < 2) PetscFunctionReturn(0);
+  if (size < 2) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexIsDistributed(dm, &distributed));
   PetscCheck(distributed == expectedDistributed, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Expected DM being %s but actually is %s", expectedDistributed ? YES : NO, distributed ? YES : NO);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckInterpolated(DM dm, PetscBool expectedInterpolated)
@@ -72,7 +72,7 @@ static PetscErrorCode CheckInterpolated(DM dm, PetscBool expectedInterpolated)
   PetscCall(DMPlexIsInterpolatedCollective(dm, &iflg));
   interpolated = (PetscBool)(iflg == DMPLEX_INTERPOLATED_FULL);
   PetscCheck(interpolated == expectedInterpolated, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Expected DM being %s but actually is %s", expectedInterpolated ? YES : NO, interpolated ? YES : NO);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckDistributedInterpolated(DM dm, PetscViewer v, AppCtx *user)
@@ -104,7 +104,7 @@ static PetscErrorCode CheckDistributedInterpolated(DM dm, PetscViewer v, AppCtx 
   }
   PetscCall(CheckDistributed(dm, distributed));
   PetscCall(CheckInterpolated(dm, interpolated));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx *user, DM *dm_new)
@@ -146,7 +146,7 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   PetscCall(PetscViewerPopFormat(v));
   PetscCall(PetscViewerDestroy(&v));
   *dm_new = dmnew;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

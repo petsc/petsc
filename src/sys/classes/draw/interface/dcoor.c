@@ -28,7 +28,7 @@ PetscErrorCode PetscDrawSetCoordinates(PetscDraw draw, PetscReal xl, PetscReal y
   draw->coor_xr = xr;
   draw->coor_yr = yr;
   PetscTryTypeMethod(draw, setcoordinates, xl, yl, xr, yr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -62,5 +62,5 @@ PetscErrorCode PetscDrawGetCoordinates(PetscDraw draw, PetscReal *xl, PetscReal 
   *yl = draw->coor_yl;
   *xr = draw->coor_xr;
   *yr = draw->coor_yr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

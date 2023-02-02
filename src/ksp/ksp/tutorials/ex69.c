@@ -39,7 +39,7 @@ PetscErrorCode ComputeSolution(DM da, PetscGLL *gll, Vec u)
   }
   PetscCall(DMDAVecRestoreArray(da, x, &xx));
   PetscCall(DMDAVecRestoreArray(da, u, &uu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -76,7 +76,7 @@ PetscErrorCode ComputeRhs(DM da, PetscGLL *gll, Vec b)
   PetscCall(DMLocalToGlobalBegin(da, blocal, ADD_VALUES, b));
   PetscCall(DMLocalToGlobalEnd(da, blocal, ADD_VALUES, b));
   PetscCall(DMRestoreLocalVector(da, &blocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*

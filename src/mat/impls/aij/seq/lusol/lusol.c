@@ -191,7 +191,7 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
   }
   PetscCall(PetscFree(A->spptr));
   PetscCall(MatDestroy_SeqAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x)
@@ -217,7 +217,7 @@ PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x)
 
   PetscCall(VecRestoreArray(x, &xx));
   PetscCall(VecRestoreArrayRead(b, &bb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
@@ -308,7 +308,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
   F->ops->solve   = MatSolve_LUSOL;
   F->assembled    = PETSC_TRUE;
   F->preallocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
@@ -390,14 +390,14 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFact
 
   lusol->CleanUpLUSOL     = PETSC_TRUE;
   F->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERLUSOL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype, Mat *F)
@@ -426,14 +426,14 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERLUSOL, &B->solvertype));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERLUSOL, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_lusol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC

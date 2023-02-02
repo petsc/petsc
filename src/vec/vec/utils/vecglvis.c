@@ -8,7 +8,7 @@ static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void *ptr)
   PetscFunctionBeginUser;
   PetscCall(PetscFree(info->fec_type));
   PetscCall(PetscFree(info));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* the main function to visualize vectors using GLVis */
@@ -25,7 +25,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerGLVisGetStatus_Private(viewer, &sockstatus));
-  if (sockstatus == PETSCVIEWERGLVIS_DISABLED) PetscFunctionReturn(0);
+  if (sockstatus == PETSCVIEWERGLVIS_DISABLED) PetscFunctionReturn(PETSC_SUCCESS);
   /* if the user did not customize the viewer through the API, we need extra data that can be attached to the Vec */
   PetscCall(PetscViewerGLVisGetFields_Private(viewer, &nfields, NULL, NULL, NULL, NULL, NULL));
   if (!nfields) {
@@ -37,7 +37,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
     } else SETERRQ(PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "You need to provide a DM or use PetscViewerGLVisSetFields()");
   }
   PetscCall(PetscViewerGLVisGetFields_Private(viewer, &nfields, &fec_type, &spacedim, &g2lfields, (PetscObject **)&Ufield, &userctx));
-  if (!nfields) PetscFunctionReturn(0);
+  if (!nfields) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscViewerGLVisGetType_Private(viewer, &socktype));
 
@@ -108,5 +108,5 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
     PetscCall(PetscViewerGLVisRestoreWindow_Private(viewer, i, &view));
   }
   if (pause) PetscCall(PetscViewerGLVisPause_Private(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

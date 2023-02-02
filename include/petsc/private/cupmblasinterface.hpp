@@ -278,7 +278,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
   PETSC_NODISCARD static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
-    if (handle) PetscFunctionReturn(0);
+    if (handle) PetscFunctionReturn(PETSC_SUCCESS);
     for (auto i = 0; i < 3; ++i) {
       const auto cerr = cusolverDnCreate(&handle);
       if (PetscLikely(cerr == CUSOLVER_STATUS_SUCCESS)) break;
@@ -289,7 +289,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
       }
       PetscCheck(cerr == CUSOLVER_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize cuSolverDn");
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode SetHandleStream(const cupmSolverHandle_t &handle, const cupmStream_t &stream) noexcept
@@ -299,7 +299,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
     PetscFunctionBegin;
     PetscCallCUSOLVER(cusolverDnGetStream(handle, &cupmStream));
     if (cupmStream != stream) PetscCallCUSOLVER(cusolverDnSetStream(handle, stream));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
@@ -309,7 +309,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
       PetscCallCUSOLVER(cusolverDnDestroy(handle));
       handle = nullptr;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
     #undef PETSC_CUPMBLAS_PREFIX
@@ -375,14 +375,14 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
   {
     PetscFunctionBegin;
     if (!handle) PetscCallHIPSOLVER(hipsolverCreate(&handle));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode SetHandleStream(cupmSolverHandle_t handle, cupmStream_t stream) noexcept
   {
     PetscFunctionBegin;
     PetscCallHIPSOLVER(hipsolverSetStream(handle, stream));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
@@ -392,7 +392,7 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
       PetscCallHIPSOLVER(hipsolverDestroy(handle));
       handle = nullptr;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
     #undef PETSC_CUPMBLAS_PREFIX
@@ -458,7 +458,7 @@ struct BlasInterface : BlasInterfaceImpl<T> {
     PetscFunctionBegin;
     PetscCall(PetscCUPMGetMemType(ptr, &mtype));
     PetscCallCUPMBLAS(cupmBlasSetPointerMode(handle, PetscMemTypeDevice(mtype) ? CUPMBLAS_POINTER_MODE_DEVICE : CUPMBLAS_POINTER_MODE_HOST));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode checkCupmBlasIntCast(PetscInt x) noexcept
@@ -466,7 +466,7 @@ struct BlasInterface : BlasInterfaceImpl<T> {
     PetscFunctionBegin;
     PetscCheck((std::is_same<PetscInt, cupmBlasInt_t>::value) || (x <= std::numeric_limits<cupmBlasInt_t>::max()), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for %s, which may be restricted to 32 bit integers", x, cupmBlasName());
     PetscCheck(x >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to %s routine: %" PetscInt_FMT, cupmBlasName(), x);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static cupmBlasInt_t cupmBlasIntCast(PetscInt x) noexcept

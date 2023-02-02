@@ -49,7 +49,7 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidPointer(outviewer, 3);
   PetscUseTypeMethod(viewer, getsubviewer, comm, outviewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -71,5 +71,5 @@ PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer viewer, MPI_Comm comm, Pe
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
 
   PetscUseTypeMethod(viewer, restoresubviewer, comm, outviewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

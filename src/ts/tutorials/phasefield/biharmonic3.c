@@ -263,7 +263,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &localX));
   PetscCall(DMRestoreLocalVector(da, &localXdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -315,7 +315,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec X, PetscReal kappa)
   PetscCall(DMLocalToGlobalBegin(da, Xg, ADD_VALUES, X));
   PetscCall(DMLocalToGlobalEnd(da, Xg, ADD_VALUES, X));
   PetscCall(VecDestroy(&Xg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -30,7 +30,7 @@ PetscErrorCode DMStagGetBoundaryTypes(DM dm, DMBoundaryType *boundaryTypeX, DMBo
   if (boundaryTypeX) *boundaryTypeX = stag->boundaryType[0];
   if (boundaryTypeY && dim > 1) *boundaryTypeY = stag->boundaryType[1];
   if (boundaryTypeZ && dim > 2) *boundaryTypeZ = stag->boundaryType[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm, void *arrX, void *arrY, void *arrZ, PetscBool read)
@@ -89,7 +89,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm, void *arrX
       PetscCall(DMStagVecGetArray(subDM, coord1d_local, arr[d]));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -123,7 +123,7 @@ PetscErrorCode DMStagGetProductCoordinateArrays(DM dm, void *arrX, void *arrY, v
 {
   PetscFunctionBegin;
   PetscCall(DMStagGetProductCoordinateArrays_Private(dm, arrX, arrY, arrZ, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -147,7 +147,7 @@ PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm, void *arrX, void *arr
 {
   PetscFunctionBegin;
   PetscCall(DMStagGetProductCoordinateArrays_Private(dm, arrX, arrY, arrZ, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -217,7 +217,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
       for (s = 0; s < DMSTAG_MAX_STRATA; ++s) PetscCheck(dofCheck[s] == dof[s], PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Coordinate sub-DMs have different dofs");
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -265,7 +265,7 @@ PetscErrorCode DMStagGetCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *z, Pe
   if (nExtrax) *nExtrax = stag->boundaryType[0] != DM_BOUNDARY_PERIODIC && stag->lastRank[0] ? 1 : 0;
   if (nExtray) *nExtray = stag->boundaryType[1] != DM_BOUNDARY_PERIODIC && stag->lastRank[1] ? 1 : 0;
   if (nExtraz) *nExtraz = stag->boundaryType[2] != DM_BOUNDARY_PERIODIC && stag->lastRank[2] ? 1 : 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -296,7 +296,7 @@ PetscErrorCode DMStagGetDOF(DM dm, PetscInt *dof0, PetscInt *dof1, PetscInt *dof
   if (dof1) *dof1 = stag->dof[1];
   if (dof2) *dof2 = stag->dof[2];
   if (dof3) *dof3 = stag->dof[3];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -334,7 +334,7 @@ PetscErrorCode DMStagGetGhostCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *
   if (m) *m = stag->nGhost[0];
   if (n) *n = stag->nGhost[1];
   if (p) *p = stag->nGhost[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -364,7 +364,7 @@ PetscErrorCode DMStagGetGlobalSizes(DM dm, PetscInt *M, PetscInt *N, PetscInt *P
   if (M) *M = stag->N[0];
   if (N) *N = stag->N[1];
   if (P) *P = stag->N[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -394,7 +394,7 @@ PetscErrorCode DMStagGetIsFirstRank(DM dm, PetscBool *isFirstRank0, PetscBool *i
   if (isFirstRank0) *isFirstRank0 = stag->firstRank[0];
   if (isFirstRank1) *isFirstRank1 = stag->firstRank[1];
   if (isFirstRank2) *isFirstRank2 = stag->firstRank[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -425,7 +425,7 @@ PetscErrorCode DMStagGetIsLastRank(DM dm, PetscBool *isLastRank0, PetscBool *isL
   if (isLastRank0) *isLastRank0 = stag->lastRank[0];
   if (isLastRank1) *isLastRank1 = stag->lastRank[1];
   if (isLastRank2) *isLastRank2 = stag->lastRank[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -456,7 +456,7 @@ PetscErrorCode DMStagGetLocalSizes(DM dm, PetscInt *m, PetscInt *n, PetscInt *p)
   if (m) *m = stag->n[0];
   if (n) *n = stag->n[1];
   if (p) *p = stag->n[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -487,7 +487,7 @@ PetscErrorCode DMStagGetNumRanks(DM dm, PetscInt *nRanks0, PetscInt *nRanks1, Pe
   if (nRanks0) *nRanks0 = stag->nRanks[0];
   if (nRanks1) *nRanks1 = stag->nRanks[1];
   if (nRanks2) *nRanks2 = stag->nRanks[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -518,7 +518,7 @@ PetscErrorCode DMStagGetEntries(DM dm, PetscInt *entries)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
   if (entries) *entries = stag->entries;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -549,7 +549,7 @@ PetscErrorCode DMStagGetEntriesLocal(DM dm, PetscInt *entries)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
   if (entries) *entries = stag->entriesGhost;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -578,7 +578,7 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm, PetscInt *entriesPerElement)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
   if (entriesPerElement) *entriesPerElement = stag->entriesPerElement;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -603,7 +603,7 @@ PetscErrorCode DMStagGetStencilType(DM dm, DMStagStencilType *stencilType)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
   *stencilType = stag->stencilType;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -628,7 +628,7 @@ PetscErrorCode DMStagGetStencilWidth(DM dm, PetscInt *stencilWidth)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
   if (stencilWidth) *stencilWidth = stag->stencilWidth;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -665,7 +665,7 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm, const PetscInt *lx[], const Petsc
   if (lx) *lx = stag->l[0];
   if (ly) *ly = stag->l[1];
   if (lz) *lz = stag->l[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -698,7 +698,7 @@ PetscErrorCode DMStagCreateCompatibleDMStag(DM dm, PetscInt dof0, PetscInt dof1,
   PetscCall(DMStagDuplicateWithoutSetup(dm, PetscObjectComm((PetscObject)dm), newdm));
   PetscCall(DMStagSetDOF(*newdm, dof0, dof1, dof2, dof3));
   PetscCall(DMSetUp(*newdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -736,7 +736,7 @@ PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt 
     PetscCheck(c <= dof - 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Supplied component number (%" PetscInt_FMT ") for location %s is too big (maximum %" PetscInt_FMT ")", c, DMStagStencilLocations[loc], dof - 1);
   }
   *slot = stag->locationOffsets[loc] + c;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -856,7 +856,7 @@ PetscErrorCode DMStagMigrateVec(DM dm, Vec vec, DM dmTo, Vec vecTo)
   PetscCall(DMLocalToGlobalBegin(dmTo, vecToLocal, INSERT_VALUES, vecTo));
   PetscCall(DMLocalToGlobalEnd(dmTo, vecToLocal, INSERT_VALUES, vecTo));
   PetscCall(DMRestoreLocalVector(dmTo, &vecToLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -898,7 +898,7 @@ PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
-  if (stag->ltog_injective) PetscFunctionReturn(0); /* Don't re-populate */
+  if (stag->ltog_injective) PetscFunctionReturn(PETSC_SUCCESS); /* Don't re-populate */
   PetscCall(DMGetDimension(dm, &dim));
   switch (dim) {
   case 1:
@@ -913,7 +913,7 @@ PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM dm)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm, void *arrX, void *arrY, void *arrZ, PetscBool read)
@@ -945,7 +945,7 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm, void *
       PetscCall(DMStagVecRestoreArray(subDM, coord1d_local, arr[d]));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -985,7 +985,7 @@ PetscErrorCode DMStagRestoreProductCoordinateArrays(DM dm, void *arrX, void *arr
 {
   PetscFunctionBegin;
   PetscCall(DMStagRestoreProductCoordinateArrays_Private(dm, arrX, arrY, arrZ, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1007,7 +1007,7 @@ PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM dm, void *arrX, void 
 {
   PetscFunctionBegin;
   PetscCall(DMStagRestoreProductCoordinateArrays_Private(dm, arrX, arrY, arrZ, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1041,7 +1041,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm, DMBoundaryType boundaryType0, DMBou
   stag->boundaryType[0] = boundaryType0;
   if (dim > 1) stag->boundaryType[1] = boundaryType1;
   if (dim > 2) stag->boundaryType[2] = boundaryType2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1065,7 +1065,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm, DMType dmtype)
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
   PetscCall(PetscFree(stag->coordinateDMType));
   PetscCall(PetscStrallocpy(dmtype, (char **)&stag->coordinateDMType));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1105,7 +1105,7 @@ PetscErrorCode DMStagSetDOF(DM dm, PetscInt dof0, PetscInt dof1, PetscInt dof2, 
   stag->dof[1] = dof1;
   if (dim > 1) stag->dof[2] = dof2;
   if (dim > 2) stag->dof[3] = dof3;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1142,7 +1142,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm, PetscInt nRanks0, PetscInt nRanks1, Pets
   if (nRanks0) stag->nRanks[0] = nRanks0;
   if (dim > 1 && nRanks1) stag->nRanks[1] = nRanks1;
   if (dim > 2 && nRanks2) stag->nRanks[2] = nRanks2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1167,7 +1167,7 @@ PetscErrorCode DMStagSetStencilType(DM dm, DMStagStencilType stencilType)
   PetscValidLogicalCollectiveEnum(dm, stencilType, 2);
   PetscCheck(!dm->setupcalled, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This function must be called before DMSetUp()");
   stag->stencilType = stencilType;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1196,7 +1196,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm, PetscInt stencilWidth)
   PetscCheck(!dm->setupcalled, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This function must be called before DMSetUp()");
   PetscCheck(stencilWidth >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil width must be non-negative");
   stag->stencilWidth = stencilWidth;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1230,7 +1230,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm, PetscInt N0, PetscInt N1, PetscInt N2
   if (N0) stag->N[0] = N0;
   if (N1) stag->N[1] = N1;
   if (N2) stag->N[2] = N2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1269,7 +1269,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
       PetscCall(PetscArraycpy(stag->l[d], lin[d], stag->nRanks[d]));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1313,7 +1313,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
   } else if (flg_product) {
     PetscCall(DMStagSetUniformCoordinatesProduct(dm, xmin, xmax, ymin, ymax, zmin, zmax));
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported DM Type %s", stag->coordinateDMType);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1365,7 +1365,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   }
   PetscCall(DMCoarsenHookRemove(dm, DMRestrictHook_Coordinates, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1461,7 +1461,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
     PetscCallMPI(MPI_Comm_free(&subcomm));
   }
   PetscCall(DMCoarsenHookRemove(dm, DMRestrictHook_Coordinates, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1526,7 +1526,7 @@ PetscErrorCode DMStagVecGetArray(DM dm, Vec vec, void *array)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1575,7 +1575,7 @@ PetscErrorCode DMStagVecGetArrayRead(DM dm, Vec vec, void *array)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1619,7 +1619,7 @@ PetscErrorCode DMStagVecRestoreArray(DM dm, Vec vec, void *array)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1663,5 +1663,5 @@ PetscErrorCode DMStagVecRestoreArrayRead(DM dm, Vec vec, void *array)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -51,7 +51,7 @@ PetscErrorCode PetscSetDebugTerminal(const char terminal[])
   PetscCall(PetscStrncpy(DebugTerminal, terminal, sizeof(DebugTerminal)));
   PetscCall(PetscStrcmp(terminal, "xterm", &xterm));
   if (xterm) PetscCall(PetscStrlcat(DebugTerminal, " -e", sizeof(DebugTerminal)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -78,7 +78,7 @@ PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugtermina
   PetscFunctionBegin;
   if (debugger) PetscCall(PetscStrncpy(PetscDebugger, debugger, sizeof(PetscDebugger)));
   if (UseDebugTerminal) UseDebugTerminal = usedebugterminal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -101,7 +101,7 @@ PetscErrorCode PetscSetDefaultDebugger(void)
 #else
   PetscCall(PetscSetDebugTerminal("xterm"));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
@@ -116,7 +116,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
     if (exists) *debugger = string;
     else *debugger = defaultDbg;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -157,7 +157,7 @@ PetscErrorCode PetscSetDebuggerFromString(const char *string)
   PetscCall(PetscCheckDebugger_Private("pathdb", string, &debugger));
   PetscCall(PetscCheckDebugger_Private("lldb", string, &debugger));
   PetscCall(PetscSetDebugger(debugger, useterminal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -177,7 +177,7 @@ PetscErrorCode PetscSetDebuggerFromString(const char *string)
 PetscErrorCode PetscWaitOnError(void)
 {
   petscwaitonerrorflg = PETSC_TRUE;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -198,6 +198,7 @@ PetscErrorCode PetscWaitOnError(void)
 @*/
 PetscErrorCode PetscAttachDebugger(void)
 {
+  PetscErrorCode PETSC_UNUSED ierr;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) && defined(PETSC_HAVE_FORK)
   int       child     = 0;
   PetscReal sleeptime = 0;
@@ -205,26 +206,26 @@ PetscErrorCode PetscAttachDebugger(void)
 #endif
 
 #if defined(PETSC_CANNOT_START_DEBUGGER) || !defined(PETSC_HAVE_FORK)
-  (*PetscErrorPrintf)("System cannot start debugger\n");
-  (*PetscErrorPrintf)("On Cray run program in Totalview debugger\n");
-  (*PetscErrorPrintf)("On Windows use Developer Studio(MSDEV)\n");
+  ierr = (*PetscErrorPrintf)("System cannot start debugger\n");
+  ierr = (*PetscErrorPrintf)("On Cray run program in Totalview debugger\n");
+  ierr = (*PetscErrorPrintf)("On Windows use Developer Studio(MSDEV)\n");
   PETSCABORT(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS);
 #else
   if (PetscUnlikely(PetscGetDisplay(display, sizeof(display)))) {
-    (*PetscErrorPrintf)("Cannot determine display\n");
+    ierr = (*PetscErrorPrintf)("Cannot determine display\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(PetscGetProgramName(program, sizeof(program)))) {
-    (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(!program[0])) {
-    (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
   child = (int)fork();
   if (PetscUnlikely(child < 0)) {
-    (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
+    ierr = (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
     return PETSC_ERR_SYS;
   }
   petscindebugger = PETSC_TRUE;
@@ -439,11 +440,11 @@ PetscErrorCode PetscAttachDebugger(void)
       while (left > 0) left = PetscSleep(left) - 1;
     }
   #else
-    PetscSleep(sleeptime);
+    PetscCall(PetscSleep(sleeptime));
   #endif
   }
 #endif
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -494,14 +495,16 @@ $    PetscAbortErrorHandler()
 @*/
 PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, void *ctx)
 {
+  PetscErrorCode ierr;
   if (!mess) mess = " ";
 
-  if (fun) (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
-  else (*PetscErrorPrintf)("%s:%d %s\n", file, line, mess);
+  if (fun) ierr = (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
+  else ierr = (*PetscErrorPrintf)("%s:%d %s\n", file, line, mess);
 
-  PetscAttachDebugger();
+  ierr = PetscAttachDebugger();
+  (void)ierr;
   abort(); /* call abort because don't want to kill other MPI ranks that may successfully attach to debugger */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -537,24 +540,23 @@ PetscErrorCode PetscStopForDebugger(void)
 
   PetscFunctionBegin;
 #if defined(PETSC_CANNOT_START_DEBUGGER)
-  (*PetscErrorPrintf)("System cannot start debugger; just continuing program\n");
+  PetscCall((*PetscErrorPrintf)("System cannot start debugger; just continuing program\n"));
 #else
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-  if (ierr) rank = 0; /* ignore error since this may be already in error handler */
+  if (MPI_Comm_rank(PETSC_COMM_WORLD, &rank)) rank = 0; /* ignore error since this may be already in error handler */
   ierr = PetscGetHostName(hostname, sizeof(hostname));
   if (ierr) {
-    (*PetscErrorPrintf)("Cannot determine hostname; just continuing program\n");
-    PetscFunctionReturn(0);
+    PetscCall((*PetscErrorPrintf)("Cannot determine hostname; just continuing program\n"));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   ierr = PetscGetProgramName(program, sizeof(program));
   if (ierr) {
-    (*PetscErrorPrintf)("Cannot determine program name; just continuing program\n");
-    PetscFunctionReturn(0);
+    PetscCall((*PetscErrorPrintf)("Cannot determine program name; just continuing program\n"));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!program[0]) {
-    (*PetscErrorPrintf)("Cannot determine program name; just continuing program\n");
-    PetscFunctionReturn(0);
+    PetscCall((*PetscErrorPrintf)("Cannot determine program name; just continuing program\n"));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   ppid = getpid();
@@ -588,14 +590,15 @@ PetscErrorCode PetscStopForDebugger(void)
 
   fflush(stdout); /* ignore error because may already be in error handler */
 
-  sleeptime = 25;                                                      /* default to sleep waiting for debugger */
-  PetscOptionsGetInt(NULL, NULL, "-debugger_pause", &sleeptime, NULL); /* ignore error because may already be in error handler */
+  sleeptime = 25;                                                                         /* default to sleep waiting for debugger */
+  PetscCallContinue(PetscOptionsGetInt(NULL, NULL, "-debugger_pause", &sleeptime, NULL)); /* ignore error because may already be in error handler */
   if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
   /*
       HP cannot attach process to sleeping debugger, hence count instead
   */
   {
+    // this *will* get optimized away by any compiler known to man
     PetscReal x = 1.0;
     int       i = 10000000;
     while (i--) x++; /* cannot attach to sleeper */
@@ -609,7 +612,7 @@ PetscErrorCode PetscStopForDebugger(void)
     while (left > 0) left = sleep(left) - 1;
   }
 #else
-  PetscSleep(sleeptime);
+  PetscCall(PetscSleep(sleeptime));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

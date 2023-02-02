@@ -12,6 +12,7 @@ configure_options = [
   '--download-f2cblaslapack=1',
   '--with-mpi=0',
   '--with-batch',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

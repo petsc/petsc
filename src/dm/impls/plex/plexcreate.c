@@ -30,7 +30,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   PetscCall(DMPlexReorderSetDefault(dmout, reorder));
   ((DM_Plex *)dmout->data)->useHashLocation = ((DM_Plex *)dmin->data)->useHashLocation;
   if (copyOverlap) PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Replace dm with the contents of ndm, and then destroy ndm
@@ -49,7 +49,7 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscFunctionBegin;
   if (dm == dmNew) {
     PetscCall(DMDestroy(ndm));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   dm->setupcalled = dmNew->setupcalled;
   PetscCall(DMGetDimension(dmNew, &dim));
@@ -83,7 +83,7 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscCall(DMGetCoarseDM(dmNew, &coarseDM));
   PetscCall(DMSetCoarseDM(dm, coarseDM));
   PetscCall(DMDestroy(ndm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Swap dm with the contents of dmNew
@@ -103,7 +103,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscInt    tmpI;
 
   PetscFunctionBegin;
-  if (dmA == dmB) PetscFunctionReturn(0);
+  if (dmA == dmB) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetPointSF(dmA, &sfA));
   PetscCall(DMGetPointSF(dmB, &sfB));
   PetscCall(PetscObjectReference((PetscObject)sfA));
@@ -160,7 +160,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   tmpI                      = dmA->levelup;
   dmA->levelup              = dmB->levelup;
   dmB->levelup              = tmpI;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
@@ -171,7 +171,7 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
   PetscCall(DMPlexInterpolate(dm, &idm));
   PetscCall(DMPlexCopyCoordinates(dm, idm));
   PetscCall(DMPlexReplace_Internal(dm, &idm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -230,7 +230,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
     PetscCall(PetscFEDestroy(&fe));
   }
   mesh->coordFunc = coordFunc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -343,7 +343,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
     PetscCall(DMDestroy(newdm));
     *newdm = idm;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_1D_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
@@ -397,7 +397,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_1D_Internal(DM dm, const
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_2D_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
@@ -513,7 +513,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_2D_Internal(DM dm, const
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
@@ -698,7 +698,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], PetscBool interpolate)
@@ -723,7 +723,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Internal(DM dm, PetscInt dim, c
   }
   PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   if (interpolate) PetscCall(DMPlexInterpolateInPlace_Internal(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -756,7 +756,7 @@ PetscErrorCode DMPlexCreateBoxSurfaceMesh(MPI_Comm comm, PetscInt dim, const Pet
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateBoxSurfaceMesh_Internal(*dm, dim, faces ? faces : fac, lower ? lower : low, upper ? upper : upp, interpolate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm, PetscInt segments, PetscReal lower, PetscReal upper, DMBoundaryType bd)
@@ -814,7 +814,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm, PetscInt segments, Pe
     PetscCall(DMSetPeriodicity(dm, &maxCell, &lower, &L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
@@ -834,7 +834,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, 
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, vol));
   PetscCall(DMPlexReplace_Internal(dm, &vol));
   PetscCall(DMDestroy(&boundary));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY, DMBoundaryType bdZ)
@@ -1259,7 +1259,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     PetscCall(DMSetCoordinatesLocal(dm, coordinates));
     PetscCall(VecDestroy(&coordinates));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[])
@@ -1289,7 +1289,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
     PetscCall(DMSetPeriodicity(dm, maxCell, lower, L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
@@ -1308,7 +1308,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, Pet
     PetscCall(DMPlexReplace_Internal(dm, &udm));
   }
   PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1387,7 +1387,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateBoxMesh_Internal(*dm, DM_SHAPE_BOX, dim, simplex, faces ? faces : fac, lower ? lower : low, upper ? upper : upp, periodicity ? periodicity : bdt, interpolate));
   if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[])
@@ -1420,7 +1420,7 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
     PetscCall(VecRestoreArray(v, &x));
     PetscCall(DMSetCoordinatesLocal(dm, v));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1462,7 +1462,7 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
     PetscCall(DMPlexReplace_Internal(*dm, &udm));
   }
   if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1496,7 +1496,7 @@ static PetscErrorCode DMPlexTensorPointLexicographic_Private(PetscInt len, const
   }
   if (i == len) tup[i - 1] = max[i - 1];
   else ++tup[i];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscInt TupleToIndex_Private(PetscInt len, const PetscInt max[], const PetscInt tup[])
@@ -1557,21 +1557,21 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
     const PetscInt vertex = TupleToIndex_Private(dim, vertices, vert) + numCells;
     PetscInt       s      = 0;
 
-    PetscPrintf(PETSC_COMM_SELF, "Vertex %" PetscInt_FMT ":", vertex);
-    for (d = 0; d < dim; ++d) PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vert[d]);
-    PetscPrintf(PETSC_COMM_SELF, "\n");
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Vertex %" PetscInt_FMT ":", vertex));
+    for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vert[d]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
     PetscCall(DMPlexSetCellType(dm, vertex, DM_POLYTOPE_POINT));
     for (d = 0; d < dim; ++d) {
       for (e = 0; e < dim; ++e) vtmp[e] = vert[e];
       vtmp[d] = (vert[d] + 1) % vertices[d];
       cone[0] = vertex;
       cone[1] = TupleToIndex_Private(dim, vertices, vtmp) + numCells;
-      PetscPrintf(PETSC_COMM_SELF, "  Vertex %" PetscInt_FMT ":", cone[1]);
-      for (e = 0; e < dim; ++e) PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vtmp[e]);
-      PetscPrintf(PETSC_COMM_SELF, "\n");
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Vertex %" PetscInt_FMT ":", cone[1]));
+      for (e = 0; e < dim; ++e) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vtmp[e]));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
       PetscCall(DMPlexSetCone(dm, cell, cone));
       PetscCall(DMPlexSetCellType(dm, cell, DM_POLYTOPE_SEGMENT));
-      PetscPrintf(PETSC_COMM_SELF, "  Edge %" PetscInt_FMT " (%" PetscInt_FMT " %" PetscInt_FMT ")\n", cell, cone[0], cone[1]);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Edge %" PetscInt_FMT " (%" PetscInt_FMT " %" PetscInt_FMT ")\n", cell, cone[0], cone[1]));
       ++cell;
     }
     for (d = 0; d < dim; ++d) {
@@ -1606,10 +1606,10 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
     const PetscInt vertex = TupleToIndex_Private(dim, vertices, vert);
 
     for (d = 0; d < dim; ++d) coords[vertex * dim + d] = lower[d] + ((upper[d] - lower[d]) / vertices[d]) * vert[d];
-    PetscPrintf(PETSC_COMM_SELF, "Vertex %" PetscInt_FMT ":", vertex);
-    for (d = 0; d < dim; ++d) PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vert[d]);
-    for (d = 0; d < dim; ++d) PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(coords[vertex * dim + d]));
-    PetscPrintf(PETSC_COMM_SELF, "\n");
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Vertex %" PetscInt_FMT ":", vertex));
+    for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vert[d]));
+    for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(coords[vertex * dim + d])));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
     PetscCall(DMPlexTensorPointLexicographic_Private(dim, vertices, vert));
   }
   PetscCall(VecRestoreArray(coordinates, &coords));
@@ -1630,7 +1630,7 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
     PetscCall(PetscObjectCompose((PetscObject)dm, "_extent", (PetscObject)c));
     PetscCall(PetscContainerDestroy(&c));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1692,7 +1692,7 @@ PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const Pet
   }
   PetscCall(DMPlexCreateHypercubicMesh_Internal(*dm, dim, low, upp, edg, bdt));
   PetscCall(PetscFree4(edg, low, upp, bdt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1720,7 +1720,7 @@ PetscErrorCode DMPlexSetOptionsPrefix(DM dm, const char prefix[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)mesh->partitioner, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Remap geometry to cylinder
@@ -2119,7 +2119,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
 
   /* Wait for coordinate creation before doing in-place modification */
   PetscCall(DMPlexInterpolateInPlace_Internal(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2179,7 +2179,7 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodi
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateHexCylinderMesh_Internal(*dm, periodicZ));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, PetscBool interpolate)
@@ -2265,7 +2265,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
   PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   /* Interpolate */
   if (interpolate) PetscCall(DMPlexInterpolateInPlace_Internal(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2292,7 +2292,7 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateWedgeCylinderMesh_Internal(*dm, n, interpolate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscReal DiffNormReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
@@ -2789,7 +2789,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
   PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   /* Wait for coordinate creation before doing in-place modification */
   if (simplex) PetscCall(DMPlexInterpolateInPlace_Internal(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef void (*TPSEvaluateFunc)(const PetscReal[], PetscReal *, PetscReal[], PetscReal (*)[3]);
@@ -2814,7 +2814,7 @@ static void TPSEvaluate_SchwarzP(const PetscReal y[3], PetscReal *f, PetscReal g
 static PetscErrorCode TPSExtrudeNormalFunc_SchwarzP(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
 {
   for (PetscInt i = 0; i < 3; i++) u[i] = -PETSC_PI * PetscSinReal(x[i] * PETSC_PI);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -2850,7 +2850,7 @@ static PetscErrorCode TPSExtrudeNormalFunc_Gyroid(PetscInt dim, PetscReal time, 
   u[0]           = PETSC_PI * (c[0] * c[1] - s[2] * s[0]);
   u[1]           = PETSC_PI * (c[1] * c[2] - s[0] * s[1]);
   u[2]           = PETSC_PI * (c[2] * c[0] - s[1] * s[2]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -2946,7 +2946,7 @@ static PetscErrorCode TPSNearestPoint(TPSEvaluateFunc feval, PetscScalar x[])
     PetscKernel_v_gets_v_minus_A_times_w_3(y, J, res);
   }
   for (PetscInt i = 0; i < 3; i++) x[i] = y[i];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 const char *const DMPlexTPSTypes[] = {"SCHWARZ_P", "GYROID", "DMPlexTPSType", "DMPLEX_TPS_", NULL};
@@ -3479,7 +3479,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     }
     PetscCall(DMPlexReplace_Internal(dm, &edm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3528,7 +3528,7 @@ PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const P
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateTPSMesh_Internal(*dm, tpstype, extent, periodic, tps_distribute, refinements, layers, thickness));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3556,7 +3556,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateSphereMesh_Internal(*dm, dim, simplex, R));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBallMesh_Internal(DM dm, PetscInt dim, PetscReal R)
@@ -3578,7 +3578,7 @@ static PetscErrorCode DMPlexCreateBallMesh_Internal(DM dm, PetscInt dim, PetscRe
   PetscCall(DMGetLabel(dm, "marker", &bdlabel));
   PetscCall(DMPlexMarkBoundaryFaces(dm, PETSC_DETERMINE, bdlabel));
   PetscCall(DMPlexLabelComplete(dm, bdlabel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3607,7 +3607,7 @@ PetscErrorCode DMPlexCreateBallMesh(MPI_Comm comm, PetscInt dim, PetscReal R, DM
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateBallMesh_Internal(*dm, dim, R));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType ct)
@@ -3748,7 +3748,7 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
   }
   PetscCall(DMPlexInterpolateInPlace_Internal(rdm));
   PetscCall(PetscObjectSetName((PetscObject)rdm, DMPolytopeTypes[ct]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3773,7 +3773,7 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, DMPolytopeType ct, DM *r
   PetscCall(DMCreate(comm, refdm));
   PetscCall(DMSetType(*refdm, DMPLEX));
   PetscCall(DMPlexCreateReferenceCell_Internal(*refdm, ct));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[])
@@ -3784,14 +3784,14 @@ static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[]
 
   PetscFunctionBegin;
   PetscCall(DMHasLabel(dm, name, &hasLabel));
-  if (hasLabel) PetscFunctionReturn(0);
+  if (hasLabel) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMCreateLabel(dm, name));
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexMarkBoundaryFaces(plex, 1, label));
   PetscCall(DMPlexLabelComplete(plex, label));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -4037,7 +4037,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   if (!((PetscObject)dm)->name && nameflg) PetscCall(PetscObjectSetName((PetscObject)dm, plexname));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *PetscOptionsObject)
@@ -4105,7 +4105,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
     }
   }
   PetscCall(PetscPartitionerSetFromOptions(mesh->partitioner));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems *PetscOptionsObject, PetscInt *overlap)
@@ -4142,7 +4142,7 @@ PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems *PetscOptio
     if (!flg) numOvExValues = 0;
     PetscCheck(numOvExLabels == numOvExValues, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "The number of exclude labels %" PetscInt_FMT " must match the number of values %" PetscInt_FMT, numOvExLabels, numOvExValues);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOptionsObject)
@@ -4404,7 +4404,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
 non_refine:
   PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateGlobalVector_Plex(DM dm, Vec *vec)
@@ -4416,7 +4416,7 @@ static PetscErrorCode DMCreateGlobalVector_Plex(DM dm, Vec *vec)
   PetscCall(VecSetOperation(*vec, VECOP_VIEWNATIVE, (void (*)(void))VecView_Plex_Native));
   PetscCall(VecSetOperation(*vec, VECOP_LOAD, (void (*)(void))VecLoad_Plex));
   PetscCall(VecSetOperation(*vec, VECOP_LOADNATIVE, (void (*)(void))VecLoad_Plex_Native));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateLocalVector_Plex(DM dm, Vec *vec)
@@ -4425,7 +4425,7 @@ static PetscErrorCode DMCreateLocalVector_Plex(DM dm, Vec *vec)
   PetscCall(DMCreateLocalVector_Section_Private(dm, vec));
   PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Plex_Local));
   PetscCall(VecSetOperation(*vec, VECOP_LOAD, (void (*)(void))VecLoad_Plex_Local));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
@@ -4445,7 +4445,7 @@ static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart,
   } else {
     PetscCall(DMPlexGetDepthStratum(dm, dim, pStart, pEnd));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGetNeighbors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
@@ -4474,7 +4474,7 @@ static PetscErrorCode DMGetNeighbors_Plex(DM dm, PetscInt *nranks, const PetscMP
     if (data->neighbors[0]) *ranks = data->neighbors + 1;
     else *ranks = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMInterpolateSolution_Plex(DM, DM, Mat, Vec, Vec);
@@ -4536,7 +4536,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMInterpolateSolution_C", DMInterpolateSolution_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", DMPlexSetOverlap_Plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
@@ -4551,7 +4551,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
   PetscCall(DMPlexSetIsoperiodicFaceSF(*newdm, face_sf));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*newdm, DMPLEX));
   PetscCall(DMInitialize_Plex(*newdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -4618,7 +4618,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->printTol      = 1.0e-10;
 
   PetscCall(DMInitialize_Plex(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4642,7 +4642,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
   PetscValidPointer(mesh, 2);
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPLEX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4792,7 +4792,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   PetscCall(DMPlexSymmetrize(dm));
   PetscCall(DMPlexStratify(dm));
   PetscCall(PetscLogEventEnd(DMPLEX_BuildFromCellList, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -4869,7 +4869,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
   PetscCall(PetscLogEventEnd(DMPLEX_BuildCoordinatesFromCellList, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4927,7 +4927,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   PetscCall(DMPlexBuildCoordinatesFromCellListParallel(*dm, spaceDim, sfVert, vertexCoords));
   if (vertexSF) *vertexSF = sfVert;
   else PetscCall(PetscSFDestroy(&sfVert));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5015,7 +5015,7 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
   PetscCall(DMPlexSymmetrize(dm));
   PetscCall(DMPlexStratify(dm));
   PetscCall(PetscLogEventEnd(DMPLEX_BuildFromCellList, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5070,7 +5070,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
   PetscCall(PetscLogEventEnd(DMPLEX_BuildCoordinatesFromCellList, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5125,7 +5125,7 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   }
   if (rank == 0) PetscCall(DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, vertexCoords));
   else PetscCall(DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -5221,7 +5221,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5406,7 +5406,7 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
       PetscCall(DMPlexLabelComplete(*dm, bdlabel));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -5560,7 +5560,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscCall(PetscStrlen(plexname, &len));
   if (len) PetscCall(PetscObjectSetName((PetscObject)(*dm), plexname));
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromFile, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@C
   DMPlexCreateEphemeral - This takes a `DMPlexTransform` and a base `DMPlex` and produces an ephemeral `DM`, meaning one that is created on the fly in response to queries.
@@ -5612,5 +5612,5 @@ PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, DM *dm)
     PetscCall(DMLabelEphemeralSetTransform(labelNew, tr));
     PetscCall(DMLabelSetUp(labelNew));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

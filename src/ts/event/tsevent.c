@@ -6,14 +6,14 @@
 PetscErrorCode TSEventInitialize(TSEvent event, TS ts, PetscReal t, Vec U)
 {
   PetscFunctionBegin;
-  if (!event) PetscFunctionReturn(0);
+  if (!event) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidPointer(event, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 4);
   event->ptime_prev = t;
   event->iterctr    = 0;
   PetscCall((*event->eventhandler)(ts, t, U, event->fvalue_prev, event->ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSEventDestroy(TSEvent *event)
@@ -22,10 +22,10 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 
   PetscFunctionBegin;
   PetscValidPointer(event, 1);
-  if (!*event) PetscFunctionReturn(0);
+  if (!*event) PetscFunctionReturn(PETSC_SUCCESS);
   if (--(*event)->refct > 0) {
     *event = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscFree((*event)->fvalue));
@@ -46,7 +46,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 
   PetscCall(PetscViewerDestroy(&(*event)->monitor));
   PetscCall(PetscFree(*event));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -78,7 +78,7 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
 {
   PetscFunctionBegin;
   ts->event->timestep_posteventinterval = dt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -121,7 +121,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
       for (i = 0; i < event->nevents; i++) event->vtol[i] = tol;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -241,7 +241,7 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   PetscCall(TSEventDestroy(&ts->event));
   ts->event        = event;
   ts->event->refct = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -287,7 +287,7 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event)
   /* Double size */
   event->recsize *= fact;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -343,7 +343,7 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U)
   event->recorder.nevents[ctr] = event->nevents_zero;
   for (i = 0; i < event->nevents_zero; i++) event->recorder.eventidx[ctr][i] = event->events_zero[i];
   event->recorder.ctr++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Uses Anderson-Bjorck variant of regula falsi method */
@@ -397,7 +397,7 @@ static PetscErrorCode TSEventDetection(TS ts)
   in = (PetscInt)event->status;
   PetscCall(MPIU_Allreduce(&in, &out, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ts)));
   event->status = (TSEventStatus)out;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
@@ -467,7 +467,7 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
       event->side[i] = 0;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSEventHandler(TS ts)
@@ -480,7 +480,7 @@ PetscErrorCode TSEventHandler(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (!ts->event) PetscFunctionReturn(0);
+  if (!ts->event) PetscFunctionReturn(PETSC_SUCCESS);
   event = ts->event;
 
   PetscCall(TSGetTime(ts, &t));
@@ -554,7 +554,7 @@ PetscErrorCode TSEventHandler(TS ts)
     for (i = 0; i < event->nevents; i++) event->fvalue_prev[i] = event->fvalue[i];
     event->ptime_prev = t;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSAdjointEventHandler(TS ts)
@@ -567,7 +567,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (!ts->event) PetscFunctionReturn(0);
+  if (!ts->event) PetscFunctionReturn(PETSC_SUCCESS);
   event = ts->event;
 
   PetscCall(TSGetTime(ts, &t));
@@ -582,8 +582,8 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
     }
   }
 
-  PetscBarrier((PetscObject)ts);
-  PetscFunctionReturn(0);
+  PetscCall(PetscBarrier((PetscObject)ts));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -605,5 +605,5 @@ PetscErrorCode TSGetNumEvents(TS ts, PetscInt *nevents)
 {
   PetscFunctionBegin;
   *nevents = ts->event->nevents;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

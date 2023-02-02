@@ -46,7 +46,7 @@ PETSC_EXTERN PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx, D
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetDimension(*dm, 2));
   PetscCall(DMStagInitialize(bndx, bndy, DM_BOUNDARY_NONE, M, N, 0, m, n, 0, dof0, dof1, dof2, 0, stencilType, stencilWidth, lx, ly, NULL, *dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagRestrictSimple_2d(DM dmf, Vec xf_local, DM dmc, Vec xc_local)
@@ -112,7 +112,7 @@ PETSC_INTERN PetscErrorCode DMStagRestrictSimple_2d(DM dmf, Vec xf_local, DM dmc
   }
   PetscCall(DMStagVecRestoreArray(dmf, xf_local, &LA_xf));
   PetscCall(DMStagVecRestoreArray(dmc, xc_local, &LA_xc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax)
@@ -171,7 +171,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm, PetscR
   PetscCall(DMStagVecRestoreArray(dmCoord, coordLocal, &arr));
   PetscCall(DMSetCoordinatesLocal(dm, coordLocal));
   PetscCall(VecDestroy(&coordLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Helper functions used in DMSetUp_Stag() */
@@ -971,7 +971,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
   /* View from Options */
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* adapted from da2.c */
@@ -1022,7 +1022,7 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
   PetscCheck(N >= n, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in y direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, N, n);
   stag->nRanks[0] = m;
   stag->nRanks[1] = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
@@ -1085,7 +1085,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
     }
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMStagSetUpBuildGlobalOffsets_2d(DM dm, PetscInt **pGlobalOffsets)
@@ -1128,7 +1128,7 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_2d(DM dm, PetscInt **pGlobal
     }
     /* Don't need to compute entries in last element */
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMStagComputeLocationOffsets_2d(DM dm)
@@ -1148,7 +1148,7 @@ static PetscErrorCode DMStagComputeLocationOffsets_2d(DM dm)
   stag->locationOffsets[DMSTAG_UP_LEFT]    = stag->locationOffsets[DMSTAG_DOWN_LEFT] + epr;
   stag->locationOffsets[DMSTAG_UP]         = stag->locationOffsets[DMSTAG_DOWN] + epr;
   stag->locationOffsets[DMSTAG_UP_RIGHT]   = stag->locationOffsets[DMSTAG_UP_LEFT] + epe;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM dm)
@@ -1230,7 +1230,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM dm)
   PetscCall(ISDestroy(&isLocal));
   PetscCall(ISDestroy(&isGlobal));
   if (globalOffsetsRecomputed) PetscCall(PetscFree(globalOffsetsRecomputed));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ_Assemble(DM dm, Mat A)
@@ -1399,5 +1399,5 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ_Assemble(DM dm, Mat A)
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported stencil type %s", DMStagStencilTypes[stencil_type]);
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

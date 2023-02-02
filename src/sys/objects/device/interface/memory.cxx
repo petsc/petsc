@@ -111,7 +111,7 @@ PetscErrorCode MemoryMap::register_finalize_() noexcept
   // slow if it needs to rehash. Experiments show that users tend not to have more than 5 or
   // so concurrently live pointers lying around. 10 at most.
   PetscCall(map.reserve(16));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MemoryMap::finalize_() noexcept
@@ -119,7 +119,7 @@ PetscErrorCode MemoryMap::finalize_() noexcept
   PetscFunctionBegin;
   PetscCall(PetscInfo(nullptr, "Finalizing memory map\n"));
   PetscCallCXX(map = map_type{});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -167,7 +167,7 @@ static PetscErrorCode PetscDeviceCheckCapable_Private(PetscDeviceContext dctx, b
 {
   PetscFunctionBegin;
   PetscCheck(cond, PETSC_COMM_SELF, PETSC_ERR_SUP, "Device context (id: %" PetscInt64_FMT ", name: %s, type: %s) can only handle %s host memory", PetscObjectCast(dctx)->id, PetscObjectCast(dctx)->name, dctx->device ? PetscDeviceTypes[dctx->device->type] : "unknown", descr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // A helper utility, since register is called from PetscDeviceRegisterMemory() and
@@ -202,7 +202,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
       std::forward_as_tuple(mtype, newid, size)
     ));
     // clang-format on
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (PetscDefined(USE_DEBUG)) {
     const auto &old = it->second;
@@ -211,7 +211,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
                PetscMemTypeToString(old.mtype), old.size, old.id, PetscMemTypeToString(mtype), size, old.id);
   }
   if (id) *id = it->second.id;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -242,9 +242,9 @@ PetscErrorCode PetscDeviceRegisterMemory(const void *PETSC_RESTRICT ptr, PetscMe
 {
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscValidPointer(ptr, 1);
-  if (PetscUnlikely(!size)) PetscFunctionReturn(0); // there is no point registering empty range
+  if (PetscUnlikely(!size)) PetscFunctionReturn(PETSC_SUCCESS); // there is no point registering empty range
   PetscCall(PetscDeviceRegisterMemory_Private(ptr, mtype, size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -321,7 +321,7 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
   }
   PetscValidPointer(ptr, 6);
   *ptr = nullptr;
-  if (PetscUnlikely(!n)) PetscFunctionReturn(0);
+  if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(memory_map.register_finalize());
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
 
@@ -336,7 +336,7 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
   // Note this is a "write" so that the next dctx to try and read from the pointer has to wait
   // for the allocation to be ready
   PetscCall(PetscDeviceContextMarkIntentFromID(dctx, id, PETSC_MEMORY_ACCESS_WRITE, "memory allocation"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -411,7 +411,7 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
     if (ptr) PetscCall(PetscFree(ptr));
     PetscCallCXX(map.erase(found_it));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -455,10 +455,10 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
 PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT dest, const void *PETSC_RESTRICT src, std::size_t n)
 {
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(dest, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy to a NULL pointer");
   PetscCheck(src, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy from a NULL pointer");
-  if (dest == src) PetscFunctionReturn(0);
+  if (dest == src) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   {
     const auto &dest_attr = memory_map.search_for(dest, true)->second;
@@ -482,7 +482,7 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
       PetscCall(PetscMemcpy(dest, src, n));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -527,7 +527,7 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
 PetscErrorCode PetscDeviceMemset(PetscDeviceContext dctx, void *ptr, PetscInt v, std::size_t n)
 {
   PetscFunctionBegin;
-  if (PetscUnlikely(!n)) PetscFunctionReturn(0);
+  if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to memset a NULL pointer");
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   {
@@ -543,5 +543,5 @@ PetscErrorCode PetscDeviceMemset(PetscDeviceContext dctx, void *ptr, PetscInt v,
       std::memset(ptr, static_cast<int>(v), n);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

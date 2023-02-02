@@ -104,19 +104,19 @@ M*/
 static inline PetscErrorCode PetscTime(PetscLogDouble *v)
 {
   *v = MPI_Wtime();
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static inline PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
 {
   *v -= MPI_Wtime();
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static inline PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
 {
   *v += MPI_Wtime();
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 #endif

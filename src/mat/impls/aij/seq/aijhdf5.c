@@ -160,6 +160,6 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscCall(ISDestroy(&is_i));
   PetscCall(ISDestroy(&is_j));
   PetscCall(VecDestroy(&vec_a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

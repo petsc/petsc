@@ -13,14 +13,14 @@ static PetscErrorCode PFView_String(void *value, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "String = %s\n", (char *)value));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PFDestroy_String(void *value)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(value));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -83,7 +83,7 @@ PetscErrorCode PFStringCreateFunction(PF pf, char *string, void **f)
   PetscCall(PetscDLLibrarySym(comm, NULL, lib, "PFApply_String", f));
   PetscCheck(f, PetscObjectComm((PetscObject)pf), PETSC_ERR_ARG_WRONGSTATE, "Cannot find function %s", lib);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOptionsObject)
@@ -100,7 +100,7 @@ static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOpti
     pf->ops->apply = f;
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef PetscErrorCode (*FCN)(void *, PetscInt, const PetscScalar *, PetscScalar *); /* force argument to next function to not be extern C*/
@@ -113,5 +113,5 @@ PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf, void *value)
   if (value) PetscCall(PFStringCreateFunction(pf, (char *)value, (void **)&f));
   PetscCall(PFSet(pf, f, NULL, PFView_String, PFDestroy_String, NULL));
   pf->ops->setfromoptions = PFSetFromOptions_String;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

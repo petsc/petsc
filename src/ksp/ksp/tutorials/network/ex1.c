@@ -131,7 +131,7 @@ PetscErrorCode read_data(PetscInt *pnnode, PetscInt *pnbranch, Node **pnode, Bra
   *pedgelist = edgelist;
   *pbranch   = branch;
   *pnode     = node;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormOperator(DM dmnetwork, Mat A, Vec b)
@@ -225,7 +225,7 @@ PetscErrorCode FormOperator(DM dmnetwork, Mat A, Vec b)
 
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -30,7 +30,7 @@ static PetscErrorCode MatColoringApply_Power(MatColoring mc, ISColoring *iscolor
   PetscCall(MatColoringApply(imc, iscoloring));
   PetscCall(MatColoringDestroy(&imc));
   if (mp != m) PetscCall(MatDestroy(&mp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -52,5 +52,5 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_Power(MatColoring mc)
   mc->ops->view           = NULL;
   mc->ops->destroy        = NULL;
   mc->ops->setfromoptions = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

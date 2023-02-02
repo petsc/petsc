@@ -32,7 +32,7 @@ static PetscErrorCode VecLoadIfExists_Private(Vec b, PetscViewer fd, PetscBool *
     PetscCall(PetscPopErrorHandler());
     *has = ierrp ? PETSC_FALSE : PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

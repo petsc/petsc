@@ -25,7 +25,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBoundedInt("-pend", "The label point limit", "ex6.c", options->pEnd, &options->pEnd, NULL, 0));
   PetscCall(PetscOptionsReal("-fill", "The percentage of label chart to set", "ex6.c", options->fill, &options->fill, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
@@ -54,7 +54,7 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
   PetscCall(PetscRandomDestroy(&r));
   PetscCall(DMLabelCreateIndex(label, user->pStart, user->pEnd));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%" PetscInt_FMT ", %" PetscInt_FMT ") and set %" PetscInt_FMT " values\n", user->pStart, user->pEnd, user->size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
@@ -75,7 +75,7 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
   }
   PetscCheck(n == user->size, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %" PetscInt_FMT " does not match number set %" PetscInt_FMT, n, user->size);
   /* Also put in timing code */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestClear(DMLabel label, AppCtx *user)
@@ -96,7 +96,7 @@ PetscErrorCode TestClear(DMLabel label, AppCtx *user)
     PetscCheck(val == defaultValue, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected default value %" PetscInt_FMT " after clearing point %" PetscInt_FMT ", got %" PetscInt_FMT, defaultValue, p, val);
     PetscCheck(!hasPoint, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label contains %" PetscInt_FMT " after clearing", p);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -109,7 +109,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
     (void)(devid);
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch", PetscDeviceTypes[type]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -129,16 +129,16 @@ PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
 {
   PetscFunctionBegin;
   PetscValidPointer(device, 1);
-  if (!*device) PetscFunctionReturn(0);
+  if (!*device) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidDevice(*device, 1);
   PetscCall(PetscDeviceDereference_Internal(*device));
   if ((*device)->refcnt) {
     *device = nullptr;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscFree((*device)->data));
   PetscCall(PetscFree(*device));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -182,7 +182,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PETSc was not configured for PetscDeviceType %s", PetscDeviceTypes[dtype]);
   }
   PetscUseTypeMethod(device, configure);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -241,7 +241,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sub));
     PetscCall(PetscViewerFlush(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -267,7 +267,7 @@ PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type)
   PetscValidDevice(device, 1);
   PetscValidPointer(type, 2);
   *type = device->type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -296,7 +296,7 @@ PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
   PetscValidDevice(device, 1);
   PetscValidIntPointer(id, 2);
   *id = device->deviceId;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 struct DefaultDeviceType : public Petsc::RegisterFinalizeable<DefaultDeviceType> {
@@ -306,7 +306,7 @@ struct DefaultDeviceType : public Petsc::RegisterFinalizeable<DefaultDeviceType>
   {
     PetscFunctionBegin;
     type = PETSC_DEVICE_HARDWARE_DEFAULT_TYPE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 
@@ -354,7 +354,7 @@ PetscErrorCode PetscDeviceSetDefaultDeviceType(PetscDeviceType type)
     default_device_type.type = type;
     PetscCall(default_device_type.register_finalize());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static std::array<std::pair<PetscDevice, bool>, PETSC_DEVICE_MAX> defaultDevices = {};
@@ -376,7 +376,7 @@ static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceTyp
     PetscCall(PetscDeviceConfigure(dev));
     init = true;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -401,7 +401,7 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type)
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
   PetscCall(PetscDeviceInitializeDefaultDevice_Internal(type, PETSC_DECIDE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -436,7 +436,7 @@ PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, Petsc
   PetscValidPointer(device, 2);
   PetscCall(PetscDeviceInitialize(type));
   *device = defaultDevices[type].first;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -468,7 +468,7 @@ PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute 
   PetscValidDeviceAttribute(attr, 2);
   PetscValidPointer(value, 3);
   PetscUseTypeMethod(device, getattribute, attr, value);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, PetscDeviceType type, PetscInt defaultDeviceId, PetscBool defaultView, PetscDeviceInitType *defaultInitType)
@@ -477,7 +477,7 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
   if (!PetscDeviceConfiguredFor_Internal(type)) {
     PetscCall(PetscInfo(nullptr, "PetscDeviceType %s not available\n", PetscDeviceTypes[type]));
     defaultDevices[type].first = nullptr;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscInfo(nullptr, "PetscDeviceType %s available, initializing\n", PetscDeviceTypes[type]));
   /* ugly switch needed to pick the right global variable... could maybe do this as a union? */
@@ -499,7 +499,7 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
     PetscCall(PetscDeviceInitializeDefaultDevice_Internal(type, defaultDeviceId));
     if (defaultView) PetscCall(PetscDeviceView(defaultDevices[type].first, nullptr));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDeviceType *deviceContextInitDevice, PetscDeviceInitType *defaultInitType, PetscInt *defaultDevice, PetscBool *defaultDeviceSet, PetscBool *defaultView)
@@ -530,7 +530,7 @@ static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, P
   }
   *defaultInitType         = PetscDeviceInitTypeCast(initIdx);
   *deviceContextInitDevice = PetscDeviceTypeCast(initDeviceIdx);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* called from PetscFinalize() do not call yourself! */
@@ -545,7 +545,7 @@ static PetscErrorCode PetscDeviceFinalize_Private()
 
         PetscCheck(!dev, PETSC_COMM_WORLD, PETSC_ERR_COR, "Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()", PetscDeviceTypes[dev->type], dev->refcnt);
       }
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
     /*
       you might be thinking, why on earth are you registered yet another finalizer in a
@@ -570,7 +570,7 @@ static PetscErrorCode PetscDeviceFinalize_Private()
     PetscCall(PetscDeviceDestroy(&device.first));
     device.second = false;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -678,5 +678,5 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(PetscDeviceContextSetUp(dctx));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

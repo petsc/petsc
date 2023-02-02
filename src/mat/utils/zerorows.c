@@ -45,5 +45,5 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat A, PetscInt N, const
   }
   if (nr) *nr = len;
   if (olrows) *olrows = lrows;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

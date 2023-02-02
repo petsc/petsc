@@ -32,7 +32,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   }
   PetscCall(PetscOptionsBoundedInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL, 0));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CleanupContext(AppCtx *user)
@@ -40,7 +40,7 @@ PetscErrorCode CleanupContext(AppCtx *user)
   PetscFunctionBegin;
   PetscCall(PetscFree(user->numComponents));
   PetscCall(PetscFree(user->numDof));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This mesh comes from~\cite{saad2003}, Fig. 2.10, p. 70. */
@@ -51,7 +51,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, DM *dm, AppCtx *options)
 
   PetscFunctionBegin;
   PetscCall(DMPlexCreateFromCellListPetsc(comm, 2, 16, 15, 3, PETSC_FALSE, cells, 2, coords, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestReordering(DM dm, AppCtx *user)
@@ -84,7 +84,7 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   } else {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Ordering method %s reduced bandwidth from %" PetscInt_FMT " to %" PetscInt_FMT "\n", order, bw, pbw));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCtx *options)
@@ -96,13 +96,13 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
   PetscFunctionBegin;
   if (numGroups < 2) {
     *label = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(numGroups == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Test only coded for 2 groups, not %" PetscInt_FMT, numGroups);
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "groups", label));
   for (c = 0; c < 10; ++c) PetscCall(DMLabelSetValue(*label, groupA[c], 101));
   for (c = 0; c < 6; ++c) PetscCall(DMLabelSetValue(*label, groupB[c], 1001));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestReorderingByGroup(DM dm, AppCtx *user)
@@ -130,7 +130,7 @@ PetscErrorCode TestReorderingByGroup(DM dm, AppCtx *user)
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&pA));
   PetscCall(DMDestroy(&pdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

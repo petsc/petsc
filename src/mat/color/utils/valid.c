@@ -92,7 +92,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc, ISColoring coloring)
   PetscCall(PetscFree(stateleafrow));
   PetscCall(PetscSFDestroy(&etor));
   PetscCall(PetscSFDestroy(&etoc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat A, ISColoring iscoloring)
@@ -136,5 +136,5 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat A, ISColoring iscoloring)
   PetscCall(PetscBTDestroy(&table));
 
   PetscCall(MatRestoreColumnIJ(A, 1, PETSC_FALSE, PETSC_TRUE, NULL, &cia, &cja, &done));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

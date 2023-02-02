@@ -24,7 +24,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   numEdges    = wash->nedge;
@@ -92,7 +92,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash)
   wash->Nvertex = numVertices;
   wash->nvertex = nvertices;
   wash->vtype   = vtype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode WASHIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
@@ -220,7 +220,7 @@ PetscErrorCode WASHIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *c
    PetscCall(PetscPrintf(PETSC_COMM_WORLD("F:\n"));
    PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD));
    */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode WASHSetInitialSolution(DM networkdm, Vec X, Wash wash)
@@ -282,7 +282,7 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm, Vec X, Wash wash)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"initial solution %d:\n",N));
   PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void *context)
@@ -292,7 +292,7 @@ PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void
   PetscFunctionBegin;
   monitor = (DMNetworkMonitor)context;
   PetscCall(DMNetworkMonitorView(monitor, x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X)
@@ -374,7 +374,7 @@ PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X)
   for (i = 0; i < numkeys; i++) PetscCall(PetscFree(selectedvariables[i]));
   PetscCall(PetscFree3(blocksize, numselectedvariable, selectedvariables));
   PetscCall(VecDestroy(&Xto));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISJunctionsView(DM networkdm, PetscInt KeyJunc)
@@ -401,7 +401,7 @@ PetscErrorCode ISJunctionsView(DM networkdm, PetscInt KeyJunc)
     PetscCall(ISView(isfrom, PETSC_VIEWER_STDOUT_SELF));
   }
   PetscCall(ISDestroy(&isfrom));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode WashNetworkCleanUp(Wash wash)
@@ -413,7 +413,7 @@ PetscErrorCode WashNetworkCleanUp(Wash wash)
   PetscCall(PetscFree(wash->edgelist));
   PetscCall(PetscFree(wash->vtype));
   if (rank == 0) PetscCall(PetscFree2(wash->junction, wash->pipe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_ptr)
@@ -602,7 +602,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_p
      */
     PetscCall(WashNetworkDistribute(comm, wash));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------- */

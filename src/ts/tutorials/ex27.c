@@ -107,7 +107,7 @@ PetscErrorCode SetFromOptions(AppCtx *ctx)
   PetscCall(PetscOptionsGetRealArray(NULL, NULL, "-sp_0", ctx->x_0.sp, &as, NULL));
   as = N_SPECIES;
   PetscCall(PetscOptionsGetRealArray(NULL, NULL, "-stoich", ctx->stoichiometry, &as, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
   PetscCall(TSDestroy(&ts));
   PetscCall(DMDestroy(&da));
   PetscCall(PetscFinalize());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -181,7 +181,7 @@ PetscErrorCode FormInitialGuess(DM da, AppCtx *ctx, Vec X)
     }
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscScalar ptime, Field **x, Field **xt, Field **f, AppCtx *ctx)
@@ -279,7 +279,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscScalar ptime, Field 
     }
   }
   PetscCall(PetscLogFlops((N_SPECIES * (28.0 + 13.0 * N_REACTIONS)) * info->ym * info->xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w, void *vctx)
@@ -293,7 +293,7 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
   PetscFunctionBeginUser;
   *changed_w = PETSC_FALSE;
   PetscCall(VecMin(X, NULL, &min));
-  if (min >= 0.) PetscFunctionReturn(0);
+  if (min >= 0.) PetscFunctionReturn(PETSC_SUCCESS);
 
   *changed_w = PETSC_TRUE;
   PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
@@ -309,7 +309,7 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
     }
   }
   PetscCall(DMDAVecRestoreArray(da, W, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormIFunction(TS ts, PetscReal ptime, Vec X, Vec Xdot, Vec F, void *user)
@@ -333,5 +333,5 @@ PetscErrorCode FormIFunction(TS ts, PetscReal ptime, Vec X, Vec Xdot, Vec F, voi
   PetscCall(DMDAVecRestoreArrayRead(da, Xdot, &udot));
   PetscCall(DMDAVecRestoreArray(da, F, &fu));
   PetscCall(DMRestoreLocalVector(da, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

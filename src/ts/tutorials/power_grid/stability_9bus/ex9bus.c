@@ -181,7 +181,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, voi
 
   PetscCall(DMCompositeRestoreLocalVectors(user->dmpgrid, &Xgen, &Xnet));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, void *ctx)
@@ -295,7 +295,7 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
 
   PetscCall(DMCompositeRestoreLocalVectors(user->dmpgrid, &Xgen, &Xnet));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
@@ -304,7 +304,7 @@ PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscSca
   PetscFunctionBegin;
   *Fr = Fd * PetscSinScalar(delta) + Fq * PetscCosScalar(delta);
   *Fi = -Fd * PetscCosScalar(delta) + Fq * PetscSinScalar(delta);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
@@ -313,7 +313,7 @@ PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscSca
   PetscFunctionBegin;
   *Fd = Fr * PetscSinScalar(delta) - Fi * PetscCosScalar(delta);
   *Fq = Fr * PetscCosScalar(delta) + Fi * PetscSinScalar(delta);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Saves the solution at each time to a matrix */
@@ -338,7 +338,7 @@ PetscErrorCode SaveSolution(TS ts)
   PetscCall(MatDenseRestoreArray(user->Sol, &mat));
   PetscCall(VecRestoreArrayRead(X, &x));
   user->stepnum++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialGuess(Vec X, Userctx *user)
@@ -428,7 +428,7 @@ PetscErrorCode SetInitialGuess(Vec X, Userctx *user)
   /* PetscCall(VecView(Xgen,0)); */
   PetscCall(DMCompositeGather(user->dmpgrid, INSERT_VALUES, X, Xgen, Xnet));
   PetscCall(DMCompositeRestoreLocalVectors(user->dmpgrid, &Xgen, &Xnet));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Computes F = [f(x,y);g(x,y)] */
@@ -551,7 +551,7 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
   PetscCall(DMCompositeGather(user->dmpgrid, INSERT_VALUES, F, Fgen, Fnet));
   PetscCall(DMCompositeRestoreLocalVectors(user->dmpgrid, &Xgen, &Xnet));
   PetscCall(DMCompositeRestoreLocalVectors(user->dmpgrid, &Fgen, &Fnet));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*   f(x,y)
@@ -564,7 +564,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
   PetscFunctionBegin;
   user->t = t;
   PetscCall(ResidualFunction(X, F, user));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* f(x,y) - \dot{x}
@@ -592,7 +592,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
   }
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This function is used for solving the algebraic system only during fault on and
@@ -619,7 +619,7 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
     f[9 * i + 8] = 0;
   }
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X)
@@ -629,7 +629,7 @@ PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X)
   PetscFunctionBegin;
   PetscCall(TSGetApplicationContext(ts, &user));
   PetscCall(SNESSolve(user->snes_alg, NULL, X[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PostEvaluate(TS ts)
@@ -641,7 +641,7 @@ PetscErrorCode PostEvaluate(TS ts)
   PetscCall(TSGetApplicationContext(ts, &user));
   PetscCall(TSGetSolution(ts, &X));
   PetscCall(SNESSolve(user->snes_alg, NULL, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
@@ -681,7 +681,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   }
   PetscCall(MatSeqAIJSetPreallocation(J, 0, d_nnz));
   PetscCall(PetscFree(d_nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -985,7 +985,7 @@ PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, void *ctx)
 
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1000,7 +1000,7 @@ PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx)
   PetscCall(ResidualJacobian(X, A, B, ctx));
   PetscCall(MatSetOption(A, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
   PetscCall(MatZeroRowsIS(A, user->is_diff, 1.0, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1017,7 +1017,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx)
 
   PetscCall(ResidualJacobian(X, A, B, user));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1053,7 +1053,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

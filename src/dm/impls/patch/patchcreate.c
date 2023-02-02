@@ -10,7 +10,7 @@ PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems *PetscOptionsObjec
   /* Handle associated vectors */
   /* Handle viewing */
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* External function declarations here */
@@ -45,7 +45,7 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   dm->ops->localtoglobalend        = NULL;
   dm->ops->destroy                 = DMDestroy_Patch;
   dm->ops->createsubdm             = DMCreateSubDM_Patch;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
@@ -65,7 +65,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
   mesh->patchSize.c = 0;
 
   PetscCall(DMInitialize_Patch(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -94,7 +94,7 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
   PetscValidPointer(mesh, 2);
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPATCH));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil commSize, MatStencil gridSize, DM *dm)
@@ -127,5 +127,5 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
 
   PetscCall(DMPatchSetPatchSize(*dm, patchSize));
   PetscCall(DMPatchSetCommSize(*dm, commSize));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

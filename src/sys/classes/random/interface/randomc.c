@@ -34,15 +34,15 @@ PetscClassId PETSC_RANDOM_CLASSID;
 PetscErrorCode PetscRandomDestroy(PetscRandom *r)
 {
   PetscFunctionBegin;
-  if (!*r) PetscFunctionReturn(0);
+  if (!*r) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*r, PETSC_RANDOM_CLASSID, 1);
   if (--((PetscObject)(*r))->refct > 0) {
     *r = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if ((*r)->ops->destroy) PetscCall((*(*r)->ops->destroy)(*r));
   PetscCall(PetscHeaderDestroy(r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -68,7 +68,7 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
     PetscValidPointer(seed, 2);
     *seed = r->seed;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -100,7 +100,7 @@ PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed)
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   r->seed = seed;
   PetscCall(PetscInfo(NULL, "Setting seed to %d\n", (int)seed));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -136,7 +136,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
   } else {
     PetscCall(PetscRandomSetType(rnd, defaultType));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -193,7 +193,7 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
 #endif
   PetscOptionsEnd();
   PetscCall(PetscRandomViewFromOptions(rnd, NULL, "-random_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_SAWS)
@@ -218,7 +218,7 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSC_RANDOM_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -283,7 +283,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
     }
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -348,7 +348,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
   rr->seed  = 0x12345678 + 76543 * rank;
   PetscCall(PetscRandomSetType(rr, PETSCRANDER48));
   *r = rr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -381,5 +381,5 @@ PetscErrorCode PetscRandomSeed(PetscRandom r)
 
   PetscUseTypeMethod(r, seed);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

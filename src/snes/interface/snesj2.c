@@ -110,7 +110,7 @@ PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, 
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -169,5 +169,5 @@ PetscErrorCode SNESPruneJacobianColor(SNES snes, Mat J, Mat B)
   PetscCall(PetscObjectCompose((PetscObject)B, "SNESMatFDColoring", (PetscObject)matfdcoloring));
   PetscCall(PetscObjectDereference((PetscObject)matfdcoloring));
   PetscCall(ISColoringDestroy(&iscoloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

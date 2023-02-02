@@ -62,7 +62,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
 
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -93,7 +93,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCt
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
@@ -108,7 +108,7 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
   PetscCall(MatSetValues(A, 2, row, 1, col, &J[0][0], INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, AppCtx *ctx)
@@ -122,7 +122,7 @@ static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, AppCtx *ct
   r[0] = ctx->c * PetscPowScalarInt(PetscMax(0., u[0] - ctx->u_s), ctx->beta);
   PetscCall(VecRestoreArray(R, &r));
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B, AppCtx *ctx)
@@ -138,7 +138,7 @@ static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU,
   PetscCall(MatSetValues(DRDU, 1, row, 1, col, ru, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(DRDU, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(DRDU, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, AppCtx *ctx)
@@ -147,7 +147,7 @@ static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP,
   PetscCall(MatZeroEntries(DRDP));
   PetscCall(MatAssemblyBegin(DRDP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(DRDP, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, AppCtx *ctx)
@@ -162,7 +162,7 @@ PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, AppCtx *ctx)
   y[0]   = sensip;
   PetscCall(VecRestoreArray(mu, &y));
   PetscCall(VecRestoreArrayRead(lambda, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -350,6 +350,7 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscScalar *x_ptr;
   Vec          q;
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(P, (const PetscScalar **)&x_ptr));
   ctx->Pm = x_ptr[0];
   PetscCall(VecRestoreArrayRead(P, (const PetscScalar **)&x_ptr));
@@ -381,7 +382,7 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscCall(VecGetArray(q, &x_ptr));
   *f = -ctx->Pm + x_ptr[0];
   PetscCall(VecRestoreArray(q, &x_ptr));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormGradient(Tao tao, Vec P, Vec G, void *ctx0)
@@ -395,6 +396,7 @@ PetscErrorCode FormGradient(Tao tao, Vec P, Vec G, void *ctx0)
   PetscScalar *x_ptr, *y_ptr;
   Vec         *lambda, q, *mu;
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(P, (const PetscScalar **)&x_ptr));
   ctx->Pm = x_ptr[0];
   PetscCall(VecRestoreArrayRead(P, (const PetscScalar **)&x_ptr));
@@ -447,7 +449,7 @@ PetscErrorCode FormGradient(Tao tao, Vec P, Vec G, void *ctx0)
   PetscCall(TSGetCostIntegral(ts, &q));
   PetscCall(ComputeSensiP(lambda[0], mu[0], ctx));
   PetscCall(VecCopy(mu[0], G));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -67,5 +67,5 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
   PetscCall(PetscFree2(X, Y));
   *intercept = beta[0];
   *slope     = beta[1];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

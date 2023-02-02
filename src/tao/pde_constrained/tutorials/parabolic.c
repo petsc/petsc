@@ -246,7 +246,7 @@ PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *f, void *ptr)
   PetscCall(VecDot(user->lwork, user->lwork, &d2));
 
   *f = 0.5 * (d1 + user->alpha * d2);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -282,7 +282,7 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
   PetscCall(MatMult(user->LT, user->lwork, user->uwork));
   PetscCall(VecScale(user->uwork, user->alpha));
   PetscCall(Gather(G, user->ywork, user->state_scatter, user->uwork, user->design_scatter));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr)
@@ -318,7 +318,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
   *f = 0.5 * (d1 + user->alpha * d2);
 
   PetscCall(Gather(G, user->ywork, user->state_scatter, user->uwork, user->design_scatter));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -349,7 +349,7 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void
   /* B = speye(nx^3) + ht*DSG; */
   PetscCall(MatScale(user->DSG, user->ht));
   PetscCall(MatShift(user->DSG, 1.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -360,7 +360,7 @@ PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat J, void *ptr)
 
   PetscFunctionBegin;
   PetscCall(Scatter(X, user->y, user->state_scatter, user->u, user->design_scatter));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
@@ -377,7 +377,7 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
     PetscCall(VecAXPY(user->yiwork[i], -1.0, user->yi[i - 1]));
   }
   PetscCall(Gather_i(Y, user->yiwork, user->yi_scatter, user->nt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y)
@@ -395,7 +395,7 @@ PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   i = user->nt - 1;
   PetscCall(MatMult(user->JsBlock, user->yi[i], user->yiwork[i]));
   PetscCall(Gather_i(Y, user->yiwork, user->yi_scatter, user->nt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatBlockMult(Mat J_shell, Vec X, Vec Y)
@@ -408,7 +408,7 @@ PetscErrorCode StateMatBlockMult(Mat J_shell, Vec X, Vec Y)
   PetscCall(VecPointwiseDivide(user->Swork, user->Swork, user->Av_u));
   PetscCall(MatMult(user->Div, user->Swork, Y));
   PetscCall(VecAYPX(Y, user->ht, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
@@ -448,7 +448,7 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
   }
   PetscCall(Gather_i(Y, user->yiwork, user->yi_scatter, user->nt));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
@@ -490,7 +490,7 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
     PetscCall(VecPointwiseMult(user->yiwork[i], user->uwork, user->yiwork[i]));
     PetscCall(VecAXPY(Y, user->ht, user->yiwork[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
@@ -503,7 +503,7 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
   if (user->dsg_formed) {
     PetscCall(MatSOR(user->DSG, X, 1.0, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP), 0.0, 1, 1, Y));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DSG not formed");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
@@ -533,7 +533,7 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
     user->ksp_its = user->ksp_its + its;
   }
   PetscCall(Gather_i(Y, user->yiwork, user->yi_scatter, user->nt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
@@ -561,7 +561,7 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   }
 
   PetscCall(Gather_i(Y, user->yiwork, user->yi_scatter, user->nt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_shell)
@@ -576,7 +576,7 @@ PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_s
   PetscCall(MatShellSetOperation(*new_shell, MATOP_DUPLICATE, (void (*)(void))StateMatDuplicate));
   PetscCall(MatShellSetOperation(*new_shell, MATOP_MULT_TRANSPOSE, (void (*)(void))StateMatMultTranspose));
   PetscCall(MatShellSetOperation(*new_shell, MATOP_GET_DIAGONAL, (void (*)(void))StateMatGetDiagonal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
@@ -586,7 +586,7 @@ PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(J_shell, &user));
   PetscCall(VecCopy(user->js_diag, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
@@ -610,7 +610,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
   }
   PetscCall(Gather_i(C, user->yiwork, user->yi_scatter, user->nt));
   PetscCall(VecAXPY(C, -1.0, user->q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat)
@@ -620,7 +620,7 @@ PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatt
   PetscCall(VecScatterEnd(s_scat, x, state, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterBegin(d_scat, x, design, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(d_scat, x, design, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Scatter_i(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
@@ -632,7 +632,7 @@ PetscErrorCode Scatter_i(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
     PetscCall(VecScatterBegin(scat[i], y, yi[i], INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(scat[i], y, yi[i], INSERT_VALUES, SCATTER_FORWARD));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat)
@@ -642,7 +642,7 @@ PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatte
   PetscCall(VecScatterEnd(s_scat, state, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterBegin(d_scat, design, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(d_scat, design, x, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Gather_i(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
@@ -654,7 +654,7 @@ PetscErrorCode Gather_i(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
     PetscCall(VecScatterBegin(scat[i], yi[i], y, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(scat[i], yi[i], y, INSERT_VALUES, SCATTER_REVERSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ParabolicInitialize(AppCtx *user)
@@ -1184,7 +1184,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   PetscCall(PetscFree(x));
   PetscCall(PetscFree(y));
   PetscCall(PetscFree(z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ParabolicDestroy(AppCtx *user)
@@ -1243,7 +1243,7 @@ PetscErrorCode ParabolicDestroy(AppCtx *user)
   PetscCall(PetscFree(user->yi_scatter));
   PetscCall(PetscFree(user->di_scatter));
   PetscCall(PetscFree(user->sample_times));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ParabolicMonitor(Tao tao, void *ptr)
@@ -1260,7 +1260,7 @@ PetscErrorCode ParabolicMonitor(Tao tao, void *ptr)
   PetscCall(VecNorm(user->uwork, NORM_2, &unorm));
   PetscCall(VecNorm(user->ywork, NORM_2, &ynorm));
   PetscCall(PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n", (double)unorm, (double)ynorm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

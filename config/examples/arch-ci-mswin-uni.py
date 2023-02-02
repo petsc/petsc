@@ -16,6 +16,7 @@ if __name__ == '__main__':
     '--with-cxx=0',
     '--with-fc=0',
     '--with-mpi=0',
+    '--with-strict-petscerrorcode',
   ]
   configure.petsc_configure(configure_options)
 

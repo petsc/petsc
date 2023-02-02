@@ -39,7 +39,7 @@ static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx)
   ctx->sparseLeaves = (PetscBool)(ctx->leaveStep != 1);
   PetscCallMPI(MPI_Comm_size(comm, &ctx->size));
   PetscCallMPI(MPI_Comm_rank(comm, &ctx->rank));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
@@ -88,7 +88,7 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
   PetscCall(VecDestroy(&vecRoot1));
   PetscCall(VecDestroy(&vecLeave0));
   PetscCall(VecDestroy(&vecLeave1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFViewCustom(PetscSF sf, PetscViewer viewer)
@@ -121,7 +121,7 @@ static PetscErrorCode PetscSFViewCustom(PetscSF sf, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscLayoutDestroy(&rootLayout));
   PetscCall(PetscFree(gremote));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateReferenceSF_Regular(AppCtx *ctx, PetscSF *refSF)
@@ -174,7 +174,7 @@ PetscErrorCode CreateReferenceSF_Regular(AppCtx *ctx, PetscSF *refSF)
   PetscCall(PetscObjectSetName((PetscObject)sf, "reference_sf"));
   if (ctx->viewer) PetscCall(PetscSFViewCustom(sf, ctx->viewer));
   *refSF = sf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateSFs_Irregular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[])
@@ -216,7 +216,7 @@ PetscErrorCode CreateSFs_Irregular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *lea
   }
   *newSFs      = sfs;
   *leafOffsets = lOffsets;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateSFs_Regular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[])
@@ -293,7 +293,7 @@ PetscErrorCode CreateSFs_Regular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafO
   }
   *newSFs      = sfs;
   *leafOffsets = lOffsets;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[])
@@ -303,7 +303,7 @@ PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[])
   PetscFunctionBegin;
   for (i = 0; i < ctx->nsfs; i++) PetscCall(PetscSFDestroy(&(*sfs)[i]));
   PetscCall(PetscFree(*sfs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

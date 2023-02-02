@@ -195,14 +195,14 @@ static PetscErrorCode PhysicsBoundary_Advect_Inflow(PetscReal time, const PetscR
 
   PetscFunctionBeginUser;
   xG[0] = advect->inflowState;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsBoundary_Advect_Outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBeginUser;
   xG[0] = xI[0];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, Physics phys)
@@ -291,7 +291,7 @@ static PetscErrorCode PhysicsSolution_Advect(Model mod, PetscReal time, const Pe
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown solution type");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsFunctional_Advect(Model mod, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, void *ctx)
@@ -304,7 +304,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod, PetscReal time, const 
   PetscCall(PhysicsSolution_Advect(mod, time, x, yexact, phys));
   f[advect->functional.Solution] = PetscRealPart(y[0]);
   f[advect->functional.Error]    = PetscAbsScalar(y[0] - yexact[0]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetUpBC_Advect(DM dm, PetscDS prob, Physics phys)
@@ -317,7 +317,7 @@ static PetscErrorCode SetUpBC_Advect(DM dm, PetscDS prob, Physics phys)
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
   PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow", label, PETSC_STATIC_ARRAY_LENGTH(inflowids), inflowids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_Advect_Inflow, NULL, phys, NULL));
   PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_Advect_Outflow, NULL, phys, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsCreate_Advect(Model mod, Physics phys, PetscOptionItems *PetscOptionsObject)
@@ -368,7 +368,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod, Physics phys, PetscOptionI
   /* Register "canned" functionals */
   PetscCall(ModelFunctionalRegister(mod, "Solution", &advect->functional.Solution, PhysicsFunctional_Advect, phys));
   PetscCall(ModelFunctionalRegister(mod, "Error", &advect->functional.Error, PhysicsFunctional_Advect, phys));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /******************* Shallow Water ********************/
@@ -413,7 +413,7 @@ static PetscErrorCode SWFlux(Physics phys, const PetscReal *n, const SWNode *x, 
   uhn  = x->uh[0] * n[0] + x->uh[1] * n[1];
   f->h = uhn;
   for (i = 0; i < DIM; i++) f->uh[i] = u[i] * uhn + sw->gravity * PetscSqr(x->h) * n[i];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
@@ -422,7 +422,7 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c
   xG[0] = xI[0];
   xG[1] = -xI[1];
   xG[2] = -xI[2];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void PhysicsRiemann_SW_HLL(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, Physics phys)
@@ -454,8 +454,8 @@ static void PhysicsRiemann_SW_HLL(PetscInt dim, PetscInt Nf, const PetscReal *qp
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2Real(nn);
-  SWFlux(phys, nn, uL, &(fL.swnode));
-  SWFlux(phys, nn, uR, &(fR.swnode));
+  PetscCallAbort(PETSC_COMM_SELF, SWFlux(phys, nn, uL, &(fL.swnode)));
+  PetscCallAbort(PETSC_COMM_SELF, SWFlux(phys, nn, uR, &(fR.swnode)));
   /* gravity wave speed */
   aL = PetscSqrtReal(sw->gravity * uL->h);
   aR = PetscSqrtReal(sw->gravity * uR->h);
@@ -504,8 +504,8 @@ static void PhysicsRiemann_SW_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2Real(nn);
-  SWFlux(phys, nn, uL, &(fL.swnode));
-  SWFlux(phys, nn, uR, &(fR.swnode));
+  PetscCallAbort(PETSC_COMM_SELF, SWFlux(phys, nn, uL, &(fL.swnode)));
+  PetscCallAbort(PETSC_COMM_SELF, SWFlux(phys, nn, uR, &(fR.swnode)));
   cL    = PetscSqrtReal(sw->gravity * uL->h);
   cR    = PetscSqrtReal(sw->gravity * uR->h); /* gravity wave speed */
   speed = PetscMax(PetscAbsReal(Dot2Real(uL->uh, nn) / uL->h) + cL, PetscAbsReal(Dot2Real(uR->uh, nn) / uR->h) + cR);
@@ -525,7 +525,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod, PetscReal time, const PetscR
   u[0]  = 1 + 2 * PetscExpReal(-PetscSqr(r) / (2 * PetscSqr(sigma)));
   u[1]  = 0.0;
   u[2]  = 0.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsFunctional_SW(Model mod, PetscReal time, const PetscReal *coord, const PetscScalar *xx, PetscReal *f, void *ctx)
@@ -542,7 +542,7 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod, PetscReal time, const Pets
   f[sw->functional.Height] = h;
   f[sw->functional.Speed]  = Norm2Real(u) + PetscSqrtReal(sw->gravity * h);
   f[sw->functional.Energy] = 0.5 * (Dot2Real(x->uh, u) + sw->gravity * PetscSqr(h));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetUpBC_SW(DM dm, PetscDS prob, Physics phys)
@@ -553,7 +553,7 @@ static PetscErrorCode SetUpBC_SW(DM dm, PetscDS prob, Physics phys)
   PetscFunctionBeginUser;
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
   PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_SW_Wall, NULL, phys, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems *PetscOptionsObject)
@@ -567,8 +567,8 @@ static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems
   phys->data   = sw;
   mod->setupbc = SetUpBC_SW;
 
-  PetscFunctionListAdd(&PhysicsRiemannList_SW, "rusanov", PhysicsRiemann_SW_Rusanov);
-  PetscFunctionListAdd(&PhysicsRiemannList_SW, "hll", PhysicsRiemann_SW_HLL);
+  PetscCall(PetscFunctionListAdd(&PhysicsRiemannList_SW, "rusanov", PhysicsRiemann_SW_Rusanov));
+  PetscCall(PetscFunctionListAdd(&PhysicsRiemannList_SW, "hll", PhysicsRiemann_SW_HLL));
 
   PetscOptionsHeadBegin(PetscOptionsObject, "SW options");
   {
@@ -587,7 +587,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems
   PetscCall(ModelFunctionalRegister(mod, "Speed", &sw->functional.Speed, PhysicsFunctional_SW, phys));
   PetscCall(ModelFunctionalRegister(mod, "Energy", &sw->functional.Energy, PhysicsFunctional_SW, phys));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /******************* Euler Density Shock (EULER_IV_SHOCK,EULER_SS_SHOCK) ********************/
@@ -694,11 +694,11 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   } else SETERRQ(mod->comm, PETSC_ERR_SUP, "Unknown type %d", eu->type);
 
   /* set phys->maxspeed: (mod->maxspeed = phys->maxspeed) in main; */
-  eu->sound(&gamma, uu, &c);
+  PetscCall(eu->sound(&gamma, uu, &c));
   c = (uu->ru[0] / uu->r) + c;
   if (c > phys->maxspeed) phys->maxspeed = c;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Pressure_PG(const PetscReal gamma, const EulerNode *x, PetscReal *p)
@@ -708,7 +708,7 @@ static PetscErrorCode Pressure_PG(const PetscReal gamma, const EulerNode *x, Pet
   PetscFunctionBeginUser;
   ru2  = DotDIMReal(x->ru, x->ru);
   (*p) = (x->E - 0.5 * ru2 / x->r) * (gamma - 1.0); /* (E - rho V^2/2)(gamma-1) = e rho (gamma-1) */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SpeedOfSound_PG(const PetscReal *gamma, const EulerNode *x, PetscReal *c)
@@ -716,11 +716,11 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *gamma, const EulerNode *x
   PetscReal p;
 
   PetscFunctionBeginUser;
-  Pressure_PG(*gamma, x, &p);
+  PetscCall(Pressure_PG(*gamma, x, &p));
   PetscCheck(p >= 0., PETSC_COMM_WORLD, PETSC_ERR_SUP, "negative pressure time %g -- NEED TO FIX!!!!!!", (double)p);
   /* pars[EULER_PAR_GAMMA] = heat capacity ratio */
   (*c) = PetscSqrtReal(*gamma * p / x->r);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -737,13 +737,13 @@ static PetscErrorCode EulerFlux(Physics phys, const PetscReal *n, const EulerNod
   PetscInt       i;
 
   PetscFunctionBeginUser;
-  Pressure_PG(eu->pars[EULER_PAR_GAMMA], x, &p);
+  PetscCall(Pressure_PG(eu->pars[EULER_PAR_GAMMA], x, &p));
   nu   = DotDIMReal(x->ru, n);
   f->r = nu;                                                     /* A rho u */
   nu /= x->r;                                                    /* A u */
   for (i = 0; i < DIM; i++) f->ru[i] = nu * x->ru[i] + n[i] * p; /* r u^2 + p */
   f->E = nu * (x->E + p);                                        /* u(e+p) */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* PetscReal* => EulerNode* conversion */
@@ -768,7 +768,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
     PetscPrintf(PETSC_COMM_WORLD,"%s coord=%g,%g\n",PETSC_FUNCTION_NAME,(double)c[0],(double)c[1]);
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 int godunovflux(const PetscScalar *ul, const PetscScalar *ur, PetscScalar *flux, const PetscReal *nn, const int *ndim, const PetscReal *gamma);
 /* PetscReal* => EulerNode* conversion */
@@ -789,8 +789,8 @@ static void PhysicsRiemann_Euler_Godunov(PetscInt dim, PetscInt Nf, const PetscR
   if (0) { /* Rusanov */
     const EulerNode *uL = (const EulerNode *)xL, *uR = (const EulerNode *)xR;
     EulerNodeUnion   fL, fR;
-    EulerFlux(phys, nn, uL, &(fL.eulernode));
-    EulerFlux(phys, nn, uR, &(fR.eulernode));
+    PetscCallAbort(PETSC_COMM_SELF, EulerFlux(phys, nn, uL, &(fL.eulernode)));
+    PetscCallAbort(PETSC_COMM_SELF, EulerFlux(phys, nn, uR, &(fR.eulernode)));
     ierr = eu->sound(&eu->pars[EULER_PAR_GAMMA], uL, &cL);
     if (ierr) exit(13);
     ierr = eu->sound(&eu->pars[EULER_PAR_GAMMA], uR, &cR);
@@ -820,9 +820,9 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod, PetscReal time, const P
   f[eu->monitor.Momentum] = NormDIM(x->ru);
   f[eu->monitor.Energy]   = x->E;
   f[eu->monitor.Speed]    = NormDIM(x->ru) / x->r;
-  Pressure_PG(eu->pars[EULER_PAR_GAMMA], x, &p);
+  PetscCall(Pressure_PG(eu->pars[EULER_PAR_GAMMA], x, &p));
   f[eu->monitor.Pressure] = p;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob, Physics phys)
@@ -839,7 +839,7 @@ static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob, Physics phys)
     const PetscInt wallids[] = {100, 101, 200, 300};
     PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionItems *PetscOptionsObject)
@@ -904,7 +904,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
   PetscCall(ModelFunctionalRegister(mod, "Momentum", &eu->monitor.Momentum, PhysicsFunctional_Euler, phys));
   PetscCall(ModelFunctionalRegister(mod, "Pressure", &eu->monitor.Pressure, PhysicsFunctional_Euler, phys));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ErrorIndicator_Simple(PetscInt dim, PetscReal volume, PetscInt numComps, const PetscScalar u[], const PetscScalar grad[], PetscReal *error, void *ctx)
@@ -917,7 +917,7 @@ static PetscErrorCode ErrorIndicator_Simple(PetscInt dim, PetscReal volume, Pets
     for (j = 0; j < dim; j++) err += PetscSqr(PetscRealPart(grad[i * dim + j]));
   }
   *error = volume * err;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
@@ -956,7 +956,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
     p[0] = rank;
   }
   PetscCall(VecRestoreArray(*partition, &part));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
@@ -1032,7 +1032,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscCall(VecRestoreArray(*massMatrix, &m));
   PetscCall(DMDestroy(&dmMass));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Behavior will be different for multi-physics or when using non-default boundary conditions */
@@ -1041,7 +1041,7 @@ static PetscErrorCode ModelSolutionSetDefault(Model mod, SolutionFunction func, 
   PetscFunctionBeginUser;
   mod->solution    = func;
   mod->solutionctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ModelFunctionalRegister(Model mod, const char *name, PetscInt *offset, FunctionalFunction func, void *ctx)
@@ -1059,7 +1059,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod, const char *name, Petsc
   link->next   = NULL;
   *ptr         = link;
   *offset      = link->offset;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ModelFunctionalSetFromOptions(Model mod, PetscOptionItems *PetscOptionsObject)
@@ -1100,7 +1100,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod, PetscOptionItems 
       if (link->func == call->func && link->ctx == call->ctx) mod->maxComputed = PetscMax(mod->maxComputed, link->offset);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
@@ -1108,7 +1108,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
   FunctionalLink l, next;
 
   PetscFunctionBeginUser;
-  if (!link) PetscFunctionReturn(0);
+  if (!link) PetscFunctionReturn(PETSC_SUCCESS);
   l     = *link;
   *link = NULL;
   for (; l; l = next) {
@@ -1116,7 +1116,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
     PetscCall(PetscFree(l->name));
     PetscCall(PetscFree(l));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* put the solution callback into a functional callback */
@@ -1126,7 +1126,7 @@ static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const Pet
   PetscFunctionBeginUser;
   mod = (Model)modctx;
   PetscCall((*mod->solution)(mod, time, x, u, mod->solutionctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
@@ -1139,7 +1139,7 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   func[0] = SolutionFunctional;
   ctx[0]  = (void *)mod;
   PetscCall(DMProjectFunction(dm, 0.0, func, ctx, INSERT_ALL_VALUES, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer)
@@ -1148,7 +1148,7 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
   PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)dm), viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERVTK));
   PetscCall(PetscViewerFileSetName(*viewer, filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X, void *ctx)
@@ -1255,7 +1255,7 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "% 3" PetscInt_FMT "  time %8.4g  |x| %8.4g  %s\n", stepnum, (double)time, (double)xnorm, ftable ? ftable : ""));
     PetscCall(PetscFree(ftable));
   }
-  if (user->vtkInterval < 1) PetscFunctionReturn(0);
+  if (user->vtkInterval < 1) PetscFunctionReturn(PETSC_SUCCESS);
   if ((stepnum == -1) ^ (stepnum % user->vtkInterval == 0)) {
     if (stepnum == -1) { /* Final time is not multiple of normal time interval, write it anyway */
       PetscCall(TSGetStepNumber(ts, &stepnum));
@@ -1265,7 +1265,7 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
     PetscCall(VecView(X, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
@@ -1279,7 +1279,7 @@ static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
   PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user));
   PetscCall(TSSetMaxTime(*ts, 2.0));
   PetscCall(TSSetExactFinalTime(*ts, TS_EXACTFINALTIME_STEPOVER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger refineTag, VecTagger coarsenTag, User user, TS *tsNew, Vec *solNew)
@@ -1382,7 +1382,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
     if (tsNew) *tsNew = NULL;
     if (solNew) *solNew = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -53,7 +53,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
     }
   }
   PetscCall(PetscSFSetGraph(sf, nroots, nleaves, ilocal, localmode, remote, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -101,7 +101,7 @@ PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *
   if (nleaves) *nleaves = nl;
   if (layout) *layout = lt;
   else PetscCall(PetscLayoutDestroy(&lt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -196,7 +196,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   PetscCheck(l == nleaves, comm, PETSC_ERR_PLIB, "Iteration error, l %" PetscInt_FMT " != nleaves %" PetscInt_FMT, l, nleaves);
   PetscCall(PetscLayoutDestroy(&layout));
   PetscCall(PetscSFSetGraph(sf, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -344,7 +344,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscCall(PetscSFDestroy(&embedSF));
   PetscCall(PetscFree(sub));
   PetscCall(PetscLogEventEnd(PETSCSF_DistSect, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -377,7 +377,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscFunctionBegin;
   *remoteOffsets = NULL;
   PetscCall(PetscSFGetGraph(sf, &numRoots, NULL, NULL, NULL));
-  if (numRoots < 0) PetscFunctionReturn(0);
+  if (numRoots < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PETSCSF_RemoteOff, sf, 0, 0, 0));
   PetscCall(PetscSectionGetChart(rootSection, &rpStart, &rpEnd));
   PetscCall(PetscSectionGetChart(leafSection, &lpStart, &lpEnd));
@@ -391,7 +391,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart], MPI_REPLACE));
   PetscCall(PetscSFDestroy(&embedSF));
   PetscCall(PetscLogEventEnd(PETSCSF_RemoteOff, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -440,7 +440,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscCall(PetscSectionGetChart(leafSection, &lpStart, &lpEnd));
   PetscCall(PetscSectionGetStorageSize(rootSection, &numSectionRoots));
   PetscCall(PetscSFGetGraph(sf, &numRoots, &numPoints, &localPoints, &remotePoints));
-  if (numRoots < 0) PetscFunctionReturn(0);
+  if (numRoots < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PETSCSF_SectSF, sf, 0, 0, 0));
   for (i = 0; i < numPoints; ++i) {
     PetscInt localPoint = localPoints ? localPoints[i] : i;
@@ -475,7 +475,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscCall(PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetUp(*sectionSF));
   PetscCall(PetscLogEventEnd(PETSCSF_SectSF, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -523,7 +523,7 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   }
   PetscCall(PetscSFSetGraph(*sf, nroots, nleaves, NULL, PETSC_OWN_POINTER, remote, PETSC_COPY_VALUES));
   PetscCall(PetscFree(remote));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: handle nooffprocentries like MatZeroRowsMapLocal_Private, since this code is the same */
@@ -583,7 +583,7 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt i
   if (on) *on = len;
   if (oidxs) *oidxs = lidxs;
   if (ogidxs) *ogidxs = work;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -784,7 +784,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscCall(PetscSFCreate(comm, sf));
   PetscCall(PetscSFSetFromOptions(*sf));
   PetscCall(PetscSFSetGraph(*sf, rootLocalOffset + numRootIndices, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -845,5 +845,5 @@ PetscErrorCode PetscSFMerge(PetscSF sfa, PetscSF sfb, PetscSF *merged)
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfa), merged));
   PetscCall(PetscSFSetGraph(*merged, aroots, nleaves, clocal, PETSC_COPY_VALUES, cremote, PETSC_COPY_VALUES));
   PetscCall(PetscFree2(clocal, cremote));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

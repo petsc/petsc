@@ -60,7 +60,7 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(viewer, format, 2);
   viewer->format = format;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -110,7 +110,7 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
 
   viewer->formats[viewer->iformat++] = viewer->format;
   viewer->format                     = format;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -130,10 +130,10 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  if (viewer->iformat <= 0) PetscFunctionReturn(0);
+  if (viewer->iformat <= 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   viewer->format = viewer->formats[--viewer->iformat];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -187,5 +187,5 @@ PetscErrorCode PetscViewerGetFormat(PetscViewer viewer, PetscViewerFormat *forma
 {
   PetscFunctionBegin;
   *format = viewer->format;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

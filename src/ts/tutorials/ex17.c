@@ -204,7 +204,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec
   PetscCall(DMDAVecRestoreArrayRead(da, Udot, &udot));
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &localU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------- */
@@ -264,7 +264,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Jpre:\n"));
     PetscCall(MatView(Jpre, PETSC_VIEWER_STDOUT_WORLD));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -299,7 +299,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ptr)
 
   /* Restore vectors */
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

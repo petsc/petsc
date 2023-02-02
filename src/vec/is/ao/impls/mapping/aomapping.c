@@ -22,7 +22,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
   PetscFunctionBegin;
   PetscCall(PetscFree4(aomap->app, aomap->appPerm, aomap->petsc, aomap->petscPerm));
   PetscCall(PetscFree(aomap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
@@ -34,14 +34,14 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank));
-  if (rank) PetscFunctionReturn(0);
+  if (rank) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N);
-    PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
-    for (i = 0; i < aomap->N; i++) PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n"));
+    for (i = 0; i < aomap->N; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
@@ -76,7 +76,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
     if (low > high) ia[i] = -1;
     else ia[i] = app[perm[mid]];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
@@ -111,7 +111,7 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
     if (low > high) ia[i] = -1;
     else ia[i] = petsc[perm[mid]];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _AOOps AOps = {
@@ -162,7 +162,7 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *has
   }
   if (low > high) *hasIndex = PETSC_FALSE;
   else *hasIndex = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -206,7 +206,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
   }
   if (low > high) *hasIndex = PETSC_FALSE;
   else *hasIndex = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -319,7 +319,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   PetscCall(AOViewFromOptions(ao, NULL, "-ao_view"));
 
   *aoout = ao;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -366,5 +366,5 @@ PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 
   PetscCall(ISRestoreIndices(isapp, &myapp));
   if (ispetsc) PetscCall(ISRestoreIndices(ispetsc, &mypetsc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

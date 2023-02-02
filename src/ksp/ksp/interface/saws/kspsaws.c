@@ -32,7 +32,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
   PetscCheck(mon->viewer, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Cannot create SAWs default viewer");
   *ctx = (void *)mon;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -54,7 +54,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
   PetscFunctionBegin;
   PetscCall(PetscFree2(mon->eigr, mon->eigi));
   PetscCall(PetscFree(*ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -105,5 +105,5 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
       PetscCall(PetscSAWsBlock());
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

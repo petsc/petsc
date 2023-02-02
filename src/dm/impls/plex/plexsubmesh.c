@@ -19,7 +19,7 @@ static PetscErrorCode DMPlexCellIsHybrid_Internal(DM dm, PetscInt p, PetscBool *
     *isHybrid = PETSC_FALSE;
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexGetTensorPrismBounds_Internal(DM dm, PetscInt dim, PetscInt *cStart, PetscInt *cEnd)
@@ -42,9 +42,9 @@ static PetscErrorCode DMPlexGetTensorPrismBounds_Internal(DM dm, PetscInt dim, P
     if (*cStart < 0) PetscCall(DMLabelGetStratumBounds(ctLabel, DM_POLYTOPE_QUAD_PRISM_TENSOR, cStart, cEnd));
     break;
   default:
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label)
@@ -94,7 +94,7 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -125,7 +125,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
   PetscCall(DMPlexIsInterpolated(dm, &flg));
   PetscCheck(flg == DMPLEX_INTERPOLATED_FULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not fully interpolated on this rank");
   PetscCall(DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells)
@@ -204,7 +204,7 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
     PetscCall(ISDestroy(&valueIS));
     PetscCall(DMLabelDestroy(&lblRoots));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -225,7 +225,7 @@ PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
 {
   PetscFunctionBegin;
   PetscCall(DMPlexLabelComplete_Internal(dm, label, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -295,7 +295,7 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
   }
   PetscCall(ISRestoreIndices(valueIS, &values));
   PetscCall(ISDestroy(&valueIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -355,7 +355,7 @@ PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
   }
   PetscCall(ISRestoreIndices(valueIS, &values));
   PetscCall(ISDestroy(&valueIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -403,7 +403,7 @@ PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label)
   }
   PetscCall(ISRestoreIndices(valueIS, &values));
   PetscCall(ISDestroy(&valueIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* take (oldEnd, added) pairs, ordered by height and convert them to (oldstart, newstart) pairs, ordered by ascending
@@ -442,7 +442,7 @@ static inline PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth, Pets
     off += depthShift[2 * d + 1];
     depthShift[2 * d + 1] = depthShift[2 * d] + off;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* depthShift is a list of (old, new) pairs */
@@ -478,7 +478,7 @@ static PetscErrorCode DMPlexShiftSizes_Internal(DM dm, PetscInt depthShift[], DM
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
-  if (depth < 0) PetscFunctionReturn(0);
+  if (depth < 0) PetscFunctionReturn(PETSC_SUCCESS);
   /* Step 1: Expand chart */
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   pEnd = DMPlexShiftPoint_Internal(pEnd, depth, depthShift);
@@ -510,7 +510,7 @@ static PetscErrorCode DMPlexShiftSizes_Internal(DM dm, PetscInt depthShift[], DM
       PetscCall(DMPlexSetCellType(dmNew, newp, ct));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexShiftPoints_Internal(DM dm, PetscInt depthShift[], DM dmNew)
@@ -520,7 +520,7 @@ static PetscErrorCode DMPlexShiftPoints_Internal(DM dm, PetscInt depthShift[], D
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
-  if (depth < 0) PetscFunctionReturn(0);
+  if (depth < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
   PetscCall(DMPlexGetMaxSizes(dmNew, &maxConeSizeNew, &maxSupportSizeNew));
   PetscCall(PetscMalloc1(PetscMax(PetscMax(maxConeSize, maxSupportSize), PetscMax(maxConeSizeNew, maxSupportSizeNew)), &newpoints));
@@ -544,7 +544,7 @@ static PetscErrorCode DMPlexShiftPoints_Internal(DM dm, PetscInt depthShift[], D
     PetscCall(DMPlexSetSupport(dmNew, newp, newpoints));
   }
   PetscCall(PetscFree(newpoints));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift[], DM dmNew)
@@ -619,7 +619,7 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   PetscCall(VecRestoreArray(newCoordinates, &newCoords));
   PetscCall(VecDestroy(&newCoordinates));
   PetscCall(PetscSectionDestroy(&newCoordSection));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexShiftSF_Single(DM dm, PetscInt depthShift[], PetscSF sf, PetscSF sfNew)
@@ -650,7 +650,7 @@ static PetscErrorCode DMPlexShiftSF_Single(DM dm, PetscInt depthShift[], PetscSF
     PetscCall(PetscFree2(newLocation, newRemoteLocation));
     PetscCall(PetscSFSetGraph(sfNew, numRoots + totShift, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dmNew)
@@ -673,7 +673,7 @@ static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dm
     PetscCall(DMGetNaturalSF(dmNew, &sfNatNew));
     PetscCall(DMPlexShiftSF_Single(dm, depthShift, sfNat, sfNatNew));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], DM dmNew)
@@ -724,7 +724,7 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhostLabel, DM dmNew)
@@ -776,7 +776,7 @@ static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhost
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM dmNew)
@@ -831,7 +831,7 @@ static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM 
     PetscCall(PetscFree2(parentsShifted, childIDsShifted));
     PetscCall(PetscSectionDestroy(&pSecShifted));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, PetscInt *numGhostCells, DM gdm)
@@ -951,7 +951,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
   PetscCall(DMSetPeriodicity(gdm, maxCell, Lstart, L));
   if (numGhostCells) *numGhostCells = Ng;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1004,7 +1004,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   gdm->setfromoptionscalled = dm->setfromoptionscalled;
   if (numGhostCells) *numGhostCells = Ng;
   *dmGhosted = gdm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DivideCells_Private(DM dm, DMLabel label, DMPlexPointQueue queue)
@@ -1072,7 +1072,7 @@ static PetscErrorCode DivideCells_Private(DM dm, DMLabel label, DMPlexPointQueue
     PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
   }
   PetscCall(PetscFree2(pStart, pEnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -1094,7 +1094,7 @@ static PetscErrorCode divideCell(DMLabel label, PetscInt p, PetscInt val, void *
     PetscCall(DMLabelSetValue(label, support[s], cval));
     PetscCall(DMPlexPointQueueEnqueue(div->queue, support[s]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Mark cells by label propagation */
@@ -1142,7 +1142,7 @@ static PetscErrorCode DMPlexLabelFaultHalo(DM dm, DMLabel faultLabel)
   }
   PetscCall(DMLabelPropagateEnd(faultLabel, pointSF));
   PetscCall(DMPlexPointQueueDestroy(&queue));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1845,7 +1845,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   PetscCall(PetscFree3(coneNew, coneONew, supportNew));
   PetscCall(PetscFree5(depthMax, depthEnd, depthShift, pMaxNew, numHybridPointsOld));
   PetscCall(PetscFree7(splitIS, unsplitIS, numSplitPoints, numUnsplitPoints, numHybridPoints, splitPoints, unsplitPoints));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1886,7 +1886,7 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DMLabel splitL
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct cohesive cells for dimension %" PetscInt_FMT, dim);
   }
   *dmSplit = sdm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Returns the side of the surface for a given cell with a face on the surface */
@@ -1928,7 +1928,7 @@ static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoin
     }
   }
   PetscCheck(c != coneSize, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " in split face %" PetscInt_FMT " support does not have it in the cone", cell, face);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
@@ -1945,7 +1945,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
   if (!facePosIS || !faceNegIS) {
     PetscCall(ISDestroy(&facePosIS));
     PetscCall(ISDestroy(&faceNegIS));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(ISExpand(facePosIS, faceNegIS, &dimIS));
   PetscCall(ISDestroy(&facePosIS));
@@ -2011,7 +2011,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
   }
   PetscCall(ISRestoreIndices(dimIS, &points));
   PetscCall(ISDestroy(&dimIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2215,7 +2215,7 @@ divide:
   if (subpointIS) PetscCall(ISRestoreIndices(subpointIS, &subpoints));
   PetscCall(DMPlexLabelFaultHalo(dm, label));
   PetscCall(CheckFaultEdge_Private(dm, label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Check that no cell have all vertices on the fault */
@@ -2226,10 +2226,10 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
   PetscInt        defaultValue, cStart, cEnd, c, vStart, vEnd;
 
   PetscFunctionBegin;
-  if (!label) PetscFunctionReturn(0);
+  if (!label) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMLabelGetDefaultValue(label, &defaultValue));
   PetscCall(DMPlexGetSubpointIS(subdm, &subpointIS));
-  if (!subpointIS) PetscFunctionReturn(0);
+  if (!subpointIS) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetHeightStratum(subdm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(ISGetIndices(subpointIS, &dmpoints));
@@ -2258,7 +2258,7 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
     }
   }
   PetscCall(ISRestoreIndices(subpointIS, &dmpoints));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2343,7 +2343,7 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, Pet
     PetscCall(DMPlexGetCellTypeLabel(*dmHybrid, &ctLabel));
     PetscCall(DMSetLabel(cdm, ctLabel));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Here we need the explicit assumption that:
@@ -2420,7 +2420,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   if (subvertexIS) PetscCall(ISRestoreIndices(subvertexIS, &subvertices));
   PetscCall(ISDestroy(&subvertexIS));
   PetscCall(PetscFree2(pStart, pEnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DMLabel subpointMap, DM subdm)
@@ -2504,7 +2504,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
   if (subvertexIS) PetscCall(ISRestoreIndices(subvertexIS, &subvertices));
   PetscCall(ISDestroy(&subvertexIS));
   PetscCall(PetscFree2(pStart, pEnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool hasLagrange, const char labelname[], PetscInt value, DMLabel subpointMap, PetscInt *numFaces, PetscInt *nFV, PetscInt *subCells[], DM subdm)
@@ -2520,7 +2520,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
   *subCells = NULL;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetTensorPrismBounds_Internal(dm, dim, &cMax, &cEnd));
-  if (cMax < 0) PetscFunctionReturn(0);
+  if (cMax < 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (label) {
     for (c = cMax; c < cEnd; ++c) {
       PetscInt val;
@@ -2536,7 +2536,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
     PetscCall(DMPlexGetConeSize(dm, cMax, &coneSize));
   }
   PetscCall(PetscMalloc1(*numFaces * 2, subCells));
-  if (!(*numFaces)) PetscFunctionReturn(0);
+  if (!(*numFaces)) PetscFunctionReturn(PETSC_SUCCESS);
   *nFV = hasLagrange ? coneSize / 3 : coneSize / 2;
   for (c = cMax; c < cEnd; ++c) {
     const PetscInt *cells;
@@ -2561,7 +2561,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
     PetscCall(DMPlexRestoreJoin(dm, *nFV, cone, &numCells, &cells));
     /* Positive face is not included */
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel label, PetscInt value, DMLabel subpointMap, DM subdm)
@@ -2572,7 +2572,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetTensorPrismBounds_Internal(dm, dim, &cMax, &cEnd));
-  if (cMax < 0) PetscFunctionReturn(0);
+  if (cMax < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscMalloc2(dim + 1, &pStart, dim + 1, &pEnd));
   for (d = 0; d <= dim; ++d) PetscCall(DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]));
   for (c = cMax; c < cEnd; ++c) {
@@ -2613,7 +2613,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
     }
   }
   PetscCall(PetscFree2(pStart, pEnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
@@ -2694,7 +2694,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
     }
     PetscCheck(found, comm, PETSC_ERR_ARG_WRONG, "Invalid tri crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (cellDim == 2 && numCorners == 9) {
     /* Quadratic quad (I hate this) */
     /* Edges are determined by the first 2 vertices (corners of edges) */
@@ -2735,7 +2735,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
     }
     PetscCheck(found, comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (cellDim == 3 && numCorners == 8) {
     /* Hexes
        A hex is two oriented quads with the normal of the first
@@ -2790,7 +2790,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
     }
     PetscCheck(found, comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (cellDim == 3 && numCorners == 10) {
     /* Quadratic tet */
     /* Faces are determined by the first 3 vertices (corners of faces) */
@@ -2831,7 +2831,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
     }
     PetscCheck(found, comm, PETSC_ERR_ARG_WRONG, "Invalid tet crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (cellDim == 3 && numCorners == 27) {
     /* Quadratic hexes (I hate this)
        A hex is two oriented quads with the normal of the first
@@ -2886,7 +2886,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
     }
     PetscCheck(found, comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown cell type for faceOrientation().");
   if (!posOrient) {
     if (debug) PetscCall(PetscPrintf(comm, "  Reversing initial face orientation\n"));
@@ -2896,7 +2896,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
     for (f = 0; f < faceSize; ++f) faceVertices[f] = origVertices[f];
   }
   if (posOriented) *posOriented = posOrient;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2949,7 +2949,7 @@ PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, co
     }
   }
   PetscCall(DMPlexGetFaceOrientation(dm, cell, numCorners, indices, oppositeVertex, origVertices, faceVertices, posOriented));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -3049,7 +3049,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
 #else
   PetscCall(DMRestoreWorkArray(subdm, 1, MPIU_INT, (void **)&faces));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLabel, PetscInt value, DM subdm)
@@ -3174,7 +3174,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   PetscCall(ISDestroy(&subvertexIS));
   if (subcellIS) PetscCall(ISRestoreIndices(subcellIS, &subCells));
   PetscCall(ISDestroy(&subcellIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Fix this to properly propagate up error conditions it may find */
@@ -3253,7 +3253,7 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, DM subdm)
@@ -3319,7 +3319,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscInt lsdim;
     for (lsdim = dim; lsdim >= 0; --lsdim)
       if (numSubPoints[lsdim]) break;
-    PetscCall(MPI_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPIU_MAX, comm));
+    PetscCallMPI(MPI_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPIU_MAX, comm));
     PetscCall(DMSetDimension(subdm, sdim));
     PetscCall(DMSetCoordinateDim(subdm, cdim));
   }
@@ -3576,14 +3576,14 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscCall(ISDestroy(&subpointIS[d]));
   }
   PetscCall(PetscFree4(numSubPoints, firstSubPoint, subpointIS, subpoints));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DM subdm)
 {
   PetscFunctionBegin;
   PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, markedFaces, PETSC_FALSE, 1, subdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3626,7 +3626,7 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, P
     PetscCall(DMPlexCreateSubmesh_Uninterpolated(dm, vertexLabel, value, *subdm));
   }
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBool hasLagrange, const char label[], PetscInt value, DM subdm)
@@ -3832,7 +3832,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   if (subvertexIS) PetscCall(ISRestoreIndices(subvertexIS, &subVertices));
   PetscCall(ISDestroy(&subvertexIS));
   PetscCall(PetscFree(subCells));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char labelname[], PetscInt value, DM subdm)
@@ -3842,7 +3842,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   PetscFunctionBegin;
   if (labelname) PetscCall(DMGetLabel(dm, labelname, &label));
   PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_FALSE, PETSC_TRUE, 1, subdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3883,7 +3883,7 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
     PetscCall(DMPlexCreateCohesiveSubmesh_Uninterpolated(dm, hasLagrange, label, value, *subdm));
   }
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3940,7 +3940,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
     PetscCall(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (ghasSubcell) PetscCall(DMPlexSetOverlap(*subdm, NULL, 1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3962,7 +3962,7 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(subpointMap, 2);
   *subpointMap = ((DM_Plex *)dm->data)->subpointMap;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3989,7 +3989,7 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
   mesh->subpointMap = subpointMap;
   PetscCall(PetscObjectReference((PetscObject)mesh->subpointMap));
   PetscCall(DMLabelDestroy(&tmp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
@@ -4047,7 +4047,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd, points, PETSC_OWN_POINTER, subpointIS));
     PetscCall(PetscObjectStateGet((PetscObject)spmap, &mesh->subpointState));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4078,7 +4078,7 @@ PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
   PetscCall(PetscObjectStateGet((PetscObject)spmap, &state));
   if (state != mesh->subpointState || !mesh->subpointIS) PetscCall(DMPlexCreateSubpointIS_Internal(dm, &mesh->subpointIS));
   *subpointIS = mesh->subpointIS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4104,12 +4104,12 @@ PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
   PetscFunctionBegin;
   PetscValidPointer(rel, 3);
   *rel = DM_ENC_NONE;
-  if (!dmA || !dmB) PetscFunctionReturn(0);
+  if (!dmA || !dmB) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
   if (dmA == dmB) {
     *rel = DM_ENC_EQUALITY;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMConvert(dmA, DMPLEX, &plexA));
   PetscCall(DMConvert(dmB, DMPLEX, &plexB));
@@ -4136,7 +4136,7 @@ PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
 end:
   PetscCall(DMDestroy(&plexA));
   PetscCall(DMDestroy(&plexB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -4198,5 +4198,5 @@ PetscErrorCode DMGetEnclosurePoint(DM dmA, DM dmB, DMEnclosureType etype, PetscI
   default:
     SETERRQ(PetscObjectComm((PetscObject)dmA), PETSC_ERR_ARG_OUTOFRANGE, "Invalid enclosure type %d", (int)etype);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

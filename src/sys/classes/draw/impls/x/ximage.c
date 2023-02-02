@@ -21,7 +21,7 @@ static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_
     if (right == 1) {
       if (v[idx[0]] > v[idx[1]]) SWAP(idx[0], idx[1]);
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   SWAP(idx[0], idx[right / 2]);
   vl   = v[idx[0]];
@@ -35,7 +35,7 @@ static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_
   PetscCall(PetscArgSortPixVal(v, idx, last - 1));
   PetscCall(PetscArgSortPixVal(v, idx + last + 1, right - (last + 1)));
 #undef SWAP
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -105,5 +105,5 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw, unsigned char palette[PETSC_D
     *out_pixels = pixels;
   }
   PetscDrawCollectiveEnd(draw);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

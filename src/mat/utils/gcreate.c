@@ -3,10 +3,10 @@
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
 {
   PetscFunctionBegin;
-  if (!mat->preallocated) PetscFunctionReturn(0);
+  if (!mat->preallocated) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(mat->rmap->bs <= 0 || mat->rmap->bs == rbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot change row block size %" PetscInt_FMT " to %" PetscInt_FMT, mat->rmap->bs, rbs);
   PetscCheck(mat->cmap->bs <= 0 || mat->cmap->bs == cbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot change column block size %" PetscInt_FMT " to %" PetscInt_FMT, mat->cmap->bs, cbs);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
@@ -25,7 +25,7 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, prevoption));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -94,7 +94,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
   B->boundtocpu = PETSC_TRUE;
 #endif
   *A = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -120,7 +120,7 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(mat, flg, 2);
   mat->erroriffailure = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -171,7 +171,7 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
   A->cmap->n = n;
   A->rmap->N = M > -1 ? M : A->rmap->N;
   A->cmap->N = N > -1 ? N : A->cmap->N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -264,7 +264,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)B, PetscOptionsObject));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -339,7 +339,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
       PetscCall(PetscFree2(sdnnz, sonnz));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -360,7 +360,7 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(*C, MAT_CLASSID, 2);
-  if (A == *C) PetscFunctionReturn(0);
+  if (A == *C) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheckSameComm(A, 1, *C, 2);
   /* save the parts of A we need */
   Abops     = ((PetscObject)A)->bops[0];
@@ -412,7 +412,7 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
   ((PetscObject)*C)->olist = NULL;
 
   PetscCall(PetscHeaderDestroy(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
         Replace A's header with that of C; the C object is then destroyed
@@ -433,7 +433,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(*C, MAT_CLASSID, 2);
-  if (A == *C) PetscFunctionReturn(0);
+  if (A == *C) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheckSameComm(A, 1, *C, 2);
   PetscCheck(((PetscObject)*C)->refct == 1, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_WRONGSTATE, "Object C has refct %" PetscInt_FMT " > 1, would leave hanging reference", ((PetscObject)*C)->refct);
 
@@ -451,7 +451,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
   ((PetscObject)*C)->refct = 1;
   PetscCall(MatShellSetOperation(*C, MATOP_DESTROY, (void (*)(void))NULL));
   PetscCall(MatDestroy(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -473,11 +473,11 @@ PetscErrorCode MatBindToCPU(Mat A, PetscBool flg)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(A, flg, 2);
 #if defined(PETSC_HAVE_DEVICE)
-  if (A->boundtocpu == flg) PetscFunctionReturn(0);
+  if (A->boundtocpu == flg) PetscFunctionReturn(PETSC_SUCCESS);
   A->boundtocpu = flg;
   PetscTryTypeMethod(A, bindtocpu, flg);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -503,7 +503,7 @@ PetscErrorCode MatBoundToCPU(Mat A, PetscBool *flg)
 #else
   *flg = PETSC_TRUE;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetValuesCOO_Basic(Mat A, const PetscScalar coo_v[], InsertMode imode)
@@ -527,7 +527,7 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A, const PetscScalar coo_v[], InsertMod
   for (n = 0; n < n_i; n++) PetscCall(MatSetValue(A, coo_i[n], coo_j[n], coo_v ? coo_v[n] : zero, ADD_VALUES));
   PetscCall(ISRestoreIndices(is_coo_i, &coo_i));
   PetscCall(ISRestoreIndices(is_coo_j, &coo_j));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscInt coo_i[], const PetscInt coo_j[])
@@ -556,7 +556,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
   PetscCall(PetscObjectCompose((PetscObject)A, "__PETSc_coo_j", (PetscObject)is_coo_j));
   PetscCall(ISDestroy(&is_coo_i));
   PetscCall(ISDestroy(&is_coo_j));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -609,7 +609,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
   PetscCall(PetscLogEventEnd(MAT_PreallCOO, A, 0, 0, 0));
   A->preallocated = PETSC_TRUE;
   A->nonzerostate++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -664,7 +664,7 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
     PetscCall(MatSetPreallocationCOO(A, ncoo, coo_i, coo_j));
   }
   A->preallocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -708,7 +708,7 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
   PetscCall(PetscLogEventEnd(MAT_SetVCOO, A, 0, 0, 0));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -741,7 +741,7 @@ PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg)
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->bindingpropagates = flg;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -767,5 +767,5 @@ PetscErrorCode MatGetBindingPropagates(Mat A, PetscBool *flg)
 #else
   *flg = PETSC_FALSE;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

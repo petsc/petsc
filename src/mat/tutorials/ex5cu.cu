@@ -37,7 +37,7 @@ PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, 
     PetscScalar values[] = {1, 1, 1, 1};
     PetscCall(MatSetValues(A, nn, js, nn, js, values, ADD_VALUES));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

@@ -11,25 +11,25 @@ typedef struct {
 static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = 1.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = 2. * x[0] + 1.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = 3. * x[0] * x[0] + 2. * x[0] + 1.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = 4. * x[0] * x[0] * x[0] + 3. * x[0] * x[0] + 2. * x[0] + 1.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -39,7 +39,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsBegin(comm, "", "1D Refinement Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-num_refine", "Refine cycles", "ex46.c", options->Nr, &options->Nr, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -50,7 +50,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
@@ -91,7 +91,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   }
   user->funcs[1] = user->funcs[0];
   PetscCall(PetscFEDestroy(&fe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckError(DM dm, Vec u, PetscSimplePointFunc funcs[])
@@ -104,7 +104,7 @@ static PetscErrorCode CheckError(DM dm, Vec u, PetscSimplePointFunc funcs[])
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   if (error > tol) PetscCall(PetscPrintf(comm, "Function tests FAIL at tolerance %g error %g\n", (double)tol, (double)error));
   else PetscCall(PetscPrintf(comm, "Function tests pass at tolerance %g\n", (double)tol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

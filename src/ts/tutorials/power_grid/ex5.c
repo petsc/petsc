@@ -88,7 +88,7 @@ PetscErrorCode SaveSolution(TS ts)
   PetscCall(MatDenseRestoreArray(user->Sol, &mat));
   PetscCall(VecRestoreArrayRead(X, &x));
   user->stepnum++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Computes the wind speed using Weibull distribution */
@@ -131,7 +131,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   /* Wind speed (t) = (1 + wind speed deviation(t) - avg_dev)*average wind speed */
   PetscCall(VecShift(user->wind_data, (1 - avg_dev)));
   PetscCall(VecScale(user->wind_data, vwa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Sets the parameters for wind turbine */
@@ -143,7 +143,7 @@ PetscErrorCode SetWindTurbineParams(AppCtx *user)
   user->nGB = 1.0 / 89.0;
   user->rho = 1.225;
   user->Ht  = 1.5;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Sets the parameters for induction generator */
@@ -159,7 +159,7 @@ PetscErrorCode SetInductionGeneratorParams(AppCtx *user)
   user->Xp = user->Xs + user->Xm * user->Xr / (user->Xm + user->Xr);
   user->Hm = 1.0;
   user->Te = 0.011063063063251968;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Computes the power extracted from wind */
@@ -173,7 +173,7 @@ PetscErrorCode GetWindPower(PetscScalar wm, PetscScalar vw, PetscScalar *Pw, App
   lambda_i = 1 / (1 / lambda + 0.002);
   cp       = 0.44 * (125 / lambda_i - 6.94) * PetscExpScalar(-16.5 / lambda_i);
   *Pw      = 0.5 * user->rho * cp * user->Ar * vw * vw * vw / (MVAbase * 1e6);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -202,7 +202,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppC
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArrayRead(Udot, &udot));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

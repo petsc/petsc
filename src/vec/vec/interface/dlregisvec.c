@@ -27,7 +27,7 @@ PetscErrorCode ISFinalizePackage(void)
   ISPackageInitialized                    = PETSC_FALSE;
   ISRegisterAllCalled                     = PETSC_FALSE;
   ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -45,7 +45,7 @@ PetscErrorCode ISInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (ISPackageInitialized) PetscFunctionReturn(0);
+  if (ISPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   ISPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Index Set", &IS_CLASSID));
@@ -81,7 +81,7 @@ PetscErrorCode ISInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(ISFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern MPI_Op PetscSplitReduction_Op;
@@ -106,7 +106,7 @@ static void MPIAPI MPIU_MaxIndex_Local(void *in, void *out, PetscMPIInt *cnt, MP
 
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL_INT) {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL_INT data types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL_INT data types"));
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
   for (c = 0; c < *cnt; c++) {
@@ -132,7 +132,7 @@ static void MPIAPI MPIU_MinIndex_Local(void *in, void *out, PetscMPIInt *cnt, MP
 
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL_INT) {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL_INT data types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL_INT data types"));
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
   for (c = 0; c < *cnt; c++) {
@@ -169,7 +169,7 @@ PetscErrorCode VecInitializePackage(void)
   PetscInt  i;
 
   PetscFunctionBegin;
-  if (VecPackageInitialized) PetscFunctionReturn(0);
+  if (VecPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   VecPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Vector", &VEC_CLASSID));
@@ -266,7 +266,7 @@ PetscErrorCode VecInitializePackage(void)
 
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(VecFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -287,7 +287,7 @@ PetscErrorCode VecFinalizePackage(void)
   if (Petsc_Reduction_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Reduction_keyval));
   VecPackageInitialized = PETSC_FALSE;
   VecRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -305,7 +305,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void)
   PetscCall(AOInitializePackage());
   PetscCall(VecInitializePackage());
   PetscCall(PFInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

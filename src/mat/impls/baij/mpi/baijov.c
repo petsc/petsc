@@ -26,7 +26,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscIn
   PetscCall(ISExpandIndicesGeneral(N, N, bs, imax, is_new, is));
   for (i = 0; i < imax; i++) PetscCall(ISDestroy(&is_new[i]));
   PetscCall(PetscFree(is_new));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -322,7 +322,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C, PetscInt imax, IS is[])
     PetscCall(PetscFree(xdata));
   }
   PetscCall(PetscFree(isz1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -378,7 +378,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat C, PetscInt imax, Pet
     }
     isz[i] = isz_i;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
       MatIncreaseOverlap_MPIBAIJ_Receive - Process the received messages,
@@ -516,7 +516,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C, PetscInt nrqr, P
   }
   PetscCall(PetscBTDestroy(&xtable));
   PetscCall(PetscInfo(C, "Allocated %" PetscInt_FMT " bytes, required %" PetscInt_FMT ", no of mallocs = %" PetscInt_FMT "\n", mem_estimate, ct3, no_malloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submat[])
@@ -585,7 +585,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
     PetscCall(ISDestroy(&iscol_block[i]));
   }
   PetscCall(PetscFree2(isrow_block, iscol_block));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_USE_CTABLE)
@@ -602,7 +602,7 @@ PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const Pe
     else fproc++;
   }
   *rank = fproc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -1529,5 +1529,5 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
     PetscCall(PetscFree(rbuf4));
   }
   c->ijonly = PETSC_FALSE; /* set back to the default */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

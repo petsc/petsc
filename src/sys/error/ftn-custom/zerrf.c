@@ -31,16 +31,17 @@
 static void (*f2)(MPI_Comm *comm,int*,const char*,const char*,PetscErrorCode*,PetscErrorType*,const char*,void*,PetscErrorCode*,PETSC_FORTRAN_CHARLEN_T len1,PETSC_FORTRAN_CHARLEN_T len2,PETSC_FORTRAN_CHARLEN_T len3);
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+static PetscErrorCode ourerrorhandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
-  PetscErrorCode ierr = 0;
-  size_t         len1,len2,len3;
+  PetscErrorCode ierr = PETSC_SUCCESS;
+  size_t         len1, len2, len3;
 
-  PetscStrlen(fun,&len1);
-  PetscStrlen(file,&len2);
-  PetscStrlen(mess,&len3);
+  ierr = PetscStrlen(fun, &len1);
+  ierr = PetscStrlen(file, &len2);
+  ierr = PetscStrlen(mess, &len3);
 
-  (*f2)(&comm,&line,fun,file,&n,&p,mess,ctx,&ierr,((PETSC_FORTRAN_CHARLEN_T)(len1)),((PETSC_FORTRAN_CHARLEN_T)(len2)),((PETSC_FORTRAN_CHARLEN_T)(len3)));
+  ierr = PETSC_SUCCESS;
+  (*f2)(&comm, &line, fun, file, &n, &p, mess, ctx, &ierr, ((PETSC_FORTRAN_CHARLEN_T)(len1)), ((PETSC_FORTRAN_CHARLEN_T)(len2)), ((PETSC_FORTRAN_CHARLEN_T)(len3)));
   return ierr;
 }
 
@@ -92,40 +93,40 @@ PETSC_EXTERN void petscerror_(MPI_Fint *comm,PetscErrorCode *number,PetscErrorTy
 }
 
 #if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
-PETSC_EXTERN void petscerrorf_(PetscErrorCode *err,int *line,char *file,PETSC_FORTRAN_CHARLEN_T len)
+PETSC_EXTERN void petscerrorf_(PetscErrorCode *err, int *line, char *file, PETSC_FORTRAN_CHARLEN_T len)
 {
-  char           *tfile;
-  PetscErrorCode derr,*ierr = &derr; /* needed by FIXCHAR */
+  char          *tfile;
+  PetscErrorCode ierr[] = {PETSC_SUCCESS}; /* needed by FIXCHAR */
 
-  FIXCHAR(file,len,tfile);
-  PetscError(PETSC_COMM_SELF,*line,NULL,tfile,*err,PETSC_ERROR_REPEAT,NULL);
-  FREECHAR(file,tfile);
+  FIXCHAR(file, len, tfile);
+  *err = PetscError(PETSC_COMM_SELF, *line, NULL, tfile, *err, PETSC_ERROR_REPEAT, NULL);
+  FREECHAR(file, tfile);
 }
 
-PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err,int *line,char *file,PETSC_FORTRAN_CHARLEN_T len)
+PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err, int *line, char *file, PETSC_FORTRAN_CHARLEN_T len)
 {
-  char           errorstring[2*MPI_MAX_ERROR_STRING];
-  char           *tfile;
-  PetscErrorCode derr,*ierr = &derr; /* needed by FIXCHAR */
+  char           errorstring[2 * MPI_MAX_ERROR_STRING];
+  char          *tfile;
+  PetscErrorCode ierr[] = {PETSC_SUCCESS}; /* needed by FIXCHAR */
 
-  FIXCHAR(file,len,tfile);
-  PetscMPIErrorString(*err,errorstring);
-  PetscError(PETSC_COMM_SELF,*line,NULL,file,PETSC_ERR_MPI,PETSC_ERROR_INITIAL,"MPI error %d %s",*err,errorstring);
-  FREECHAR(file,tfile);
+  FIXCHAR(file, len, tfile);
+  PetscMPIErrorString(*err, errorstring);
+  *err = PetscError(PETSC_COMM_SELF, *line, NULL, file, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "MPI error %d %s", *err, errorstring);
+  FREECHAR(file, tfile);
   *err = PETSC_ERR_MPI;
 }
 #else
 PETSC_EXTERN void petscerrorf_(PetscErrorCode *err)
 {
-  PetscError(PETSC_COMM_SELF,0,NULL,NULL,*err,PETSC_ERROR_REPEAT,NULL);
+  *err = PetscError(PETSC_COMM_SELF, 0, NULL, NULL, *err, PETSC_ERROR_REPEAT, NULL);
 }
 
 PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err)
 {
-  char           errorstring[2*MPI_MAX_ERROR_STRING];
+  char errorstring[2 * MPI_MAX_ERROR_STRING];
 
-  PetscMPIErrorString(*err,errorstring);
-  PetscError(PETSC_COMM_SELF,0,NULL,NULL,PETSC_ERR_MPI,PETSC_ERROR_INITIAL,"MPI error %d %s",*err,errorstring);
+  PetscMPIErrorString(*err, errorstring);
+  *err = PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "MPI error %d %s", *err, errorstring);
   *err = PETSC_ERR_MPI;
 }
 #endif

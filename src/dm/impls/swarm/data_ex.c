@@ -118,7 +118,7 @@ PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm, const PetscInt count, DMSwarmD
   d->_stats    = NULL;
   d->_requests = NULL;
   *ex          = d;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -158,7 +158,7 @@ PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d)
   }
   if (d->packer_status == DEOBJECT_FINALIZED) { }
   if (d->communication_status == DEOBJECT_FINALIZED) { }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExDestroy(DMSwarmDataEx d)
@@ -177,7 +177,7 @@ PetscErrorCode DMSwarmDataExDestroy(DMSwarmDataEx d)
   if (d->_stats) PetscCall(PetscFree(d->_stats));
   if (d->_requests) PetscCall(PetscFree(d->_requests));
   PetscCall(PetscFree(d));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* === Phase A === */
@@ -194,7 +194,7 @@ PetscErrorCode DMSwarmDataExTopologyInitialize(DMSwarmDataEx d)
   PetscCall(PetscFree(d->pack_cnt));
   PetscCall(PetscFree(d->send_tags));
   PetscCall(PetscFree(d->recv_tags));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d, const PetscMPIInt proc_id)
@@ -222,7 +222,7 @@ PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d, const PetscMPI
     d->neighbour_procs[d->n_neighbour_procs] = proc_id;
     d->n_neighbour_procs++;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -328,7 +328,7 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt
   PetscCall(PetscFree(vals));
   PetscCall(PetscFree(proc_neighbours_));
   PetscCallMPI(MPI_Barrier(comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
@@ -368,7 +368,7 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
   }
   d->topology_status = DEOBJECT_FINALIZED;
   PetscCall(PetscLogEventEnd(DMSWARM_DataExchangerTopologySetup, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* === Phase B === */
@@ -385,7 +385,7 @@ PetscErrorCode _DMSwarmDataExConvertProcIdToLocalIndex(DMSwarmDataEx de, PetscMP
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExInitializeSendCount(DMSwarmDataEx de)
@@ -397,7 +397,7 @@ PetscErrorCode DMSwarmDataExInitializeSendCount(DMSwarmDataEx de)
   PetscCall(PetscLogEventBegin(DMSWARM_DataExchangerSendCount, 0, 0, 0, 0));
   de->message_lengths_status = DEOBJECT_INITIALIZED;
   for (i = 0; i < de->n_neighbour_procs; ++i) de->messages_to_be_sent[i] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -415,7 +415,7 @@ PetscErrorCode DMSwarmDataExAddToSendCount(DMSwarmDataEx de, const PetscMPIInt p
   PetscCheck(local_val != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Proc %d is not a valid neighbour rank", (int)proc_id);
 
   de->messages_to_be_sent[local_val] = de->messages_to_be_sent[local_val] + count;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExFinalizeSendCount(DMSwarmDataEx de)
@@ -425,7 +425,7 @@ PetscErrorCode DMSwarmDataExFinalizeSendCount(DMSwarmDataEx de)
 
   de->message_lengths_status = DEOBJECT_FINALIZED;
   PetscCall(PetscLogEventEnd(DMSWARM_DataExchangerSendCount, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* === Phase C === */
@@ -448,7 +448,7 @@ PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
   }
   PetscCall(PetscFree(de->send_message));
   PetscCall(PetscFree(de->recv_message));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -493,7 +493,7 @@ PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de, size_t unit_message
   /* init the packer counters */
   de->total_pack_cnt = 0;
   for (i = 0; i < np; ++i) de->pack_cnt[i] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -520,7 +520,7 @@ PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de, PetscMPIInt proc_id, Pets
   PetscCall(PetscMemcpy(dest, data, de->unit_message_size * n));
   /* increment counter */
   de->pack_cnt[local] = de->pack_cnt[local] + n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -554,7 +554,7 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
   de->packer_status        = DEOBJECT_FINALIZED;
   de->communication_status = DEOBJECT_INITIALIZED;
   PetscCall(PetscLogEventEnd(DMSWARM_DataExchangerPack, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* do the actual message passing */
@@ -579,7 +579,7 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
     PetscCallMPI(MPI_Isend(dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
   }
   PetscCall(PetscLogEventEnd(DMSWARM_DataExchangerBegin, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* do the actual message passing now */
@@ -613,7 +613,7 @@ PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
   PetscCall(PetscFree(message_recv_offsets));
   de->communication_status = DEOBJECT_FINALIZED;
   PetscCall(PetscLogEventEnd(DMSWARM_DataExchangerEnd, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExGetSendData(DMSwarmDataEx de, PetscInt *length, void **send)
@@ -622,7 +622,7 @@ PetscErrorCode DMSwarmDataExGetSendData(DMSwarmDataEx de, PetscInt *length, void
   PetscCheck(de->packer_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ARG_WRONGSTATE, "Data has not finished being packed.");
   *length = de->send_message_length;
   *send   = de->send_message;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExGetRecvData(DMSwarmDataEx de, PetscInt *length, void **recv)
@@ -631,7 +631,7 @@ PetscErrorCode DMSwarmDataExGetRecvData(DMSwarmDataEx de, PetscInt *length, void
   PetscCheck(de->communication_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ARG_WRONGSTATE, "Data has not finished being sent.");
   *length = de->recv_message_length;
   *recv   = de->recv_message;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmDataExTopologyGetNeighbours(DMSwarmDataEx de, PetscMPIInt *n, PetscMPIInt *neigh[])
@@ -639,5 +639,5 @@ PetscErrorCode DMSwarmDataExTopologyGetNeighbours(DMSwarmDataEx de, PetscMPIInt 
   PetscFunctionBegin;
   if (n) *n = de->n_neighbour_procs;
   if (neigh) *neigh = de->neighbour_procs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -13,7 +13,7 @@ PetscErrorCode DMGlobalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l)
   PetscValidHeaderSpecific(g, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(l, VEC_CLASSID, 4);
   PetscCall(VecScatterBegin(dd->gtol, g, l, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMGlobalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l)
@@ -25,7 +25,7 @@ PetscErrorCode DMGlobalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l)
   PetscValidHeaderSpecific(g, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(l, VEC_CLASSID, 4);
   PetscCall(VecScatterEnd(dd->gtol, g, l, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMLocalToGlobalBegin_DA(DM da, Vec l, InsertMode mode, Vec g)
@@ -44,7 +44,7 @@ PetscErrorCode DMLocalToGlobalBegin_DA(DM da, Vec l, InsertMode mode, Vec g)
     PetscCheck(dd->bx == DM_BOUNDARY_GHOSTED || dd->bz == DM_BOUNDARY_NONE || dd->s <= 0 || dd->p != 1, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Available only for boundary none or with parallelism in z direction");
     PetscCall(VecScatterBegin(dd->gtol, l, g, INSERT_VALUES, SCATTER_REVERSE_LOCAL));
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMLocalToGlobalEnd_DA(DM da, Vec l, InsertMode mode, Vec g)
@@ -60,7 +60,7 @@ PetscErrorCode DMLocalToGlobalEnd_DA(DM da, Vec l, InsertMode mode, Vec g)
   } else if (mode == INSERT_VALUES) {
     PetscCall(VecScatterEnd(dd->gtol, l, g, INSERT_VALUES, SCATTER_REVERSE_LOCAL));
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode DMDAGetNatural_Private(DM, PetscInt *, IS *);
@@ -104,7 +104,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
   PetscCall(VecDestroy(&global));
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -148,7 +148,7 @@ PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n)
     PetscCall(DMDAGlobalToNatural_Create(da));
   }
   PetscCall(VecScatterBegin(dd->gton, g, n, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -185,7 +185,7 @@ PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n)
   PetscValidHeaderSpecific(g, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(n, VEC_CLASSID, 4);
   PetscCall(VecScatterEnd(dd->gton, g, n, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -227,7 +227,7 @@ PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g)
     PetscCall(DMDAGlobalToNatural_Create(da));
   }
   PetscCall(VecScatterBegin(dd->gton, n, g, mode, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -264,5 +264,5 @@ PetscErrorCode DMDANaturalToGlobalEnd(DM da, Vec n, InsertMode mode, Vec g)
   PetscValidHeaderSpecific(n, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(g, VEC_CLASSID, 4);
   PetscCall(VecScatterEnd(dd->gton, n, g, mode, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

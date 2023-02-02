@@ -106,7 +106,7 @@ L500:
   search = j;
   *nofsub += deg[node];
   marker[node] = 1;
-  SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &rchset[1], &nhdsze, &nbrhd[1]);
+  PetscCall(SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &rchset[1], &nhdsze, &nbrhd[1]));
   /*          ELIMINATE ALL NODES INDISTINGUISHABLE FROM NODE.       */
   /*          THEY ARE GIVEN BY NODE, QLINK(NODE), ....              */
   nxnode = node;
@@ -125,7 +125,7 @@ L600:
 
   /*             UPDATE THE DEGREES OF THE NODES IN THE REACHABLE     */
   /*             SET AND IDENTIFY INDISTINGUISHABLE NODES.            */
-  SPARSEPACKqmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]);
+  PetscCall(SPARSEPACKqmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]));
 
   /*             RESET MARKER VALUE OF NODES IN REACH SET.            */
   /*             UPDATE THRESHOLD VALUE FOR CYCLIC SEARCH.            */
@@ -145,8 +145,8 @@ L600:
     search = invp[inode];
   L700:;
   }
-  if (nhdsze > 0) SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &nbrhd[1]);
+  if (nhdsze > 0) PetscCall(SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &nbrhd[1]));
 L800:
   if (num < *neqns) goto L300;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

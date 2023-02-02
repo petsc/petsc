@@ -55,7 +55,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->commSize.k  = commSize;
     options->gridSize.k  = gridSize;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

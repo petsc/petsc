@@ -174,7 +174,7 @@ static PetscErrorCode GmshCellInfoSetUp(void)
   size_t           i, n;
   static PetscBool called = PETSC_FALSE;
 
-  if (called) return 0;
+  if (called) return PETSC_SUCCESS;
   PetscFunctionBegin;
   called = PETSC_TRUE;
   n      = PETSC_STATIC_ARRAY_LENGTH(GmshCellMap);
@@ -187,7 +187,7 @@ static PetscErrorCode GmshCellInfoSetUp(void)
     if (GmshCellTable[i].cellType <= 0) continue;
     GmshCellMap[GmshCellTable[i].cellType] = GmshCellTable[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define GmshCellTypeCheck(ct) \
@@ -221,7 +221,7 @@ static PetscErrorCode GmshBufferGet(GmshFile *gmsh, size_t count, size_t eltsize
     gmsh->wlen = size;
   }
   *(void **)buf = size ? gmsh->wbuf : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshBufferSizeGet(GmshFile *gmsh, size_t count, void *buf)
@@ -236,7 +236,7 @@ static PetscErrorCode GmshBufferSizeGet(GmshFile *gmsh, size_t count, void *buf)
     gmsh->slen = size;
   }
   *(void **)buf = size ? gmsh->sbuf : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshRead(GmshFile *gmsh, void *buf, PetscInt count, PetscDataType dtype)
@@ -244,21 +244,21 @@ static PetscErrorCode GmshRead(GmshFile *gmsh, void *buf, PetscInt count, PetscD
   PetscFunctionBegin;
   PetscCall(PetscViewerRead(gmsh->viewer, buf, count, NULL, dtype));
   if (gmsh->byteSwap) PetscCall(PetscByteSwap(buf, dtype, count));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadString(GmshFile *gmsh, char *buf, PetscInt count)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerRead(gmsh->viewer, buf, count, NULL, PETSC_STRING));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshMatch(PETSC_UNUSED GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN], PetscBool *match)
 {
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(line, Section, match));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN])
@@ -268,7 +268,7 @@ static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line
   PetscFunctionBegin;
   PetscCall(GmshMatch(gmsh, Section, line, &match));
   PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s", Section);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_LEN])
@@ -286,7 +286,7 @@ static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_L
       if (match) break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadEndSection(GmshFile *gmsh, const char EndSection[], char line[PETSC_MAX_PATH_LEN])
@@ -294,7 +294,7 @@ static PetscErrorCode GmshReadEndSection(GmshFile *gmsh, const char EndSection[]
   PetscFunctionBegin;
   PetscCall(GmshReadString(gmsh, line, 1));
   PetscCall(GmshExpect(gmsh, EndSection, line));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count)
@@ -321,21 +321,21 @@ static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count
     PetscCall(GmshRead(gmsh, ibuf, count, PETSC_INT64));
     for (i = 0; i < count; ++i) buf[i] = (PetscInt)ibuf[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadInt(GmshFile *gmsh, int *buf, PetscInt count)
 {
   PetscFunctionBegin;
   PetscCall(GmshRead(gmsh, buf, count, PETSC_ENUM));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadDouble(GmshFile *gmsh, double *buf, PetscInt count)
 {
   PetscFunctionBegin;
   PetscCall(GmshRead(gmsh, buf, count, PETSC_DOUBLE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define GMSH_MAX_TAGS 16
@@ -363,7 +363,7 @@ static PetscErrorCode GmshEntitiesCreate(PetscInt count[4], GmshEntities **entit
     PetscCall(PetscCalloc1(count[dim], &(*entities)->entity[dim]));
     PetscCall(PetscHMapICreate(&(*entities)->entityMap[dim]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities)
@@ -371,13 +371,13 @@ static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities)
   PetscInt dim;
 
   PetscFunctionBegin;
-  if (!*entities) PetscFunctionReturn(0);
+  if (!*entities) PetscFunctionReturn(PETSC_SUCCESS);
   for (dim = 0; dim < 4; ++dim) {
     PetscCall(PetscFree((*entities)->entity[dim]));
     PetscCall(PetscHMapIDestroy(&(*entities)->entityMap[dim]));
   }
   PetscCall(PetscFree((*entities)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshEntitiesAdd(GmshEntities *entities, PetscInt index, PetscInt dim, PetscInt eid, GmshEntity **entity)
@@ -387,7 +387,7 @@ static PetscErrorCode GmshEntitiesAdd(GmshEntities *entities, PetscInt index, Pe
   entities->entity[dim][index].dim = dim;
   entities->entity[dim][index].id  = eid;
   if (entity) *entity = &entities->entity[dim][index];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshEntitiesGet(GmshEntities *entities, PetscInt dim, PetscInt eid, GmshEntity **entity)
@@ -397,7 +397,7 @@ static PetscErrorCode GmshEntitiesGet(GmshEntities *entities, PetscInt dim, Pets
   PetscFunctionBegin;
   PetscCall(PetscHMapIGet(entities->entityMap[dim], eid, &index));
   *entity = &entities->entity[dim][index];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -413,18 +413,18 @@ static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes)
   PetscCall(PetscMalloc1(count * 1, &(*nodes)->id));
   PetscCall(PetscMalloc1(count * 3, &(*nodes)->xyz));
   PetscCall(PetscMalloc1(count * GMSH_MAX_TAGS, &(*nodes)->tag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshNodesDestroy(GmshNodes **nodes)
 {
   PetscFunctionBegin;
-  if (!*nodes) PetscFunctionReturn(0);
+  if (!*nodes) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*nodes)->id));
   PetscCall(PetscFree((*nodes)->xyz));
   PetscCall(PetscFree((*nodes)->tag));
   PetscCall(PetscFree((*nodes)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -442,15 +442,15 @@ static PetscErrorCode GmshElementsCreate(PetscInt count, GmshElement **elements)
 {
   PetscFunctionBegin;
   PetscCall(PetscCalloc1(count, elements));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshElementsDestroy(GmshElement **elements)
 {
   PetscFunctionBegin;
-  if (!*elements) PetscFunctionReturn(0);
+  if (!*elements) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(*elements));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -477,7 +477,7 @@ static PetscErrorCode GmshMeshCreate(GmshMesh **mesh)
   PetscFunctionBegin;
   PetscCall(PetscNew(mesh));
   PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 0, &(*mesh)->segbuf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
@@ -485,7 +485,7 @@ static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
   PetscInt r;
 
   PetscFunctionBegin;
-  if (!*mesh) PetscFunctionReturn(0);
+  if (!*mesh) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(GmshEntitiesDestroy(&(*mesh)->entities));
   PetscCall(GmshNodesDestroy(&(*mesh)->nodelist));
   PetscCall(GmshElementsDestroy(&(*mesh)->elements));
@@ -495,7 +495,7 @@ static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
   for (r = 0; r < (*mesh)->numRegions; ++r) PetscCall(PetscFree((*mesh)->regionNames[r]));
   PetscCall(PetscFree3((*mesh)->regionDims, (*mesh)->regionTags, (*mesh)->regionNames));
   PetscCall(PetscFree((*mesh)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
@@ -522,7 +522,7 @@ static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
     nodes->id[n] = nid;
     for (t = 0; t < GMSH_MAX_TAGS; ++t) nodes->tag[n * GMSH_MAX_TAGS + t] = -1;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Gmsh elements can be of any dimension/co-dimension, so we need to traverse the
@@ -576,7 +576,7 @@ static PetscErrorCode GmshReadElements_v22(GmshFile *gmsh, GmshMesh *mesh)
       for (p = 0; p < element->numTags; p++) element->tags[p] = tags[p];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -644,7 +644,7 @@ static PetscErrorCode GmshReadEntities_v40(GmshFile *gmsh, GmshMesh *mesh)
       if (byteSwap) PetscCall(PetscByteSwap(ibuf, PETSC_ENUM, num));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -705,7 +705,7 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -766,7 +766,7 @@ static PetscErrorCode GmshReadElements_v40(GmshFile *gmsh, GmshMesh *mesh)
       for (p = 0; p < element->numTags; p++) element->tags[p] = entity->tags[p];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[])
@@ -843,7 +843,7 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
       periodicMap[correspondingNode] = primaryNode;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
@@ -897,7 +897,7 @@ static PetscErrorCode GmshReadEntities_v41(GmshFile *gmsh, GmshMesh *mesh)
       /* Currently, we do not save the ids for the bounding entities */
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
@@ -948,7 +948,7 @@ static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
   }
   gmsh->nodeStart = sizes[2];
   gmsh->nodeEnd   = sizes[3] + 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
@@ -1003,7 +1003,7 @@ static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
       for (p = 0; p < element->numTags; p++) element->tags[p] = entity->tags[p];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
@@ -1039,7 +1039,7 @@ static PetscErrorCode GmshReadPeriodic_v41(GmshFile *gmsh, PetscInt periodicMap[
       periodicMap[correspondingNode] = primaryNode;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* http://gmsh.info/dev/doc/texinfo/gmsh.html#MSH-file-format
@@ -1079,7 +1079,7 @@ static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
       gmsh->byteSwap = PETSC_TRUE;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1116,7 +1116,7 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
     mesh->regionTags[region] = tag;
     PetscCall(PetscStrallocpy(name, &mesh->regionNames[region]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadEntities(GmshFile *gmsh, GmshMesh *mesh)
@@ -1130,7 +1130,7 @@ static PetscErrorCode GmshReadEntities(GmshFile *gmsh, GmshMesh *mesh)
     PetscCall(GmshReadEntities_v40(gmsh, mesh));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
@@ -1174,7 +1174,7 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
       gmsh->nodeMap[tag] = n;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
@@ -1246,7 +1246,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
 
     PetscCall(PetscBTDestroy(&vtx));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
@@ -1279,7 +1279,7 @@ static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
     if (mesh->vertexMap[n] >= 0)   /* is vertex */
       if (mesh->periodMap[n] != n) /* is corresponding  */
         mesh->vertexMap[n] = mesh->vertexMap[mesh->periodMap[n]];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define DM_POLYTOPE_VERTEX DM_POLYTOPE_POINT
@@ -1370,7 +1370,7 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
   /* Set finite element name */
   PetscCall(PetscSNPrintf(name, sizeof(name), "%s%" PetscInt_FMT, isSimplex ? "P" : "Q", k));
   PetscCall(PetscFESetName(*fem, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1432,7 +1432,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   PetscCall(PetscViewerFileSetName(viewer, filename));
   PetscCall(DMPlexCreateGmsh(comm, viewer, interpolate, dm));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2022,5 +2022,5 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   PetscCall(PetscLogEventEnd(DMPLEX_CreateGmsh, *dm, NULL, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -12,7 +12,7 @@ PetscErrorCode PetscGetUserName(char name[], size_t nlen)
 {
   PetscFunctionBegin;
   GetUserName((LPTSTR)name, (LPDWORD)(&nlen));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #else
@@ -39,6 +39,6 @@ PetscErrorCode PetscGetUserName(char name[], size_t nlen)
   user = getenv("USER");
   if (!user) user = "Unknown";
   PetscCall(PetscStrncpy(name, user, nlen));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

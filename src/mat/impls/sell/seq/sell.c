@@ -86,7 +86,7 @@ PetscErrorCode MatSeqSELLSetPreallocation(Mat B, PetscInt rlenmax, const PetscIn
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidType(B, 1);
   PetscTryMethod(B, "MatSeqSELLSetPreallocation_C", (Mat, PetscInt, const PetscInt[]), (B, rlenmax, rlen));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, const PetscInt rlen[])
@@ -169,7 +169,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
   b->maxallocmat      = b->sliidx[totalslices];
   B->info.nz_unneeded = (double)b->maxallocmat;
   if (realalloc) PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
@@ -192,13 +192,13 @@ PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **i
     for (j = 0; j < a->rlen[row]; j++) a->getrowvals[j] = a->val[shift + 8 * j];
     *v = a->getrowvals;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatRestoreRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
@@ -236,7 +236,7 @@ PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype, MatReuse reuse,
   } else {
     *newmat = B;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -286,7 +286,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A, MatType newtype, MatReuse reuse,
   } else {
     *newmat = B;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqSELL(Mat A, Vec xx, Vec yy)
@@ -501,7 +501,7 @@ PetscErrorCode MatMult_SeqSELL(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogFlops(2.0 * a->nz - a->nonzerorowcnt)); /* theoretical minimal FLOPs */
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
@@ -678,7 +678,7 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(PetscLogFlops(2.0 * a->nz));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArrayPair(yy, zz, &y, &z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A, Vec xx, Vec zz, Vec yy)
@@ -697,7 +697,7 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A, Vec xx, Vec zz, Vec yy)
   PetscFunctionBegin;
   if (A->symmetric == PETSC_BOOL3_TRUE) {
     PetscCall(MatMultAdd_SeqSELL(A, xx, zz, yy));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (zz != yy) PetscCall(VecCopy(zz, yy));
   PetscCall(VecGetArrayRead(xx, &x));
@@ -725,7 +725,7 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A, Vec xx, Vec zz, Vec yy)
   PetscCall(PetscLogFlops(2.0 * a->sliidx[a->totalslices]));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_SeqSELL(Mat A, Vec xx, Vec yy)
@@ -737,7 +737,7 @@ PetscErrorCode MatMultTranspose_SeqSELL(Mat A, Vec xx, Vec yy)
     PetscCall(VecSet(yy, 0.0));
     PetscCall(MatMultTransposeAdd_SeqSELL(A, xx, yy, yy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -765,7 +765,7 @@ PetscErrorCode MatMissingDiagonal_SeqSELL(Mat A, PetscBool *missing, PetscInt *d
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMarkDiagonal_SeqSELL(Mat A)
@@ -788,7 +788,7 @@ PetscErrorCode MatMarkDiagonal_SeqSELL(Mat A)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -802,7 +802,7 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A, PetscScalar omega, PetscScalar f
   PetscScalar *idiag, *mdiag;
 
   PetscFunctionBegin;
-  if (a->idiagvalid) PetscFunctionReturn(0);
+  if (a->idiagvalid) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatMarkDiagonal_SeqSELL(A));
   diag = a->diag;
   if (!a->idiag) {
@@ -833,7 +833,7 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A, PetscScalar omega, PetscScalar f
     PetscCall(PetscLogFlops(2.0 * m));
   }
   a->idiagvalid = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatZeroEntries_SeqSELL(Mat A)
@@ -843,7 +843,7 @@ PetscErrorCode MatZeroEntries_SeqSELL(Mat A)
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(a->val, a->sliidx[a->totalslices]));
   PetscCall(MatSeqSELLInvalidateDiagonal(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqSELL(Mat A)
@@ -852,7 +852,7 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->n, A->cmap->n, a->nz);
+  PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->n, A->cmap->n, a->nz));
 #endif
   PetscCall(MatSeqXSELLFreeSELL(A, &a->val, &a->colidx));
   PetscCall(ISDestroy(&a->row));
@@ -875,7 +875,7 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLRestoreArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqsell_seqaij_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetOption_SeqSELL(Mat A, MatOption op, PetscBool flg)
@@ -920,7 +920,7 @@ PetscErrorCode MatSetOption_SeqSELL(Mat A, MatOption op, PetscBool flg)
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetDiagonal_SeqSELL(Mat A, Vec v)
@@ -938,7 +938,7 @@ PetscErrorCode MatGetDiagonal_SeqSELL(Mat A, Vec v)
     PetscCall(VecGetArray(v, &x));
     for (i = 0; i < n; i++) x[i] = 1.0 / a->val[diag[i]];
     PetscCall(VecRestoreArray(v, &x));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecSet(v, zero));
@@ -954,7 +954,7 @@ PetscErrorCode MatGetDiagonal_SeqSELL(Mat A, Vec v)
     }
   }
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr)
@@ -999,7 +999,7 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr)
     PetscCall(PetscLogFlops(a->nz));
   }
   PetscCall(MatSeqSELLInvalidateDiagonal(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], PetscScalar v[])
@@ -1039,7 +1039,7 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
     finished:;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
@@ -1091,7 +1091,7 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "];\n %s = spconvert(zzz);\n", name));
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     for (i = 0; i < m; i++) {
@@ -1261,7 +1261,7 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
   }
   PetscCall(PetscViewerFlush(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -1350,7 +1350,7 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw, void *Aa)
     }
     PetscDrawCollectiveEnd(draw);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -1363,7 +1363,7 @@ PetscErrorCode MatView_SeqSELL_Draw(Mat A, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
   PetscCall(PetscDrawIsNull(draw, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
   xr = A->cmap->n;
   yr = A->rmap->n;
@@ -1378,7 +1378,7 @@ PetscErrorCode MatView_SeqSELL_Draw(Mat A, PetscViewer viewer)
   PetscCall(PetscDrawZoom(draw, MatView_SeqSELL_Draw_Zoom, A));
   PetscCall(PetscObjectCompose((PetscObject)A, "Zoomviewer", NULL));
   PetscCall(PetscDrawSave(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_SeqSELL(Mat A, PetscViewer viewer)
@@ -1394,7 +1394,7 @@ PetscErrorCode MatView_SeqSELL(Mat A, PetscViewer viewer)
   } else if (isbinary) {
     /* PetscCall(MatView_SeqSELL_Binary(A,viewer)); */
   } else if (isdraw) PetscCall(MatView_SeqSELL_Draw(A, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
@@ -1404,7 +1404,7 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   MatScalar   *vp;
 
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
   /* To do: compress out the unused elements */
   PetscCall(MatMarkDiagonal_SeqSELL(A));
   PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; storage space: %" PetscInt_FMT " allocated %" PetscInt_FMT " used (%" PetscInt_FMT " nonzeros+%" PetscInt_FMT " paddedzeros)\n", A->rmap->n, A->cmap->n, a->maxallocmat, a->sliidx[a->totalslices], a->nz, a->sliidx[a->totalslices] - a->nz));
@@ -1447,7 +1447,7 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   a->reallocs = 0;
 
   PetscCall(MatSeqSELLInvalidateDiagonal(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetInfo_SeqSELL(Mat A, MatInfoType flag, MatInfo *info)
@@ -1471,7 +1471,7 @@ PetscErrorCode MatGetInfo_SeqSELL(Mat A, MatInfoType flag, MatInfo *info)
     info->fill_ratio_needed = 0;
     info->factor_mallocs    = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)
@@ -1544,7 +1544,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
     }
     a->rlen[row] = nrow;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCopy_SeqSELL(Mat A, Mat B, MatStructure str)
@@ -1560,14 +1560,14 @@ PetscErrorCode MatCopy_SeqSELL(Mat A, Mat B, MatStructure str)
   } else {
     PetscCall(MatCopy_Basic(A, B, str));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetUp_SeqSELL(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(MatSeqSELLSetPreallocation(A, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqSELLGetArray_SeqSELL(Mat A, PetscScalar *array[])
@@ -1576,13 +1576,13 @@ PetscErrorCode MatSeqSELLGetArray_SeqSELL(Mat A, PetscScalar *array[])
 
   PetscFunctionBegin;
   *array = a->val;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqSELLRestoreArray_SeqSELL(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatRealPart_SeqSELL(Mat A)
@@ -1593,7 +1593,7 @@ PetscErrorCode MatRealPart_SeqSELL(Mat A)
 
   PetscFunctionBegin;
   for (i = 0; i < a->sliidx[a->totalslices]; i++) aval[i] = PetscRealPart(aval[i]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatImaginaryPart_SeqSELL(Mat A)
@@ -1605,7 +1605,7 @@ PetscErrorCode MatImaginaryPart_SeqSELL(Mat A)
   PetscFunctionBegin;
   for (i = 0; i < a->sliidx[a->totalslices]; i++) aval[i] = PetscImaginaryPart(aval[i]);
   PetscCall(MatSeqSELLInvalidateDiagonal(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatScale_SeqSELL(Mat inA, PetscScalar alpha)
@@ -1620,7 +1620,7 @@ PetscErrorCode MatScale_SeqSELL(Mat inA, PetscScalar alpha)
   PetscCallBLAS("BLASscal", BLASscal_(&size, &oalpha, aval, &one));
   PetscCall(PetscLogFlops(a->nz));
   PetscCall(MatSeqSELLInvalidateDiagonal(inA));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatShift_SeqSELL(Mat Y, PetscScalar a)
@@ -1630,7 +1630,7 @@ PetscErrorCode MatShift_SeqSELL(Mat Y, PetscScalar a)
   PetscFunctionBegin;
   if (!Y->preallocated || !y->nz) PetscCall(MatSeqSELLSetPreallocation(Y, 1, NULL));
   PetscCall(MatShift_Basic(Y, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSOR_SeqSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
@@ -1732,7 +1732,7 @@ PetscErrorCode MatSOR_SeqSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag, P
   }
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(VecRestoreArrayRead(bb, &b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------*/
@@ -1901,7 +1901,7 @@ PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
 
   /* copy values over */
   PetscCall(PetscArraycpy(a->saved_values, a->val, a->sliidx[a->totalslices]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
@@ -1912,7 +1912,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
   PetscCheck(a->nonew, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   PetscCheck(a->saved_values, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatStoreValues(A);first");
   PetscCall(PetscArraycpy(a->val, a->saved_values, a->sliidx[a->totalslices]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1932,7 +1932,7 @@ PetscErrorCode MatSeqSELLRestoreArray(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscUseMethod(A, "MatSeqSELLRestoreArray_C", (Mat, PetscScalar **), (A, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
@@ -1977,7 +1977,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatRetrieveValues_C", MatRetrieveValues_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLSetPreallocation_C", MatSeqSELLSetPreallocation_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqsell_seqaij_C", MatConvert_SeqSELL_SeqAIJ));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -2048,7 +2048,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOption cpv
   C->nonzerostate  = A->nonzerostate;
 
   PetscCall(PetscFunctionListDuplicate(((PetscObject)A)->qlist, &((PetscObject)C)->qlist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B)
@@ -2059,7 +2059,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B)
   if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) PetscCall(MatSetBlockSizesFromMats(*B, A, A));
   PetscCall(MatSetType(*B, ((PetscObject)A)->type_name));
   PetscCall(MatDuplicateNoCreate_SeqSELL(*B, A, cpvalues, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -2168,7 +2168,7 @@ PetscErrorCode MatCreateSeqSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt 
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQSELL));
   PetscCall(MatSeqSELLSetPreallocation_SeqSELL(*A, maxallocrow, rlen));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatEqual_SeqSELL(Mat A, Mat B, PetscBool *flg)
@@ -2180,14 +2180,14 @@ PetscErrorCode MatEqual_SeqSELL(Mat A, Mat B, PetscBool *flg)
   /* If the  matrix dimensions are not equal,or no of nonzeros */
   if ((A->rmap->n != B->rmap->n) || (A->cmap->n != B->cmap->n) || (a->nz != b->nz) || (a->rlenmax != b->rlenmax)) {
     *flg = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* if the a->colidx are the same */
   PetscCall(PetscArraycmp(a->colidx, b->colidx, a->sliidx[totalslices], flg));
-  if (!*flg) PetscFunctionReturn(0);
+  if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
   /* if a->val are the same */
   PetscCall(PetscArraycmp(a->val, b->val, a->sliidx[totalslices], flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqSELLInvalidateDiagonal(Mat A)
@@ -2196,7 +2196,7 @@ PetscErrorCode MatSeqSELLInvalidateDiagonal(Mat A)
 
   PetscFunctionBegin;
   a->idiagvalid = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConjugate_SeqSELL(Mat A)
@@ -2211,5 +2211,5 @@ PetscErrorCode MatConjugate_SeqSELL(Mat A)
 #else
   PetscFunctionBegin;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

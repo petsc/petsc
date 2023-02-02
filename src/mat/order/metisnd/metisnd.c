@@ -79,5 +79,5 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat, MatOrderingType type
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nrow, perm, PETSC_COPY_VALUES, row));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nrow, perm, PETSC_COPY_VALUES, col));
   PetscCall(PetscFree4(xadj, adjncy, perm, iperm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

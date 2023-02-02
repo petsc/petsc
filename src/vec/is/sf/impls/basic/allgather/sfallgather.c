@@ -27,7 +27,7 @@ PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
   sf->persistent                  = PETSC_FALSE;
   sf->nleafreqs                   = 0; /* MPI collectives only need one request. We treat it as a root request. */
   dat->nrootreqs                  = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
@@ -47,7 +47,7 @@ static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit,
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
   PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
   PetscCallMPI(MPIU_Iallgather(rootbuf, sendcount, unit, leafbuf, sendcount, unit, comm, req));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
@@ -83,7 +83,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
     PetscCallMPI(MPI_Reduce(leafbuf, link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], count, link->basicunit, op, 0, comm)); /* Must do reduce with MPI builtin datatype basicunit */
     PetscCallMPI(MPIU_Iscatter(link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], recvcount, unit, rootbuf, recvcount, unit, 0 /*rank 0*/, comm, req));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata)
@@ -100,7 +100,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit
     PetscCall((*link->Memcpy)(link, PETSC_MEMTYPE_DEVICE, leafdata, PETSC_MEMTYPE_HOST, link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST], sf->leafbuflen[PETSCSF_REMOTE] * link->unitbytes));
   }
   PetscCall(PetscSFLinkReclaim(sf, &link));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
@@ -129,5 +129,5 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

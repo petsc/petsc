@@ -35,7 +35,7 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   for (i=0; i<len-1; i++) {
     if ((*out)[i] == '\\' && (*out)[i+1] == 'n') {(*out)[i] = ' '; (*out)[i+1] = '\n';}
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN void petscfprintf_(MPI_Comm *comm,FILE **file,char* fname,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len1)

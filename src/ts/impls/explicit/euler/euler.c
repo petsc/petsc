@@ -22,24 +22,24 @@ static PetscErrorCode TSStep_Euler(TS ts)
   PetscCall(TSAdaptCheckStage(ts->adapt, ts, ts->ptime, solution, &stageok));
   if (!stageok) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(TSFunctionDomainError(ts, ts->ptime + ts->time_step, update, &stageok));
   if (!stageok) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(TSAdaptChoose(ts->adapt, ts, ts->time_step, NULL, &next_time_step, &accept));
   if (!accept) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecCopy(update, solution));
 
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
 
@@ -52,7 +52,7 @@ static PetscErrorCode TSSetUp_Euler(TS ts)
   PetscCall(VecDuplicate(ts->vec_sol, &euler->update));
   PetscCall(TSGetAdapt(ts, &ts->adapt));
   PetscCall(TSAdaptCandidatesClear(ts->adapt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_Euler(TS ts)
@@ -61,7 +61,7 @@ static PetscErrorCode TSReset_Euler(TS ts)
 
   PetscFunctionBegin;
   PetscCall(VecDestroy(&euler->update));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_Euler(TS ts)
@@ -69,20 +69,20 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
   PetscFunctionBegin;
   PetscCall(TSReset_Euler(ts));
   PetscCall(PetscFree(ts->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
 
 static PetscErrorCode TSSetFromOptions_Euler(TS ts, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_Euler(TS ts, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_Euler(TS ts, PetscReal t, Vec X)
@@ -94,7 +94,7 @@ static PetscErrorCode TSInterpolate_Euler(TS ts, PetscReal t, Vec X)
   PetscFunctionBegin;
   PetscCall(VecWAXPY(X, -ts->time_step, update, ts->vec_sol));
   PetscCall(VecAXPBY(X, 1.0 - alpha, alpha, ts->vec_sol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeLinearStability_Euler(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
@@ -102,7 +102,7 @@ static PetscErrorCode TSComputeLinearStability_Euler(TS ts, PetscReal xr, PetscR
   PetscFunctionBegin;
   *yr = 1.0 + xr;
   *yi = xi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------ */
 
@@ -131,5 +131,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   ts->ops->linearstability = TSComputeLinearStability_Euler;
   ts->default_adapt_type   = TSADAPTNONE;
   ts->usessnes             = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -24,7 +24,7 @@ PetscErrorCode DumpCSR(Mat A, PetscInt shift, PetscBool symmetric, PetscBool com
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   }
   PetscCall(MatRestoreRowIJ(A, shift, symmetric, compressed, &nr, &ia, &ja, &done));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

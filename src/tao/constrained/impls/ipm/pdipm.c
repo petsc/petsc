@@ -32,7 +32,7 @@ static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao, Vec x)
     PetscCall(TaoComputeInequalityConstraints(tao, x, tao->constraints_inequality));
     PetscCall(TaoComputeJacobianInequality(tao, x, tao->jacobian_inequality, tao->jacobian_inequality_pre));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -131,7 +131,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x)
   PetscCall(VecRestoreArrayRead(x, &xarr));
   PetscCall(VecRestoreArrayRead(tao->XU, &xuarr));
   PetscCall(VecRestoreArrayRead(tao->XL, &xlarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -201,7 +201,7 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
   if (pdipm->Nxbox) PetscCall(ISCreateGeneral(comm, pdipm->nxbox, ixbox, PETSC_COPY_VALUES, &pdipm->isxbox));
   if (pdipm->Nxfree) PetscCall(ISCreateGeneral(comm, pdipm->nxfree, ixfree, PETSC_COPY_VALUES, &pdipm->isxfree));
   PetscCall(PetscFree5(ixlb, ixub, ixfixed, ixbox, ixfree));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -257,7 +257,7 @@ static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
   }
 
   PetscCall(VecRestoreArrayWrite(pdipm->X, &Xarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -429,7 +429,7 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, v
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -541,7 +541,7 @@ static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, void *ctx)
 
   PetscCall(VecRestoreArrayRead(X, &Xarr));
   PetscCall(VecRestoreArrayWrite(F, &Farr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -615,7 +615,7 @@ static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, vo
   tao->residual = PetscSqrtReal(res[0] * res[0] + res[1] * res[1]);
   tao->cnorm    = PetscSqrtReal(cnorm[0] * cnorm[0] + cnorm[1] * cnorm[1]);
   tao->step     = pdipm->mu;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -636,7 +636,7 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCCHOLESKY, &isCHOL));
-  if (!isCHOL) PetscFunctionReturn(0);
+  if (!isCHOL) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PCFactorGetMatrix(pc, &Factor));
   PetscCall(MatGetInertia(Factor, &nneg, &nzero, &npos));
@@ -677,7 +677,7 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
     PetscCall(PCSetUp(pc));
     PetscCall(MatGetInertia(Factor, &nneg, &nzero, &npos));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -692,7 +692,7 @@ PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
   PetscCall(KSPGetApplicationContext(ksp, &tao));
   pdipm = (TAO_PDIPM *)tao->data;
   PetscCall(KKTAddShifts(tao, pdipm->snes, pdipm->X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -787,7 +787,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
 
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   if (tao->reason) PetscCall(SNESSetConvergedReason(snes, SNES_CONVERGED_FNORM_ABS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -840,7 +840,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
     /* Check TAO convergence */
     PetscCheck(!PetscIsInfOrNanReal(pdipm->obj), PETSC_COMM_SELF, PETSC_ERR_SUP, "User-provided compute function generated Inf or NaN");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -862,7 +862,7 @@ PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Number of prime=%" PetscInt_FMT ", Number of dual=%" PetscInt_FMT "\n", pdipm->Nx + pdipm->Nci, pdipm->Nce + pdipm->Nci));
   if (pdipm->kkt_pd) PetscCall(PetscViewerASCIIPrintf(viewer, "KKT shifts deltaw=%g, deltac=%g\n", (double)pdipm->deltaw, (double)pdipm->deltac));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1377,7 +1377,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1442,7 +1442,7 @@ PetscErrorCode TaoDestroy_PDIPM(Tao tao)
   /* Destroy Dual */
   PetscCall(VecDestroy(&tao->DE)); /* equality dual */
   PetscCall(VecDestroy(&tao->DI)); /* dinequality dual */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -1458,7 +1458,7 @@ PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsOb
   PetscCall(PetscOptionsBool("-tao_pdipm_symmetric_kkt", "Solve non reduced symmetric KKT system", NULL, pdipm->solve_symmetric_kkt, &pdipm->solve_symmetric_kkt, NULL));
   PetscCall(PetscOptionsBool("-tao_pdipm_kkt_shift_pd", "Add shifts to make KKT matrix positive definite", NULL, pdipm->kkt_pd, &pdipm->kkt_pd, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1519,5 +1519,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
   PetscCall(SNESGetKSP(pdipm->snes, &tao->ksp));
   PetscCall(PetscObjectReference((PetscObject)tao->ksp));
   PetscCall(KSPSetApplicationContext(tao->ksp, (void *)tao));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -18,7 +18,7 @@ PetscErrorCode Print_memory(PetscLogDouble mem)
   max_mem = max_mem / 1024.0 / 1024.0;
   min_mem = min_mem / 1024.0 / 1024.0;
   PetscCall(PetscPrintf(MPI_COMM_WORLD, " max and min memory across all processors %.4f Mb, %.4f Mb.\n", (double)max_mem, (double)min_mem));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -75,7 +75,7 @@ PetscErrorCode TestMPIDerivedDataType()
     PetscCallMPI(MPI_Type_free(&rtype2));
   }
   PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

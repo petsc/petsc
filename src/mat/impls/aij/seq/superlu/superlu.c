@@ -87,7 +87,7 @@ static PetscErrorCode MatView_Info_SuperLU(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  ILU_Norm: %" PetscInt_FMT "\n", options.ILU_Norm));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  ILU_MILU: %" PetscInt_FMT "\n", options.ILU_MILU));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SuperLU_Private(Mat A, Vec b, Vec x)
@@ -100,7 +100,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A, Vec b, Vec x)
   static PetscBool   cite = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (lu->lwork == -1) PetscFunctionReturn(0);
+  if (lu->lwork == -1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscCitationsRegister("@article{superlu99,\n  author  = {James W. Demmel and Stanley C. Eisenstat and\n             John R. Gilbert and Xiaoye S. Li and Joseph W. H. Liu},\n  title = {A supernodal approach to sparse partial "
                                    "pivoting},\n  journal = {SIAM J. Matrix Analysis and Applications},\n  year = {1999},\n  volume  = {20},\n  number = {3},\n  pages = {720-755}\n}\n",
                                    &cite));
@@ -186,7 +186,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A, Vec b, Vec x)
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSolve__SuperLU():\n"));
     PetscStackCallExternalVoid("SuperLU:StatPrint", StatPrint(&lu->stat));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SuperLU(Mat A, Vec b, Vec x)
@@ -198,14 +198,14 @@ PetscErrorCode MatSolve_SuperLU(Mat A, Vec b, Vec x)
   if (A->factorerrortype) {
     PetscCall(PetscInfo(A, "MatSolve is called with singular matrix factor, skip\n"));
     PetscCall(VecSetInf(x));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   oldOption         = lu->options.Trans;
   lu->options.Trans = TRANS;
   PetscCall(MatSolve_SuperLU_Private(A, b, x));
   lu->options.Trans = oldOption;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolveTranspose_SuperLU(Mat A, Vec b, Vec x)
@@ -217,14 +217,14 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A, Vec b, Vec x)
   if (A->factorerrortype) {
     PetscCall(PetscInfo(A, "MatSolve is called with singular matrix factor, skip\n"));
     PetscCall(VecSetInf(x));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   oldOption         = lu->options.Trans;
   lu->options.Trans = NOTRANS;
   PetscCall(MatSolve_SuperLU_Private(A, b, x));
   lu->options.Trans = oldOption;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorInfo *info)
@@ -346,7 +346,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
   F->ops->solve          = MatSolve_SuperLU;
   F->ops->solvetranspose = MatSolveTranspose_SuperLU;
   F->ops->matsolve       = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_SuperLU(Mat A)
@@ -376,7 +376,7 @@ static PetscErrorCode MatDestroy_SuperLU(Mat A)
   /* clear composed functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSuperluSetILUDropTol_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_SuperLU(Mat A, PetscViewer viewer)
@@ -390,7 +390,7 @@ static PetscErrorCode MatView_SuperLU(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_SuperLU(A, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatSolve_SuperLU(Mat A, Mat B, Mat X)
@@ -405,7 +405,7 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A, Mat B, Mat X)
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Matrix X must be MATDENSE matrix");
   lu->options.Trans = TRANS;
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MatMatSolve_SuperLU() is not implemented yet");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
@@ -472,7 +472,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F, Mat A, IS r, IS c, cons
   if (lu->options.Equil == YES && !lu->A_dup) { /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
     PetscCall(MatDuplicate_SeqAIJ(A, MAT_COPY_VALUES, &lu->A_dup));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
@@ -481,7 +481,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
 
   PetscFunctionBegin;
   lu->options.ILU_DropTol = dtol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -509,14 +509,14 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F, PetscReal dtol)
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(F, dtol, 2);
   PetscTryMethod(F, "MatSuperluSetILUDropTol_C", (Mat, PetscReal), (F, dtol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSUPERLU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -636,7 +636,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A, MatFactorType ftype, Ma
   B->data = lu;
 
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetFactor_seqsell_superlu(Mat A, MatFactorType ftype, Mat *F)
@@ -647,7 +647,7 @@ static PetscErrorCode MatGetFactor_seqsell_superlu(Mat A, MatFactorType ftype, M
   PetscCall(MatGetFactor_seqaij_superlu(A, ftype, F));
   lu                 = (Mat_SuperLU *)((*F)->data);
   lu->needconversion = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void)
@@ -657,5 +657,5 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU, MATSEQAIJ, MAT_FACTOR_ILU, MatGetFactor_seqaij_superlu));
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU, MATSEQSELL, MAT_FACTOR_LU, MatGetFactor_seqsell_superlu));
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU, MATSEQSELL, MAT_FACTOR_ILU, MatGetFactor_seqsell_superlu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

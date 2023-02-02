@@ -75,7 +75,7 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
     PetscCall(PetscFree(nnz_d));
     PetscCall(PetscFree(nnz_o));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
@@ -99,26 +99,26 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
     if (same) {
       PetscCall(MatMPIAIJGetSeqAIJ(A, &A_d, &A_o, &colmap));
       PetscCall(MatHYPRE_IJMatrixPreallocate(A_d, A_o, hA->ij));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIBAIJ, &same));
     if (same) {
       PetscCall(MatMPIBAIJGetSeqBAIJ(A, &A_d, &A_o, &colmap));
       PetscCall(MatHYPRE_IJMatrixPreallocate(A_d, A_o, hA->ij));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &same));
     if (same) {
       PetscCall(MatHYPRE_IJMatrixPreallocate(A, NULL, hA->ij));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQBAIJ, &same));
     if (same) {
       PetscCall(MatHYPRE_IJMatrixPreallocate(A, NULL, hA->ij));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
@@ -138,12 +138,12 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
   PetscCall(MatGetSize(A, &nr, &nc));
   if (flg && nr == nc) {
     PetscCall(MatHYPRE_IJMatrixFastCopy_MPIAIJ(A, ij));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &flg));
   if (flg) {
     PetscCall(MatHYPRE_IJMatrixFastCopy_SeqAIJ(A, ij));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Do not need Aux since we have done precise i[],j[] allocation in MatHYPRE_CreateFromMat() */
@@ -160,7 +160,7 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
     }
     PetscCall(MatRestoreRow(A, i, &ncols, &cols, &values));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
@@ -197,7 +197,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
 
   aux_matrix                               = (hypre_AuxParCSRMatrix *)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
@@ -266,7 +266,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 
   aux_matrix                               = (hypre_AuxParCSRMatrix *)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, Mat *B)
@@ -377,7 +377,7 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY));
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
@@ -410,7 +410,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
   (*B)->preallocated = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse, Mat *B)
@@ -641,7 +641,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       PetscCall(PetscContainerDestroy(&c));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
@@ -778,7 +778,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   hypre_ParCSRMatrixColMapOffd(tA) = (HYPRE_BigInt *)garray;
   if (!hypre_ParCSRMatrixCommPkg(tA)) PetscCallExternal(hypre_MatvecCommPkgCreate, tA);
   *hA = tA;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
@@ -822,7 +822,7 @@ static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA
   hypre_ParCSRMatrixColMapOffd(*hA) = NULL;
   hypre_ParCSRMatrixDestroy(*hA);
   *hA = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* calls RAP from BoomerAMG:
@@ -855,7 +855,7 @@ static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMa
   if (P_owns_col_starts) hypre_ParCSRMatrixSetColStartsOwner(hP, 1);
   if (R_owns_row_starts) hypre_ParCSRMatrixSetRowStartsOwner(hR, 1);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A, Mat P, Mat C)
@@ -875,7 +875,7 @@ static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A, Mat P, Mat C)
 
   PetscCall(MatAIJRestoreParCSR_Private(A, &hA));
   PetscCall(MatAIJRestoreParCSR_Private(P, &hP));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat A, Mat P, PetscReal fill, Mat C)
@@ -884,7 +884,7 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat A, Mat P, PetscRe
   PetscCall(MatSetType(C, MATAIJ));
   C->ops->ptapnumeric    = MatPtAPNumeric_AIJ_AIJ_wHYPRE;
   C->ops->productnumeric = MatProductNumeric_PtAP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatPtAPNumeric_AIJ_HYPRE(Mat A, Mat P, Mat C)
@@ -911,7 +911,7 @@ static PetscErrorCode MatPtAPNumeric_AIJ_HYPRE(Mat A, Mat P, Mat C)
   /* create temporary matrix and merge to C */
   PetscCall(MatCreateFromParCSR(ptapparcsr, ((PetscObject)C)->type_name, PETSC_OWN_POINTER, &B));
   PetscCall(MatHeaderMerge(C, &B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatPtAPNumeric_HYPRE_HYPRE(Mat A, Mat P, Mat C)
@@ -938,7 +938,7 @@ static PetscErrorCode MatPtAPNumeric_HYPRE_HYPRE(Mat A, Mat P, Mat C)
   PetscCall(MatHYPRE_ParCSR_RAP(Pparcsr, Aparcsr, Pparcsr, &ptapparcsr));
   PetscCall(MatCreateFromParCSR(ptapparcsr, MATHYPRE, PETSC_OWN_POINTER, &B));
   PetscCall(MatHeaderMerge(C, &B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* calls hypre_ParMatmul
@@ -957,7 +957,7 @@ static PetscErrorCode MatHYPRE_ParCSR_MatMatMult(hypre_ParCSRMatrix *hA, hypre_P
   *hAB = hypre_ParMatmul(hA, hB);
 #endif
   PetscStackPop;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultNumeric_AIJ_AIJ_wHYPRE(Mat A, Mat B, Mat C)
@@ -977,7 +977,7 @@ static PetscErrorCode MatMatMultNumeric_AIJ_AIJ_wHYPRE(Mat A, Mat B, Mat C)
 
   PetscCall(MatAIJRestoreParCSR_Private(A, &hA));
   PetscCall(MatAIJRestoreParCSR_Private(B, &hB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat A, Mat B, PetscReal fill, Mat C)
@@ -986,7 +986,7 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat A, Mat B, Pets
   PetscCall(MatSetType(C, MATAIJ));
   C->ops->matmultnumeric = MatMatMultNumeric_AIJ_AIJ_wHYPRE;
   C->ops->productnumeric = MatProductNumeric_AB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultNumeric_HYPRE_HYPRE(Mat A, Mat B, Mat C)
@@ -1021,7 +1021,7 @@ static PetscErrorCode MatMatMultNumeric_HYPRE_HYPRE(Mat A, Mat B, Mat C)
   C->product             = product;
   C->ops->matmultnumeric = MatMatMultNumeric_HYPRE_HYPRE;
   C->ops->productnumeric = MatProductNumeric_AB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat A, Mat B, Mat C, Mat D)
@@ -1039,14 +1039,14 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat
   PetscCall(MatAIJRestoreParCSR_Private(A, &hA));
   PetscCall(MatAIJRestoreParCSR_Private(B, &hB));
   PetscCall(MatAIJRestoreParCSR_Private(C, &hC));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat A, Mat B, Mat C, PetscReal fill, Mat D)
 {
   PetscFunctionBegin;
   PetscCall(MatSetType(D, MATAIJ));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------- */
@@ -1054,7 +1054,7 @@ static PetscErrorCode MatProductSymbolic_AB_HYPRE(Mat C)
 {
   PetscFunctionBegin;
   C->ops->productnumeric = MatProductNumeric_AB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_HYPRE_AB(Mat C)
@@ -1068,16 +1068,16 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_AB(Mat C)
     PetscCall(MatSetType(C, MATHYPRE));
     C->ops->productsymbolic = MatProductSymbolic_AB_HYPRE;
     C->ops->matmultnumeric  = MatMatMultNumeric_HYPRE_HYPRE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSymbolic_PtAP_HYPRE(Mat C)
 {
   PetscFunctionBegin;
   C->ops->productnumeric = MatProductNumeric_PtAP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_HYPRE_PtAP(Mat C)
@@ -1096,7 +1096,7 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_PtAP(Mat C)
     PetscCall(MatSetType(C, MATHYPRE));
     C->ops->productsymbolic = MatProductSymbolic_PtAP_HYPRE;
     C->ops->ptapnumeric     = MatPtAPNumeric_HYPRE_HYPRE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* A is AIJ, P is Hypre, C = PtAP can be either AIJ or Hypre format */
@@ -1118,7 +1118,7 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_PtAP(Mat C)
   } else SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatPtAP outtype is not supported");
   C->ops->productsymbolic = MatProductSymbolic_PtAP_HYPRE;
   C->ops->ptapnumeric     = MatPtAPNumeric_AIJ_HYPRE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_HYPRE(Mat C)
@@ -1136,7 +1136,7 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE(Mat C)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------- */
@@ -1145,14 +1145,14 @@ static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatHYPRE_MultKernel_Private(A, 1.0, x, 0.0, y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatHYPRE_MultKernel_Private(A, 1.0, x, 0.0, y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultAdd_HYPRE(Mat A, Vec x, Vec y, Vec z)
@@ -1160,7 +1160,7 @@ static PetscErrorCode MatMultAdd_HYPRE(Mat A, Vec x, Vec y, Vec z)
   PetscFunctionBegin;
   if (y != z) PetscCall(VecCopy(y, z));
   PetscCall(MatHYPRE_MultKernel_Private(A, 1.0, x, 1.0, z, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTransposeAdd_HYPRE(Mat A, Vec x, Vec y, Vec z)
@@ -1168,7 +1168,7 @@ static PetscErrorCode MatMultTransposeAdd_HYPRE(Mat A, Vec x, Vec y, Vec z)
   PetscFunctionBegin;
   if (y != z) PetscCall(VecCopy(y, z));
   PetscCall(MatHYPRE_MultKernel_Private(A, 1.0, x, 1.0, z, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* y = a * A * x + b * y or y = a * A^t * x + b * y depending on trans */
@@ -1200,7 +1200,7 @@ static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, HYPRE_Complex a, Vec x,
   }
   PetscCall(VecHYPRE_IJVectorPopVec(hA->x));
   PetscCall(VecHYPRE_IJVectorPopVec(hA->b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_HYPRE(Mat A)
@@ -1235,14 +1235,14 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", NULL));
   PetscCall(PetscFree(A->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetUp_HYPRE(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(MatHYPRESetPreallocation(A, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 //TODO FIX hypre_CSRMatrixMatvecOutOfPlace
@@ -1261,7 +1261,7 @@ static PetscErrorCode MatBindToCPU_HYPRE(Mat A, PetscBool bind)
   }
   if (hA->x) PetscCall(VecHYPRE_IJBindToCPU(hA->x, bind));
   if (hA->b) PetscCall(VecHYPRE_IJBindToCPU(hA->b, bind));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -1331,7 +1331,7 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   PetscCall(MatBindToCPU_HYPRE(A, A->boundtocpu));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetArray_HYPRE(Mat A, PetscInt size, void **array)
@@ -1351,7 +1351,7 @@ static PetscErrorCode MatGetArray_HYPRE(Mat A, PetscInt size, void **array)
   }
 
   hA->available = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatRestoreArray_HYPRE(Mat A, void **array)
@@ -1361,7 +1361,7 @@ static PetscErrorCode MatRestoreArray_HYPRE(Mat A, void **array)
   PetscFunctionBegin;
   *array        = NULL;
   hA->available = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], PetscInt nc, const PetscInt cols[], const PetscScalar v[], InsertMode ins)
@@ -1386,7 +1386,7 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
   }
   if (!nzc) {
     PetscCall(MatRestoreArray_HYPRE(A, &array));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 #if 0 //defined(PETSC_HAVE_HYPRE_DEVICE)
@@ -1431,7 +1431,7 @@ static PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows
   }
 
   PetscCall(MatRestoreArray_HYPRE(A, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
@@ -1504,7 +1504,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
   /* Match AIJ logic */
   A->preallocated = PETSC_TRUE;
   A->assembled    = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1543,7 +1543,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscTryMethod(A, "MatHYPRESetPreallocation_C", (Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]), (A, dnz, dnnz, onz, onnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1682,7 +1682,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
     if (copymode != PETSC_OWN_POINTER) hA->inner_free = PETSC_FALSE;
     PetscCall(MatDestroy(&T));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr)
@@ -1695,7 +1695,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
   PetscCallExternal(HYPRE_IJMatrixGetObjectType, hA->ij, &type);
   PetscCheck(type == HYPRE_PARCSR, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "HYPRE_IJMatrix is not of type HYPRE_PARCSR");
   PetscCallExternal(HYPRE_IJMatrixGetObject, hA->ij, (void **)parcsr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1719,7 +1719,7 @@ PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscUseMethod(A, "MatHYPREGetParCSR_C", (Mat, hypre_ParCSRMatrix **), (A, parcsr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMissingDiagonal_HYPRE(Mat A, PetscBool *missing, PetscInt *dd)
@@ -1749,23 +1749,23 @@ static PetscErrorCode MatMissingDiagonal_HYPRE(Mat A, PetscBool *missing, PetscI
       for (j = ii[i]; j < ii[i + 1] && !found; j++) found = (jj[j] == i) ? PETSC_TRUE : PETSC_FALSE;
 
       if (!found) {
-        PetscInfo(A, "Matrix is missing local diagonal entry %" PetscInt_FMT "\n", i);
+        PetscCall(PetscInfo(A, "Matrix is missing local diagonal entry %" PetscInt_FMT "\n", i));
         if (missing) *missing = PETSC_TRUE;
         if (dd) *dd = i + rst;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     if (!size) {
-      PetscInfo(A, "Matrix has no diagonal entries therefore is missing diagonal\n");
+      PetscCall(PetscInfo(A, "Matrix has no diagonal entries therefore is missing diagonal\n"));
       if (missing) *missing = PETSC_TRUE;
       if (dd) *dd = rst;
     }
   } else {
-    PetscInfo(A, "Matrix has no diagonal entries therefore is missing diagonal\n");
+    PetscCall(PetscInfo(A, "Matrix has no diagonal entries therefore is missing diagonal\n"));
     if (missing) *missing = PETSC_TRUE;
     if (dd) *dd = rst;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
@@ -1806,7 +1806,7 @@ static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
     for (i = 0; i < ii[size]; i++) a[i] *= hs;
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroRowsColumns_HYPRE(Mat A, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -1826,7 +1826,7 @@ static PetscErrorCode MatZeroRowsColumns_HYPRE(Mat A, PetscInt numRows, const Pe
   }
   PetscCallExternal(hypre_ParCSRMatrixEliminateRowsCols, parcsr, numRows, lrows);
   PetscCall(PetscFree(lrows));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroEntries_HYPRE_CSRMatrix(hypre_CSRMatrix *ha)
@@ -1842,7 +1842,7 @@ static PetscErrorCode MatZeroEntries_HYPRE_CSRMatrix(hypre_CSRMatrix *ha)
 
     if (a) PetscCall(PetscArrayzero(a, ii[size]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatZeroEntries_HYPRE(Mat A)
@@ -1859,7 +1859,7 @@ PetscErrorCode MatZeroEntries_HYPRE(Mat A)
     PetscCall(MatZeroEntries_HYPRE_CSRMatrix(hypre_ParCSRMatrixDiag(parcsr)));
     PetscCall(MatZeroEntries_HYPRE_CSRMatrix(hypre_ParCSRMatrixOffd(parcsr)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt N, const PetscInt rows[], HYPRE_Complex diag)
@@ -1869,7 +1869,7 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
   HYPRE_Complex *a;
 
   PetscFunctionBegin;
-  if (!hA) PetscFunctionReturn(0);
+  if (!hA) PetscFunctionReturn(PETSC_SUCCESS);
 
   i = hypre_CSRMatrixI(hA);
   j = hypre_CSRMatrixJ(hA);
@@ -1885,7 +1885,7 @@ static PetscErrorCode MatZeroRows_HYPRE_CSRMatrix(hypre_CSRMatrix *hA, PetscInt 
       if (j[jj] == irow) a[jj] = diag;
       else a[jj] = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroRows_HYPRE(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -1907,16 +1907,16 @@ static PetscErrorCode MatZeroRows_HYPRE(Mat A, PetscInt N, const PetscInt rows[]
   PetscCall(MatZeroRows_HYPRE_CSRMatrix(hypre_ParCSRMatrixOffd(parcsr), len, lrows, 0.0));
 
   PetscCall(PetscFree(lrows));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyBegin_HYPRE(Mat mat, MatAssemblyType mode)
 {
   PetscFunctionBegin;
-  if (mat->nooffprocentries) PetscFunctionReturn(0);
+  if (mat->nooffprocentries) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(MatStashScatterBegin_Private(mat, &mat->stash, mat->rmap->range));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
@@ -1930,7 +1930,7 @@ static PetscErrorCode MatGetRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, PetscIn
   /* call HYPRE API */
   PetscCallExternal(HYPRE_ParCSRMatrixGetRow, parcsr, row, &hnz, (HYPRE_BigInt **)idx, (HYPRE_Complex **)v);
   if (nz) *nz = (PetscInt)hnz;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
@@ -1944,7 +1944,7 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, Pet
   /* call HYPRE API */
   hnz = nz ? (HYPRE_Int)(*nz) : 0;
   PetscCallExternal(HYPRE_ParCSRMatrixRestoreRow, parcsr, row, &hnz, (HYPRE_BigInt **)idx, (HYPRE_Complex **)v);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
@@ -1953,7 +1953,7 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[
   PetscInt   i;
 
   PetscFunctionBegin;
-  if (!m || !n) PetscFunctionReturn(0);
+  if (!m || !n) PetscFunctionReturn(PETSC_SUCCESS);
   /* Ignore negative row indices
    * And negative column indices should be automatically ignored in hypre
    * */
@@ -1963,7 +1963,7 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[
       PetscCallExternal(HYPRE_IJMatrixGetValues, hA->ij, 1, &hn, (HYPRE_BigInt *)&idxm[i], (HYPRE_BigInt *)idxn, (HYPRE_Complex *)(v + i * n));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetOption_HYPRE(Mat A, MatOption op, PetscBool flg)
@@ -1981,7 +1981,7 @@ static PetscErrorCode MatSetOption_HYPRE(Mat A, MatOption op, PetscBool flg)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
@@ -1990,7 +1990,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(view, &format));
-  if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
+  if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(PETSC_SUCCESS);
   if (format != PETSC_VIEWER_NATIVE) {
     Mat                 B;
     hypre_ParCSRMatrix *parcsr;
@@ -2020,7 +2020,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
       PetscCall(PetscViewerASCIIPrintf(view, "Matrix file: %s.%05d\n", filename, 0));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDuplicate_HYPRE(Mat A, MatDuplicateOption op, Mat *B)
@@ -2037,7 +2037,7 @@ static PetscErrorCode MatDuplicate_HYPRE(Mat A, MatDuplicateOption op, Mat *B)
     cpmode = PETSC_COPY_VALUES;
   }
   PetscCall(MatCreateFromParCSR(parcsr, MATHYPRE, cpmode, B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
@@ -2055,7 +2055,7 @@ static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
   } else {
     PetscCall(MatCopy_Basic(A, B, str));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
@@ -2086,7 +2086,7 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
     for (i = 0; i < A->rmap->n; i++) a[i] = data[diag[i]];
     PetscCall(VecRestoreArray(d, (PetscScalar **)&a));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscblaslapack.h>
@@ -2163,7 +2163,7 @@ static PetscErrorCode MatAXPY_HYPRE(Mat Y, PetscScalar a, Mat X, MatStructure st
     PetscCall(MatHeaderReplace(Y, &B));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
@@ -2255,7 +2255,7 @@ static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, Pe
   /* Record cooMat for use in MatSetValuesCOO_HYPRE */
   hmat->cooMat  = cooMat;
   hmat->memType = hypreMemtype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], InsertMode imode)
@@ -2289,7 +2289,7 @@ static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], Inse
     PetscCall(MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(A, hmat->diag));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -2370,12 +2370,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscCall(MatSetVecType(B, VECCUDA));
   #endif
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode hypre_array_destroy(void *ptr)
 {
   PetscFunctionBegin;
   hypre_TFree(ptr, HYPRE_MEMORY_HOST);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

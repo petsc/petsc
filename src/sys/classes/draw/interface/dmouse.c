@@ -35,7 +35,7 @@ PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw, PetscDrawButton *button, 
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidPointer(button, 2);
   *button = PETSC_BUTTON_NONE;
-  if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
+  if (!draw->ops->getmousebutton) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscUseTypeMethod(draw, getmousebutton, button, x_user, y_user, x_phys, y_phys);
 
@@ -49,5 +49,5 @@ PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw, PetscDrawButton *button, 
   if (y_user) *y_user = bcast[1];
   if (x_phys) *x_phys = bcast[2];
   if (y_phys) *y_phys = bcast[3];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

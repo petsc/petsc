@@ -44,7 +44,7 @@ static PetscErrorCode PetscRandomSeed_Rander48(PetscRandom r)
   r48->mult[1] = RANDER48_MULT_1;
   r48->mult[2] = RANDER48_MULT_2;
   r48->add     = RANDER48_ADD;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *val)
@@ -64,7 +64,7 @@ static PetscErrorCode PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *v
   if (r->iset) *val = r->width * _dorander48(r48) + r->low;
   else *val = _dorander48(r48);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal *val)
@@ -79,14 +79,14 @@ static PetscErrorCode PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal 
   if (r->iset) *val = r->width * _dorander48(r48) + r->low;
   else *val = _dorander48(r48);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscRandomDestroy_Rander48(PetscRandom r)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(r->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
@@ -129,5 +129,5 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
   r->data = r48;
   PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRANDER48));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

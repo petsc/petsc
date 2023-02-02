@@ -34,7 +34,7 @@ PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(K
   PetscFunctionBegin;
   PetscCall(KSPInitializePackage());
   PetscCall(PetscFunctionListAdd(&KSPGuessList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -49,11 +49,11 @@ PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(K
 PetscErrorCode KSPGuessRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (KSPGuessRegisterAllCalled) PetscFunctionReturn(0);
+  if (KSPGuessRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   KSPGuessRegisterAllCalled = PETSC_TRUE;
   PetscCall(KSPGuessRegister(KSPGUESSFISCHER, KSPGuessCreate_Fischer));
   PetscCall(KSPGuessRegister(KSPGUESSPOD, KSPGuessCreate_POD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -73,7 +73,7 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscTryTypeMethod(guess, setfromoptions);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -94,7 +94,7 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscTryTypeMethod(guess, settolerance, tol);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -112,16 +112,16 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
 {
   PetscFunctionBegin;
-  if (!*guess) PetscFunctionReturn(0);
+  if (!*guess) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*guess), KSPGUESS_CLASSID, 1);
   if (--((PetscObject)(*guess))->refct > 0) {
     *guess = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscTryTypeMethod((*guess), destroy);
   PetscCall(MatDestroy(&(*guess)->A));
   PetscCall(PetscHeaderDestroy(guess));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -153,7 +153,7 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view)
     PetscTryTypeMethod(guess, view, view);
     PetscCall(PetscViewerASCIIPopTab(view));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -182,7 +182,7 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
   PetscCall(PetscHeaderCreate(tguess, KSPGUESS_CLASSID, "KSPGuess", "Initial guess for Krylov Method", "KSPGuess", comm, KSPGuessDestroy, KSPGuessView));
   tguess->omatstate = -1;
   *guess            = tguess;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -211,7 +211,7 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)guess, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(KSPGuessList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)guess), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested KSPGuess type %s", type);
@@ -221,7 +221,7 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
   PetscCall(PetscMemzero(guess->ops, sizeof(struct _KSPGuessOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)guess, type));
   PetscCall((*r)(guess));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -245,7 +245,7 @@ PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)guess)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -269,7 +269,7 @@ PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
   PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(sol, VEC_CLASSID, 3);
   PetscTryTypeMethod(guess, update, rhs, sol);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -293,7 +293,7 @@ PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
   PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(sol, VEC_CLASSID, 3);
   PetscTryTypeMethod(guess, formguess, rhs, sol);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -341,5 +341,5 @@ PetscErrorCode KSPGuessSetUp(KSPGuess guess)
   PetscTryTypeMethod(guess, setup);
   guess->omatstate = matstate;
   PetscCall(MatDestroy(&omat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

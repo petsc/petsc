@@ -985,7 +985,8 @@ static inline PetscErrorCode MatSetValueLocal(Mat v, PetscInt i, PetscInt j, Pet
 M*/
 #define MatPreallocateBegin(comm, nrows, ncols, dnz, onz) \
   do { \
-    PetscInt __nrows = (nrows), __ncols = (ncols), __rstart, __start, __end = 0; \
+    PetscInt              __nrows = (nrows), __ncols = (ncols), __rstart, __end = 0; \
+    PetscInt PETSC_UNUSED __start; \
     PetscCall(PetscCalloc2(__nrows, &(dnz), __nrows, &(onz))); \
     PetscCallMPI(MPI_Scan(&__ncols, &__end, 1, MPIU_INT, MPI_SUM, comm)); \
     __start = __end - __ncols; \

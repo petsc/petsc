@@ -37,7 +37,7 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   shell->solve = solve;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -68,7 +68,7 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
   else *(void **)ctx = ((Tao_Shell *)(tao->data))->ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -97,7 +97,7 @@ PetscErrorCode TaoShellSetContext(Tao tao, void *ctx)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOSHELL, &flg));
   if (flg) shell->ctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_Shell(Tao tao)
@@ -108,32 +108,32 @@ static PetscErrorCode TaoSolve_Shell(Tao tao)
   PetscCheck(shell->solve, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Must call TaoShellSetSolve() first");
   tao->reason = TAO_CONVERGED_USER;
   PetscCall((*(shell->solve))(tao));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoDestroy_Shell(Tao tao)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoSetUp_Shell(Tao tao)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -156,5 +156,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
 
   PetscCall(PetscNew(&shell));
   tao->data = (void *)shell;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

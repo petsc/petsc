@@ -65,7 +65,7 @@ static PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal t, Petsc
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -129,7 +129,7 @@ static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info, PetscReal t, Petsc
   */
   PetscCall(MatAssemblyBegin(jacpre, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jacpre, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

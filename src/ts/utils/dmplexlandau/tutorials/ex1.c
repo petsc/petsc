@@ -42,7 +42,7 @@ PetscErrorCode landau_field_print_access_callback(DM dm, Vec x, PetscInt local_f
     PetscCall(VecViewFromOptions(x, NULL, "-ex1_vec_view")); // this causes diffs with Kokkos, etc
     PetscCall(PetscInfo(dm, "DMPlexLandauAccess user 'add' method to grid %" PetscInt_FMT ", batch %" PetscInt_FMT " and species %" PetscInt_FMT "\n", grid, b_id, ctx->species_offset[grid] + local_field));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

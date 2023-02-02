@@ -53,7 +53,7 @@ PetscErrorCode MatFinalizePackage(void)
   /* this is not ideal because it exposes SeqAIJ implementation details directly into the base Mat code */
   PetscCall(PetscFunctionListDestroy(&MatSeqAIJList));
   MatSeqAIJRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_MUMPS)
@@ -139,7 +139,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (MatPackageInitialized) PetscFunctionReturn(0);
+  if (MatPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   MatPackageInitialized = PETSC_TRUE;
   /* Initialize subpackage */
   PetscCall(MatMFFDInitializePackage());
@@ -437,7 +437,7 @@ PetscErrorCode MatInitializePackage(void)
 #endif
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(MatFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -451,7 +451,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(void)
 {
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

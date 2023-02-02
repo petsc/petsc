@@ -85,11 +85,11 @@ private:
   {
     PetscFunctionBegin;
     *id = 0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static constexpr PetscErrorCode configure_device_(PetscDevice) noexcept { return 0; }
-  PETSC_NODISCARD static constexpr PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept { return 0; }
+  PETSC_NODISCARD static constexpr PetscErrorCode configure_device_(PetscDevice) noexcept { return PETSC_SUCCESS; }
+  PETSC_NODISCARD static constexpr PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept { return PETSC_SUCCESS; }
 };
 
 template <typename D>
@@ -102,7 +102,7 @@ inline PetscErrorCode DeviceBase<D>::getDevice(PetscDevice device, PetscInt id) 
   device->ops->configure     = this->underlying().configureDevice;
   device->ops->view          = this->underlying().viewDevice;
   device->ops->getattribute  = this->underlying().getAttribute;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -110,7 +110,7 @@ inline PetscErrorCode DeviceBase<D>::configureDevice(PetscDevice device) noexcep
 {
   PetscFunctionBegin;
   PetscCall(derived_type::configure_device_(device));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -118,7 +118,7 @@ inline PetscErrorCode DeviceBase<D>::viewDevice(PetscDevice device, PetscViewer 
 {
   PetscFunctionBegin;
   PetscCall(derived_type::view_device_(device, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -126,7 +126,7 @@ inline PetscErrorCode DeviceBase<D>::getAttribute(PetscDevice device, PetscDevic
 {
   PetscFunctionBegin;
   PetscCall(derived_type::get_attribute_(device->deviceId, attr, value));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -146,7 +146,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDevice(F &&OptionsFunction, Pets
   }
   PetscCall(PetscSNPrintf(buf.data(), buflen, "%s%s", optstub, implname));
   PetscCall(OptionsFunction(PetscOptionsObject, buf.data(), std::forward<T>(args)...));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -155,7 +155,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItem
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDevice(PetscOptionsEList_Private, PetscOptionsObject, "-device_enable_", std::forward<T>(args)...));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -166,7 +166,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItem
   PetscFunctionBegin;
   PetscCall(PetscOptionDeviceInitialize(PetscOptionsObject, "How (or whether) to initialize a device", "PetscDeviceInitialize()", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[type], &type, flag));
   *inittype = static_cast<PetscDeviceInitType>(type);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -175,7 +175,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems *P
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDevice(PetscOptionsInt_Private, PetscOptionsObject, "-device_select_", std::forward<T>(args)...));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -183,7 +183,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems *P
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDeviceSelect(PetscOptionsObject, "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate()", *id, id, flag, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -192,7 +192,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems *Pet
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDevice(PetscOptionsBool_Private, PetscOptionsObject, "-device_view_", std::forward<T>(args)...));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -200,7 +200,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems *Pet
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDeviceView(PetscOptionsObject, "Display device information and assignments (forces eager initialization)", "PetscDeviceView()", *view, view, flag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -210,7 +210,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceBasic(PetscOptionItems *Pe
   PetscCall(PetscOptionDeviceInitialize(PetscOptionsObject, &initType.first, &initType.second));
   PetscCall(PetscOptionDeviceSelect(PetscOptionsObject, &initId.first, &initId.second));
   PetscCall(PetscOptionDeviceView(PetscOptionsObject, &initView.first, &initView.second));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename D>
@@ -233,7 +233,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceAll(MPI_Comm comm, std::pa
   PetscOptionsBegin(comm, nullptr, buf.data(), "Sys");
   PetscCall(PetscOptionDeviceBasic(PetscOptionsObject, initType, initId, initView));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace impl

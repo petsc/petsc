@@ -20,7 +20,7 @@ static PetscErrorCode DestroyGLVisViewerCtx_Private(void *vctx)
   for (i = 0; i < ctx->nf; i++) PetscCall(VecScatterDestroy(&ctx->scctx[i]));
   PetscCall(PetscFree(ctx->scctx));
   PetscCall(PetscFree(vctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexSampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXfield[], void *vctx)
@@ -33,7 +33,7 @@ static PetscErrorCode DMPlexSampleGLVisFields_Private(PetscObject oX, PetscInt n
     PetscCall(VecScatterBegin(ctx->scctx[f], (Vec)oX, (Vec)oXfield[f], INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(ctx->scctx[f], (Vec)oX, (Vec)oXfield[f], INSERT_VALUES, SCATTER_FORWARD));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* for FEM, it works for H1 fields only and extracts dofs at cell vertices, discarding any other dof */
@@ -218,7 +218,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
     PetscCall(VecDestroy(&Ufield[f]));
   }
   PetscCall(PetscFree7(fieldname, nlocal, bs, dims, fec_type, idxs, Ufield));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef enum {
@@ -271,7 +271,7 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
     PetscCheck(pdepth >= 0 && pdepth <= 3, PETSC_COMM_SELF, PETSC_ERR_SUP, "Depth %" PetscInt_FMT " for point %" PetscInt_FMT, csize, p);
     *cid = mfem_table_cid[pdepth][csize];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, PetscSection csec, PetscInt *nv, PetscInt vids[])
@@ -302,7 +302,7 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
     for (q = 0; q < dof / sdim; q++) vids[q] = off / sdim + q;
   }
   *nv = q;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GLVisCreateFE(PetscFE femIn, char name[32], PetscFE *fem, IS *perm)
@@ -440,7 +440,7 @@ static PetscErrorCode GLVisCreateFE(PetscFE femIn, char name[32], PetscFE *fem, 
   PetscCall(PetscDualSpaceDestroy(&Q));
   PetscCall(PetscQuadratureDestroy(&q));
   PetscCall(PetscQuadratureDestroy(&fq));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -626,7 +626,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", sdim));
     PetscCall(PetscBTDestroy(&pown));
     PetscCall(VecDestroy(&hovec));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (enable_mfem) {
@@ -1174,12 +1174,12 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   }
   PetscCall(PetscBTDestroy(&pown));
   PetscCall(VecDestroy(&hovec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexView_GLVis(DM dm, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscCall(DMView_GLVis(dm, viewer, DMPlexView_GLVis_ASCII));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

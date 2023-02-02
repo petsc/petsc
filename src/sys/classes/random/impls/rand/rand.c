@@ -5,7 +5,7 @@ PetscErrorCode PetscRandomSeed_Rand(PetscRandom r)
 {
   PetscFunctionBegin;
   srand(r->seed);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define RAND_WRAP ((PetscReal)((rand() / (double)((unsigned int)RAND_MAX + 1))))
@@ -19,7 +19,7 @@ PetscErrorCode PetscRandomGetValue_Rand(PetscRandom r, PetscScalar *val)
   if (r->iset) *val = r->width * RAND_WRAP + r->low;
   else *val = RAND_WRAP;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscRandomGetValueReal_Rand(PetscRandom r, PetscReal *val)
@@ -32,7 +32,7 @@ PetscErrorCode PetscRandomGetValueReal_Rand(PetscRandom r, PetscReal *val)
   if (r->iset) *val = r->width * RAND_WRAP + r->low;
   else *val = RAND_WRAP;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
@@ -60,5 +60,5 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom r)
   PetscFunctionBegin;
   PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRAND));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

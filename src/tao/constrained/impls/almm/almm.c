@@ -115,7 +115,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_ALMM(Tao tao, PetscViewer viewer)
@@ -133,7 +133,7 @@ static PetscErrorCode TaoView_ALMM(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "ALMM Formulation Type: %s\n", TaoALMMTypes[auglag->type]));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetUp_ALMM(Tao tao)
@@ -279,7 +279,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
   }
   PetscCall(TaoSetUp(auglag->subsolver));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_ALMM(Tao tao)
@@ -336,7 +336,7 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetPrimalIS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetDualIS_C", NULL));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -365,7 +365,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
     PetscCall(TaoSetMonitor(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
     if (tao->monitor[i] == TaoMonitorDefault || tao->monitor[i] == TaoDefaultCMonitor || tao->monitor[i] == TaoDefaultGMonitor || tao->monitor[i] == TaoDefaultSMonitor) auglag->info = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------- */
@@ -478,7 +478,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMSetMultipliers_C", TaoALMMSetMultipliers_Private));
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetPrimalIS_C", TaoALMMGetPrimalIS_Private));
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetDualIS_C", TaoALMMGetDualIS_Private));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoALMMCombinePrimal_Private(Tao tao, Vec X, Vec S, Vec P)
@@ -494,7 +494,7 @@ static PetscErrorCode TaoALMMCombinePrimal_Private(Tao tao, Vec X, Vec S, Vec P)
   } else {
     PetscCall(VecCopy(X, P));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoALMMCombineDual_Private(Tao tao, Vec EQ, Vec IN, Vec Y)
@@ -514,7 +514,7 @@ static PetscErrorCode TaoALMMCombineDual_Private(Tao tao, Vec EQ, Vec IN, Vec Y)
   } else {
     PetscCall(VecCopy(IN, Y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoALMMSplitPrimal_Private(Tao tao, Vec P, Vec X, Vec S)
@@ -530,7 +530,7 @@ static PetscErrorCode TaoALMMSplitPrimal_Private(Tao tao, Vec P, Vec X, Vec S)
   } else {
     PetscCall(VecCopy(P, X));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* this assumes that the latest constraints are stored in Ce and Ci, and also combined in C */
@@ -559,7 +559,7 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao)
     PetscCall(VecNorm(auglag->LgradX, NORM_2, &auglag->gnorm));
     PetscCall(VecNorm(auglag->C, NORM_2, &auglag->cnorm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao)
@@ -595,7 +595,7 @@ static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao)
   }
   /* combine constraints into one vector */
   PetscCall(TaoALMMCombineDual_Private(tao, auglag->Ce, auglag->Ci, auglag->C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -635,7 +635,7 @@ static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao tao)
   PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->LgradX, auglag->LgradS, auglag->G));
   /* compute L = f + 0.5 * mu * [(Ce + Ye/mu)^T (Ce + Ye/mu) + pmax(0, Ci + Yi/mu)^T pmax(0, Ci + Yi/mu)] */
   auglag->Lval = auglag->fval + 0.5 * auglag->mu * (eq_norm + ineq_norm);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -679,7 +679,7 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
   PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->LgradX, auglag->LgradS, auglag->G));
   /* compute L = f + ye^T ce + yi^T (ci - s) + 0.5*mu*||ce||^2 + 0.5*mu*||ci - s||^2 */
   auglag->Lval = auglag->fval + yeTce + yiTcims + 0.5 * auglag->mu * (ceTce + cimsTcims);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoALMMSubsolverObjective_Private(Tao tao, Vec P, PetscReal *Lval, void *ctx)
@@ -690,7 +690,7 @@ PetscErrorCode TaoALMMSubsolverObjective_Private(Tao tao, Vec P, PetscReal *Lval
   PetscCall(VecCopy(P, auglag->P));
   PetscCall((*auglag->sub_obj)(auglag->parent));
   *Lval = auglag->Lval;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoALMMSubsolverObjectiveAndGradient_Private(Tao tao, Vec P, PetscReal *Lval, Vec G, void *ctx)
@@ -702,5 +702,5 @@ PetscErrorCode TaoALMMSubsolverObjectiveAndGradient_Private(Tao tao, Vec P, Pets
   PetscCall((*auglag->sub_obj)(auglag->parent));
   PetscCall(VecCopy(auglag->G, G));
   *Lval = auglag->Lval;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

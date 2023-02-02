@@ -16,7 +16,7 @@ static PetscErrorCode TestView(PetscDeviceContext dctx)
   PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
   PetscCall(PetscDeviceContextView(dctx, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -50,7 +50,7 @@ static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscInt *nroo
   if (rootranks) *rootranks = bas->iranks;
   if (rootoffset) *rootoffset = bas->ioffset;
   if (rootloc) *rootloc = bas->irootloc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscInt *nleafranks, PetscInt *ndleafranks, const PetscMPIInt **leafranks, const PetscInt **leafoffset, const PetscInt **leafloc, const PetscInt **leafrremote)
@@ -62,7 +62,7 @@ static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscInt *nlea
   if (leafoffset) *leafoffset = sf->roffset;
   if (leafloc) *leafloc = sf->rmine;
   if (leafrremote) *leafrremote = sf->rremote;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF);

@@ -36,7 +36,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, lab));
   PetscCall(PetscViewerSetType(*lab, PETSCVIEWERSAWS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -66,7 +66,7 @@ PetscErrorCode PetscObjectViewSAWs(PetscObject obj, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  if (obj->amsmem) PetscFunctionReturn(0);
+  if (obj->amsmem) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCheck(rank == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Should only be being called on rank zero");
   PetscCheck(obj->name, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Object must already have been named");
@@ -78,5 +78,5 @@ PetscErrorCode PetscObjectViewSAWs(PetscObject obj, PetscViewer viewer)
   PetscCallSAWs(SAWs_Register, (dir, &obj->type_name, 1, SAWs_READ, SAWs_STRING));
   PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/__Id", obj->name));
   PetscCallSAWs(SAWs_Register, (dir, &obj->id, 1, SAWs_READ, SAWs_INT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

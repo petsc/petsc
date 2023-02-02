@@ -62,7 +62,7 @@ PetscErrorCode HessianProduct(void *, Vec, Vec);
 PetscErrorCode MatrixFreeHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 
-PetscErrorCode main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   PetscInt    mx = 10; /* discretization in x-direction */
   PetscInt    my = 10; /* discretization in y-direction */
@@ -202,7 +202,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
   }
   PetscCall(VecAssemblyBegin(X));
   PetscCall(VecAssemblyEnd(X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -223,7 +223,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
   PetscFunctionBeginUser;
   PetscCall(FormFunction(tao, X, f, ptr));
   PetscCall(FormGradient(tao, X, G, ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -293,7 +293,7 @@ PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *f, void *ptr)
   *f   = area * (p5 * fquad + flin);
 
   PetscCall(PetscLogFlops(24.0 * nx * ny));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -394,7 +394,7 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
   area = p5 * hx * hy;
   PetscCall(VecScale(G, area));
   PetscCall(PetscLogFlops(24.0 * nx * ny));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -453,7 +453,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
   }
   PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -478,7 +478,7 @@ PetscErrorCode MatrixFreeHessian(Tao tao, Vec X, Mat H, Mat PrecH, void *ptr)
   /* Sets location of vector for use in computing matrix-vector products  of the form H(X)*y  */
   PetscFunctionBeginUser;
   user->xvec = X;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -500,7 +500,7 @@ PetscErrorCode HessianProductMat(Mat mat, Vec svec, Vec y)
   PetscFunctionBeginUser;
   PetscCall(MatShellGetContext(mat, &ptr));
   PetscCall(HessianProduct(ptr, svec, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -605,7 +605,7 @@ PetscErrorCode HessianProduct(void *ptr, Vec svec, Vec y)
   area = p5 * hx * hy;
   PetscCall(VecScale(y, area));
   PetscCall(PetscLogFlops(18.0 * nx * ny));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

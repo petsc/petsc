@@ -219,7 +219,7 @@ static PetscErrorCode LINPACKcgtql1(PetscInt *n, PetscReal *d, PetscReal *e, Pet
 L1000:
   *ierr = l;
 L1001:
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 } /* cgtql1_ */
 
 PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig)
@@ -234,7 +234,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, Pe
   *neig = n;
 
   PetscCall(PetscArrayzero(c, nmax));
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   d  = cgP->d;
   e  = cgP->e;
   ee = cgP->ee;
@@ -245,10 +245,10 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, Pe
     ee[j] = PetscRealPart(e[j]);
   }
 
-  LINPACKcgtql1(&n, r, ee, &j);
+  PetscCall(LINPACKcgtql1(&n, r, ee, &j));
   PetscCheck(j == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from tql1(); eispack eigenvalue routine");
   PetscCall(PetscSortReal(n, r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, PetscReal *emin)
@@ -261,7 +261,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, Pets
   PetscFunctionBegin;
   if (!n) {
     *emax = *emin = 1.0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   d  = cgP->d;
   e  = cgP->e;
@@ -274,9 +274,9 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, Pets
     ee[j] = PetscRealPart(e[j]);
   }
 
-  LINPACKcgtql1(&n, dd, ee, &j);
+  PetscCall(LINPACKcgtql1(&n, dd, ee, &j));
   PetscCheck(j == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from tql1(); eispack eigenvalue routine");
   *emin = dd[0];
   *emax = dd[n - 1];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

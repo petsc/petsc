@@ -35,7 +35,7 @@ PetscErrorCode DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
   dd->M = M;
   dd->N = N;
   dd->P = P;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -78,7 +78,7 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
       PetscCheck(dd->n * dd->m == size, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " processes in Y direction not divisible into comm size %d", n, size);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -107,7 +107,7 @@ PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, 
   dd->bx = bx;
   dd->by = by;
   dd->bz = bz;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -133,7 +133,7 @@ PetscErrorCode DMDASetDof(DM da, PetscInt dof)
   PetscCheck(!da->setupcalled, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "This function must be called before DMSetUp()");
   dd->w  = dof;
   da->bs = dof;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -159,7 +159,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidIntPointer(dof, 2);
   *dof = dd->w;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -188,7 +188,7 @@ PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z)
   if (x) *x = dd->xol;
   if (y) *y = dd->yol;
   if (z) *z = dd->zol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -218,7 +218,7 @@ PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z)
   dd->xol = x;
   dd->yol = y;
   dd->zol = z;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -243,7 +243,7 @@ PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   if (Nsub) *Nsub = dd->Nsub;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -267,7 +267,7 @@ PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidLogicalCollectiveInt(da, Nsub, 2);
   dd->Nsub = Nsub;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -309,7 +309,7 @@ PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Petsc
   dd->Po = Po;
 
   if (da->coordinates[0].dm) PetscCall(DMDASetOffset(da->coordinates[0].dm, xo, yo, zo, Mo, No, Po));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -344,7 +344,7 @@ PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, Pe
   if (Mo) *Mo = dd->Mo;
   if (No) *No = dd->No;
   if (Po) *Po = dd->Po;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -379,7 +379,7 @@ PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, Pe
   if (xm) *xm = dd->nonxm;
   if (ym) *ym = dd->nonym;
   if (zm) *zm = dd->nonzm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -419,7 +419,7 @@ PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pets
   dd->nonym = ym;
   dd->nonzm = zm;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -444,7 +444,7 @@ PetscErrorCode DMDASetStencilType(DM da, DMDAStencilType stype)
   PetscValidLogicalCollectiveEnum(da, stype, 2);
   PetscCheck(!da->setupcalled, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "This function must be called before DMSetUp()");
   dd->stencil_type = stype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -470,7 +470,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidPointer(stype, 2);
   *stype = dd->stencil_type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -495,7 +495,7 @@ PetscErrorCode DMDASetStencilWidth(DM da, PetscInt width)
   PetscValidLogicalCollectiveInt(da, width, 2);
   PetscCheck(!da->setupcalled, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "This function must be called before DMSetUp()");
   dd->s = width;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -521,7 +521,7 @@ PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidIntPointer(width, 2);
   *width = dd->s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscInt m, const PetscInt lx[])
@@ -532,7 +532,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscI
   PetscCheck(M >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Global dimension not set");
   for (i = sum = 0; i < m; i++) sum += lx[i];
   PetscCheck(sum == M, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_INCOMP, "Ownership ranges sum to %" PetscInt_FMT " but global dimension is %" PetscInt_FMT, sum, M);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -577,7 +577,7 @@ PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt
     if (!dd->lz) PetscCall(PetscMalloc1(dd->p, &dd->lz));
     PetscCall(PetscArraycpy(dd->lz, lz, dd->p));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -605,7 +605,7 @@ PetscErrorCode DMDASetInterpolationType(DM da, DMDAInterpolationType ctype)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidLogicalCollectiveEnum(da, ctype, 2);
   dd->interptype = ctype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -632,7 +632,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidPointer(ctype, 2);
   *ctype = dd->interptype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -669,7 +669,7 @@ PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   *ranks = dd->neighbors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -710,7 +710,7 @@ PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscIn
   if (lx) *lx = dd->lx;
   if (ly) *ly = dd->ly;
   if (lz) *lz = dd->lz;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -750,7 +750,7 @@ PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine
   if (refine_x > 0) dd->refine_x = refine_x;
   if (refine_y > 0) dd->refine_y = refine_y;
   if (refine_z > 0) dd->refine_z = refine_z;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -782,7 +782,7 @@ PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refi
   if (refine_x) *refine_x = dd->refine_x;
   if (refine_y) *refine_y = dd->refine_y;
   if (refine_z) *refine_z = dd->refine_z;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -810,7 +810,7 @@ PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM, Mat *))
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   da->ops->creatematrix = f;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -839,7 +839,7 @@ PetscErrorCode DMDAMapMatStencilToGlobal(DM da, PetscInt m, const MatStencil idx
   ISLocalToGlobalMapping ltog;
 
   PetscFunctionBegin;
-  if (m <= 0) PetscFunctionReturn(0);
+  if (m <= 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Code adapted from DMDAGetGhostCorners() */
   starts2[0] = dd->Xs / dof + dd->xo;
@@ -876,7 +876,7 @@ PetscErrorCode DMDAMapMatStencilToGlobal(DM da, PetscInt m, const MatStencil idx
   /* Map local indices to global indices */
   PetscCall(DMGetLocalToGlobalMapping(da, &ltog));
   PetscCall(ISLocalToGlobalMappingApply(ltog, m, gidxm, gidxm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -893,7 +893,7 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da, PetscBool periodic, Petsc
   PetscCheck(ratio >= 1, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Requested refinement ratio %" PetscInt_FMT " must be at least 1", ratio);
   if (ratio == 1) {
     PetscCall(PetscArraycpy(lf, lc, m));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (i = 0; i < m; i++) totalc += lc[i];
   remaining = (!periodic) + ratio * (totalc - (!periodic));
@@ -917,7 +917,7 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da, PetscBool periodic, Petsc
     startf += lf[i];
     remaining -= lf[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -934,7 +934,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da, PetscBool periodic, Pets
   PetscCheck(ratio >= 1, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Requested refinement ratio %" PetscInt_FMT " must be at least 1", ratio);
   if (ratio == 1) {
     PetscCall(PetscArraycpy(lc, lf, m));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (i = 0, totalf = 0; i < m; i++) totalf += lf[i];
   remaining = (!periodic) + (totalf - (!periodic)) / ratio;
@@ -957,7 +957,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da, PetscBool periodic, Pets
     startf += lf[i];
     remaining -= lc[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref)
@@ -1104,7 +1104,7 @@ PetscErrorCode DMRefine_DA(DM da, MPI_Comm comm, DM *daref)
   }
 
   *daref = da2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCoarsen_DA(DM dmf, MPI_Comm comm, DM *dmc)
@@ -1255,7 +1255,7 @@ PetscErrorCode DMCoarsen_DA(DM dmf, MPI_Comm comm, DM *dmc)
   }
 
   *dmc = dmc2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[])
@@ -1265,7 +1265,7 @@ PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
-  if (nlevels == 0) PetscFunctionReturn(0);
+  if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidPointer(daf, 3);
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
@@ -1285,7 +1285,7 @@ PetscErrorCode DMRefineHierarchy_DA(DM da, PetscInt nlevels, DM daf[])
     PetscCall(DMRefine(daf[i - 1], PetscObjectComm((PetscObject)da), &daf[i]));
   }
   PetscCall(PetscFree3(refx, refy, refz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCoarsenHierarchy_DA(DM da, PetscInt nlevels, DM dac[])
@@ -1295,11 +1295,11 @@ PetscErrorCode DMCoarsenHierarchy_DA(DM da, PetscInt nlevels, DM dac[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
-  if (nlevels == 0) PetscFunctionReturn(0);
+  if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidPointer(dac, 3);
   PetscCall(DMCoarsen(da, PetscObjectComm((PetscObject)da), &dac[0]));
   for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dac[i - 1], PetscObjectComm((PetscObject)da), &dac[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes)
@@ -1331,7 +1331,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes)
     }
     PetscCall(DMDAVecRestoreArray(dm, x, &xx));
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented for periodic");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1360,7 +1360,7 @@ PetscErrorCode DMDASetGLLCoordinates(DM da, PetscInt n, PetscReal *nodes)
   if (da->dim == 1) {
     PetscCall(DMDASetGLLCoordinates_1d(da, n, nodes));
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented for 2 or 3d");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1, DM dm2, PetscBool *compatible, PetscBool *set)
@@ -1400,5 +1400,5 @@ PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1, DM dm2, PetscBool *com
     /* Decline to determine compatibility with other DM types */
     *set = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

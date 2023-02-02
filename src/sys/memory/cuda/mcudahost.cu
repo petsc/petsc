@@ -4,13 +4,13 @@
 static PetscErrorCode PetscCUDAHostMalloc(size_t a, PetscBool, int, const char[], const char[], void **result)
 {
   PetscCallCUDA(cudaMallocHost(result, a));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode PetscCUDAHostFree(void *aa, int, const char[], const char[])
 {
   PetscCallCUDA(cudaFreeHost(aa));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode PetscCUDAHostRealloc(size_t, int, const char[], const char[], void **)
@@ -46,7 +46,7 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
   PetscTrMalloc   = PetscCUDAHostMalloc;
   PetscTrRealloc  = PetscCUDAHostRealloc;
   PetscTrFree     = PetscCUDAHostFree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -64,5 +64,5 @@ PetscErrorCode PetscMallocResetCUDAHost(void)
   PetscTrMalloc  = PetscMallocOld;
   PetscTrRealloc = PetscReallocOld;
   PetscTrFree    = PetscFreeOld;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

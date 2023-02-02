@@ -78,19 +78,19 @@ PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapISetWithMode()") static inline Pet
       case ADD_BC_VALUES:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported InsertMode");
       }
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     } else if (!ta->keytable[hash]) {
       if (ta->count < 5 * (ta->tablesize / 6) - 1) {
         ta->count++; /* add */
         ta->keytable[hash] = key;
         ta->table[hash]    = data;
       } else PetscCall(PetscTableAddExpand(ta, key, data, imode));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     hash = (hash + hashstep) % ta->tablesize;
   }
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Full table");
-  /* PetscFunctionReturn(0); */
+  /* PetscFunctionReturn(PETSC_SUCCESS); */
 }
 
 PETSC_TABLE_DEPRECATION_WARNING("") static inline PetscErrorCode PetscTableAddCount(PetscTable ta, PetscInt key)
@@ -104,19 +104,19 @@ PETSC_TABLE_DEPRECATION_WARNING("") static inline PetscErrorCode PetscTableAddCo
 
   for (i = 0; i < ta->tablesize; i++) {
     if (ta->keytable[hash] == key) {
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     } else if (!ta->keytable[hash]) {
       if (ta->count < 5 * (ta->tablesize / 6) - 1) {
         ta->count++; /* add */
         ta->keytable[hash] = key;
         ta->table[hash]    = ta->count;
       } else PetscCall(PetscTableAddCountExpand(ta, key));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     hash = (hash + hashstep) % ta->tablesize;
   }
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Full table");
-  /* PetscFunctionReturn(0); */
+  /* PetscFunctionReturn(PETSC_SUCCESS); */
 }
 
 /*
@@ -141,7 +141,7 @@ PETSC_TABLE_DEPRECATION_WARNING("Use PetscHMapIGetWithDefault()") static inline 
     }
     hash = (hash + hashstep) % ta->tablesize;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #undef PetscHashMacroImplToGetAroundDeprecationWarning_Private

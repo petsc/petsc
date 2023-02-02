@@ -19,7 +19,7 @@ PetscErrorCode DMView_GLVis(DM dm, PetscViewer viewer, PetscErrorCode (*DMView_G
 
     PetscCall(PetscViewerGLVisGetType_Private(viewer, &type));
     PetscCall(PetscViewerGLVisGetDMWindow_Private(viewer, &view));
-    if (!view) PetscFunctionReturn(0); /* socket window has been closed */
+    if (!view) PetscFunctionReturn(PETSC_SUCCESS); /* socket window has been closed */
     if (type == PETSC_VIEWER_GLVIS_SOCKET) {
       PetscMPIInt size, rank;
       PetscInt    sdim;
@@ -42,5 +42,5 @@ PetscErrorCode DMView_GLVis(DM dm, PetscViewer viewer, PetscErrorCode (*DMView_G
   } else {
     PetscCall(DMView_GLVis_ASCII(dm, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

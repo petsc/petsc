@@ -85,14 +85,14 @@ private:
 
   // this exists purely to satisfy the compiler so the tag-based dispatch works for the other
   // handles
-  PETSC_NODISCARD static PetscErrorCode initialize_handle_(stream_tag, PetscDeviceContext) noexcept { return 0; }
+  PETSC_NODISCARD static PetscErrorCode initialize_handle_(stream_tag, PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
 
   PETSC_NODISCARD static PetscErrorCode create_handle_(blas_tag, cupmBlasHandle_t &handle) noexcept
   {
     PetscLogEvent event;
 
     PetscFunctionBegin;
-    if (PetscLikely(handle)) PetscFunctionReturn(0);
+    if (PetscLikely(handle)) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
     PetscCall(PetscLogEventBegin(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
     for (auto i = 0; i < 3; ++i) {
@@ -107,7 +107,7 @@ private:
     }
     PetscCall(PetscLogEventEnd(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
     PetscCall(PetscLogEventResume_Internal(event));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode initialize_handle_(blas_tag tag, PetscDeviceContext dctx) noexcept
@@ -119,7 +119,7 @@ private:
     PetscCall(create_handle_(tag, handle));
     PetscCallCUPMBLAS(cupmBlasSetStream(handle, dci->stream.get_stream()));
     dci->blas = handle;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode initialize_handle_(solver_tag, PetscDeviceContext dctx) noexcept
@@ -136,7 +136,7 @@ private:
     PetscCall(PetscLogEventResume_Internal(event));
     PetscCall(cupmBlasInterface_t::SetHandleStream(handle, dci->stream.get_stream()));
     dci->solver = handle;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode check_current_device_(PetscDeviceContext dctxl, PetscDeviceContext dctxr) noexcept
@@ -149,7 +149,7 @@ private:
     PetscCall(PetscDeviceCheckDeviceCount_Internal(devidl));
     PetscCall(PetscDeviceCheckDeviceCount_Internal(devidr));
     PetscCallCUPM(cupmSetDevice(static_cast<int>(devidl)));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode check_current_device_(PetscDeviceContext dctx) noexcept { return check_current_device_(dctx, dctx); }
@@ -171,7 +171,7 @@ private:
       }
     }
     initialized_ = false;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename Allocator, typename PoolType = ::Petsc::memory::SegmentedMemoryPool<typename Allocator::value_type, stream_type, Allocator, 256 * sizeof(PetscScalar)>>
@@ -185,7 +185,7 @@ private:
   {
     PetscFunctionBegin;
     PetscCheck(PetscMemTypeHost(mtype) || (mtype == PETSC_MEMTYPE_DEVICE) || (mtype == PETSC_MEMTYPE_CUPM()), PETSC_COMM_SELF, PETSC_ERR_SUP, "%s device context can only handle %s (pinned) host or device memory", cupmName(), mess);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 public:
@@ -252,7 +252,7 @@ inline PetscErrorCode DeviceContext<T>::initialize(PetscDevice device) noexcept
     solverhandles_.fill(nullptr);
     PetscCall(PetscRegisterFinalize(finalize_));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -267,7 +267,7 @@ inline PetscErrorCode DeviceContext<T>::destroy(PetscDeviceContext dctx) noexcep
     delete dci;
     dctx->data = nullptr;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -280,7 +280,7 @@ inline PetscErrorCode DeviceContext<T>::changeStreamType(PetscDeviceContext dctx
   // set these to null so they aren't usable until setup is called again
   dci->blas   = nullptr;
   dci->solver = nullptr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -296,7 +296,7 @@ inline PetscErrorCode DeviceContext<T>::setUp(PetscDeviceContext dctx) noexcept
   #if PetscDefined(USE_DEBUG)
   dci->timerInUse = PETSC_FALSE;
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -318,7 +318,7 @@ inline PetscErrorCode DeviceContext<T>::query(PetscDeviceContext dctx, PetscBool
     PetscCallCUPM(cerr);
     PetscUnreachable();
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -331,7 +331,7 @@ inline PetscErrorCode DeviceContext<T>::waitForContext(PetscDeviceContext dctxa,
   PetscCall(check_current_device_(dctxa, dctxb));
   PetscCallCUPM(cupmEventRecord(event, dcib->stream.get_stream()));
   PetscCallCUPM(cupmStreamWaitEvent(impls_cast_(dctxa)->stream.get_stream(), event, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -342,7 +342,7 @@ inline PetscErrorCode DeviceContext<T>::synchronize(PetscDeviceContext dctx) noe
   PetscFunctionBegin;
   PetscCall(query(dctx, &idle));
   if (!idle) PetscCallCUPM(cupmStreamSynchronize(impls_cast_(dctx)->stream.get_stream()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -352,7 +352,7 @@ inline PetscErrorCode DeviceContext<T>::getHandle(PetscDeviceContext dctx, void 
   PetscFunctionBegin;
   PetscCall(initialize_handle_(handle_t{}, dctx));
   *static_cast<typename handle_t::type *>(handle) = impls_cast_(dctx)->get(handle_t{});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -372,7 +372,7 @@ inline PetscErrorCode DeviceContext<T>::beginTimer(PetscDeviceContext dctx) noex
     PetscCallCUPM(cupmEventCreate(&dci->end));
   }
   PetscCallCUPM(cupmEventRecord(dci->begin, dci->stream.get_stream()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -392,7 +392,7 @@ inline PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceContext dctx, PetscL
   PetscCallCUPM(cupmEventSynchronize(end));
   PetscCallCUPM(cupmEventElapsedTime(&gtime, dci->begin, end));
   *elapsed = static_cast<util::remove_pointer_t<decltype(elapsed)>>(gtime);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -409,7 +409,7 @@ inline PetscErrorCode DeviceContext<T>::memAlloc(PetscDeviceContext dctx, PetscB
     PetscCall(default_pool_<DeviceAllocator<T>>().allocate(n, reinterpret_cast<char **>(dest), &stream, alignment));
   }
   if (clear) PetscCallCUPM(cupmMemsetAsync(*dest, 0, n, stream.get_stream()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -420,7 +420,7 @@ inline PetscErrorCode DeviceContext<T>::memFree(PetscDeviceContext dctx, PetscMe
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
   PetscCall(check_memtype_(mtype, "freeing"));
-  if (!*ptr) PetscFunctionReturn(0);
+  if (!*ptr) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscMemTypeHost(mtype)) {
     PetscCall(default_pool_<HostAllocator<T>>().deallocate(reinterpret_cast<char **>(ptr), &stream));
     // if ptr exists still exists the pool didn't own it
@@ -439,7 +439,7 @@ inline PetscErrorCode DeviceContext<T>::memFree(PetscDeviceContext dctx, PetscMe
     // if ptr still exists the pool didn't own it
     if (*ptr) PetscCallCUPM(cupmFreeAsync(*ptr, stream.get_stream()));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -455,7 +455,7 @@ inline PetscErrorCode DeviceContext<T>::memCopy(PetscDeviceContext dctx, void *P
     // yes this is faster
     if (cerr == cupmSuccess) {
       PetscCall(PetscMemcpy(dest, src, n));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     } else if (cerr == cupmErrorNotReady) {
       auto PETSC_UNUSED unused = cupmGetLastError();
 
@@ -464,8 +464,8 @@ inline PetscErrorCode DeviceContext<T>::memCopy(PetscDeviceContext dctx, void *P
       PetscCallCUPM(cerr);
     }
   }
-  PetscCall(cupmMemcpyAsync(dest, src, n, PetscDeviceCopyModeToCUPMMemcpyKind(mode), stream));
-  PetscFunctionReturn(0);
+  PetscCallCUPM(cupmMemcpyAsync(dest, src, n, PetscDeviceCopyModeToCUPMMemcpyKind(mode), stream));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -475,7 +475,7 @@ inline PetscErrorCode DeviceContext<T>::memSet(PetscDeviceContext dctx, PetscMem
   PetscCall(check_current_device_(dctx));
   PetscCall(check_memtype_(mtype, "zeroing"));
   PetscCallCUPM(cupmMemsetAsync(ptr, static_cast<int>(v), n, impls_cast_(dctx)->stream.get_stream()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -487,9 +487,9 @@ inline PetscErrorCode DeviceContext<T>::createEvent(PetscDeviceContext, PetscEve
     PetscFunctionBegin;
     delete event_cast_(event);
     event->data = nullptr;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   };
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -497,7 +497,7 @@ inline PetscErrorCode DeviceContext<T>::recordEvent(PetscDeviceContext dctx, Pet
 {
   PetscFunctionBegin;
   PetscCall(impls_cast_(dctx)->stream.record_event(*event_cast_(event)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -505,7 +505,7 @@ inline PetscErrorCode DeviceContext<T>::waitForEvent(PetscDeviceContext dctx, Pe
 {
   PetscFunctionBegin;
   PetscCall(impls_cast_(dctx)->stream.wait_for_event(*event_cast_(event)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // initialize the static member variables

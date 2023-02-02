@@ -40,7 +40,7 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
     MatNullSpace nnsp;
 
     PetscCall(MatGetNearNullSpace(A, &nnsp));
-    PetscObjectReference((PetscObject)nnsp);
+    PetscCall(PetscObjectReference((PetscObject)nnsp));
     PetscCall(MatConvert(A, MATIS, MAT_INITIAL_MATRIX, &A));
     PetscCall(MatSetNearNullSpace(A, nnsp));
     PetscCall(MatNullSpaceDestroy(&nnsp));
@@ -210,7 +210,7 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
   PetscCall(PetscFree(cridx));
   PetscCall(PCDestroy(&pcbddc));
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat guess, Mat *cspace)
@@ -226,7 +226,7 @@ PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP s
 
   PetscFunctionBegin;
   *cspace = NULL;
-  if (!l) PetscFunctionReturn(0);
+  if (!l) PetscFunctionReturn(PETSC_SUCCESS);
   if (pc->useAmat) {
     PetscCall(KSPGetOperatorsSet(smooth, &flg, NULL));
     PetscCheck(flg, PetscObjectComm((PetscObject)smooth), PETSC_ERR_ORDER, "Amat not set");
@@ -348,5 +348,5 @@ PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP s
   PetscCall(PetscFree(sGiM));
   PetscCall(PetscFree(sGf));
   PetscCall(PetscFree(sA_IG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

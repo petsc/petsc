@@ -26,7 +26,7 @@ static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCo
   } while (0)
   for (coff = 0; coff < bound; coff += numCorners) SWAP(cells[coff], cells[coff + 1]);
 #undef SWAP
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
@@ -290,7 +290,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_FALSE));
   }
   PetscCall(DMUniversalLabelDestroy(&universal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
@@ -570,5 +570,5 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     }
     PetscCall(DMPlexSetRefinementUniform(*dmRefined, PETSC_FALSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

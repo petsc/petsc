@@ -9,11 +9,11 @@ PetscErrorCode MatCreateVecs_SchurComplement(Mat N, Vec *right, Vec *left)
   PetscFunctionBegin;
   if (Na->D) {
     PetscCall(MatCreateVecs(Na->D, right, left));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (right) PetscCall(MatCreateVecs(Na->B, right, NULL));
   if (left) PetscCall(MatCreateVecs(Na->C, NULL, left));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_SchurComplement(Mat N, PetscViewer viewer)
@@ -42,7 +42,7 @@ PetscErrorCode MatView_SchurComplement(Mat N, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(MatView(Na->B, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -60,7 +60,7 @@ PetscErrorCode MatMultTranspose_SchurComplement(Mat N, Vec x, Vec y)
   PetscCall(MatMultTranspose(Na->B, Na->work2, y));
   PetscCall(VecScale(y, -1.0));
   if (Na->D) PetscCall(MatMultTransposeAdd(Na->D, x, y, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -78,7 +78,7 @@ PetscErrorCode MatMult_SchurComplement(Mat N, Vec x, Vec y)
   PetscCall(MatMult(Na->C, Na->work2, y));
   PetscCall(VecScale(y, -1.0));
   if (Na->D) PetscCall(MatMultAdd(Na->D, x, y, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -101,7 +101,7 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N, Vec x, Vec y, Vec z)
     PetscCall(VecAYPX(z, -1.0, y));
   }
   if (Na->D) PetscCall(MatMultAdd(Na->D, x, z, z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetFromOptions_SchurComplement(Mat N, PetscOptionItems *PetscOptionsObject)
@@ -115,7 +115,7 @@ PetscErrorCode MatSetFromOptions_SchurComplement(Mat N, PetscOptionItems *PetscO
                              (PetscEnum *)&Na->ainvtype, NULL));
   PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(Na->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SchurComplement(Mat N)
@@ -134,7 +134,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   PetscCall(PetscFree(N->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_mpidense_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -178,7 +178,7 @@ PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A00), S));
   PetscCall(MatSetType(*S, MATSCHURCOMPLEMENT));
   PetscCall(MatSchurComplementSetSubMatrices(*S, A00, Ap00, A01, A10, A11));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -217,7 +217,7 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSCHURCOMPLEMENT, &isschur));
-  if (!isschur) PetscFunctionReturn(0);
+  if (!isschur) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(!S->assembled, PetscObjectComm((PetscObject)S), PETSC_ERR_ARG_WRONGSTATE, "Use MatSchurComplementUpdateSubMatrices() for already used matrix");
   PetscValidHeaderSpecific(A00, MAT_CLASSID, 2);
   PetscValidHeaderSpecific(Ap00, MAT_CLASSID, 3);
@@ -251,7 +251,7 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
   PetscCall(MatSetUp(S));
   PetscCall(KSPSetOperators(Na->ksp, A00, Ap00));
   S->assembled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -284,7 +284,7 @@ PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
   PetscValidPointer(ksp, 2);
   Na   = (Mat_SchurComplement *)S->data;
   *ksp = Na->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -312,14 +312,14 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S, MAT_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSCHURCOMPLEMENT, &isschur));
-  if (!isschur) PetscFunctionReturn(0);
+  if (!isschur) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 2);
   Na = (Mat_SchurComplement *)S->data;
   PetscCall(PetscObjectReference((PetscObject)ksp));
   PetscCall(KSPDestroy(&Na->ksp));
   Na->ksp = ksp;
   PetscCall(KSPSetOperators(Na->ksp, Na->A, Na->Ap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -357,7 +357,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S, MAT_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSCHURCOMPLEMENT, &isschur));
-  if (!isschur) PetscFunctionReturn(0);
+  if (!isschur) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(S->assembled, PetscObjectComm((PetscObject)S), PETSC_ERR_ARG_WRONGSTATE, "Use MatSchurComplementSetSubMatrices() for a new matrix");
   PetscValidHeaderSpecific(A00, MAT_CLASSID, 2);
   PetscValidHeaderSpecific(Ap00, MAT_CLASSID, 3);
@@ -396,7 +396,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   Na->D  = A11;
 
   PetscCall(KSPSetOperators(Na->ksp, A00, Ap00));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -435,7 +435,7 @@ PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat 
   if (A01) *A01 = Na->B;
   if (A10) *A10 = Na->C;
   if (A11) *A11 = Na->D;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petsc/private/kspimpl.h>
@@ -494,7 +494,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   PetscCall(MatConvert(*S, !E && flg ? MATSBAIJ : MATAIJ, MAT_INPLACE_MATRIX, S)); /* if A is symmetric and the (1,1) block is a MatSBAIJ, return S as a MatSBAIJ */
   PetscCall(MatScale(*S, -1.0));
   PetscCall(MatDestroy(&E));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Developer Notes:
@@ -514,7 +514,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
   PetscValidLogicalCollectiveEnum(mat, mreuse, 6);
   PetscValidLogicalCollectiveEnum(mat, ainvtype, 8);
   PetscValidLogicalCollectiveEnum(mat, preuse, 9);
-  if (mreuse == MAT_IGNORE_MATRIX && preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
+  if (mreuse == MAT_IGNORE_MATRIX && preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(PETSC_SUCCESS);
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*S, MAT_CLASSID, 7);
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp, MAT_CLASSID, 10);
 
@@ -547,7 +547,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&D));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -616,7 +616,7 @@ PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS 
   }
   if (f) PetscCall((*f)(A, isrow0, iscol0, isrow1, iscol1, mreuse, S, preuse, Sp));
   else PetscCall(MatGetSchurComplement_Basic(A, isrow0, iscol0, isrow1, iscol1, mreuse, S, ainvtype, preuse, Sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -644,12 +644,12 @@ PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType a
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S, MAT_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSCHURCOMPLEMENT, &isschur));
-  if (!isschur) PetscFunctionReturn(0);
+  if (!isschur) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidLogicalCollectiveEnum(S, ainvtype, 2);
   schur = (Mat_SchurComplement *)S->data;
   PetscCheck(ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_FULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown MatSchurComplementAinvType: %d", (int)ainvtype);
   schur->ainvtype = ainvtype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -679,7 +679,7 @@ PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *
   PetscCheck(isschur, PetscObjectComm((PetscObject)S), PETSC_ERR_ARG_WRONG, "Not for type %s", ((PetscObject)S)->type_name);
   schur = (Mat_SchurComplement *)S->data;
   if (ainvtype) *ainvtype = schur->ainvtype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -711,7 +711,7 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
   /* Use an appropriate approximate inverse of A00 to form A11 - A10 inv(DIAGFORM(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
   PetscValidLogicalCollectiveEnum(A11, preuse, 6);
-  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
+  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* A zero size A00 or empty A01 or A10 imply S = A11. */
   PetscCall(MatGetSize(A00, &N00, NULL));
@@ -762,7 +762,7 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
     }
     PetscCall(MatDestroy(&AdB));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp)
@@ -771,7 +771,7 @@ PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp)
   Mat_SchurComplement *schur = (Mat_SchurComplement *)S->data;
 
   PetscFunctionBegin;
-  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
+  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatSchurComplementGetSubMatrices(S, &A, NULL, &B, &C, &D));
   PetscCheck(A, PetscObjectComm((PetscObject)S), PETSC_ERR_ARG_WRONGSTATE, "Schur complement component matrices unset");
   if (schur->ainvtype != MAT_SCHUR_COMPLEMENT_AINV_FULL) PetscCall(MatCreateSchurComplementPmat(A, B, C, D, schur->ainvtype, preuse, Sp));
@@ -779,7 +779,7 @@ PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp)
     if (preuse == MAT_REUSE_MATRIX) PetscCall(MatDestroy(Sp));
     PetscCall(MatSchurComplementComputeExplicitOperator(S, Sp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -832,7 +832,7 @@ PetscErrorCode MatSchurComplementGetPmat(Mat S, MatReuse preuse, Mat *Sp)
   PetscCall(PetscObjectQueryFunction((PetscObject)S, "MatSchurComplementGetPmat_C", &f));
   if (f) PetscCall((*f)(S, preuse, Sp));
   else PetscCall(MatSchurComplementGetPmat_Basic(S, preuse, Sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductNumeric_SchurComplement_Dense(Mat C)
@@ -861,7 +861,7 @@ static PetscErrorCode MatProductNumeric_SchurComplement_Dense(Mat C)
     PetscCall(MatAYPX(C, -1.0, work1, SAME_NONZERO_PATTERN));
     PetscCall(MatDestroy(&work1));
   } else PetscCall(MatScale(C, -1.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSymbolic_SchurComplement_Dense(Mat C)
@@ -880,14 +880,14 @@ static PetscErrorCode MatProductSymbolic_SchurComplement_Dense(Mat C)
   }
   PetscCall(MatSetUp(C));
   C->ops->productnumeric = MatProductNumeric_SchurComplement_Dense;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_Dense_AB(Mat C)
 {
   PetscFunctionBegin;
   C->ops->productsymbolic = MatProductSymbolic_SchurComplement_Dense;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
@@ -897,7 +897,7 @@ static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
   PetscFunctionBegin;
   PetscCheck(product->type == MATPRODUCT_AB, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Not for product type %s", MatProductTypes[product->type]);
   PetscCall(MatProductSetFromOptions_Dense_AB(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
@@ -922,5 +922,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
   PetscCall(PetscObjectChangeTypeName((PetscObject)N, MATSCHURCOMPLEMENT));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_seqdense_C", MatProductSetFromOptions_SchurComplement_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_mpidense_C", MatProductSetFromOptions_SchurComplement_Dense));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

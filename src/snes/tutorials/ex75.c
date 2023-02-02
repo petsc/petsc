@@ -16,7 +16,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-fem", "Run FEM tests", "ex75.c", options->fem, &options->fem, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -486,7 +486,7 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   *szz *= cos(km * z); /* szz total stress */
 
   /* rho = -sigma*sin(km*z)*cos(kn*x); */ /* density */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
@@ -498,7 +498,7 @@ PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, Pet
 
   PetscFunctionBeginUser;
   SolKxSolution(x[0], x[1], kn, km, B, &v[0], &v[1], &p, &sxx, &sxz, &szz);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
@@ -510,7 +510,7 @@ PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, Pet
 
   PetscFunctionBeginUser;
   SolKxSolution(x[0], x[1], kn, km, B, &vx, &vz, &v[0], &sxx, &sxz, &szz);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -538,7 +538,7 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
   }
 }
 PetscCall(PetscPrintf(comm, "Verified Maple test 5\n"));
-PetscFunctionReturn(0);
+PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
@@ -549,7 +549,7 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   PetscReal discError;
 
   PetscFunctionBegin;
-  if (!ctx->fem) PetscFunctionReturn(0);
+  if (!ctx->fem) PetscFunctionReturn(PETSC_SUCCESS);
   /* Create DM */
   PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, &dm));
   PetscCall(DMSetFromOptions(dm));
@@ -561,7 +561,7 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   /* Cleanup */
   PetscCall(DMRestoreGlobalVector(dm, &u));
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

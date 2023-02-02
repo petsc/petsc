@@ -152,7 +152,7 @@ PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, void *ctx)
     PetscCall(DMSetApplicationContextDestroy(dm, (PetscErrorCode(*)(void **))MatDestroy));
   }
   PetscCall(MatMult(J, x, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyComputeJacobian(SNES snes, Vec x, Mat J, Mat Jp, void *ctx)
@@ -162,7 +162,7 @@ PetscErrorCode MyComputeJacobian(SNES snes, Vec x, Mat J, Mat Jp, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(FormMatrix(dm, Jp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormMatrix(DM da, Mat jac)
@@ -236,7 +236,7 @@ PetscErrorCode FormMatrix(DM da, Mat jac)
      matrix. If we do, it will generate an error.
   */
   PetscCall(MatSetOption(jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -311,7 +311,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X)
     PetscCall(DMLocalToGlobalEnd(da, localX, INSERT_VALUES, X));
   }
   PetscCall(DMRestoreLocalVector(da, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -54,7 +54,7 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
     }
   } else fd = NULL;
   *fp = fd;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -82,7 +82,7 @@ PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd)
     err = fclose(fd);
     PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fclose() failed on file");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_POPEN)
@@ -116,7 +116,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
       ; /* wait till it prints everything */
     (void)pclose(fd);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -190,7 +190,7 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
     PetscCheck((fd = popen(commandt, mode)), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot run command %s", commandt);
     if (fp) *fp = fd;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -216,7 +216,7 @@ PetscErrorCode PetscPOpenSetMachine(const char machine[])
   } else {
     PetscPOpenMachine[0] = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

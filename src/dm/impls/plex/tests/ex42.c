@@ -30,7 +30,7 @@ static PetscErrorCode CeedDataDestroy(CeedData *data)
   PetscCall(CeedVectorDestroy(&data->vceed));
   PetscCall(CeedQFunctionDestroy(&data->qf_apply));
   PetscCall(CeedOperatorDestroy(&data->op_apply));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
@@ -200,7 +200,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
@@ -220,7 +220,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)*dm), "libCEED Backend: %s\n", usedresource));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm)
@@ -245,7 +245,7 @@ static PetscErrorCode SetupDiscretization(DM dm)
   PetscCall(PetscFEDestroy(&cfe));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
@@ -331,7 +331,7 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
   PetscCall(CeedQFunctionDestroy(&qf_setupgeo));
   PetscCall(CeedOperatorDestroy(&op_setupgeo));
   PetscCall(CeedVectorDestroy(&xcoord));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

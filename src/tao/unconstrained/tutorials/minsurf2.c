@@ -161,7 +161,7 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *userCtx)
 
   PetscFunctionBegin;
   PetscCall(FormFunctionGradient(tao, X, &fcn, G, userCtx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------- */
@@ -338,7 +338,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   /* Scatter values to global vector */
   PetscCall(DMRestoreLocalVector(user->dm, &localX));
   PetscCall(PetscLogFlops(67.0 * xm * ym));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -363,7 +363,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
   PetscFunctionBegin;
   /* Evaluate the Hessian entries*/
   PetscCall(QuadraticH(user, X, H));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -549,7 +549,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   PetscCall(MatAssemblyEnd(Hessian, MAT_FINAL_ASSEMBLY));
 
   PetscCall(PetscLogFlops(199.0 * xm * ym));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -667,7 +667,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
       for (i = 0; i < lsize; i++) user->left[i] *= scl;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -722,7 +722,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
     PetscCall(DMDAVecRestoreArray(user->dm, X, (void **)&x));
     PetscCall(PetscLogFlops(9.0 * xm * ym));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*-----------------------------------------------------------------------*/
@@ -733,7 +733,7 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
   PetscFunctionBegin;
   PetscCall(TaoGetSolution(tao, &X));
   PetscCall(VecView(X, PETSC_VIEWER_STDOUT_WORLD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

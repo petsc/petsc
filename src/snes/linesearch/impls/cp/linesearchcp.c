@@ -33,7 +33,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
     PetscCall(SNESSetConvergedReason(linesearch->snes, SNES_CONVERGED_FNORM_ABS));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   fty_init = fty_old;
@@ -117,7 +117,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
   }
   if (lambda <= steptol) PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -152,5 +152,5 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
   linesearch->order               = SNES_LINESEARCH_ORDER_LINEAR;
 
   linesearch->max_its = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -26,7 +26,7 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
   PetscValidHeader(obj, 1);
   PetscCall(PetscFree(obj->name));
   PetscCall(PetscStrallocpy(name, &obj->name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -59,12 +59,12 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &flg));
-  if (obj->donotPetscObjectPrintClassNamePrefixType) PetscFunctionReturn(0);
-  if (!flg) PetscFunctionReturn(0);
+  if (obj->donotPetscObjectPrintClassNamePrefixType) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX || format == PETSC_VIEWER_ASCII_GLVIS)
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 
   if (format == PETSC_VIEWER_ASCII_MATLAB) PetscCall(PetscViewerASCIIPrintf(viewer, "%%"));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm(obj), &size));
@@ -75,7 +75,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
   } else {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  type not yet set\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -127,7 +127,7 @@ PetscErrorCode PetscObjectName(PetscObject obj)
     PetscCall(PetscSNPrintf(name, 64, "%s_%p_%" PetscInt_FMT, obj->class_name, ucomm.ptr, counter->namecount++));
     PetscCall(PetscStrallocpy(name, &obj->name));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscObjectChangeTypeName(PetscObject obj, const char type_name[])
@@ -138,5 +138,5 @@ PetscErrorCode PetscObjectChangeTypeName(PetscObject obj, const char type_name[]
   PetscCall(PetscStrallocpy(type_name, &obj->type_name));
   /* Clear all the old subtype callbacks so they can't accidentally be called (shouldn't happen anyway) */
   PetscCall(PetscMemzero(obj->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE], obj->num_fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE] * sizeof(PetscFortranCallback)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

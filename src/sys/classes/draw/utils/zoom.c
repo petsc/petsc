@@ -23,7 +23,7 @@ PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, v
 
   PetscFunctionBegin;
   PetscCall(PetscDrawIsNull(draw, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscDrawCheckResizedWindow(draw));
   PetscCall(PetscDrawClear(draw));
@@ -81,5 +81,5 @@ PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, v
   }
   PetscCall(PetscDrawSetCoordinates(draw, xmin, ymin, xmax, ymax));
 theend:
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

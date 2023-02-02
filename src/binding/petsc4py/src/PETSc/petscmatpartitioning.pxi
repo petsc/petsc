@@ -10,13 +10,13 @@ cdef extern from * nogil:
     PetscMatPartitioningType MATPARTITIONINGPTSCOTCH
     PetscMatPartitioningType MATPARTITIONINGHIERARCH
 
-    int MatPartitioningCreate(MPI_Comm,PetscMatPartitioning*)
-    int MatPartitioningDestroy(PetscMatPartitioning*)
-    int MatPartitioningView(PetscMatPartitioning,PetscViewer)
+    PetscErrorCode MatPartitioningCreate(MPI_Comm,PetscMatPartitioning*)
+    PetscErrorCode MatPartitioningDestroy(PetscMatPartitioning*)
+    PetscErrorCode MatPartitioningView(PetscMatPartitioning,PetscViewer)
 
-    int MatPartitioningSetType(PetscMatPartitioning,PetscMatPartitioningType)
-    int MatPartitioningGetType(PetscMatPartitioning,PetscMatPartitioningType*)
-    int MatPartitioningSetFromOptions(PetscMatPartitioning)
+    PetscErrorCode MatPartitioningSetType(PetscMatPartitioning,PetscMatPartitioningType)
+    PetscErrorCode MatPartitioningGetType(PetscMatPartitioning,PetscMatPartitioningType*)
+    PetscErrorCode MatPartitioningSetFromOptions(PetscMatPartitioning)
 
-    int MatPartitioningSetAdjacency(PetscMatPartitioning,PetscMat)
-    int MatPartitioningApply(PetscMatPartitioning,PetscIS*)
+    PetscErrorCode MatPartitioningSetAdjacency(PetscMatPartitioning,PetscMat)
+    PetscErrorCode MatPartitioningApply(PetscMatPartitioning,PetscIS*)

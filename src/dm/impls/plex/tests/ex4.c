@@ -35,7 +35,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL));
   PetscCall(PetscOptionsBool("-reinterpolate", "Reinterpolate the mesh at the end", "ex4.c", options->reinterpolate, &options->reinterpolate, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Two segments
@@ -67,7 +67,7 @@ PetscErrorCode CreateSimplex_1D(MPI_Comm comm, DM *dm)
 
     PetscCall(DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Two triangles
@@ -120,7 +120,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *dm)
 
     PetscCall(DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Two triangles separated by a zero-volume cell with 4 vertices/2 edges
@@ -195,7 +195,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscCall(DMDestroy(dm));
     *dm = hdm;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Two quadrilaterals
@@ -230,7 +230,7 @@ PetscErrorCode CreateTensorProduct_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 
     PetscCall(DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
@@ -276,7 +276,7 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
   PetscCall(DMDestroy(&idm));
   PetscCall(DMDestroy(dm));
   *dm = hdm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Two tetrahedrons
@@ -354,7 +354,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Two tetrahedrons separated by a zero-volume cell with 6 vertices
@@ -432,7 +432,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscCall(DMDestroy(dm));
     *dm = hdm;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
@@ -474,7 +474,7 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscCall(DMViewFromOptions(idm, NULL, "-in_dm_view"));
   PetscCall(DMDestroy(dm));
   *dm = idm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
@@ -539,7 +539,7 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
     PetscCall(DMDestroy(dm));
     *dm = hdm;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -784,7 +784,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "hyb_"));
   PetscCall(DMSetFromOptions(*dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

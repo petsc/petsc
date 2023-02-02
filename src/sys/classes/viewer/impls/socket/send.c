@@ -60,10 +60,11 @@ PETSC_EXTERN int connect(int, struct sockaddr *, int);
 static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)viewer->data;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   if (vmatlab->port) {
+    int ierr;
+
 #if defined(PETSC_HAVE_CLOSESOCKET)
     ierr = closesocket(vmatlab->port);
 #else
@@ -75,7 +76,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerBinarySetSkipHeader_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerBinaryGetSkipHeader_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerBinaryGetFlowControl_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*--------------------------------------------------------------*/
@@ -137,10 +138,15 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SYS, "system error");
       }
 #else
-      if (errno == EADDRINUSE) (*PetscErrorPrintf)("SEND: address is in use\n");
-      else if (errno == EALREADY) (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
-      else if (errno == EISCONN) {
-        (*PetscErrorPrintf)("SEND: socket already connected\n");
+      if (errno == EADDRINUSE) {
+        PetscErrorCode ierr = (*PetscErrorPrintf)("SEND: address is in use\n");
+        (void)ierr;
+      } else if (errno == EALREADY) {
+        PetscErrorCode ierr = (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
+        (void)ierr;
+      } else if (errno == EISCONN) {
+        PetscErrorCode ierr = (*PetscErrorPrintf)("SEND: socket already connected\n");
+        (void)ierr;
         sleep((unsigned)1);
       } else if (errno == ECONNREFUSED) {
         refcnt++;
@@ -161,7 +167,7 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
     } else flg = PETSC_FALSE;
   }
   *t = s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -200,7 +206,8 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
 #if defined(PETSC_HAVE_SO_REUSEADDR)
   {
     int optval = 1; /* Turn on the option */
-    PetscCall(setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&optval, sizeof(optval)));
+    int ret    = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&optval, sizeof(optval));
+    PetscCheck(!ret, PETSC_COMM_SELF, PETSC_ERR_LIB, "setsockopt() failed with error code %d", ret);
   }
 #endif
 
@@ -217,7 +224,7 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
   }
   listen(s, 0);
   *ss = s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -246,7 +253,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport, int *t)
   /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
   PetscCheck((*t = accept(listenport, (struct sockaddr *)&isa, (socklen_t *)&i)) >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "error from accept()");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -309,7 +316,7 @@ PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm, const char machine[], int po
   PetscCall(PetscViewerCreate(comm, lab));
   PetscCall(PetscViewerSetType(*lab, PETSCVIEWERSOCKET));
   PetscCall(PetscViewerSocketSetConnection(*lab, machine, port));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v, PetscOptionItems *PetscOptionsObject)
@@ -334,7 +341,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v, PetscOptio
   PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v), "PETSC_VIEWER_SOCKET_MACHINE", sdef, sizeof(sdef), &tflg));
   if (!tflg) PetscCall(PetscGetHostName(sdef, sizeof(sdef)));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerBinaryGetSkipHeader_Socket(PetscViewer viewer, PetscBool *skip)
@@ -343,7 +350,7 @@ static PetscErrorCode PetscViewerBinaryGetSkipHeader_Socket(PetscViewer viewer, 
 
   PetscFunctionBegin;
   *skip = vsocket->skipheader;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerBinarySetSkipHeader_Socket(PetscViewer viewer, PetscBool skip)
@@ -352,7 +359,7 @@ static PetscErrorCode PetscViewerBinarySetSkipHeader_Socket(PetscViewer viewer, 
 
   PetscFunctionBegin;
   vsocket->skipheader = skip;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer, PetscInt *);
@@ -387,7 +394,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinaryGetSkipHeader_C", PetscViewerBinaryGetSkipHeader_Socket));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinaryGetFlowControl_C", PetscViewerBinaryGetFlowControl_Binary));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -448,7 +455,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
       PetscCall(PetscOpenSocket(mach, port, &vmatlab->port));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------*/
@@ -499,6 +506,7 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    mpi_ierr;
   PetscBool      flg;
   PetscViewer    viewer;
   MPI_Comm       ncomm;
@@ -506,41 +514,41 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm, &ncomm, NULL);
   if (ierr) {
-    PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
+    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
     PetscFunctionReturn(NULL);
   }
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Socket_keyval, NULL);
-    if (ierr) {
-      PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
+    mpi_ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Socket_keyval, NULL);
+    if (mpi_ierr) {
+      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
       PetscFunctionReturn(NULL);
     }
   }
-  ierr = MPI_Comm_get_attr(ncomm, Petsc_Viewer_Socket_keyval, (void **)&viewer, (int *)&flg);
-  if (ierr) {
-    PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
+  mpi_ierr = MPI_Comm_get_attr(ncomm, Petsc_Viewer_Socket_keyval, (void **)&viewer, (int *)&flg);
+  if (mpi_ierr) {
+    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
     PetscFunctionReturn(NULL);
   }
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerSocketOpen(ncomm, NULL, 0, &viewer);
     if (ierr) {
-      PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
+      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
       PetscFunctionReturn(NULL);
     }
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {
-      PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
+      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
       PetscFunctionReturn(NULL);
     }
-    ierr = MPI_Comm_set_attr(ncomm, Petsc_Viewer_Socket_keyval, (void *)viewer);
-    if (ierr) {
-      PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
+    mpi_ierr = MPI_Comm_set_attr(ncomm, Petsc_Viewer_Socket_keyval, (void *)viewer);
+    if (mpi_ierr) {
+      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
       PetscFunctionReturn(NULL);
     }
   }
   ierr = PetscCommDestroy(&ncomm);
   if (ierr) {
-    PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
+    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SOCKET_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
     PetscFunctionReturn(NULL);
   }
   PetscFunctionReturn(viewer);

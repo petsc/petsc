@@ -131,6 +131,7 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
   PetscLogDouble vstart = 0, vend = 0;
   PetscBool      isaijcusparse, isaijkokkos;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscStrcmp(petscmatformat, MATAIJCUSPARSE, &isaijcusparse));
   PetscCall(PetscStrcmp(petscmatformat, MATAIJKOKKOS, &isaijkokkos));
   if (isaijcusparse) PetscCall(VecSetType(b, VECCUDA));
@@ -155,7 +156,7 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
   }
   PetscCall(VecDestroy(&u));
   if (repetitions > 0 && use_gpu) PetscCall(MatDestroy(&A2));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscLogSpMVTime(PetscReal *gputime, PetscReal *cputime, PetscReal *gpuflops, const char *petscmatformat)
@@ -172,6 +173,7 @@ PetscErrorCode PetscLogSpMVTime(PetscReal *gputime, PetscReal *cputime, PetscRea
   // PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &eventInfo));
   // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%.4e ", eventInfo.time));
 
+  PetscFunctionBeginUser;
   PetscCall(PetscLogEventGetId("MatMult", &event));
   PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &eventInfo));
   //gpuflopRate = eventInfo.GpuFlops/eventInfo.GpuTime;
@@ -181,12 +183,14 @@ PetscErrorCode PetscLogSpMVTime(PetscReal *gputime, PetscReal *cputime, PetscRea
   if (gputime) *gputime = eventInfo.GpuTime;
   if (gpuflops) *gpuflops = eventInfo.GpuFlops / 1.e6;
 #endif
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MapToPetscMatType(const char *matformat, PetscBool use_gpu, char **petscmatformat)
 {
   PetscBool iscsr, issell, iscsrkokkos;
+
+  PetscFunctionBeginUser;
   PetscCall(PetscStrcmp(matformat, "csr", &iscsr));
   if (iscsr) {
     if (use_gpu) PetscCall(PetscStrallocpy(MATAIJCUSPARSE, petscmatformat));
@@ -201,7 +205,7 @@ PetscErrorCode MapToPetscMatType(const char *matformat, PetscBool use_gpu, char 
       if (iscsrkokkos) PetscCall(PetscStrallocpy(MATAIJKOKKOS, petscmatformat));
     }
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)
@@ -275,7 +279,7 @@ int main(int argc, char **args)
 
   for (j = 0; j < nformats; j++) {
     char *petscmatformat = NULL;
-    MapToPetscMatType(matformats[j], use_gpu, &petscmatformat);
+    PetscCall(MapToPetscMatType(matformats[j], use_gpu, &petscmatformat));
     PetscCheck(petscmatformat, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Invalid mat format %s, supported options include csr and sell.", matformats[j]);
     if (flg3) { // mat names specified in a JSON file
       for (i = 0; i < nmat; i++) {

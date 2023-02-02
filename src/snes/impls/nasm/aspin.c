@@ -43,7 +43,7 @@ PetscErrorCode MatMultASPIN(Mat m, Vec X, Vec Y)
     PetscCall(VecScatterBegin(oscatter[i], x[i], Y, ADD_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(oscatter[i], x[i], Y, ADD_VALUES, SCATTER_REVERSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
@@ -53,7 +53,7 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
   /* reset NEWTONLS and free the data */
   PetscCall(SNESReset(snes));
   PetscCall(PetscFree(snes->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -134,5 +134,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 
   snes->ops->destroy = SNESDestroy_ASPIN;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

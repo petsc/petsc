@@ -154,7 +154,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **x, PetscScal
   }
   PetscCall(DMDAVecRestoreArray(coordDA, coordinates, &coords));
   PetscCall(PetscLogFlops(11.0 * info->ym * info->xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -234,7 +234,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Mat jac, 
      matrix. If we do, it will generate an error.
   */
   PetscCall(MatSetOption(jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

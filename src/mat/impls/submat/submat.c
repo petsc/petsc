@@ -15,7 +15,7 @@ static PetscErrorCode MatScale_SubMatrix(Mat N, PetscScalar a)
 
   PetscFunctionBegin;
   PetscCall(MatScale(Na->A, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShift_SubMatrix(Mat N, PetscScalar a)
@@ -24,7 +24,7 @@ static PetscErrorCode MatShift_SubMatrix(Mat N, PetscScalar a)
 
   PetscFunctionBegin;
   PetscCall(MatShift(Na->A, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N, Vec left, Vec right)
@@ -43,7 +43,7 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N, Vec left, Vec right)
     PetscCall(VecScatterEnd(Na->lrestrict, left, Na->lwork, INSERT_VALUES, SCATTER_REVERSE));
   }
   PetscCall(MatDiagonalScale(Na->A, left ? Na->lwork : NULL, right ? Na->rwork : NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonal_SubMatrix(Mat N, Vec d)
@@ -54,7 +54,7 @@ static PetscErrorCode MatGetDiagonal_SubMatrix(Mat N, Vec d)
   PetscCall(MatGetDiagonal(Na->A, Na->rwork));
   PetscCall(VecScatterBegin(Na->rprolong, Na->rwork, d, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(Na->rprolong, Na->rwork, d, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_SubMatrix(Mat N, Vec x, Vec y)
@@ -68,7 +68,7 @@ static PetscErrorCode MatMult_SubMatrix(Mat N, Vec x, Vec y)
   PetscCall(MatMult(Na->A, Na->rwork, Na->lwork));
   PetscCall(VecScatterBegin(Na->lrestrict, Na->lwork, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(Na->lrestrict, Na->lwork, y, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3)
@@ -98,7 +98,7 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3)
   }
   PetscCall(VecScatterBegin(Na->lrestrict, Na->lwork, v3, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(Na->lrestrict, Na->lwork, v3, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_SubMatrix(Mat N, Vec x, Vec y)
@@ -112,7 +112,7 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N, Vec x, Vec y)
   PetscCall(MatMultTranspose(Na->A, Na->lwork, Na->rwork));
   PetscCall(VecScatterBegin(Na->rprolong, Na->rwork, y, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(Na->rprolong, Na->rwork, y, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3)
@@ -142,7 +142,7 @@ static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v
   }
   PetscCall(VecScatterBegin(Na->rprolong, Na->rwork, v3, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(Na->rprolong, Na->rwork, v3, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_SubMatrix(Mat N)
@@ -160,7 +160,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
   PetscCall(VecScatterDestroy(&Na->rprolong));
   PetscCall(MatDestroy(&Na->A));
   PetscCall(PetscFree(N->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -245,7 +245,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
 
   N->assembled = PETSC_TRUE;
   *newmat      = N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -302,5 +302,5 @@ PetscErrorCode MatSubMatrixVirtualUpdate(Mat N, Mat A, IS isrow, IS iscol)
   /* Do not use MatConvert directly since MatShell has a duplicate operation which does not increase
      the reference count of the context. This is a problem if A is already of type MATSHELL */
   PetscCall(MatConvertFrom_Shell(A, MATSHELL, MAT_INITIAL_MATRIX, &Na->A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

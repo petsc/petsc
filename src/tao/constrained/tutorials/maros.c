@@ -47,7 +47,7 @@ PetscErrorCode FormEqualityConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormInequalityJacobian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormEqualityJacobian(Tao, Vec, Mat, Mat, void *);
 
-PetscErrorCode main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   PetscMPIInt        size;
   Vec                x; /* solution */
@@ -193,7 +193,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscCall(VecSet(user->bin, 0.0));
   PetscCall(VecSetFromOptions(user->bin));
   user->m = user->me + user->mi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DestroyProblem(AppCtx *user)
@@ -205,7 +205,7 @@ PetscErrorCode DestroyProblem(AppCtx *user)
   PetscCall(VecDestroy(&user->beq));
   PetscCall(VecDestroy(&user->bin));
   PetscCall(VecDestroy(&user->d));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionGradient(Tao tao, Vec x, PetscReal *f, Vec g, void *ctx)
@@ -219,13 +219,13 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec x, PetscReal *f, Vec g, void *c
   PetscCall(VecDot(x, user->d, f));
   *f += 0.5 * xtHx;
   PetscCall(VecAXPY(g, 1.0, user->d));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormInequalityConstraints(Tao tao, Vec x, Vec ci, void *ctx)
@@ -234,7 +234,7 @@ PetscErrorCode FormInequalityConstraints(Tao tao, Vec x, Vec ci, void *ctx)
 
   PetscFunctionBegin;
   PetscCall(MatMult(user->Ain, x, ci));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormEqualityConstraints(Tao tao, Vec x, Vec ce, void *ctx)
@@ -244,19 +244,19 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec x, Vec ce, void *ctx)
   PetscFunctionBegin;
   PetscCall(MatMult(user->Aeq, x, ce));
   PetscCall(VecAXPY(ce, -1.0, user->beq));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormInequalityJacobian(Tao tao, Vec x, Mat JI, Mat JIpre, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

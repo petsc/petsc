@@ -84,7 +84,7 @@ static PetscErrorCode PetscSectionView_HDF5_SingleField(PetscSection s, PetscVie
     PetscCall(ISView(cindIS, viewer));
     PetscCall(ISDestroy(&cindIS));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer)
@@ -121,7 +121,7 @@ PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer
     PetscCall(PetscViewerHDF5PopGroup(viewer));
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSectionLoad_HDF5_SingleField_SetConstraintIndices(PetscSection s, IS cindIS, IS coffIS)
@@ -169,7 +169,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField_SetConstraintIndices(Pet
     m += cdof;
   }
   PetscCall(PetscFree(cinds));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscViewer viewer)
@@ -268,7 +268,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     PetscCall(ISDestroy(&coffIS));
     PetscCall(ISDestroy(&cindIS));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer)
@@ -318,7 +318,7 @@ PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer
     PetscCall(PetscViewerHDF5PopGroup(viewer));
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

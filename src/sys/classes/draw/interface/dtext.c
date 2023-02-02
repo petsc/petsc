@@ -26,7 +26,7 @@ PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int c
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidCharPointer(text, 5);
   PetscUseTypeMethod(draw, string, xl, yl, cl, text);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -60,7 +60,7 @@ PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal y
     PetscCall(PetscDrawStringGetSize(draw, &tw, &th));
     for (i = 0; (chr[0] = text[i]); i++) PetscCall(PetscDrawString(draw, xl, yl - th * (i + 1), cl, chr));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -93,7 +93,7 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
   PetscCall(PetscStrlen(text, &len));
   xc = xc - len * tw / 2;
   PetscCall(PetscDrawString(draw, xc, yl, cl, text));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -130,7 +130,7 @@ PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl
 
   if (draw->ops->boxedstring) {
     PetscUseTypeMethod(draw, boxedstring, sxl, syl, sc, bc, text, w, h);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscStrToArray(text, '\n', &cnt, &array));
@@ -162,7 +162,7 @@ PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl
 
   for (i = 0; i < cnt; i++) PetscCall(PetscDrawString(draw, left + tw, top - (1.5 + i) * th, sc, array[i]));
   PetscCall(PetscStrToArrayDestroy(cnt, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -188,7 +188,7 @@ PetscErrorCode PetscDrawStringSetSize(PetscDraw draw, PetscReal width, PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, stringsetsize, width, height);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -212,5 +212,5 @@ PetscErrorCode PetscDrawStringGetSize(PetscDraw draw, PetscReal *width, PetscRea
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, stringgetsize, width, height);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

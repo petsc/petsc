@@ -51,7 +51,7 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm, PetscInt m, Pets
 
   PetscCall(PetscFree(Iidx));
   *H = defl;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size)
@@ -96,7 +96,7 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc, Mat *W, PetscInt size)
 
   PetscCall(PetscFree2(col, Iidx));
   *W = defl;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt ncoeffs, PetscScalar *coeffs, PetscBool trunc)
@@ -128,7 +128,7 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc, Mat *W, PetscInt size, PetscInt nc
 
   for (i = 0; i < size; i++) PetscCall(MatDestroy(&H[i]));
   PetscCall(PetscFree(H));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDeflationGetSpaceAggregation(PC pc, Mat *W)
@@ -167,7 +167,7 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc, Mat *W)
 
   PetscCall(PetscFree2(col, Iidx));
   *W = defl;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDeflationComputeSpace(PC pc)
@@ -212,5 +212,5 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
 
   PetscCall(PCDeflationSetSpace(pc, defl, transp));
   PetscCall(MatDestroy(&defl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

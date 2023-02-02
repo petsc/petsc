@@ -8,7 +8,7 @@ PetscErrorCode MatDestroySubMatrix_Dummy(Mat C)
   PetscFunctionBegin;
   PetscCall(submatj->destroy(C));
   PetscCall(MatDestroySubMatrix_Private(submatj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[])
@@ -30,14 +30,14 @@ PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[])
 
   /* memory is allocated even if n = 0 */
   PetscCall(PetscFree(*mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_Dummy(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -58,5 +58,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat A)
 
   /* special MATPREALLOCATOR functions */
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATDUMMY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

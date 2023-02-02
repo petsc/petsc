@@ -33,7 +33,7 @@ PetscErrorCode AOSetType(AO ao, AOType method)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)ao, method, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(AORegisterAll());
   PetscCall(PetscFunctionListFind(AOList, method, &r));
@@ -42,7 +42,7 @@ PetscErrorCode AOSetType(AO ao, AOType method)
   ao->ops->destroy = NULL;
 
   PetscCall((*r)(ao));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -67,7 +67,7 @@ PetscErrorCode AOGetType(AO ao, AOType *type)
   PetscValidPointer(type, 2);
   PetscCall(AORegisterAll());
   *type = ((PetscObject)ao)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -90,5 +90,5 @@ PetscErrorCode AORegister(const char sname[], PetscErrorCode (*function)(AO))
   PetscFunctionBegin;
   PetscCall(AOInitializePackage());
   PetscCall(PetscFunctionListAdd(&AOList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

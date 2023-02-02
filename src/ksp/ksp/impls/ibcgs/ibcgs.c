@@ -10,7 +10,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   PetscCall(KSPSetWorkVecs(ksp, 9));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -120,7 +120,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
   }
   PetscCall(KSPMonitor(ksp, 0, rnorm));
   PetscCall((*ksp->converged)(ksp, 0, rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecCopy(Rn_1, R0));
 
@@ -161,7 +161,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     if (taun == 0.0) {
       PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to taun is zero, iteration %" PetscInt_FMT, ksp->its);
       ksp->reason = KSP_DIVERGED_NANORINF;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     alphan = rhon / taun;
     PetscCall(PetscLogFlops(15.0));
@@ -249,12 +249,12 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     if (kappan == 0.0) {
       PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to kappan is zero, iteration %" PetscInt_FMT, ksp->its);
       ksp->reason = KSP_DIVERGED_NANORINF;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (thetan == 0.0) {
       PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to thetan is zero, iteration %" PetscInt_FMT, ksp->its);
       ksp->reason = KSP_DIVERGED_NANORINF;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     omegan = thetan / kappan;
     sigman = gamman - omegan * etan;
@@ -286,7 +286,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     PetscCall((*ksp->converged)(ksp, ksp->its, rnorm, &ksp->reason, ksp->cnvP));
     if (ksp->reason) {
       PetscCall(KSPUnwindPreconditioner(ksp, Xn, Tn));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     /* un = A*rn */
@@ -303,7 +303,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
   }
   if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscCall(KSPUnwindPreconditioner(ksp, Xn, Tn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -353,6 +353,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
 #else
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }

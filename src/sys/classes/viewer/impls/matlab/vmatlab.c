@@ -46,7 +46,7 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const 
 
     PetscCall(PetscInfo(mfile, "Put MATLAB array %s\n", name));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name, void *mat)
@@ -55,7 +55,7 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 
   PetscFunctionBegin;
   matPutVariable(ml->ep, name, (mxArray *)mat);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -91,7 +91,7 @@ PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile, int m, int n, PetscS
     PetscCall(PetscArraycpy(array, mxGetPr(mat), m * n));
     PetscCall(PetscInfo(mfile, "Got MATLAB array %s\n", name));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode type)
@@ -100,7 +100,7 @@ PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode t
 
   PetscFunctionBegin;
   vmatlab->btype = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -124,7 +124,7 @@ PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name
       SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[type]);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
@@ -136,7 +136,7 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
   PetscCall(PetscFree(vf));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileSetMode_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -191,7 +191,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetMode_C", PetscViewerFileSetMode_Matlab));
 
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -232,7 +232,7 @@ PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFile
   PetscCall(PetscViewerSetType(*binv, PETSCVIEWERMATLAB));
   PetscCall(PetscViewerFileSetMode(*binv, type));
   PetscCall(PetscViewerFileSetName(*binv, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
@@ -276,7 +276,7 @@ PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
   ierr = PetscCommDuplicate(comm, &ncomm, NULL);
   if (ierr) {
     PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_MATLAB_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (Petsc_Viewer_Matlab_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Matlab_keyval, 0);

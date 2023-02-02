@@ -81,7 +81,7 @@ static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, P
   *_x    = x;
   *_y    = y;
   *_b    = b;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

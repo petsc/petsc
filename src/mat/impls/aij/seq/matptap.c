@@ -28,7 +28,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C)
   if (flg) {
     PetscCall(MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A, P, fill, C));
     C->ops->productnumeric = MatProductNumeric_PtAP;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* "rap" */
@@ -47,7 +47,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C)
     C->product->destroy    = MatDestroy_SeqAIJ_MatTransMatMult;
     C->ops->ptapnumeric    = MatPtAPNumeric_SeqAIJ_SeqAIJ;
     C->ops->productnumeric = MatProductNumeric_PtAP;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* hypre */
@@ -55,7 +55,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJ_SeqAIJ(Mat C)
   PetscCall(PetscStrcmp(alg, "hypre", &flg));
   if (flg) {
     PetscCall(MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A, P, fill, C));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
 
@@ -183,7 +183,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, PetscReal 
     PetscCall(PetscInfo(C, "Empty matrix product\n"));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C)
@@ -273,7 +273,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, Mat C)
 
   PetscCall(PetscFree2(apa, apjdense));
   PetscCall(PetscFree(apj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A, Mat P, Mat C)
@@ -290,5 +290,5 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A, Mat P, Mat C)
   if (atb->data) C->product->data = atb->data;
   PetscCall((*C->ops->matmatmultnumeric)(atb->At, A, P, C));
   C->product->data = atb;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

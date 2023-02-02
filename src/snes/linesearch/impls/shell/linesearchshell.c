@@ -33,7 +33,7 @@ $     .. determine lambda using W and G as work vecs..
 $     PetscCall(VecAXPY(X,-lambda,Y));
 $     PetscCall(SNESComputeFunction(snes,X,F));
 $     PetscCall(SNESLineSearchComputeNorms(linesearch));
-$     PetscFunctionReturn(0);
+$     PetscFunctionReturn(PETSC_SUCCESS);
 $  }
 $
 $  ...
@@ -58,7 +58,7 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
     shell->ctx  = ctx;
     shell->func = func;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -91,7 +91,7 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
     if (func) *func = shell->func;
     if (ctx) *ctx = shell->ctx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch)
@@ -103,7 +103,7 @@ static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch)
   if (shell->func) {
     PetscCall((*shell->func)(linesearch, shell->ctx));
   } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetUserFunc");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
@@ -112,7 +112,7 @@ static PetscErrorCode SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(shell));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -143,5 +143,5 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch
   PetscCall(PetscNew(&shell));
 
   linesearch->data = (void *)shell;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

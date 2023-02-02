@@ -49,7 +49,7 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype, MPI_Datatype *mty
   else if (ptype == PETSC___FP16) *mtype = MPIU___FP16;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown PETSc datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -95,7 +95,7 @@ PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype, PetscDataType
   else if (mtype == MPIU___FP16) *ptype = PETSC___FP16;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled MPI datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef enum {
@@ -159,7 +159,7 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype, size_t *size)
   else if (ptype == PETSC___FP16) *size = PETSC___FP16_SIZE;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown PETSc datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -195,5 +195,5 @@ PetscErrorCode PetscDataTypeFromString(const char *name, PetscDataType *ptype, P
       if (*found) *ptype = PETSC_REAL;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

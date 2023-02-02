@@ -25,7 +25,7 @@ struct Marker {
     PetscCall(PetscObjectGetId(obj, &id));
     PetscCall(PetscObjectGetName(obj, &name));
     PetscCall(PetscDeviceContextMarkIntentFromID(dctx, id, this->mode, name));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 
@@ -65,7 +65,7 @@ static PetscErrorCode MarkedObjectMapView(PetscViewer vwr, std::size_t nkeys, co
   PetscCall(PetscViewerASCIIPopTab(vwr));
   PetscCall(PetscViewerFlush(vwr));
   PetscCall(PetscViewerASCIIPopSynchronized(vwr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_ATTRIBUTE_FORMAT(10, 11)
@@ -87,7 +87,7 @@ static PetscErrorCode CheckMarkedObjectMap_Private(PetscBool cond, const char co
     PetscCall(MarkedObjectMapView(vwr, nkeys, keys, modes, ndeps, dependencies));
     SETERRQ(comm, PETSC_ERR_PLIB, "Condition '%s' failed, marked object map in corrupt state: %s", cond_str, buf.data());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #define CheckMarkedObjectMap(__cond__, ...) CheckMarkedObjectMap_Private((PetscBool)(!!(__cond__)), PetscStringize(__cond__), PETSC_COMM_SELF, dctx, nkeys, keys, modes, ndeps, const_cast<const PetscEvent **>(dependencies), __VA_ARGS__);
 
@@ -145,7 +145,7 @@ static PetscErrorCode TestAllCombinations(PetscDeviceContext dctx, const std::ve
             PetscCall(CheckMarkedObjectMap(modes[key_idx] == mode, "unexpected mode %s, expected %s", PetscMemoryAccessModeToString(modes[key_idx]), PetscMemoryAccessModeToString(mode)));
             PetscCall(CheckMarkedObjectMap(ndeps[key_idx] == 1, "unexpected number of dependencies %zu, expected 1", ndeps[key_idx]));
             PetscCall(CheckMarkedObjectMap(dependencies[key_idx][0]->dtype == dtype, "unexpected device type on event: %s, expected %s", PetscDeviceTypes[dependencies[key_idx][0]->dtype], PetscDeviceTypes[dtype]));
-            PetscFunctionReturn(0);
+            PetscFunctionReturn(PETSC_SUCCESS);
           };
 
           // if it == next, then even though we might num_expected_keys keys we never "look
@@ -171,7 +171,7 @@ static PetscErrorCode TestAllCombinations(PetscDeviceContext dctx, const std::ve
     }
   }
   PetscCall(PetscDeviceContextSynchronize(dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename... T>
@@ -233,7 +233,7 @@ static PetscErrorCode CheckMapEqual(std::unordered_map<PetscObjectId, std::pair<
   }
   PetscCall(CheckMarkedObjectMap(expected_map.empty(), "Not all keys in marked object map accounted for!"));
   PetscCall(PetscRestoreMarkedObjectMap_Internal(nkeys, &keys, &modes, &ndeps, &dependencies));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])
@@ -248,12 +248,12 @@ int main(int argc, char *argv[])
     PetscCall(PetscObjectSetName((PetscObject)(*c), name));
     PetscCall(PetscObjectGetId((PetscObject)(*c), id));
     if (container_view) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Container '%s' -> id %" PetscInt64_FMT "\n", name, *id));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   };
   const auto sync_all = [&] {
     PetscFunctionBegin;
     for (auto &&ctx : {dctx_a, dctx_b, dctx_c}) PetscCall(PetscDeviceContextSynchronize(ctx));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   };
 
   PetscFunctionBeginUser;
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
     }));
     PetscCall(PetscDeviceContextSynchronize(remain_reader));
     PetscCall(CheckMapEqual({}));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   };
 
   // Test that multiple readers can simulatenously read -- even if one of them is synchronized

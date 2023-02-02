@@ -18,7 +18,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex13.c", options->testPartition, &options->testPartition, NULL));
   PetscCall(PetscOptionsBoundedInt("-test_num", "The test partition number", "ex13.c", options->testNum, &options->testNum, NULL, 0));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -94,7 +94,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   PetscCall(PetscObjectSetName((PetscObject)*dm, simplex ? "Simplicial Mesh" : "Tensor Product Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user)
@@ -108,7 +108,7 @@ static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user)
     /* Could use PetscRand instead */
     if (c % 2) PetscCall(DMPlexOrientPoint(dm, c, -1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestOrientation(DM dm, AppCtx *user)
@@ -117,7 +117,7 @@ static PetscErrorCode TestOrientation(DM dm, AppCtx *user)
   PetscCall(ScrambleOrientation(dm, user));
   PetscCall(DMPlexOrient(dm));
   PetscCall(DMViewFromOptions(dm, NULL, "-oriented_dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

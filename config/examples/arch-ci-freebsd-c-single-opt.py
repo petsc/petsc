@@ -13,8 +13,9 @@ configure_options = [
   '--download-superlu_dist',
   '--download-metis',
   '--download-parmetis',
-  '--download-cmake'  # needed by metis/parmetis
-  ]
+  '--download-cmake',  # needed by metis/parmetis
+  '--with-strict-petscerrorcode',
+]
 
 if __name__ == '__main__':
   import sys,os

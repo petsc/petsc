@@ -21,7 +21,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF sf, MPI_Datatype un
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
   PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
   PetscCallMPI(MPIU_Igather(rootbuf == leafbuf ? MPI_IN_PLACE : rootbuf, sendcount, unit, leafbuf, sendcount, unit, 0 /*rank 0*/, comm, req));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFReduceBegin_Gather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
@@ -41,7 +41,7 @@ static PetscErrorCode PetscSFReduceBegin_Gather(PetscSF sf, MPI_Datatype unit, P
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_LEAF2ROOT, &rootbuf, &leafbuf, &req, NULL));
   PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
   PetscCallMPI(MPIU_Iscatter(leafbuf, recvcount, unit, rootbuf == leafbuf ? MPI_IN_PLACE : rootbuf, recvcount, unit, 0 /*rank 0*/, comm, req));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf)
@@ -73,5 +73,5 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf)
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

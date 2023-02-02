@@ -22,7 +22,7 @@ static PetscErrorCode TestPointwiseMaxAbs(Vec result, Vec x, Vec y, Vec ref)
   }
   PetscCall(VecRestoreArrayRead(ref, &ref_array));
   PetscCall(VecRestoreArrayRead(result, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

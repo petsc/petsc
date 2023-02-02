@@ -35,17 +35,17 @@ PETSC_EXTERN void matfdcoloringrestoreperturbedcolumnsf90_(MatFDColoring *x,F90A
 }
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourmatfdcoloringfunctionts(TS ts,PetscReal t,Vec x,Vec y,MatFDColoring fd)
+static PetscErrorCode ourmatfdcoloringfunctionts(TS ts, PetscReal t, Vec x, Vec y, MatFDColoring fd)
 {
-  PetscErrorCode ierr = 0;
-  (*(void (*)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&ts,&t,&x,&y,fd->ftn_func_cntx,&ierr);
+  PetscErrorCode ierr = PETSC_SUCCESS;
+  (*(void (*)(TS *, PetscReal *, Vec *, Vec *, void *, PetscErrorCode *))(fd->ftn_func_pointer))(&ts, &t, &x, &y, fd->ftn_func_cntx, &ierr);
   return ierr;
 }
 
-static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes,Vec x,Vec y,MatFDColoring fd)
+static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes, Vec x, Vec y, MatFDColoring fd)
 {
-  PetscErrorCode ierr = 0;
-  (*(void (*)(SNES*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&snes,&x,&y,fd->ftn_func_cntx,&ierr);
+  PetscErrorCode ierr = PETSC_SUCCESS;
+  (*(void (*)(SNES *, Vec *, Vec *, void *, PetscErrorCode *))(fd->ftn_func_pointer))(&snes, &x, &y, fd->ftn_func_cntx, &ierr);
   return ierr;
 }
 

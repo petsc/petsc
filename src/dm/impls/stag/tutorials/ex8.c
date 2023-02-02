@@ -138,7 +138,7 @@ static PetscErrorCode AssembleSystem1DVertexCentered(DM dm, Mat *pA, Vec *pb)
   PetscCall(VecAssemblyBegin(b));
   PetscCall(VecAssemblyEnd(b));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode AssembleSystem(DM dm, Mat *pA, Vec *pb)
@@ -155,7 +155,7 @@ PetscErrorCode AssembleSystem(DM dm, Mat *pA, Vec *pb)
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension: %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

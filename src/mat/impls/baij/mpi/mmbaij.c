@@ -114,7 +114,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
   PetscCall(VecDestroy(&gvec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -188,7 +188,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
   baij->B          = Bnew;
   A->was_assembled = PETSC_FALSE;
   A->assembled     = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*      ugly stuff added for Glenn someday we should fix this up */
@@ -245,7 +245,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
   }
   PetscCall(PetscFree(r_rmapo));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, nt * bs, &uglyoo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMPIBAIJDiagonalScaleLocal(Mat A, Vec scale)
@@ -254,7 +254,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocal(Mat A, Vec scale)
 
   PetscFunctionBegin;
   PetscTryMethod(A, "MatDiagonalScaleLocal_C", (Mat, Vec), (A, scale));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalScaleLocal_MPIBAIJ(Mat A, Vec scale)
@@ -283,5 +283,5 @@ PetscErrorCode MatDiagonalScaleLocal_MPIBAIJ(Mat A, Vec scale)
   PetscCall(VecRestoreArray(uglyoo, &o));
   /* column scale "off-diagonal" portion of local matrix */
   PetscCall(MatDiagonalScale(a->B, NULL, uglyoo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -51,7 +51,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
       *type = PCBJACOBI;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -80,7 +80,7 @@ PetscErrorCode PCReset(PC pc)
   PetscCall(MatDestroy(&pc->mat));
 
   pc->setupcalled = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -98,11 +98,11 @@ PetscErrorCode PCReset(PC pc)
 PetscErrorCode PCDestroy(PC *pc)
 {
   PetscFunctionBegin;
-  if (!*pc) PetscFunctionReturn(0);
+  if (!*pc) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*pc), PC_CLASSID, 1);
   if (--((PetscObject)(*pc))->refct > 0) {
     *pc = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PCReset(*pc));
@@ -112,7 +112,7 @@ PetscErrorCode PCDestroy(PC *pc)
   PetscTryTypeMethod((*pc), destroy);
   PetscCall(DMDestroy(&(*pc)->dm));
   PetscCall(PetscHeaderDestroy(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -144,7 +144,7 @@ PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(flag, 2);
   *flag = pc->diagonalscale;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -185,7 +185,7 @@ PetscErrorCode PCSetDiagonalScale(PC pc, Vec s)
   PetscCall(VecDuplicate(s, &pc->diagonalscaleright));
   PetscCall(VecCopy(s, pc->diagonalscaleright));
   PetscCall(VecReciprocal(pc->diagonalscaleright));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -224,7 +224,7 @@ PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
   } else if (in != out) {
     PetscCall(VecCopy(in, out));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -263,7 +263,7 @@ PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
   } else if (in != out) {
     PetscCall(VecCopy(in, out));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -293,7 +293,7 @@ PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->useAmat = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -322,7 +322,7 @@ PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flg, 2);
   pc->erroriffailure = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -351,7 +351,7 @@ PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *flg = pc->useAmat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -397,7 +397,7 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
   pc->modifysubmatricesP = NULL;
 
   *newpc = pc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -442,7 +442,7 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y)
   PetscCall(PetscLogEventEnd(PC_Apply, pc, x, y, 0));
   if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
   PetscCall(VecLockReadPop(x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -504,7 +504,7 @@ PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
       PetscCall(MatDenseRestoreColumnVecRead(X, n1, &cx));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -541,7 +541,7 @@ PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y)
   PetscCall(PetscLogEventEnd(PC_ApplySymmetricLeft, pc, x, y, 0));
   PetscCall(VecLockReadPop(x));
   if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -578,7 +578,7 @@ PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y)
   PetscCall(PetscLogEventEnd(PC_ApplySymmetricRight, pc, x, y, 0));
   PetscCall(VecLockReadPop(x));
   if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -618,7 +618,7 @@ PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y)
   PetscCall(PetscLogEventEnd(PC_Apply, pc, x, y, 0));
   PetscCall(VecLockReadPop(x));
   if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 3, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -643,7 +643,7 @@ PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
   PetscValidBoolPointer(flg, 2);
   if (pc->ops->applytranspose) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -722,7 +722,7 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
     }
   }
   if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 4, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -761,7 +761,7 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
   if (pc->ops->applyBAtranspose) {
     PetscUseTypeMethod(pc, applyBAtranspose, side, x, y, work);
     if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 4, PETSC_FALSE));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(side == PC_LEFT || side == PC_RIGHT, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Side must be right or left");
 
@@ -775,7 +775,7 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
   }
   /* add support for PC_SYMMETRIC */
   if (pc->erroriffailure) PetscCall(VecValidValues_Internal(y, 4, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -801,7 +801,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
   PetscValidBoolPointer(exists, 2);
   if (pc->ops->applyrichardson) *exists = PETSC_TRUE;
   else *exists = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -847,7 +847,7 @@ PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, Pet
   PetscCheck(b != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "b and y must be different vectors");
   PetscCall(PCSetUp(pc));
   PetscUseTypeMethod(pc, applyrichardson, b, y, w, rtol, abstol, dtol, its, guesszero, outits, reason);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -867,7 +867,7 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
 {
   PetscFunctionBegin;
   pc->failedreason = reason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -895,7 +895,7 @@ PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
   PetscFunctionBegin;
   if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
   else *reason = pc->failedreason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -921,7 +921,7 @@ PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason)
   PetscFunctionBegin;
   if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
   else *reason = pc->failedreason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*  Next line needed to deactivate KSP_Solve logging */
@@ -955,7 +955,7 @@ PetscErrorCode PCSetUp(PC pc)
 
   if (pc->setupcalled && pc->reusepreconditioner) {
     PetscCall(PetscInfo(pc, "Leaving PC with identical preconditioner since reuse preconditioner is set\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscObjectStateGet((PetscObject)pc->pmat, &matstate));
@@ -965,7 +965,7 @@ PetscErrorCode PCSetUp(PC pc)
     pc->flag = DIFFERENT_NONZERO_PATTERN;
   } else if (matstate == pc->matstate) {
     PetscCall(PetscInfo(pc, "Leaving PC with identical preconditioner since operator is unchanged\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     if (matnonzerostate > pc->matnonzerostate) {
       PetscCall(PetscInfo(pc, "Setting up PC with different nonzero pattern\n"));
@@ -997,7 +997,7 @@ PetscErrorCode PCSetUp(PC pc)
   }
   PetscCall(PetscLogEventEnd(PC_SetUp, pc, 0, 0, 0));
   if (!pc->setupcalled) pc->setupcalled = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1022,11 +1022,11 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (!pc->ops->setuponblocks) PetscFunctionReturn(0);
+  if (!pc->ops->setuponblocks) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PC_SetUpOnBlocks, pc, 0, 0, 0));
   PetscUseTypeMethod(pc, setuponblocks);
   PetscCall(PetscLogEventEnd(PC_SetUpOnBlocks, pc, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1072,7 +1072,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->modifysubmatrices  = func;
   pc->modifysubmatricesP = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1114,11 +1114,11 @@ PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const I
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (!pc->modifysubmatrices) PetscFunctionReturn(0);
+  if (!pc->modifysubmatrices) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PC_ModifySubMatrices, pc, 0, 0, 0));
   PetscCall((*pc->modifysubmatrices)(pc, nsub, row, col, submat, ctx));
   PetscCall(PetscLogEventEnd(PC_ModifySubMatrices, pc, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1181,7 +1181,7 @@ PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat)
   PetscCall(MatDestroy(&pc->pmat));
   pc->mat  = Amat;
   pc->pmat = Pmat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1207,7 +1207,7 @@ PetscErrorCode PCSetReusePreconditioner(PC pc, PetscBool flag)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flag, 2);
   pc->reusepreconditioner = flag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1231,7 +1231,7 @@ PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(flag, 2);
   *flag = pc->reusepreconditioner;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1329,7 +1329,7 @@ PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat)
     }
     *Pmat = pc->pmat;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1355,7 +1355,7 @@ PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (mat) *mat = (pc->mat) ? PETSC_TRUE : PETSC_FALSE;
   if (pmat) *pmat = (pc->pmat) ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1384,7 +1384,7 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(mat, 2);
   PetscUseTypeMethod(pc, getfactoredmatrix, mat);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1411,7 +1411,7 @@ PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pc, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1438,7 +1438,7 @@ PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)pc, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1467,7 +1467,7 @@ PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(prefix, 2);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1482,7 +1482,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
   PetscValidBoolPointer(change, 2);
   *change = PETSC_FALSE;
   PetscTryMethod(pc, "PCPreSolveChangeRHS_C", (PC, PetscBool *), (pc, change));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1526,7 +1526,7 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
 
   if (pc->ops->presolve) PetscUseTypeMethod(pc, presolve, ksp, rhs, x);
   else if (pc->presolve) PetscCall((pc->presolve)(pc, ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1555,7 +1555,7 @@ PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->presolve = presolve;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1594,7 +1594,7 @@ PetscErrorCode PCPostSolve(PC pc, KSP ksp)
   PetscCall(KSPGetSolution(ksp, &x));
   PetscCall(KSPGetRhs(ksp, &rhs));
   PetscTryTypeMethod(pc, postsolve, ksp, rhs, x);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1631,7 +1631,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
   PetscCall(PetscViewerBinaryRead(viewer, type, 256, NULL, PETSC_CHAR));
   PetscCall(PCSetType(newdm, type));
   PetscTryTypeMethod(newdm, load, viewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -1658,7 +1658,7 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PC_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1783,7 +1783,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
     if (pc->pmat && pc->pmat != pc->mat) PetscCall(MatView(pc->pmat, viewer));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1817,7 +1817,7 @@ PetscErrorCode PCRegister(const char sname[], PetscErrorCode (*function)(PC))
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
   PetscCall(PetscFunctionListAdd(&PCList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
@@ -1827,7 +1827,7 @@ static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &pc));
   PetscCall(PCApply(pc, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1867,7 +1867,7 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
   PetscCall(MatShellSetOperation(Apc, MATOP_MULT, (void (*)(void))MatMult_PC));
   PetscCall(MatComputeOperator(Apc, mattype, mat));
   PetscCall(MatDestroy(&Apc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1901,7 +1901,7 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, dim, 2);
   PetscTryMethod(pc, "PCSetCoordinates_C", (PC, PetscInt, PetscInt, PetscReal *), (pc, dim, nloc, coords));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1930,7 +1930,7 @@ PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolati
   PetscValidIntPointer(num_levels, 2);
   PetscValidPointer(interpolations, 3);
   PetscUseMethod(pc, "PCGetInterpolations_C", (PC, PetscInt *, Mat *[]), (pc, num_levels, interpolations));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1959,5 +1959,5 @@ PetscErrorCode PCGetCoarseOperators(PC pc, PetscInt *num_levels, Mat *coarseOper
   PetscValidIntPointer(num_levels, 2);
   PetscValidPointer(coarseOperators, 3);
   PetscUseMethod(pc, "PCGetCoarseOperators_C", (PC, PetscInt *, Mat *[]), (pc, num_levels, coarseOperators));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

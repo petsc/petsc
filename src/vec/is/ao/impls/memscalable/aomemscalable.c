@@ -64,7 +64,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer)
     PetscCallMPI(MPI_Send((void *)aomems->petsc_loc, map->n, MPIU_INT, 0, tag_petsc, PetscObjectComm((PetscObject)ao)));
   }
   PetscCall(PetscViewerFlush(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode AODestroy_MemoryScalable(AO ao)
@@ -75,7 +75,7 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao)
   PetscCall(PetscFree2(aomems->app_loc, aomems->petsc_loc));
   PetscCall(PetscLayoutDestroy(&aomems->map));
   PetscCall(PetscFree(aomems));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -226,7 +226,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, con
   PetscCall(PetscFree2(rindices2, recv_waits2));
   PetscCall(PetscFree3(sindices, send_waits, send_status));
   PetscCall(PetscFree3(sindices2, send_waits2, send_status2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
@@ -236,7 +236,7 @@ PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *
 
   PetscFunctionBegin;
   PetscCall(AOMap_MemoryScalable_private(ao, n, ia, app_loc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
@@ -246,7 +246,7 @@ PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao, PetscInt n, PetscInt *
 
   PetscFunctionBegin;
   PetscCall(AOMap_MemoryScalable_private(ao, n, ia, petsc_loc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _AOOps AOOps_MemoryScalable = {
@@ -367,7 +367,7 @@ PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, cons
   PetscCall(PetscFree2(rindices, recv_waits));
   PetscCall(PetscFree(owner));
   PetscCall(PetscFree(sizes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
@@ -443,7 +443,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
     }
   }
   PetscCall(PetscFree2(lens, disp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -485,7 +485,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
   PetscCall(AOCreateMemoryScalableIS(isapp, ispetsc, aoout));
   PetscCall(ISDestroy(&isapp));
   if (mypetsc) PetscCall(ISDestroy(&ispetsc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -523,5 +523,5 @@ PetscErrorCode AOCreateMemoryScalableIS(IS isapp, IS ispetsc, AO *aoout)
   PetscCall(AOSetType(ao, AOMEMORYSCALABLE));
   PetscCall(AOViewFromOptions(ao, NULL, "-ao_view"));
   *aoout = ao;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

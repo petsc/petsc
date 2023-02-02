@@ -332,13 +332,13 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
     PetscCall(PetscSectionDestroy(&facetSectionRemote));
     PetscCall(PetscSectionDestroy(&facetSectionIDsRemote));
   }
-  PetscCall(MEDfileClose(fileID));
+  PetscCallExternal(MEDfileClose, fileID);
   PetscCall(PetscFree(coordinates));
   PetscCall(PetscFree(cellList));
   PetscCall(PetscLayoutDestroy(&vLayout));
   PetscCall(PetscLayoutDestroy(&cLayout));
   PetscCall(PetscSFDestroy(&sfVertices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires Med mesh reader support. Reconfigure using --download-med");
 #endif

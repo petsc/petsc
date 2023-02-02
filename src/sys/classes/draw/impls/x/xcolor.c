@@ -74,7 +74,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display, int screen, Visua
   }
 
   PetscCall(PetscInfo(NULL, "Successfully allocated colors\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -154,7 +154,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display, int screen, Visu
   }
 
   PetscCall(PetscInfo(NULL, "Successfully allocated colors\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawSetUpColormap_X(Display *display, int screen, Visual *visual, Colormap colormap)
@@ -177,7 +177,7 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display, int screen, Visual *vi
   } else {
     PetscCall(PetscDrawSetUpColormap_Private(display, screen, visual, colormap));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *, Colormap);
@@ -196,7 +196,7 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin, Colormap colormap)
   PetscCall(PetscMemcpy(XiWin->cpalette, gCpalette, sizeof(XiWin->cpalette)));
   XiWin->background = XiWin->cmapping[PETSC_DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[PETSC_DRAW_BLACK];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawXiColormap(PetscDraw_X *XiWin)
@@ -237,14 +237,14 @@ PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X *XiWin)
   } else {
     XiWin->vis = DefaultVisual(XiWin->disp, XiWin->screen);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X *XiWin)
 {
   PetscFunctionBegin;
   XSetWindowColormap(XiWin->disp, XiWin->win, XiWin->cmap);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -266,5 +266,5 @@ PetscErrorCode PetscDrawXiGetPalette(PetscDraw_X *XiWin, unsigned char palette[P
     palette[k][1] = (unsigned char)(colordef[k].green >> 8);
     palette[k][2] = (unsigned char)(colordef[k].blue >> 8);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

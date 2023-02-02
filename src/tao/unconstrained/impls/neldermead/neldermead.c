@@ -17,7 +17,7 @@ static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
     for (j = i - 1; j >= 0 && values[indices[j]] > val; j--) indices[j + 1] = indices[j];
     indices[j + 1] = index;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -33,7 +33,7 @@ static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec 
 
   /*  Subtract last vector from average */
   PetscCall(VecAXPY(nm->Xbar, -nm->oneOverN, nm->simplex[nm->indices[nm->N]]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -56,7 +56,7 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
 
   tao->gradient = NULL;
   tao->step     = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -75,7 +75,7 @@ static PetscErrorCode TaoDestroy_NM(Tao tao)
   PetscCall(PetscFree(nm->indices));
   PetscCall(PetscFree(nm->f_values));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -92,7 +92,7 @@ static PetscErrorCode TaoSetFromOptions_NM(Tao tao, PetscOptionItems *PetscOptio
   nm->mu_r  = nm->mu_oc * 2.0;
   nm->mu_e  = nm->mu_oc * 4.0;
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -112,7 +112,7 @@ static PetscErrorCode TaoView_NM(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Shrink steps: %" PetscInt_FMT "\n", nm->nshrink));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -226,7 +226,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
       PetscCall(VecAXPY(Xbar, -nm->oneOverN, nm->simplex[nm->indices[nm->N]]));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -266,5 +266,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
   nm->mu_r  = 1.0;
   nm->mu_e  = 2.0;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

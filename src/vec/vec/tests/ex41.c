@@ -120,7 +120,7 @@ PetscErrorCode test_vec_ops(void)
   PetscCall(VecDestroy(&b));
   PetscCall(VecDestroy(&X));
   PetscCall(VecDestroy(&Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

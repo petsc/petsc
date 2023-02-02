@@ -47,13 +47,13 @@ static PetscErrorCode mms_quad_lin(PetscInt dim, PetscReal time, const PetscReal
 
   *u = dim * time;
   for (d = 0; d < dim; ++d) *u += x[d] * x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode mms_quad_lin_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = dim;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_quad_lin_exp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -82,13 +82,13 @@ static PetscErrorCode mms_quad_trig(PetscInt dim, PetscReal time, const PetscRea
 
   *u = dim * PetscCosReal(time);
   for (d = 0; d < dim; ++d) *u += x[d] * x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode mms_quad_trig_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = -dim * PetscSinReal(time);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_quad_trig_exp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -117,13 +117,13 @@ static PetscErrorCode mms_trig_lin(PetscInt dim, PetscReal time, const PetscReal
 
   *u = dim * PetscSqr(PETSC_PI) * time;
   for (d = 0; d < dim; ++d) *u += PetscCosReal(PETSC_PI * x[d]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode mms_trig_lin_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = dim * PetscSqr(PETSC_PI);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_trig_lin(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -154,13 +154,13 @@ static PetscErrorCode mms_trig_trig(PetscInt dim, PetscReal time, const PetscRea
 
   *u = PetscSqr(PETSC_PI) * PetscCosReal(time);
   for (d = 0; d < dim; ++d) *u += PetscCosReal(PETSC_PI * x[d]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode mms_trig_trig_t(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = -PetscSqr(PETSC_PI) * PetscSinReal(time);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_trig_trig_exp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -213,7 +213,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-explicit", "Use explicit timestepping", "ex45.c", options->expTS, &options->expTS, NULL));
   PetscCall(PetscOptionsBool("-lumped", "Lump the mass matrix", "ex45.c", options->lumped, &options->lumped, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
@@ -223,7 +223,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
@@ -266,7 +266,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%d)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
@@ -300,7 +300,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetInitialConditions(TS ts, Vec u)
@@ -312,7 +312,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(TSGetTime(ts, &t));
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

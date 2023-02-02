@@ -29,7 +29,7 @@ static PetscErrorCode MatGetDiagonal_Htool(Mat A, Vec v)
   a->hmatrix->copy_local_diagonal(x);
   PetscCall(VecRestoreArrayWrite(v, &x));
   PetscCall(VecScale(v, a->s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
@@ -54,7 +54,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
     *b = B;
     PetscCall(MatDestroy(&B));
   } else *b = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_Htool(Mat A, Vec x, Vec y)
@@ -70,7 +70,7 @@ static PetscErrorCode MatMult_Htool(Mat A, Vec x, Vec y)
   PetscCall(VecRestoreArrayRead(x, &in));
   PetscCall(VecRestoreArrayWrite(y, &out));
   PetscCall(VecScale(y, a->s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* naive implementation of MatMultAdd() needed for FEM-BEM coupling via MATNEST */
@@ -88,7 +88,7 @@ static PetscErrorCode MatMultAdd_Htool(Mat A, Vec v1, Vec v2, Vec v3)
   PetscCall(VecAXPY(v3, scale, tmp));
   PetscCall(VecDestroy(&tmp));
   a->s = scale; /* set s back to its original value */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_Htool(Mat A, Vec x, Vec y)
@@ -104,7 +104,7 @@ static PetscErrorCode MatMultTranspose_Htool(Mat A, Vec x, Vec y)
   PetscCall(VecRestoreArrayRead(x, &in));
   PetscCall(VecRestoreArrayWrite(y, &out));
   PetscCall(VecScale(y, a->s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatIncreaseOverlap_Htool(Mat A, PetscInt is_max, IS is[], PetscInt ov)
@@ -146,7 +146,7 @@ static PetscErrorCode MatIncreaseOverlap_Htool(Mat A, PetscInt is_max, IS is[], 
     oidx -= size;
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, size, oidx, PETSC_OWN_POINTER, is + i));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
@@ -245,7 +245,7 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
     PetscCall(MatDenseRestoreArrayWrite((*submat)[i], &ptr));
     PetscCall(MatScale((*submat)[i], a->s));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_Htool(Mat A)
@@ -279,7 +279,7 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   delete a->wrapper;
   delete a->hmatrix;
   PetscCall(PetscFree(A->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
@@ -315,7 +315,7 @@ static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
                                      a->hmatrix->get_infos("Low_rank_block_size_max").c_str()));
     PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) ranks: (%s, %s, %s)\n", a->hmatrix->get_infos("Rank_min").c_str(), a->hmatrix->get_infos("Rank_mean").c_str(), a->hmatrix->get_infos("Rank_max").c_str()));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatScale_Htool(Mat A, PetscScalar s)
@@ -324,7 +324,7 @@ static PetscErrorCode MatScale_Htool(Mat A, PetscScalar s)
 
   PetscFunctionBegin;
   a->s *= s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* naive implementation of MatGetRow() needed for MatConvert_Nest_AIJ() */
@@ -349,7 +349,7 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
     PetscCallBLAS("BLASscal", BLASscal_(&bn, &a->s, *v, &one));
   }
   if (!idx) PetscCall(PetscFree(idxc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatRestoreRow_Htool(Mat, PetscInt, PetscInt *nz, PetscInt **idx, PetscScalar **v)
@@ -358,7 +358,7 @@ static PetscErrorCode MatRestoreRow_Htool(Mat, PetscInt, PetscInt *nz, PetscInt 
   if (nz) *nz = 0;
   if (idx) PetscCall(PetscFree(*idx));
   if (v) PetscCall(PetscFree(*v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOptionsObject)
@@ -382,7 +382,7 @@ static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsEList("-mat_htool_clustering", "Type of clustering", "MatHtoolClusteringType", MatHtoolClusteringTypes, PETSC_STATIC_ARRAY_LENGTH(MatHtoolClusteringTypes), MatHtoolClusteringTypes[MAT_HTOOL_CLUSTERING_PCA_REGULAR], &n, &flg));
   if (flg) a->clustering = MatHtoolClusteringType(n);
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
@@ -468,7 +468,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
   a->hmatrix->set_minsourcedepth(a->depth[1]);
   if (s) a->hmatrix->build(a->wrapper ? *a->wrapper : *generator, a->gcoords_target, a->gcoords_source);
   else a->hmatrix->build(a->wrapper ? *a->wrapper : *generator, a->gcoords_target);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductNumeric_Htool(Mat C)
@@ -499,7 +499,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
   PetscCall(MatDenseRestoreArrayWrite(C, &out));
   PetscCall(MatDenseRestoreArrayRead(product->B, &in));
   PetscCall(MatScale(C, a->s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSymbolic_Htool(Mat C)
@@ -531,7 +531,7 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   C->ops->productsymbolic = NULL;
   C->ops->productnumeric  = MatProductNumeric_Htool;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_Htool(Mat C)
@@ -539,7 +539,7 @@ static PetscErrorCode MatProductSetFromOptions_Htool(Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
   if (C->product->type == MATPRODUCT_AB || C->product->type == MATPRODUCT_AtB) C->ops->productsymbolic = MatProductSymbolic_Htool;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::VirtualHMatrix<PetscScalar> **hmatrix)
@@ -548,7 +548,7 @@ static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::Virtu
 
   PetscFunctionBegin;
   *hmatrix = a->hmatrix;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -570,7 +570,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::Virtu
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(hmatrix, 2);
   PetscTryMethod(A, "MatHtoolGetHierarchicalMat_C", (Mat, const htool::VirtualHMatrix<PetscScalar> **), (A, hmatrix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel kernel, void *kernelctx)
@@ -582,7 +582,7 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel kernel, void
   a->kernelctx = kernelctx;
   delete a->wrapper;
   if (a->kernel) a->wrapper = new WrapperHtool(A->rmap->N, A->cmap->N, a->dim, a->kernel, a->kernelctx);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -604,7 +604,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernel kernel, void
   if (!kernelctx) PetscValidFunction(kernel, 2);
   if (!kernel) PetscValidPointer(kernelctx, 3);
   PetscTryMethod(A, "MatHtoolSetKernel_C", (Mat, MatHtoolKernel, void *), (A, kernel, kernelctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
@@ -616,7 +616,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
   source = a->hmatrix->get_source_cluster()->get_local_perm();
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), source.size(), source.data(), PETSC_COPY_VALUES, is));
   PetscCall(ISSetPermutation(*is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -638,7 +638,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   if (!is) PetscValidPointer(is, 2);
   PetscTryMethod(A, "MatHtoolGetPermutationSource_C", (Mat, IS *), (A, is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
@@ -650,7 +650,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
   target = a->hmatrix->get_target_cluster()->get_local_perm();
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), target.size(), target.data(), PETSC_COPY_VALUES, is));
   PetscCall(ISSetPermutation(*is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -672,7 +672,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat A, IS *is)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   if (!is) PetscValidPointer(is, 2);
   PetscTryMethod(A, "MatHtoolGetPermutationTarget_C", (Mat, IS *), (A, is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
@@ -681,7 +681,7 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
 
   PetscFunctionBegin;
   a->hmatrix->set_use_permutation(use);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -701,7 +701,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat A, PetscBool use)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(A, use, 2);
   PetscTryMethod(A, "MatHtoolUsePermutation_C", (Mat, PetscBool), (A, use));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat *B)
@@ -733,7 +733,7 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(A, &C));
   } else *B = C;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GenEntriesTranspose(PetscInt sdim, PetscInt M, PetscInt N, const PetscInt *rows, const PetscInt *cols, PetscScalar *ptr, void *ctx)
@@ -742,14 +742,14 @@ static PetscErrorCode GenEntriesTranspose(PetscInt sdim, PetscInt M, PetscInt N,
   PetscScalar             *tmp;
 
   PetscFunctionBegin;
-  generator->kernel(sdim, N, M, cols, rows, ptr, generator->kernelctx);
+  PetscCall(generator->kernel(sdim, N, M, cols, rows, ptr, generator->kernelctx));
   PetscCall(PetscMalloc1(M * N, &tmp));
   PetscCall(PetscArraycpy(tmp, ptr, M * N));
   for (PetscInt i = 0; i < M; ++i) {
     for (PetscInt j = 0; j < N; ++j) ptr[i + j * M] = tmp[j + i * N];
   }
   PetscCall(PetscFree(tmp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* naive implementation which keeps a reference to the original Mat */
@@ -803,7 +803,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   if (reuse == MAT_INITIAL_MATRIX) *B = C;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -868,7 +868,7 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, P
   } else a->gcoords_source = a->gcoords_target;
   PetscCall(PetscCalloc2(A->cmap->N, &a->work_source, A->rmap->N, &a->work_target));
   *B = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -928,5 +928,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationSource_C", MatHtoolGetPermutationSource_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", MatHtoolGetPermutationTarget_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", MatHtoolUsePermutation_Htool));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

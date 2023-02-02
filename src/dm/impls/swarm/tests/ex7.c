@@ -25,7 +25,7 @@ PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy)
   PetscCheck(matshellctx, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   PetscCall(MatMult(matshellctx->Mp, xx, matshellctx->ff));
   PetscCall(MatMult(matshellctx->MpTrans, matshellctx->ff, yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz)
@@ -37,7 +37,7 @@ PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz)
   PetscCheck(matshellctx, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   PetscCall(MatMult(matshellctx->Mp, xx, matshellctx->ff));
   PetscCall(MatMultAdd(matshellctx->MpTrans, matshellctx->ff, yy, zz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode createSwarm(const DM dm, DM *sw)
@@ -53,7 +53,7 @@ PetscErrorCode createSwarm(const DM dm, DM *sw)
   PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", Nc, PETSC_SCALAR));
   PetscCall(DMSwarmFinalizeFieldRegister(*sw));
   PetscCall(DMSetFromOptions(*sw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, Mat M_p)
@@ -101,7 +101,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
       }
       PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY));
-      PetscInfo(M_p, "createMtMKSP Have %" PetscInt_FMT " eqs, nzl = %" PetscInt_FMT "\n", N, nzl);
+      PetscCall(PetscInfo(M_p, "createMtMKSP Have %" PetscInt_FMT " eqs, nzl = %" PetscInt_FMT "\n", N, nzl));
       PetscCall(KSPSetOperators(ksp, MtM, D));
       PetscCall(MatViewFromOptions(D, NULL, "-ftop2_D_mat_view"));
       PetscCall(MatViewFromOptions(M_p, NULL, "-ftop2_Mp_mat_view"));
@@ -155,7 +155,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
     PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void **)&wq));
   }
   PetscCall(MatDestroy(&PM_p));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const PetscInt a_tid, const PetscInt dim, const PetscInt target, const PetscReal xx[], const PetscReal yy[], const PetscReal a_wp[], Vec rho, Mat *Mp_out)
@@ -197,7 +197,7 @@ PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const Pets
   // output
   *Mp_out = M_p;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscScalar *u)
 {
@@ -209,7 +209,7 @@ static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt
   for (i = 0; i < dim; ++i) v2 += x[i] * x[i];
   /* evaluate the Maxwellian */
   u[0] = n * PetscPowReal(PETSC_PI * theta, -1.5) * (PetscExpReal(-v2 / theta)) * 2. * PETSC_PI * x[1]; // radial term for 2D axi-sym.
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define MAX_NUM_THRDS 12
@@ -340,7 +340,7 @@ PetscErrorCode go()
     PetscCall(DMDestroy(&dm_t[tid]));
     PetscCall(PetscFree3(xx_t[tid], yy_t[tid], wp_t[tid]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

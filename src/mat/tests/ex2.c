@@ -73,7 +73,7 @@ static PetscErrorCode TransposeAXPY(Mat C, PetscScalar alpha, Mat mat, PetscErro
   PetscCall(MatDestroy(&E));
   PetscCall(MatDestroy(&D));
   PetscCall(MatDestroy(&C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

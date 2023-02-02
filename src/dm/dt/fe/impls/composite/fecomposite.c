@@ -10,7 +10,7 @@ static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
   PetscFunctionBegin;
   PetscCall(PetscFree(cmp->embedding));
   PetscCall(PetscFree(cmp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
@@ -94,7 +94,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscCall(PetscFree(invVscalar));
 #endif
   PetscCall(PetscFree2(pivots, work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
@@ -189,7 +189,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
   if (K >= 0) PetscCall(DMRestoreWorkArray(dm, npoints * spdim, MPIU_REAL, &tmpB));
   if (K >= 1) PetscCall(DMRestoreWorkArray(dm, npoints * spdim * dim, MPIU_REAL, &tmpD));
   if (K >= 2) PetscCall(DMRestoreWorkArray(dm, npoints * spdim * dim * dim, MPIU_REAL, &tmpH));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
@@ -205,7 +205,7 @@ static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
   fem->ops->integratebdresidual     = PetscFEIntegrateBdResidual_Basic;
   fem->ops->integratejacobianaction = NULL /* PetscFEIntegrateJacobianAction_Basic */;
   fem->ops->integratejacobian       = PetscFEIntegrateJacobian_Basic;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -229,7 +229,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   cmp->jac            = NULL;
 
   PetscCall(PetscFEInitialize_Composite(fem));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -272,5 +272,5 @@ PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements,
     PetscValidPointer(invjac, 5);
     *invjac = cmp->invjac;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

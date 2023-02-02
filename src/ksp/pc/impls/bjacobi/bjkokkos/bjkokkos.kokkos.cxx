@@ -243,7 +243,7 @@ static PetscErrorCode PCBJKOKKOSCreateKSP_BJKOKKOS(PC pc)
   jac->batch_target = -1;
   jac->nsolves_team = 1;
   jac->ksp->max_it  = 50; // this is realy for GMRES w/o restarts
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // y <-- Ax
@@ -260,7 +260,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode MatMult(const team_member team, const Pets
     Kokkos::single(Kokkos::PerThread(team), [=]() { y_loc[rowb - start] = sum; });
   });
   team.team_barrier();
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 // temp buffer per thread with reduction at end?
@@ -280,7 +280,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode MatMultTranspose(const team_member team, c
     });
   });
   team.team_barrier();
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 typedef struct Batch_MetaData_TAG {
@@ -376,11 +376,11 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
 #endif
   if (dp < atol) {
     metad->reason = KSP_CONVERGED_ATOL_NORMAL;
-    return 0;
+    return PETSC_SUCCESS;
   }
   if (0 == maxit) {
     metad->reason = KSP_DIVERGED_ITS;
-    return 0;
+    return PETSC_SUCCESS;
   }
 
   /* Make the initial Rp = R */
@@ -403,7 +403,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
     D[idx] = 0;
   });
   team.team_barrier();
-  MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, T, V);
+  static_cast<void>(MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, T, V));
 
   i = 0;
   do {
@@ -422,7 +422,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
     // KSP_PCApplyBAorAB
     parallel_for(Kokkos::TeamVectorRange(team, Nblk), [=](int idx) { T[idx] = Diag[idx] * T[idx]; });
     team.team_barrier();
-    MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, T, AUQ);
+    static_cast<void>(MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, T, AUQ));
     /* r <- r - a K (u + q) */
     parallel_for(Kokkos::TeamVectorRange(team, Nblk), [=](int idx) { R[idx] = R[idx] - a * AUQ[idx]; });
     team.team_barrier();
@@ -497,7 +497,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
     team.team_barrier();
     parallel_for(Kokkos::TeamVectorRange(team, Nblk), [=](int idx) { T[idx] = Diag[idx] * P[idx]; });
     team.team_barrier();
-    MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, T, V);
+    static_cast<void>(MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, T, V));
 
     rhoold = rho;
     dpold  = dp;
@@ -522,7 +522,7 @@ done:
   } else {
     metad->flops = 2 * (metad->its * (10 * Nblk + 2 * 50 * Nblk) + 5 * Nblk); // guess
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 // Solve Ax = y with biCG
@@ -602,11 +602,11 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
 #endif
   if (dp < atol) {
     metad->reason = KSP_CONVERGED_ATOL_NORMAL;
-    return 0;
+    return PETSC_SUCCESS;
   }
   if (0 == maxit) {
     metad->reason = KSP_DIVERGED_ITS;
-    return 0;
+    return PETSC_SUCCESS;
   }
   i = 0;
   do {
@@ -641,8 +641,8 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
     team.team_barrier();
     betaold = beta;
     /*     z <- Kp         */
-    MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, Pr, Zr);
-    MatMultTranspose(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, Pl, Zl);
+    static_cast<void>(MatMult(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, Pr, Zr));
+    static_cast<void>(MatMultTranspose(team, glb_Aai, glb_Aaj, glb_Aaa, r, ic, start, end, Pl, Zl));
     /*     dpi <- z'p      */
     parallel_reduce(
       Kokkos::TeamVectorRange(team, Nblk), [=](const int idx, PetscScalar &lsum) { lsum += Zr[idx] * PetscConj(Pl[idx]); }, dpi);
@@ -714,7 +714,7 @@ done:
   } else {
     metad->flops = 2 * (metad->its * (10 * Nblk + 2 * 50 * Nblk) + 5 * Nblk); // guess
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 // KSP solver solve Ax = b; x is output, bin is input
@@ -977,7 +977,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
       nvtxRangePushA("batch-kokkos-solve");
 #endif
       Kokkos::View<PetscScalar *, Kokkos::DefaultExecutionSpace> d_work_vecs_k("workvectors", global_buff_words); // global work vectors
-      PetscInfo(pc, "\tn = %d. %d shared bytes/team, %d global mem bytes, rtol=%e, num blocks %d, team_size=%d, %d vector threads, %d shared vectors, %d global vectors\n", (int)jac->n, scr_bytes_team_shared, global_buff_words, rtol, (int)nBlk, (int)team_size, PCBJKOKKOS_VEC_SIZE, nShareVec, nGlobBVec);
+      PetscCall(PetscInfo(pc, "\tn = %d. %d shared bytes/team, %d global mem bytes, rtol=%e, num blocks %d, team_size=%d, %d vector threads, %d shared vectors, %d global vectors\n", (int)jac->n, scr_bytes_team_shared, global_buff_words, rtol, (int)nBlk, (int)team_size, PCBJKOKKOS_VEC_SIZE, nShareVec, nGlobBVec));
       PetscScalar *d_work_vecs = d_work_vecs_k.data();
       Kokkos::parallel_for(
         "Solve", Kokkos::TeamPolicy<Kokkos::LaunchBounds<256, 4>>(nBlk, team_size, PCBJKOKKOS_VEC_SIZE).set_scratch_size(PCBJKOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes_team_shared)), KOKKOS_LAMBDA(const team_member team) {
@@ -988,10 +988,10 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
           bool         print            = monitor && (blkID == view_bid);
           switch (ksp_type_idx) {
           case BATCH_KSP_BICG_IDX:
-            BJSolve_BICG(team, glb_Aai, glb_Aaj, glb_Aaa, d_isrow, d_isicol, work_buff_global, stride_global, nShareVec, work_buff_shared, stride_shared, rtol, atol, dtol, maxit, &d_metadata[blkID], start, end, glb_idiag, glb_bdata, glb_xdata, print);
+            static_cast<void>(BJSolve_BICG(team, glb_Aai, glb_Aaj, glb_Aaa, d_isrow, d_isicol, work_buff_global, stride_global, nShareVec, work_buff_shared, stride_shared, rtol, atol, dtol, maxit, &d_metadata[blkID], start, end, glb_idiag, glb_bdata, glb_xdata, print));
             break;
           case BATCH_KSP_TFQMR_IDX:
-            BJSolve_TFQMR(team, glb_Aai, glb_Aaj, glb_Aaa, d_isrow, d_isicol, work_buff_global, stride_global, nShareVec, work_buff_shared, stride_shared, rtol, atol, dtol, maxit, &d_metadata[blkID], start, end, glb_idiag, glb_bdata, glb_xdata, print);
+            static_cast<void>(BJSolve_TFQMR(team, glb_Aai, glb_Aaj, glb_Aaa, d_isrow, d_isicol, work_buff_global, stride_global, nShareVec, work_buff_shared, stride_shared, rtol, atol, dtol, maxit, &d_metadata[blkID], start, end, glb_idiag, glb_bdata, glb_xdata, print));
             break;
           case BATCH_KSP_GMRES_IDX:
             //BJSolve_GMRES();
@@ -1089,7 +1089,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
       PetscCall(VecDestroy(&bvec));
     }
   } // whole 'have aijkok' block
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
@@ -1257,7 +1257,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
         });
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Default destroy, if it has never been setup */
@@ -1291,7 +1291,7 @@ static PetscErrorCode PCReset_BJKOKKOS(PC pc)
   jac->batch_x      = NULL;
   jac->batch_values = NULL;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_BJKOKKOS(PC pc)
@@ -1299,7 +1299,7 @@ static PetscErrorCode PCDestroy_BJKOKKOS(PC pc)
   PetscFunctionBegin;
   PetscCall(PCReset_BJKOKKOS(pc));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_BJKOKKOS(PC pc, PetscViewer viewer)
@@ -1315,7 +1315,7 @@ static PetscErrorCode PCView_BJKOKKOS(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "\t\tnwork = %" PetscInt_FMT ", rel tol = %e, abs tol = %e, div tol = %e, max it =%" PetscInt_FMT ", type = %s\n", jac->nwork, jac->ksp->rtol, jac->ksp->abstol, jac->ksp->divtol, jac->ksp->max_it,
                                      ((PetscObject)jac->ksp)->type_name));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_BJKOKKOS(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -1323,7 +1323,7 @@ static PetscErrorCode PCSetFromOptions_BJKOKKOS(PC pc, PetscOptionItems *PetscOp
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "PC BJKOKKOS options");
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
@@ -1334,7 +1334,7 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
   PetscCall(PetscObjectReference((PetscObject)ksp));
   PetscCall(KSPDestroy(&jac->ksp));
   jac->ksp = ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1362,7 +1362,7 @@ PetscErrorCode PCBJKOKKOSSetKSP(PC pc, KSP ksp)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 2);
   PetscCheckSameComm(pc, 1, ksp, 2);
   PetscTryMethod(pc, "PCBJKOKKOSSetKSP_C", (PC, KSP), (pc, ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp)
@@ -1372,7 +1372,7 @@ static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp)
   PetscFunctionBegin;
   if (!jac->ksp) PetscCall(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
   *ksp = jac->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1401,7 +1401,7 @@ PetscErrorCode PCBJKOKKOSGetKSP(PC pc, KSP *ksp)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(ksp, 2);
   PetscUseMethod(pc, "PCBJKOKKOSGetKSP_C", (PC, KSP *), (pc, ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPostSolve_BJKOKKOS(PC pc, KSP ksp, Vec b, Vec x)
@@ -1410,7 +1410,7 @@ static PetscErrorCode PCPostSolve_BJKOKKOS(PC pc, KSP ksp, Vec b, Vec x)
 
   PetscFunctionBegin;
   ksp->its = jac->max_nits;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1468,5 +1468,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJKOKKOS(PC pc)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJKOKKOSGetKSP_C", PCBJKOKKOSGetKSP_BJKOKKOS));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJKOKKOSSetKSP_C", PCBJKOKKOSSetKSP_BJKOKKOS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

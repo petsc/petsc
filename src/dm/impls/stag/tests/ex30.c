@@ -1612,7 +1612,7 @@ static PetscErrorCode CreateMat(DM dmSol, Mat *pA)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* A helper function to check values */
@@ -1624,7 +1624,7 @@ static PetscErrorCode check_vals(PetscInt ex, PetscInt ey, PetscInt ez, PetscInt
   for (i = 0; i < n; ++i) {
     PetscCheck(ref[i] == computed[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "(%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") Assertion Failure. (ref[%" PetscInt_FMT "]) %g != %g (computed)[%" PetscInt_FMT "]", ex, ey, ez, i, (double)PetscRealPart(ref[i]), (double)PetscRealPart(computed[i]), i);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* The same function as above, but getting and checking values, instead of setting them */
@@ -3186,7 +3186,7 @@ static PetscErrorCode CheckMat(DM dmSol, Mat A)
     }
   }
   PetscCall(DMStagVecRestoreArrayRead(dmCoord, coordLocal, &arrCoord));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

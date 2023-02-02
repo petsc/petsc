@@ -115,6 +115,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A, IS is, PetscScalar diag)
   PetscBool keepnonzeropattern;
 
   /* Now copy A into B, and test it with MatZeroRows() */
+  PetscFunctionBeginUser;
   PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-keep_nonzero_pattern", &keepnonzeropattern));
@@ -123,7 +124,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A, IS is, PetscScalar diag)
   PetscCall(MatZeroRowsIS(B, is, diag, 0, 0));
   PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&B));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A, IS is, PetscScalar diag)
@@ -131,6 +132,7 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A, IS is, PetscScalar diag
   Mat B;
 
   /* Now copy A into B, and test it with MatZeroRows() */
+  PetscFunctionBeginUser;
   PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
   /* Set this flag after assembly. This way, it affects only MatZeroRows() */
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
@@ -138,7 +140,7 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A, IS is, PetscScalar diag
   PetscCall(MatZeroRowsIS(B, is, diag, 0, 0));
   PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&B));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

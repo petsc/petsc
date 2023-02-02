@@ -27,7 +27,7 @@ PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG lg, PetscDrawAxis *axis)
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscValidPointer(axis, 2);
   *axis = lg->axis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -51,7 +51,7 @@ PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG lg, PetscDraw *draw)
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscValidPointer(draw, 2);
   *draw = lg->win;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -82,7 +82,7 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin)
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscValidHeaderSpecific(sp, PETSC_DRAWLG_CLASSID, 2);
   PetscCall(PetscDrawIsNull(lg->win, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)lg), &rank));
 
   draw = lg->win;
@@ -117,7 +117,7 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin)
 
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawPause(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -177,7 +177,7 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
   PetscCall(PetscDrawAxisCreate(draw, &lg->axis));
 
   *outlg = lg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -202,7 +202,7 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
   PetscCall(PetscFree(lg->colors));
   PetscCall(PetscMalloc1(lg->dim, &lg->colors));
   PetscCall(PetscArraycpy(lg->colors, colors, lg->dim));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -237,7 +237,7 @@ PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG lg, const char *const *names)
     PetscCall(PetscMalloc1(lg->dim, &lg->legend));
     for (i = 0; i < lg->dim; i++) PetscCall(PetscStrallocpy(names[i], &lg->legend[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -261,7 +261,7 @@ PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG lg, PetscInt *dim)
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
   *dim = lg->dim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -284,7 +284,7 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscValidLogicalCollectiveInt(lg, dim, 2);
-  if (lg->dim == dim) PetscFunctionReturn(0);
+  if (lg->dim == dim) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFree2(lg->x, lg->y));
   if (lg->legend) {
@@ -295,7 +295,7 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim)
   lg->dim = dim;
   PetscCall(PetscMalloc2(dim * PETSC_DRAW_LG_CHUNK_SIZE, &lg->x, dim * PETSC_DRAW_LG_CHUNK_SIZE, &lg->y));
   lg->len = dim * PETSC_DRAW_LG_CHUNK_SIZE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -322,7 +322,7 @@ PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG lg, PetscReal x_min, PetscReal x
   (lg)->xmax = x_max;
   (lg)->ymin = y_min;
   (lg)->ymax = y_max;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -347,7 +347,7 @@ PetscErrorCode PetscDrawLGReset(PetscDrawLG lg)
   lg->ymax  = -1.e20;
   lg->loc   = 0;
   lg->nopts = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -367,11 +367,11 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG *lg)
   PetscInt i;
 
   PetscFunctionBegin;
-  if (!*lg) PetscFunctionReturn(0);
+  if (!*lg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*lg, PETSC_DRAWLG_CLASSID, 1);
   if (--((PetscObject)(*lg))->refct > 0) {
     *lg = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if ((*lg)->legend) {
@@ -383,7 +383,7 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG *lg)
   PetscCall(PetscDrawAxisDestroy(&(*lg)->axis));
   PetscCall(PetscDrawDestroy(&(*lg)->win));
   PetscCall(PetscHeaderDestroy(lg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@
    PetscDrawLGSetUseMarkers - Causes the line graph object to draw a marker for each data-point.
@@ -407,7 +407,7 @@ PetscErrorCode PetscDrawLGSetUseMarkers(PetscDrawLG lg, PetscBool flg)
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscValidLogicalCollectiveBool(lg, flg, 2);
   lg->use_markers = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -432,7 +432,7 @@ PetscErrorCode PetscDrawLGDraw(PetscDrawLG lg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscCall(PetscDrawIsNull(lg->win, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)lg), &rank));
 
   draw = lg->win;
@@ -491,7 +491,7 @@ PetscErrorCode PetscDrawLGDraw(PetscDrawLG lg)
 
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawPause(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -511,7 +511,7 @@ PetscErrorCode PetscDrawLGSave(PetscDrawLG lg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscCall(PetscDrawSave(lg->win));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -534,8 +534,8 @@ PetscErrorCode PetscDrawLGView(PetscDrawLG lg, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
 
-  if (nopts < 1) PetscFunctionReturn(0);
-  if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
+  if (nopts < 1) PetscFunctionReturn(PETSC_SUCCESS);
+  if (xmin > xmax || ymin > ymax) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg), &viewer));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)lg, viewer));
@@ -543,7 +543,7 @@ PetscErrorCode PetscDrawLGView(PetscDrawLG lg, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Line %" PetscInt_FMT ">\n", i));
     for (j = 0; j < nopts; j++) PetscCall(PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j * dim + i], (double)lg->y[j * dim + i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -565,7 +565,7 @@ PetscErrorCode PetscDrawLGSetOptionsPrefix(PetscDrawLG lg, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)lg, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -600,5 +600,5 @@ PetscErrorCode PetscDrawLGSetFromOptions(PetscDrawLG lg)
   usemarkers = lg->use_markers;
   PetscCall(PetscOptionsGetBool(((PetscObject)lg)->options, ((PetscObject)lg)->prefix, "-lg_use_markers", &usemarkers, &set));
   if (set) PetscCall(PetscDrawLGSetUseMarkers(lg, usemarkers));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

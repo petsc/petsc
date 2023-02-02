@@ -16,7 +16,7 @@ static PetscErrorCode ISCopy_Stride(IS is, IS isy)
 
   PetscFunctionBegin;
   PetscCall(PetscMemcpy(isy_stride, is_stride, sizeof(IS_Stride)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISShift_Stride(IS is, PetscInt shift, IS isy)
@@ -26,7 +26,7 @@ PetscErrorCode ISShift_Stride(IS is, PetscInt shift, IS isy)
   PetscFunctionBegin;
   isy_stride->first = is_stride->first + shift;
   isy_stride->step  = is_stride->step;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISDuplicate_Stride(IS is, IS *newIS)
@@ -35,7 +35,7 @@ PetscErrorCode ISDuplicate_Stride(IS is, IS *newIS)
 
   PetscFunctionBegin;
   PetscCall(ISCreateStride(PetscObjectComm((PetscObject)is), is->map->n, sub->first, sub->step, newIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
@@ -60,7 +60,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
     PetscCall(ISInvertPermutation(tmp, nlocal, perm));
     PetscCall(ISDestroy(&tmp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -94,7 +94,7 @@ PetscErrorCode ISStrideGetInfo(IS is, PetscInt *first, PetscInt *step)
   sub = (IS_Stride *)is->data;
   if (first) *first = sub->first;
   if (step) *step = sub->step;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISDestroy_Stride(IS is)
@@ -103,7 +103,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISStrideSetStride_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", NULL));
   PetscCall(PetscFree(is->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISToGeneral_Stride(IS inis)
@@ -116,7 +116,7 @@ PetscErrorCode ISToGeneral_Stride(IS inis)
   PetscCall(ISGetIndices(inis, &idx));
   PetscCall(ISSetType(inis, ISGENERAL));
   PetscCall(ISGeneralSetIndices(inis, n, idx, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISLocate_Stride(IS is, PetscInt key, PetscInt *location)
@@ -130,7 +130,7 @@ PetscErrorCode ISLocate_Stride(IS is, PetscInt key, PetscInt *location)
   key -= sub->first;
   rem = key / step;
   if ((rem < is->map->n) && !(key % step)) *location = rem;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -148,14 +148,14 @@ PetscErrorCode ISGetIndices_Stride(IS is, const PetscInt *idx[])
     (*dx)[0] = sub->first;
     for (i = 1; i < is->map->n; i++) (*dx)[i] = (*dx)[i - 1] + sub->step;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISRestoreIndices_Stride(IS in, const PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(*(void **)idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISView_Stride(IS is, PetscViewer viewer)
@@ -204,7 +204,7 @@ PetscErrorCode ISView_Stride(IS is, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   } else if (ibinary) PetscCall(ISView_Binary(is, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISSort_Stride(IS is)
@@ -212,10 +212,10 @@ PetscErrorCode ISSort_Stride(IS is)
   IS_Stride *sub = (IS_Stride *)is->data;
 
   PetscFunctionBegin;
-  if (sub->step >= 0) PetscFunctionReturn(0);
+  if (sub->step >= 0) PetscFunctionReturn(PETSC_SUCCESS);
   sub->first += (is->map->n - 1) * sub->step;
   sub->step *= -1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISSorted_Stride(IS is, PetscBool *flg)
@@ -225,7 +225,7 @@ PetscErrorCode ISSorted_Stride(IS is, PetscBool *flg)
   PetscFunctionBegin;
   if (sub->step >= 0) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISUniqueLocal_Stride(IS is, PetscBool *flg)
@@ -235,7 +235,7 @@ static PetscErrorCode ISUniqueLocal_Stride(IS is, PetscBool *flg)
   PetscFunctionBegin;
   if (!(is->map->n) || sub->step != 0) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISPermutationLocal_Stride(IS is, PetscBool *flg)
@@ -245,7 +245,7 @@ static PetscErrorCode ISPermutationLocal_Stride(IS is, PetscBool *flg)
   PetscFunctionBegin;
   if (!(is->map->n) || (PetscAbsInt(sub->step) == 1 && is->min == 0)) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISIntervalLocal_Stride(IS is, PetscBool *flg)
@@ -255,7 +255,7 @@ static PetscErrorCode ISIntervalLocal_Stride(IS is, PetscBool *flg)
   PetscFunctionBegin;
   if (!(is->map->n) || sub->step == 1) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISOnComm_Stride(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
@@ -264,7 +264,7 @@ static PetscErrorCode ISOnComm_Stride(IS is, MPI_Comm comm, PetscCopyMode mode, 
 
   PetscFunctionBegin;
   PetscCall(ISCreateStride(comm, is->map->n, sub->first, sub->step, newis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISSetBlockSize_Stride(IS is, PetscInt bs)
@@ -274,7 +274,7 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is, PetscInt bs)
   PetscFunctionBegin;
   PetscCheck(sub->step == 1 || bs == 1, PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_SIZ, "ISSTRIDE has stride %" PetscInt_FMT ", cannot be blocked of size %" PetscInt_FMT, sub->step, bs);
   PetscCall(PetscLayoutSetBlockSize(is->map, bs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISContiguousLocal_Stride(IS is, PetscInt gstart, PetscInt gend, PetscInt *start, PetscBool *contig)
@@ -289,7 +289,7 @@ static PetscErrorCode ISContiguousLocal_Stride(IS is, PetscInt gstart, PetscInt 
     *start  = -1;
     *contig = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _ISOps myops = {PetscDesignatedInitializer(getindices, ISGetIndices_Stride), PetscDesignatedInitializer(restoreindices, ISRestoreIndices_Stride), PetscDesignatedInitializer(invertpermutation, ISInvertPermutation_Stride), PetscDesignatedInitializer(sort, ISSort_Stride), PetscDesignatedInitializer(sortremovedups, ISSort_Stride), PetscDesignatedInitializer(sorted, ISSorted_Stride), PetscDesignatedInitializer(duplicate, ISDuplicate_Stride), PetscDesignatedInitializer(destroy, ISDestroy_Stride), PetscDesignatedInitializer(view, ISView_Stride), PetscDesignatedInitializer(load, ISLoad_Default), PetscDesignatedInitializer(copy, ISCopy_Stride), PetscDesignatedInitializer(togeneral, ISToGeneral_Stride), PetscDesignatedInitializer(oncomm, ISOnComm_Stride), PetscDesignatedInitializer(setblocksize, ISSetBlockSize_Stride), PetscDesignatedInitializer(contiguous, ISContiguousLocal_Stride), PetscDesignatedInitializer(locate, ISLocate_Stride), PetscDesignatedInitializer(sortedlocal, ISSorted_Stride), NULL, PetscDesignatedInitializer(uniquelocal, ISUniqueLocal_Stride), NULL, PetscDesignatedInitializer(permlocal, ISPermutationLocal_Stride), NULL, PetscDesignatedInitializer(intervallocal, ISIntervalLocal_Stride), NULL};
@@ -318,7 +318,7 @@ PetscErrorCode ISStrideSetStride(IS is, PetscInt n, PetscInt first, PetscInt ste
   PetscCheck(n >= 0, PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Negative length %" PetscInt_FMT " not valid", n);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISStrideSetStride_C", (IS, PetscInt, PetscInt, PetscInt), (is, n, first, step));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first, PetscInt step)
@@ -345,7 +345,7 @@ PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first, Petsc
   is->min  = n > 0 ? min : PETSC_MAX_INT;
   is->max  = n > 0 ? max : PETSC_MIN_INT;
   is->data = (void *)sub;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -379,7 +379,7 @@ PetscErrorCode ISCreateStride(MPI_Comm comm, PetscInt n, PetscInt first, PetscIn
   PetscCall(ISCreate(comm, is));
   PetscCall(ISSetType(*is, ISSTRIDE));
   PetscCall(ISStrideSetStride(*is, n, first, step));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
@@ -392,5 +392,5 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
   PetscCall(PetscMemcpy(is->ops, &myops, sizeof(myops)));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISStrideSetStride_C", ISStrideSetStride_Stride));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", ISShift_Stride));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

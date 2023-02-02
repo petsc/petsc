@@ -78,7 +78,7 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
     }
   }
   ctx->n_restarts++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_GCR(KSP ksp)
@@ -107,15 +107,15 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm0));
   PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm0));
   PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm0, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   do {
     PetscCall(KSPSolve_GCR_cycle(ksp));
-    if (ksp->reason) PetscFunctionReturn(0); /* catch case when convergence occurs inside the cycle */
+    if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS); /* catch case when convergence occurs inside the cycle */
   } while (ksp->its < ksp->max_it);
 
   if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
@@ -124,12 +124,12 @@ static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
   PetscBool iascii;
 
   PetscFunctionBegin;
-  PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restart = %" PetscInt_FMT " \n", ctx->restart));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restarts performed = %" PetscInt_FMT " \n", ctx->n_restarts));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetUp_GCR(KSP ksp)
@@ -148,7 +148,7 @@ static PetscErrorCode KSPSetUp_GCR(KSP ksp)
   PetscCall(VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS));
 
   PetscCall(PetscMalloc1(ctx->restart, &ctx->val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPReset_GCR(KSP ksp)
@@ -161,7 +161,7 @@ static PetscErrorCode KSPReset_GCR(KSP ksp)
   PetscCall(VecDestroyVecs(ctx->restart, &ctx->SS));
   if (ctx->modifypc_destroy) PetscCall((*ctx->modifypc_destroy)(ctx->modifypc_ctx));
   PetscCall(PetscFree(ctx->val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_GCR(KSP ksp)
@@ -172,7 +172,7 @@ static PetscErrorCode KSPDestroy_GCR(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRGetRestart_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetModifyPC_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -186,7 +186,7 @@ static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsInt("-ksp_gcr_restart", "Number of Krylov search directions", "KSPGCRSetRestart", ctx->restart, &restart, &flg));
   if (flg) PetscCall(KSPGCRSetRestart(ksp, restart));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Force these parameters to not be EXTERN_C */
@@ -202,7 +202,7 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
   ctx->modifypc         = function;
   ctx->modifypc_destroy = destroy;
   ctx->modifypc_ctx     = data;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -237,7 +237,7 @@ PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscI
 {
   PetscFunctionBegin;
   PetscUseMethod(ksp, "KSPGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, data, destroy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart)
@@ -247,7 +247,7 @@ static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart)
   PetscFunctionBegin;
   ctx          = (KSP_GCR *)ksp->data;
   ctx->restart = restart;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
@@ -257,7 +257,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
   PetscFunctionBegin;
   ctx      = (KSP_GCR *)ksp->data;
   *restart = ctx->restart;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -286,7 +286,7 @@ PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 {
   PetscFunctionBegin;
   PetscTryMethod(ksp, "KSPGCRSetRestart_C", (KSP, PetscInt), (ksp, restart));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -308,7 +308,7 @@ PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
 {
   PetscFunctionBegin;
   PetscTryMethod(ksp, "KSPGCRGetRestart_C", (KSP, PetscInt *), (ksp, restart));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
@@ -323,7 +323,7 @@ static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
   } else if (V) {
     *V = ksp->vec_sol;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
@@ -338,7 +338,7 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
   } else if (V) {
     *V = ctx->R;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -407,5 +407,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C", KSPGCRSetRestart_GCR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRGetRestart_C", KSPGCRGetRestart_GCR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetModifyPC_C", KSPGCRSetModifyPC_GCR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

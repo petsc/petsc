@@ -58,7 +58,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS *S)
     }
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)Vec1), n_same, same, PETSC_OWN_POINTER, S));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -121,7 +121,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS *S)
     }
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)Vec1), n_lt, lt, PETSC_OWN_POINTER, S));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -184,7 +184,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS *S)
     }
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)Vec1), n_gt, gt, PETSC_OWN_POINTER, S));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -255,7 +255,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
     if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &vmiddle));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -322,7 +322,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S)
     if (V != VecLow && V != VecHigh) PetscCall(VecRestoreArrayRead(V, &vmiddle));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -358,7 +358,7 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
   if (!VecLow && !VecHigh) {
     PetscCall(VecGetOwnershipRange(V, &low, &high));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)V), high - low, low, 1, S));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscValidHeaderSpecific(VecLow, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(V, VEC_CLASSID, 2);
@@ -433,7 +433,7 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
     if (D != VecLow && D != VecHigh && D != V) PetscCall(VecRestoreArrayRead(D, &d));
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)V), n_vm, vm, PETSC_OWN_POINTER, S));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -502,7 +502,7 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     PetscCall(VecRestoreArray(vfull, &y));
     PetscCall(VecRestoreArrayRead(vreduced, &x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -585,7 +585,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
     } else SETERRQ(PetscObjectComm((PetscObject)vfull), PETSC_ERR_ARG_WRONG, "Only forward or reverse modes are legal");
     PetscCall(ISRestoreIndices(is, &id));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -611,7 +611,7 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
   PetscFunctionBegin;
   PetscCall(VecGetOwnershipRange(V, &start, &end));
   PetscCall(ISComplement(S, start, end, T));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -637,7 +637,7 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (!S) PetscFunctionReturn(0); /* simply return with no-op if the index set is NULL */
+  if (!S) PetscFunctionReturn(PETSC_SUCCESS); /* simply return with no-op if the index set is NULL */
   PetscValidHeaderSpecific(V, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(S, IS_CLASSID, 2);
   PetscValidType(V, 1);
@@ -653,7 +653,7 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
   }
   PetscCall(ISRestoreIndices(S, &s));
   PetscCall(VecRestoreArray(V, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -693,7 +693,7 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   PetscValidHeaderSpecific(GP, VEC_CLASSID, 5);
   if (!XL && !XU) {
     PetscCall(VecCopy(G, GP));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecGetLocalSize(X, &n));
@@ -718,7 +718,7 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   PetscCall(VecRestoreArrayRead(XL, &xlptr));
   PetscCall(VecRestoreArrayRead(XU, &xuptr));
   PetscCall(VecRestoreArrayPair(G, GP, &gptr, &gpptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -768,7 +768,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   PetscCall(VecRestoreArrayRead(XU, &xu));
   PetscCall(VecRestoreArrayRead(DX, &dx));
   PetscCall(MPIU_Allreduce(&localmax, stepmax, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)X)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -844,7 +844,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
     if (*boundmax < 0) *boundmax = PETSC_INFINITY;
     PetscCall(PetscInfo(X, "Step Bound Info: Max: %20.19e\n", (double)*boundmax));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -884,7 +884,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   PetscCall(VecRestoreArrayRead(X, &xx));
   PetscCall(VecRestoreArrayRead(DX, &dx));
   PetscCall(MPIU_Allreduce(&stepmax, step, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)X)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -949,7 +949,7 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
     }
   }
   PetscCall(VecRestoreArray(v, &v1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -983,15 +983,15 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 
   if (!Vec1 && !Vec3) {
     PetscCall(VecCopy(Vec2, VMedian));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (Vec1 == Vec2 || Vec1 == Vec3) {
     PetscCall(VecCopy(Vec1, VMedian));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (Vec2 == Vec3) {
     PetscCall(VecCopy(Vec2, VMedian));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Assert that Vec1 != Vec2 and Vec2 != Vec3 */
@@ -1036,5 +1036,5 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
     if (VMedian != Vec2) PetscCall(VecRestoreArrayRead(Vec2, &v2));
     if (VMedian != Vec3) PetscCall(VecRestoreArrayRead(Vec3, &v3));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -24,7 +24,7 @@ PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, point, xl, yl, cl);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -46,7 +46,7 @@ PetscErrorCode PetscDrawPointPixel(PetscDraw draw, int x, int y, int c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, pointpixel, x, y, c);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -73,5 +73,5 @@ PetscErrorCode PetscDrawPointSetSize(PetscDraw draw, PetscReal width)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCheck(width >= 0.0 && width <= 1.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Bad size %g, should be between 0 and 1", (double)width);
   PetscTryTypeMethod(draw, pointsetsize, width);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

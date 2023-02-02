@@ -45,7 +45,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
   if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
   PetscCall(PCSetOptionsPrefix(ksp->pc, prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -73,7 +73,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
   if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
   PetscCall(PCAppendOptionsPrefix(ksp->pc, prefix));
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)ksp, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -104,7 +104,7 @@ PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
   PetscCall(KSPGetGuess(ksp, &guess));
   PetscCall(KSPGuessSetType(guess, KSPGUESSFISCHER));
   PetscCall(KSPGuessFischerSetModel(guess, model, size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -136,7 +136,7 @@ PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
   PetscCall(KSPGuessDestroy(&ksp->guess));
   ksp->guess      = guess;
   ksp->guess->ksp = ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -168,7 +168,7 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
     ksp->guess->ksp = ksp;
   }
   *guess = ksp->guess;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -196,7 +196,7 @@ PetscErrorCode KSPGetOptionsPrefix(KSP ksp, const char *prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
@@ -204,7 +204,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
   PetscFunctionBegin;
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -245,7 +245,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   PetscCall(PetscStrcmp(opt, "-all_ksp_monitor", &all));
   if (!all) PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
   PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp), ((PetscObject)ksp)->options, prefix, opt, &viewer, &format, &flg));
-  if (!flg) PetscFunctionReturn(0);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscViewerGetType(viewer, &vtype));
   PetscCall(KSPMonitorMakeKey_Internal(name, vtype, format, key));
@@ -258,7 +258,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
   PetscCall(PetscObjectDereference((PetscObject)viewer));
   PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode(*)(void **))dfunc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -627,7 +627,7 @@ skipoptions:
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)ksp, PetscOptionsObject));
   PetscOptionsEnd();
   ksp->setfromoptionscalled++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -646,5 +646,5 @@ PetscErrorCode KSPResetFromOptions(KSP ksp)
 {
   PetscFunctionBegin;
   if (ksp->setfromoptionscalled) PetscCall(KSPSetFromOptions(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

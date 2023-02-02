@@ -96,7 +96,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1(nz + 1, &z));
   for (i = 0; i < nz; i++) z[i] = (i) * ((zFinal - zInitial) / (nz - 1));
   appctx.z = z;
-  femA(&appctx, nz, z);
+  PetscCall(femA(&appctx, nz, z));
 
   /* create the jacobian matrix */
   /*----------------------------*/
@@ -230,6 +230,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
   PetscReal    norm_2, norm_max, h = 1.0 / (m + 1);
   PetscScalar *u_exact;
 
+  PetscFunctionBeginUser;
   /* Compute the exact solution */
   PetscCall(VecGetArrayWrite(appctx->solution, &u_exact));
   for (i = 0; i < m; i++) u_exact[i] = exact(appctx->z[i + 1], time);
@@ -258,7 +259,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error vector\n"));
     PetscCall(VecView(appctx->solution, PETSC_VIEWER_STDOUT_SELF));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -270,6 +271,7 @@ PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
   KSP ksp;
   PC  pc;
 
+  PetscFunctionBeginUser;
   /*create the ksp context and set the operators,that is, associate the system matrix with it*/
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, obj->Amat, obj->Amat));
@@ -286,7 +288,7 @@ PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
   PetscCall(KSPSolve(ksp, obj->ksp_rhs, obj->ksp_sol));
 
   PetscCall(KSPDestroy(&ksp));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /***********************************************************************
@@ -340,6 +342,7 @@ PetscErrorCode femBg(PetscScalar btri[][3], PetscScalar *f, PetscInt nz, PetscSc
   PetscScalar dd, dl, zip, zipq, zz, b_z, bb_z, bij;
   PetscScalar zquad[num_z][3], dlen[num_z], qdwt[3];
 
+  PetscFunctionBeginUser;
   /*  initializing everything - btri and f are initialized in rhs.c  */
   for (i = 0; i < nz; i++) {
     nli[i][0]   = 0;
@@ -409,7 +412,7 @@ PetscErrorCode femBg(PetscScalar btri[][3], PetscScalar *f, PetscInt nz, PetscSc
       }              /*end for (iq)*/
     }                /*end for (iquad)*/
   }                  /*end for (il)*/
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z)
@@ -419,6 +422,7 @@ PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z)
   PetscScalar dd, dl, zip, zipq, zz, bb, bbb, aij;
   PetscScalar rquad[num_z][3], dlen[num_z], qdwt[3], add_term;
 
+  PetscFunctionBeginUser;
   /*  initializing everything  */
   for (i = 0; i < nz; i++) {
     nli[i][0]   = 0;
@@ -483,7 +487,7 @@ PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z)
   }           /*end for (il)*/
   PetscCall(MatAssemblyBegin(obj->Amat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(obj->Amat, MAT_FINAL_ASSEMBLY));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*---------------------------------------------------------
@@ -495,13 +499,14 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
   PetscInt    i, j, js, je, jj;
   PetscScalar val, g[num_z], btri[num_z][3], add_term;
 
+  PetscFunctionBeginUser;
   for (i = 0; i < nz - 2; i++) {
     for (j = 0; j <= 2; j++) btri[i][j] = 0.0;
     g[i] = 0.0;
   }
 
   /*  call femBg to set the tri-diagonal b matrix and vector g  */
-  femBg(btri, g, nz, z, t);
+  PetscCall(femBg(btri, g, nz, z, t));
 
   /*  setting the entries of the right hand side vector  */
   for (i = 0; i < nz - 2; i++) {
@@ -520,7 +525,7 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
   }
   PetscCall(VecAssemblyBegin(obj->ksp_rhs));
   PetscCall(VecAssemblyEnd(obj->ksp_rhs));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -542,6 +547,7 @@ PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   PetscInt           i, nz = obj->nz;
   PetscReal          time;
 
+  PetscFunctionBeginUser;
   /* get the previous solution to compute updated system */
   PetscCall(VecGetArrayRead(globalin, &soln_ptr));
   for (i = 0; i < num_z - 2; i++) soln[i] = soln_ptr[i];
@@ -554,7 +560,7 @@ PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
 
   time = t;
   /* get the updated system */
-  rhs(obj, soln, nz, obj->z, time); /* setup of the By+g rhs */
+  PetscCall(rhs(obj, soln, nz, obj->z, time)); /* setup of the By+g rhs */
 
   /* do a ksp solve to get the rhs for the ts problem */
   if (obj->useAlhs) {
@@ -565,7 +571,7 @@ PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
     PetscCall(Petsc_KSPSolve(obj));
     PetscCall(VecCopy(obj->ksp_sol, globalout));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

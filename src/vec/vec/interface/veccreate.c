@@ -45,5 +45,5 @@ PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
 #endif
   PetscCall(PetscStrallocpy(PETSCRANDER48, &v->defaultrandtype));
   *vec = v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

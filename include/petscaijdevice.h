@@ -194,7 +194,7 @@ static
       }
     }
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 #undef MatSetValues_SeqAIJ_A_Private

@@ -60,13 +60,13 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = x[0];
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode linear_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = c ? 0.0 : 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_linear_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -79,7 +79,7 @@ static void f0_bd_linear_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
   PetscScalar potential;
   PetscInt    d;
 
-  linear_u(dim, t, x, dim, &potential, NULL);
+  PetscCallAbort(PETSC_COMM_SELF, linear_u(dim, t, x, dim, &potential, NULL));
   for (d = 0; d < dim; ++d) f0[d] = -potential * n[d];
 }
 
@@ -97,13 +97,13 @@ static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal 
 
   u[0] = 0.0;
   for (d = 0; d < dim; ++d) u[0] += x[d] * x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode quadratic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 2.0 * x[c];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -116,7 +116,7 @@ static void f0_bd_quadratic_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const P
   PetscScalar potential;
   PetscInt    d;
 
-  quadratic_u(dim, t, x, dim, &potential, NULL);
+  PetscCallAbort(PETSC_COMM_SELF, quadratic_u(dim, t, x, dim, &potential, NULL));
   for (d = 0; d < dim; ++d) f0[d] = -potential * n[d];
 }
 
@@ -134,7 +134,7 @@ static PetscErrorCode quartic_u(PetscInt dim, PetscReal time, const PetscReal x[
 
   u[0] = 1.0;
   for (d = 0; d < dim; ++d) u[0] *= x[d] * (1.0 - x[d]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode quartic_q(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -147,7 +147,7 @@ static PetscErrorCode quartic_q(PetscInt dim, PetscReal time, const PetscReal x[
       else u[c] *= x[d] * (1.0 - x[d]);
     }
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_quartic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -208,7 +208,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");
   PetscCall(PetscOptionsEnum("-sol_type", "Type of exact solution", "ex24.c", SolTypeNames, (PetscEnum)options->solType, (PetscEnum *)&options->solType, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -220,7 +220,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
@@ -269,7 +269,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid exact solution type %s", SolTypeNames[PetscMin(user->solType, SOL_UNKNOWN)]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user)
@@ -302,7 +302,7 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscErrorCode (*setup)(DM, App
   }
   PetscCall(PetscFEDestroy(&feq));
   PetscCall(PetscFEDestroy(&feu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

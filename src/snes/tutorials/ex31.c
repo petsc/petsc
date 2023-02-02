@@ -92,10 +92,10 @@ int main(int argc, char **argv)
   {
     KSP ksp;
     PC  pc;
-    SNESGetKSP(snes, &ksp);
-    KSPSetType(ksp, KSPPREONLY);
-    KSPGetPC(ksp, &pc);
-    PCSetType(pc, PCLU);
+    PetscCall(SNESGetKSP(snes, &ksp));
+    PetscCall(KSPSetType(ksp, KSPPREONLY));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCSetType(pc, PCLU));
   }
   /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
@@ -166,6 +166,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec R, void *ctx)
   PetscInt           N  = blasius->N;
   PetscReal          Ma = blasius->Ma, Pr = blasius->Pr;
 
+  PetscFunctionBeginUser;
   /*
    Get pointers to vector data.
       - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -197,7 +198,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec R, void *ctx)
   /* Restore vectors */
   PetscCall(VecRestoreArrayRead(X, &Tf));
   PetscCall(VecRestoreArray(R, &r));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

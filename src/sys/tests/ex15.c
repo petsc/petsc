@@ -85,7 +85,7 @@ int main(int argc, char **argv)
   PetscSegBuffer          sbuff;
   PetscOptionsHelpPrinted oh;
 
-  ierr   = 0;
+  ierr   = PETSC_SUCCESS;
   svalue = 0.0;
   rvalue = 0.0;
 #if defined(PETSC_HAVE_COMPLEX)
@@ -94,14 +94,14 @@ int main(int argc, char **argv)
 
 #if defined(PETSC_HAVE_COMPLEX)
   /* this example returns an error of 141 in GitLab CI once in a great while; this is an attempt to debug that issue */
-  if (ierr != 0) return 77;
+  if (ierr != PETSC_SUCCESS) return 77;
   TestComplexOperators(signed char, 1);
   TestComplexOperators(signed short, 1);
   TestComplexOperators(signed int, 1);
   TestComplexOperators(signed long, 1L);
   TestComplexOperators(float, 1.0f);
   TestComplexOperators(double, 1.0);
-  if (ierr != 0) return 78;
+  if (ierr != PETSC_SUCCESS) return 78;
 #endif
 
   i64  = 0;
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
   (void)octrl;
   (void)sbuff;
   (void)oh;
-  return ierr;
+  return (int)ierr;
 }
 
 /*TEST

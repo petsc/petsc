@@ -8,7 +8,7 @@ PetscErrorCode VecCreate_SeqHIP(Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecSeq_HIP.create(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -38,7 +38,7 @@ PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
 {
   PetscFunctionBegin;
   PetscCall(VecCreateSeqCUPMAsync(VecSeq_HIP, comm, n, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -80,7 +80,7 @@ PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
 {
   PetscFunctionBegin;
   PetscCall(VecCreateSeqCUPMWithArraysAsync(VecSeq_HIP, comm, bs, n, cpuarray, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -121,7 +121,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 {
   PetscFunctionBegin;
   PetscCall(VecCreateSeqHIPWithArrays(comm, bs, n, nullptr, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -160,7 +160,7 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync(VecSeq_HIP, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -186,7 +186,7 @@ PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync(VecSeq_HIP, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -220,7 +220,7 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayReadAsync(VecSeq_HIP, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -246,7 +246,7 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayReadAsync(VecSeq_HIP, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -279,7 +279,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayWriteAsync(VecSeq_HIP, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -305,7 +305,7 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayWriteAsync(VecSeq_HIP, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -339,7 +339,7 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMPlaceArrayAsync(VecSeq_HIP, vin, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -368,7 +368,7 @@ PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMReplaceArrayAsync(VecSeq_HIP, vin, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -391,5 +391,5 @@ PetscErrorCode VecHIPResetArray(Vec vin)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMResetArrayAsync(VecSeq_HIP, vin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

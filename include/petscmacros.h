@@ -612,7 +612,10 @@ M*/
 
 .seealso: `SETERRABORT()`, `PETSCABORT()`, `PETSC_ATTRIBUTE_COLD`, `PetscAssume()`
 M*/
-#if defined(__GNUC__)
+#if PETSC_CPP_VERSION >= 23
+  #include <utility>
+  #define PetscUnreachable() std::unreachable()
+#elif defined(__GNUC__)
   /* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
   #define PetscUnreachable() __builtin_unreachable()
 #elif defined(_MSC_VER) /* MSVC */
@@ -690,7 +693,9 @@ M*/
 
 .seealso: `PetscAssert()`
 M*/
-#if defined(_MSC_VER) // msvc
+#if PETSC_CPP_VERSION >= 23
+  #define PetscAssume(...) [[assume(__VA_ARGS__)]]
+#elif defined(_MSC_VER) // msvc
   #define PetscAssume(...) __assume(__VA_ARGS__)
 #elif defined(__clang__) && PetscHasBuiltin(__builtin_assume) // clang
   #define PetscAssume(...) \
@@ -1121,7 +1126,7 @@ M*/
 M*/
   #define PetscMacroReturns(retexpr, ...) PetscMacroReturns_(retexpr, __VA_ARGS__)
 
-  #define PetscMacroReturnStandard(...) PetscMacroReturns(0, __VA_ARGS__)
+  #define PetscMacroReturnStandard(...) PetscMacroReturns(PETSC_SUCCESS, __VA_ARGS__)
 
 #endif /* !PETSC_SKIP_VARIADIC_MACROS */
 
