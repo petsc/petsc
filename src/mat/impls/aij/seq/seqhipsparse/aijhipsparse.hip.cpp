@@ -3970,6 +3970,8 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJHIPSPARSE_Basic(Mat A, PetscCount n,
     A->preallocated  = PETSC_TRUE;
     PetscCall(PetscLogGpuToCpu((A->rmap->n + a->nz) * sizeof(PetscInt)));
     PetscCall(MatMarkDiagonal_SeqAIJ(A));
+    if (free_raw_i) PetscCallHIP(hipFree(d_raw_i));
+    if (free_raw_j) PetscCallHIP(hipFree(d_raw_j));
   } else PetscCall(MatSeqAIJSetPreallocation(A, 0, NULL));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
   /* We want to allocate the HIPSPARSE struct for matvec now.

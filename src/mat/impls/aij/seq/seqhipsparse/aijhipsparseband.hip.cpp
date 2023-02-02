@@ -180,8 +180,8 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJHIPSPARSEBAND(Mat B, Mat A, const
     if (!hipsparseTriFactors->init_dev_prop) {
       int gpuid;
       hipsparseTriFactors->init_dev_prop = PETSC_TRUE;
-      hipGetDevice(&gpuid);
-      hipGetDeviceProperties(&hipsparseTriFactors->dev_prop, gpuid);
+      PetscCallHIP(hipGetDevice(&gpuid));
+      PetscCallHIP(hipGetDeviceProperties(&hipsparseTriFactors->dev_prop, gpuid));
     }
     nsm = hipsparseTriFactors->dev_prop.multiProcessorCount;
     Ni  = nsm / Nf / nconcurrent;
@@ -197,7 +197,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJHIPSPARSEBAND(Mat B, Mat A, const
 #if defined(AIJBANDUSEGROUPS)
       if (Ni > 1) {
         void *kernelArgs[] = {(void *)&n, (void *)&bw, (void *)&bi_t, (void *)&ba_t, (void *)&nsm};
-        hipLaunchCooperativeKernel((void *)mat_lu_factor_band, dimBlockLeague, dimBlockTeam, kernelArgs, 0, NULL);
+        PetscCallHIP(hipLaunchCooperativeKernel((void *)mat_lu_factor_band, dimBlockLeague, dimBlockTeam, kernelArgs, 0, NULL));
       } else {
         hipLaunchKernelGGL(mat_lu_factor_band, dim3(dimBlockLeague), dim3(dimBlockTeam), 0, 0, n, bw, bi_t, ba_t, NULL);
       }
@@ -241,7 +241,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJHIPSPARSEBAND(Mat B, Mat A, IS isrow, I
   PetscCall(ISInvertPermutation(iscol, PETSC_DECIDE, &isicol));
   PetscCall(ISGetIndices(isicol, &ic));
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(B, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
   b = (Mat_SeqAIJ *)(B)->data;
 
   /* get band widths, MatComputeBandwidth should take a reordering ic and do this */
@@ -271,7 +270,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJHIPSPARSEBAND(Mat B, Mat A, IS isrow, I
   hipsparseTriFactors->a_band_d = ba_t;
   hipsparseTriFactors->i_band_d = bi_t;
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (nzBcsr + 1) * (sizeof(PetscInt) + sizeof(PetscScalar))));
   {
     dim3 dimBlockTeam(1, 128);
     dim3 dimBlockLeague(Nf, 1);

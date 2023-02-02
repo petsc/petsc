@@ -96,7 +96,7 @@ __device__ double atomicAdd(double *x, double y)
   #define SETERR return PETSC_ERR_ARG_OUTOFRANGE
 #endif
 
-#if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__) || defined(PETSC_HAVE_HIP)
 __device__
 #elif defined(KOKKOS_INLINE_FUNCTION)
 KOKKOS_INLINE_FUNCTION
