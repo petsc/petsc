@@ -33,10 +33,10 @@ typedef int LandauIdx;
     #error "LANDAU_MAX_NQ but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
   #endif
   #if defined(PETSC_USE_DMLANDAU_2D)
-    #define LANDAU_MAX_Q 5
+    #define LANDAU_MAX_Q 6
   #else
     // 3D CUDA fails with > 3 (KK-CUDA is OK)
-    #define LANDAU_MAX_Q 3
+    #define LANDAU_MAX_Q 4
   #endif
 #else
   #undef LANDAU_MAX_NQ
@@ -122,14 +122,10 @@ typedef struct {
   PetscReal radius[LANDAU_MAX_GRIDS];
   PetscReal radius_par[LANDAU_MAX_GRIDS];
   PetscReal radius_perp[LANDAU_MAX_GRIDS];
-  PetscReal re_radius;                  /* RE: radius of refinement along v_perp=0, z>0 */
-  PetscReal vperp0_radius1;             /* RE: radius of refinement along v_perp=0 */
-  PetscReal vperp0_radius2;             /* RE: radius of refinement along v_perp=0 after origin AMR refinement */
-  PetscBool sphere;                     // not used
-  PetscBool inflate;                    // not used
-  PetscReal i_radius[LANDAU_MAX_GRIDS]; // not used
-  PetscReal e_radius;                   // not used
-  PetscInt  num_sections;               // not used
+  PetscReal re_radius;      /* RE: radius of refinement along v_perp=0, z>0 */
+  PetscReal vperp0_radius1; /* RE: radius of refinement along v_perp=0 */
+  PetscReal vperp0_radius2; /* RE: radius of refinement along v_perp=0 after origin AMR refinement */
+  PetscBool sphere;         // not working in FEM
   PetscInt  cells0[3];
   /* AMR */
   PetscBool use_p4est;

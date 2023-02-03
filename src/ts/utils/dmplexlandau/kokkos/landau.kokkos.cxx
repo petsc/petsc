@@ -652,7 +652,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
             [=](const int &ipidx, landau_inner_red::TensorValueType &ggg) {
               const PetscReal wi = d_w[ipidx], x = d_x[ipidx], y = d_y[ipidx];
               PetscReal       temp1[3] = {0, 0, 0}, temp2 = 0;
-              PetscInt        fieldA, d2, d3, f_off_r, grid_r, ipidx_g, nip_loc_r, loc_Nf_r;
+              PetscInt        fieldB, d2, d3, f_off_r, grid_r, ipidx_g, nip_loc_r, loc_Nf_r;
   #if LANDAU_DIM == 2
               PetscReal       Ud[2][2], Uk[2][2], mask = (PetscAbs(vj[0] - x) < 100 * PETSC_SQRT_MACHINE_EPSILON && PetscAbs(vj[1] - y) < 100 * PETSC_SQRT_MACHINE_EPSILON) ? 0. : 1.;
               LandauTensor2D(vj, x, y, Ud, Uk, mask);
@@ -666,14 +666,14 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
               ipidx_g   = ipidx - d_ip_offset[grid_r];
               nip_loc_r = d_numCells[grid_r] * Nq;
               loc_Nf_r  = d_species_offset[grid_r + 1] - d_species_offset[grid_r];
-              for (fieldA = 0; fieldA < loc_Nf_r; ++fieldA) {
-                const PetscInt idx = d_ipf_offset[grid_r] + fieldA * nip_loc_r + ipidx_g;
-                temp1[0] += d_fdf_k(b_id, 1, idx) * d_beta[fieldA + f_off_r] * d_invMass[fieldA + f_off_r];
-                temp1[1] += d_fdf_k(b_id, 2, idx) * d_beta[fieldA + f_off_r] * d_invMass[fieldA + f_off_r];
+              for (fieldB = 0; fieldB < loc_Nf_r; ++fieldB) { // fieldB is \beta
+                const PetscInt idx = d_ipf_offset[grid_r] + fieldB * nip_loc_r + ipidx_g;
+                temp1[0] += d_fdf_k(b_id, 1, idx) * d_beta[fieldB + f_off_r] * d_invMass[fieldB + f_off_r];
+                temp1[1] += d_fdf_k(b_id, 2, idx) * d_beta[fieldB + f_off_r] * d_invMass[fieldB + f_off_r];
   #if LANDAU_DIM == 3
-                temp1[2] += d_fdf_k(b_id, 3, idx) * d_beta[fieldA + f_off_r] * d_invMass[fieldA + f_off_r];
+                temp1[2] += d_fdf_k(b_id, 3, idx) * d_beta[fieldB + f_off_r] * d_invMass[fieldB + f_off_r];
   #endif
-                temp2 += d_fdf_k(b_id, 0, idx) * d_beta[fieldA + f_off_r];
+                temp2 += d_fdf_k(b_id, 0, idx) * d_beta[fieldB + f_off_r];
               }
               temp1[0] *= wi;
               temp1[1] *= wi;
@@ -703,7 +703,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
             },
             Kokkos::Sum<landau_inner_red::TensorValueType>(gg_temp));
           // add alpha and put in gg2/3
-          Kokkos::parallel_for(Kokkos::ThreadVectorRange(team, (int)loc_Nf), [&](const int &fieldA) {
+          Kokkos::parallel_for(Kokkos::ThreadVectorRange(team, (int)loc_Nf), [&](const int &fieldA) { // \alpha
             PetscInt d2, d3;
             for (d2 = 0; d2 < dim; d2++) {
               gg2(d2, fieldA, myQi) = gg_temp.gg2[d2] * d_alpha[fieldA + f_off];
