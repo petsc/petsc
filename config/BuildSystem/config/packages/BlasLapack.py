@@ -234,7 +234,6 @@ class Configure(config.package.Package):
         yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknown')
         self.logWrite('Did not detect default BLAS and LAPACK locations so using the value of MKLROOT to search as --with-blas-lapack-dir='+mkl)
         self.argDB['with-blaslapack-dir'] = mkl
-        self.checkingMKLROOTautomatically = 1
 
     if self.argDB['with-64-bit-blas-indices']:
       flexiblas = 'libflexiblas64.a'
@@ -429,6 +428,8 @@ class Configure(config.package.Package):
       for lapack in ['libflame.a','liblapack.a']:
         yield ('Default BLIS/AMD-AOCL', lib, lapack,'unknown','unknown')
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
+    yield ('Default compiler locations (all contained in libblas)', None, 'libblas.a','unknown','unknown')
+    yield ('Default NVHPC', None, ['liblapack.a','libblas.a','libnvf.a','librt.a'],'unknown','unknown')
     yield ('Default OpenBLAS', None, 'libopenblas.a','unknown','unknown')
     # Intel on Mac
     for ITHREAD in ITHREADS:

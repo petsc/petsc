@@ -1452,7 +1452,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
       self.executeTest(self.checkCxxRestrict)
-      self.executeTest(self.checkCxxOptionalExtensions)
+      # Adding -x c++ it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
+      if not config.setCompilers.Configure.isClang(self.setCompilers.CXX, self.log):
+        self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxComplexFix)
       self.executeTest(self.checkStdAtomic,kargs={'cxx' : True})
       if self.argDB['with-cxxlib-autodetect']:

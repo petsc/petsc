@@ -884,39 +884,41 @@ PetscErrorCode PetscMallocView(FILE *fp)
   } else {
     (void)fprintf(fp, "[%d] Maximum memory PetscMalloc()ed %.0f OS cannot compute size of entire process\n", rank, (PetscLogDouble)TRMaxMem);
   }
-  shortcount = (int *)malloc(PetscLogMalloc * sizeof(int));
-  PetscCheck(shortcount, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
-  shortlength = (size_t *)malloc(PetscLogMalloc * sizeof(size_t));
-  PetscCheck(shortlength, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
-  shortfunction = (const char **)malloc(PetscLogMalloc * sizeof(char *));
-  PetscCheck(shortfunction, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
-  for (i = 0, n = 0; i < PetscLogMalloc; i++) {
-    for (j = 0; j < n; j++) {
-      PetscCall(PetscStrcmp(shortfunction[j], PetscLogMallocFunction[i], &match));
-      if (match) {
-        shortlength[j] += PetscLogMallocLength[i];
-        shortcount[j]++;
-        goto foundit;
+  if (PetscLogMalloc > 0) {
+    shortcount = (int *)malloc(PetscLogMalloc * sizeof(int));
+    PetscCheck(shortcount, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
+    shortlength = (size_t *)malloc(PetscLogMalloc * sizeof(size_t));
+    PetscCheck(shortlength, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
+    shortfunction = (const char **)malloc(PetscLogMalloc * sizeof(char *));
+    PetscCheck(shortfunction, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
+    for (i = 0, n = 0; i < PetscLogMalloc; i++) {
+      for (j = 0; j < n; j++) {
+        PetscCall(PetscStrcmp(shortfunction[j], PetscLogMallocFunction[i], &match));
+        if (match) {
+          shortlength[j] += PetscLogMallocLength[i];
+          shortcount[j]++;
+          goto foundit;
+        }
       }
+      shortfunction[n] = PetscLogMallocFunction[i];
+      shortlength[n]   = PetscLogMallocLength[i];
+      shortcount[n]    = 1;
+      n++;
+    foundit:;
     }
-    shortfunction[n] = PetscLogMallocFunction[i];
-    shortlength[n]   = PetscLogMallocLength[i];
-    shortcount[n]    = 1;
-    n++;
-  foundit:;
+
+    perm = (PetscInt *)malloc(n * sizeof(PetscInt));
+    PetscCheck(perm, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
+    for (i = 0; i < n; i++) perm[i] = i;
+    PetscCall(PetscSortStrWithPermutation(n, (const char **)shortfunction, perm));
+
+    (void)fprintf(fp, "[%d] Memory usage sorted by function\n", rank);
+    for (i = 0; i < n; i++) (void)fprintf(fp, "[%d] %d %.0f %s()\n", rank, shortcount[perm[i]], (PetscLogDouble)shortlength[perm[i]], shortfunction[perm[i]]);
+    free(perm);
+    free(shortlength);
+    free(shortcount);
+    free((char **)shortfunction);
   }
-
-  perm = (PetscInt *)malloc(n * sizeof(PetscInt));
-  PetscCheck(perm, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
-  for (i = 0; i < n; i++) perm[i] = i;
-  PetscCall(PetscSortStrWithPermutation(n, (const char **)shortfunction, perm));
-
-  (void)fprintf(fp, "[%d] Memory usage sorted by function\n", rank);
-  for (i = 0; i < n; i++) (void)fprintf(fp, "[%d] %d %.0f %s()\n", rank, shortcount[perm[i]], (PetscLogDouble)shortlength[perm[i]], shortfunction[perm[i]]);
-  free(perm);
-  free(shortlength);
-  free(shortcount);
-  free((char **)shortfunction);
   err = fflush(fp);
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
   PetscFunctionReturn(PETSC_SUCCESS);

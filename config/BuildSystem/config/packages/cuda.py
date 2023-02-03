@@ -221,21 +221,28 @@ class Configure(config.package.Package):
     import os
     self.pushLanguage('CUDA')
     petscNvcc = self.getCompiler()
+    self.cudaclang = self.setCompilers.isClang(petscNvcc, self.log)
     self.popLanguage()
+
+    if 'with-cuda-dir' in self.argDB and os.path.exists(os.path.join(self.argDB['with-cuda-dir'],'include','cuda.h')):
+      self.cudaDir = os.path.join(self.argDB['with-cuda-dir'],'include','cuda.h')
     if self.setCompilers.isCygwin(self.log):  # Handle win32fe nvcc as the compiler name
       petscNvcc = petscNvcc.split(' ')[1]
+
     self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
-    if hasattr(self,'systemNvcc'):
-      self.nvccDir = os.path.dirname(self.systemNvcc) # /path/bin
-      d = os.path.dirname(self.nvccDir) # /path
-      if os.path.exists(os.path.join(d,'include','cuda.h')): # CUDAToolkit with a structure /path/{bin/nvcc, include/cuda.h}
-        self.cudaDir = d
-      elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # NVHPC, see above
-        self.cudaDir = os.path.normpath(os.path.join(d,'..','cuda')) # get rid of .. in path, getting /path/Linux_x86_64/21.5/cuda
-        self.isnvhpc = 1
-    else:
-      raise RuntimeError('CUDA compiler not found!')
-    if not hasattr(self,'cudaDir'):
+    if hasattr(self,'systemNvcc') and not hasattr(self, 'cudaDir'):
+      if self.cudaclang:
+        (out, err, ret) = Configure.executeShellCommand(petscNvcc + ' -v 2>&1 | grep "Found CUDA installation"',timeout = 60, log = self.log, threads = 1)
+        self.cudaDir = out.split()[3].replace(',','')
+      else:
+        nvccDir = os.path.dirname(self.systemNvcc) # /path/bin
+        d = os.path.dirname(nvccDir) # /path
+        if os.path.exists(os.path.join(d,'include','cuda.h')): # CUDAToolkit with a structure /path/{bin/nvcc, include/cuda.h}
+          self.cudaDir = d
+        elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # NVHPC, see above
+          self.cudaDir = os.path.normpath(os.path.join(d,'..','cuda')) # get rid of .. in path, getting /path/Linux_x86_64/21.5/cuda
+          self.isnvhpc = 1
+    if not hasattr(self, 'cudaDir'):
       raise RuntimeError('CUDA directory not found!')
 
 
@@ -259,8 +266,11 @@ class Configure(config.package.Package):
     petscNvcc = self.getCompiler()
     self.popLanguage()
 
-    genArches = ['30','32', '35', '37', '50', '52', '53', '60','61','70','71', '72', '75', '80']
-    if 'with-cuda-arch' in self.framework.clArgDB:
+    # Handle cuda arch
+    genArchesAll = ['30','32', '35', '37', '50', '52', '53', '60','61','70','71', '72', '75', '80']
+    if 'with-cuda-arch' in self.framework.clArgDB and self.argDB['with-cuda-arch'] == 'all':
+      self.cudaArch = 'all'
+    elif 'with-cuda-arch' in self.framework.clArgDB:
       self.cudaArch = re.search(r'(\d+)$', self.argDB['with-cuda-arch']).group() # get the trailing number from the string
     else:
       dq = os.path.join(self.cudaDir,'extras','demo_suite')
@@ -307,11 +317,16 @@ class Configure(config.package.Package):
               self.log.write('petsc-supplied CUDA device query test found the CUDA Capability is '+str(gen)+'\n')
               self.cudaArch = str(gen)
 
-    if not hasattr(self,'cudaArch'):
+    # Check flags validity
+    if hasattr(self,'cudaArch'):
+      genArches = genArchesAll if self.cudaArch == 'all' else [self.cudaArch]
       for gen in reversed(genArches):
         self.pushLanguage('CUDA')
         cflags = self.setCompilers.CUDAFLAGS
-        self.setCompilers.CUDAFLAGS += ' -gencode'+arg_sep+'arch=compute_'+gen+',code=sm_'+gen
+        if self.cudaclang:
+          self.setCompilers.CUDAFLAGS += ' --cuda-gpu-arch=sm_'+gen
+        else: # assuming nvcc
+          self.setCompilers.CUDAFLAGS += ' -gencode'+arg_sep+'arch=compute_'+gen+',code=sm_'+gen
         try:
           valid = self.checkCompile()
         except Exception as e:
@@ -324,24 +339,6 @@ class Configure(config.package.Package):
           self.log.write('Flag from checkCompile on CUDA compile with gencode '+str(valid)+'\n')
           if not valid:
             self.setCompilers.CUDAFLAGS = cflags
-            continue
-          else:
-            self.logPrintWarning('Cannot check if gencode '+str(gen)+' works for your hardware, assuming it does. \
-You may need to run ./configure with-cuda-arch=numerical value (such as 70) \
-to set the right generation for your hardware.')
-            self.cudaArch = gen
-            self.setCompilers.CUDAFLAGS = cflags
-            break
-
-    if hasattr(self,'cudaArch'):
-      if self.cudaArch == 'all':
-        for gen in genArches:
-          self.setCompilers.CUDAFLAGS += ' -gencode'+arg_sep+'arch=compute_'+gen+',code=sm_'+gen+' '
-          self.log.write(self.setCompilers.CUDAFLAGS+'\n')
-        self.addDefine('CUDA_GENERATION','0')
-      else:
-        self.setCompilers.CUDAFLAGS += ' -gencode'+arg_sep+'arch=compute_'+self.cudaArch+',code=sm_'+self.cudaArch+' '
-        self.addDefine('CUDA_GENERATION',self.cudaArch)
 
     self.addDefine('HAVE_CUDA','1')
     self.addDefine('HAVE_CUPM','1') # Have either CUDA or HIP
@@ -349,48 +346,58 @@ to set the right generation for your hardware.')
       self.checkVersion(); # set version_tuple
     if self.version_tuple[0] >= 11:
       self.addDefine('HAVE_CUDA_VERSION_11PLUS','1')
+    if self.cudaclang:
+      self.addDefine('HAVE_CUDA_CLANG','1') # code compilation in aijdevice and landau is broken
 
     # determine the compiler used by nvcc
     # '-ccbin mpicxx' might be in by self.setCompilers.CUDAFLAGS
-    (out, err, ret) = Configure.executeShellCommand(petscNvcc + ' ' + self.setCompilers.CUDAFLAGS + ' --dryrun dummy.cu 2>&1 | grep D__CUDACC__ | head -1 | cut -f2 -d" "')
-    if out:
-      # MPI.py adds its include paths and libraries to these lists and saves them again
-      self.setCompilers.CUDA_CXX = out
-      self.setCompilers.CUDA_CXXFLAGS = ''
-      self.setCompilers.CUDA_CXXLIBS = ''
-      self.logPrint('Determined the compiler nvcc uses is ' + out);
-      self.logPrint('PETSc C compiler '+self.compilers.CC)
-      self.logPrint('PETSc C++ compiler '+self.compilers.CXX)
+    if not self.cudaclang:
+      (out, err, ret) = Configure.executeShellCommand(petscNvcc + ' ' + self.setCompilers.CUDAFLAGS + ' --dryrun dummy.cu 2>&1 | grep D__CUDACC__ | head -1 | cut -f2 -d" "')
+      if out:
+        # MPI.py adds its include paths and libraries to these lists and saves them again
+        self.setCompilers.CUDA_CXX = out
+        self.setCompilers.CUDA_CXXFLAGS = ''
+        self.setCompilers.CUDA_CXXLIBS = ''
+        self.logPrint('Determined the compiler nvcc uses is ' + out);
+        self.logPrint('PETSc C compiler '+self.compilers.CC)
+        self.logPrint('PETSc C++ compiler '+self.compilers.CXX)
 
-      # TODO: How to handle MPI compiler wrapper as opposed to its underlying compiler
-      if out == self.compilers.CXX:
-        # nvcc will say it is using gcc as its compiler, it pass a flag when using to
-        # treat it as a C++ compiler
-        newFlags = self.setCompilers.CXXPPFLAGS.split()+self.setCompilers.CXXFLAGS.split()
-        # need to remove the std flag from the list, nvcc will already have its own flag set
-        # With IBM XL compilers, we also need to remove -+
-        # Remove -O since the optimization level is already set by CUDAC_FLAGS, otherwise Kokkos nvcc_wrapper will complain
-        #   "nvcc_wrapper - *warning* you have set multiple optimization flags (-O*), only the last
-        #    is used because nvcc can only accept a single optimization setting."
-        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++','-+','-O'))])
-      else:
-        # only add any -I arguments since compiler arguments may not work
-        flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')
-        for i in flags:
-          if i.startswith('-I'):
-            self.setCompilers.CUDA_CXXFLAGS += ' '+i
-      # set compiler flags for compiler called by nvcc
-      if self.setCompilers.CUDA_CXXFLAGS:
-        self.addMakeMacro('CUDA_CXXFLAGS',self.setCompilers.CUDA_CXXFLAGS)
-      else:
-        self.logPrint('No CUDA_CXXFLAGS available')
-      self.addMakeMacro('CUDA_CXX',self.setCompilers.CUDA_CXX)
+        # TODO: How to handle MPI compiler wrapper as opposed to its underlying compiler
+        if out == self.compilers.CXX:
+          # nvcc will say it is using gcc as its compiler, it pass a flag when using to
+          # treat it as a C++ compiler
+          newFlags = self.setCompilers.CXXPPFLAGS.split()+self.setCompilers.CXXFLAGS.split()
+          # need to remove the std flag from the list, nvcc will already have its own flag set
+          # With IBM XL compilers, we also need to remove -+
+          # Remove -O since the optimization level is already set by CUDAC_FLAGS, otherwise Kokkos nvcc_wrapper will complain
+          #   "nvcc_wrapper - *warning* you have set multiple optimization flags (-O*), only the last
+          #    is used because nvcc can only accept a single optimization setting."
+          self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++','-+','-O'))])
+        else:
+          # only add any -I arguments since compiler arguments may not work
+          flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')
+          for i in flags:
+            if i.startswith('-I'):
+              self.setCompilers.CUDA_CXXFLAGS += ' '+i
+        # set compiler flags for compiler called by nvcc
+        if self.setCompilers.CUDA_CXXFLAGS:
+          self.addMakeMacro('CUDA_CXXFLAGS',self.setCompilers.CUDA_CXXFLAGS)
+        else:
+          self.logPrint('No CUDA_CXXFLAGS available')
+        self.addMakeMacro('CUDA_CXX',self.setCompilers.CUDA_CXX)
 
-      # Intel compiler environment breaks GNU compilers, fix it just enough to allow g++ to run
-      if self.setCompilers.CUDA_CXX == 'gcc' and config.setCompilers.Configure.isIntel(self.compilers.CXX,self.log):
-        self.logPrint('''Removing Intel's CPLUS_INCLUDE_PATH when using nvcc since it breaks g++''')
-        self.delMakeMacro('CUDAC')
-        self.addMakeMacro('CUDAC','CPLUS_INCLUDE_PATH="" '+petscNvcc)
+        # Intel compiler environment breaks GNU compilers, fix it just enough to allow g++ to run
+        if self.setCompilers.CUDA_CXX == 'gcc' and config.setCompilers.Configure.isIntel(self.compilers.CXX,self.log):
+          self.logPrint('''Removing Intel's CPLUS_INCLUDE_PATH when using nvcc since it breaks g++''')
+          self.delMakeMacro('CUDAC')
+          self.addMakeMacro('CUDAC','CPLUS_INCLUDE_PATH="" '+petscNvcc)
+      else:
+        self.logPrint('nvcc --dryrun failed, unable to determine CUDA_CXX and CUDA_CXXFLAGS')
+
+    if not self.cudaclang:
+      self.addMakeMacro('CUDA_HOSTFLAGS','--compiler-options="${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS)"')
+      self.addMakeMacro('CUDA_PETSC_GENDEPS','$(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(MPICXX_INCLUDES) $(CUDAC_FLAGS) --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDA_CXXFLAGS)"')
     else:
-      self.logPrint('nvcc --dryrun failed, unable to determine CUDA_CXX and CUDA_CXXFLAGS')
+      self.addMakeMacro('CUDA_HOSTFLAGS','$(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(CUDA_DEPFLAGS) $(PETSC_CC_INCLUDES)')
+      self.addMakeMacro('CUDA_PETSC_GENDEPS','true')
     return

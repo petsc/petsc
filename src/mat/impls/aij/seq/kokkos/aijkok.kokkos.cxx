@@ -1090,7 +1090,7 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y, PetscScalar alpha, Mat X, MatS
                                                        if (Yi(i) != Yi(i + 1))
                                                          Ya(Yi(i)) =
 #if PETSC_PKG_KOKKOS_VERSION_GE(3, 6, 99)
-                                                           Kokkos::nan("1"); /* auto promote the double NaN if needed */
+                                                           Kokkos::ArithTraits<PetscScalar>::nan();
 #else
               Kokkos::Experimental::nan("1");
 #endif

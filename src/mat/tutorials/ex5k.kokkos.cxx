@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 /*TEST
 
    build:
-     requires: kokkos_kernels
+     requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
 
    test:
      suffix: 0

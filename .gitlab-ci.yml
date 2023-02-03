@@ -586,6 +586,18 @@ linux-cuda-uni-pkgs:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
     TEST_OPTS: -j20 query=requires queryval=cuda
 
+linux-clang-cuda:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - cuda-stage3
+  variables:
+    TEST_ARCH: arch-ci-linux-clang-cuda
+    TEST_OPTS: -j 1  queryval='cuda*,snes*' query='requires%OR%name'
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
+    LOAD_MODULES: llvm-15.0.7-gcc-11.3.0-pjldtxf cuda-11.5.2-gcc-11.3.0-jkoottx gcc-11.3.0-gcc-11.3.0-pgrvke5
+
 linux-viennacl:
   extends:
     - .stage-3
