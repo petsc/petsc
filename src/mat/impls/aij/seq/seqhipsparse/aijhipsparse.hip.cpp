@@ -2302,7 +2302,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
       mmdata->matBDescr = NULL;
     }
     if (!mmdata->matBDescr) {
-      PetscCallHIPSPARSE(hipsparseCreateDnMat(&mmdata->matBDescr, B->rmap->n, B->cmap->n, blda, (void *)barray, hipsparse_scalartype, HIPSPARSE_ORDER_COLUMN));
+      PetscCallHIPSPARSE(hipsparseCreateDnMat(&mmdata->matBDescr, B->rmap->n, B->cmap->n, blda, (void *)barray, hipsparse_scalartype, HIPSPARSE_ORDER_COL));
       mmdata->Blda = blda;
     }
     if (mmdata->initialized && mmdata->Clda != clda) {
@@ -2310,7 +2310,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
       mmdata->matCDescr = NULL;
     }
     if (!mmdata->matCDescr) { /* matCDescr is for C or mmdata->X */
-      PetscCallHIPSPARSE(hipsparseCreateDnMat(&mmdata->matCDescr, m, n, clda, (void *)carray, hipsparse_scalartype, HIPSPARSE_ORDER_COLUMN));
+      PetscCallHIPSPARSE(hipsparseCreateDnMat(&mmdata->matCDescr, m, n, clda, (void *)carray, hipsparse_scalartype, HIPSPARSE_ORDER_COL));
       mmdata->Clda = clda;
     }
     if (!mat->matDescr) {

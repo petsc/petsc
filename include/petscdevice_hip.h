@@ -19,6 +19,10 @@
     #include <hipsparse.h>
   #endif
 
+  #if PETSC_PKG_HIP_VERSION_LT(5, 4, 0)
+    #define HIPSPARSE_ORDER_COL HIPSPARSE_ORDER_COLUMN
+  #endif
+
   #if defined(__HIP_PLATFORM_NVCC__)
     #include <cusolverDn.h>
   #else // __HIP_PLATFORM_HCC__
