@@ -1194,7 +1194,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   B->info.factor_mallocs   = reallocs;
   B->info.fill_ratio_given = fill;
   if (ai[am] != 0.) {
-    /* nonzeros in lower triangular part of A (includign diagonals)= (ai[am]+am)/2 */
+    /* nonzeros in lower triangular part of A (including diagonals)= (ai[am]+am)/2 */
     B->info.fill_ratio_needed = ((PetscReal)2 * ui[am]) / (ai[am] + am);
   } else {
     B->info.fill_ratio_needed = 0.0;

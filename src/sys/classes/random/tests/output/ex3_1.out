@@ -3,4 +3,4 @@ Expected spacing collisions per process 1.000000 (1.000000 total).
 PetscRandom Object: 1 MPI process
   type: rander48
 [0] Random type rander48, seed 305419896
-1 total collisions counted: that many or more should occur with probabilty 0.632121.
+1 total collisions counted: that many or more should occur with probability 0.632121.

@@ -61,7 +61,7 @@ int main(int argc, char **args)
 
   /* Create the random Index Sets */
   for (i = 0; i < nd; i++) {
-    /* Skip a few,so that the IS on different procs are diffeent*/
+    /* Skip a few,so that the IS on different procs are different*/
     for (j = 0; j < rank; j++) PetscCall(PetscRandomGetValue(r, &rand));
     PetscCall(PetscRandomGetValue(r, &rand));
     lsize = (PetscInt)(rand * (m / bs));

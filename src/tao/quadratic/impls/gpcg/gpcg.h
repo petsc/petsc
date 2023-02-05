@@ -52,7 +52,7 @@ typedef struct {
   PetscInt n_free; /* Number of free variables */
   PetscInt n_upper;
   PetscInt n_lower;
-  PetscInt n_bind; /* Number of binding varibles */
+  PetscInt n_bind; /* Number of binding variables */
   PetscInt ksp_type;
   PetscInt subset_type;
 } TAO_GPCG;

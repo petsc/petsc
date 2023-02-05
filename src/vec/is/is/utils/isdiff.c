@@ -725,7 +725,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   corresponding to these global indices are either mapped to -1 (if !drop) or are omitted (if drop).  In the former
   case the size of c is that same as that of a, in the latter case c's size may be smaller.
 
-  The resulting `IS` is sequential, since the index substition it encodes is purely local.
+  The resulting `IS` is sequential, since the index substitution it encodes is purely local.
 
 .seealso: `IS`, `ISLocalToGlobalMapping`
  @*/
@@ -775,7 +775,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   Notes:
   Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
 
-  If always == `PETSC_FALSE`, an extra check is peformed to see whether
+  If always == `PETSC_FALSE`, an extra check is performed to see whether
   the f indices are nondecreasing. h is built on `PETSC_COMM_SELF`, since
   the permutation has a local meaning only.
 

@@ -480,7 +480,7 @@ static PetscErrorCode MatSeqAIJKokkosBcast(Mat B, MatReuse reuse, PetscInt N, co
                   unrelated places in Ca, so dstrowoffset is not in CSR-like format as srcrowoffset.
 -  C            - the matrix made up by rows sent to me from other ranks, using global col ids
 
-   TODO: we can even have MatSeqAIJKokkosReduceBegin/End to provide oppertunity for callers to overlap comp./comm. when reuse = MAT_REUSE_MATRIX.
+   TODO: we can even have MatSeqAIJKokkosReduceBegin/End to provide opportunity for callers to overlap comp./comm. when reuse = MAT_REUSE_MATRIX.
  */
 static PetscErrorCode MatSeqAIJKokkosReduce(Mat A, MatReuse reuse, PetscBool local, PetscInt N, const ConstMatColIdxKokkosView &l2g, PetscSF ownerSF, PetscSF &reduceSF, MatScalarKokkosView &abuf, MatRowMapKokkosView &srcrowoffset, MatRowMapKokkosView &dstrowoffset, KokkosCsrMatrix &C)
 {
@@ -917,7 +917,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
   /* C2 = Ao * B_other. B_other is a matrix consisting of needed rows of B gathered from other procs */
   PetscCall(MatSeqAIJKokkosBcast(mm->B_local, MAT_INITIAL_MATRIX, N, l2g1, a->Mvctx, mm->sf, mm->abuf, mm->rows, mm->rowoffset, mm->B_other));
 
-  /* Compact B_other to use local ids as we guess KK spgemm is more memroy scalable with that; We could skip the compaction to simplify code */
+  /* Compact B_other to use local ids as we guess KK spgemm is more memory scalable with that; We could skip the compaction to simplify code */
   PetscCall(MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos(mm->B_other, l2g2));
   PetscCall(MatProductCreate(Ao, mm->B_other, NULL, &C2));
   PetscCall(MatProductSetType(C2, MATPRODUCT_AB));
@@ -1568,7 +1568,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     h_mat.diag.i = aijkokA->i_device_data();
     h_mat.diag.j = aijkokA->j_device_data();
     h_mat.diag.a = aijkokA->a_device_data();
-    // copy pointers and metdata to device
+    // copy pointers and metadata to device
     PetscCall(MatSeqAIJKokkosSetDeviceMat(Amat, &h_mat));
     PetscCall(MatSeqAIJKokkosGetDeviceMat(Amat, &d_mat));
     PetscCall(PetscInfo(A, "Create device Mat n=%" PetscInt_FMT " nnz=%" PetscInt_FMT "\n", h_mat.diag.n, nnz));

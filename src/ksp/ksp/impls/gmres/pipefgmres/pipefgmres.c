@@ -747,7 +747,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
 
   Note:
   A heuristic is to set this to be comparable to the largest eigenvalue of the preconditioned operator.
-  This can be acheived with PETSc itself by using a few iterations of a Krylov method.
+  This can be achieved with PETSc itself by using a few iterations of a Krylov method.
   See `KSPComputeEigenvalues()` (and note the caveats there).
 
 .seealso: [](chapter_ksp), `KSPPIPEFGMRES`, `KSPComputeEigenvalues()`

@@ -17,7 +17,7 @@ static char help[] = "Nonlinear Reaction Problem from Chemistry.\n";
 
      Helpful runtime monitoring options:
          -ts_view                  -  prints information about the solver being used
-         -ts_monitor               -  prints the progess of the solver
+         -ts_monitor               -  prints the progress of the solver
          -ts_adapt_monitor         -  prints the progress of the time-step adaptor
          -ts_monitor_lg_timestep   -  plots the size of each timestep (at each time-step)
          -ts_monitor_lg_solution   -  plots each component of the solution as a function of time (at each timestep)

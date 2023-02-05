@@ -912,7 +912,7 @@ PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[], PetscInt n, Pet
 }
 
 /* Only add/insert a(i,j) with i<=j (blocks).
-   Any a(i,j) with i>j input by user is ingored.
+   Any a(i,j) with i>j input by user is ignored.
 */
 
 PetscErrorCode MatSetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)

@@ -385,7 +385,7 @@ PetscErrorCode MatFDColoringSetType(MatFDColoring matfd, MatMFFDType type)
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);
   /*
      It is goofy to handle the strings this way but currently there is no code to free a dynamically created matfd->htype
-     and this function is being provided as patch for a release so it shouldn't change the implementaton
+     and this function is being provided as patch for a release so it shouldn't change the implementation
   */
   if (type[0] == 'w' && type[1] == 'p') matfd->htype = "wp";
   else if (type[0] == 'd' && type[1] == 's') matfd->htype = "ds";

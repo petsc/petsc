@@ -269,7 +269,7 @@ static PetscErrorCode SkewMesh(DM *mesh, PetscScalar *coordVals, PetscInt npoint
     }
   }
 
-  /* Multiply each coordinate vector by our tranformation.*/
+  /* Multiply each coordinate vector by our transformation.*/
   for (i = 0; i < npoints; ++i) {
     for (j = 0; j < dim; ++j) {
       tmpcoord[j] = 0;

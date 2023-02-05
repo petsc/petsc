@@ -10,7 +10,7 @@
    Not Collective
 
    Input Parameter:
-.  maxlen - maximum lengh allowed
+.  maxlen - maximum length allowed
 
    Output Parameter:
 .  dir - contains the home directory. Must be long enough to hold the name.
@@ -20,7 +20,7 @@
    Notes:
    If PETSc cannot determine the home directory it makes dir a null string
 
-   On Windows machines the enviornmental variable `HOME` specifies the home directory.
+   On Windows machines the environmental variable `HOME` specifies the home directory.
 
 .seealso: `PetscGetTmp()`, `PetscSharedTmp()`, `PetscGetWorkingDirectory()`
 @*/

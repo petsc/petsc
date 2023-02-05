@@ -8,7 +8,7 @@
   2) The general system is written as
      Usdot = Fs(t,Us,Uf)
      Ufdot = Ff(t,Us,Uf) for multi-rate RK with RHS splits,
-     user should partioned RHS by themselves and also provide the indexes for both slow and fast components.
+     user should partition RHS by themselves and also provide the indexes for both slow and fast components.
 */
 
 #include <petsc/private/tsimpl.h>

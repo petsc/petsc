@@ -3363,7 +3363,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
       /* ScatterAdd the result from work vector into the full vector when A is compressed */
       if (compressed) {
         PetscCall(PetscLogGpuTimeBegin());
-        /* I wanted to make this for_each asynchronous but failed. thrust::async::for_each() returns an event (internally registerred)
+        /* I wanted to make this for_each asynchronous but failed. thrust::async::for_each() returns an event (internally registered)
            and in the destructor of the scope, it will call cudaStreamSynchronize() on this stream. One has to store all events to
            prevent that. So I just add a ScatterAdd kernel.
          */

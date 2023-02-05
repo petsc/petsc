@@ -86,7 +86,7 @@ struct _n_Physics {
 };
 
 struct _n_Model {
-  MPI_Comm         comm; /* Does not do collective communicaton, but some error conditions can be collective */
+  MPI_Comm         comm; /* Does not do collective communication, but some error conditions can be collective */
   Physics          physics;
   FunctionalLink   functionalRegistry;
   PetscInt         maxComputed;

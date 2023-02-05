@@ -233,7 +233,7 @@ static PetscErrorCode PetscSFLinkBuildDependenceEnd(PetscSF sf, PetscSFLink link
   PetscInt       buflen = (direction == PETSCSF_ROOT2LEAF) ? sf->leafbuflen[PETSCSF_REMOTE] : bas->rootbuflen[PETSCSF_REMOTE];
 
   PetscFunctionBegin;
-  /* If unpack to non-null device buffer, build the endRemoteComm dependance */
+  /* If unpack to non-null device buffer, build the endRemoteComm dependence */
   if (buflen) {
     PetscCallCUDA(cudaEventRecord(link->endRemoteComm, link->remoteCommStream));
     PetscCallCUDA(cudaStreamWaitEvent(link->stream, link->endRemoteComm, 0));
@@ -498,7 +498,7 @@ __global__ static void WaitAndPutDataToRemotelyAccessible(PetscInt ndstranks, Pe
   }
 }
 
-/* one-thread kernel, which takes in charge all locally accesible */
+/* one-thread kernel, which takes in charge all locally accessible */
 __global__ static void WaitSignalsFromLocallyAccessible(PetscInt ndstranks, PetscMPIInt *dstranks, uint64_t *srcsig, const char *dst)
 {
   for (int i = 0; i < ndstranks; i++) {
@@ -694,7 +694,7 @@ PetscErrorCode PetscSFLinkCreate_NVSHMEM(PetscSF sf, MPI_Datatype unit, PetscMem
 
   PetscFunctionBegin;
   /* Check to see if we can directly send/recv root/leafdata with the given sf, sfop and op.
-     We only care root/leafdirect[PETSCSF_REMOTE], since we never need intermeidate buffers in local communication with NVSHMEM.
+     We only care root/leafdirect[PETSCSF_REMOTE], since we never need intermediate buffers in local communication with NVSHMEM.
   */
   if (sfop == PETSCSF_BCAST) { /* Move data from rootbuf to leafbuf */
     if (sf->use_nvshmem_get) {

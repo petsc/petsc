@@ -2293,7 +2293,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 +     a11 - the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
      matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
 .     self - the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
-          The only preconditioner that currently works with this symbolic respresentation matrix object is the `PCLSC`
+          The only preconditioner that currently works with this symbolic representation matrix object is the `PCLSC`
           preconditioner
 .     user - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
           to this function).
@@ -2703,8 +2703,8 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc, PetscInt delay)
     Level: intermediate
 
     Notes:
-    This shift is in general done to obtain better convergence properties for the outer loop of the algorithm. This is often achieved by chosing nu sufficiently big. However,
-    if nu is chosen too big, the matrix H might be badly conditioned and the solution of the linear system Hx = b in the inner loop gets difficult. It is therefore
+    This shift is in general done to obtain better convergence properties for the outer loop of the algorithm. This is often achieved by choosing nu sufficiently big. However,
+    if nu is chosen too big, the matrix H might be badly conditioned and the solution of the linear system Hx = b in the inner loop becomes difficult. It is therefore
     necessary to find a good balance in between the convergence of the inner and outer loop.
 
     For nu = 0, no shift is done. In this case A00 has to be positive definite. The matrix N in [Ar13] is then chosen as identity.

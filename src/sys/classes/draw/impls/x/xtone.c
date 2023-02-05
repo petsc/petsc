@@ -51,7 +51,7 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
     SWAP(t2, t3);
     SWAP(x2, x3);
   }
-  /* This code is decidely non-optimal; it is intended to be a start at
+  /* This code is decidedly non-optimal; it is intended to be a start at
    an implementation */
 
   if (y2 != y_1) R_y2_y_1 = 1.0 / ((double)(y2 - y_1));

@@ -436,7 +436,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-bc_type", "Type of boundary condition", "ex12.c", bcTypes, 3, bcTypes[options->bcType], &bc, NULL));
   options->bcType = (BCType)bc;
   coeff           = options->variableCoefficient;
-  PetscCall(PetscOptionsEList("-variable_coefficient", "Type of variable coefficent", "ex12.c", coeffTypes, 8, coeffTypes[options->variableCoefficient], &coeff, NULL));
+  PetscCall(PetscOptionsEList("-variable_coefficient", "Type of variable coefficient", "ex12.c", coeffTypes, 8, coeffTypes[options->variableCoefficient], &coeff, NULL));
   options->variableCoefficient = (CoeffType)coeff;
 
   PetscCall(PetscOptionsBool("-field_bc", "Use a field representation for the BC", "ex12.c", options->fieldBC, &options->fieldBC, NULL));

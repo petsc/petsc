@@ -93,7 +93,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
   /* MIS */
   nremoved = nDone = 0;
   PetscCall(ISGetIndices(perm, &perm_ix));
-  while (nDone < nloc || PETSC_TRUE) { /* asyncronous not implemented */
+  while (nDone < nloc || PETSC_TRUE) { /* asynchronous not implemented */
     /* check all vertices */
     for (kk = 0; kk < nloc; kk++) {
       lid   = perm_ix[kk];

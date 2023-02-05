@@ -5,7 +5,7 @@ Build a few basic tools to help with partitioned domains.
 On each processor, have a DomainExchangerTopology.
 This is a doubly-connected edge list which enumerates the
 communication paths between connected processors. By numbering
-these paths we can always uniquely assign message identifers.
+these paths we can always uniquely assign message identifiers.
 
         edge
          10

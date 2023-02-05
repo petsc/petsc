@@ -231,7 +231,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
   SCformat    *Lstore;
 
   PetscFunctionBegin;
-  if (lu->flg == SAME_NONZERO_PATTERN) { /* successing numerical factorization */
+  if (lu->flg == SAME_NONZERO_PATTERN) { /* successive numerical factorization */
     lu->options.Fact = SamePattern;
     /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
     Destroy_SuperMatrix_Store(&lu->A);

@@ -159,7 +159,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     for (i = 0; i < pcis->n_neigh; i++)
       for (j = 0; j < pcis->n_shared[i]; j++) PetscCall(PetscBTSet(bt, pcis->shared[i][j]));
 
-    /* Creating local and global index sets for interior and inteface nodes. */
+    /* Creating local and global index sets for interior and interface nodes. */
     PetscCall(PetscMalloc1(pcis->n, &idx_I_local));
     PetscCall(PetscMalloc1(pcis->n, &idx_B_local));
     for (i = 0, pcis->n_B = 0, n_I = 0; i < pcis->n; i++) {

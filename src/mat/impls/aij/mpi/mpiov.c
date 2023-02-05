@@ -148,7 +148,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat, PetscInt 
     PetscFunctionReturn(0);
   }
   nto = 0;
-  /* send sizes and ranks for building a two-sided communcation */
+  /* send sizes and ranks for building a two-sided communication */
   for (i = 0; i < size; i++) {
     if (tosizes_temp[i]) {
       tosizes[nto * 2] = tosizes_temp[i] * 2; /* size */

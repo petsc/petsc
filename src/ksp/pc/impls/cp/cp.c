@@ -145,7 +145,7 @@ static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsO
 .ve
 
     Notes:
-    This proceedure can also be done with block columns or any groups of columns
+    This procedure can also be done with block columns or any groups of columns
     but this is not coded.
 
     These "projections" can be done simultaneously for all columns (similar to Jacobi)

@@ -1688,7 +1688,7 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 
   Input Parameters:
 + fvm          - The `PetscFV` object for the field being integrated
-. prob         - The `PetscDS` specifing the discretizations and continuum functions
+. prob         - The `PetscDS` specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Nf           - The number of faces in the chunk
 . fgeom        - The face geometry for each face in the chunk

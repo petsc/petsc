@@ -678,7 +678,7 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
     if (byteSwap) PetscCall(PetscByteSwap(&numNodes, PETSC_LONG, 1));
     if (gmsh->binary) {
       size_t nbytes = sizeof(int) + 3 * sizeof(double);
-      char  *cbuf   = NULL; /* dummy value to prevent warning from compiler about possible unitilized value */
+      char  *cbuf   = NULL; /* dummy value to prevent warning from compiler about possible uninitialized value */
       PetscCall(GmshBufferGet(gmsh, numNodes, nbytes, &cbuf));
       PetscCall(PetscViewerRead(viewer, cbuf, numNodes * nbytes, NULL, PETSC_CHAR));
       for (node = 0; node < numNodes; ++node, ++n) {

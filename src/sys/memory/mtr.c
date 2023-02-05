@@ -361,7 +361,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
     *result = NULL;
     PetscFunctionReturn(0);
   }
-  /* If the orginal space was NULL just use the regular malloc() */
+  /* If the original space was NULL just use the regular malloc() */
   if (!*result) {
     PetscCall(PetscTrMallocDefault(len, PETSC_FALSE, lineno, function, filename, result));
     PetscFunctionReturn(0);

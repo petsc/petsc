@@ -189,7 +189,7 @@ PetscErrorCode port_lsd_bfbt(void)
       VecScatter  uscat, pscat;
       Mat         A11, A22;
 
-      /* grab matrices and create the compatable u,p vectors */
+      /* grab matrices and create the compatible u,p vectors */
       PetscCall(MatCreateSubMatrix(A, isu, isu, MAT_INITIAL_MATRIX, &A11));
       PetscCall(MatCreateSubMatrix(A, isp, isp, MAT_INITIAL_MATRIX, &A22));
 

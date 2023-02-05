@@ -21,7 +21,7 @@ end
 
 %
 % to run parallel jobs make sure petscmpiexec is in your path
-% with the particular PETSC_ARCH environmental varable set
+% with the particular PETSC_ARCH environmental variable set
 %command = ['petscmpiexec -np ' int2str(np) ' ' program opt ' &'];
 command = [ program opt ' &'];
 fprintf(1,['Executing: ' command])

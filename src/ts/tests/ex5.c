@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   PetscInt      time; /* amount of loops */
   struct in     put;
   PetscScalar   rh;                 /* relative humidity */
-  PetscScalar   x;                  /* memory varialbe for relative humidity calculation */
+  PetscScalar   x;                  /* memory variable for relative humidity calculation */
   PetscScalar   deep_grnd_temp;     /* temperature of ground under top soil surface layer */
   PetscScalar   emma;               /* absorption-emission constant for air */
   PetscScalar   pressure1 = 101300; /* surface pressure */
@@ -400,7 +400,7 @@ extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
   PetscScalar e;        /* vapor pressure */
   PetscScalar mixratio; /* mixing ratio */
 
-  dtemp    = dtemp - 273;                                                    /* converts from Kelvin to Celsuis */
+  dtemp    = dtemp - 273;                                                    /* converts from Kelvin to Celsius */
   e        = 6.11 * (PetscPowScalar(10, ((7.5 * dtemp) / (237.7 + dtemp)))); /* converts from dew point temp to vapor pressure */
   e        = e * 100;                                                        /* converts from hPa to Pa */
   mixratio = (0.622 * e) / (pressure1 - e);                                  /* computes mixing ratio */

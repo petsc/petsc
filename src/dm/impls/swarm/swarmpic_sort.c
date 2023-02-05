@@ -149,7 +149,7 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *
 +  dm - a DMSwarm object
 .  e - the index of the cell
 .  npoints - the number of points in the cell
--  pidlist - array of the indices indentifying all points in cell e
+-  pidlist - array of the indices identifying all points in cell e
 
    Level: advanced
 

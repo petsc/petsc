@@ -400,7 +400,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS pe
 
   /*
    This code originally uses Modified Sparse Row (MSR) storage
-   (see page 85, "Iterative Methods ..." by Saad) for the output matrix B - bad choise!
+   (see page 85, "Iterative Methods ..." by Saad) for the output matrix B - bad choice!
    Then it is rewritten so the factor B takes seqsbaij format. However the associated
    MatCholeskyFactorNumeric_() have not been modified for the cases of bs>1 or !perm_identity,
    thus the original code in MSR format is still used for these cases.

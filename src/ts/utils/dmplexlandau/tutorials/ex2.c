@@ -592,7 +592,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   PetscCall(PetscOptionsReal("-ex2_pulse_rate", "Number density of pulse for 'pulse' source", "none", rectx->pulse_rate, &rectx->pulse_rate, NULL));
   rectx->T_cold *= 1.16e7; /* convert to Kelvin */
   PetscCall(PetscOptionsReal("-ex2_ion_potential", "Potential to ionize impurity (should be array) in ev", "none", rectx->ion_potential, &rectx->ion_potential, NULL));
-  PetscCall(PetscOptionsReal("-ex2_inductance", "Inductance E feild", "none", rectx->L, &rectx->L, NULL));
+  PetscCall(PetscOptionsReal("-ex2_inductance", "Inductance E field", "none", rectx->L, &rectx->L, NULL));
   PetscCall(PetscOptionsBool("-ex2_connor_e_field_units", "Scale Ex but Connor-Hastie E_c", "none", Connor_E, &Connor_E, NULL));
   PetscCall(PetscInfo(dm_dummy, "Num electrons from ions=%g, T_cold=%10.3e, ion potential=%10.3e, E_z=%10.3e v_0=%10.3e\n", (double)rectx->Ne_ion, (double)rectx->T_cold, (double)rectx->ion_potential, (double)ctx->Ez, (double)ctx->v_0));
   PetscOptionsEnd();
@@ -681,7 +681,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetApplicationContext(ts, ctx));
   PetscCall(TSMonitorSet(ts, Monitor, ctx, NULL));
   PetscCall(TSSetPreStep(ts, PreStep));
-  rectx->Ez_initial = ctx->Ez; /* cache for induction caclulation - applied E field */
+  rectx->Ez_initial = ctx->Ez; /* cache for induction calculation - applied E field */
   if (1) {                     /* warm up an test just DMPlexLandauIJacobian */
     Vec       vec;
     PetscInt  nsteps;

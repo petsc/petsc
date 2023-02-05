@@ -31,7 +31,7 @@ typedef enum {
  * the template.
  *
  * If the desired path was found, set result and return FTPP_DONE.
- * If an IO/FS error ocurred, set errno and return FTPP_ERROR.
+ * If an IO/FS error occurred, set errno and return FTPP_ERROR.
  * Otherwise return FTPP_TRY_NEXT.
  */
 typedef find_temp_path_progress_t (*find_temp_path_action_t)(int dfd, char *path, void *ctx, void *result);

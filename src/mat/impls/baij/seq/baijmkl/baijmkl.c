@@ -1,7 +1,7 @@
 /*
   Defines basic operations for the MATSEQBAIJMKL matrix class.
   Uses sparse BLAS operations from the Intel Math Kernel Library (MKL)
-  wherever possible. If used MKL verion is older than 11.3 PETSc default
+  wherever possible. If used MKL version is older than 11.3 PETSc default
   code for sparse matrix operations is used.
 */
 

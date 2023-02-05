@@ -34,7 +34,7 @@ struct PointerAttributes {
   std::size_t   size  = 0;                  // size of allocation (bytes)
 
   // even though this is a POD and can be aggregate initialized, the STL uses () constructors
-  // in unordered_map and so we need to provide a trivial contructor...
+  // in unordered_map and so we need to provide a trivial constructor...
   constexpr PointerAttributes(PetscMemType, PetscObjectId, std::size_t) noexcept;
 
   bool operator==(const PointerAttributes &) const noexcept;

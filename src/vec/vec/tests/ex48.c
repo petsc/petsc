@@ -46,7 +46,7 @@ static const char *paths[np] = {
   /* 20 */
   "<",
 };
-/* corresponsing expected absolute paths - positions in abspath */
+/* corresponding expected absolute paths - positions in abspath */
 static const PetscInt paths2apaths[np] = {
   /* 0 */
   0,

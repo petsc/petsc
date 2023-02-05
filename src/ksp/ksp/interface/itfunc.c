@@ -169,8 +169,8 @@ PetscErrorCode KSPComputeEigenvalues(KSP ksp, PetscInt n, PetscReal r[], PetscRe
 
    The (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus.
 
-   The Ritz pairs do not neccessarily accurately reflect the eigenvalues and eigenvectors of the operator, consider the
-   excellant package `SLEPc` if accurate values are required.
+   The Ritz pairs do not necessarily accurately reflect the eigenvalues and eigenvectors of the operator, consider the
+   excellent package `SLEPc` if accurate values are required.
 
    Level: advanced
 
@@ -279,7 +279,7 @@ PetscErrorCode KSPGetReusePreconditioner(KSP ksp, PetscBool *flag)
 }
 
 /*@
-   KSPSetSkipPCSetFromOptions - prevents `KSPSetFromOptions()` from calling `PCSetFromOptions()`. This is used if the same PC is shared by more than one KSP so its options are not resetable for each KSP
+   KSPSetSkipPCSetFromOptions - prevents `KSPSetFromOptions()` from calling `PCSetFromOptions()`. This is used if the same `PC` is shared by more than one `KSP` so its options are not resettable for each `KSP`
 
    Collective
 

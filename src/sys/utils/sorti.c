@@ -996,7 +996,7 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
 -  J   - merged additional array
 
    Note:
-    if L or J point to non-null arrays then this routine will assume they are of the approproate size and use them, otherwise this routine will allocate space for them
+    if L or J point to non-null arrays then this routine will assume they are of the appropriate size and use them, otherwise this routine will allocate space for them
 
    Level: intermediate
 

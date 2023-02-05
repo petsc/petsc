@@ -5,7 +5,7 @@ typedef struct {
   char     *string; /* string where info is stored */
   char     *head;   /* pointer to beginning of unused portion */
   size_t    curlen, maxlen;
-  PetscBool ownstring; /* string viewer is responsable for freeing the string */
+  PetscBool ownstring; /* string viewer is responsible for freeing the string */
 } PetscViewer_String;
 
 static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
@@ -189,7 +189,7 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
   Note:
   The function does not copy the string, it uses it directly therefore you cannot free
   the string until the viewer is destroyed. If you call `PetscViewerStringSetOwnString()` the ownership
-  passes to the viewer and it will be responsable for freeing it. In this case the string must be
+  passes to the viewer and it will be responsible for freeing it. In this case the string must be
   obtained with `PetscMalloc()`.
 
 .seealso: [](sec_viewers), `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,

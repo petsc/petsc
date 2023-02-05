@@ -65,7 +65,7 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 .  F - output vector
 
    Note:
-   The Galerkin FAS function evalutation is defined as
+   The Galerkin FAS function evaluation is defined as
 $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
 
    Level: developer

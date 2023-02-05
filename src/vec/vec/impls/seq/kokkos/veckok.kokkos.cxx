@@ -834,7 +834,7 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
   PetscFunctionReturn(0);
 }
 
-/* Replace the array in vin with a[] that must be allocated by PetscMalloc. a[] is owned by vin afterwords. */
+/* Replace the array in vin with a[] that must be allocated by PetscMalloc. a[] is owned by vin afterwards. */
 PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin, const PetscScalar *a)
 {
   Vec_Seq    *vecseq = (Vec_Seq *)vin->data;

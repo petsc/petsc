@@ -64,7 +64,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], Pets
           }
           k++;
           if (k >= n) break; /* for (brow=0; brow<mbs; brow++) */
-        } else {             /* brow is not on nidx - col serach: add brow onto nidx if there is a bcol in nidx */
+        } else {             /* brow is not on nidx - col search: add brow onto nidx if there is a bcol in nidx */
           for (l = start; l < end; l++) {
             bcol = aj[l];
             if (bcol > bcol_max) break;
@@ -209,7 +209,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
   PetscCall(ISGetLocalSize(isrow, &nrows));
   PetscCall(ISGetLocalSize(iscol, &ncols));
 
-  /* Verify if the indices corespond to each element in a block
+  /* Verify if the indices correspond to each element in a block
    and form the IS with compressed IS */
   maxmnbs = PetscMax(a->mbs, a->nbs);
   PetscCall(PetscMalloc2(maxmnbs, &vary, maxmnbs, &iary));

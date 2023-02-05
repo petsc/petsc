@@ -228,7 +228,7 @@ PetscErrorCode DMLocatePoints_DA_Regular(DM dm, Vec pos, DMPointLocationType lty
     PetscCall(private_DMDALocatePointsIS_3D_Regular(dm, pos, &iscell));
     break;
   default:
-    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupport spatial dimension");
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported spatial dimension");
   }
 
   PetscCall(VecGetLocalSize(pos, &npoints));

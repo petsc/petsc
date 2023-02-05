@@ -272,7 +272,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
     for (ii = 0; ii < aug_dim; ii++) AUG_ORDER(ii)++;
     AUG_ORDER(spot) = 1;
 
-    /*now add the A*aug vector to A_AUGVEC(spot)  - this is independ. of preconditioning type*/
+    /*now add the A*aug vector to A_AUGVEC(spot) - this is independent of preconditioning type*/
     /* want V*H*y - y is in GRS, V is in VEC_VV and H is in HES */
 
     /* first do H+*y */

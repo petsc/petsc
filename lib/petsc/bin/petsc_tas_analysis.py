@@ -6,7 +6,7 @@ import importlib
 import datetime as date
 import importlib
 
-# Check to ensure that the enviromental variable PETSC_DIR has been assigned.
+# Check to ensure that the environmental variable PETSC_DIR has been assigned.
 # MPLCONFIGDIR is needed for matplotlib
 try:
     if os.environ.get('PETSC_DIR') is None:
@@ -14,7 +14,7 @@ try:
     os.environ['MPLCONFIGDIR'] = os.environ.get(
         'PETSC_DIR')+'/share/petsc/xml/'
 except NotADirectoryError:
-    sys.exit('The enviromental variable PETSC_DIR was not found.  \n'
+    sys.exit('The environmental variable PETSC_DIR was not found.\n'
              'Please add this variable with the base directory for PETSc or the base directory that MPLCONFIGDIR resides')
 
 import matplotlib.pyplot as plt
@@ -124,7 +124,7 @@ def main(cmdLineArgs):
 def checkAlias(alias, path):
     """
     This function checks to see if the alias to be added/updated, entered on the command line, already exits
-    in configureTAS.py.  In configureTAS.py the alias is the key in the Dicionary filePath.  If that key exists
+    in configureTAS.py.  In configureTAS.py the alias is the key in the Dictionary filePath.  If that key exists
     The current key value pair is displayed and the user is prompted to confirm replacement.  The function
     returns True or False based on the user response.
 
@@ -184,7 +184,7 @@ def checkDirforFilePath(alias, path):
                 print('Directory successfully created.\n')
                 return True
             except os.error:
-                print(f'\nAn error occured while attempting to create directory:\n{path}\n\n'
+                print(f'\nAn error occurred while attempting to create directory:\n{path}\n\n'
                       f'Please check to make sure that you have permission to create directories\n\n'
                       f'Do you with to continue with adding {path} to configureTAS.py?')
                 response = input('(y/n) to continue\n')
@@ -257,7 +257,7 @@ def editConfigureTasFile(alias, mode, aliasInConfig=False, path=None):
 
 def getFiles(cmdLineArgs, alias):
     """
-    This function first determins if it should look in the pathway specifed in filePath['defaultData']
+    This function first determines if it should look in the pathway specified in filePath['defaultData']
     in the configurationTAS.py file or a file name given as a command line argument using -f or -file.
     It then builds lists of file names and stores them in a dictionary, where they keys correspond to
     the type of file, ie, module(ASCII type) or CSV.
@@ -472,7 +472,7 @@ def dataProcesCSV(cmdLineArgs, fileName):
             if cmdLineArgs.fieldList is not None:
                 if len(cmdLineArgs.fieldList) != Nf:
                     print(f'\nYou specified {len(cmdLineArgs.fieldList)} from the command line, while the log file has {Nf} fields.\n\n'
-                          f'The fields you specifed were:\n{cmdLineArgs.fieldList}\n\n')
+                          f'The fields you specified were:\n{cmdLineArgs.fieldList}\n\n')
 
                     response = input('(y/n) to continue without field names\n')
 
@@ -742,7 +742,7 @@ def graphGen(file, enable_graphs, graph_flops_scaling, dim):
     This function takes the supplied dictionary and plots the data from each file on the Mesh Convergence, Static Scaling, and
     Efficacy graphs.
 
-    :param file: Contains the data to be ploted on the graphs, assumes the format -- file[<file name>][<data type>]:<numpy array>
+    :param file: Contains the data to be plotted on the graphs, assumes the format -- file[<file name>][<data type>]:<numpy array>
     :type file: Dictionary
     :param graph_flops_scaling: Controls creating the scaling graph that uses flops/second.  The default is not to.  This option
                                     is specified on the command line.

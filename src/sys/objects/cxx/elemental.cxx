@@ -11,7 +11,7 @@
 
    Note:
    Can be called outside of `PetscInitialize()` and `PetscFinalize()`.
-   If called outside of these functions, it is the user's responsability
+   If called outside of these functions, it is the user's responsibility
    to make sure that `PETSC_COMM_WORLD` is either unset (default value is `MPI_COMM_NULL`),
    or that it is not `MPI_UNEQUAL` to `MPI_COMM_WORLD`.
    Users who do not have a custom `PETSC_COMM_WORLD` do not have to call this function.
