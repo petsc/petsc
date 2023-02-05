@@ -237,7 +237,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, mass, mass));
   PetscCall(KSPSetFromOptions(ksp));
-  //   Compute rhs as M f, could also direclty project the analytic function but we might not have it
+  //   Compute rhs as M f, could also directly project the analytic function but we might not have it
   PetscCall(DMCreateMassMatrix(dmProj, dmaProj, &mass2));
   PetscCall(MatMult(mass2, u, rhs));
   PetscCall(MatDestroy(&mass2));

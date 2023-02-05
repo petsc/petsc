@@ -753,7 +753,7 @@ PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt 
   Notes:
   Extra dof are ignored, and unfilled dof are zeroed.
   Currently only implemented to migrate global vectors to global vectors.
-  For the defintion of compatibility of `DM`s, see `DMGetCompatibility()`.
+  For the definition of compatibility of `DM`s, see `DMGetCompatibility()`.
 
   Level: advanced
 

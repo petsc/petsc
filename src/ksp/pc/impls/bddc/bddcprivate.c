@@ -4572,7 +4572,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   if (n_constraints) PetscCall(MatDestroy(&C_CR));
   PetscCall(PetscLogEventEnd(PC_BDDC_CorrectionSetUp[pcbddc->current_level], pc, 0, 0, 0));
 
-  /* Checking coarse_sub_mat and coarse basis functios */
+  /* Checking coarse_sub_mat and coarse basis functions */
   /* Symmetric case     : It should be \Phi^{(j)^T} A^{(j)} \Phi^{(j)}=coarse_sub_mat */
   /* Non-symmetric case : It should be \Psi^{(j)^T} A^{(j)} \Phi^{(j)}=coarse_sub_mat */
   if (pcbddc->dbg_flag) {

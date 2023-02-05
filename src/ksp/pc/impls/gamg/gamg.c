@@ -131,7 +131,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
 #endif
     PetscCall(MatGetSize(Cmat, &ncrs_eq_glob, NULL));
     new_size = (PetscMPIInt)((float)ncrs_eq_glob / (float)pc_gamg->min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
-    if (!new_size) new_size = 1;                                                       /* not likely, posible? */
+    if (!new_size) new_size = 1;                                                       /* not likely, possible? */
     else if (new_size >= nactive) new_size = nactive;                                  /* no change, rare */
     PetscCall(PetscInfo(pc, "%s: Coarse grid reduction from %d to %d active processes\n", ((PetscObject)pc)->prefix, nactive, new_size));
   }
@@ -1454,7 +1454,7 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
     PetscCall((*pc_gamg->ops->destroy)(pc));
     PetscCall(PetscMemzero(pc_gamg->ops, sizeof(struct _PCGAMGOps)));
     pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;
-    /* cleaning up common data in pc_gamg - this should disapear someday */
+    /* cleaning up common data in pc_gamg - this should disappear someday */
     pc_gamg->data_cell_cols      = 0;
     pc_gamg->data_cell_rows      = 0;
     pc_gamg->orig_data_cell_cols = 0;
@@ -1554,9 +1554,9 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
 
    Options Database Keys:
 +   -pc_gamg_type <type,default=agg> - one of agg, geo, or classical
-.   -pc_gamg_repartition  <bool,default=false> - repartition the degrees of freedom accross the coarse grids as they are determined
+.   -pc_gamg_repartition  <bool,default=false> - repartition the degrees of freedom across the coarse grids as they are determined
 .   -pc_gamg_asm_use_agg <bool,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
-.   -pc_gamg_process_eq_limit <limit, default=50> - `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit>
+.   -pc_gamg_process_eq_limit <limit, default=50> - `PCGAMG` will reduce the number of MPI ranks used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
 .   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
 .   -pc_gamg_reuse_interpolation <bool,default=true> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)

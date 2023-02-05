@@ -665,7 +665,7 @@ PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype
   mat_mkl_pardiso->iparm[27] = 0;
 #endif
   /* Default options for both sym and unsym */
-  mat_mkl_pardiso->iparm[0]  = 1;  /* Solver default parameters overriden with provided by iparm */
+  mat_mkl_pardiso->iparm[0]  = 1;  /* Solver default parameters overridden with provided by iparm */
   mat_mkl_pardiso->iparm[1]  = 2;  /* Metis reordering */
   mat_mkl_pardiso->iparm[5]  = 0;  /* Write solution into x */
   mat_mkl_pardiso->iparm[7]  = 0;  /* Max number of iterative refinement steps */

@@ -656,7 +656,7 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
 
 typedef struct {
   PetscReal c; /* speed of sound: c = sqrt(bulk/rho) */
-  PetscReal z; /* impedence: z = sqrt(rho*bulk) */
+  PetscReal z; /* impedance: z = sqrt(rho*bulk) */
 } AcousticsCtx;
 
 PETSC_UNUSED static inline void AcousticsFlux(AcousticsCtx *ctx, const PetscScalar *u, PetscScalar *f)

@@ -836,7 +836,7 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 . -tao_nls_pmsfac - merit shrink factor
 . -tao_nls_eta1 - poor steplength; reduce radius
 . -tao_nls_eta2 - reasonable steplength; leave radius
-. -tao_nls_eta3 - good steplength; increase readius
+. -tao_nls_eta3 - good steplength; increase radius
 . -tao_nls_eta4 - excellent steplength; greatly increase radius
 . -tao_nls_alpha1 - alpha1 reduction
 . -tao_nls_alpha2 - alpha2 reduction

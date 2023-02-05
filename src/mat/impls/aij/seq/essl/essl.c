@@ -58,7 +58,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F, Mat A, const MatFactorInfo *info)
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(A->rmap->n, &nessl));
-  /* copy matrix data into silly ESSL data structure (1-based Frotran style) */
+  /* copy matrix data into silly ESSL data structure (1-based Fortran style) */
   for (i = 0; i < A->rmap->n + 1; i++) essl->ia[i] = aa->i[i] + 1;
   for (i = 0; i < aa->nz; i++) essl->ja[i] = aa->j[i] + 1;
 

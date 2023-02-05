@@ -1399,7 +1399,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
 
    Notes:
     When petsc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
-    are host pointers or device pointers, which may incur a noticable cost. If you already knew the info, you should
+    are host pointers or device pointers, which may incur a noticeable cost. If you already knew the info, you should
     use `PetscSFBcastWithMemTypeBegin()` instead.
 
 .seealso: `PetscSF`, `PetscSFBcastEnd()`, `PetscSFBcastWithMemTypeBegin()`
@@ -1496,7 +1496,7 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf, MPI_Datatype unit, const void *rootda
 
    Notes:
     When petsc is configured with device support, it will use its own mechanism to figure out whether the given data pointers
-    are host pointers or device pointers, which may incur a noticable cost. If you already knew the info, you should
+    are host pointers or device pointers, which may incur a noticeable cost. If you already knew the info, you should
     use `PetscSFReduceWithMemTypeBegin()` instead.
 
 .seealso: `PetscSF`, `PetscSFBcastBegin()`, `PetscSFReduceWithMemTypeBegin()`

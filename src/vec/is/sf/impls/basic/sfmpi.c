@@ -110,7 +110,7 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
   } else {
     rootmtype_mpi = leafmtype_mpi = PETSC_MEMTYPE_HOST;
   }
-  /* Will root/leafdata be directly accessed by MPI?  Without use_gpu_aware_mpi, device data is bufferred on host and then passed to MPI */
+  /* Will root/leafdata be directly accessed by MPI?  Without use_gpu_aware_mpi, device data is buffered on host and then passed to MPI */
   rootdirect_mpi = rootdirect[PETSCSF_REMOTE] && (rootmtype_mpi == rootmtype) ? 1 : 0;
   leafdirect_mpi = leafdirect[PETSCSF_REMOTE] && (leafmtype_mpi == leafmtype) ? 1 : 0;
 

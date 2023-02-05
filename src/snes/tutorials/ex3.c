@@ -68,7 +68,7 @@ typedef struct {
 } StepCheckCtx;
 
 typedef struct {
-  PetscInt its0; /* num of prevous outer KSP iterations */
+  PetscInt its0; /* num of previous outer KSP iterations */
 } SetSubKSPCtx;
 
 int main(int argc, char **argv)

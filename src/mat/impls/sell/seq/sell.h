@@ -82,7 +82,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
     PetscCall(PetscArraycpy(new_colidx + SIDX[SID + 1] + 8, COLIDX + SIDX[SID + 1], SIDX[AM >> 3] - SIDX[SID + 1])); \
     /* update slice_idx */ \
     for (ii = SID + 1; ii <= AM >> 3; ii++) SIDX[ii] += 8; \
-    /* update pointers. Notice that they point to the FIRST postion of the row */ \
+    /* update pointers. Notice that they point to the FIRST position of the row */ \
     CP = new_colidx + SIDX[SID] + (ROW & 0x07); \
     VP = new_val + SIDX[SID] + (ROW & 0x07); \
     /* free up old matrix storage */ \
@@ -133,7 +133,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
           PetscCall(PetscArraycpy(new_colidx, a->colidx, a->sliidx[row / 8 + 1])); \
           PetscCall(PetscArraycpy(new_val + a->sliidx[row / 8 + 1] + 8, a->val + a->sliidx[row / 8 + 1], a->sliidx[a->totalslices] - a->sliidx[row / 8 + 1])); \
           PetscCall(PetscArraycpy(new_colidx + a->sliidx[row / 8 + 1] + 8, a->colidx + a->sliidx[row / 8 + 1], a->sliidx[a->totalslices] - a->sliidx[row / 8 + 1])); \
-          /* update pointers. Notice that they point to the FIRST postion of the row */ \
+          /* update pointers. Notice that they point to the FIRST position of the row */ \
           cp = new_colidx + a->sliidx[row / 8] + (row & 0x07); \
           vp = new_val + a->sliidx[row / 8] + (row & 0x07); \
           /* free up old matrix storage */ \

@@ -28,11 +28,11 @@ typedef struct {
   /* PetscReal      *inorms;         Heeho's new TR-dogleg, stores largest inf norm */
   /* PetscInt       bs;              Heeho's new TR-dogleg, solution vector block size */
 
-  PetscReal sigma;                 /* used to detemine termination */
+  PetscReal sigma;                 /* used to determine termination */
   PetscBool itflag;                /* flag for convergence testing */
   PetscBool use_cauchy;            /* flag to use/not use Cauchy step and direction (S&D) */
   PetscBool auto_scale_multiphase; /* flag to use/not use autoscaling for Cauchy S&D for multiphase*/
-  PetscReal auto_scale_max;        /* max cap value for auto-scaling muste be > 1 */
+  PetscReal auto_scale_max;        /* max cap value for auto-scaling must be > 1 */
   PetscBool rho_satisfied;         /* flag for whether inner iteration satisfied rho */
   PetscReal rnorm0, ttol;          /* used for KSP convergence test */
   PetscErrorCode (*precheck)(SNES, Vec, Vec, PetscBool *, void *);

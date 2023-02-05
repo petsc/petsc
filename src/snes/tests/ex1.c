@@ -392,7 +392,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
 */
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
 {
-  AppCtx            *user = (AppCtx *)ptr; /* user-defined applicatin context */
+  AppCtx            *user = (AppCtx *)ptr; /* user-defined application context */
   PetscInt           i, j, row, mx, my, col[5];
   PetscScalar        two = 2.0, one = 1.0, lambda, v[5], sc;
   const PetscScalar *x;

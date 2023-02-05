@@ -26,7 +26,7 @@ for i = f
     disp (Problem) ;
     title (sprintf ('%s:%s', Problem.name, Problem.title')) ;
 
-    % convets to PETSc binary format and writes into ~mat/A_{id}
+    % converts to PETSc binary format and writes into ~mat/A_{id}
     %-----------------------------------------------------------
     fname = ['mat/A',num2str(i)];
     fprintf ('write matrix into petsc binary file %s ...\n',fname);

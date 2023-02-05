@@ -17,7 +17,7 @@ where
 
 #include <petsctao.h>
 
-static char help[] = "Solves constrained optimiztion problem using pdipm.\n\
+static char help[] = "Solves constrained optimization problem using pdipm.\n\
 Input parameters include:\n\
   -tao_type pdipm    : sets Tao solver\n\
   -no_eq             : removes the equaility constraints from the problem\n\

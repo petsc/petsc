@@ -148,7 +148,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
 . rnd - The random number generator context
 
   Options Database Keys:
-+ -random_seed <integer> - provide a seed to the random number generater
++ -random_seed <integer> - provide a seed to the random number generator
 - -random_no_imaginary_part - makes the imaginary part of the random number zero, this is useful when you want the
                               same code to produce the same result when run with real numbers or complex numbers for regression testing purposes
 

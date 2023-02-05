@@ -2070,7 +2070,7 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
   Notes:
   Functions transform in a complementary way (pushforward) to functionals, so that the scalar product is invariant. The type of transform is dependent on the associated k-simplex from the DeRahm complex.
 
-  This only handles tranformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
+  This only handles transformations when the embedding dimension of the geometry in fegeom is the same as the reference dimension.
 
 .seealso: `PetscDualSpace`, `PetscDualSpacePushforward()`, `PetscDualSpaceTransform()`, `PetscDualSpaceGetDeRahm()`
 @*/

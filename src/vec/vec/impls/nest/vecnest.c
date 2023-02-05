@@ -469,7 +469,7 @@ static PetscErrorCode VecSize_Nest_Recursive(Vec x, PetscBool globalsize, PetscI
   PetscFunctionReturn(0);
 }
 
-/* Returns the sum of the global size of all the consituent vectors in the nest */
+/* Returns the sum of the global size of all the constituent vectors in the nest */
 static PetscErrorCode VecGetSize_Nest(Vec x, PetscInt *N)
 {
   PetscFunctionBegin;
@@ -477,7 +477,7 @@ static PetscErrorCode VecGetSize_Nest(Vec x, PetscInt *N)
   PetscFunctionReturn(0);
 }
 
-/* Returns the sum of the local size of all the consituent vectors in the nest */
+/* Returns the sum of the local size of all the constituent vectors in the nest */
 static PetscErrorCode VecGetLocalSize_Nest(Vec x, PetscInt *n)
 {
   PetscFunctionBegin;
@@ -1119,7 +1119,7 @@ PetscErrorCode VecCreateNest(MPI_Comm comm, PetscInt nb, IS is[], Vec x[], Vec *
   PetscCall(VecCreate(comm, &V));
   PetscCall(PetscObjectChangeTypeName((PetscObject)V, VECNEST));
 
-  /* allocate and set pointer for implememtation data */
+  /* allocate and set pointer for implementation data */
   PetscCall(PetscNew(&s));
   V->data         = (void *)s;
   s->setup_called = PETSC_FALSE;

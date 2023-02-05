@@ -7,8 +7,8 @@ Input parameters include:\n";
 
 /* ------------------------------------------------------------------------
 
-   This code demonstrates how to compute trajectory sensitivties w.r.t. the stiffness parameter mu.
-   1) Use two vectors s and sp for sensitivities w.r.t. initial values and paraeters respectively. This case requires the original Jacobian matrix and a JacobianP matrix for the only parameter mu.
+   This code demonstrates how to compute trajectory sensitivities w.r.t. the stiffness parameter mu.
+   1) Use two vectors s and sp for sensitivities w.r.t. initial values and parameters respectively. This case requires the original Jacobian matrix and a JacobianP matrix for the only parameter mu.
    2) Consider the initial values to be parameters as well. Then there are three parameters in total. The JacobianP matrix will be combined matrix of the Jacobian matrix and JacobianP matrix in the previous case. This choice can be selected by using command line option '-combined'
 
   ------------------------------------------------------------------------- */

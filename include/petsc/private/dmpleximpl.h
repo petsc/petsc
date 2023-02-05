@@ -126,7 +126,7 @@ typedef struct {
 
   PetscSection coneSection;      /* Layout of cones (inedges for DAG) */
   PetscInt    *cones;            /* Cone for each point */
-  PetscInt    *coneOrientations; /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
+  PetscInt    *coneOrientations; /* Orientation of each cone point, means cone traversal should start on point 'o', and if negative start on -(o+1) and go in reverse */
   PetscSection supportSection;   /* Layout of cones (inedges for DAG) */
   PetscInt    *supports;         /* Cone for each point */
   PetscInt    *facesTmp;         /* Work space for faces operation */

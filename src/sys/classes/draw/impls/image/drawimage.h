@@ -151,7 +151,7 @@ static inline void PetscImageDrawTriangle(PetscImage img, int x_1, int y_1, int 
   }
 #undef SWAP
 
-  /* This code is decidely non-optimal;
+  /* This code is decidedly non-optimal;
    it is intended to be a start at an implementation */
 
   t2_t1   = t_2 - t_1;

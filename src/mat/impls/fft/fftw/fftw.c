@@ -23,7 +23,7 @@ typedef struct {
   PetscInt     partial_dim;
   fftw_plan    p_forward, p_backward;
   unsigned     p_flag;                                      /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
-  PetscScalar *finarray, *foutarray, *binarray, *boutarray; /* keep track of arrays becaue fftw plan should be
+  PetscScalar *finarray, *foutarray, *binarray, *boutarray; /* keep track of arrays because fftw plan should be
                                                             executed for the arrays with which the plan was created */
 } Mat_FFTW;
 
@@ -699,7 +699,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
     }
     /* fftw vectors have their data array allocated by fftw_malloc, such that v->array=xxx but
        v->array_allocated=NULL. A regular replacearray call won't free the memory and only causes
-       memory leaks. We void these pointers here to avoid acident uses.
+       memory leaks. We void these pointers here to avoid accident uses.
     */
     if (fin) (*fin)->ops->replacearray = NULL;
     if (fout) (*fout)->ops->replacearray = NULL;

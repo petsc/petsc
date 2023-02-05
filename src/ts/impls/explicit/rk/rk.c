@@ -1433,7 +1433,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
   Level: intermediate
 
   Note:
-  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except `TSRK5DP` which comes with the interpolation coeffcients (binterp).
+  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except `TSRK5DP` which comes with the interpolation coefficients (binterp).
 
 .seealso: [](chapter_ts), `TSRK`, `TSRKGetMultirate()`
 @*/

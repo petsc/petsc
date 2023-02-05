@@ -758,7 +758,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)vv, VECMPI, &flg));
-  /* if already fully existant VECMPI then basically destroy it and rebuild with ghosting */
+  /* if already fully existent VECMPI then basically destroy it and rebuild with ghosting */
   if (flg) {
     PetscInt               n, N;
     Vec_MPI               *w;

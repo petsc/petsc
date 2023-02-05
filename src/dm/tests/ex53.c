@@ -2,7 +2,7 @@ static char help[] = "Use DMDACreatePatchIS  to extract a slice from a vector, C
 mx/my/mz - set the dimensions of the parent vector\n\
 dim - set the dimensionality of the parent vector (2,3)\n\
 sliceaxis - Integer describing the axis along which the sice will be selected (0-X, 1-Y, 2-Z)\n\
-sliceid - set the location where the slice will be extraced from the parent vector\n";
+sliceid - set the location where the slice will be extracted from the parent vector\n";
 
 /*
    This test checks the functionality of DMDACreatePatchIS when

@@ -603,7 +603,7 @@ static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi)
     thi->erosion.refvel *= units->meter / units->year;
     PetscCall(PetscOptionsReal("-thi_dirichlet_scale", "Scale Dirichlet boundary conditions by this factor", "", thi->dirichlet_scale, &thi->dirichlet_scale, NULL));
     PetscCall(PetscOptionsReal("-thi_ssa_friction_scale", "Scale slip boundary conditions by this factor in SSA (2D) assembly", "", thi->ssa_friction_scale, &thi->ssa_friction_scale, NULL));
-    PetscCall(PetscOptionsReal("-thi_inertia", "Coefficient of accelaration term in velocity system, physical is almost zero", NULL, thi->inertia, &thi->inertia, NULL));
+    PetscCall(PetscOptionsReal("-thi_inertia", "Coefficient of acceleration term in velocity system, physical is almost zero", NULL, thi->inertia, &thi->inertia, NULL));
     PetscCall(PetscOptionsInt("-thi_nlevels", "Number of levels of refinement", "", thi->nlevels, &thi->nlevels, NULL));
     PetscCall(PetscOptionsFList("-thi_mat_type", "Matrix type", "MatSetType", MatList, mtype, (char *)mtype, sizeof(mtype), NULL));
     PetscCall(PetscStrallocpy(mtype, &thi->mattype));

@@ -53,7 +53,7 @@ static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A)
   PetscCall(MatSetSizes(*A, fe->n, fe->n, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetFromOptions(*A));
 
-  /* determine for each entry in each element stiffness matrix the global row and colum */
+  /* determine for each entry in each element stiffness matrix the global row and column */
   /* since the element is triangular with piecewise linear basis functions there are three degrees of freedom per element, one for each vertex */
   PetscCall(PetscMalloc2(3 * 3 * fe->Ne, &oor, 3 * 3 * fe->Ne, &ooc));
   for (PetscInt e = 0; e < fe->Ne; e++) {

@@ -3549,7 +3549,7 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 - points - `IS` with points to extract; its indices must lie in the chart of origSection
 
   Output Parameters:
-+ newSection - the new `PetscSection` desribing the layout of the new array (with points renumbered 0,1,... but preserving numbers of DOFs)
++ newSection - the new `PetscSection` describing the layout of the new array (with points renumbered 0,1,... but preserving numbers of DOFs)
 - newArray - the array of the extracted DOFs; its size is the storage size of newSection
 
   Level: developer

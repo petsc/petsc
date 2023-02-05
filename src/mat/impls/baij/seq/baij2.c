@@ -169,7 +169,7 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat A, IS isrow, IS iscol, MatReuse sc
   PetscCall(ISGetLocalSize(isrow, &nrows));
   PetscCall(ISGetLocalSize(iscol, &ncols));
 
-  /* Verify if the indices corespond to each element in a block
+  /* Verify if the indices correspond to each element in a block
    and form the IS with compressed IS */
   maxmnbs = PetscMax(a->mbs, a->nbs);
   PetscCall(PetscMalloc2(maxmnbs, &vary, maxmnbs, &iary));

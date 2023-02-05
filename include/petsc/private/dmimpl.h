@@ -250,7 +250,7 @@ struct _p_DM {
   /* Hierarchy / Submeshes */
   DM                      coarseMesh;
   DM                      fineMesh;
-  DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
+  DMCoarsenHookLink       coarsenhook; /* For transferring auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;
   DMGlobalToLocalHookLink gtolhook;

@@ -114,7 +114,7 @@ PetscErrorCode PetscSplitOwnership(MPI_Comm comm, PetscInt *n, PetscInt *N)
    Notes:
      This is intended to be used with `MATSCALAPACK`, where the local size must
      be equal in all processes (except possibly the last one). For instance,
-     the local sizes when spliting N=50 with 6 processes are 9,9,9,9,9,5
+     the local sizes when splitting N=50 with 6 processes are 9,9,9,9,9,5
 
      n and N cannot be both `PETSC_DECIDE`
 

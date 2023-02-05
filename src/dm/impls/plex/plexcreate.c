@@ -2607,7 +2607,7 @@ static PetscErrorCode TPSExtrudeNormalFunc_Gyroid(PetscInt dim, PetscReal time, 
    where Q = I - 2 n n^T is a symmetric orthogonal matrix.
    The first column of Q is parallel to g so the remaining two columns span the null space.
    Let Qn = Q[:,1:] be those remaining columns.  Then Qn Qn^T is an orthogonal projector into the tangent space.
-   Since Q is symmetric, this is equivalent to multipyling by Q and taking the last two entries.
+   Since Q is symmetric, this is equivalent to multiplying by Q and taking the last two entries.
    In total, we have a system of 3 equations in 3 unknowns:
 
      f(y) = 0                       1 equation

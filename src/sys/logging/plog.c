@@ -2067,7 +2067,7 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer)
   Level: beginner
 
   Notes:
-  It is possible to control the logging programatically but we recommend using the options database approach whenever possible
+  It is possible to control the logging programmatically but we recommend using the options database approach whenever possible
   By default the summary is printed to stdout.
 
   Before calling this routine you must have called either PetscLogDefaultBegin() or PetscLogNestedBegin()
@@ -2375,7 +2375,7 @@ PetscErrorCode PetscLogGpuTime(void)
 
     This timer should NOT include times for data transfers between the GPU and CPU, nor setup actions such as allocating space.
 
-    The regular logging captures the time for data transfers and any CPU activites during the event
+    The regular logging captures the time for data transfers and any CPU activities during the event
 
     It is used to compute the flop rate on the GPU as it is actively engaged in running a kernel.
 
@@ -2384,7 +2384,7 @@ PetscErrorCode PetscLogGpuTime(void)
 
     `PetscLogGpuTimeBegin()` and `PetsLogGpuTimeEnd()` insert the begin and end events into the default stream (stream 0). The device will record a time stamp for the
     event when it reaches that event in the stream. The function xxxEventSynchronize() is called in `PetsLogGpuTimeEnd()` to block CPU execution,
-    but not continued GPU excution, until the timer event is recorded.
+    but not continued GPU execution, until the timer event is recorded.
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTime()`
 @*/

@@ -36,7 +36,7 @@ typedef enum {
   FVBC_INFLOW
 } FVBCType;
 extern const char *FVBCTypes[];
-/* we add three new variables at the end of input parameters of function to be position of cell center, left bounday of domain, right boundary of domain */
+/* we add three new variables at the end of input parameters of function to be position of cell center, left boundary of domain, right boundary of domain */
 typedef PetscErrorCode (*RiemannFunction)(void *, PetscInt, const PetscScalar *, const PetscScalar *, PetscScalar *, PetscReal *, PetscReal, PetscReal, PetscReal);
 typedef PetscErrorCode (*ReconstructFunction)(void *, PetscInt, const PetscScalar *, PetscScalar *, PetscScalar *, PetscReal *, PetscReal);
 

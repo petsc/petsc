@@ -78,7 +78,7 @@ typedef struct { /* parameters needed to compute viscosity */
   PetscReal A, n, Estar, Vstar;
 } ViscParam;
 
-typedef struct { /* physical and miscelaneous parameters */
+typedef struct { /* physical and miscellaneous parameters */
   PetscReal width, depth, scaled_width, scaled_depth, peclet, potentialT;
   PetscReal slab_dip, slab_age, slab_velocity, kappa, z_scale;
   PetscReal c, d, sb, cb, skt, visc_cutoff, lid_age, eta0, continuation;

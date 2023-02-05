@@ -106,7 +106,7 @@ function drawDiagrams(data,endtag,targetEndtag,x,y) {
                 var top_shift = shift + 141;
                 ret += "<line x1=\""+(x+shift)+"\" y1=\""+(y+141+global_downshift)+"\" x2=\""+(x+top_shift)+"\" y2=\""+(y+global_downshift)+"\" style='stroke:black;stroke-width:1'></line>";
             }
-            for(var j=1; j<dim; j++) {//draw horizonal lines
+            for(var j=1; j<dim; j++) {//draw horizontal lines
                 var inc = 141/dim;//parallelogram is 141 tall
                 var horiz_shift = (141/dim) * j;
                 var horiz_shift_end = horiz_shift + 324;

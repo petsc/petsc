@@ -277,7 +277,7 @@ PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
   PetscDrawCollectiveBegin(draw);
   if (rank) goto finally;
 
-  /* get cannonical string size */
+  /* get canonical string size */
   PetscCall(PetscDrawSetCoordinates(draw, 0, 0, 1, 1));
   PetscCall(PetscDrawStringGetSize(draw, &tw, &th));
   /* lower spacing */

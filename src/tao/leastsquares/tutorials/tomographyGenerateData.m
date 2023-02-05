@@ -10,7 +10,7 @@ WGT = createObject(sampleName, WSz);
 % NTheta*NTau:  Sinogram Size
 % L:            Forward Model, sparse matrix of NTheta*NTau by Ny*Nx
 % SAll:         Sinogram for all scans of NTheta*NTau*NScan, SAll(:,:,n) for the nth scan
-NTheta = 20;  % sample angle #. Use odd NOT even, for display purpose of sinagram of Phantom. As even NTheta will include theta of 90 degree where sinagram will be very bright as Phantom sample has verical bright line on left and right boundary.
+NTheta = 20;  % sample angle #. Use odd NOT even, for display purpose of sinagram of Phantom. As even NTheta will include theta of 90 degree where sinagram will be very bright as Phantom sample has vertical bright line on left and right boundary.
 NTau = ceil(sqrt(sum(WSz.^2))); NTau = NTau + rem(NTau-Ny,2); % number of discrete beam, enough to cover object diagonal, also use + rem(NTau-Ny,2) to make NTau the same odd/even as Ny just for perfection, so that for theta=0, we have sum(WGT, 2)' and  S(1, (1:Ny)+(NTau-Ny)/2) are the same with a scale factor
 SSz = [NTheta, NTau];
 L = XTM_Tensor_XH(WSz, NTheta, NTau);

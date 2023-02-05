@@ -496,7 +496,7 @@ PetscErrorCode DMSetOptionsPrefix(DM dm, const char prefix[])
 }
 
 /*@C
-   DMAppendOptionsPrefix - Appends an additional string to an already exising prefix used for searching for
+   DMAppendOptionsPrefix - Appends an additional string to an already existing prefix used for searching for
    `DM` options in the options database.
 
    Logically Collective on dm
@@ -1560,7 +1560,7 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 
   Input Parameters:
 + dm - the `DM`
-- only - `PETSC_TRUE` if you only want matrix stucture
+- only - `PETSC_TRUE` if you only want matrix structure
 
   Level: developer
 
@@ -1590,7 +1590,7 @@ PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
   Level: developer
 
   Note:
-  A `DM` may stash the array between instantations so using this routine may be more efficient than calling `PetscMalloc()`
+  A `DM` may stash the array between instantiations so using this routine may be more efficient than calling `PetscMalloc()`
 
   The array may contain nonzero values
 
@@ -4955,7 +4955,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject disc)
   Notes:
   The label already exists or will be added to the `DM` with `DMSetLabel()`.
 
-  For example, a piecewise continous pressure field can be defined by coefficients at the cell centers of a mesh and piecewise constant functions
+  For example, a piecewise continuous pressure field can be defined by coefficients at the cell centers of a mesh and piecewise constant functions
   within each cell. Thus a specific function in the space is defined by the combination of a `Vec` containing the coefficients, a `DM` defining the
   geometry entities, a `DMLabel` indicating a subset of those geometric entities, and a discretization object, such as a `PetscFE`.
 
@@ -8915,7 +8915,7 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
 /*@
   DMSetAuxiliaryVec - Set an auxiliary vector for region specified by the given label and value, and equation part
 
-  Not collective because auxilary vectors are not parallel
+  Not collective because auxiliary vectors are not parallel
 
   Input Parameters:
 + dm     - The `DM`

@@ -17,7 +17,7 @@ typedef struct {
   PetscReal delta1;       /* used to compute trust region parameter */
   PetscReal delta2;       /* used to compute trust region parameter */
   PetscReal delta3;       /* used to compute trust region parameter */
-  PetscReal sigma;        /* used to detemine termination */
+  PetscReal sigma;        /* used to determine termination */
   PetscBool itflag;       /* flag for convergence testing */
   PetscReal rnorm0, ttol; /* used for KSP convergence test */
   PetscErrorCode (*precheck)(SNES, Vec, Vec, PetscBool *, void *);

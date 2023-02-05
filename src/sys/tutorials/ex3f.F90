@@ -93,7 +93,7 @@
       PetscCallA(PetscLogEventEnd(USER_EVENT9,ierr))
 !
 !    We disable the logging of an event.
-!      - Note that the user can activate/deactive both user-defined
+!      - Note that the user can activate/deactivate both user-defined
 !        events and predefined PETSc events.
 !
       PetscCallA(PetscLogEventDeactivate(USER_EVENT1,ierr))

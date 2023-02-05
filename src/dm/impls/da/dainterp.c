@@ -1419,7 +1419,7 @@ PetscErrorCode DMDACreateAggregates(DM dac, DM daf, Mat *rest)
      Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios
      for dimension 1 and 2 respectively.
      Let (i,j) be a coarse grid node. All the fine grid nodes between r_x*i and r_x*(i+1)
-     and r_y*j and r_y*(j+1) will be grouped into the same coarse grid agregate.
+     and r_y*j and r_y*(j+1) will be grouped into the same coarse grid aggregate.
      Each specific dof on the fine grid is mapped to one dof on the coarse grid.
   */
 

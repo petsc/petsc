@@ -622,7 +622,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
    Only support for left preconditioning.
 
-   Chebyshev is configured as a smoother by default, targetting the "upper" part of the spectrum.
+   Chebyshev is configured as a smoother by default, targeting the "upper" part of the spectrum.
 
    The user should call `KSPChebyshevSetEigenvalues()` to get eigenvalue estimates.
 

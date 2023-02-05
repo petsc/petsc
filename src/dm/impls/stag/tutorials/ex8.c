@@ -85,7 +85,7 @@ static PetscErrorCode AssembleSystem1DVertexCentered(DM dm, Mat *pA, Vec *pb)
     row.loc = DMSTAG_LEFT;
 
     if (e == 0) {
-      /* Left bondary conditions (Dirichlet) */
+      /* Left boundary conditions (Dirichlet) */
       PetscScalar val;
 
       val = 1.0;

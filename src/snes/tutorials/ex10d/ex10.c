@@ -591,7 +591,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   /*
     Now compute the f(x). As mentioned earlier, the computed Laplacian is just an
     approximate one chosen for illustrative purpose only. Another point to notice
-    is that this is a local (completly parallel) calculation. In practical application
+    is that this is a local (completely parallel) calculation. In practical application
     codes, function calculation time is a dominat portion of the overall execution time.
   */
   for (i = 0; i < Nvlocal; i++) {

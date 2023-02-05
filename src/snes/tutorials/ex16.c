@@ -12,7 +12,7 @@ static char help[] = "Large-deformation Elasticity Buckling Example";
     F is the deformation gradient, and S is the second Piola-Kirchhoff tensor from the Saint Venant-Kirchhoff model of
     hyperelasticity.  \Omega is a (arc) angle subsection of a cylindrical shell of thickness (height), inner radius
     (rad) and width (width).  The problem is discretized using Q1 finite elements on a logically structured grid.
-    Homogenous Dirichlet boundary conditions are applied at the centers of the ends of the sphere.
+    Homogeneous Dirichlet boundary conditions are applied at the centers of the ends of the sphere.
 
     This example is tunable with the following options:
     -rad : the radius of the circle
