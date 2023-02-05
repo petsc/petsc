@@ -36,23 +36,23 @@ typedef struct {
   PetscBool   debug;    /* Debug flag for PreallocateCOO() */
   PetscBool   splitksp; /* Split KSPSolve and PCSetUp */
   PetscInt    its;      /* No of matmult_iterations */
+  PetscInt    Istart,Iend;
 } AppCtx;
 
 static PetscErrorCode PreallocateCOO(Mat A, void *ctx)
 {
   AppCtx  *user = (AppCtx *)ctx;
-  PetscInt Istart, Iend, n = user->n, n2 = n * n, n1 = n - 1;
+  PetscInt n = user->n, n2 = n * n, n1 = n - 1;
   PetscInt xstart, ystart, zstart, xend, yend, zend, nm2 = n - 2, idx;
   PetscInt nnz[] = {8, 12, 18, 27}; /* nnz for corner, edge, face, and center. */
 
   PetscFunctionBeginUser;
-  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
-  xstart = Istart % n;
-  ystart = (Istart / n) % n;
-  zstart = Istart / n2;
-  xend   = (Iend - 1) % n;
-  yend   = ((Iend - 1) / n) % n;
-  zend   = (Iend - 1) / n2;
+  xstart = user->Istart % n;
+  ystart = (user->Istart / n) % n;
+  zstart = user->Istart / n2;
+  xend   = (user->Iend - 1) % n;
+  yend   = ((user->Iend - 1) / n) % n;
+  zend   = (user->Iend - 1) / n2;
 
   /* bottom xy-plane */
   user->nnz = 0;
@@ -106,16 +106,14 @@ static PetscErrorCode PreallocateCOO(Mat A, void *ctx)
     user->nnz += 3 * nnz[idx] + (3 * nm2 + xend) * nnz[idx + 1] + (nm2 * nm2) * nnz[idx + 2];
   else if (xend == n1 && yend == n1) // top right
     user->nnz += 4 * nnz[idx] + (4 * nm2) * nnz[idx + 1] + (nm2 * nm2) * nnz[idx + 2];
-  if (user->debug)
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d: xyzstart = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", xvzend = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n", user->rank, xstart, ystart, zstart, xend, yend, zend,
-                          user->nnz));
+  if (user->debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d: xyzstart = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", xvzend = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n", user->rank, xstart, ystart, zstart, xend, yend, zend,user->nnz));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FillCOO(Mat A, void *ctx)
 {
   AppCtx      *user = (AppCtx *)ctx;
-  PetscInt     Ii, Istart, Iend, x, y, z, n = user->n, n2 = n * n, n1 = n - 1;
+  PetscInt     Ii, x, y, z, n = user->n, n2 = n * n, n1 = n - 1;
   PetscInt     count = 0;
   PetscInt    *coo_i, *coo_j;
   PetscScalar *coo_v;
@@ -127,9 +125,8 @@ PetscErrorCode FillCOO(Mat A, void *ctx)
 
   PetscFunctionBeginUser;
   PetscCall(PetscCalloc3(user->nnz, &coo_i, user->nnz, &coo_j, user->nnz, &coo_v));
-  PetscCall(MatGetOwnershipRange(A, &Istart, &Iend));
   /* Fill COO arrays */
-  for (Ii = Istart; Ii < Iend; Ii++) {
+  for (Ii = user->Istart; Ii < user->Iend; Ii++) {
     x = Ii % n;
     y = (Ii / n) % n;
     z = Ii / n2;
@@ -312,7 +309,7 @@ int main(int argc, char **argv)
   KSP                        ksp;            /* linear solver context */
   PC                         pc;             /* Preconditioner */
   PetscReal                  norm;           /* Error norm */
-  PetscInt                   ksp_its;        /* Number of KSP iterations */
+  PetscInt                   nlocal = PETSC_DECIDE, ksp_its;        /* Number of KSP iterations */
   PetscInt                   global_nnz = 0; /* Total number of nonzeros */
   PetscLogDouble             time_start, time_mid1 = 0.0, time_mid2 = 0.0, time_end, time_avg, floprate;
   PetscBool                  printTiming = PETSC_TRUE; /* If run in CI, do not print timing result */
@@ -362,7 +359,13 @@ int main(int argc, char **argv)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, user.dim, user.dim));
   PetscCall(MatSetFromOptions(A));
-  PetscCall(MatSetUp(A));
+
+  /* cannot use MatGetOwnershipRange() because the matrix has yet to be preallocated; that happens in MatSetPreallocateCOO() */
+  PetscCall(PetscSplitOwnership(PetscObjectComm((PetscObject)A), &nlocal, &user.dim));
+  PetscCallMPI(MPI_Scan(&nlocal,&user.Istart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A)));
+  user.Istart -= nlocal;
+  user.Iend = user.Istart + nlocal;
+
   PetscCall(PreallocateCOO(A, &user)); /* Determine local number of nonzeros */
   PetscCall(FillCOO(A, &user));        /* Fill COO Matrix */
   PetscCall(MatMult(A, u, b));         /* Compute RHS based on exact solution */
@@ -384,8 +387,10 @@ int main(int argc, char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     time_avg = (time_end - time_start) / ((PetscLogDouble)user.its);
     floprate = 2 * global_nnz / time_avg * 1e-9;
-    if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n%-15s%-7.5f seconds\n", "Average time:", time_avg));
-    if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-9.3e Gflops/sec\n", "FOM:", floprate));
+    if (printTiming) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n%-15s%-7.5f seconds\n", "Average time:", time_avg));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-9.3e Gflops/sec\n", "FOM:", floprate));
+    }
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "===========================================\n"));
   } else {
     if (!user.splitksp) {
@@ -442,16 +447,18 @@ int main(int argc, char **argv)
     /*  Summary                                                            */
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     PetscCall(KSPGetIterationNumber(ksp, &ksp_its));
-    if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n%-15s%-1.3e\n", "Error norm:", (double)norm));
-    if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-3" PetscInt_FMT "\n", "KSP iters:", ksp_its));
-    if (user.splitksp) {
-      if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "PCSetUp:", time_mid1 - time_start));
-      if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "KSPSolve:", time_end - time_mid2));
-      if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "Total Solve:", time_end - time_start));
-    } else {
-      if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "KSPSolve:", time_end - time_start));
+    if (printTiming) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n%-15s%-1.3e\n", "Error norm:", (double)norm));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-3" PetscInt_FMT "\n", "KSP iters:", ksp_its));
+      if (user.splitksp) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "PCSetUp:", time_mid1 - time_start));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "KSPSolve:", time_end - time_mid2));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "Total Solve:", time_end - time_start));
+      } else {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "KSPSolve:", time_end - time_start));
+      }
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-1.3e DoFs/sec\n", "FOM:", user.dim / (time_end - time_start)));
     }
-    if (printTiming) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-1.3e DoFs/sec\n", "FOM:", user.dim / (time_end - time_start)));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "===========================================\n"));
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
