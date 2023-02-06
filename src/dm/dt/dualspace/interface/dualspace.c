@@ -263,7 +263,15 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 + -petscdualspace_order <order>      - the approximation order of the space
 . -petscdualspace_form_degree <deg>  - the form degree, say 0 for point evaluations, or 2 for area integrals
 . -petscdualspace_components <c>     - the number of components, say d for a vector field
-- -petscdualspace_refcell <celltype> - Reference cell type name
+. -petscdualspace_refcell <celltype> - Reference cell type name
+. -petscdualspace_lagrange_continuity           - Flag for continuous element
+. -petscdualspace_lagrange_tensor               - Flag for tensor dual space
+. -petscdualspace_lagrange_trimmed              - Flag for trimmed dual space
+. -petscdualspace_lagrange_node_type <nodetype> - Lagrange node location type
+. -petscdualspace_lagrange_node_endpoints       - Flag for nodes that include endpoints
+. -petscdualspace_lagrange_node_exponent        - Gauss-Jacobi weight function exponent
+. -petscdualspace_lagrange_use_moments          - Use moments (where appropriate) for functionals
+- -petscdualspace_lagrange_moment_order <order> - Quadrature order for moment functionals
 
   Level: intermediate
 
