@@ -43,5 +43,6 @@ PetscErrorCode PetscAbortErrorHandler(MPI_Comm comm, int line, const char *fun, 
   PetscFunctionBegin;
   n = (*PetscErrorPrintf)("PetscAbortErrorHandler: %s() at %s:%d %s\n  To prevent termination, change the error handler using PetscPushErrorHandler()\n", fun, file, line, mess);
   abort();
+  (void)n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
