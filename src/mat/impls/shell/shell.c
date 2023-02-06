@@ -1720,8 +1720,8 @@ $
 
           A is the user provided function.
 
-   `KSP`/`PC` uses changes in the` Mat`'s "state" to decide if preconditioners need to be rebuilt: `PCSetUp()` only calls the setup() for
-   for the PC implementation if the Mat state has increased from the previous call. Thus to get changes in a `MATSHELL` to trigger
+   `KSP`/`PC` uses changes in the `Mat`'s "state" to decide if preconditioners need to be rebuilt: `PCSetUp()` only calls the setup() for
+   for the `PC` implementation if the `Mat` state has increased from the previous call. Thus to get changes in a `MATSHELL` to trigger
    an update in the preconditioner you must call `MatAssemblyBegin()` and `MatAssemblyEnd()` or `PetscObjectStateIncrease`((`PetscObject`)mat);
    each time the `MATSHELL` matrix has changed.
 
