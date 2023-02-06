@@ -338,20 +338,21 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
      PCREDISTRIBUTE - Redistributes a matrix for load balancing, removing the rows (and the corresponding columns) that only have a diagonal entry and then
      applies a `KSP` to that new smaller matrix
 
+     Level: intermediate
+
      Notes:
      Options for the redistribute `KSP` and `PC` with the options database prefix -redistribute_
 
-     Usually run this with -ksp_type preonly
+     Usually run this with `-ksp_type preonly`
 
-     If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly
-     -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc to take advantage of the symmetry.
+     If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, `-ksp_type preonly
+     -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc` to take advantage of the symmetry.
 
-     This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same.
+     This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same. Rows are moved
+     between MPI processes inside the preconditioner to balance the number of rows on each process.
 
      Developer Note:
      Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.
-
-   Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`
 M*/
