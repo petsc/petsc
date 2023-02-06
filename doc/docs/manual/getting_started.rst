@@ -281,7 +281,7 @@ or
 
 
 These macros check the returned error code and if it is nonzero they call the PETSc error
-handler and then return from the function with the error code. ``` PetscCallA()``` calls abort
+handler and then return from the function with the error code. ``PetscCallA()`` calls abort
 after calling the error handler because it is not possible to return from a Fortran main
 program. The above macros should be used in all subroutines to enable
 a complete error traceback. See :any:`sec_error2` for more details on PETSc error handling.
