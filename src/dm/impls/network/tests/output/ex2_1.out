@@ -10,14 +10,12 @@ DM Object: 2 MPI processes
        edge 2: 3 ----> 0
        edge 3: 4 ----> 0
 
- Rank 0
-
+CoordinatePrint, cdim 2:
+[0]
 Vertex: 0, x =  0.000000 y = 0.000000 
 Vertex: 1, x =  1.000000 y = 0.000000 
 Vertex: 2, x =  0.000000 y = 1.000000 
-
- Rank 1
-
+[1]
 Vertex: 0, x =  0.000000 y = 0.000000 
 Vertex: 3, x =  -1.000000 y = 0.000000 
 Vertex: 4, x =  -0.000000 y = -1.000000 
