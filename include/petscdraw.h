@@ -201,6 +201,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw, PetscReal, Pets
 PETSC_EXTERN PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawGetBoundingBox(PetscDraw, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 
+PETSC_EXTERN PetscErrorCode PetscDrawSetVisible(PetscDraw, PetscBool);
+
 /*E
     PetscDrawButton - Used to determine which button was pressed
 

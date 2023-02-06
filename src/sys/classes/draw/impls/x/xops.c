@@ -520,6 +520,28 @@ finally:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscDrawSetVisible_X(PetscDraw draw, PetscBool visible)
+{
+  PetscDraw_X *Xwin = (PetscDraw_X *)draw->data;
+  PetscMPIInt  rank;
+
+  PetscFunctionBegin;
+  PetscDrawCollectiveBegin(draw);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
+  if (rank == 0) {
+    if (Xwin->win) {
+      if (visible) {
+        XMapWindow(Xwin->disp, Xwin->win);
+      } else {
+        XUnmapWindow(Xwin->disp, Xwin->win);
+        XFlush(Xwin->disp);
+      }
+    }
+  }
+  PetscDrawCollectiveEnd(draw);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
 {
   PetscDraw_X *win = (PetscDraw_X *)draw->data;
@@ -550,7 +572,7 @@ static PetscErrorCode       PetscDrawGetSingleton_X(PetscDraw, PetscDraw *);
 static PetscErrorCode       PetscDrawRestoreSingleton_X(PetscDraw, PetscDraw *);
 PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw, unsigned char[][3], unsigned int *, unsigned int *, unsigned char *[]);
 
-static struct _PetscDrawOps DvOps = {PetscDrawSetDoubleBuffer_X, PetscDrawFlush_X, PetscDrawLine_X, NULL, NULL, PetscDrawPoint_X, NULL, PetscDrawString_X, PetscDrawStringVertical_X, PetscDrawStringSetSize_X, PetscDrawStringGetSize_X, PetscDrawSetViewport_X, PetscDrawClear_X, PetscDrawRectangle_X, PetscDrawTriangle_X, PetscDrawEllipse_X, PetscDrawGetMouseButton_X, PetscDrawPause_X, NULL, NULL, PetscDrawGetPopup_X, PetscDrawSetTitle_X, PetscDrawCheckResizedWindow_X, PetscDrawResizeWindow_X, PetscDrawDestroy_X, NULL, PetscDrawGetSingleton_X, PetscDrawRestoreSingleton_X, NULL, PetscDrawGetImage_X, NULL, PetscDrawArrow_X, PetscDrawCoordinateToPixel_X, PetscDrawPixelToCoordinate_X, PetscDrawPointPixel_X, NULL};
+static struct _PetscDrawOps DvOps = {PetscDrawSetDoubleBuffer_X, PetscDrawFlush_X, PetscDrawLine_X, NULL, NULL, PetscDrawPoint_X, NULL, PetscDrawString_X, PetscDrawStringVertical_X, PetscDrawStringSetSize_X, PetscDrawStringGetSize_X, PetscDrawSetViewport_X, PetscDrawClear_X, PetscDrawRectangle_X, PetscDrawTriangle_X, PetscDrawEllipse_X, PetscDrawGetMouseButton_X, PetscDrawPause_X, NULL, NULL, PetscDrawGetPopup_X, PetscDrawSetTitle_X, PetscDrawCheckResizedWindow_X, PetscDrawResizeWindow_X, PetscDrawDestroy_X, NULL, PetscDrawGetSingleton_X, PetscDrawRestoreSingleton_X, NULL, PetscDrawGetImage_X, NULL, PetscDrawArrow_X, PetscDrawCoordinateToPixel_X, PetscDrawPixelToCoordinate_X, PetscDrawPointPixel_X, NULL, PetscDrawSetVisible_X};
 
 static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw, PetscDraw *sdraw)
 {

@@ -140,7 +140,8 @@ static struct _PetscDrawOps DvOps = {NULL, /* PetscDrawSetDoubleBuffer_Null */
                                      PetscDrawCoordinateToPixel_Null,
                                      PetscDrawPixelToCoordinate_Null,
                                      PetscDrawPointPixel_Null,
-                                     PetscDrawStringBoxed_Null};
+                                     PetscDrawStringBoxed_Null,
+                                     NULL /* PetscDrawSetVisible_Null */};
 
 /*MC
      PETSC_DRAW_NULL - PETSc graphics device that ignores all draw commands

@@ -443,3 +443,20 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
   } else PetscUseTypeMethod(draw, restoresingleton, sdraw);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@C
+   PetscDrawSetVisible - Sets if the drawing surface (the 'window') is visible on its display.
+
+   Input Parameters:
++  draw - the drawing window
+-  visible - if the surface should be visible
+
+.seealso: `PetscDraw`
+@*/
+PetscErrorCode PetscDrawSetVisible(PetscDraw draw, PetscBool visible)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
+  PetscTryTypeMethod(draw, setvisible, visible);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
