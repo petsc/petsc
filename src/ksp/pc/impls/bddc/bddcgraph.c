@@ -205,7 +205,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscCalloc1(graph->ncc, &mark));
-  /* loop on ccs to evalute number of faces, edges and vertices */
+  /* loop on ccs to evaluate number of faces, edges and vertices */
   nfc = 0;
   nec = 0;
   nvc = 0;

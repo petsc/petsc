@@ -360,7 +360,7 @@ PetscErrorCode PetscDeviceSetDefaultDeviceType(PetscDeviceType type)
 static std::array<std::pair<PetscDevice, bool>, PETSC_DEVICE_MAX> defaultDevices = {};
 
 /*
-  Actual intialization function; any functions claiming to initialize PetscDevice or
+  Actual initialization function; any functions claiming to initialize PetscDevice or
   PetscDeviceContext will have to run through this one
 */
 static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type, PetscInt defaultDeviceId)
@@ -454,7 +454,7 @@ PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, Petsc
   Notes:
   Since different attributes are often different types `value` is a `void *` to accommodate
   them all. The underlying type of the attribute is therefore included in the name of the
-  `PetscDeviceAttribute` reponsible for querying it. For example,
+  `PetscDeviceAttribute` responsible for querying it. For example,
   `PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK` is of type `size_t`.
 
   Level: intermediate
@@ -521,7 +521,7 @@ static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, P
 
   if (initIdx == PETSC_DEVICE_INIT_NONE) {
     /* disabled all device initialization if devices are globally disabled */
-    PetscCheck(*defaultDevice == PETSC_DECIDE, comm, PETSC_ERR_USER_INPUT, "You have disabled devices but also specified a particular device to use, these options are mutually exlusive");
+    PetscCheck(*defaultDevice == PETSC_DECIDE, comm, PETSC_ERR_USER_INPUT, "You have disabled devices but also specified a particular device to use, these options are mutually exclusive");
     *defaultView  = PETSC_FALSE;
     initDeviceIdx = PETSC_DEVICE_HOST;
   } else {

@@ -107,7 +107,7 @@ int main(int argc, char **argv)
   PetscCall(CreateSimpleStarGraph(PETSC_COMM_WORLD, dofv, dofe, ne, PETSC_TRUE, &dm));
   PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));
 
-  /* check if cloning changed any componenent */
+  /* check if cloning changed any component */
   if (eStart < eEnd) PetscCall(DMNetworkGetComponent(dm, eStart, 0, NULL, (void **)&compprev, &ndofsprev));
   PetscCall(DMClone(dm, &dmclone));
   if (eStart < eEnd) {

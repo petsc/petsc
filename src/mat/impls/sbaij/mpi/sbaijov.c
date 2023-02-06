@@ -461,7 +461,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, P
   PetscInt      row, mbs, Mbs, *nidx_i, col, col_max, isz, isz0, *ai, *aj, *bi, *bj, *garray, rstart, l;
   PetscInt      a_start, a_end, b_start, b_end, i, j, k, is_max, *idx_i, n;
   PetscBT       table0;  /* mark the indices of input is[] for look up */
-  PetscBT       table_i; /* poits to i-th table. When whose=OTHER, a single table is used for all is[] */
+  PetscBT       table_i; /* points to i-th table. When whose=OTHER, a single table is used for all is[] */
 
   PetscFunctionBegin;
   Mbs    = c->Mbs;
@@ -530,7 +530,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, P
         k++;
         if (k >= isz0) break;               /* for (row=0; row<mbs; row++) */
       } else {                              /* row is not on input is[i]:
-                  do col serach: add row onto nidx_i if there is a col in nidx_i */
+                  do col search: add row onto nidx_i if there is a col in nidx_i */
         for (l = a_start; l < a_end; l++) { /* Amat */
           col = aj[l] + rstart;
           if (col > col_max) break;

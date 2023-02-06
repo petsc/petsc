@@ -143,7 +143,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
   PetscCall(PetscObjectTypeCompare((PetscObject)sf, PETSCSFNEIGHBOR, &isneighbor));
   PetscCheck(isbasic || isneighbor, PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "VecScatterRemap on SF type %s is not supported", type);
 
-  PetscCall(PetscSFSetUp(sf)); /* to bulid sf->irootloc if SetUp is not yet called */
+  PetscCall(PetscSFSetUp(sf)); /* to build sf->irootloc if SetUp is not yet called */
 
   /* Root indices are going to be remapped. This is tricky for SF. Root indices are used in sf->rremote,
     sf->remote and bas->irootloc. The latter one is cheap to remap, but the former two are not.
@@ -160,7 +160,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
   /* Not easy to free sf->rremote since it was allocated with PetscMalloc4(), so just give it crazy values */
   for (i = 0; i < sf->roffset[sf->nranks]; i++) sf->rremote[i] = PETSC_MIN_INT;
 
-  /* Indices in tomap[] are for each indivisual vector entry. But indices in sf are for each
+  /* Indices in tomap[] are for each individual vector entry. But indices in sf are for each
      block in the vector. So before the remapping, we have to expand indices in sf by bs, and
      after the remapping, we have to shrink them back.
    */
@@ -766,7 +766,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
         /* Other ranks also scatter the whole mpi x to seq y, so it is a ToAll candidate in their view */
         pattern[0] = 1;
       } else if (ixsize == 0) {
-        /* Other ranks do nothing, so it is a ToZero candiate */
+        /* Other ranks do nothing, so it is a ToZero candidate */
         pattern[1] = 1;
       }
     }
@@ -876,7 +876,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
        to owner process of yindices[i] according to ylayout, i = 0..n.
 
        I did it through a temp sf, but later I thought the old design was inefficient and also distorted log view.
-       We want to mape one VecScatterCreate() call to one PetscSFCreate() call. The old design mapped to three
+       We want to map one VecScatterCreate() call to one PetscSFCreate() call. The old design mapped to three
        PetscSFCreate() calls. This code is on critical path of VecScatterSetUp and is used by every VecScatterCreate.
        So I commented it out and did another optimized implementation. The commented code is left here for reference.
      */

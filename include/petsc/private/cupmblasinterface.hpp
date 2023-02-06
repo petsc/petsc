@@ -158,7 +158,7 @@ namespace impl
   // MACRO_SUFFIX - suffix to one of the above blas function builder macros, e.g. STANDARD or
   // IFPTYPE
   // our_suffix   - the suffix of the alias function
-  // their_suffix - the suffix of the funciton being aliased
+  // their_suffix - the suffix of the function being aliased
   //
   // notes:
   // requires PETSC_CUPMBLAS_PREFIX to be defined as the specific CUDA/HIP blas function

@@ -52,7 +52,7 @@ static PetscErrorCode PhysicsRiemann_Advect(void *vctx, PetscInt m, const PetscS
   speed = ctx->a;
   if (x == 0 || x == xmin || x == xmax)
     flux[0] = PetscMax(0, (speed[0] + speed[1]) / 2.0) * uL[0] + PetscMin(0, (speed[0] + speed[1]) / 2.0) * uR[0]; /* if condition need to be changed base on different problem, '0' is the discontinuous point of a */
-  else if (x < 0) flux[0] = PetscMax(0, speed[0]) * uL[0] + PetscMin(0, speed[0]) * uR[0];                         /* else if condition need to be changed based on diferent problem, 'x = 0' is discontinuous point of a */
+  else if (x < 0) flux[0] = PetscMax(0, speed[0]) * uL[0] + PetscMin(0, speed[0]) * uR[0];                         /* else if condition need to be changed based on different problem, 'x = 0' is discontinuous point of a */
   else flux[0] = PetscMax(0, speed[1]) * uL[0] + PetscMin(0, speed[1]) * uR[0];
   *maxspeed = *speed;
   PetscFunctionReturn(PETSC_SUCCESS);

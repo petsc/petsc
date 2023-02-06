@@ -117,7 +117,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* The intiial conditions are just the initial particle weights */
+/* The initial conditions are just the initial particle weights */
 static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
 {
   DM           dm;

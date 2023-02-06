@@ -187,7 +187,7 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf, MPI_Datatype unit, Pet
   PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, PETSCSF_BCAST, &link));
   /* Pack rootdata to rootbuf for remote communication */
   PetscCall(PetscSFLinkPackRootData(sf, link, PETSCSF_REMOTE, rootdata));
-  /* Start communcation, e.g., post MPI_Isend */
+  /* Start communication, e.g., post MPI_Isend */
   PetscCall(PetscSFLinkStartCommunication(sf, link, PETSCSF_ROOT2LEAF));
   /* Do local scatter (i.e., self to self communication), which overlaps with the remote communication above */
   PetscCall(PetscSFLinkScatterLocal(sf, link, PETSCSF_ROOT2LEAF, (void *)rootdata, leafdata, op));
@@ -287,7 +287,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF sf, PetscInt *nira
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* An optimized PetscSFCreateEmbeddedRootSF. We aggresively make use of the established communication on sf.
+/* An optimized PetscSFCreateEmbeddedRootSF. We aggressively make use of the established communication on sf.
    We need one bcast on sf, and no communication anymore to build the embedded sf. Note that selected[]
    was sorted before calling the routine.
  */

@@ -200,7 +200,7 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&ytmp));
 
   if (qr) {
-    /* setup rectanglar */
+    /* setup rectangular */
     PetscCall(createMatsAndVecs(m, n, nrhs, full, &mat, &RHS, &SOLU, &x, &y, &b));
     PetscCall(VecDuplicate(y, &ytmp));
 

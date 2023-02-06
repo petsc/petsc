@@ -5,7 +5,7 @@
        use petscvec
        implicit none
 !
-!  This routine demonstates how a computational module may be written
+!  This routine demonstrates how a computational module may be written
 !  in Fortran and called from a C routine, passing down PETSc objects.
 !
 

@@ -402,7 +402,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   KSP          ksp;
   PetscScalar *xarr;
   PetscReal    adjoint_time_step;
-  PetscReal    adjoint_ptime; /* end time of the adjoint time step (ts->ptime is the start time, ususally ts->ptime is larger than adjoint_ptime) */
+  PetscReal    adjoint_ptime; /* end time of the adjoint time step (ts->ptime is the start time, usually ts->ptime is larger than adjoint_ptime) */
 
   PetscFunctionBegin;
   if (th->Theta == 1.) {

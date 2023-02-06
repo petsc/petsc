@@ -290,7 +290,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 }
 
 /*@C
-     PetscDLLibraryAppend - Appends another dynamic link library to the seach list, to the end
+     PetscDLLibraryAppend - Appends another dynamic link library to the search list, to the end
                 of the search path.
 
      Collective

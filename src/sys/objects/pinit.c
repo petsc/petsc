@@ -739,7 +739,7 @@ PetscBool PetscCIEnabled = PETSC_FALSE, PetscCIEnabledPortableErrorOutput = PETS
   prog:     program name
   file:     optional PETSc database file name. Might be in Fortran string format when 'ftn' is true
   help:     program help message
-  ftn:      is it called from Fortran initilization (petscinitializef_)?
+  ftn:      is it called from Fortran initialization (petscinitializef_)?
   readarguments,len: used when fortran is true
 */
 PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char *file, const char *help, PetscBool ftn, PetscBool readarguments, PetscInt len)

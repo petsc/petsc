@@ -220,7 +220,7 @@ PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
   }
 
 /* Only add/insert a(i,j) with i<=j (blocks).
-   Any a(i,j) with i>j input by user is ingored or generates an error
+   Any a(i,j) with i>j input by user is ignored or generates an error
 */
 PetscErrorCode MatSetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
 {

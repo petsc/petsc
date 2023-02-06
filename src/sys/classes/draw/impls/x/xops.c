@@ -671,7 +671,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   /* initialize the display size */
   if (!xmax) {
     PetscCall(PetscDrawXGetDisplaySize_Private(draw->display, &xmax, &ymax, &has_display));
-    /* if some processors fail on this and others succed then this is a problem ! */
+    /* if some processors fail on this and others succeed then this is a problem ! */
     if (!has_display) {
       PetscCall((*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n"));
       PetscCall(PetscDrawSetType(draw, PETSC_DRAW_NULL));

@@ -6,7 +6,7 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
    time-dependent partial differential equations.
    In this problem, the initial value for the PDE is unknown, but the output (the final solution of the PDE) is known.
    We want to determine the initial value that can produce the given output.
-   We formulate the problem as a nonlinear optimization problem that minimizes the discrepency between the simulated
+   We formulate the problem as a nonlinear optimization problem that minimizes the discrepancy between the simulated
    result and given reference solution, calculate the gradient of the objective function with the discrete adjoint
    solver, and solve the optimization problem with TAO.
 

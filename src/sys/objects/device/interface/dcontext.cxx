@@ -114,7 +114,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
   `dctx`'s stream the user is responsible for calling `PetscDeviceContextSynchronize()` before
   calling this routine.
 
-  DAG represetation:
+  DAG representation:
 .vb
   time ->
 
@@ -271,7 +271,7 @@ PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceCon
 
   Notes:
   This routine is effectively `PetscDeviceContext`'s "set-type" (so every `PetscDeviceContext` must
-  also have an attached `PetscDevice`). Unlike the usual set-type semantics, it is not stricly
+  also have an attached `PetscDevice`). Unlike the usual set-type semantics, it is not strictly
   necessary to set a contexts device to enable usage, any created `PetscDeviceContext`s will
   always come equipped with the "default" device.
 

@@ -1023,7 +1023,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject)
   }
   /* energy minimization sometimes breaks if this is turned off, the more classical stuff should be okay without it */
   if (pc_ml->EnergyMinimization) pc_ml->KeepAggInfo = PETSC_TRUE;
-  PetscCall(PetscOptionsBool("-pc_ml_KeepAggInfo", "Allows the preconditioner to be reused, or auxilliary matrices to be generated", "None", pc_ml->KeepAggInfo, &pc_ml->KeepAggInfo, NULL));
+  PetscCall(PetscOptionsBool("-pc_ml_KeepAggInfo", "Allows the preconditioner to be reused, or auxiliary matrices to be generated", "None", pc_ml->KeepAggInfo, &pc_ml->KeepAggInfo, NULL));
   /* Option (-1) doesn't work at all (calls exit(1)) if the tentative restriction operator isn't stored. */
   if (pc_ml->EnergyMinimization == -1) pc_ml->Reusable = PETSC_TRUE;
   PetscCall(PetscOptionsBool("-pc_ml_Reusable", "Store intermedaiate data structures so that the multilevel hierarchy is reusable", "None", pc_ml->Reusable, &pc_ml->Reusable, NULL));

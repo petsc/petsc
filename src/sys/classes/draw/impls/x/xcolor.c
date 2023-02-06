@@ -210,7 +210,7 @@ PetscErrorCode PetscDrawXiColormap(PetscDraw_X *XiWin)
     created.
 
     The next layer is the colormap.  The installation of colormaps is
-    the buisness of the window manager (in some distant later release).
+    the business of the window manager (in some distant later release).
 */
 
 /*

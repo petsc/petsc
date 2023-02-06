@@ -174,7 +174,7 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
 
    Input Parameters:
 +  obj1 - any PETSc object, for example a Vec, Mat or KSP.
--  obj2 - anther PETSc object
+-  obj2 - another PETSc object
 
    Output Parameter:
 .  same - PETSC_TRUE if they are the same, else PETSC_FALSE

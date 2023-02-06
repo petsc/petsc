@@ -384,7 +384,7 @@ PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg)
 +   snes - the iterative context
 -   rtype - restart type
 
-    Options Databas Keys:
+    Options Database Keys:
 +   -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
 -   -snes_ngmres_restart[30] - sets the number of iterations before restart for periodic
 

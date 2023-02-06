@@ -3412,7 +3412,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A, IS isrow, IS iscol, const MatFactorI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* a wraper of MatILUDTFactor_SeqAIJ() */
+/* a wrapper of MatILUDTFactor_SeqAIJ() */
 /*
     This will get a new name and become a variant of MatILUFactor_SeqAIJ() there is no longer separate functions in the matrix function table for dt factors
 */

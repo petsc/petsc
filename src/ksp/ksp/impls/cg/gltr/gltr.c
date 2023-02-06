@@ -667,7 +667,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   }
 
   /***************************************************************************/
-  /* Switch to contructing the Lanczos basis by way of the conjugate         */
+  /* Switch to constructing the Lanczos basis by way of the conjugate        */
   /* directions.                                                             */
   /***************************************************************************/
 

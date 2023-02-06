@@ -494,7 +494,7 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 }
 
 /*@C
-  PetscProbCreateFromOptions - Return the probability distribution specified by the argumetns and options
+  PetscProbCreateFromOptions - Return the probability distribution specified by the arguments and options
 
   Not collective
 

@@ -377,7 +377,7 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
    Notes:
    Returns the value `PETSC_MAX_REAL` and negative p if the vector is of length 0.
 
-   This returns the smallest index with the minumum value
+   This returns the smallest index with the minimum value
 
 .seealso: [](chapter_vectors), `Vec`, `VecMax()`
 @*/
@@ -781,7 +781,7 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
     `w` cannot be either `x` or `y`, but `x` and `y` can be the same
 
    Developer Note:
-    The implementation is optimzed for alpha of -1.0, 0.0, and 1.0
+    The implementation is optimized for alpha of -1.0, 0.0, and 1.0
 
 .seealso: [](chapter_vectors), `Vec`, `VecAXPY()`, `VecAYPX()`, `VecAXPBY()`, `VecMAXPY()`, `VecAXPBYPCZ()`
 @*/
@@ -2199,7 +2199,7 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer. The returned pointer is guarenteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
+   VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer. The returned pointer is guaranteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
 
    Not Collective; No Fortran Support
 
@@ -3866,7 +3866,7 @@ PetscErrorCode VecLockReadPop(Vec x)
    Level: beginner
 
    Notes:
-    The function is usefull in split-phase computations, which usually have a begin phase and an end phase.
+    The function is useful in split-phase computations, which usually have a begin phase and an end phase.
     One can call `VecLockWriteSet`(x,`PETSC_TRUE`) in the begin phase to lock a vector for exclusive
     access, and call `VecLockWriteSet`(x,`PETSC_FALSE`) in the end phase to unlock the vector from exclusive
     access. In this way, one is ensured no other operations can access the vector in between. The code may like

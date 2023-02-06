@@ -3014,7 +3014,7 @@ $                   Run with the option -info to determine an optimal value to u
    This changes the state of the matrix to a factored matrix; it cannot be used
    for example with `MatSetValues()` unless one first calls `MatSetUnfactored()`.
 
-   This is really in-place only for dense matrices, the prefered approach is to use `MatGetFactor()`, `MatLUFactorSymbolic()`, and `MatLUFactorNumeric()`
+   This is really in-place only for dense matrices, the preferred approach is to use `MatGetFactor()`, `MatLUFactorSymbolic()`, and `MatLUFactorNumeric()`
    when not using `KSP`.
 
    Level: developer
@@ -3074,7 +3074,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    See, e.g., `KSPCreate()`.
 
    Probably really in-place only when level of fill is zero, otherwise allocates
-   new space to store factored matrix and deletes previous memory. The prefered approach is to use `MatGetFactor()`, `MatILUFactorSymbolic()`, and `MatILUFactorNumeric()`
+   new space to store factored matrix and deletes previous memory. The preferred approach is to use `MatGetFactor()`, `MatILUFactorSymbolic()`, and `MatILUFactorNumeric()`
    when not using `KSP`.
 
    Developer Note:
@@ -5817,7 +5817,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
 
    `MAT_NEW_NONZERO_LOCATIONS` set to `PETSC_FALSE` indicates that any add or insertion
    that would generate a new entry in the nonzero structure is instead
-   ignored.  Thus, if memory has not alredy been allocated for this particular
+   ignored.  Thus, if memory has not already been allocated for this particular
    data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored.
    Set after the first `MatAssemblyEnd()`. If this option is set then the MatAssemblyBegin/End() processes has one less global reduction
@@ -9585,7 +9585,7 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F, Mat *S, MatFactorSchurStatu
 
    Schur complement mode is currently implemented for sequential matrices with factor type of `MATSOLVERMUMPS`
 
-   The routine returns a the Schur Complement stored within the data strutures of the solver.
+   The routine returns a the Schur Complement stored within the data structures of the solver.
 
    If `MatFactorInvertSchurComplement()` has previously been called, the returned matrix is actually the inverse of the Schur complement.
 
@@ -10268,7 +10268,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
   Notes:
   The submatrix partition across processors is dictated by 'subComm' a
   communicator obtained by MPI_comm_split() or via `PetscSubcommCreate()`. The subComm
-  is not restriced to be grouped with consecutive original ranks.
+  is not restricted to be grouped with consecutive original ranks.
 
   Due the MPI_Comm_split() usage, the parallel layout of the submatrices
   map directly to the layout of the original matrix [wrt the local

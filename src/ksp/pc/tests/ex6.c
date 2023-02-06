@@ -81,7 +81,7 @@ int main(int argc, char **args)
     PetscCall(PCASMCreateSubdomains2D(m + 1, m + 1, x1, x2, 1, ol, &Nsub2, &is2, &islocal2));
 
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "flg == 1 => both index sets are same\n"));
-    if (Nsub1 != Nsub2) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: No of indes sets don't match\n"));
+    if (Nsub1 != Nsub2) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: No of index sets don't match\n"));
 
     for (i = 0; i < Nsub1; ++i) {
       PetscCall(ISEqual(is1[i], is2[i], &flg));

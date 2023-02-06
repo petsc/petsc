@@ -14,7 +14,7 @@ typedef struct {
   PetscBool spectral;    /* Look at the spectrum along planes in the solution */
   PetscBool shear;       /* Shear the domain */
   PetscBool adjoint;     /* Solve the adjoint problem */
-  PetscBool homogeneous; /* Use homogeneous boudnary conditions */
+  PetscBool homogeneous; /* Use homogeneous boundary conditions */
   PetscBool viewError;   /* Output the solution error */
 } AppCtx;
 

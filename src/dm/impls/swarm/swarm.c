@@ -768,7 +768,7 @@ PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
   PetscFunctionBegin;
   if (!swarm->field_registration_initialized) {
     swarm->field_registration_initialized = PETSC_TRUE;
-    PetscCall(DMSwarmRegisterPetscDatatypeField(dm, DMSwarmField_pid, 1, PETSC_INT64)); /* unique identifer */
+    PetscCall(DMSwarmRegisterPetscDatatypeField(dm, DMSwarmField_pid, 1, PETSC_INT64)); /* unique identifier */
     PetscCall(DMSwarmRegisterPetscDatatypeField(dm, DMSwarmField_rank, 1, PETSC_INT));  /* used for communication */
   }
   PetscFunctionReturn(PETSC_SUCCESS);

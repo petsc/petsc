@@ -54,7 +54,7 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 
        q(s) = g^T * s + 0.5 * s^T * H * s
 
-    which satisfies the Euclidian Norm trust region constraint
+    which satisfies the Euclidean Norm trust region constraint
 
        || D * s || <= delta,
 

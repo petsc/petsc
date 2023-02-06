@@ -731,7 +731,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     PetscCall(PetscLogStagePop());
   }
-  PetscCheck(user->ncoords % user->dim == 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %" PetscInt_FMT " must be divisable by spatial dimension %" PetscInt_FMT, user->ncoords, user->dim);
+  PetscCheck(user->ncoords % user->dim == 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %" PetscInt_FMT " must be divisible by spatial dimension %" PetscInt_FMT, user->ncoords, user->dim);
   PetscCall(PetscObjectSetName((PetscObject)*dm, "Original Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
 

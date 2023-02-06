@@ -335,7 +335,7 @@ PetscErrorCode MatMult_SeqSELL(Mat A, Vec xx, Vec yy)
     vec_y3 = _mm512_setzero_pd();
     vec_y4 = _mm512_setzero_pd();
 
-    j = a->sliidx[i] >> 3; /* 8 bytes are read at each time, corresponding to a slice columnn */
+    j = a->sliidx[i] >> 3; /* 8 bytes are read at each time, corresponding to a slice column */
     switch ((a->sliidx[i + 1] - a->sliidx[i]) / 8 & 3) {
     case 3:
       AVX512_Mult_Private(vec_idx, vec_x, vec_vals, vec_y);
@@ -551,7 +551,7 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
     vec_y3 = _mm512_setzero_pd();
     vec_y4 = _mm512_setzero_pd();
 
-    j = a->sliidx[i] >> 3; /* 8 bytes are read at each time, corresponding to a slice columnn */
+    j = a->sliidx[i] >> 3; /* 8 bytes are read at each time, corresponding to a slice column */
     switch ((a->sliidx[i + 1] - a->sliidx[i]) / 8 & 3) {
     case 3:
       AVX512_Mult_Private(vec_idx, vec_x, vec_vals, vec_y);

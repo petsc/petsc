@@ -2,7 +2,7 @@
 static char help[] = "Transient nonlinear driven cavity in 2d.\n\
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
-The flow can be driven with the lid or with bouyancy or both:\n\
+The flow can be driven with the lid or with buoyancy or both:\n\
   -lidvelocity <lid>, where <lid> = dimensionless velocity of lid\n\
   -grashof <gr>, where <gr> = dimensionless temperature gradent\n\
   -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Driven cavity/natural convection options", "");
   PetscCall(PetscOptionsReal("-lidvelocity", "Lid velocity, related to Reynolds number", "", user.lidvelocity, &user.lidvelocity, NULL));
   PetscCall(PetscOptionsReal("-prandtl", "Ratio of viscous to thermal diffusivity", "", user.prandtl, &user.prandtl, NULL));
-  PetscCall(PetscOptionsReal("-grashof", "Ratio of bouyant to viscous forces", "", user.grashof, &user.grashof, NULL));
+  PetscCall(PetscOptionsReal("-grashof", "Ratio of buoyant to viscous forces", "", user.grashof, &user.grashof, NULL));
   PetscCall(PetscOptionsBool("-parabolic", "Relax incompressibility to make the system parabolic instead of differential-algebraic", "", user.parabolic, &user.parabolic, NULL));
   PetscCall(PetscOptionsReal("-cfl_initial", "Advective CFL for the first time step", "", user.cfl_initial, &user.cfl_initial, NULL));
   PetscOptionsEnd();

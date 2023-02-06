@@ -146,7 +146,7 @@ int main(int argc, char **args)
   PetscCall(PetscLogFlops(2.0 * ldim));
 
   /*
-     End curent profiling stage
+     End current profiling stage
   */
   PetscCall(PetscLogStagePop());
 

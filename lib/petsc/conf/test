@@ -14,7 +14,7 @@ LINK.cc = $(CXXLINKER) $(CXXCPPFLAGS) $(LDFLAGS)
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
   # We prefer to use the Kokkos nvcc_wrapper compiler wrapper for compiling Kokkos files. The command is adapted from PETSC_COMPILE.kokkos.cxx
-  # in gmakefile.test, with additional "-o $*.o" to generate intended foo.o intead of foo.kokkos.o
+  # in gmakefile.test, with additional "-o $*.o" to generate intended foo.o instead of foo.kokkos.o
   KOKKOS_COMPILE_SINGLE = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES) -o $*.o
 
   LINK.kokkos.cxx = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)

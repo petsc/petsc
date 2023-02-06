@@ -4,7 +4,7 @@
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n \
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
-The flow can be driven with the lid or with bouyancy or both:\n\
+The flow can be driven with the lid or with buoyancy or both:\n\
   -lidvelocity &ltlid&gt, where &ltlid&gt = dimensionless velocity of lid\n\
   -grashof &ltgr&gt, where &ltgr&gt = dimensionless temperature gradent\n\
   -prandtl &ltpr&gt, where &ltpr&gt = dimensionless thermal/momentum diffusity ratio\n\

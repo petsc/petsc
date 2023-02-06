@@ -599,12 +599,12 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
     PetscCall(DMSwarmSortGetPointsPerCell(dm, e, &npoints_e, &plist_e));
 
     PetscCall(PetscMalloc1(npoints, &nnlist));
-    /* find nearest neighour points in this cell */
+    /* find nearest neighbour points in this cell */
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
     for (q = 0; q < npoints; q++) {
-      PetscInt  qn, nearest_neighour = -1;
-      PetscReal sep, min_sep         = PETSC_MAX_REAL;
+      PetscInt  qn, nearest_neighbour = -1;
+      PetscReal sep, min_sep          = PETSC_MAX_REAL;
 
       coor_q = &xp[dim * q];
       for (qn = 0; qn < npoints_e; qn++) {
@@ -612,12 +612,12 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
         sep     = 0.0;
         for (d = 0; d < dim; d++) sep += (coor_q[d] - coor_qn[d]) * (coor_q[d] - coor_qn[d]);
         if (sep < min_sep) {
-          nearest_neighour = plist_e[qn];
-          min_sep          = sep;
+          nearest_neighbour = plist_e[qn];
+          min_sep           = sep;
         }
       }
-      PetscCheck(nearest_neighour != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "Cell %" PetscInt_FMT " is empty - cannot initialize using nearest neighbours", e);
-      nnlist[q] = nearest_neighour;
+      PetscCheck(nearest_neighbour != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "Cell %" PetscInt_FMT " is empty - cannot initialize using nearest neighbours", e);
+      nnlist[q] = nearest_neighbour;
     }
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));

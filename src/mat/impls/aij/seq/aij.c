@@ -3773,7 +3773,7 @@ $       Solve linear system with Jacobian
 $    endloop
 
   Notes:
-    Matrix must already be assemblied before calling this routine
+    Matrix must already be assembled before calling this routine
     Must set the matrix option `MatSetOption`(mat,`MAT_NEW_NONZERO_LOCATIONS`,`PETSC_FALSE`); before
     calling this routine.
 

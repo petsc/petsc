@@ -14,7 +14,7 @@ Choose one of the two at runtime by -sa_method {track,global}. \n";
    [u2'] = [mu2(t)*((1-u1^2)*u2-u1)]
    (with initial conditions & params independent)
 
-   Define uref to be solution with initail conditions (2,-2/3), mu=(1,1e3)
+   Define uref to be solution with initial conditions (2,-2/3), mu=(1,1e3)
    - u_ref : (1.5967,-1.02969)
 
    Define const function as cost = 2-norm(u - u_ref);

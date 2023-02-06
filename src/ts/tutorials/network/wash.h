@@ -54,7 +54,7 @@ struct _p_Wash {
   PetscInt  nedge, nvertex;    /* local number of components */
   PetscInt  Nedge, Nvertex;    /* global number of components */
   PetscInt *edgelist;          /* local edge list */
-  Vec       localX, localXdot; /* vectors used in local function evalutation */
+  Vec       localX, localXdot; /* vectors used in local function evaluation */
   PetscInt  nnodes_loc;        /* num of global and local nodes */
 
   /* Junction */

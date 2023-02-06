@@ -1228,7 +1228,7 @@ PetscErrorCode MatMult_MPIBAIJ(Mat A, Vec xx, Vec yy)
   PetscCall(VecGetLocalSize(xx, &nt));
   PetscCheck(nt == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A and xx");
   PetscCall(VecGetLocalSize(yy, &nt));
-  PetscCheck(nt == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible parition of A and yy");
+  PetscCheck(nt == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A and yy");
   PetscCall(VecScatterBegin(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall((*a->A->ops->mult)(a->A, xx, yy));
   PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));

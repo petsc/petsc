@@ -925,7 +925,7 @@ PetscErrorCode VecGetOwnershipRanges(Vec x, const PetscInt *ranges[])
 }
 
 /*@
-   VecSetOption - Sets an option for controling a vector's behavior.
+   VecSetOption - Sets an option for controlling a vector's behavior.
 
    Collective
 

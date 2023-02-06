@@ -126,7 +126,7 @@ M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
 
-     This method has one explicit stage and two implicit stages. The stability function is independent of the explicit part in the infinity limit of the implict component. This method was provided by Emil Constantinescu.
+     This method has one explicit stage and two implicit stages. The stability function is independent of the explicit part in the infinity limit of the implicit component. This method was provided by Emil Constantinescu.
 
      Options Database Key:
 .      -ts_arkimex_type 2d - set arkimex type to 2d

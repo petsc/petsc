@@ -345,7 +345,7 @@ PetscErrorCode DMInitialize_Network(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
-  copies over the subnetid and index portions of the DMNetworkComponentHeader from orignal dm to the newdm
+  copies over the subnetid and index portions of the DMNetworkComponentHeader from original dm to the newdm
 */
 static PetscErrorCode DMNetworkCopyHeaderTopological(DM dm, DM newdm)
 {

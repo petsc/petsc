@@ -1164,7 +1164,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   */
   /* Step 1: Construct section+SFNode array
        The section has entries for all shared faces for which we have a leaf point in the cone
-       The array holds candidate shared faces, each face is refered to by the leaf point */
+       The array holds candidate shared faces, each face is referred to by the leaf point */
   PetscCall(PetscSectionCreate(comm, &candidateSection));
   PetscCall(PetscSectionSetChart(candidateSection, 0, Nr));
   {

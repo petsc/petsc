@@ -12,7 +12,7 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
   PetscCoarsenData *ail;
 
   PetscFunctionBegin;
-  /* alocate pool, partially */
+  /* allocate pool, partially */
   PetscCall(PetscNew(&ail));
   *a_out               = ail;
   ail->pool_list.next  = NULL;
@@ -771,7 +771,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
         }
         /* receive requests, send response, clear lists */
         kk = nactive_edges;
-        PetscCall(MPIU_Allreduce(&kk, &nactive_edges, 1, MPIU_INT, MPI_SUM, comm)); /* not correct syncronization and global */
+        PetscCall(MPIU_Allreduce(&kk, &nactive_edges, 1, MPIU_INT, MPI_SUM, comm)); /* not correct synchronization and global */
         nSend2 = 0;
         while (1) {
 #define BF_SZ 10000

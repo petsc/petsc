@@ -1628,7 +1628,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
   ystart = 0;
   for (j = 0; j < Ndomains; ++j) {
     maxheight = N / Ndomains + ((N % Ndomains) > j); /* Maximal height of subdomain */
-    PetscCheck(maxheight >= 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many %" PetscInt_FMT " subdomains in the vertical directon for mesh height %" PetscInt_FMT, Ndomains, N);
+    PetscCheck(maxheight >= 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many %" PetscInt_FMT " subdomains in the vertical direction for mesh height %" PetscInt_FMT, Ndomains, N);
     /* Vertical domain limits with an overlap. */
     ylow   = PetscMax(ystart - overlap, 0);
     yhigh  = PetscMin(ystart + maxheight + overlap, N);
@@ -1657,7 +1657,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
   ystart = 0;
   for (j = 0; j < Ndomains; ++j) {
     maxheight = N / Ndomains + ((N % Ndomains) > j); /* Maximal height of subdomain */
-    PetscCheck(maxheight >= 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many %" PetscInt_FMT " subdomains in the vertical directon for mesh height %" PetscInt_FMT, Ndomains, N);
+    PetscCheck(maxheight >= 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many %" PetscInt_FMT " subdomains in the vertical direction for mesh height %" PetscInt_FMT, Ndomains, N);
     /* Vertical domain limits with an overlap. */
     y[0][0] = PetscMax(ystart - overlap, 0);
     y[0][1] = PetscMin(ystart + maxheight + overlap, N);

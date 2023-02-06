@@ -870,7 +870,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
       lr[i] = l1;
       lc[j] = l2;
 
-      /* check compatibilty for local matrix reusage */
+      /* check compatibility for local matrix reusage */
       if (rnest && !rnest[i][j] != !snest[ij]) lreuse = PETSC_FALSE;
     }
   }

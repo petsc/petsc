@@ -13,7 +13,7 @@ static char help[] = "Solve a toy 3D problem on a staggered grid\n\n";
 
   Boundary conditions give prescribed flow perpendicular to the boundaries,
   and zero derivative perpendicular to them (free slip). This involves
-  using a modifed stencil at the boundaries. Another option would be to
+  using a modified stencil at the boundaries. Another option would be to
   use DM_BOUNDARY_GHOSTED in DMStagCreate3d() and a matrix-free operator (MATSHELL)
   making use of the uniformly-available ghost layer.
 

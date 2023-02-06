@@ -305,7 +305,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A, IS isrow, IS iscol, Mat
   PetscCall(ISGetSize(iscol, &Ncols)); /* global number of columns, size of iscol_local */
 
   /* No parallel redistribution currently supported! Should really check each index set
-     to comfirm that it is OK.  ... Currently supports only submatrix same partitioning as
+     to confirm that it is OK.  ... Currently supports only submatrix same partitioning as
      original matrix! */
 
   PetscCall(MatGetLocalSize(A, &nlrows, &nlcols));

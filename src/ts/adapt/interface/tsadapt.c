@@ -844,7 +844,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt *
    Collective
 
    Input Parameters:
-+  adapt - adaptive contoller
++  adapt - adaptive controller
 .  ts - time stepper
 -  h - current step size
 

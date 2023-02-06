@@ -247,7 +247,7 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
    Developer Note:
     If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
     and pass that as the right hand side into this `KSP` (and hence this `KSP` will always have a zero initial guess). For all outer Krylov methods
-    except Richardson this is neccessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
+    except Richardson this is necessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
     input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For
     `KSPRICHARDSON` it is possible to provide a `PCApplyRichardson_PCKSP()` that short circuits returning to the `KSP` object at each iteration to compute the
     residual, see for example `PCApplyRichardson_SOR()`. We do not implement a `PCApplyRichardson_PCKSP()`  because (1) using a `KSP` directly inside a Richardson

@@ -150,7 +150,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   Level: developer
 
   Notes:
-  For example, if there is an edge (rank,index)=(0,2) connecting points cone(0,2)=[(0,0),(0,1)] in this order, and the point SF containts connections 0 <- (1,0), 1 <- (1,1) and 2 <- (1,2),
+  For example, if there is an edge (rank,index)=(0,2) connecting points cone(0,2)=[(0,0),(0,1)] in this order, and the point SF contains connections 0 <- (1,0), 1 <- (1,1) and 2 <- (1,2),
   then this check would pass if the edge (1,2) has cone(1,2)=[(1,0),(1,1)]. By contrast, if cone(1,2)=[(1,1),(1,0)], then this check would fail.
 
   This is mainly intended for debugging/testing purposes. Does not check cone orientation, for this purpose use `DMPlexCheckFaces()`.

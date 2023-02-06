@@ -264,7 +264,7 @@ skip_merge_mvctx:
 
   if (shell->Mvctx) { /* Have a merged Mvctx */
     /* Suppose we want to compute y = sMx, where s is the scaling factor and A, B are matrix M's diagonal/off-diagonal part. We could do
-       in y = s(Ax1 + Bx2) or y = sAx1 + sBx2. The former incurs less FLOPS than the latter, but the latter provides an oppertunity to
+       in y = s(Ax1 + Bx2) or y = sAx1 + sBx2. The former incurs less FLOPS than the latter, but the latter provides an opportunity to
        overlap communication/computation since we can do sAx1 while communicating x2. Here, we use the former approach.
      */
     PetscCall(VecScatterBegin(shell->Mvctx, in, shell->gvec, INSERT_VALUES, SCATTER_FORWARD));
@@ -714,7 +714,7 @@ static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat, MatCompositeMe
    Level: advanced
 
    Note:
-    The resulting matrix is the same regardles of the `MatCompositeMergeType`. Only the order of operation is changed.
+    The resulting matrix is the same regardless of the `MatCompositeMergeType`. Only the order of operation is changed.
     If set to `MAT_COMPOSITE_MERGE_RIGHT` the order of the merge is mat[nmat-1]*(mat[nmat-2]*(...*(mat[1]*mat[0])))
     otherwise the order is (((mat[nmat-1]*mat[nmat-2])*mat[nmat-3])*...)*mat[0].
 

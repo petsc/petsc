@@ -1015,7 +1015,7 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   PetscCall(VecGetSize(x, &M));
 
   /* ---------------------------------------------------------------------------*/
-  /* Sort COOs along with a permuation array, so that negative indices come     */
+  /* Sort COOs along with a permutation array, so that negative indices come    */
   /* first, then local ones, then remote ones.                                  */
   /* ---------------------------------------------------------------------------*/
   PetscCount n1 = coo_n, nneg, *perm;
@@ -1041,7 +1041,7 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
     }
   }
 
-  /* Sort the indices, after that, [0,nneg) have ignored entires, [nneg,rem) have local entries and [rem,n1) have remote entries */
+  /* Sort the indices, after that, [0,nneg) have ignored entries, [nneg,rem) have local entries and [rem,n1) have remote entries */
   PetscCall(PetscSortIntWithCountArray(n1, i1, perm));
   for (k = 0; k < n1; k++) {
     if (i1[k] > PETSC_MIN_INT) break;
@@ -1247,7 +1247,7 @@ PetscErrorCode VecSetValuesCOO_MPI(Vec x, const PetscScalar v[], InsertMode imod
   PetscCall(PetscSFReduceWithMemTypeBegin(vmpi->coo_sf, MPIU_SCALAR, PETSC_MEMTYPE_HOST, sendbuf, PETSC_MEMTYPE_HOST, recvbuf, MPI_REPLACE));
   /* Add local entries to A and B */
   for (PetscInt i = 0; i < m; i++) { /* All entries in a[] are either zero'ed or added with a value (i.e., initialized) */
-    PetscScalar sum = 0.0;           /* Do partial summation first to improve numerical stablility */
+    PetscScalar sum = 0.0;           /* Do partial summation first to improve numerical stability */
     for (PetscCount k = jmap1[i]; k < jmap1[i + 1]; k++) sum += v[perm1[k]];
     a[i] = (imode == INSERT_VALUES ? 0.0 : a[i]) + sum;
   }

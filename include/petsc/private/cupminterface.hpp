@@ -640,7 +640,7 @@ struct Interface : InterfaceImpl<T> {
     // cannot dereference (i.e. cannot call PetscValidPointer() here)
     PetscCheck(dest, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy to a NULL pointer");
     PetscCheck(src, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy from a NULL pointer");
-    // do early return after nullptr check since we need to check that they arent both nullptrs
+    // do early return after nullptr check since we need to check that they are not both nullptrs
     if (PetscUnlikely(dest == src)) PetscFunctionReturn(PETSC_SUCCESS);
     if (kind == cupmMemcpyHostToHost) {
       // If we are HTOH it is cheaper to check if the stream is idle and do a basic mempcy()

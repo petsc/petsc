@@ -6461,7 +6461,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
     }
   }
 
-  /* Sort by row; after that, [0,k) have ignored entires, [k,rem) have local rows and [rem,n1) have remote rows */
+  /* Sort by row; after that, [0,k) have ignored entries, [k,rem) have local rows and [rem,n1) have remote rows */
   PetscCall(PetscSortIntWithIntCountArrayPair(n1, i1, j1, perm1));
   for (k = 0; k < n1; k++) {
     if (i1[k] > PETSC_MIN_INT) break;
@@ -6750,7 +6750,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat, const PetscScalar v[], Ins
   PetscCall(PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf, MPIU_SCALAR, PETSC_MEMTYPE_HOST, sendbuf, PETSC_MEMTYPE_HOST, recvbuf, MPI_REPLACE));
   /* Add local entries to A and B */
   for (PetscCount i = 0; i < Annz; i++) { /* All nonzeros in A are either zero'ed or added with a value (i.e., initialized) */
-    PetscScalar sum = 0.0;                /* Do partial summation first to improve numerical stablility */
+    PetscScalar sum = 0.0;                /* Do partial summation first to improve numerical stability */
     for (PetscCount k = Ajmap1[i]; k < Ajmap1[i + 1]; k++) sum += v[Aperm1[k]];
     Aa[i] = (imode == INSERT_VALUES ? 0.0 : Aa[i]) + sum;
   }
@@ -7436,7 +7436,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
     so, off[p+1]-off[p] is the number of nonzeros that mp[p] will send to others.
 
     coo_i/j/v[]: [ncoo] row/col/val of nonzeros belonging to this proc.
-    Ex. coo_i[]: the beginning part (of size ncoo_d + ncoo_oown) stores i of local nonzeros, and the remaing part stores i of nonzeros I will receive.
+    Ex. coo_i[]: the beginning part (of size ncoo_d + ncoo_oown) stores i of local nonzeros, and the remaining part stores i of nonzeros I will receive.
   */
   PetscCall(PetscCalloc1(mmdata->cp + 1, &mmdata->off)); /* +1 to make a csr-like data structure */
   PetscCall(PetscCalloc1(mmdata->cp + 1, &mmdata->own));

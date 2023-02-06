@@ -755,7 +755,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 -  type - whether the property is local (IS_LOCAL) or global (IS_GLOBAL)
 
    Output Parameter:
-.  flg - wheter the property is true (PETSC_TRUE) or false (PETSC_FALSE)
+.  flg - whether the property is true (PETSC_TRUE) or false (PETSC_FALSE)
 
    Note: ISGetInfo uses cached values when possible, which will be incorrect if ISSetInfo() has been called with incorrect information.  To clear cached values, use ISClearInfoCache().
 

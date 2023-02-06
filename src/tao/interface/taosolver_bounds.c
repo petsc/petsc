@@ -397,7 +397,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
 .  tao - the Tao context
 
    Output Parameters:
-+  X - point the equality constraints were evaluted on
++  X - point the equality constraints were evaluated on
 -  CE   - vector of equality constraints evaluated at X
 
    Level: developer
@@ -430,7 +430,7 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
 .  tao - the Tao context
 
    Output Parameters:
-+  X - point the inequality constraints were evaluted on
++  X - point the inequality constraints were evaluated on
 -  CE   - vector of inequality constraints evaluated at X
 
    Level: developer

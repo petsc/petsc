@@ -201,7 +201,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[])
 }
 
 /*@C
-   DMDAGetCoordinateName - Gets the name of a coodinate direction associated with a `DMDA`.
+   DMDAGetCoordinateName - Gets the name of a coordinate direction associated with a `DMDA`.
 
    Not collective; name will contain a common value
 

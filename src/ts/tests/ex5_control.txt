@@ -11,11 +11,11 @@
 11. Wind direction........................90
 13. RUNTIME...............................12
 
-14. INITAL DOMAIN:
+14. INITIAL DOMAIN:
 15. Initiation specifier..................1
 
 INITIAL DOMAIN DESCRIPTION:
-- To only diabatic dT/dt contributions (all fileds uniform throughout grid) enter 0 in line 15
+- To only diabatic dT/dt contributions (all fields uniform throughout grid) enter 0 in line 15
 - Default initiation is a west-east temperature gradient, wind = 0, and two high pressure perturbations in the mass field
 
 

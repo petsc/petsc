@@ -311,7 +311,7 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
 
-  /* TODO: optimize code to not require building counts/displ everytime */
+  /* TODO: optimize code to not require building counts/displ every time */
 
   /* scatterv rhs */
   PetscCallMPI(MPI_Comm_size(comm, &size));

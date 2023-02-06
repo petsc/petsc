@@ -1388,7 +1388,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B, Mat A, const 
     Kokkos::View<size_t, Kokkos::HostSpace>                                                                              h_flops_k(&flops_h);
     Kokkos::View<size_t>                                                                                                 d_flops_k("flops");
     const int                                                                                                            conc = Kokkos::DefaultExecutionSpace().concurrency(), team_size = conc > 1 ? 16 : 1; // 8*32 = 256
-    const int                                                                                                            nloc = n / Nf, Ni = (conc > 8) ? 1 /* some intelegent number of SMs -- but need league_barrier */ : 1;
+    const int                                                                                                            nloc = n / Nf, Ni = (conc > 8) ? 1 /* some intelligent number of SMs -- but need league_barrier */ : 1;
     Kokkos::deep_copy(d_flops_k, h_flops_k);
     Kokkos::deep_copy(d_r_k, h_r_k);
     Kokkos::deep_copy(d_ic_k, h_ic_k);

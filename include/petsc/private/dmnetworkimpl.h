@@ -134,7 +134,7 @@ typedef struct {
   DMNetworkComponentHeader           header;
   DMNetworkComponentValue            cvalue;
   DMNetworkComponentGenericDataType *componentdataarray;   /* Array to hold the data */
-  PetscBool                          componentsetup;       /* Flag for the setup of the component. Migth differ from dmsetup information */
+  PetscBool                          componentsetup;       /* Flag for the setup of the component. Might differ from dmsetup information */
   PetscInt                           max_comps_registered; /* Max. number of components that can be registered */
 
   PetscBool userEdgeJacobian, userVertexJacobian; /* Global flag for using user's sub Jacobians */

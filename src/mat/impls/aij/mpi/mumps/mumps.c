@@ -183,7 +183,7 @@ struct Mat_MUMPS {
 
   /* stuff used by petsc/mumps OpenMP support*/
   PetscBool    use_petsc_omp_support;
-  PetscOmpCtrl omp_ctrl;             /* an OpenMP controler that blocked processes will release their CPU (MPI_Barrier does not have this guarantee) */
+  PetscOmpCtrl omp_ctrl;             /* an OpenMP controller that blocked processes will release their CPU (MPI_Barrier does not have this guarantee) */
   MPI_Comm     petsc_comm, omp_comm; /* petsc_comm is petsc matrix's comm */
   PetscInt64  *recvcount;            /* a collection of nnz on omp_master */
   PetscMPIInt  tag, omp_comm_size;
@@ -1268,7 +1268,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   } else {                   /* sparse B */
     PetscCheck(X != B, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_IDN, "X and B must be different matrices");
     PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &flgT));
-    if (flgT) { /* input B is transpose of actural RHS matrix,
+    if (flgT) { /* input B is transpose of actual RHS matrix,
                  because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
       PetscCall(MatTransposeGetMat(B, &Bt));
     } else SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix B must be MATTRANSPOSEVIRTUAL matrix");

@@ -1,5 +1,5 @@
 /*
-      Utilites routines to add simple ASCII IO capability.
+      Utilities routines to add simple ASCII IO capability.
 */
 #include <../src/sys/fileio/mprint.h>
 #include <errno.h>

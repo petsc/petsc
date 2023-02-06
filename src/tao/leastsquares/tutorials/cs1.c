@@ -196,7 +196,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 /* ---------------------------------------------------------------------- */
 PetscErrorCode InitializeUserData(AppCtx *user)
 {
-  PetscReal *b = user->b; /* **A=user->A, but we don't kown the dimension of A in this way, how to fix? */
+  PetscReal *b = user->b; /* **A=user->A, but we don't know the dimension of A in this way, how to fix? */
   PetscInt   m, n, k;     /* loop index for M,N,K dimension. */
 
   PetscFunctionBegin;

@@ -584,7 +584,7 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
   mat_mkl_cpardiso->iparm[27]     = 0;
 #endif
 
-  mat_mkl_cpardiso->iparm[0]  = 1;  /* Solver default parameters overriden with provided by iparm */
+  mat_mkl_cpardiso->iparm[0]  = 1;  /* Solver default parameters overridden with provided by iparm */
   mat_mkl_cpardiso->iparm[1]  = 2;  /* Use METIS for fill-in reordering */
   mat_mkl_cpardiso->iparm[5]  = 0;  /* Write solution into x */
   mat_mkl_cpardiso->iparm[7]  = 2;  /* Max number of iterative refinement steps */

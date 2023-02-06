@@ -23,7 +23,7 @@ __global__ void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start
   int            err;
 
   for (i = start + my0; i < end + 1; i += inc) {
-    PetscInt    js[] = {i - 1, i}, nn = (i == N) ? 1 : 2; // negative indices are igored but >= N are not, so clip end
+    PetscInt    js[] = {i - 1, i}, nn = (i == N) ? 1 : 2; // negative indices are ignored but >= N are not, so clip end
     PetscScalar values[] = {1, 1, 1, 1};
     err                  = MatSetValuesDevice(d_mat, nn, js, nn, js, values, ADD_VALUES);
     if (err) assert(0);

@@ -58,7 +58,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
 }
 
 /*@C
-  PetscGatherMessageLengths - Computes infomation about messages that an MPI rank will receive,
+  PetscGatherMessageLengths - Computes information about messages that an MPI rank will receive,
   including (from-id,length) pairs for each message.
 
   Collective

@@ -121,7 +121,7 @@
 !    Clean storage for star forest.
       PetscCallA(PetscSFDestroy(sf,ierr))
 
-!  Create a star forest with continous leaves and hence no buffer
+!  Create a star forest with continuous leaves and hence no buffer
       PetscCallA(PetscSFCreate(PETSC_COMM_WORLD,sf,ierr))
       PetscCallA(PetscSFSetFromOptions(sf,ierr))
       PetscCallA(PetscSFSetGraph(sf,nrootsalloc,nleaves,PETSC_NULL_INTEGER,PETSC_COPY_VALUES,remote,PETSC_COPY_VALUES,ierr))

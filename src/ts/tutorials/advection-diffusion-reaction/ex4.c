@@ -7,7 +7,7 @@ static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
         rho_t =
         c_t   =
 
-     Further discusson on Page 134 and in 2d on Page 409
+     Further discussion on Page 134 and in 2d on Page 409
 */
 
 /*

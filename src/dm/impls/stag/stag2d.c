@@ -542,7 +542,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
             idxGlobal[count] = globalOffset + j * entriesPerElementRow + i * stag->entriesPerElement + d;
             idxLocal[count]  = jghost * entriesPerElementRowGhost + ighost * stag->entriesPerElement + d;
           }
-          for (d = 0; d < stag->dof[1]; ++d, ++count) { /* then left ege (skipping bottom face) */
+          for (d = 0; d < stag->dof[1]; ++d, ++count) { /* then left edge (skipping bottom face) */
             idxGlobal[count] = globalOffset + j * entriesPerElementRow + i * stag->entriesPerElement + stag->dof[0] + d;
             idxLocal[count]  = jghost * entriesPerElementRowGhost + ighost * stag->entriesPerElement + stag->dof[0] + stag->dof[1] + d;
           }
@@ -1191,7 +1191,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM dm)
           idxGlobal[count] = globalOffset + j * entriesPerElementRow + i * stag->entriesPerElement + d;
           idxLocal[count]  = jghost * entriesPerElementRowGhost + ighost * stag->entriesPerElement + d;
         }
-        for (d = 0; d < stag->dof[1]; ++d, ++count) { /* then left ege (skipping bottom face) */
+        for (d = 0; d < stag->dof[1]; ++d, ++count) { /* then left edge (skipping bottom face) */
           idxGlobal[count] = globalOffset + j * entriesPerElementRow + i * stag->entriesPerElement + stag->dof[0] + d;
           idxLocal[count]  = jghost * entriesPerElementRowGhost + ighost * stag->entriesPerElement + stag->dof[0] + stag->dof[1] + d;
         }

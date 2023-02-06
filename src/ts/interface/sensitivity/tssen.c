@@ -1869,7 +1869,7 @@ PetscErrorCode TSComputeSNESJacobian(TS ts, Vec x, Mat J, Mat Jpre)
   /*
     Unlike implicit methods, explicit methods do not have SNESMatFDColoring in the snes object
     because SNESSolve() has not been called yet; so querying SNESMatFDColoring does not work for
-    explicit methods. Instead, we check the Jacobian compute function directly to determin if FD
+    explicit methods. Instead, we check the Jacobian compute function directly to determine if FD
     coloring is used.
   */
   PetscCall(SNESGetJacobian(snes, NULL, NULL, &jac, NULL));

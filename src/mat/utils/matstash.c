@@ -352,7 +352,7 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash, PetscInt row, P
     space->idy[l] = idxn[i];
     /* Now copy over the block of values. Store the values column oriented.
        This enables inserting multiple blocks belonging to a row with a single
-       funtion call */
+       function call */
     array = space->val + bs2 * l;
     vals  = values + idx * bs2 * n + bs * i;
     for (j = 0; j < bs; j++) {
@@ -403,7 +403,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash, PetscInt row, P
     space->idy[l] = idxn[i];
     /* Now copy over the block of values. Store the values column oriented.
      This enables inserting multiple blocks belonging to a row with a single
-     funtion call */
+     function call */
     array = space->val + bs2 * l;
     vals  = values + idx * bs2 * n + bs * i;
     for (j = 0; j < bs; j++) {
@@ -779,7 +779,7 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Callback invoked after target rank has initiatied receive of rendezvous message.
+/* Callback invoked after target rank has initiated receive of rendezvous message.
  * Here we post the main sends.
  */
 static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rankid, PetscMPIInt rank, void *sdata, MPI_Request req[], void *ctx)

@@ -5,7 +5,7 @@ static auto               rootStreamType = PETSC_DEVICE_CONTEXT_DEFAULT_STREAM_T
 static PetscDeviceContext globalContext  = nullptr;
 
 /* when PetsDevice initializes PetscDeviceContext eagerly the type of device created should
- * match whatever device is eagerly intialized */
+ * match whatever device is eagerly initialized */
 PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDeviceType type)
 {
   PetscFunctionBegin;
@@ -100,7 +100,7 @@ PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
   Notes:
   This routine can be used to set the defacto "root" `PetscDeviceContext` to a user-defined
   implementation by calling this routine immediately after `PetscInitialize()` and ensuring that
-  `PetscDevice` is not greedily intialized. In this case the user is responsible for destroying
+  `PetscDevice` is not greedily initialized. In this case the user is responsible for destroying
   their `PetscDeviceContext` before `PetscFinalize()` returns.
 
   The old context is not stored in any way by this routine; if one is overriding a context that

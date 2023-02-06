@@ -152,7 +152,7 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSARKIMEX));
-  /* Must use ARKIMEX with fully implicit stages since mass matrix is not the indentity */
+  /* Must use ARKIMEX with fully implicit stages since mass matrix is not the identity */
   PetscCall(TSARKIMEXSetType(ts, TSARKIMEXPRSSP2));
   PetscCall(TSSetEquationType(ts, TS_EQ_DAE_IMPLICIT_INDEX1));
   /*PetscCall(TSSetType(ts,TSROSW));*/

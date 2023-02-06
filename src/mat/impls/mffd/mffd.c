@@ -93,7 +93,7 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype)
 
 /*@C
     MatMFFDSetType - Sets the method that is used to compute the
-    differencing parameter for finite differene matrix-free formulations.
+    differencing parameter for finite difference matrix-free formulations.
 
     Input Parameters:
 +   mat - the "matrix-free" matrix created via `MatCreateSNESMF()`, or `MatCreateMFFD()`

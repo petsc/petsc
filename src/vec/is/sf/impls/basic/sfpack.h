@@ -15,7 +15,7 @@ typedef hipEvent_t  cupmEvent_t;
 #endif
 
 /* In terms of function overloading, long long int is a different type than int64_t, which PetscInt might be defined to.
-   We perfer long long int over PetscInt (int64_t), since CUDA atomics are built around (unsigned) long long int.
+   We prefer long long int over PetscInt (int64_t), since CUDA atomics are built around (unsigned) long long int.
  */
 typedef long long int          llint;
 typedef unsigned long long int ullint;

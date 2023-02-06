@@ -118,7 +118,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
   PetscCheck(Nsubnet >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Number of global subnetworks %" PetscInt_FMT " cannot be less than 1", Nsubnet);
 
   network->cloneshared->Nsubnet = Nsubnet;
-  network->cloneshared->nsubnet = 0; /* initial value; will be determind by DMNetworkAddSubnetwork() */
+  network->cloneshared->nsubnet = 0; /* initial value; will be determined by DMNetworkAddSubnetwork() */
   PetscCall(PetscCalloc1(Nsubnet, &network->cloneshared->subnet));
 
   /* num of shared vertices */

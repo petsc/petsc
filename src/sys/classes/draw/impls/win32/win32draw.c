@@ -34,7 +34,7 @@ unsigned char RedMap[]   = {255, 0, 255, 0, 0, 0, 255, 127, 34, 255, 238, 165, 2
 unsigned char GreenMap[] = {255, 0, 0, 255, 255, 0, 0, 255, 139, 165, 130, 42, 182, 127, 190, 255, 215, 162, 197, 246, 105, 205, 206, 100, 0, 164, 245, 224, 17, 191, 205, 240};
 unsigned char BlueMap[]  = {255, 0, 0, 0, 255, 255, 225, 212, 34, 0, 238, 42, 193, 80, 190, 0, 0, 173, 205, 143, 105, 50, 235, 0, 128, 96, 255, 230, 120, 216, 50, 245};
 
-/* Foward declarations of functions included in this code module: */
+/* Forward declarations of functions included in this code module: */
 LRESULT CALLBACK      PetscWndProc(HWND, UINT, WPARAM, LPARAM);
 static PetscErrorCode TranslateColor_Win32(PetscDraw, int);
 static PetscErrorCode AverageColorRectangle_Win32(PetscDraw, int, int, int, int);
@@ -56,7 +56,7 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_Win32(PetscDraw draw)
   windraw->node->dbstore         = SelectObject(windraw->node->DoubleBuffer, windraw->node->DoubleBufferBit);
   /* Fill background of second buffer */
   ExtFloodFill(windraw->node->DoubleBuffer, 0, 0, COLOR_WINDOW, FLOODFILLBORDER);
-  /* Copy current buffer into seconf buffer and set window data as double buffered */
+  /* Copy current buffer into second buffer and set window data as double buffered */
   BitBlt(windraw->node->DoubleBuffer, 0, 0, windraw->w, windraw->h, windraw->node->Buffer, 0, 0, SRCCOPY);
 
   windraw->node->DoubleBuffered = PETSC_TRUE;

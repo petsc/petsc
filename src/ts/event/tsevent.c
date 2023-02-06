@@ -453,7 +453,7 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
   PetscCall(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ts)));
   event->status = (TSEventStatus)out[0];
   rollback      = out[1];
-  /* If rollback is true, the status will be overwritten so that an event at the endtime of current time step will be postponed to guarantee corret order */
+  /* If rollback is true, the status will be overwritten so that an event at the endtime of current time step will be postponed to guarantee correct order */
   if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
   if (event->status == TSEVENT_ZERO) {
     for (i = 0; i < event->nevents; i++) {

@@ -215,7 +215,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   PetscFunctionBegin;
   pdiag = (Mat_SeqAIJ *)pA->A->data;
   poffd = (Mat_SeqAIJ *)pA->B->data;
-  /* cstart is only valid for square MPIAIJ layed out in the usual way */
+  /* cstart is only valid for square MPIAIJ laid out in the usual way */
   PetscCall(MatGetOwnershipRange(A, &cstart, NULL));
 
   PetscCallExternal(HYPRE_IJMatrixGetObjectType, ij, &type);
@@ -625,7 +625,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
   }
 
   /* we have to use hypre_Tfree to free the HYPRE arrays
-     that PETSc now onws */
+     that PETSc now owns */
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscInt    nh;
     void       *ptrs[6]  = {da, oa, dii, djj, oii, ojj};

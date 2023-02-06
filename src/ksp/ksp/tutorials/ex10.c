@@ -126,7 +126,7 @@ PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhs
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ATTENTION: this is the example used in the Profiling chaper of the PETSc manual,
+/* ATTENTION: this is the example used in the Profiling chapter of the PETSc manual,
    where we referenced its profiling stages, preloading and output etc.
    When you modify it, please make sure it is still consistent with the manual.
  */

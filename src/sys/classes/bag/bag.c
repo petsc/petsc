@@ -664,7 +664,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
     while (nitem) {
       if (nitem->dtype == PETSC_CHAR) {
         char *value             = (char *)(((char *)bag) + nitem->offset);
-        char  tmp               = value[nitem->msize - 1]; /* special handling for fortran chars wihout null terminator */
+        char  tmp               = value[nitem->msize - 1]; /* special handling for fortran chars without null terminator */
         value[nitem->msize - 1] = 0;
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = %s; %s\n", nitem->name, value, nitem->help));
         value[nitem->msize - 1] = tmp;
