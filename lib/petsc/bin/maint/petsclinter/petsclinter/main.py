@@ -118,10 +118,17 @@ def main(
     )
   elif patches:
     import time
+    import shutil
 
     patch_dir.mkdir(exist_ok=True)
     mangle_postfix = f'_{int(time.time())}.patch'
     root_dir       = f'--directory={patch_dir.anchor}'
+    patch_exec     = shutil.which('patch')
+
+    if patch_exec is None:
+      # couldn't find it, but let's just try out the bare name and hope it works,
+      # otherwise this will error below anyways
+      patch_exec = 'patch'
 
     for fname, patch in patches:
       mangled_rel = fname.append_name(mangle_postfix)
@@ -137,7 +144,7 @@ def main(
       for patch_file in patch_dir.glob('*' + mangle_postfix):
         if verbose: pl.sync_print(root_print_prefix, 'Applying patch', patch_file)
         output = pl.util.subprocess_run(
-          ['patch', root_dir, '--strip=0', '--unified', f'--input={patch_file}'],
+          [patch_exec, root_dir, '--strip=0', '--unified', f'--input={patch_file}'],
           check=True, universal_newlines=True, capture_output=True
         )
         if verbose: pl.sync_print(output.stdout)
@@ -165,7 +172,7 @@ def main(
       pl.sync_print('Patch files written to', patch_dir)
       pl.sync_print('Apply manually using:')
       pl.sync_print(
-        f'  patch {root_dir} --strip=0 --unified --input={patch_dir/("*" + mangle_postfix)}'
+        f'  {patch_exec} {root_dir} --strip=0 --unified --input={patch_dir / ("*" + mangle_postfix)}'
       )
       if ret != 0:
         ret = 12
