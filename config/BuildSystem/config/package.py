@@ -96,6 +96,7 @@ class Package(config.base.Configure):
     self.requires32bitint       = 0  # 1 means that the package will not work with 64 bit integers
     self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
+    self.skippackagelibincludedirs = 0 # packages like make do not support --with-package-lib and --with-package-include so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
     self.usesopenmp             = 'no'  # yes, no, unknown package is built to use OpenMP
     self.usespthreads           = 'no'  # yes, no, unknown package is built to use Pthreads
@@ -173,8 +174,9 @@ class Package(config.base.Configure):
       help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation',mustExist = 1))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-pkg-config=<dir>', nargs.ArgDir(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in',mustExist = 1))
-      help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
-      help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
+      if not self.skippackagelibincludedirs:
+        help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
+        help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename,url>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
       help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build of '+self.name))
