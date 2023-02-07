@@ -7,17 +7,18 @@
 /* SUBMANSEC = DMStag */
 
 /*E
-  DMStagStencilLocation - enumerated type denoted a location relative to an element in a `DMSTAG` grid
+  DMStagStencilLocation - enumerated type denoting a location relative to an element in a `DMSTAG` grid
 
   The interpretation of these values is dimension-dependent.
 
   Level: beginner
 
-.seealso: `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`
-E*/
+  Developer Note:
+   The order of the enum entries is significant, as it corresponds to the canonical numbering
+   of DOFs, and the fact that the numbering starts at 0 may also be used by the implementation.
 
-/* The order of these entries is significant, as it corresponds to the canonical numbering
-   of DOFs, and the fact the the numbering starts at 0 may also be used by the implementation */
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
+E*/
 typedef enum {
   DMSTAG_NULL_LOCATION = 0,
   DMSTAG_BACK_DOWN_LEFT,
@@ -62,7 +63,8 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
 
 Level: beginner
 
-.seealso: `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`, `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
+          `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`, `DMStagStencilLocation`
 S*/
 typedef struct {
   DMStagStencilLocation loc;
@@ -74,7 +76,7 @@ typedef struct {
 
   Level: beginner
 
-.seealso: `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`
 E*/
 
 typedef enum {

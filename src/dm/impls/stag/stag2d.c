@@ -19,7 +19,7 @@
 - lx,ly - arrays of local x,y element counts, of length equal to m,n, summing to M,N
 
   Output Parameter:
-. dm - the new DMStag object
+. dm - the new `DMSTAG` object
 
   Options Database Keys:
 + -dm_view - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
@@ -31,14 +31,14 @@
 . -stag_boundary_type_x <none,ghosted,periodic> - `DMBoundaryType` value
 - -stag_boundary_type_y <none,ghosted,periodic> - `DMBoundaryType` value
 
-  Notes:
-  You must call `DMSetUp()` after this call, before using the DM.
-  If you wish to use the options database (see the keys above) to change values in the DMStag, you must call
-  `DMSetFromOptions()` after this function but before `DMSetUp()`.
-
   Level: beginner
 
-.seealso: `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`
+  Notes:
+  You must call `DMSetUp()` after this call, before using the `DM`.
+  If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
+  `DMSetFromOptions()` after this function but before `DMSetUp()`.
+
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, PetscInt M, PetscInt N, PetscInt m, PetscInt n, PetscInt dof0, PetscInt dof1, PetscInt dof2, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], DM *dm)
 {
