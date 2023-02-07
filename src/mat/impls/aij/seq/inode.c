@@ -754,7 +754,7 @@ PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A, Vec xx, Vec zz, Vec yy)
 }
 
 /* ----------------------------------------------------------- */
-PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A, Vec bb, Vec xx)
+static PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A, Vec bb, Vec xx)
 {
   Mat_SeqAIJ        *a     = (Mat_SeqAIJ *)A->data;
   IS                 iscol = a->col, isrow = a->row;
@@ -1972,7 +1972,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B, Mat A, const MatFactorInfo *info)
+#if 0
+// unused
+static PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B, Mat A, const MatFactorInfo *info)
 {
   Mat              C = B;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)C->data;
@@ -2390,6 +2392,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B, Mat A, const MatFa
   PetscCall(MatSeqAIJCheckInode(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif
 
 /* ----------------------------------------------------------- */
 PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
@@ -4190,7 +4193,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
+static PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   PetscScalar       *x, tmp1, tmp2, tmp3, tmp4, tmp5, x1, x2, x3, x4, x5;

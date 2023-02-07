@@ -1,8 +1,8 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h> /*I "petscpc.h" I*/
 #include <petscsf.h>
 
-PetscFunctionList PCGAMGClassicalProlongatorList    = NULL;
-PetscBool         PCGAMGClassicalPackageInitialized = PETSC_FALSE;
+static PetscFunctionList PCGAMGClassicalProlongatorList    = NULL;
+static PetscBool         PCGAMGClassicalPackageInitialized = PETSC_FALSE;
 
 typedef struct {
   PetscReal interp_threshold; /* interpolation threshold */
@@ -78,7 +78,7 @@ static PetscErrorCode PCGAMGClassicalGetType_GAMG(PC pc, PCGAMGClassicalType *ty
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGCreateGraph_Classical(PC pc, Mat A, Mat *G)
+static PetscErrorCode PCGAMGCreateGraph_Classical(PC pc, Mat A, Mat *G)
 {
   PetscInt           s, f, n, idx, lidx, gidx;
   PetscInt           r, c, ncols;
@@ -159,7 +159,7 @@ PetscErrorCode PCGAMGCreateGraph_Classical(PC pc, Mat A, Mat *G)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGCoarsen_Classical(PC pc, Mat *G, PetscCoarsenData **agg_lists)
+static PetscErrorCode PCGAMGCoarsen_Classical(PC pc, Mat *G, PetscCoarsenData **agg_lists)
 {
   MatCoarsen crs;
   MPI_Comm   fcomm = ((PetscObject)pc)->comm;
@@ -177,7 +177,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc, Mat *G, PetscCoarsenData **agg_lis
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists, Mat *P)
+static PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists, Mat *P)
 {
   PC_MG             *mg   = (PC_MG *)pc->data;
   PC_GAMG           *gamg = (PC_GAMG *)mg->innerctx;
@@ -433,7 +433,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc, Mat *P)
+static PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc, Mat *P)
 {
   PetscInt           j, i, ps, pf, pn, pcs, pcf, pcn, idx, cmax;
   const PetscScalar *pval;
@@ -548,7 +548,7 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc, Mat *P)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists, Mat *P)
+static PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists, Mat *P)
 {
   Mat                lA, *lAs;
   MatType            mtype;
@@ -793,7 +793,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc, Mat A, Mat *P)
+static PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc, Mat A, Mat *P)
 {
   PetscInt           f, s, n, cf, cs, i, idx;
   PetscInt          *coarserows;
@@ -872,7 +872,7 @@ static PetscErrorCode PCGAMGDestroy_Classical(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_MG             *mg      = (PC_MG *)pc->data;
   PC_GAMG           *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -904,7 +904,7 @@ static PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGClassicalFinalizePackage(void)
+static PetscErrorCode PCGAMGClassicalFinalizePackage(void)
 {
   PetscFunctionBegin;
   PCGAMGClassicalPackageInitialized = PETSC_FALSE;
@@ -912,7 +912,7 @@ PetscErrorCode PCGAMGClassicalFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCGAMGClassicalInitializePackage(void)
+static PetscErrorCode PCGAMGClassicalInitializePackage(void)
 {
   PetscFunctionBegin;
   if (PCGAMGClassicalPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);

@@ -459,7 +459,7 @@ PetscErrorCode MatKAIJSetT(Mat A, PetscInt p, PetscInt q, const PetscScalar T[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
+static PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
 
@@ -474,7 +474,7 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
+static PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
 {
   Mat_MPIKAIJ     *a;
   Mat_MPIAIJ      *mpiaij;
@@ -515,7 +515,7 @@ PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_KAIJ(Mat A)
+static PetscErrorCode MatSetUp_KAIJ(Mat A)
 {
   PetscInt     n;
   PetscMPIInt  size;
@@ -570,7 +570,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatView_KAIJ(Mat A, PetscViewer viewer)
+static PetscErrorCode MatView_KAIJ(Mat A, PetscViewer viewer)
 {
   PetscViewerFormat format;
   Mat_SeqKAIJ      *a = (Mat_SeqKAIJ *)A->data;
@@ -634,7 +634,7 @@ PetscErrorCode MatView_KAIJ(Mat A, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
+static PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
 {
   Mat_MPIKAIJ *b = (Mat_MPIKAIJ *)A->data;
 
@@ -656,7 +656,7 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
 /* --------------------------------------------------------------------------------------*/
 
 /* zz = yy + Axx */
-PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_SeqKAIJ       *b = (Mat_SeqKAIJ *)A->data;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)b->AIJ->data;
@@ -725,7 +725,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_SeqKAIJ(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_SeqKAIJ(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatMultAdd_SeqKAIJ(A, xx, NULL, yy));
@@ -734,7 +734,7 @@ PetscErrorCode MatMult_SeqKAIJ(Mat A, Vec xx, Vec yy)
 
 #include <petsc/private/kernels/blockinvert.h>
 
-PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **values)
+static PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **values)
 {
   Mat_SeqKAIJ       *b = (Mat_SeqKAIJ *)A->data;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)b->AIJ->data;
@@ -848,7 +848,7 @@ static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A, MatType newtype, MatReuse reuse
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSOR_SeqKAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
+static PetscErrorCode MatSOR_SeqKAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_SeqKAIJ       *kaij = (Mat_SeqKAIJ *)A->data;
   Mat_SeqAIJ        *a    = (Mat_SeqAIJ *)kaij->AIJ->data;
@@ -1136,7 +1136,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, P
 
 /*===================================================================================*/
 
-PetscErrorCode MatMultAdd_MPIKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
+static PetscErrorCode MatMultAdd_MPIKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPIKAIJ *b = (Mat_MPIKAIJ *)A->data;
 
@@ -1155,14 +1155,14 @@ PetscErrorCode MatMultAdd_MPIKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_MPIKAIJ(Mat A, Vec xx, Vec yy)
+static PetscErrorCode MatMult_MPIKAIJ(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
   PetscCall(MatMultAdd_MPIKAIJ(A, xx, NULL, yy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A, const PetscScalar **values)
+static PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A, const PetscScalar **values)
 {
   Mat_MPIKAIJ *b = (Mat_MPIKAIJ *)A->data;
 
@@ -1174,7 +1174,7 @@ PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A, const PetscScalar **values)
 
 /* ----------------------------------------------------------------*/
 
-PetscErrorCode MatGetRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **values)
+static PetscErrorCode MatGetRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **values)
 {
   Mat_SeqKAIJ *b    = (Mat_SeqKAIJ *)A->data;
   PetscBool    diag = PETSC_FALSE;
@@ -1245,7 +1245,7 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *ncols, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
   if (nz) *nz = 0;
@@ -1254,7 +1254,7 @@ PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetRow_MPIKAIJ(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **values)
+static PetscErrorCode MatGetRow_MPIKAIJ(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **values)
 {
   Mat_MPIKAIJ   *b    = (Mat_MPIKAIJ *)A->data;
   Mat            AIJ  = b->A;
@@ -1350,7 +1350,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A, PetscInt row, PetscInt *ncols, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatRestoreRow_MPIKAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatRestoreRow_MPIKAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree2(*idx, *v));
@@ -1358,7 +1358,7 @@ PetscErrorCode MatRestoreRow_MPIKAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat *newmat)
+static PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat *newmat)
 {
   Mat A;
 

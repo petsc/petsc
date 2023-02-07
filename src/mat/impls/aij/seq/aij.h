@@ -141,7 +141,6 @@ PETSC_INTERN PetscErrorCode MatCreate_SeqAIJ_Inode(Mat);
 PETSC_INTERN PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat, MatOption, PetscBool);
 PETSC_INTERN PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat, MatDuplicateOption, Mat *);
 PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat, Mat, MatDuplicateOption, PetscBool);
-PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat, PetscScalar **);
 PETSC_INTERN PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat, PetscScalar **);
@@ -257,13 +256,10 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat, PetscInt, cons
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat, PetscCount, PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat);
 
-PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat, Mat, IS, IS, const MatFactorInfo *);
 
-PETSC_INTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat, Mat, IS, const MatFactorInfo *);
-PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat, Mat, const MatFactorInfo *);
@@ -291,7 +287,6 @@ PETSC_INTERN PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ(Mat, MatReuse, Mat *);
 
 PETSC_INTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt, PetscInt *, PetscInt *, PetscBool, PetscInt, PetscInt, PetscInt **, PetscInt **);
-PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat, Mat, const MatFactorInfo *);
@@ -299,18 +294,13 @@ PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat, Mat, 
 PETSC_INTERN PetscErrorCode MatLUFactor_SeqAIJ(Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_Inode(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolveAdd_SeqAIJ_inplace(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveAdd_SeqAIJ(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTranspose_SeqAIJ_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ_inplace(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat, Vec, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatEqual_SeqAIJ(Mat, Mat, PetscBool *);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat, ISColoring, MatFDColoring);

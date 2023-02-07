@@ -9610,6 +9610,32 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F, Mat *S, MatFactorSchurStatus *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
+{
+  Mat S = F->schur;
+
+  PetscFunctionBegin;
+  switch (F->schur_status) {
+  case MAT_FACTOR_SCHUR_UNFACTORED: // fall-through
+  case MAT_FACTOR_SCHUR_INVERTED:
+    if (S) {
+      S->ops->solve             = NULL;
+      S->ops->matsolve          = NULL;
+      S->ops->solvetranspose    = NULL;
+      S->ops->matsolvetranspose = NULL;
+      S->ops->solveadd          = NULL;
+      S->ops->solvetransposeadd = NULL;
+      S->factortype             = MAT_FACTOR_NONE;
+      PetscCall(PetscFree(S->solvertype));
+    }
+  case MAT_FACTOR_SCHUR_FACTORED: // fall-through
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_SUP, "Unhandled MatFactorSchurStatus %d", F->schur_status);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatFactorRestoreSchurComplement - Restore the Schur complement matrix object obtained from a call to `MatFactorGetSchurComplement()`
 
@@ -9725,6 +9751,39 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
+#if PetscDefined(HAVE_CUDA)
+PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);
+#endif
+
+/* Schur status updated in the interface */
+static PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
+{
+  Mat S = F->schur;
+
+  PetscFunctionBegin;
+  if (S) {
+    PetscMPIInt size;
+    PetscBool   isdense, isdensecuda;
+
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)S), &size));
+    PetscCheck(size <= 1, PetscObjectComm((PetscObject)S), PETSC_ERR_SUP, "Not yet implemented");
+    PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSEQDENSE, &isdense));
+    PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSEQDENSECUDA, &isdensecuda));
+    PetscCheck(isdense || isdensecuda, PetscObjectComm((PetscObject)S), PETSC_ERR_SUP, "Not implemented for type %s", ((PetscObject)S)->type_name);
+    PetscCall(PetscLogEventBegin(MAT_FactorInvS, F, 0, 0, 0));
+    if (isdense) {
+      PetscCall(MatSeqDenseInvertFactors_Private(S));
+    } else if (isdensecuda) {
+#if defined(PETSC_HAVE_CUDA)
+      PetscCall(MatSeqDenseCUDAInvertFactors_Private(S));
+#endif
+    }
+    PetscCall(PetscLogEventEnd(MAT_FactorInvS, F, 0, 0, 0));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatFactorInvertSchurComplement - Invert the Schur complement matrix computed during the factorization step
 
@@ -9771,11 +9830,19 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 @*/
 PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 {
+  MatFactorInfo info;
+
   PetscFunctionBegin;
   PetscValidType(F, 1);
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   if (F->schur_status == MAT_FACTOR_SCHUR_INVERTED || F->schur_status == MAT_FACTOR_SCHUR_FACTORED) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(MatFactorFactorizeSchurComplement_Private(F));
+  PetscCall(PetscLogEventBegin(MAT_FactorFactS, F, 0, 0, 0));
+  if (F->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
+    PetscCall(MatCholeskyFactor(F->schur, NULL, &info));
+  } else {
+    PetscCall(MatLUFactor(F->schur, NULL, NULL, &info));
+  }
+  PetscCall(PetscLogEventEnd(MAT_FactorFactS, F, 0, 0, 0));
   F->schur_status = MAT_FACTOR_SCHUR_FACTORED;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

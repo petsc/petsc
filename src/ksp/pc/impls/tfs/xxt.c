@@ -146,53 +146,6 @@ PetscErrorCode XXT_free(xxt_ADT xxt_handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* This function is currently unused */
-PetscErrorCode XXT_stats(xxt_ADT xxt_handle)
-{
-  PetscInt    op[]  = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD};
-  PetscInt    fop[] = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD};
-  PetscInt    vals[9], work[9];
-  PetscScalar fvals[3], fwork[3];
-
-  PetscFunctionBegin;
-  PetscCall(PCTFS_comm_init());
-  PetscCall(check_handle(xxt_handle));
-
-  /* if factorization not done there are no stats */
-  if (!xxt_handle->info || !xxt_handle->mvi) {
-    if (!PCTFS_my_id) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "XXT_stats() :: no stats available!\n"));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  vals[0] = vals[1] = vals[2] = xxt_handle->info->nnz;
-  vals[3] = vals[4] = vals[5] = xxt_handle->mvi->n;
-  vals[6] = vals[7] = vals[8] = xxt_handle->info->msg_buf_sz;
-  PetscCall(PCTFS_giop(vals, work, PETSC_STATIC_ARRAY_LENGTH(op) - 1, op));
-
-  fvals[0] = fvals[1] = fvals[2] = xxt_handle->info->tot_solve_time / xxt_handle->info->nsolves++;
-  PetscCall(PCTFS_grop(fvals, fwork, PETSC_STATIC_ARRAY_LENGTH(fop) - 1, fop));
-
-  if (!PCTFS_my_id) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: min   xxt_nnz=%" PetscInt_FMT "\n", PCTFS_my_id, vals[0]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: max   xxt_nnz=%" PetscInt_FMT "\n", PCTFS_my_id, vals[1]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: avg   xxt_nnz=%g\n", PCTFS_my_id, (double)(1.0 * vals[2] / PCTFS_num_nodes)));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: tot   xxt_nnz=%" PetscInt_FMT "\n", PCTFS_my_id, vals[2]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: xxt   C(2d)  =%g\n", PCTFS_my_id, (double)(vals[2] / (PetscPowReal(1.0 * vals[5], 1.5)))));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: xxt   C(3d)  =%g\n", PCTFS_my_id, (double)(vals[2] / (PetscPowReal(1.0 * vals[5], 1.6667)))));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: min   xxt_n  =%" PetscInt_FMT "\n", PCTFS_my_id, vals[3]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: max   xxt_n  =%" PetscInt_FMT "\n", PCTFS_my_id, vals[4]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: avg   xxt_n  =%g\n", PCTFS_my_id, (double)(1.0 * vals[5] / PCTFS_num_nodes)));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: tot   xxt_n  =%" PetscInt_FMT "\n", PCTFS_my_id, vals[5]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: min   xxt_buf=%" PetscInt_FMT "\n", PCTFS_my_id, vals[6]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: max   xxt_buf=%" PetscInt_FMT "\n", PCTFS_my_id, vals[7]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: avg   xxt_buf=%g\n", PCTFS_my_id, (double)(1.0 * vals[8] / PCTFS_num_nodes)));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: min   xxt_slv=%g\n", PCTFS_my_id, (double)PetscRealPart(fvals[0])));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: max   xxt_slv=%g\n", PCTFS_my_id, (double)PetscRealPart(fvals[1])));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%d :: avg   xxt_slv=%g\n", PCTFS_my_id, (double)PetscRealPart(fvals[2] / PCTFS_num_nodes)));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*
 
 Description: get A_local, local portion of global coarse matrix which
@@ -761,9 +714,8 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
 
 static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data)
 {
-  mv_info *mvi;
+  mv_info *mvi = (mv_info *)malloc(sizeof(mv_info));
 
-  mvi               = (mv_info *)malloc(sizeof(mv_info));
   mvi->n            = n;
   mvi->m            = m;
   mvi->n_global     = -1;

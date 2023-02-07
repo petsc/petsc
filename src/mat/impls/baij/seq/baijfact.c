@@ -11,51 +11,51 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B, Mat A, const MatFactorInfo *i
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
   const PetscInt *r, *ic;
-  PetscInt        i, j, k, nz, nzL, row, *pj;
   const PetscInt  n = a->mbs, *ai = a->i, *aj = a->j, *bi = b->i, *bj = b->j, bs2 = a->bs2;
   const PetscInt *ajtmp, *bjtmp, *bdiag = b->diag;
   MatScalar      *rtmp, *pc, *mwork, *pv;
-  MatScalar      *aa = a->a, *v;
-  PetscInt        flg;
-  PetscReal       shift = info->shiftamount;
-  PetscBool       allowzeropivot, zeropivotdetected;
+  MatScalar      *aa             = a->a, *v;
+  PetscReal       shift          = info->shiftamount;
+  const PetscBool allowzeropivot = PetscNot(A->erroriffailure);
 
   PetscFunctionBegin;
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));
-  allowzeropivot = PetscNot(A->erroriffailure);
 
   /* generate work space needed by the factorization */
   PetscCall(PetscMalloc2(bs2 * n, &rtmp, bs2, &mwork));
   PetscCall(PetscArrayzero(rtmp, bs2 * n));
 
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     /* zero rtmp */
     /* L part */
-    nz    = bi[i + 1] - bi[i];
+    PetscInt *pj;
+    PetscInt  nzL, nz = bi[i + 1] - bi[i];
     bjtmp = bj + bi[i];
-    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
+    for (PetscInt j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* U part */
     nz    = bdiag[i] - bdiag[i + 1];
     bjtmp = bj + bdiag[i + 1] + 1;
-    for (j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
+    for (PetscInt j = 0; j < nz; j++) PetscCall(PetscArrayzero(rtmp + bs2 * bjtmp[j], bs2));
 
     /* load in initial (unfactored row) */
     nz    = ai[r[i] + 1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
     v     = aa + bs2 * ai[r[i]];
-    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmp[j]], v + bs2 * j, bs2));
+    for (PetscInt j = 0; j < nz; j++) PetscCall(PetscArraycpy(rtmp + bs2 * ic[ajtmp[j]], v + bs2 * j, bs2));
 
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i + 1] - bi[i];
-    for (k = 0; k < nzL; k++) {
-      row = bjtmp[k];
-      pc  = rtmp + bs2 * row;
-      for (flg = 0, j = 0; j < bs2; j++) {
+    for (PetscInt k = 0; k < nzL; k++) {
+      PetscBool flg = PETSC_FALSE;
+      PetscInt  row = bjtmp[k];
+
+      pc = rtmp + bs2 * row;
+      for (PetscInt j = 0; j < bs2; j++) {
         if (pc[j] != (PetscScalar)0.0) {
-          flg = 1;
+          flg = PETSC_TRUE;
           break;
         }
       }
@@ -67,7 +67,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B, Mat A, const MatFactorInfo *i
         pj = b->j + bdiag[row + 1] + 1; /* beginning of U(row,:) */
         pv = b->a + bs2 * (bdiag[row + 1] + 1);
         nz = bdiag[row] - bdiag[row + 1] - 1; /* num of entries inU(row,:), excluding diag */
-        for (j = 0; j < nz; j++) {
+        for (PetscInt j = 0; j < nz; j++) {
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v = rtmp + 4 * pj[j];
@@ -83,20 +83,24 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B, Mat A, const MatFactorInfo *i
     pv = b->a + bs2 * bi[i];
     pj = b->j + bi[i];
     nz = bi[i + 1] - bi[i];
-    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
+    for (PetscInt j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
 
     /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv = b->a + bs2 * bdiag[i];
     pj = b->j + bdiag[i];
     PetscCall(PetscArraycpy(pv, rtmp + bs2 * pj[0], bs2));
-    PetscCall(PetscKernel_A_gets_inverse_A_2(pv, shift, allowzeropivot, &zeropivotdetected));
-    if (zeropivotdetected) B->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    {
+      PetscBool zeropivotdetected;
+
+      PetscCall(PetscKernel_A_gets_inverse_A_2(pv, shift, allowzeropivot, &zeropivotdetected));
+      if (zeropivotdetected) B->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    }
 
     /* U part */
     pv = b->a + bs2 * (bdiag[i + 1] + 1);
     pj = b->j + bdiag[i + 1] + 1;
     nz = bdiag[i] - bdiag[i + 1] - 1;
-    for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
+    for (PetscInt j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
   }
 
   PetscCall(PetscFree2(rtmp, mwork));

@@ -9,8 +9,6 @@
 PetscFunctionList MatOrderingList              = NULL;
 PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat, MatOrderingType, IS *, IS *);
-
 PetscErrorCode MatGetOrdering_Flow(Mat mat, MatOrderingType type, IS *irow, IS *icol)
 {
   PetscFunctionBegin;

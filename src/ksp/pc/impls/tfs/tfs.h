@@ -328,13 +328,6 @@ assumes x has been initialized to be b
 PETSC_INTERN PetscErrorCode XXT_solve(xxt_ADT, PetscScalar *, PetscScalar *);
 
 /*************************************xxt.h************************************
-Function: XXT_stats
-
-Input : handle
-**************************************xxt.h***********************************/
-PETSC_INTERN PetscErrorCode XXT_stats(xxt_ADT);
-
-/*************************************xxt.h************************************
 Function: XXT_sp_1()
 
 Input : pointer to ADT
