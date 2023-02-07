@@ -383,8 +383,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
       PetscCall(VecPointwiseMult(X, lmvm->J0diag, Y));
     } else {
       /* User has defined a scalar value for J0 */
-      PetscCall(VecCopy(X, Y));
-      PetscCall(VecScale(Y, lmvm->J0scalar));
+      PetscCall(VecAXPBY(Y, lmvm->J0scalar, 0.0, X));
     }
   } else {
     /* There is no J0 representation so just apply an identity matrix */
@@ -446,8 +445,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
     if (lmvm->J0diag) {
       PetscCall(VecPointwiseDivide(X, Y, lmvm->J0diag));
     } else {
-      PetscCall(VecCopy(X, Y));
-      PetscCall(VecScale(Y, 1.0 / lmvm->J0scalar));
+      PetscCall(VecAXPBY(Y, 1.0 / lmvm->J0scalar, 0.0, X));
     }
   } else {
     /* There is no J0 representation so just apply an identity matrix */

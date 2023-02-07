@@ -29,32 +29,25 @@ PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same, allocate = PETSC_FALSE;
-  PetscInt  m, n, M, N;
-  VecType   type;
+  VecType   vtype;
 
   PetscFunctionBegin;
   if (lmvm->allocated) {
     VecCheckMatCompatible(B, X, 2, F, 3);
-    PetscCall(VecGetType(X, &type));
-    PetscCall(PetscObjectTypeCompare((PetscObject)lmvm->Xprev, type, &same));
+    PetscCall(VecGetType(X, &vtype));
+    PetscCall(PetscObjectTypeCompare((PetscObject)lmvm->Xprev, vtype, &same));
     if (!same) {
       /* Given X vector has a different type than allocated X-type data structures.
          We need to destroy all of this and duplicate again out of the given vector. */
       allocate = PETSC_TRUE;
       PetscCall(MatLMVMReset(B, PETSC_TRUE));
     }
-  } else {
-    allocate = PETSC_TRUE;
-  }
+  } else allocate = PETSC_TRUE;
   if (allocate) {
-    PetscCall(VecGetLocalSize(X, &n));
-    PetscCall(VecGetSize(X, &N));
-    PetscCall(VecGetLocalSize(F, &m));
-    PetscCall(VecGetSize(F, &M));
-    B->rmap->n = m;
-    B->cmap->n = n;
-    B->rmap->N = M > -1 ? M : B->rmap->N;
-    B->cmap->N = N > -1 ? N : B->cmap->N;
+    PetscCall(VecGetType(X, &vtype));
+    PetscCall(MatSetVecType(B, vtype));
+    PetscCall(PetscLayoutReference(F->map, &B->rmap));
+    PetscCall(PetscLayoutReference(X->map, &B->cmap));
     PetscCall(VecDuplicate(X, &lmvm->Xprev));
     PetscCall(VecDuplicate(F, &lmvm->Fprev));
     if (lmvm->m > 0) {
