@@ -417,11 +417,11 @@ class FunctionParameterList(ParameterList):
         docstring.add_error_from_diagnostic(diag)
     return
 
-  def _check_valid_param_list_from_cursor(self, linter, docstring, cursor_list):
+  def _check_valid_param_list_from_cursor(self, linter, docstring, arg_cursors):
     """
     Ensure that the parameter list matches the documented values, and that their order is correct
     """
-    if cursor_list and not self:
+    if arg_cursors and not self:
       # none of the function arguments are documented
       diag = docstring.make_diagnostic(
         self.diags.parameter_documentation,
@@ -430,14 +430,14 @@ class FunctionParameterList(ParameterList):
       ).add_note(
         docstring.make_error_message(
           'Parameters defined here',
-          SourceRange.from_locations(cursor_list[0].extent.start, cursor_list[-1].extent.end)
+          SourceRange.from_locations(arg_cursors[0].extent.start, arg_cursors[-1].extent.end)
         ),
-        location=cursor_list[0].extent.start
+        location=arg_cursors[0].extent.start
       )
       docstring.add_error_from_diagnostic(diag)
       return
 
-    if not cursor_list:
+    if not arg_cursors:
       # function has no arguments, so check there are no parameter docstrings, if so, we can
       # delete them
       if self and len(self.items.values()):
@@ -463,10 +463,27 @@ class FunctionParameterList(ParameterList):
           )
       return new_cursor_list
 
-    cursor_list = get_recursive_cursor_list(cursor_list)
-    arg_names   = [a.name for a in cursor_list if a.name]
+    arg_cursors = get_recursive_cursor_list(arg_cursors)
+    arg_names   = [a.name for a in arg_cursors if a.name]
     arg_seen    = [False] * len(arg_names)
     not_found   = []
+
+    def mark_name_as_seen(name):
+      idx = 0
+      while 1:
+        # in case of multiple arguments of the same name, we need to loop until we
+        # find an index that has not yet been found
+        try:
+          idx = arg_names.index(name, idx)
+        except ValueError:
+          return -1
+        if not arg_seen[idx]:
+          # argument exists and has not been found yet
+          break
+        # argument exists but has already been claimed
+        idx += 1
+      arg_seen[idx] = True
+      return idx
 
     solitary_param_diag = self.diags.solitary_parameter
     for _, group in self.items.items():
@@ -493,23 +510,12 @@ class FunctionParameterList(ParameterList):
           sub_args = (arg,)
 
         for sub in sub_args:
-          idx = 0
-          try:
-            while 1:
-              # in case of multiple arguments of the same name, we need to loop until we
-              # find an index that has not yet been found
-              idx = arg_names.index(sub, idx)
-              if not arg_seen[idx]:
-                # argument exists and has not been found yet
-                break
-              # argument exists but has already been claimed
-              idx += 1
-          except ValueError:
+          idx = mark_name_as_seen(sub)
+          if idx == -1:
             # argument was not found at all
             not_found.append((sub, docstring.make_source_range(sub, descr_item.text, loc.start.line)))
             remove.add(i)
           else:
-            arg_seen[idx] = True
             indices.append(idx)
             DescribableItem.cast(descr_item, sep='-').check(docstring, self, loc, expected_sep='-')
 
@@ -536,14 +542,26 @@ class FunctionParameterList(ParameterList):
         except IndexError:
           pass
         else:
-          match_cursor = [c for c in cursor_list if c.name == arg_match][0]
+          match_cursor = [c for c in arg_cursors if c.name == arg_match][0]
           message      = f'{message}\n\nmaybe you meant {match_cursor.get_formatted_blurb()}'
           args_left.remove(arg_match)
+          assert mark_name_as_seen(arg_match) != -1, f'{arg_match=} was not found in {arg_names=}'
         docstring.add_error_from_diagnostic(Diagnostic(diag, message, loc.start, patch=patch))
 
     undoc_param_diag = self.diags.parameter_documentation
-    for mess in map("Undocumented parameter '{}' not found in parameter section".format, args_left):
-      docstring.add_error_from_source_range(undoc_param_diag, mess, self.extent, highlight=False)
+    for arg in args_left:
+      idx = mark_name_as_seen(arg)
+      assert idx != -1, f'{arg=} was not found in {arg_names=}'
+      diag = docstring.make_diagnostic(
+        undoc_param_diag, f'Undocumented parameter \'{arg}\' not found in parameter section',
+        self.extent, highlight=False
+      ).add_note(
+        docstring.make_error_message(
+          f'Parameter \'{arg}\' defined here', arg_cursors[idx], num_context=1
+        ),
+        location=arg_cursors[idx].extent.start
+      )
+      docstring.add_error_from_diagnostic(diag)
     return
 
   def check(self, linter, cursor, docstring):
@@ -783,15 +801,15 @@ class SeeAlso(InlineList):
     Ensure that the seealso list does not contain the name of the cursors symbol, i.e. that the
     docstring is not self-referential
     """
-    item_remain   = []
-    self_ref_diag = self.diags.self_reference
-    symbol_name   = Cursor.get_name_from_cursor(cursor)
+    item_remain = []
+    symbol_name = Cursor.get_name_from_cursor(cursor)
     for line_after_colon, sub_items in items:
       for loc, text in sub_items:
         if text.rstrip('()') == symbol_name:
           mess = f"Found self-referential seealso entry '{text}'; your documentation may be good but it's not *that* good"
           docstring.add_error_from_source_range(
-            self_ref_diag, mess, loc, patch=self.__make_deletion_patch(loc, text, loc == last_loc)
+            self.diags.self_reference, mess, loc,
+            patch=self.__make_deletion_patch(loc, text, loc == last_loc)
           )
         else:
           item_remain.append((loc, text))
@@ -804,14 +822,13 @@ class SeeAlso(InlineList):
     def enclosed_by(string, char):
       return string.startswith(char) and string.endswith(char)
 
-    backtick_diag = self.diags.backticks
-    btick         = self.special_chars
+    btick = self.special_chars
     assert btick == '`'
     for loc, text in item_remain:
       if not enclosed_by(text, btick):
-        mess = f"seealso symbol '{text}' not enclosed with '{btick}'"
         docstring.add_error_from_source_range(
-          backtick_diag, mess, loc, patch=Patch(loc, f'{btick}{text.replace(btick, "")}{btick}')
+          self.diags.backticks, f"seealso symbol '{text}' not enclosed with '{btick}'",
+          loc, patch=Patch(loc, f'{btick}{text.replace(btick, "")}{btick}')
         )
     return
 

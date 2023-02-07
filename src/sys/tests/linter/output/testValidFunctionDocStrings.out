@@ -1152,6 +1152,12 @@ Undocumented parameter 'unknown' not found in parameter section [-fdoc-param-lis
   285:   Level: beginner
   286: 
 
+./src/sys/tests/linter/testValidFunctionDocStrings.c:289:45 Note: Parameter 'unknown' defined here:
+  288: M@*/
+> 289: PetscErrorCode testExplicitSynopsis_Private(PetscScalar unknown, PetscInt foo, PetscReal bar, void *baz)
+                                                   ^^^^^^^^^^^^^^^^^^^
+  290: {
+
 ERROR 12: ./src/sys/tests/linter/testValidFunctionDocStrings.c:310:16
 'testBadDocStringMissingChar' of type 'PetscErrorCode (PetscInt)' (a.k.a. 'int (int)')
   308: .seealso: `testBadDocString()`
@@ -1240,6 +1246,12 @@ Undocumented parameter 'arg' not found in parameter section [-fdoc-param-list-fu
 > 375: 
   376:   Level: beg
   377: 
+
+./src/sys/tests/linter/testValidFunctionDocStrings.c:381:48 Note: Parameter 'arg' defined here:
+  380: 
+> 381: PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)
+                                                      ^^^^^^^
+  382: {
 
 Unknown Level subheading 'beg', expected one of beginner, intermediate, advanced, developer, or deprecated [-fdoc-inline-list-level-spelling]:
   374: . another_arg_asd22 - another arg
