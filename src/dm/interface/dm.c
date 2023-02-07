@@ -4757,7 +4757,7 @@ PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf)
 
   Input Parameters:
 + dm - The `DM`
-- sf - The` PetscSF`
+- sf - The `PetscSF`
 
   Level: intermediate
 

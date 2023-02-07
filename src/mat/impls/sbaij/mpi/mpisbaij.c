@@ -2185,11 +2185,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
    and `MATMPISBAIJ` otherwise.
 
    Options Database Key:
-. -mat_type sbaij - sets the matrix type to "sbaij" during a call to MatSetFromOptions()
+. -mat_type sbaij - sets the matrix type to `MATSBAIJ` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MATSEQSBAIJ`, `MATMPISBAIJ`, `MatCreateSBAIJ`, `MATSEQSBAIJ`, `MATMPISBAIJ`
+.seealso: `MATSEQSBAIJ`, `MATMPISBAIJ`, `MatCreateSBAIJ()`, `MATSEQSBAIJ`, `MATMPISBAIJ`
 M*/
 
 /*@C
@@ -2223,7 +2223,7 @@ M*/
 
    Notes:
 
-   If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one processor
+   If `PETSC_DECIDE` or `PETSC_DETERMINE` is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
 
    If the *_nnz parameter is given then the *_nz parameter is ignored
@@ -2307,7 +2307,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 .  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
 .  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local
-           submatrix  (same for all local rows)
+           submatrix (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows
            in the upper triangular portion of the in diagonal portion of the local
            (possibly different for each block block row) or NULL.
@@ -2340,7 +2340,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   If` PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one processor
+   If `PETSC_DECIDE` or `PETSC_DETERMINE` is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
 
    If the *_nnz parameter is given then the *_nz parameter is ignored
@@ -2352,9 +2352,9 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
    local matrix (a rectangular submatrix).
 
    The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either d_nz or d_nnz (not both).  Set
+   the local submatrix with either d_nz or d_nnz (not both). Set
    d_nz=PETSC_DEFAULT and d_nnz=NULL for PETSc to control dynamic
-   memory allocation.  Likewise, specify preallocated storage for the
+   memory allocation. Likewise, specify preallocated storage for the
    off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
 
    Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
@@ -2371,14 +2371,14 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 
    Thus, any entries in the d locations are stored in the d (diagonal)
    submatrix, and any entries in the o locations are stored in the
-   o (off-diagonal) submatrix.  Note that the d matrix is stored in
+   o (off-diagonal) submatrix. Note that the d matrix is stored in
    MatSeqSBAIJ format and the o submatrix in `MATSEQBAIJ` format.
 
    Now d_nz should indicate the number of block nonzeros per row in the upper triangular
    plus the diagonal part of the d matrix,
    and o_nz should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
+   one expects d_nz >> o_nz. For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
    matrices.
 

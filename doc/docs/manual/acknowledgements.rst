@@ -40,7 +40,7 @@ Earlier contributors to PETSc include:
    ``SNESPATCH``;
 
 -  Paulo Goldfeld - the balancing Neumann-Neumann preconditioner
-   (```PCNN``);
+   (``PCNN``);
 
 -  Matt Hille;
 

@@ -921,11 +921,11 @@ M*/
 
    This routine is logically collective because state equality comparison needs to be possible without communication.
 
-   `Mat` also has `MatGetNonzeroState()` and `MatSetNonzeroState()` for tracking changes to the nonzero structure.
+   `Mat` also has `MatGetNonzeroState()` for tracking changes to the nonzero structure.
 
    Level: developer
 
-.seealso: `PetscObjectStateGet()`, `MatSetNonzeroState()`, `PetscObject`
+.seealso: `PetscObjectStateGet()`, `PetscObject`
 
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++, PETSC_SUCCESS)

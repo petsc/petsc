@@ -1240,7 +1240,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    `PCTELESCOPE` will interpret the coarse `DM` as being defined on a sub-communicator of c.
    The communicator associated with dmcoarse will define the c' to be used within `PCTELESCOPE`.
    `PCTELESCOPE` will check that c' is in fact a sub-communicator of c. If it is not, an error will be reported.
-   The intention of this setup type is that` PCTELESCOPE` will use an existing (e.g. user defined) communicator hierarchy, say as would be
+   The intention of this setup type is that `PCTELESCOPE` will use an existing (e.g. user defined) communicator hierarchy, say as would be
    available with using multi-grid on unstructured meshes.
    This setup will not use the command line options -pc_telescope_reduction_factor or -pc_telescope_subcomm_type.
    Any explicitly defined nullspace or near nullspace vectors attached to the original Bmat operator (B) are extracted, scattered into the correct ordering consistent with dmcoarse and set on B'.

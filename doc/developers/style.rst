@@ -154,7 +154,7 @@ Even with the use of ``clang-format`` there are still many decisions about code 
    As a rule, always try to wrap the function first, if this fails to compile you do
    not need to add the error checking.
 
-   Calls to external package functions are generally made with ```PetscCallExternal()`` or its variants that are specialized for particular packages, for example ```PetscCallBLAS()``
+   Calls to external package functions are generally made with ``PetscCallExternal()`` or its variants that are specialized for particular packages, for example ``PetscCallBLAS()``
 
 #. Single operation ``if`` and ``else`` commands should not be wrapped in braces. They should be done as follows,
 

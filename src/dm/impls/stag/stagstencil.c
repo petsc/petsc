@@ -8,12 +8,12 @@ const char *const DMStagStencilTypes[] = {"NONE", "STAR", "BOX", "DMStagStencilT
 const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DOWN", "BACK_DOWN_RIGHT", "BACK_LEFT", "BACK", "BACK_RIGHT", "BACK_UP_LEFT", "BACK_UP", "BACK_UP_RIGHT", "DOWN_LEFT", "DOWN", "DOWN_RIGHT", "LEFT", "ELEMENT", "RIGHT", "UP_LEFT", "UP", "UP_RIGHT", "FRONT_DOWN_LEFT", "FRONT_DOWN", "FRONT_DOWN_RIGHT", "FRONT_LEFT", "FRONT", "FRONT_RIGHT", "FRONT_UP_LEFT", "FRONT_UP", "FRONT_UP_RIGHT", "DMStagStencilLocation", "", NULL};
 
 /*@C
-  DMStagCreateISFromStencils - Create an `IS`, using global numberings, for a subset of DOF in a DMStag object
+  DMStagCreateISFromStencils - Create an `IS`, using global numberings, for a subset of DOF in a `DMSTAG` object
 
   Collective
 
   Input Parameters:
-+ dm - the DMStag object
++ dm - the `DMStag` object
 . n_stencil - the number of stencils provided
 - stencils - an array of `DMStagStencil` objects (`i`, `j`, and `k` are ignored)
 
@@ -25,7 +25,7 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
 
   Level: advanced
 
-.seealso: `DMSTAG`, `IS`, `DMStagStencil`, `DMCreateGlobalVector`
+.seealso: [](chapter_stag), `DMSTAG`, `IS`, `DMStagStencil`, `DMCreateGlobalVector`
 @*/
 PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStencil *stencils, IS *is)
 {
@@ -121,12 +121,12 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
 }
 
 /*@C
-  DMStagGetLocationDOF - Get number of DOF associated with a given point in a DMStag grid
+  DMStagGetLocationDOF - Get number of DOF associated with a given point in a `DMSTAG` grid
 
   Not Collective
 
   Input Parameters:
-+ dm - the DMStag object
++ dm - the `DMSTAG` object
 - loc - grid point (see `DMStagStencilLocation`)
 
   Output Parameter:
@@ -134,7 +134,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
 
   Level: intermediate
 
-.seealso: `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMDAGetDof()`
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMDAGetDof()`
 @*/
 PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *dof)
 {
@@ -289,7 +289,7 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
   Not Collective
 
   Input Parameters:
-+ dm - the DMStag object
++ dm - the `DMSTAG` object
 . mat - the matrix
 . nRow - number of rows
 . posRow - grid locations (including components) of rows
@@ -301,7 +301,7 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
 
   Level: advanced
 
-.seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
 @*/
 PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, PetscScalar *val)
 {
@@ -326,7 +326,7 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
   Not Collective
 
   Input Parameters:
-+ dm - the DMStag object
++ dm - the `DMSTAG` object
 . mat - the matrix
 . nRow - number of rows
 . posRow - grid locations (including components) of rows
@@ -340,7 +340,7 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
 
   Level: intermediate
 
-.seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatGetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatGetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
 @*/
 PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, const PetscScalar *val, InsertMode insertMode)
 {
@@ -358,13 +358,13 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
 }
 
 /*@C
-  DMStagStencilToIndexLocal - Convert an array of DMStagStencil objects to an array of indices into a local vector.
+  DMStagStencilToIndexLocal - Convert an array of `DMStagStenci`l objects to an array of indices into a local vector.
 
   Not Collective
 
   Input Parameters:
-+ dm - the DMStag object
-. dim - the dimension of the DMStag object
++ dm - the `DMSTAG` object
+. dim - the dimension of the `DMSTAG` object
 . n - the number of `DMStagStencil` objects
 - pos - an array of `n` `DMStagStencil` objects
 
@@ -381,7 +381,7 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
 
   Level: developer
 
-.seealso: `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMGetLocalVector`, `DMCreateLocalVector`
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMGetLocalVector`, `DMCreateLocalVector`
 @*/
 PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const DMStagStencil *pos, PetscInt *ix)
 {
@@ -427,7 +427,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
   Not Collective
 
   Input Parameters:
-+ dm - the DMStag object
++ dm - the `DMSTAG` object
 . vec - the vector object
 . n - the number of values to obtain
 - pos - locations to obtain values from (as an array of `DMStagStencil` values)
@@ -444,7 +444,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
 
   Level: advanced
 
-.seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMStagVecGetArray()`
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMStagVecGetArray()`
 @*/
 PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, PetscScalar *val)
 {
@@ -468,13 +468,13 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
 }
 
 /*@C
-  DMStagVecSetValuesStencil - Set Vec values using global grid indexing
+  DMStagVecSetValuesStencil - Set `Vec` values using global grid indexing
 
   Not Collective
 
   Input Parameters:
-+ dm - the DMStag object
-. vec - the Vec
++ dm - the `DMSTAG` object
+. vec - the `Vec`
 . n - the number of values to set
 . pos - the locations to set values, as an array of `DMStagStencil` structs
 . val - the values to set
@@ -488,7 +488,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
 
   Level: advanced
 
-.seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMStagVecGetArray()`
+.seealso: [](chapter_stag), `DMSTAG`, `Vec`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMStagVecGetArray()`
 @*/
 PetscErrorCode DMStagVecSetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, const PetscScalar *val, InsertMode insertMode)
 {

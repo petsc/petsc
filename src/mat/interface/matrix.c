@@ -5841,10 +5841,10 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
    `MAT_USE_HASH_TABLE` indicates that a hash table be used to improve the
    searches during matrix assembly. When this flag is set, the hash table
    is created during the first matrix assembly. This hash table is
-   used the next time through, during `MatSetVaules()`/`MatSetVaulesBlocked()`
+   used the next time through, during `MatSetValues()`/`MatSetValuesBlocked()`
    to improve the searching of indices. `MAT_NEW_NONZERO_LOCATIONS` flag
    should be used with `MAT_USE_HASH_TABLE` flag. This option is currently
-   supported by` MATMPIBAIJ` format only.
+   supported by `MATMPIBAIJ` format only.
 
    `MAT_KEEP_NONZERO_PATTERN` indicates when `MatZeroRows()` is called the zeroed entries
    are kept in the nonzero structure

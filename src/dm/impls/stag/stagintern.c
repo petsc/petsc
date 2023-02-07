@@ -3,9 +3,8 @@
 
 #include <petsc/private/dmstagimpl.h>
 
-/* Note: this is an internal function but we provide a man page in case it's made public */
 /*@C
-  DMStagDuplicateWithoutSetup - duplicate a DMStag object without setting it up
+  DMStagDuplicateWithoutSetup - duplicate a `DMSTAG` object without setting it up
 
   Collective
 
@@ -16,19 +15,21 @@
   Output Parameter:
 . newdm  - The new `DM` object
 
+  Level: developer
+
   Developer Notes:
-  Copies over all of the state for a DMStag object, except that which is
+  Copies over all of the state for a `DMSTAG` object, except that which is
   populated during `DMSetUp()`.  This function is used within (all) other
   functions that require an un-setup clone, which is common when duplicating,
-  coarsening, refining, or creating compatible DMs with different fields.  For
+  coarsening, refining, or creating compatible `DM`s with different fields.  For
   this reason it also accepts an MPI communicator as an argument (though note
   that at the time of this writing, implementations of `DMCoarsen()` and `DMRefine()`
   don't usually seem to respect their "comm" arguments). This function could be
-  pushed up to the general DM API (and perhaps given a different name).
+  pushed up to the general `DM` API (and perhaps given a different name).
 
-  Level: developer
+  This is an internal function but we provide a man page in case it's made public
 
-  .seealso: `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
+.seealso: [](chapter_stag), `DMSTAG`, `DM`, `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
 {
