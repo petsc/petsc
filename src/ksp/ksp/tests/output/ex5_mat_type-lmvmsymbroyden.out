@@ -1,0 +1,210 @@
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 0
+  Number of updates: 0
+  Number of rejects: 0
+  Number of resets: 0
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 0
+    Number of updates: 0
+    Number of rejects: 0
+    Number of resets: 0
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 1
+  Number of updates: 1
+  Number of rejects: 0
+  Number of resets: 0
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 1
+    Number of updates: 1
+    Number of rejects: 0
+    Number of resets: 0
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 1
+  Number of updates: 1
+  Number of rejects: 1
+  Number of resets: 0
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 0
+    Number of updates: 1
+    Number of rejects: 0
+    Number of resets: 1
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 1
+  Number of updates: 1
+  Number of rejects: 2
+  Number of resets: 0
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 0
+    Number of updates: 1
+    Number of rejects: 0
+    Number of resets: 2
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 0
+  Number of updates: 1
+  Number of rejects: 3
+  Number of resets: 1
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 0
+    Number of updates: 1
+    Number of rejects: 0
+    Number of resets: 5
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 1
+  Number of updates: 2
+  Number of rejects: 3
+  Number of resets: 1
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 0
+    Number of updates: 1
+    Number of rejects: 0
+    Number of resets: 5
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 1
+  Number of updates: 2
+  Number of rejects: 4
+  Number of resets: 1
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 0
+    Number of updates: 1
+    Number of rejects: 0
+    Number of resets: 6
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 1
+  Number of updates: 2
+  Number of rejects: 5
+  Number of resets: 1
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 0
+    Number of updates: 1
+    Number of rejects: 0
+    Number of resets: 7
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 2
+  Number of updates: 3
+  Number of rejects: 5
+  Number of resets: 1
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 1
+    Number of updates: 2
+    Number of rejects: 0
+    Number of resets: 7
+Mat Object: 1 MPI process
+  type: lmvmsymbroyden
+  Scale type: DIAGONAL
+  Scale history: 1
+  Scale params: alpha=1., beta=0.5, rho=1.
+  Convex factors: phi=0.125, theta=0.125
+  Max. storage: 5
+  Used storage: 3
+  Number of updates: 4
+  Number of rejects: 5
+  Number of resets: 1
+  Mat Object: (J0_) 1 MPI process
+    type: lmvmdiagbroyden
+    Scale history: 1
+    Scale params: alpha=1., beta=0.5, rho=1.
+    Convex factor: theta=0.125
+    Max. storage: 1
+    Used storage: 1
+    Number of updates: 3
+    Number of rejects: 0
+    Number of resets: 7
