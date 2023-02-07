@@ -302,10 +302,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
    matrix used for a Jacobian. L-SR1 is symmetric by construction, but is not
    guaranteed to be positive-definite.
 
-   The provided local and global sizes must match the solution and function vectors
-   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-SR1 matrix will have
-   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
-   parallel. To use the L-SR1 matrix with other vector types, the matrix must be
+   To use the L-SR1 matrix with other vector types, the matrix must be
    created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.

@@ -686,10 +686,7 @@ PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType s
    phi is restricted to the range [0, 1], where the L-SymBrdn matrix is guaranteed
    to be symmetric positive-definite.
 
-   The provided local and global sizes must match the solution and function vectors
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-SymBrdn matrix will have
-   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in
-   parallel. To use the L-SymBrdn matrix with other vector types, the matrix must be
+   To use the L-SymBrdn matrix with other vector types, the matrix must be
    created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.

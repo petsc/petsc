@@ -428,10 +428,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
    used for approximating Jacobians. L-DFP is symmetric positive-definite by
    construction, and is the dual of L-BFGS where Y and S vectors swap roles.
 
-   The provided local and global sizes must match the solution and function vectors
-   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-DFP matrix will have
-   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
-   parallel. To use the L-DFP matrix with other vector types, the matrix must be
+   To use the L-DFP matrix with other vector types, the matrix must be
    created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
