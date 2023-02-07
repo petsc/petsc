@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: `MATAIJ`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
+.seealso: `Mat`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
 PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is)
@@ -1244,7 +1244,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 /*@C
    MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
    For good matrix assembly performance the user should preallocate the matrix storage by
-   setting the parameters d_nz (or d_nnz) and o_nz (or o_nnz).
+   setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
 
    Collective
 
@@ -1254,7 +1254,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            (same value is used for all local rows)
 .  d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
-           or NULL (`PETSC_NULL_INTEGER` in Fortran), if d_nz is used to specify the nonzero structure.
+           or NULL (`PETSC_NULL_INTEGER` in Fortran), if `d_nz` is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e 'm'.
            For matrices that will be factored, you must leave room for (and set)
            the diagonal entry even if it is zero.
@@ -1262,41 +1262,15 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            submatrix (same value is used for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if o_nz is used to specify the nonzero
+           each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if `o_nz` is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
-   If the *_nnz parameter is given then the *_nz parameter is ignored
-
-   The stored row and column indices begin with zero.
-
-   The parallel matrix is partitioned such that the first m0 rows belong to
-   process 0, the next m1 rows belong to process 1, the next m2 rows belong
-   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
-
-   The DIAGONAL portion of the local submatrix of a processor can be defined
-   as the submatrix which is obtained by extraction the part corresponding to
-   the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
-   first row that belongs to the processor, r2 is the last row belonging to
-   the this processor, and c1-c2 is range of indices of the local part of a
-   vector suitable for applying the matrix to.  This is an mxn matrix.  In the
-   common case of a square matrix, the row and column ranges are the same and
-   the DIAGONAL part is also square. The remaining portion of the local
-   submatrix (mxN) constitute the OFF-DIAGONAL portion.
-
-   If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
-
-   You can call `MatGetInfo()` to get information on how effective the preallocation was;
-   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option -info and look for messages with the string
-   malloc in them to see if additional memory allocation was needed.
-
    Example usage:
-
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Lets assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
+   as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1333,10 +1307,10 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
    part as SeqSELL matrices. for eg: proc1 will store [E] as a SeqSELL
    matrix, ans [DF] as another SeqSELL matrix.
 
-   When d_nz, o_nz parameters are specified, d_nz storage elements are
+   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
    allocated for every row of the local diagonal submatrix, and o_nz
    storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_nz and o_nz is to use the max nonzerors per local
+   One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
    rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
    In this case, the values of d_nz,o_nz are:
 .vb
@@ -1349,7 +1323,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
    for proc3. i.e we are using 12+15+10=37 storage locations to store
    34 values.
 
-   When d_nnz, o_nnz parameters are specified, the storage is specified
+   When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
    for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
    In the above case the values for d_nnz,o_nnz are:
 .vb
@@ -1362,7 +1336,33 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
+   Notes:
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
+   The stored row and column indices begin with zero.
+
+   The parallel matrix is partitioned such that the first m0 rows belong to
+   process 0, the next m1 rows belong to process 1, the next m2 rows belong
+   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+
+   The DIAGONAL portion of the local submatrix of a processor can be defined
+   as the submatrix which is obtained by extraction the part corresponding to
+   the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
+   first row that belongs to the processor, r2 is the last row belonging to
+   the this processor, and c1-c2 is range of indices of the local part of a
+   vector suitable for applying the matrix to.  This is an mxn matrix.  In the
+   common case of a square matrix, the row and column ranges are the same and
+   the DIAGONAL part is also square. The remaining portion of the local
+   submatrix (mxN) constitute the OFF-DIAGONAL portion.
+
+   If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
+
+   You can call `MatGetInfo()` to get information on how effective the preallocation was;
+   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+   You can also run with the option -info and look for messages with the string
+   malloc in them to see if additional memory allocation was needed.
+
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
           `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
 @*/
 PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
@@ -1383,7 +1383,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
 
    Level: beginner
 
-.seealso: `MatCreateSell()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
+.seealso: `Mat`, `MatCreateSell()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
 /*@C
@@ -1476,7 +1476,7 @@ M*/
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Lets assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
+   as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1542,7 +1542,7 @@ M*/
 
    Level: intermediate
 
-.seealso: `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
+.seealso: `Mat`, `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
           `MATMPISELL`, `MatCreateMPISELLWithArrays()`
 @*/
 PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[], Mat *A)
@@ -1585,14 +1585,15 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
    Input Parameters:
 +    A - the matrix
 .    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
--    row, col - index sets of rows and columns to extract (or NULL)
+.    row - index sets of rows to extract (or `NULL`)
+-    col - index sets of columns to extract (or `NULL`)
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated
 
     Level: developer
 
-.seealso: `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
+.seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
 @*/
 PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc)
 {
@@ -1812,7 +1813,7 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
 
   Level: beginner
 
-.seealso: `MATSELL`, `MATSEQSELL` `MatCreateSELL()`
+.seealso: `Mat`, `MATSELL`, `MATSEQSELL` `MatCreateSELL()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
 {
