@@ -470,10 +470,30 @@ int main(int argc, char *argv[])
       nsize: 3
       args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2
 
-   test:
+   testset:
       suffix: 3
       nsize: 3
-      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pack_dm_mat_type {{aij nest}} -pc_type fieldsplit -pc_fieldsplit_dm_splits -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi
+      output_file: output/ex28_3.out
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator  -pc_type fieldsplit -pc_fieldsplit_dm_splits -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi
+
+      test:
+        suffix: std
+        args: -pack_dm_mat_type {{aij nest}}
+
+      test:
+        suffix: cuda
+        requires: cuda
+        args: -pack_dm_mat_type aijcusparse -pack_dm_vec_type cuda
+
+      test:
+        suffix: hip
+        requires: hip
+        args: -pack_dm_mat_type aijhipsparse -pack_dm_vec_type hip
+
+      test:
+        suffix: kok
+        requires: kokkos_kernels
+        args: -pack_dm_mat_type aijkokkos -pack_dm_vec_type kokkos
 
    test:
       suffix: 4

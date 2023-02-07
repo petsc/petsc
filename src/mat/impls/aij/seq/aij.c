@@ -2476,7 +2476,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
   const PetscScalar *aa;
   PetscInt           nrows, ncols;
   PetscInt          *starts, *j_new, *i_new, *aj = a->j, *ai = a->i, ii, *ailen = a->ilen;
-  MatScalar         *a_new, *mat_a;
+  MatScalar         *a_new, *mat_a, *c_a;
   Mat                C;
   PetscBool          stride;
 
@@ -2533,7 +2533,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
     c = (Mat_SeqAIJ *)C->data;
 
     /* loop over rows inserting into submatrix */
-    a_new = c->a;
+    PetscCall(MatSeqAIJGetArrayWrite(C, &a_new)); // Not 'a_new = c->a-new', since that raw usage ignores offload state of C
     j_new = c->j;
     i_new = c->i;
     PetscCall(MatSeqAIJGetArrayRead(A, &aa));
@@ -2546,6 +2546,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
       i_new[i + 1] = i_new[i] + lensi;
       c->ilen[i]   = lensi;
     }
+    PetscCall(MatSeqAIJRestoreArrayWrite(C, &a_new)); // Set C's offload state properly
     PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));
     PetscCall(PetscFree2(lens, starts));
   } else {
@@ -2587,14 +2588,16 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
       PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(C, 0, lens));
     }
     PetscCall(MatSeqAIJGetArrayRead(A, &aa));
+
     c = (Mat_SeqAIJ *)(C->data);
+    PetscCall(MatSeqAIJGetArrayWrite(C, &c_a)); // Not 'c->a', since that raw usage ignores offload state of C
     for (i = 0; i < nrows; i++) {
       row      = irow[i];
       kstart   = ai[row];
       kend     = kstart + a->ilen[row];
       mat_i    = c->i[i];
       mat_j    = c->j + mat_i;
-      mat_a    = c->a + mat_i;
+      mat_a    = c_a + mat_i;
       mat_ilen = c->ilen + i;
       for (k = kstart; k < kend; k++) {
         if ((tcol = smap[a->j[k]])) {
@@ -2615,10 +2618,11 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
 
       mat_i = c->i[i];
       mat_j = c->j + mat_i;
-      mat_a = c->a + mat_i;
+      mat_a = c_a + mat_i;
       ilen  = c->ilen[i];
       PetscCall(PetscSortIntWithScalarArray(ilen, mat_j, mat_a));
     }
+    PetscCall(MatSeqAIJRestoreArrayWrite(C, &c_a));
   }
 #if defined(PETSC_HAVE_DEVICE)
   PetscCall(MatBindToCPU(C, A->boundtocpu));
