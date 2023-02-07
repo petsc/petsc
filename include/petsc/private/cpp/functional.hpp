@@ -83,34 +83,15 @@ struct func_traits : detail::func_traits_impl<decay_t<T>> {
 
 } // namespace Petsc
 
-  #define PETSC_ALIAS_FUNCTION_WITH_PROLOGUE_AND_EPILOGUE_(alias, original, dispatch, prologue, epilogue) \
+  #define PETSC_ALIAS_FUNCTION_WITH_PROLOGUE_AND_EPILOGUE_(alias, original, prologue, epilogue) \
     template <typename... Args> \
-    static inline auto dispatch(int, Args &&...args) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(original(std::forward<Args>(args)...)) \
-    template <typename... Args> \
-    static inline int dispatch(char, Args...) \
-    { \
-      using namespace Petsc::util; \
-      static_assert(is_callable_with<Args...>(original) && always_false<Args...>::value, "function " PetscStringize(original) "() is not callable with given arguments"); \
-      return EXIT_FAILURE; \
-    } \
-    template <typename... Args> \
-    PETSC_NODISCARD auto alias(Args &&...args) PETSC_DECLTYPE_NOEXCEPT_AUTO(dispatch(0, std::forward<Args>(args)...)) \
+    PETSC_NODISCARD auto alias(Args &&...args) PETSC_DECLTYPE_NOEXCEPT_AUTO(original(std::forward<Args>(args)...)) \
     { \
       prologue; \
-      auto ret = dispatch(0, std::forward<Args>(args)...); \
+      auto ret = original(std::forward<Args>(args)...); \
       epilogue; \
       return ret; \
     }
-
-  #define PETSC_ALIAS_FUNCTION_(alias, original, dispatch) PETSC_ALIAS_FUNCTION_WITH_PROLOGUE_AND_EPILOGUE_(alias, original, dispatch, ((void)0), ((void)0))
-
-  #ifndef PetscConcat5
-    #define PetscConcat5_(a, b, c, d, e) a##b##c##d##e
-    #define PetscConcat5(a, b, c, d, e)  PetscConcat5_(a, b, c, d, e)
-  #endif
-
-  // makes prefix_lineno_name
-  #define PETSC_ALIAS_UNIQUE_NAME_INTERNAL(prefix, name) PetscConcat5(prefix, _, __LINE__, _, name)
 
   // PETSC_ALIAS_FUNCTION() - Alias a function
   //
@@ -131,7 +112,7 @@ struct func_traits : detail::func_traits_impl<decay_t<T>> {
   //
   // example usage:
   // PETSC_ALIAS_FUNCTION(bar,foo);
-  #define PETSC_ALIAS_FUNCTION(alias, original) PETSC_ALIAS_FUNCTION_(alias, original, PETSC_ALIAS_UNIQUE_NAME_INTERNAL(PetscAliasFunctionDispatch, original))
+  #define PETSC_ALIAS_FUNCTION(alias, original) PETSC_ALIAS_FUNCTION_WITH_PROLOGUE_AND_EPILOGUE_(alias, original, ((void)0), ((void)0))
 
   // Similar to PETSC_ALIAS_FUNCTION() this macro creates a thin wrapper which passes all
   // arguments to the target function ~except~ the last N arguments. So
@@ -155,6 +136,10 @@ struct func_traits : detail::func_traits_impl<decay_t<T>> {
     static inline auto gobblefn(TupleT &&tuple, Petsc::util::index_sequence<idx...>) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(original(std::get<idx>(tuple)...)) \
     template <typename... Args> \
     PETSC_NODISCARD auto alias(Args &&...args) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(gobblefn(std::forward_as_tuple(args...), Petsc::util::make_index_sequence<sizeof...(Args) - (N)>{}))
+
+  // makes prefix_lineno_name
+  #define PETSC_ALIAS_UNIQUE_NAME_INTERNAL_(a, b, c, d, e) a##b##c##d##e
+  #define PETSC_ALIAS_UNIQUE_NAME_INTERNAL(prefix, name)   PETSC_ALIAS_UNIQUE_NAME_INTERNAL_(prefix, _, __LINE__, _, name)
 
   #define PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS(alias, original, N) PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS_(alias, original, PETSC_ALIAS_UNIQUE_NAME_INTERNAL(PetscAliasFunctionGobbleDispatch, original), N)
 
