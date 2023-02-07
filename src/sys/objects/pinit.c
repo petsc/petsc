@@ -1226,6 +1226,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
    If your main program is C but you call Fortran code that also uses PETSc you need to call `PetscInitializeFortran()` soon after
    calling `PetscInitialize()`.
 
+   Options Database Key for Developers:
+.  -checkfunctionlist - automatically checks that function lists associated with objects are correctly cleaned up. Produces messages of the form:
+    "function name: MatInodeGetInodeSizes_C" if they are not cleaned up. This flag is always set for the test harness (in framework.py)
+
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscInitializeNoArguments()`, `PetscLogGpuTime()`
 @*/
 PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const char help[])
