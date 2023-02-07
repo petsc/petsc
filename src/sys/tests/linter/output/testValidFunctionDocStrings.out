@@ -229,7 +229,7 @@ Docstring name 'testTerbleSpelingDocstring' does not match symbol. Assuming you 
   102:   eiusmod tempor incididunt ut labore et dolore magna aliqua.
   103: 
 
-Unknown section header 'input prametirs', assuming you meant 'Input Parameters' [-fdoc-section-header-spelling]:
+Unknown section header 'input prametirs', assuming you meant 'Input Parameter' [-fdoc-section-header-spelling]:
   102:   eiusmod tempor incididunt ut labore et dolore magna aliqua.
   103: 
 > 104:   input prametirs:
@@ -237,7 +237,7 @@ Unknown section header 'input prametirs', assuming you meant 'Input Parameters' 
   105: + viewer - a PetsViewer
   106: - x - a PetscInt
 
-Unknown section header 'output Psrammmetrs', assuming you meant 'Output Parameters' [-fdoc-section-header-spelling]:
+Unknown section header 'output Psrammmetrs', assuming you meant 'Output Parameter' [-fdoc-section-header-spelling]:
   106: - x - a PetscInt
   107: 
 > 108:   output Psrammmetrs:
@@ -793,7 +793,7 @@ Heading must appear alone on a line, any content must be on the next line [-fdoc
   63: incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident,
   64: sunt in culpa qui officia deserunt mollit anim id est laborum example.
 
-Multiple 'Level' subheadings. Much like Highlanders, there can only be one [-fdoc-inline-list-section-header-unique]:
+Multiple 'Level' subheadings. Much like Highlanders, there can only be one [-fdoc-section-header-unique]:
   50: . z - a nonexistent parameter
   51: 
 > 52:   level: Lorem ipsum dolor sit amet
@@ -839,7 +839,7 @@ Docstring missing synopsis [-fdoc-synopsis-missing-description]:
 
 ./src/sys/tests/linter/testValidFunctionDocStrings.c:83:1 Note: Expected 'testIllFormedMinimalDocString - a very useful description'
 
-Required section 'Level' not found [-fdoc-inline-list-section-header-missing]:
+Required section 'Level' not found [-fdoc-section-header-missing]:
   80: }
   81: 
 > 82: /*

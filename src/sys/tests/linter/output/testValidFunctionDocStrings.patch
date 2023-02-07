@@ -104,7 +104,7 @@
    eiusmod tempor incididunt ut labore et dolore magna aliqua.
  
 -  input prametirs:
-+  Input Parameters:
++  Input Parameter:
  + viewer - a PetsViewer
  - x - a PetscInt
 @@ -107,5 +107,5 @@
@@ -118,7 +118,7 @@
  - x - a PetscInt
  
 -  output Psrammmetrs:
-+  Output Parameters:
++  Output Parameter:
  . y - a PetscScalar pointer
  
 @@ -112,5 +112,5 @@
