@@ -158,7 +158,7 @@ class WorkerPool(mp.queues.JoinableQueue):
       )
     return self
 
-  def walk(self, src_path, exclude_dirs=None, exclude_dir_suff=None, allow_file_suff=None):
+  def walk(self, src_path_list, exclude_dirs=None, exclude_dir_suff=None, allow_file_suff=None):
     if exclude_dirs is None:
       exclude_dirs = exclude_dir_names
     if exclude_dir_suff is None:
@@ -166,12 +166,14 @@ class WorkerPool(mp.queues.JoinableQueue):
     if allow_file_suff is None:
       allow_file_suff = allow_file_extensions
 
-    if src_path.is_file():
-      self.put(src_path)
-    else:
+    for src_path in src_path_list:
+      if src_path.is_file():
+        self.put(src_path)
+        continue
+
       _, initial_dirs, _ = next(os.walk(src_path))
       initial_dirs = [d for d in initial_dirs if d not in exclude_dirs]
-      initial_dirs = {str(src_path/d) for d in initial_dirs if not d.endswith(exclude_dir_suff)}
+      initial_dirs = {str(src_path / d) for d in initial_dirs if not d.endswith(exclude_dir_suff)}
       for root, dirs, files in os.walk(src_path):
         self.__print('Processing directory', root)
         dirs[:] = [d for d in dirs if d not in exclude_dirs]
