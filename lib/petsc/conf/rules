@@ -240,12 +240,6 @@ getautoconfargs:
 #
 #
 
-.c.tex .F.tex:
-	${LGRIND} -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
-
-.make.tex:
-	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
-
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
 .fig.eps:

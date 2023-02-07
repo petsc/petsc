@@ -15,6 +15,7 @@ class Configure(config.package.GNUPackage):
     self.linkedbypetsc      = 0
     self.executablename     = 'cmake'
     self.useddirectly       = 0
+    self.skippackagelibincludedirs = 1
     self.maxminCmakeVersion = (2,0,0) # minimum CMake version needed by all active packages
     return
 

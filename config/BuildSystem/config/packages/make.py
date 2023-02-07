@@ -25,6 +25,7 @@ class Configure(config.package.GNUPackage):
     self.haveGNUMake       = 0
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0
+    self.skippackagelibincludedirs = 1
     self.executablename    = 'make'
     return
 

@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-debugger=<gdb,dbx,etc>',   nargs.Arg(None, None, 'Debugger to use in PETSc'))
+    help.addArgument('PETSc', '-with-debugger=<gdb,dbx,etc>',   nargs.Arg(None, None, 'Default debugger with PETSc -start_in_debugger option'))
     return
 
   def configureDebuggers(self):

@@ -13,6 +13,7 @@ class Configure(config.package.GNUPackage):
     self.parallelMake      = 0
     self.lookforbydefault  = 1
     self.executablename    = 'c2html'
+    self.skippackagelibincludedirs = 1
 
   def setupHelp(self, help):
     import nargs
