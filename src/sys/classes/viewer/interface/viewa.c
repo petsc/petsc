@@ -47,8 +47,7 @@ const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATH
   where it didn't apply (`PETSC_VIEWER_STDOUT_WORLD`) it cause the default behavior
   for that viewer to be used.
 
-    Note:
-    This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
+   This supports passing in a `NULL` for the viewer for use in the debugger, but it should never be called in the code with a `NULL` viewer
 
 .seealso: [](sec_viewers), `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
@@ -98,7 +97,7 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the MATLAB format.
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerFormat`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPopFormat()`
 @*/
 PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat format)
@@ -123,7 +122,7 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
 
    Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerFormat`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPushFormat()`
 @*/
 PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
