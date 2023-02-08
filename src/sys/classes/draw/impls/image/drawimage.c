@@ -1,5 +1,6 @@
 #include <../src/sys/classes/draw/impls/image/drawimage.h> /*I  "petscdraw.h" I*/
 #include <petsc/private/drawimpl.h>                        /*I  "petscdraw.h" I*/
+#include <petscviewer.h>
 
 #if defined(PETSC_USE_DEBUG)
   #define PetscDrawValidColor(color) PetscCheck((color) >= 0 && (color) < 256, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Color value %" PetscInt_FMT " out of range [0..255]", (PetscInt)(color))
@@ -355,13 +356,18 @@ static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-static PetscErrorCode PetscDrawView_Image(PetscDraw draw,PetscViewer viewer)
+static PetscErrorCode PetscDrawView_Image(PetscDraw draw, PetscViewer viewer)
 {
+  PetscBool iascii;
+
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) {
+    const char *filename = draw->savefilename ? draw->savefilename : draw->title;
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Image file name %s\n", filename));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
-}*/
-#define PetscDrawView_Image NULL
+}
 
 /*
 static PetscErrorCode PetscDrawGetMouseButton_Image(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)

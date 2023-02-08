@@ -538,4 +538,9 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
       suffix: 5
       args: -snes_monitor_short -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always -prune_jacobian
       output_file: output/ex1_3.out
+
+   test:
+      suffix: 6
+      args: -snes_monitor draw:image:testfile -viewer_view
+
 TEST*/
