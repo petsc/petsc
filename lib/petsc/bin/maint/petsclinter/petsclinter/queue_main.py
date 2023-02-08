@@ -67,25 +67,34 @@ def __main_loop(file_queue, return_queue, linter):
     raise MainLoopError(filename) from exc
   return
 
+class LockPrinter:
+  __slots__ = ('_verbose', '_print_prefix', '_lock')
+
+  def __init__(self, verbose, print_prefix, lock):
+    self._verbose      = verbose
+    self._print_prefix = print_prefix
+    self._lock         = lock
+    return
+
+  def __call__(self, *args, **kwargs):
+    if self._verbose:
+      kwargs.setdefault('flush', True)
+      with self._lock:
+        print(self._print_prefix, *args, **kwargs)
+    return
+
 def queue_main(clang_lib, updated_check_function_map, updated_classid_map, updated_diagnostics_mngr, compiler_flags, clang_options, verbose, werror, error_queue, return_queue, file_queue, lock):
   """
   main function for worker processes in the queue, does pretty much the same thing the
   main process would do in their place
   """
-  def update_globals(print_prefix):
+  def update_globals():
+    import copy
     from .checks import _register
 
-    def lock_print(*args, **kwargs):
-      if verbose:
-        with lock:
-          kwargs.set_default('flush', True)
-          print(print_prefix, *args, **kwargs)
-    return
-
-    pl.util.set_sync_print(print_fn=lock_print)
-    _register.check_function_map = updated_check_function_map
-    _register.classid_map        = updated_classid_map
-    DiagnosticManager.disabled   = updated_diagnostics_mngr.disabled
+    _register.check_function_map = copy.deepcopy(updated_check_function_map)
+    _register.classid_map        = copy.deepcopy(updated_classid_map)
+    DiagnosticManager.disabled   = copy.deepcopy(updated_diagnostics_mngr.disabled)
     return
 
   # in case errors are thrown before setup is complete
@@ -98,15 +107,13 @@ def queue_main(clang_lib, updated_check_function_map, updated_classid_map, updat
     print_prefix = proc + ' --'[:len('[ROOT]') - len(proc)]
     error_prefix = f'{print_prefix} Exception detected while processing'
 
-    update_globals(print_prefix)
-    pl.sync_print(print_prefix, printbar, 'Performing setup', printbar)
+    update_globals()
+    pl.sync_print = LockPrinter(verbose, print_prefix, lock)
+    pl.sync_print(printbar, 'Performing setup', printbar)
     # initialize libclang, and create a linter instance
     pl.util.initialize_libclang(clang_lib=clang_lib)
-    linter = Linter(
-      compiler_flags,
-      clang_options=clang_options, prefix=print_prefix, verbose=verbose, werror=werror, lock=lock
-    )
-    pl.sync_print(print_prefix, printbar, 'Entering queue  ', printbar)
+    linter = Linter(compiler_flags, clang_options=clang_options, verbose=verbose, werror=werror)
+    pl.sync_print(printbar, 'Entering queue  ', printbar)
 
     # main loop
     __main_loop(file_queue, return_queue, linter)
@@ -121,7 +128,7 @@ def queue_main(clang_lib, updated_check_function_map, updated_classid_map, updat
     except:
       pass
   try:
-    pl.sync_print(print_prefix, printbar, 'Exiting queue   ', printbar)
+    pl.sync_print(printbar, 'Exiting queue   ', printbar)
   except:
     pass
   return

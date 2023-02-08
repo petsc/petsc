@@ -1,5 +1,5 @@
 <--- FIXED --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 0: ./src/sys/tests/linter/testValidEnumDocstrings.c:14:9
 'WellFormedEnum' of type 'WellFormedEnum'
   12: .seealso: Lorem
@@ -150,9 +150,9 @@ Seealso entry 'WellFormedEnum' is duplicate [-fdoc-inline-list-seealso-duplicate
 > 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
                                                       ^^^^^^^^^^^^^^
   47: */
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 <--- LEFT --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 1: ./src/sys/tests/linter/testValidEnumDocstrings.c:29:9
 'IllFormedEnum' of type 'IllFormedEnum'
   27: Level: advanced
@@ -216,4 +216,4 @@ Required section 'Level' not found [-fdoc-section-header-missing]:
 > 47: */
   48: typedef enum {
   49:   FOO
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------

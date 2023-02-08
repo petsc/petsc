@@ -1,5 +1,5 @@
 <--- FIXED --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 0: ./src/sys/tests/linter/testValidPointers.c:6:25
 'a' of type 'void *'
   4: {
@@ -567,5 +567,5 @@ ERROR 39: ./src/sys/tests/linter/testValidPointers.c:61:25
   63: /* correct */
 
 Incorrect use of PetscValidRealPointer(), use PetscValidPointer() instead [-fincompatible-function]
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 <--- LEFT --->

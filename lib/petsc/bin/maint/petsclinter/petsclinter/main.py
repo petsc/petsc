@@ -53,6 +53,12 @@ def main(
   if extra_header_includes is None:
     extra_header_includes = []
 
+  def root_sync_print(*args, **kwargs):
+    if args or kwargs:
+      print('[ROOT]', *args, **kwargs)
+    return
+  pl.sync_print = root_sync_print
+
   # pre-processing setup
   if bool(apply_patches) and bool(test_output_dir):
     raise RuntimeError('Test directory and apply patches are both non-zero. It is probably not a good idea to apply patches over the test directory!')
@@ -79,7 +85,6 @@ def main(
     raise RuntimeError(f'Test Output Directory {test_output_dir} does not appear to exist')
 
   pl.checks.filter_check_function_map(check_function_filter)
-  root_print_prefix = '[ROOT]'
   compiler_flags    = pl.util.build_compiler_flags(
     petsc_dir, petsc_arch, extra_compiler_flags=extra_compiler_flags, verbose=verbose
   )
@@ -96,7 +101,7 @@ def main(
 
     def __exit__(self, *args, **kwargs):
       if verbose:
-        pl.sync_print(root_print_prefix, 'Deleting precompiled header', self.pch)
+        pl.sync_print('Deleting precompiled header', self.pch)
         self.pch.unlink()
       return
 
@@ -110,6 +115,8 @@ def main(
   if test_output_dir is not None:
     from petsclinter.test_main import test_main
 
+    # reset the printer
+    pl.sync_print = print
     pl.sync_print('', end='', flush=True)
     assert len(src_path) == 1
     return test_main(
@@ -131,18 +138,18 @@ def main(
       patch_exec = 'patch'
 
     for fname, patch in patches:
-      mangled_rel = fname.append_name(mangle_postfix)
-      assert mangled_rel.parent == src_path[0].parent
+      # mangled_rel = fname.append_name(mangle_postfix)
+      # assert mangled_rel.parent == src_path[0].parent
       # not in same directory
       # mangled_rel = mangled_rel.relative_to(src_path)
-      mangled_file = patch_dir / str(mangled_rel).replace(os.path.sep, '_')
-      if verbose: pl.sync_print(root_print_prefix, 'Writing patch to file', mangled_file)
+      mangled_file = patch_dir / str(fname.append_name(mangle_postfix)).replace(os.path.sep, '_')
+      if verbose: pl.sync_print('Writing patch to file', mangled_file)
       mangled_file.write_text(patch)
 
     if apply_patches:
-      if verbose: pl.sync_print(root_print_prefix, 'Applying patches from patch directory', patch_dir)
+      if verbose: pl.sync_print('Applying patches from patch directory', patch_dir)
       for patch_file in patch_dir.glob('*' + mangle_postfix):
-        if verbose: pl.sync_print(root_print_prefix, 'Applying patch', patch_file)
+        if verbose: pl.sync_print('Applying patch', patch_file)
         output = pl.util.subprocess_run(
           [patch_exec, root_dir, '--strip=0', '--unified', f'--input={patch_file}'],
           check=True, universal_newlines=True, capture_output=True
@@ -150,7 +157,7 @@ def main(
         if verbose: pl.sync_print(output.stdout)
 
   ret        = 0
-  format_str = ' '.join([root_print_prefix, '{:=^85}'])
+  format_str = '{:=^85}'
   if warnings and verbose:
     pl.sync_print(format_str.format(' Found Warnings '))
     pl.sync_print('\n'.join(s for tup in warnings for _, s in tup))
