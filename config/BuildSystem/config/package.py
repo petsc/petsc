@@ -472,6 +472,7 @@ class Package(config.base.Configure):
     self.packageDir = self.getDir()
     self.setupDownload()
     if not self.packageDir: self.packageDir = self.downLoad()
+    self.basePackageDir = self.packageDir # Some packages use a subdirectory for building and hence change the value of packageDir
     self.updateGitDir()
     self.updatehgDir()
     if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
@@ -1253,7 +1254,11 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       return
 
     suggest = ''
-    if self.download: suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
+    if self.download:
+      suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
+      if self.argDB['download-'+self.package]:
+        suggest += ' after running "rm -rf ' + self.basePackageDir +'"\n'
+        suggest += 'DO NOT DO THIS if you rely on the exact version of the currently installed ' + self.name
     if self.minversion:
       if self.versionToTuple(self.minversion) > self.version_tuple:
         raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at least '+self.minversion+suggest+'\n')
