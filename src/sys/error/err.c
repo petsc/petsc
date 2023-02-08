@@ -382,7 +382,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
     ierr = PetscVSNPrintf(buf, 2048, mess, &fullLength, Argp);
     va_end(Argp);
     lbuf = buf;
-    if (p == PETSC_ERROR_INITIAL) ierr = PetscStrncpy(PetscErrorBaseMessage, lbuf, 1023);
+    if (p == PETSC_ERROR_INITIAL) ierr = PetscStrncpy(PetscErrorBaseMessage, lbuf, sizeof(PetscErrorBaseMessage));
   }
 
   if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) ierr = PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);

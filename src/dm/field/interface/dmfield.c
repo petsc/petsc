@@ -433,7 +433,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
     PetscInt i, j, k, N = g->numPoints * g->numCells;
 
     for (i = N - 1; i >= 0; i--) {
-      PetscReal J[9];
+      PetscReal J[9] = {0};
 
       for (j = 0; j < dE; j++) {
         for (k = 0; k < dim; k++) J[j * dE + k] = g->J[i * dE * dim + j * dim + k];

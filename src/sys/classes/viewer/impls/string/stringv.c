@@ -51,12 +51,13 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
   PetscCheck(vstr->string, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call PetscViewerStringSetString() before using");
 
   va_start(Argp, format);
-  PetscCall(PetscVSNPrintf(tmp, 4096, format, &fullLength, Argp));
+  PetscCall(PetscVSNPrintf(tmp, sizeof(tmp), format, &fullLength, Argp));
   va_end(Argp);
   PetscCall(PetscStrlen(tmp, &shift));
   cshift = shift + 1;
   if (cshift >= vstr->maxlen - vstr->curlen - 1) cshift = vstr->maxlen - vstr->curlen - 1;
-  PetscCall(PetscStrncpy(vstr->head, tmp, cshift));
+  PetscCall(PetscMemcpy(vstr->head, tmp, cshift));
+  vstr->head[cshift - 1] = '\0';
   vstr->head += shift;
   vstr->curlen += shift;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -53,8 +53,9 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
       size_t l1 = 0, l2 = 0;
       PetscCall(PetscStrlen(filename, &l1));
       PetscCall(PetscStrlen(imageext, &l2));
-      PetscCall(PetscStrncpy(buf, filename, l1 - l2 + 1));
-      savename = buf;
+      PetscCall(PetscStrncpy(buf, filename, sizeof(buf)));
+      buf[l1 - l2 + 1] = '\0';
+      savename         = buf;
     }
   }
 
