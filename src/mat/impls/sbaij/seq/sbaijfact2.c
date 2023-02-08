@@ -2290,13 +2290,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B, Mat A, IS perm, const Ma
   /* check whether perm is the identity mapping */
   PetscCall(ISIdentity(perm, &perm_identity));
 
-  if (perm_identity) {
-    a->permute = PETSC_FALSE;
-    ai         = a->i;
-    aj         = a->j;
-  } else { /*  non-trivial permutation */
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix reordering is not supported for sbaij matrix. Use aij format");
-  }
+  PetscCheck(perm_identity, PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix reordering is not supported for sbaij matrix. Use aij format");
+  a->permute = PETSC_FALSE;
+  ai         = a->i;
+  aj         = a->j;
 
   /* initialization */
   PetscCall(ISGetIndices(perm, &rip));

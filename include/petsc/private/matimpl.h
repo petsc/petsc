@@ -519,14 +519,6 @@ PETSC_INTERN PetscErrorCode MatAXPY_Basic_Preallocate(Mat, Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat, PetscScalar, Mat);
 
 /*
-    Utility for MatFactor (Schur complement)
-*/
-PETSC_INTERN PetscErrorCode MatFactorFactorizeSchurComplement_Private(Mat);
-PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat);
-PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat);
-PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat);
-
-/*
     Utility for MatZeroRows
 */
 PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat, PetscInt, const PetscInt *, PetscInt *, PetscInt **);

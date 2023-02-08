@@ -440,31 +440,6 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if 0
-static PetscErrorCode DMPlexCopyOverlapLabels(DM dm, DM ndm)
-{
-  DM_Plex *mesh  = (DM_Plex *) dm->data;
-  DM_Plex *nmesh = (DM_Plex *) ndm->data;
-
-  PetscFunctionBegin;
-  if (mesh->numOvLabels) {
-    const char *name;
-    PetscInt    l;
-
-    nmesh->numOvLabels = mesh->numOvLabels;
-    for (l = 0; l < mesh->numOvLabels; ++l) {
-      PetscCall(PetscObjectGetName((PetscObject) mesh->ovLabels[l], &name));
-      PetscCall(DMGetLabel(ndm, name, &nmesh->ovLabels[l]));
-      nmesh->ovValues[l] = mesh->ovValues[l];
-    }
-    PetscCall(PetscObjectGetName((PetscObject) mesh->ovExLabel, &name));
-    PetscCall(DMGetLabel(ndm, name, &nmesh->ovExLabel));
-    nmesh->ovExValue = mesh->ovExValue;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-#endif
-
 /*@C
   DMPlexCreateOverlapLabel - Compute a label indicating what overlap points should be sent to new processes
 
@@ -1414,82 +1389,6 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
     PetscCall(PetscSFDestroy(&parentSF));
   }
   pmesh->useAnchors = mesh->useAnchors;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
-{
-  PetscMPIInt rank, size;
-  MPI_Comm    comm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
-
-  /* Create point SF for parallel mesh */
-  PetscCall(PetscLogEventBegin(DMPLEX_DistributeSF, dm, 0, 0, 0));
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  {
-    const PetscInt *leaves;
-    PetscSFNode    *remotePoints, *rowners, *lowners;
-    PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp, *ghostPoints;
-    PetscInt        pStart, pEnd;
-
-    PetscCall(DMPlexGetChart(dmParallel, &pStart, &pEnd));
-    PetscCall(PetscSFGetGraph(migrationSF, &numRoots, &numLeaves, &leaves, NULL));
-    PetscCall(PetscMalloc2(numRoots, &rowners, numLeaves, &lowners));
-    for (p = 0; p < numRoots; p++) {
-      rowners[p].rank  = -1;
-      rowners[p].index = -1;
-    }
-    PetscCall(PetscSFBcastBegin(migrationSF, MPIU_2INT, rowners, lowners, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(migrationSF, MPIU_2INT, rowners, lowners, MPI_REPLACE));
-    for (p = 0; p < numLeaves; ++p) {
-      if (lowners[p].rank < 0 || lowners[p].rank == rank) { /* Either put in a bid or we know we own it */
-        lowners[p].rank  = rank;
-        lowners[p].index = leaves ? leaves[p] : p;
-      } else if (lowners[p].rank >= 0) { /* Point already claimed so flag so that MAXLOC does not listen to us */
-        lowners[p].rank  = -2;
-        lowners[p].index = -2;
-      }
-    }
-    for (p = 0; p < numRoots; p++) { /* Root must not participate in the rediction, flag so that MAXLOC does not use */
-      rowners[p].rank  = -3;
-      rowners[p].index = -3;
-    }
-    PetscCall(PetscSFReduceBegin(migrationSF, MPIU_2INT, lowners, rowners, MPI_MAXLOC));
-    PetscCall(PetscSFReduceEnd(migrationSF, MPIU_2INT, lowners, rowners, MPI_MAXLOC));
-    PetscCall(PetscSFBcastBegin(migrationSF, MPIU_2INT, rowners, lowners, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(migrationSF, MPIU_2INT, rowners, lowners, MPI_REPLACE));
-    for (p = 0; p < numLeaves; ++p) {
-      PetscCheck(lowners[p].rank >= 0 && lowners[p].index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell partition corrupt: point not claimed");
-      if (lowners[p].rank != rank) ++numGhostPoints;
-    }
-    PetscCall(PetscMalloc1(numGhostPoints, &ghostPoints));
-    PetscCall(PetscMalloc1(numGhostPoints, &remotePoints));
-    for (p = 0, gp = 0; p < numLeaves; ++p) {
-      if (lowners[p].rank != rank) {
-        ghostPoints[gp]        = leaves ? leaves[p] : p;
-        remotePoints[gp].rank  = lowners[p].rank;
-        remotePoints[gp].index = lowners[p].index;
-        ++gp;
-      }
-    }
-    PetscCall(PetscFree2(rowners, lowners));
-    PetscCall(PetscSFSetGraph((dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER));
-    PetscCall(PetscSFSetFromOptions((dmParallel)->sf));
-  }
-  {
-    PetscBool useCone, useClosure, useAnchors;
-
-    PetscCall(DMGetBasicAdjacency(dm, &useCone, &useClosure));
-    PetscCall(DMSetBasicAdjacency(dmParallel, useCone, useClosure));
-    PetscCall(DMPlexGetAdjacencyUseAnchors(dm, &useAnchors));
-    PetscCall(DMPlexSetAdjacencyUseAnchors(dmParallel, useAnchors));
-  }
-  PetscCall(PetscLogEventEnd(DMPLEX_DistributeSF, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

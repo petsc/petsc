@@ -513,12 +513,14 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if 0
+// unused
 /*
      This code is virtually identical to MatILUFactorSymbolic_SeqAIJ
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
-PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+static PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b;
   IS              isicol;
@@ -682,7 +684,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
   PetscCall(PetscFree(fill));
   PetscCall(PetscFree(im));
 
-#if defined(PETSC_USE_INFO)
+  #if defined(PETSC_USE_INFO)
   {
     PetscReal af = ((PetscReal)ainew[n]) / ((PetscReal)ai[n]);
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocate, (double)f, (double)af));
@@ -691,7 +693,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
     PetscCall(PetscInfo(A, "for best performance.\n"));
     if (diagonal_fill) PetscCall(PetscInfo(A, "Detected and replaced %" PetscInt_FMT " missing diagonals\n", dcount));
   }
-#endif
+  #endif
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(fact, bs, MAT_SKIP_ALLOCATION, NULL));
@@ -729,6 +731,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
   PetscCall(MatSeqBAIJSetNumericFactorization_inplace(fact, both_identity));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif
 
 PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {

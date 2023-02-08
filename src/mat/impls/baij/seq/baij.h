@@ -32,12 +32,9 @@ typedef struct {
 PETSC_INTERN PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt nz, PetscInt *nnz);
 PETSC_INTERN PetscErrorCode MatAXPY_SeqBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure str);
 
-PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscBool *);
-PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqBAIJ(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscBool *);
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscInt *[], PetscBool *);
 PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqBAIJ_Color(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscInt *[], PetscBool *);
 
-PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat, Mat, IS, const MatFactorInfo *);
@@ -48,7 +45,6 @@ PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat, PetscBool *, PetscIn
 PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat, IS, IS, const MatFactorInfo *, Mat *);
 
-PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactor_SeqBAIJ(Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat, PetscInt, IS *, PetscInt);

@@ -32,8 +32,8 @@ configure_options = [
   '--download-hdf5',
   '--with-zlib=1',
   '--download-med=1',
-  #'--download-exodusii', disabling due to pnetcdf+exodus errors that come up with this build
-  #'--download-pnetcdf',
+  '--download-exodusii', # disabling due to pnetcdf+exodus errors that come up with this build
+  '--download-pnetcdf',
   '--download-party',
   '--download-yaml',
   '--download-ml',
