@@ -283,7 +283,7 @@ PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP s
     PetscCall(MatBoundToCPU(A, &flg));
     if (!flg) {
       VecType vtype;
-      char   *found;
+      char   *found = NULL;
 
       PetscCall(MatGetVecType(A, &vtype));
       PetscCall(PetscStrstr(vtype, "cuda", &found));

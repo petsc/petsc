@@ -774,7 +774,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[])
 @*/
 PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetemplate[])
 {
-  const char *ptr, *ptr2;
+  const char *ptr = NULL, *ptr2 = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);

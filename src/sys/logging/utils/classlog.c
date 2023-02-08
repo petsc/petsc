@@ -223,7 +223,6 @@ PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cname[], PetscClassId classid)
 {
   PetscClassRegInfo *classInfo;
-  char              *str;
   int                c;
 
   PetscFunctionBegin;
@@ -237,9 +236,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
     classLog->classInfo = classInfo;
     classLog->maxClasses *= 2;
   }
-  PetscCall(PetscStrallocpy(cname, &str));
-
-  classLog->classInfo[c].name    = str;
+  PetscCall(PetscStrallocpy(cname, &(classLog->classInfo[c].name)));
   classLog->classInfo[c].classid = classid;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

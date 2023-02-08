@@ -452,9 +452,9 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
   FILE       *fd;
   PetscToken  token = NULL;
   int         err;
-  char       *cmatch;
-  const char  cmt  = '#';
-  PetscInt    line = 1;
+  char       *cmatch = NULL;
+  const char  cmt    = '#';
+  PetscInt    line   = 1;
   PetscMPIInt rank, cnt = 0, acnt = 0, counts[2];
   PetscBool   isdir, alias = PETSC_FALSE, valid;
 

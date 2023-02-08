@@ -210,9 +210,9 @@ PetscErrorCode PetscDrawSave(PetscDraw draw)
   if (draw->savesinglefile) {
     PetscCall(PetscSNPrintf(basename, sizeof(basename), "%s", draw->savefilename));
   } else {
-    char *basefilename;
+    char *basefilename = NULL;
 
-    PetscCall(PetscStrrchr(draw->savefilename, '/', (char **)&basefilename));
+    PetscCall(PetscStrrchr(draw->savefilename, '/', &basefilename));
     if (basefilename != draw->savefilename) {
       PetscCall(PetscSNPrintf(basename, sizeof(basename), "%s_%d", draw->savefilename, (int)saveindex));
     } else {

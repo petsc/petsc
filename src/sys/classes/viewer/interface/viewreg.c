@@ -248,7 +248,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
         PetscCall(PetscObjectReference((PetscObject)*viewer));
       }
     } else {
-      char       *loc0_vtype, *loc1_fname, *loc2_fmt = NULL, *loc3_fmode = NULL;
+      char       *loc0_vtype = NULL, *loc1_fname = NULL, *loc2_fmt = NULL, *loc3_fmode = NULL;
       PetscInt    cnt;
       const char *viewers[] = {PETSCVIEWERASCII, PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSOCKET, PETSCVIEWERMATLAB, PETSCVIEWERSAWS, PETSCVIEWERVTK, PETSCVIEWERHDF5, PETSCVIEWERGLVIS, PETSCVIEWEREXODUSII, NULL};
 

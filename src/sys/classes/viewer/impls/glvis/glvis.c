@@ -558,7 +558,7 @@ static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscViewer v, PetscOption
 
 static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const char name[])
 {
-  char            *sport;
+  char            *sport  = NULL;
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;

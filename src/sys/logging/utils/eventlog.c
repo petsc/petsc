@@ -350,7 +350,6 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
 PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char ename[], PetscClassId classid, PetscLogEvent *event)
 {
   PetscEventRegInfo *eventInfo;
-  char              *str;
   int                e;
 
   PetscFunctionBegin;
@@ -365,13 +364,12 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
     eventLog->eventInfo = eventInfo;
     eventLog->maxEvents *= 2;
   }
-  PetscCall(PetscStrallocpy(ename, &str));
 
-  eventLog->eventInfo[e].name       = str;
+  PetscCall(PetscStrallocpy(ename, &(eventLog->eventInfo[e].name)));
   eventLog->eventInfo[e].classid    = classid;
   eventLog->eventInfo[e].collective = PETSC_TRUE;
 #if defined(PETSC_HAVE_TAU_PERFSTUBS)
-  if (perfstubs_initialized == PERFSTUBS_SUCCESS) PetscStackCallExternalVoid("ps_timer_create_", eventLog->eventInfo[e].timer = ps_timer_create_(str));
+  if (perfstubs_initialized == PERFSTUBS_SUCCESS) PetscStackCallExternalVoid("ps_timer_create_", eventLog->eventInfo[e].timer = ps_timer_create_(eventLog->eventInfo[e].name));
 #endif
 #if defined(PETSC_HAVE_MPE)
   if (PetscLogPLB == PetscLogEventBeginMPE) {

@@ -354,8 +354,8 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all)
       if ((h = PetscObjects[i])) {
         PetscCall(PetscObjectName(h));
         {
-          PetscStack *stack = NULL;
-          char       *create, *rclass;
+          PetscStack *stack  = NULL;
+          char       *create = NULL, *rclass = NULL;
 
           /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
           PetscCall(PetscMallocGetStack(h, &stack));

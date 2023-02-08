@@ -171,7 +171,6 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm, &rank);
 
   if (rank == 0 && (!PetscCIEnabledPortableErrorOutput || PetscGlobalRank == 0)) {
-    PetscBool  ismain;
     static int cnt = 1;
 
     if (cnt == 1) {
@@ -211,6 +210,8 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
     if (fun) ierr = (*PetscErrorPrintf)("#%d %s() at %s:%d\n", cnt++, fun, PetscCIFilename(file), PetscCILinenumber(line));
     else if (file) ierr = (*PetscErrorPrintf)("#%d %s:%d\n", cnt++, PetscCIFilename(file), PetscCILinenumber(line));
     if (fun) {
+      PetscBool ismain = PETSC_FALSE;
+
       ierr = PetscStrncmp(fun, "main", 4, &ismain);
       if (ismain) {
         if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) ierr = (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n", n);

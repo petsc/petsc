@@ -1357,7 +1357,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinarySTDIO(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary *)viewer->data;
   const char         *fname;
-  char                bname[PETSC_MAX_PATH_LEN], *gz;
+  char                bname[PETSC_MAX_PATH_LEN], *gz = NULL;
   PetscBool           found;
   PetscMPIInt         rank;
 

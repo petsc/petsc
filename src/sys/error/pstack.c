@@ -121,7 +121,7 @@ PetscErrorCode PetscStackView(FILE *file)
       fprintf(file, "No error traceback is available, the problem could be in the main program. \n");
     }
   } else {
-    char *ptr;
+    char *ptr = NULL;
 
     if (file == PETSC_STDOUT) {
       PetscCall((*PetscErrorPrintf)("The line numbers in the error traceback are not always exact.\n"));

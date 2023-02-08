@@ -367,7 +367,7 @@ int main(int argc, char **args)
       - KSPView() prints information about the linear solver.
     */
     if (table) {
-      char *matrixname, kspinfo[120];
+      char *matrixname = NULL, kspinfo[120];
 
       /*
        Open a string viewer; then write info to it.
