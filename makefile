@@ -460,7 +460,7 @@ dist:
 #  See script for details
 #
 gcov:
-	-output_file_base_name=${PETSC_ARCH}-gcovr-report.json; \
+	output_file_base_name=${PETSC_ARCH}-gcovr-report.json; \
 	petsc_arch_dir=${PETSC_DIR}/${PETSC_ARCH}; \
         tar_file=$${petsc_arch_dir}/$${output_file_base_name}.tar.bz2; \
 	cd $${petsc_arch_dir}/obj && \

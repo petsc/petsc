@@ -16,5 +16,6 @@ if __name__ == '__main__':
     '--download-codipack=1',
     '--download-adblaslapack=1',
     '--with-strict-petscerrorcode',
+    '--with-coverage',
   ]
   configure.petsc_configure(configure_options)

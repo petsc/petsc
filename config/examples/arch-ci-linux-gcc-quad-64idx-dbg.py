@@ -18,6 +18,7 @@ configure_options = [
   '--download-mpich',
   '--download-f2cblaslapack',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
 ]
 
 if __name__ == '__main__':

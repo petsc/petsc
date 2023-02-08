@@ -51,6 +51,7 @@ configure_options = [
   '--download-egads=1',
   '--download-opencascade=1',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':

@@ -14,6 +14,7 @@ if __name__ == '__main__':
     'FFLAGS=-Wall -ffree-line-length-0 -Wno-unused-dummy-argument -fdefault-integer-8',
     '--with-mpi=0',
     '--with-strict-petscerrorcode',
+    '--with-coverage',
   ]
   configure.petsc_configure(configure_options)
 

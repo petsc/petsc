@@ -20,6 +20,7 @@ if __name__ == '__main__':
     '--download-kokkos',
     '--download-kokkos-kernels',
     '--with-strict-petscerrorcode',
+    #'--with-coverage',
   ]
 
   configure.petsc_configure(configure_options)

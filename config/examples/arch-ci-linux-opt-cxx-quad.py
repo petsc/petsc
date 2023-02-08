@@ -18,6 +18,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-mpi-f90module-visibility=0',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':
