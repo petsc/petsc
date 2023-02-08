@@ -15,7 +15,7 @@ static const char help[] = "Tests PetscDeviceContextMarkIntentFromID().\n\n";
 struct Marker {
   PetscMemoryAccessMode mode{};
 
-  PETSC_NODISCARD PetscErrorCode operator()(PetscDeviceContext dctx, PetscContainer cont) const noexcept
+  PetscErrorCode operator()(PetscDeviceContext dctx, PetscContainer cont) const noexcept
   {
     const auto    obj  = reinterpret_cast<PetscObject>(cont);
     PetscObjectId id   = 0;

@@ -96,8 +96,8 @@ public:
 
 private:
   friend class Petsc::RegisterFinalizeable<MemoryMap>;
-  PETSC_NODISCARD PetscErrorCode register_finalize_() noexcept;
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
+  PetscErrorCode register_finalize_() noexcept;
+  PetscErrorCode finalize_() noexcept;
 };
 
 // ==========================================================================================

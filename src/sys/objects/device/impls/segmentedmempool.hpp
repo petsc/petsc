@@ -34,13 +34,13 @@ public:
   PETSC_NODISCARD id_type get_id() const noexcept { return static_cast<const T &>(*this).get_id_(); }
 
   template <typename E>
-  PETSC_NODISCARD PetscErrorCode record_event(E &&event) const noexcept
+  PetscErrorCode record_event(E &&event) const noexcept
   {
     return static_cast<const T &>(*this).record_event_(std::forward<E>(event));
   }
 
   template <typename E>
-  PETSC_NODISCARD PetscErrorCode wait_for_event(E &&event) const noexcept
+  PetscErrorCode wait_for_event(E &&event) const noexcept
   {
     return static_cast<const T &>(*this).wait_for_(std::forward<E>(event));
   }
@@ -56,13 +56,13 @@ protected:
   PETSC_NODISCARD static constexpr id_type get_id_() noexcept { return 0; }
 
   template <typename U = T>
-  PETSC_NODISCARD static constexpr PetscErrorCode record_event_(const typename U::event_type &) noexcept
+  static constexpr PetscErrorCode record_event_(const typename U::event_type &) noexcept
   {
     return PETSC_SUCCESS;
   }
 
   template <typename U = T>
-  PETSC_NODISCARD static constexpr PetscErrorCode wait_for_(const typename U::event_type &) noexcept
+  static constexpr PetscErrorCode wait_for_(const typename U::event_type &) noexcept
   {
     return PETSC_SUCCESS;
   }
@@ -116,13 +116,13 @@ public:
   PETSC_NODISCARD size_type total_offset() const noexcept { return start() + size(); }
 
   template <typename U>
-  PETSC_NODISCARD PetscErrorCode release(const device::StreamBase<U> *) noexcept;
+  PetscErrorCode release(const device::StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD PetscErrorCode claim(const device::StreamBase<U> *, size_type, bool *, bool = false) noexcept;
+  PetscErrorCode claim(const device::StreamBase<U> *, size_type, bool *, bool = false) noexcept;
   template <typename U>
-  PETSC_NODISCARD bool           can_claim(const device::StreamBase<U> *, size_type, bool) const noexcept;
-  PETSC_NODISCARD PetscErrorCode resize(size_type) noexcept;
-  PETSC_NODISCARD bool           contains(size_type) const noexcept;
+  PETSC_NODISCARD bool can_claim(const device::StreamBase<U> *, size_type, bool) const noexcept;
+  PetscErrorCode       resize(size_type) noexcept;
+  PETSC_NODISCARD bool contains(size_type) const noexcept;
 
 private:
   // clang-format off
@@ -324,10 +324,10 @@ public:
   MemoryBlock &operator=(const MemoryBlock &) = delete;
 
   /* --- actual functions --- */
-  PETSC_NODISCARD PetscErrorCode try_allocate_chunk(size_type, T **, const stream_type *, bool *) noexcept;
-  PETSC_NODISCARD PetscErrorCode try_deallocate_chunk(T **, const stream_type *, bool *) noexcept;
-  PETSC_NODISCARD PetscErrorCode try_find_chunk(const T *, chunk_type **) noexcept;
-  PETSC_NODISCARD bool           owns_pointer(const T *) const noexcept;
+  PetscErrorCode       try_allocate_chunk(size_type, T **, const stream_type *, bool *) noexcept;
+  PetscErrorCode       try_deallocate_chunk(T **, const stream_type *, bool *) noexcept;
+  PetscErrorCode       try_find_chunk(const T *, chunk_type **) noexcept;
+  PETSC_NODISCARD bool owns_pointer(const T *) const noexcept;
 
   PETSC_NODISCARD size_type size() const noexcept { return size_; }
   PETSC_NODISCARD size_type bytes() const noexcept { return sizeof(value_type) * size(); }
@@ -339,7 +339,7 @@ private:
   size_type       size_{};
   chunk_list_type chunks_{};
 
-  PETSC_NODISCARD PetscErrorCode clear_(const stream_type *) noexcept;
+  PetscErrorCode clear_(const stream_type *) noexcept;
 };
 
 // ==========================================================================================
@@ -348,7 +348,7 @@ private:
 
 // clear the memory block, called from destructors and move assignment/construction
 template <typename T, typename A, typename S>
-PETSC_NODISCARD PetscErrorCode MemoryBlock<T, A, S>::clear_(const stream_type *stream) noexcept
+PetscErrorCode MemoryBlock<T, A, S>::clear_(const stream_type *stream) noexcept
 {
   PetscFunctionBegin;
   if (PetscLikely(mem_)) {
@@ -582,15 +582,15 @@ struct SegmentedMemoryPoolAllocatorBase {
   using real_value_type = typename detail::real_type<T>::type;
 
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode allocate(value_type **, size_type, const device::StreamBase<U> *) noexcept;
+  static PetscErrorCode allocate(value_type **, size_type, const device::StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode deallocate(value_type *, const device::StreamBase<U> *) noexcept;
+  static PetscErrorCode deallocate(value_type *, const device::StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode zero(value_type *, size_type, const device::StreamBase<U> *) noexcept;
+  static PetscErrorCode zero(value_type *, size_type, const device::StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode uninitialized_copy(value_type *, const value_type *, size_type, const device::StreamBase<U> *) noexcept;
+  static PetscErrorCode uninitialized_copy(value_type *, const value_type *, size_type, const device::StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode set_canary(value_type *, size_type, const device::StreamBase<U> *) noexcept;
+  static PetscErrorCode set_canary(value_type *, size_type, const device::StreamBase<U> *) noexcept;
 };
 
 template <typename T>
@@ -702,22 +702,22 @@ public:
 
   explicit SegmentedMemoryPool(AllocType = AllocType{}, std::size_t = DefaultChunkSize) noexcept(std::is_nothrow_default_constructible<pool_type>::value);
 
-  PETSC_NODISCARD PetscErrorCode allocate(PetscInt, value_type **, const stream_type *, size_type = std::alignment_of<MemType>::value) noexcept;
-  PETSC_NODISCARD PetscErrorCode deallocate(value_type **, const stream_type *) noexcept;
-  PETSC_NODISCARD PetscErrorCode reallocate(PetscInt, value_type **, const stream_type *) noexcept;
+  PetscErrorCode allocate(PetscInt, value_type **, const stream_type *, size_type = std::alignment_of<MemType>::value) noexcept;
+  PetscErrorCode deallocate(value_type **, const stream_type *) noexcept;
+  PetscErrorCode reallocate(PetscInt, value_type **, const stream_type *) noexcept;
 
 private:
   pool_type      pool_;
   allocator_type allocator_;
   size_type      chunk_size_;
 
-  PETSC_NODISCARD PetscErrorCode make_block_(size_type, const stream_type *) noexcept;
+  PetscErrorCode make_block_(size_type, const stream_type *) noexcept;
 
   friend class RegisterFinalizeable<SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>>;
-  PETSC_NODISCARD PetscErrorCode register_finalize_(const stream_type *) noexcept;
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
+  PetscErrorCode register_finalize_(const stream_type *) noexcept;
+  PetscErrorCode finalize_() noexcept;
 
-  PETSC_NODISCARD PetscErrorCode allocate_(size_type, value_type **, const stream_type *) noexcept;
+  PetscErrorCode allocate_(size_type, value_type **, const stream_type *) noexcept;
 };
 
 // ==========================================================================================

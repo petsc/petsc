@@ -29,7 +29,7 @@ public:
   PETSC_DEVICE_IMPL_BASE_CLASS_HEADER(base_type, Device<T>);
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(cupmInterface_t, T);
 
-  PETSC_NODISCARD static PetscErrorCode initialize(MPI_Comm, PetscInt *, PetscBool *, PetscDeviceInitType *) noexcept;
+  static PetscErrorCode initialize(MPI_Comm, PetscInt *, PetscBool *, PetscDeviceInitType *) noexcept;
 
 private:
   // opaque class representing a single device
@@ -46,14 +46,14 @@ private:
   static bool initialized_;
 
   // clean-up
-  PETSC_NODISCARD static PetscErrorCode finalize_() noexcept;
+  static PetscErrorCode finalize_() noexcept;
 
   PETSC_NODISCARD static constexpr PetscDeviceType PETSC_DEVICE_IMPL_() noexcept { return PETSC_DEVICE_CUPM(); }
 
-  PETSC_NODISCARD PetscErrorCode        init_device_id_(PetscInt *) const noexcept;
-  PETSC_NODISCARD static PetscErrorCode configure_device_(PetscDevice) noexcept;
-  PETSC_NODISCARD static PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept;
-  PETSC_NODISCARD static PetscErrorCode get_attribute_(PetscInt, PetscDeviceAttribute, void *) noexcept;
+  PetscErrorCode        init_device_id_(PetscInt *) const noexcept;
+  static PetscErrorCode configure_device_(PetscDevice) noexcept;
+  static PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept;
+  static PetscErrorCode get_attribute_(PetscInt, PetscDeviceAttribute, void *) noexcept;
 };
 
 // define static variables

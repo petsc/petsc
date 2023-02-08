@@ -33,10 +33,10 @@ public:
 
   // gather all relevant information for a particular device, a cupmDeviceProp_t is
   // usually sufficient here
-  PETSC_NODISCARD PetscErrorCode initialize() noexcept;
-  PETSC_NODISCARD PetscErrorCode configure() noexcept;
-  PETSC_NODISCARD PetscErrorCode view(PetscViewer) const noexcept;
-  PETSC_NODISCARD PetscErrorCode getattribute(PetscDeviceAttribute, void *) const noexcept;
+  PetscErrorCode initialize() noexcept;
+  PetscErrorCode configure() noexcept;
+  PetscErrorCode view(PetscViewer) const noexcept;
+  PetscErrorCode getattribute(PetscDeviceAttribute, void *) const noexcept;
 
   PETSC_NODISCARD auto id() const -> decltype(id_) { return id_; }
   PETSC_NODISCARD auto initialized() const -> decltype(devInitialized_) { return devInitialized_; }

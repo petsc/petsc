@@ -20,7 +20,7 @@
 
 class PetscEventConstructor : public Petsc::ConstructorInterface<_n_PetscEvent, PetscEventConstructor> {
 public:
-  PETSC_NODISCARD PetscErrorCode construct_(PetscEvent event) const noexcept
+  PetscErrorCode construct_(PetscEvent event) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(event, 1));
@@ -28,14 +28,14 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode destroy_(PetscEvent event) const noexcept
+  PetscErrorCode destroy_(PetscEvent event) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().reset(event));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode reset_(PetscEvent event) noexcept
+  static PetscErrorCode reset_(PetscEvent event) noexcept
   {
     PetscFunctionBegin;
     if (auto &destroy = event->destroy) {
@@ -49,7 +49,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode invalidate_(PetscEvent) noexcept { return PETSC_SUCCESS; }
+  static PetscErrorCode invalidate_(PetscEvent) noexcept { return PETSC_SUCCESS; }
 };
 
 static Petsc::ObjectPool<_n_PetscEvent, PetscEventConstructor> event_pool;
@@ -236,7 +236,7 @@ public:
       PetscFunctionReturn(event()->dctx_id);
     }
 
-    PETSC_NODISCARD PetscErrorCode ensure_event(PetscDeviceContext) noexcept;
+    PetscErrorCode ensure_event(PetscDeviceContext) noexcept;
 
     friend void swap(snapshot_type &, snapshot_type &) noexcept;
 
@@ -262,7 +262,7 @@ public:
 private:
   friend RegisterFinalizeable;
 
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
+  PetscErrorCode finalize_() noexcept;
 };
 
 // ==========================================================================================

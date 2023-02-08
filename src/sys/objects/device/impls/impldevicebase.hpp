@@ -36,10 +36,10 @@ public:
     return T::PETSC_DEVICE_IMPL_();
   }
 
-  PETSC_NODISCARD PetscErrorCode        getDevice(PetscDevice, PetscInt) noexcept;
-  PETSC_NODISCARD static PetscErrorCode configureDevice(PetscDevice) noexcept;
-  PETSC_NODISCARD static PetscErrorCode viewDevice(PetscDevice, PetscViewer) noexcept;
-  PETSC_NODISCARD static PetscErrorCode getAttribute(PetscDevice, PetscDeviceAttribute, void *) noexcept;
+  PetscErrorCode        getDevice(PetscDevice, PetscInt) noexcept;
+  static PetscErrorCode configureDevice(PetscDevice) noexcept;
+  static PetscErrorCode viewDevice(PetscDevice, PetscViewer) noexcept;
+  static PetscErrorCode getAttribute(PetscDevice, PetscDeviceAttribute, void *) noexcept;
 
 protected:
   // function to create a PetscDeviceContext (the (*create) function pointer usually set
@@ -48,11 +48,11 @@ protected:
 
   // if you want the base class to handle the entire options query, has the same arguments as
   // PetscOptionDeviceBasic
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceAll(MPI_Comm, std::pair<PetscDeviceInitType, PetscBool> &, std::pair<PetscInt, PetscBool> &, std::pair<PetscBool, PetscBool> &) noexcept;
+  static PetscErrorCode PetscOptionDeviceAll(MPI_Comm, std::pair<PetscDeviceInitType, PetscBool> &, std::pair<PetscInt, PetscBool> &, std::pair<PetscBool, PetscBool> &) noexcept;
 
   // if you want to start and end the options query yourself, but still want all the default
   // options
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceBasic(PetscOptionItems *, std::pair<PetscDeviceInitType, PetscBool> &, std::pair<PetscInt, PetscBool> &, std::pair<PetscBool, PetscBool> &) noexcept;
+  static PetscErrorCode PetscOptionDeviceBasic(PetscOptionItems *, std::pair<PetscDeviceInitType, PetscBool> &, std::pair<PetscInt, PetscBool> &, std::pair<PetscBool, PetscBool> &) noexcept;
 
   // option templates to follow, each one has two forms:
   // - A simple form returning only the value and flag. This gives no control over the message,
@@ -62,34 +62,34 @@ protected:
   //   - The option string
 
   // option template for initializing the device
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems *, PetscDeviceInitType *, PetscBool *) noexcept;
+  static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems *, PetscDeviceInitType *, PetscBool *) noexcept;
   template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int> = 0>
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems *, T &&...) noexcept;
+  static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems *, T &&...) noexcept;
   // option template for selecting the default device
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems *, PetscInt *, PetscBool *) noexcept;
+  static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems *, PetscInt *, PetscBool *) noexcept;
   template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int> = 0>
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems *, T &&...) noexcept;
+  static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems *, T &&...) noexcept;
   // option templates for viewing a device
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceView(PetscOptionItems *, PetscBool *, PetscBool *) noexcept;
+  static PetscErrorCode PetscOptionDeviceView(PetscOptionItems *, PetscBool *, PetscBool *) noexcept;
   template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int> = 0>
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDeviceView(PetscOptionItems *, T &&...) noexcept;
+  static PetscErrorCode PetscOptionDeviceView(PetscOptionItems *, T &&...) noexcept;
 
 private:
   // base function for all options templates above, they basically just reformat the arguments,
   // create the option string and pass it off to this function
   template <typename... T, typename F = PetscErrorCode (*)(PetscOptionItems *, const char *, T &&...)>
-  PETSC_NODISCARD static PetscErrorCode PetscOptionDevice(F &&, PetscOptionItems *, const char[], T &&...) noexcept;
+  static PetscErrorCode PetscOptionDevice(F &&, PetscOptionItems *, const char[], T &&...) noexcept;
 
   // default crtp implementations
-  PETSC_NODISCARD static PetscErrorCode init_device_id_(PetscInt *id) noexcept
+  static PetscErrorCode init_device_id_(PetscInt *id) noexcept
   {
     PetscFunctionBegin;
     *id = 0;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static constexpr PetscErrorCode configure_device_(PetscDevice) noexcept { return PETSC_SUCCESS; }
-  PETSC_NODISCARD static constexpr PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept { return PETSC_SUCCESS; }
+  static constexpr PetscErrorCode configure_device_(PetscDevice) noexcept { return PETSC_SUCCESS; }
+  static constexpr PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept { return PETSC_SUCCESS; }
 };
 
 template <typename D>

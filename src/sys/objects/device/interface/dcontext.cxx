@@ -11,7 +11,7 @@
 /* Define the allocator */
 class PetscDeviceContextConstructor : public Petsc::ConstructorInterface<_p_PetscDeviceContext, PetscDeviceContextConstructor> {
 public:
-  PETSC_NODISCARD PetscErrorCode construct_(PetscDeviceContext dctx) const noexcept
+  PetscErrorCode construct_(PetscDeviceContext dctx) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(dctx, 1));
@@ -21,7 +21,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode destroy_(PetscDeviceContext dctx) noexcept
+  static PetscErrorCode destroy_(PetscDeviceContext dctx) noexcept
   {
     PetscFunctionBegin;
     PetscAssert(!dctx->numChildren, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Device context still has %" PetscInt_FMT " un-joined children, must call PetscDeviceContextJoin() with all children before destroying", dctx->numChildren);
@@ -33,7 +33,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode reset_(PetscDeviceContext dctx, bool zero = true) noexcept
+  static PetscErrorCode reset_(PetscDeviceContext dctx, bool zero = true) noexcept
   {
     PetscFunctionBegin;
     if (zero) {
@@ -55,7 +55,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode invalidate_(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
+  static PetscErrorCode invalidate_(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
 };
 
 static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> contextPool;

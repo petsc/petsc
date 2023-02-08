@@ -37,9 +37,9 @@ public:
 
   CUPMStream() noexcept = default;
 
-  PETSC_NODISCARD PetscErrorCode destroy() noexcept;
-  PETSC_NODISCARD PetscErrorCode create(flag_type) noexcept;
-  PETSC_NODISCARD PetscErrorCode change_type(PetscStreamType) noexcept;
+  PetscErrorCode destroy() noexcept;
+  PetscErrorCode create(flag_type) noexcept;
+  PetscErrorCode change_type(PetscStreamType) noexcept;
 
 private:
   stream_type stream_{};
@@ -48,10 +48,10 @@ private:
   PETSC_NODISCARD static id_type new_id_() noexcept;
 
   // CRTP implementations
-  PETSC_NODISCARD stream_type    get_stream_() const noexcept;
-  PETSC_NODISCARD id_type        get_id_() const noexcept;
-  PETSC_NODISCARD PetscErrorCode record_event_(event_type &) const noexcept;
-  PETSC_NODISCARD PetscErrorCode wait_for_(event_type &) const noexcept;
+  PETSC_NODISCARD stream_type get_stream_() const noexcept;
+  PETSC_NODISCARD id_type     get_id_() const noexcept;
+  PetscErrorCode              record_event_(event_type &) const noexcept;
+  PetscErrorCode              wait_for_(event_type &) const noexcept;
 };
 
 template <DeviceType T>

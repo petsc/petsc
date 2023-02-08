@@ -24,7 +24,7 @@ public:
 
   ~Device() { auto PETSC_UNUSED _ = finalize_(); }
 
-  PETSC_NODISCARD static PetscErrorCode initialize(MPI_Comm, PetscInt *, PetscBool *, PetscDeviceInitType *) noexcept;
+  static PetscErrorCode initialize(MPI_Comm, PetscInt *, PetscBool *, PetscDeviceInitType *) noexcept;
 
 private:
   // opaque class representing a single device instance
@@ -41,12 +41,12 @@ private:
   static bool initialized_;
 
   // clean-up
-  PETSC_NODISCARD static PetscErrorCode finalize_() noexcept;
+  static PetscErrorCode finalize_() noexcept;
 
   PETSC_CXX_COMPAT_DECL(constexpr PetscDeviceType PETSC_DEVICE_IMPL_()) { return PETSC_DEVICE_SYCL; }
-  PETSC_NODISCARD PetscErrorCode        init_device_id_(PetscInt *) const noexcept;
-  PETSC_NODISCARD static PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept;
-  PETSC_NODISCARD static PetscErrorCode get_attribute_(PetscInt, PetscDeviceAttribute, void *) noexcept;
+  PetscErrorCode        init_device_id_(PetscInt *) const noexcept;
+  static PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept;
+  static PetscErrorCode get_attribute_(PetscInt, PetscDeviceAttribute, void *) noexcept;
 };
 
 } // namespace sycl

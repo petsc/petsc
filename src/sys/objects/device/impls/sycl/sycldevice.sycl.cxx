@@ -35,7 +35,7 @@ public:
   int  id() const { return id_; }
   bool initialized() const { return devInitialized_; }
 
-  PETSC_NODISCARD PetscErrorCode initialize() noexcept
+  PetscErrorCode initialize() noexcept
   {
     PetscFunctionBegin;
     if (initialized()) PetscFunctionReturn(PETSC_SUCCESS);
@@ -50,7 +50,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode view(PetscViewer viewer) const noexcept
+  PetscErrorCode view(PetscViewer viewer) const noexcept
   {
     MPI_Comm    comm;
     PetscMPIInt rank;
@@ -76,7 +76,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode getattribute(PetscDeviceAttribute attr, void *value) const noexcept
+  PetscErrorCode getattribute(PetscDeviceAttribute attr, void *value) const noexcept
   {
     PetscFunctionBegin;
     PetscCheck(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d not initialized", id());

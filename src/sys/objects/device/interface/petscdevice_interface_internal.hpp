@@ -73,7 +73,7 @@ struct CxxData {
   upstream_type upstream{};
   dep_type      deps{};
 
-  PETSC_NODISCARD PetscErrorCode clear() noexcept;
+  PetscErrorCode clear() noexcept;
 };
 
 inline PetscErrorCode CxxData::clear() noexcept

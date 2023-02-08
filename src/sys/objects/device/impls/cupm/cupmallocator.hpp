@@ -36,11 +36,11 @@ public:
   using value_type      = typename base_type::value_type;
 
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode allocate(value_type **, size_type, const StreamBase<U> *) noexcept;
+  static PetscErrorCode allocate(value_type **, size_type, const StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode deallocate(value_type *, const StreamBase<U> *) noexcept;
+  static PetscErrorCode deallocate(value_type *, const StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode uninitialized_copy(value_type *, const value_type *, size_type, const StreamBase<U> *) noexcept;
+  static PetscErrorCode uninitialized_copy(value_type *, const value_type *, size_type, const StreamBase<U> *) noexcept;
 };
 
 template <DeviceType T, typename P>
@@ -87,15 +87,15 @@ public:
   using value_type      = typename base_type::value_type;
 
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode allocate(value_type **, size_type, const StreamBase<U> *) noexcept;
+  static PetscErrorCode allocate(value_type **, size_type, const StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode deallocate(value_type *, const StreamBase<U> *) noexcept;
+  static PetscErrorCode deallocate(value_type *, const StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode zero(value_type *, size_type, const StreamBase<U> *) noexcept;
+  static PetscErrorCode zero(value_type *, size_type, const StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode uninitialized_copy(value_type *, const value_type *, size_type, const StreamBase<U> *) noexcept;
+  static PetscErrorCode uninitialized_copy(value_type *, const value_type *, size_type, const StreamBase<U> *) noexcept;
   template <typename U>
-  PETSC_NODISCARD static PetscErrorCode set_canary(value_type *, size_type, const StreamBase<U> *) noexcept;
+  static PetscErrorCode set_canary(value_type *, size_type, const StreamBase<U> *) noexcept;
 };
 
 template <DeviceType T, typename P>

@@ -10,7 +10,7 @@ namespace
 {
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
+inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
 {
   PetscContainer contain   = nullptr;
   const auto     finalizer = [](void *ptr) {
@@ -51,9 +51,9 @@ public:
 
   PETSC_NODISCARD bool registered() const noexcept;
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode finalize(Args &&...) noexcept;
+  PetscErrorCode finalize(Args &&...) noexcept;
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode register_finalize(Args &&...) noexcept;
+  PetscErrorCode register_finalize(Args &&...) noexcept;
 
 private:
   RegisterFinalizeable() = default;
@@ -61,9 +61,9 @@ private:
 
   // default implementations if the derived class does not want to implement them
   template <typename... Args>
-  PETSC_NODISCARD static PetscErrorCode finalize_(Args &&...) noexcept;
+  static PetscErrorCode finalize_(Args &&...) noexcept;
   template <typename... Args>
-  PETSC_NODISCARD static PetscErrorCode register_finalize_(Args &&...) noexcept;
+  static PetscErrorCode register_finalize_(Args &&...) noexcept;
 
   bool registered_ = false;
 };

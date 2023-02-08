@@ -422,13 +422,14 @@ M*/
 /*MC
   PETSC_NODISCARD - Mark the return value of a function as non-discardable
 
+  Not available in Fortran
+
+  Level: beginner
+
   Notes:
   Hints to the compiler that the return value of a function must be captured. A diagnostic may
-  (but is not required) be emitted if the value is discarded. It is safe to use this in C
-  and C++ source files.
-
-  Fortran Notes:
-  Not available in Fortran
+  (but is not required to) be emitted if the value is discarded. It is safe to use this in both
+  C and C++ source files.
 
   Example Usage:
 .vb
@@ -452,18 +453,11 @@ M*/
   Foo(x);          // Warning: Ignoring temporary created by a constructor declared 'nodiscard'
 .ve
 
-  Developer Notes:
-  It is highly recommended if not downright required that any PETSc routines written in C++
-  returning a PetscErrorCode be marked `PETSC_NODISCARD`. Ignoring the return value of PETSc
-  routines is not supported; unhandled errors may leave PETSc in an unrecoverable state.
-
-  Level: beginner
-
 .seealso: `PETSC_NULLPTR`, `PETSC_CONSTEXPR_14`
 M*/
 
 /* C++11 features */
-#if defined(__cplusplus)
+#if defined(__cplusplus) || (PETSC_C_VERSION >= 23)
   #define PETSC_NULLPTR nullptr
 #else
   #define PETSC_NULLPTR NULL
@@ -478,16 +472,16 @@ M*/
 
 /* C++17 features */
 #if PETSC_CPP_VERSION >= 17
-  #define PETSC_NODISCARD    [[nodiscard]]
   #define PETSC_CONSTEXPR_17 constexpr
 #else
-  #if PetscHasAttribute(warn_unused_result)
-    #define PETSC_NODISCARD __attribute__((warn_unused_result))
-  #endif
   #define PETSC_CONSTEXPR_17
 #endif
 
-#ifndef PETSC_NODISCARD
+#if (PETSC_CPP_VERSION >= 17) || (PETSC_C_VERSION >= 23)
+  #define PETSC_NODISCARD [[nodiscard]]
+#elif PetscHasAttribute(warn_unused_result)
+  #define PETSC_NODISCARD __attribute__((warn_unused_result))
+#else
   #define PETSC_NODISCARD
 #endif
 
