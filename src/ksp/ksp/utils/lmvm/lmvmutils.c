@@ -28,7 +28,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   if (!lmvm->allocated) {
     PetscCall(MatLMVMAllocate(B, X, F));
   } else {
@@ -58,12 +58,11 @@ PetscErrorCode MatLMVMClearJ0(Mat B)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
-  MPI_Comm  comm = PetscObjectComm((PetscObject)B);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   lmvm->user_pc    = PETSC_FALSE;
   lmvm->user_ksp   = PETSC_FALSE;
   lmvm->user_scale = PETSC_FALSE;
@@ -90,13 +89,12 @@ PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
-  MPI_Comm  comm = PetscObjectComm((PetscObject)B);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
-  PetscCheck(lmvm->square, comm, PETSC_ERR_SUP, "Scaling is available only for square LMVM matrices");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCheck(lmvm->square, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Scaling is available only for square LMVM matrices");
   PetscCall(MatLMVMClearJ0(B));
   lmvm->J0scalar   = scale;
   lmvm->user_scale = PETSC_TRUE;
@@ -125,7 +123,7 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(V, VEC_CLASSID, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(lmvm->allocated, comm, PETSC_ERR_ORDER, "Matrix must be allocated before setting diagonal scaling");
   PetscCheck(lmvm->square, comm, PETSC_ERR_SUP, "Diagonal scaling is available only for square LMVM matrices");
   VecCheckSameSize(V, 2, lmvm->Fprev, 3);
@@ -163,13 +161,12 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
-  MPI_Comm  comm = PetscObjectComm((PetscObject)B);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(J0, MAT_CLASSID, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatLMVMClearJ0(B));
   PetscCall(MatDestroy(&lmvm->J0));
   PetscCall(PetscObjectReference((PetscObject)J0));
@@ -204,7 +201,7 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(J0pc, PC_CLASSID, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(lmvm->square, comm, PETSC_ERR_SUP, "Inverse J0 can be defined only for square LMVM matrices");
   PetscCall(MatLMVMClearJ0(B));
   PetscCall(PetscObjectReference((PetscObject)J0pc));
@@ -238,7 +235,7 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(J0ksp, KSP_CLASSID, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(lmvm->square, comm, PETSC_ERR_SUP, "Inverse J0 can be defined only for square LMVM matrices");
   PetscCall(MatLMVMClearJ0(B));
   PetscCall(KSPDestroy(&lmvm->J0ksp));
@@ -386,8 +383,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
       PetscCall(VecPointwiseMult(X, lmvm->J0diag, Y));
     } else {
       /* User has defined a scalar value for J0 */
-      PetscCall(VecCopy(X, Y));
-      PetscCall(VecScale(Y, lmvm->J0scalar));
+      PetscCall(VecAXPBY(Y, lmvm->J0scalar, 0.0, X));
     }
   } else {
     /* There is no J0 representation so just apply an identity matrix */
@@ -449,8 +445,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
     if (lmvm->J0diag) {
       PetscCall(VecPointwiseDivide(X, Y, lmvm->J0diag));
     } else {
-      PetscCall(VecCopy(X, Y));
-      PetscCall(VecScale(Y, 1.0 / lmvm->J0scalar));
+      PetscCall(VecAXPBY(Y, 1.0 / lmvm->J0scalar, 0.0, X));
     }
   } else {
     /* There is no J0 representation so just apply an identity matrix */
@@ -508,13 +503,16 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
+  VecType   vtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(VecGetType(X, &vtype));
+  PetscCall(MatSetVecType(B, vtype));
   PetscCall((*lmvm->ops->allocate)(B, X, F));
   if (lmvm->J0) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same));
@@ -541,7 +539,7 @@ PetscErrorCode MatLMVMResetShift(Mat B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   lmvm->shift = 0.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -573,7 +571,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall((*lmvm->ops->reset)(B, destructive));
   if (lmvm->J0) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same));
@@ -606,7 +604,7 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
-  PetscCheck(same, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   if (hist_size > 0) {
     lmvm->m = hist_size;
     if (lmvm->allocated && lmvm->m != lmvm->m_old) {

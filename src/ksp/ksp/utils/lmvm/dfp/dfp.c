@@ -44,12 +44,11 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
     /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
     for (i = 0; i <= lmvm->k; ++i) {
       PetscCall(MatSymBrdnApplyJ0Inv(B, lmvm->Y[i], ldfp->Q[i]));
-      for (j = 0; j <= i - 1; ++j) {
-        /* Compute the necessary dot products */
-        PetscCall(VecDotBegin(lmvm->Y[j], ldfp->Q[i], &yjtqi));
-        PetscCall(VecDotBegin(lmvm->S[j], lmvm->Y[i], &sjtyi));
-        PetscCall(VecDotEnd(lmvm->Y[j], ldfp->Q[i], &yjtqi));
-        PetscCall(VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi));
+      /* Compute the necessary dot products */
+      PetscCall(VecMDot(lmvm->Y[i], i, lmvm->S, ldfp->workscalar));
+      for (j = 0; j < i; ++j) {
+        sjtyi = ldfp->workscalar[j];
+        PetscCall(VecDot(lmvm->Y[j], ldfp->Q[i], &yjtqi));
         /* Compute the pure DFP component of the inverse application*/
         PetscCall(VecAXPBYPCZ(ldfp->Q[i], -PetscRealPart(yjtqi) / ldfp->ytq[j], PetscRealPart(sjtyi) / ldfp->yts[j], 1.0, ldfp->Q[j], lmvm->S[j]));
       }
@@ -61,12 +60,11 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 
   /* Start the outer loop (i) for the recursive formula */
   PetscCall(MatSymBrdnApplyJ0Inv(B, F, dX));
+  /* Get all the dot products we need */
+  PetscCall(VecMDot(F, lmvm->k + 1, lmvm->S, ldfp->workscalar));
   for (i = 0; i <= lmvm->k; ++i) {
-    /* Get all the dot products we need */
-    PetscCall(VecDotBegin(lmvm->Y[i], dX, &ytx));
-    PetscCall(VecDotBegin(lmvm->S[i], F, &stf));
-    PetscCall(VecDotEnd(lmvm->Y[i], dX, &ytx));
-    PetscCall(VecDotEnd(lmvm->S[i], F, &stf));
+    stf = ldfp->workscalar[i];
+    PetscCall(VecDot(lmvm->Y[i], dX, &ytx));
     /* Update dX_{i+1} = (B^{-1})_{i+1} * f */
     PetscCall(VecAXPBYPCZ(dX, -PetscRealPart(ytx) / ldfp->ytq[i], PetscRealPart(stf) / ldfp->yts[i], 1.0, ldfp->Q[i], lmvm->S[i]));
   }
@@ -141,8 +139,8 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   Mat_LMVM     *dbase;
   Mat_DiagBrdn *dctx;
   PetscInt      old_k, i;
-  PetscReal     curvtol;
-  PetscScalar   curvature, ytytmp, ststmp;
+  PetscReal     curvtol, ststmp;
+  PetscScalar   curvature, ytytmp;
 
   PetscFunctionBegin;
   if (!lmvm->m) PetscFunctionReturn(PETSC_SUCCESS);
@@ -150,16 +148,12 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     PetscCall(VecAYPX(lmvm->Xprev, -1.0, X));
     PetscCall(VecAYPX(lmvm->Fprev, -1.0, F));
+
     /* Test if the updates can be accepted */
-    PetscCall(VecDotBegin(lmvm->Xprev, lmvm->Fprev, &curvature));
-    PetscCall(VecDotBegin(lmvm->Xprev, lmvm->Xprev, &ststmp));
-    PetscCall(VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature));
-    PetscCall(VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp));
-    if (PetscRealPart(ststmp) < lmvm->eps) {
-      curvtol = 0.0;
-    } else {
-      curvtol = lmvm->eps * PetscRealPart(ststmp);
-    }
+    PetscCall(VecDotNorm2(lmvm->Xprev, lmvm->Fprev, &curvature, &ststmp));
+    if (ststmp < lmvm->eps) curvtol = 0.0;
+    else curvtol = lmvm->eps * ststmp;
+
     if (PetscRealPart(curvature) > curvtol) {
       /* Update is good, accept it */
       ldfp->watchdog = 0;
@@ -178,7 +172,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
       PetscCall(VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp));
       ldfp->yts[lmvm->k] = PetscRealPart(curvature);
       ldfp->yty[lmvm->k] = PetscRealPart(ytytmp);
-      ldfp->sts[lmvm->k] = PetscRealPart(ststmp);
+      ldfp->sts[lmvm->k] = ststmp;
       /* Compute the scalar scale if necessary */
       if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) PetscCall(MatSymBrdnComputeJ0Scalar(B));
     } else {
@@ -274,7 +268,7 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
   if (ldfp->allocated) {
     if (destructive) {
       PetscCall(VecDestroy(&ldfp->work));
-      PetscCall(PetscFree4(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts));
+      PetscCall(PetscFree5(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts, ldfp->workscalar));
       PetscCall(VecDestroyVecs(lmvm->m, &ldfp->Q));
       switch (ldfp->scale_type) {
       case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
@@ -318,7 +312,7 @@ static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscCall(MatAllocate_LMVM(B, X, F));
   if (!ldfp->allocated) {
     PetscCall(VecDuplicate(X, &ldfp->work));
-    PetscCall(PetscMalloc4(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts));
+    PetscCall(PetscMalloc5(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts, lmvm->m, &ldfp->workscalar));
     if (lmvm->m > 0) PetscCall(VecDuplicateVecs(X, lmvm->m, &ldfp->Q));
     switch (ldfp->scale_type) {
     case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
@@ -342,7 +336,7 @@ static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
   PetscFunctionBegin;
   if (ldfp->allocated) {
     PetscCall(VecDestroy(&ldfp->work));
-    PetscCall(PetscFree4(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts));
+    PetscCall(PetscFree5(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts, ldfp->workscalar));
     PetscCall(VecDestroyVecs(lmvm->m, &ldfp->Q));
     ldfp->allocated = PETSC_FALSE;
   }
@@ -364,7 +358,7 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
   PetscCall(MatSetUp_LMVM(B));
   if (!ldfp->allocated) {
     PetscCall(VecDuplicate(lmvm->Xprev, &ldfp->work));
-    PetscCall(PetscMalloc4(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts));
+    PetscCall(PetscMalloc5(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts, lmvm->m, &ldfp->workscalar));
     if (lmvm->m > 0) PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &ldfp->Q));
     switch (ldfp->scale_type) {
     case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
@@ -428,10 +422,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
    used for approximating Jacobians. L-DFP is symmetric positive-definite by
    construction, and is the dual of L-BFGS where Y and S vectors swap roles.
 
-   The provided local and global sizes must match the solution and function vectors
-   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-DFP matrix will have
-   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
-   parallel. To use the L-DFP matrix with other vector types, the matrix must be
+   To use the L-DFP matrix with other vector types, the matrix must be
    created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.

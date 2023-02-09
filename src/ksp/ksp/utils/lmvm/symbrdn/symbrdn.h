@@ -12,6 +12,7 @@ typedef struct {
   Vec                        work;
   PetscBool                  allocated, needP, needQ;
   PetscReal                 *stp, *ytq, *yts, *yty, *sts; /* scalar arrays for recycling dot products */
+  PetscScalar               *workscalar;                  /* work scalar array */
   PetscReal                  theta, phi, *psi;            /* convex combination factors between DFP and BFGS */
   PetscReal                  rho, alpha, beta;            /* convex combination factors for the scalar or diagonal scaling */
   PetscReal                  delta, delta_min, delta_max, sigma;

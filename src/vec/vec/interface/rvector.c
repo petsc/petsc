@@ -1084,7 +1084,7 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode VecMXDot_Priate(Vec x, PetscInt nv, const Vec y[], PetscScalar result[], PetscErrorCode (*mxdot)(Vec, PetscInt, const Vec[], PetscScalar[]), PetscLogEvent event)
+static PetscErrorCode VecMXDot_Private(Vec x, PetscInt nv, const Vec y[], PetscScalar result[], PetscErrorCode (*mxdot)(Vec, PetscInt, const Vec[], PetscScalar[]), PetscLogEvent event)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
@@ -1144,7 +1144,7 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mtdot, VEC_MTDot));
+  PetscCall(VecMXDot_Private(x, nv, y, val, x->ops->mtdot, VEC_MTDot));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1178,7 +1178,7 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mdot, VEC_MDot));
+  PetscCall(VecMXDot_Private(x, nv, y, val, x->ops->mdot, VEC_MDot));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

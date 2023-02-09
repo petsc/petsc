@@ -8,8 +8,6 @@ static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX)
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
-  VecCheckSameSize(F, 2, dX, 3);
-  VecCheckMatCompatible(B, dX, 3, F, 2);
   PetscCall(VecPointwiseMult(dX, ldb->invD, F));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -22,8 +20,6 @@ static PetscErrorCode MatMult_DiagBrdn(Mat B, Vec X, Vec Z)
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
 
   PetscFunctionBegin;
-  VecCheckSameSize(X, 2, Z, 3);
-  VecCheckMatCompatible(B, X, 2, Z, 3);
   PetscCall(VecPointwiseDivide(Z, X, ldb->invD));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -35,8 +31,9 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;
   PetscInt      old_k, i, start;
-  PetscScalar   yty, ststmp, curvature, ytDy, stDs, ytDs;
-  PetscReal     curvtol, sigma, yy_sum, ss_sum, ys_sum, denom;
+  PetscScalar   yty, curvature, ytDy, stDs, ytDs;
+  PetscReal     curvtol, sigma, yy_sum, ss_sum, ys_sum, denom, ststmp;
+  PetscReal     stDsr, ytDyr;
 
   PetscFunctionBegin;
   if (!lmvm->m) PetscFunctionReturn(PETSC_SUCCESS);
@@ -44,16 +41,12 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     PetscCall(VecAYPX(lmvm->Xprev, -1.0, X));
     PetscCall(VecAYPX(lmvm->Fprev, -1.0, F));
-    /* Compute tolerance for accepting the update */
-    PetscCall(VecDotBegin(lmvm->Xprev, lmvm->Fprev, &curvature));
-    PetscCall(VecDotBegin(lmvm->Xprev, lmvm->Xprev, &ststmp));
-    PetscCall(VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature));
-    PetscCall(VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp));
-    if (PetscRealPart(ststmp) < lmvm->eps) {
-      curvtol = 0.0;
-    } else {
-      curvtol = lmvm->eps * PetscRealPart(ststmp);
-    }
+
+    /* Test if the updates can be accepted */
+    PetscCall(VecDotNorm2(lmvm->Xprev, lmvm->Fprev, &curvature, &ststmp));
+    if (ststmp < lmvm->eps) curvtol = 0.0;
+    else curvtol = lmvm->eps * ststmp;
+
     /* Test the curvature for the update */
     if (PetscRealPart(curvature) > curvtol) {
       /* Update is good so we accept it */
@@ -71,7 +64,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
       PetscCall(VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty));
       ldb->yty[lmvm->k] = PetscRealPart(yty);
       ldb->yts[lmvm->k] = PetscRealPart(curvature);
-      ldb->sts[lmvm->k] = PetscRealPart(ststmp);
+      ldb->sts[lmvm->k] = ststmp;
       if (ldb->forward) {
         /* We are doing diagonal scaling of the forward Hessian B */
         /*  BFGS = DFP = inv(D); */
@@ -172,10 +165,8 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
             PetscCall(VecPointwiseMult(ldb->V, lmvm->Y[0], ldb->invDnew));
             PetscCall(VecPointwiseDivide(ldb->W, lmvm->S[0], ldb->invDnew));
 
-            PetscCall(VecDotBegin(ldb->V, lmvm->Y[0], &ytDy));
-            PetscCall(VecDotBegin(ldb->W, lmvm->S[0], &stDs));
-            PetscCall(VecDotEnd(ldb->V, lmvm->Y[0], &ytDy));
-            PetscCall(VecDotEnd(ldb->W, lmvm->S[0], &stDs));
+            PetscCall(VecDot(ldb->V, lmvm->Y[0], &ytDy));
+            PetscCall(VecDot(ldb->W, lmvm->S[0], &stDs));
 
             ss_sum = PetscRealPart(stDs);
             yy_sum = PetscRealPart(ytDy);
@@ -193,10 +184,8 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
               PetscCall(VecPointwiseMult(ldb->V, lmvm->Y[i], ldb->U));
               PetscCall(VecPointwiseMult(ldb->W, lmvm->S[i], ldb->U));
 
-              PetscCall(VecDotBegin(ldb->W, lmvm->S[i], &stDs));
-              PetscCall(VecDotBegin(ldb->V, lmvm->Y[i], &ytDy));
-              PetscCall(VecDotEnd(ldb->W, lmvm->S[i], &stDs));
-              PetscCall(VecDotEnd(ldb->V, lmvm->Y[i], &ytDy));
+              PetscCall(VecDot(ldb->W, lmvm->S[i], &stDs));
+              PetscCall(VecDot(ldb->V, lmvm->Y[i], &ytDy));
 
               ss_sum += PetscRealPart(stDs);
               ys_sum += ldb->yts[i];
@@ -208,13 +197,10 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
             /*  Compute summations for scalar scaling */
             PetscCall(VecPointwiseDivide(ldb->W, lmvm->S[0], ldb->invDnew));
 
-            PetscCall(VecDotBegin(ldb->W, lmvm->Y[0], &ytDs));
-            PetscCall(VecDotBegin(ldb->W, ldb->W, &stDs));
-            PetscCall(VecDotEnd(ldb->W, lmvm->Y[0], &ytDs));
-            PetscCall(VecDotEnd(ldb->W, ldb->W, &stDs));
+            PetscCall(VecDotNorm2(lmvm->Y[0], ldb->W, &ytDs, &stDsr));
 
             ys_sum = PetscRealPart(ytDs);
-            ss_sum = PetscRealPart(stDs);
+            ss_sum = stDsr;
             yy_sum = ldb->yty[0];
           } else {
             PetscCall(VecCopy(ldb->invDnew, ldb->U));
@@ -228,12 +214,9 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
             for (i = start; i < PetscMin(lmvm->nupdates, ldb->sigma_hist); ++i) {
               PetscCall(VecPointwiseMult(ldb->W, lmvm->S[i], ldb->U));
 
-              PetscCall(VecDotBegin(ldb->W, lmvm->Y[i], &ytDs));
-              PetscCall(VecDotBegin(ldb->W, ldb->W, &stDs));
-              PetscCall(VecDotEnd(ldb->W, lmvm->Y[i], &ytDs));
-              PetscCall(VecDotEnd(ldb->W, ldb->W, &stDs));
+              PetscCall(VecDotNorm2(lmvm->Y[i], ldb->W, &ytDs, &stDsr));
 
-              ss_sum += PetscRealPart(stDs);
+              ss_sum += stDsr;
               ys_sum += PetscRealPart(ytDs);
               yy_sum += ldb->yty[i];
             }
@@ -247,12 +230,9 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           for (i = start; i < PetscMin(lmvm->nupdates, ldb->sigma_hist); ++i) {
             PetscCall(VecPointwiseMult(ldb->V, lmvm->Y[i], ldb->invDnew));
 
-            PetscCall(VecDotBegin(ldb->V, lmvm->S[i], &ytDs));
-            PetscCall(VecDotBegin(ldb->V, ldb->V, &ytDy));
-            PetscCall(VecDotEnd(ldb->V, lmvm->S[i], &ytDs));
-            PetscCall(VecDotEnd(ldb->V, ldb->V, &ytDy));
+            PetscCall(VecDotNorm2(lmvm->S[i], ldb->V, &ytDs, &ytDyr));
 
-            yy_sum += PetscRealPart(ytDy);
+            yy_sum += ytDyr;
             ys_sum += PetscRealPart(ytDs);
             ss_sum += ldb->sts[i];
           }
@@ -269,14 +249,10 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
             PetscCall(VecPointwiseMult(ldb->V, ldb->invDnew, lmvm->Y[i]));
             PetscCall(VecPointwiseMult(ldb->W, ldb->U, lmvm->S[i]));
 
-            PetscCall(VecDotBegin(ldb->V, ldb->W, &ytDs));
-            PetscCall(VecDotBegin(ldb->V, ldb->V, &ytDy));
-            PetscCall(VecDotBegin(ldb->W, ldb->W, &stDs));
-            PetscCall(VecDotEnd(ldb->V, ldb->W, &ytDs));
-            PetscCall(VecDotEnd(ldb->V, ldb->V, &ytDy));
-            PetscCall(VecDotEnd(ldb->W, ldb->W, &stDs));
+            PetscCall(VecDotNorm2(ldb->W, ldb->V, &ytDs, &ytDyr));
+            PetscCall(VecDot(ldb->W, ldb->W, &stDs));
 
-            yy_sum += PetscRealPart(ytDy);
+            yy_sum += ytDyr;
             ys_sum += PetscRealPart(ytDs);
             ss_sum += PetscRealPart(stDs);
           }

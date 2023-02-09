@@ -64,8 +64,7 @@ PETSC_INTERN PetscErrorCode MatView_LMVM(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatDestroy_LMVM(Mat);
 PETSC_INTERN PetscErrorCode MatCreate_LMVM(Mat);
 
-/* Create functions for derived LMVM types
-   NOTE: MatCreateXYZ() declarations for subtypes live under petsctao.h */
+/* Create functions for derived LMVM types */
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMDFP(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMBFGS(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMSR1(Mat);
