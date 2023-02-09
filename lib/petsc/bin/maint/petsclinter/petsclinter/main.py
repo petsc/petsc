@@ -68,11 +68,22 @@ def main(
   if src_path is None:
     src_path = [petsc_dir / 'src']
   else:
-    assert isinstance(src_path, (list, tuple))
+    if isinstance(src_path, (str, pl.Path)):
+      src_path = [src_path]
+    if not isinstance(src_path, (list, tuple)):
+      raise RuntimeError(f'Source path must be a :ist or Tuple, not {type(src_path)}')
     src_path = [pl.Path(s).resolve() for s in src_path]
+
   patch_dir = petsc_dir / 'petscLintPatches' if patch_dir is None else pl.Path(patch_dir).resolve()
+  if patch_dir.exists() and not patch_dir.is_dir():
+    raise RuntimeError(f'Patch Directory (as the name suggests) must be a directory, not {patch_dir}')
+
   if test_output_dir == '__at_src__':
-    assert len(src_path) == 1, 'Can only use default test output dir for single file or directory'
+    if len(src_path) != 1:
+      raise RuntimeError(
+        f'Can only use default test output dir for single file or directory, not {len(src_path)}'
+      )
+
     test_src_path = src_path[0]
     if test_src_path.is_dir():
       test_output_dir = test_src_path / 'output'
