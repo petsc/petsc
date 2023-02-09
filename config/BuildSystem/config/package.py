@@ -76,7 +76,7 @@ class Package(config.base.Configure):
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
     self.buildLanguages         = ['C']  # Languages the package is written in, hence also the compilers needed to build it. Normally only contains one
-                                         # language, but can have multiple, such as ['FC', 'Cxx']. In petsc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
+                                         # language, but can have multiple, such as ['FC', 'Cxx']. In PETSc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
                                          # We use the first language in the list to check include headers, library functions and versions.
     self.noMPIUni               = 0    # 1 means requires a real MPI
     self.libdir                 = 'lib'     # location of libraries in the package directory tree
@@ -948,6 +948,10 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     oldLibs  = self.compilers.LIBS
     setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    if 'FC' in self.buildLanguages:
+      self.compilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+self.setCompilers.LIBS
+    if 'Cxx' in self.buildLanguages:
+      self.compilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.cxxlibs])+' '+self.setCompilers.LIBS
     result = self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared)
     setattr(self.compilers, flagsArg,oldFlags)
     self.compilers.LIBS = oldLibs
@@ -1040,6 +1044,11 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
+      otherlibs = self.dlib
+      if 'FC' in self.buildLanguages:
+        otherlibs.extend(self.compilers.flibs)
+      if 'Cxx' in self.buildLanguages:
+        otherlibs.extend(self.compilers.cxxlibs)
       self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages}):
         self.lib = lib
