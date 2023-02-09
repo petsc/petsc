@@ -56,6 +56,11 @@ typedef struct {
   PetscBool    imex;
   PetscBool    extrapolate; /* Extrapolate initial guess from previous time-step stage values */
   TSStepStatus status;
+
+  /* context for sensitivity analysis */
+  Vec *VecsDeltaLam;   /* Increment of the adjoint sensitivity w.r.t IC at stage */
+  Vec *VecsSensiTemp;  /* Vectors to be multiplied with Jacobian transpose */
+  Vec *VecsSensiPTemp; /* Temporary Vectors to store JacobianP-transpose-vector product */
 } TS_ARKIMEX;
 /*MC
      TSARKIMEXARS122 - Second order ARK IMEX scheme.
@@ -855,6 +860,150 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+/*
+  This adjoint step function assumes the partitioned ODE system has an identity mass matrix and thus can be represented in the form
+  Udot = H(t,U) + G(t,U)
+  This corresponds to F(t,U,Udot) = Udot-H(t,U).
+
+  The complete adjoint equations are
+  (shift*I - dHdu) lambda_s[i]   = 1/at[i][i] (
+    (b_i dGdU + bt[i] dHdU) lambda_{n+1} + dGdU \sum_{j=i+1}^s a[j][i] lambda_s[j]
+    + dHdU \sum_{j=i+1}^s at[j][i] lambda_s[j]),  i = s-1,...,0
+  lambda_n = lambda_{n+1} + \sum_{j=1}^s lambda_s[j]
+  mu_{n+1}[i]   = h (at[i][i] dHdP lambda_s[i]
+    + (b_i dGdP + bt[i] dHdP) lambda_{n+1} + dGdP \sum_{j=i+1}^s a[j][i] lambda_s[j]
+    + dHdP \sum_{j=i+1}^s at[j][i] lambda_s[j]), i = s-1,...,0
+  mu_n = mu_{n+1} + \sum_{j=1}^s mu_{n+1}[j]
+  where shift = 1/(at[i][i]*h)
+
+  If at[i][i] is 0, the first equation falls back to
+  lambda_s[i] = h (
+    (b_i dGdU + bt[i] dHdU) lambda_{n+1} + dGdU \sum_{j=i+1}^s a[j][i] lambda_s[j]
+    + dHdU \sum_{j=i+1}^s at[j][i] lambda_s[j])
+
+*/
+static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
+{
+  TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
+  ARKTableau       tab = ark->tableau;
+  const PetscInt   s   = tab->s;
+  const PetscReal *At = tab->At, *A = tab->A, *ct = tab->ct, *c = tab->c, *b = tab->b, *bt = tab->bt;
+  PetscScalar     *w = ark->work;
+  Vec             *Y = ark->Y, Ydot = ark->Ydot, *VecsDeltaLam = ark->VecsDeltaLam, *VecsSensiTemp = ark->VecsSensiTemp, *VecsSensiPTemp = ark->VecsSensiPTemp;
+  Mat              Jex, Jim, Jimpre;
+  PetscInt         i, j, nadj;
+  PetscReal        t                 = ts->ptime, stage_time_ex;
+  PetscReal        adjoint_time_step = -ts->time_step; /* always positive since ts->time_step is negative */
+  KSP              ksp;
+
+  PetscFunctionBegin;
+  ark->status = TS_STEP_INCOMPLETE;
+  PetscCall(SNESGetKSP(ts->snes, &ksp));
+  PetscCall(TSGetRHSMats_Private(ts, &Jex, NULL));
+  PetscCall(TSGetIJacobian(ts, &Jim, &Jimpre, NULL, NULL));
+
+  for (i = s - 1; i >= 0; i--) {
+    ark->stage_time = t - adjoint_time_step * (1.0 - ct[i]);
+    stage_time_ex   = t - adjoint_time_step * (1.0 - c[i]);
+    if (At[i * s + i] == 0) { // This stage is explicit
+      ark->scoeff = 0.;
+    } else {
+      ark->scoeff = -1. / At[i * s + i]; // this makes shift=ark->scoeff/ts->time_step positive since ts->time_step is negative
+    }
+    PetscCall(TSComputeSNESJacobian(ts, Y[i], Jim, Jimpre));
+    PetscCall(TSComputeRHSJacobian(ts, stage_time_ex, Y[i], Jex, Jex));
+    if (ts->vecs_sensip) {
+      PetscCall(TSComputeIJacobianP(ts, ark->stage_time, Y[i], Ydot, ark->scoeff / adjoint_time_step, ts->Jacp, PETSC_TRUE)); // get dFdP (-dHdP), Ydot not really used since mass matrix is identity
+      PetscCall(TSComputeRHSJacobianP(ts, stage_time_ex, Y[i], ts->Jacprhs));                                                 // get dGdP
+    }
+    for (nadj = 0; nadj < ts->numcost; nadj++) {
+      /* Build RHS (stored in VecsDeltaLam) for first-order adjoint */
+      if (s - i - 1 > 0) {
+        /* Temp = -\sum_{j=i+1}^s at[j][i] lambda_s[j] */
+        for (j = i + 1; j < s; j++) w[j - i - 1] = -At[j * s + i];
+        PetscCall(VecSet(VecsSensiTemp[nadj], 0));
+        PetscCall(VecMAXPY(VecsSensiTemp[nadj], s - i - 1, w, &VecsDeltaLam[nadj * s + i + 1]));
+        /* (shift I - dHdU) Temp */
+        PetscCall(MatMultTranspose(Jim, VecsSensiTemp[nadj], VecsDeltaLam[nadj * s + i]));
+        /* cancel out shift Temp where shift=-scoeff/h */
+        PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], ark->scoeff / adjoint_time_step, VecsSensiTemp[nadj]));
+        if (ts->vecs_sensip) {
+          /* - dHdP Temp */
+          PetscCall(MatMultTranspose(ts->Jacp, VecsSensiTemp[nadj], VecsSensiPTemp[nadj]));
+          /* mu_n += h dHdP Temp */
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj], -adjoint_time_step, VecsSensiPTemp[nadj]));
+        }
+        /* Temp = \sum_{j=i+1}^s a[j][i] lambda_s[j] */
+        for (j = i + 1; j < s; j++) w[j - i - 1] = A[j * s + i];
+        PetscCall(VecSet(VecsSensiTemp[nadj], 0));
+        PetscCall(VecMAXPY(VecsSensiTemp[nadj], s - i - 1, w, &VecsDeltaLam[nadj * s + i + 1]));
+        /* dGdU Temp */
+        PetscCall(MatMultTransposeAdd(Jex, VecsSensiTemp[nadj], VecsDeltaLam[nadj * s + i], VecsDeltaLam[nadj * s + i]));
+        if (ts->vecs_sensip) {
+          /* dGdP Temp */
+          PetscCall(MatMultTranspose(ts->Jacprhs, VecsSensiTemp[nadj], VecsSensiPTemp[nadj]));
+          /* mu_n += h dGdP Temp */
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj], adjoint_time_step, VecsSensiPTemp[nadj]));
+        }
+      } else {
+        PetscCall(VecSet(VecsDeltaLam[nadj * s + i], 0)); // make sure it is initialized
+      }
+      if (bt[i]) { // bt[i] dHdU lambda_{n+1}
+        /* (shift I - dHdU)^T lambda_{n+1} */
+        PetscCall(MatMultTranspose(Jim, ts->vecs_sensi[nadj], VecsSensiTemp[nadj]));
+        /* -bt[i] (shift I - dHdU)^T lambda_{n+1} */
+        PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], -bt[i], VecsSensiTemp[nadj]));
+        /* cancel out -bt[i] shift lambda_{n+1} */
+        PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], -bt[i] * ark->scoeff / adjoint_time_step, ts->vecs_sensi[nadj]));
+        if (ts->vecs_sensip) {
+          /* -dHdP lambda_{n+1} */
+          PetscCall(MatMultTranspose(ts->Jacp, ts->vecs_sensi[nadj], VecsSensiPTemp[nadj]));
+          /* mu_n += h bt[i] dHdP lambda_{n+1} */
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj], -bt[i] * adjoint_time_step, VecsSensiPTemp[nadj]));
+        }
+      }
+      if (b[i]) { // b[i] dGdU lambda_{n+1}
+        /* dGdU lambda_{n+1} */
+        PetscCall(MatMultTranspose(Jex, ts->vecs_sensi[nadj], VecsSensiTemp[nadj]));
+        /* b[i] dGdU lambda_{n+1} */
+        PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], b[i], VecsSensiTemp[nadj]));
+        if (ts->vecs_sensip) {
+          /* dGdP lambda_{n+1} */
+          PetscCall(MatMultTranspose(ts->Jacprhs, ts->vecs_sensi[nadj], VecsSensiPTemp[nadj]));
+          /* mu_n += h b[i] dGdP lambda_{n+1} */
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj], b[i] * adjoint_time_step, VecsSensiPTemp[nadj]));
+        }
+      }
+      /* Build LHS for first-order adjoint */
+      if (At[i * s + i] == 0) { // This stage is explicit
+        PetscCall(VecScale(VecsDeltaLam[nadj * s + i], adjoint_time_step));
+      } else {
+        KSP                ksp;
+        KSPConvergedReason kspreason;
+        PetscCall(SNESGetKSP(ts->snes, &ksp));
+        PetscCall(KSPSetOperators(ksp, Jim, Jimpre));
+        PetscCall(VecScale(VecsDeltaLam[nadj * s + i], 1. / At[i * s + i]));
+        PetscCall(KSPSolveTranspose(ksp, VecsDeltaLam[nadj * s + i], VecsDeltaLam[nadj * s + i]));
+        PetscCall(KSPGetConvergedReason(ksp, &kspreason));
+        if (kspreason < 0) {
+          ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
+          PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", %" PetscInt_FMT "th cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n", ts->steps, nadj));
+        }
+        if (ts->vecs_sensip) {
+          /* -dHdP lambda_s[i] */
+          PetscCall(MatMultTranspose(ts->Jacp, VecsDeltaLam[nadj * s + i], VecsSensiPTemp[nadj]));
+          /* mu_n += h at[i][i] dHdP lambda_s[i] */
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj], -At[i * s + i] * adjoint_time_step, VecsSensiPTemp[nadj]));
+        }
+      }
+    }
+  }
+  for (j = 0; j < s; j++) w[j] = 1.0;
+  for (nadj = 0; nadj < ts->numcost; nadj++) // no need to do this for mu's
+    PetscCall(VecMAXPY(ts->vecs_sensi[nadj], s, w, &VecsDeltaLam[nadj * s]));
+  ark->status = TS_STEP_COMPLETE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X)
 {
@@ -954,6 +1103,18 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TSAdjointReset_ARKIMEX(TS ts)
+{
+  TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
+  ARKTableau  tab = ark->tableau;
+
+  PetscFunctionBegin;
+  PetscCall(VecDestroyVecs(tab->s * ts->numcost, &ark->VecsDeltaLam));
+  PetscCall(VecDestroyVecs(ts->numcost, &ark->VecsSensiTemp));
+  PetscCall(VecDestroyVecs(ts->numcost, &ark->VecsSensiPTemp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 {
   TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
@@ -1027,6 +1188,16 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
 
   ts->dm = dmsave;
   PetscCall(TSARKIMEXRestoreVecs(ts, dm, NULL, &Ydot));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TSGetStages_ARKIMEX(TS ts, PetscInt *ns, Vec *Y[])
+{
+  TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
+
+  PetscFunctionBegin;
+  if (ns) *ns = ark->tableau->s;
+  if (Y) *Y = ark->Y;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1110,6 +1281,23 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
+
+static PetscErrorCode TSAdjointSetUp_ARKIMEX(TS ts)
+{
+  TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
+  ARKTableau  tab = ark->tableau;
+
+  PetscFunctionBegin;
+  PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], tab->s * ts->numcost, &ark->VecsDeltaLam));
+  PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], ts->numcost, &ark->VecsSensiTemp));
+  if (ts->vecs_sensip) { PetscCall(VecDuplicateVecs(ts->vecs_sensip[0], ts->numcost, &ark->VecsSensiPTemp)); }
+  if (PetscDefined(USE_DEBUG)) {
+    PetscBool id = PETSC_FALSE;
+    PetscCall(TSARKIMEXTestMassIdentity(ts, &id));
+    PetscCheck(id, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Adjoint ARKIMEX requires an identity mass matrix, however the TSIFunction you provide does not utilize an identity mass matrix");
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOptionsObject)
 {
@@ -1369,16 +1557,18 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
 {
-  TS_ARKIMEX *th;
+  TS_ARKIMEX *ark;
 
   PetscFunctionBegin;
   PetscCall(TSARKIMEXInitializePackage());
 
   ts->ops->reset          = TSReset_ARKIMEX;
+  ts->ops->adjointreset   = TSAdjointReset_ARKIMEX;
   ts->ops->destroy        = TSDestroy_ARKIMEX;
   ts->ops->view           = TSView_ARKIMEX;
   ts->ops->load           = TSLoad_ARKIMEX;
   ts->ops->setup          = TSSetUp_ARKIMEX;
+  ts->ops->adjointsetup   = TSAdjointSetUp_ARKIMEX;
   ts->ops->step           = TSStep_ARKIMEX;
   ts->ops->interpolate    = TSInterpolate_ARKIMEX;
   ts->ops->evaluatestep   = TSEvaluateStep_ARKIMEX;
@@ -1386,12 +1576,18 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_ARKIMEX;
   ts->ops->snesfunction   = SNESTSFormFunction_ARKIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_ARKIMEX;
+  ts->ops->getstages      = TSGetStages_ARKIMEX;
+  ts->ops->adjointstep    = TSAdjointStep_ARKIMEX;
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNew(&th));
-  ts->data = (void *)th;
-  th->imex = PETSC_TRUE;
+  PetscCall(PetscNew(&ark));
+  ts->data  = (void *)ark;
+  ark->imex = PETSC_TRUE;
+
+  ark->VecsDeltaLam   = NULL;
+  ark->VecsSensiTemp  = NULL;
+  ark->VecsSensiPTemp = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXGetType_C", TSARKIMEXGetType_ARKIMEX));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetType_C", TSARKIMEXSetType_ARKIMEX));

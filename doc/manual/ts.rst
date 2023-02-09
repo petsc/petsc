@@ -1200,6 +1200,14 @@ Jacobian :math:`-F_p` with
 
    TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 
+or
+
+.. code-block::
+
+   TSSetIJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Vec,PetscReal,Mat,void*),void *ctx)
+
+or both, depending on which form is used to define the ODE.
+
 The arguments for the function ``fp()`` are the timestep context,
 current time, :math:`y`, and the (optional) user-provided context.
 

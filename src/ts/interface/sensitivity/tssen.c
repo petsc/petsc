@@ -103,7 +103,16 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
-  PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->rhsjacobianp)(ts, t, U, Amat, ts->rhsjacobianpctx));
+  if (ts->rhsjacobianp) PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->rhsjacobianp)(ts, t, U, Amat, ts->rhsjacobianpctx));
+  else {
+    PetscBool assembled;
+    PetscCall(MatZeroEntries(Amat));
+    PetscCall(MatAssembled(Amat, &assembled));
+    if (!assembled) {
+      PetscCall(MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -161,7 +170,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Petsc
 . U - state vector
 . Udot - time derivative of state vector
 . shift - shift to apply, see note below
-- imex - flag indicates if the method is IMEX so that the RHSJacobian should be kept separate
+- imex - flag indicates if the method is IMEX so that the RHSJacobianP should be kept separate
 
   Output Parameters:
 . A - Jacobian matrix
