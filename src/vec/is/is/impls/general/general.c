@@ -8,11 +8,13 @@
 static PetscErrorCode ISDuplicate_General(IS is, IS *newIS)
 {
   IS_General *sub = (IS_General *)is->data;
-  PetscInt    n;
+  PetscInt    n, bs;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is), n, sub->idx, PETSC_COPY_VALUES, newIS));
+  PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
+  PetscCall(PetscLayoutSetBlockSize((*newIS)->map, bs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
