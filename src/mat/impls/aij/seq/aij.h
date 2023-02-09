@@ -554,7 +554,6 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
 {
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx;
-  __mmask8 mask;
   PetscInt j;
 
   vec_y = _mm512_setzero_pd();
@@ -569,6 +568,7 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
   #if defined(__AVX512VL__)
   /* masked load requires avx512vl, which is not supported by KNL */
   if (n & 0x07) {
+    __mmask8 mask;
     mask     = (__mmask8)(0xff >> (8 - (n & 0x07)));
     vec_idx  = _mm256_mask_loadu_epi32(vec_idx, mask, aj);
     vec_vals = _mm512_mask_loadu_pd(vec_vals, mask, aa);
