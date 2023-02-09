@@ -3029,7 +3029,7 @@ The line search routines involve several parameters, which are set to
 defaults that are reasonable for many applications. The user can
 override the defaults by using the following options
 
--  ``-tao_ls_maxfev <max>``
+-  ``-tao_ls_max_funcs <max>``
 
 -  ``-tao_ls_stepmin <min>``
 
