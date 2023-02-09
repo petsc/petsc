@@ -160,7 +160,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-syclc=<prog>',    nargs.Arg(None, None, 'Specify the SYCL compiler'))
     help.addArgument('Compilers', '-SYCLC=<prog>',         nargs.Arg(None, None, 'Specify the SYCL compiler'))
     help.addArgument('Compilers', '-SYCLFLAGS=<string>',   nargs.Arg(None, None, 'Specify the SYCL compiler options'))
-    help.addArgument('Compilers', '-SYCLC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the SYCL linker flags'))
+    help.addArgument('Compilers', '-SYCLC_LINKER_FLAGS=<string>',        nargs.Arg(None, '', 'Specify the SYCL linker flags'))
 
 ##    help.addArgument('Compilers', '-LD=<prog>',              nargs.Arg(None, None, 'Specify the executable linker'))
 ##    help.addArgument('Compilers', '-CC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for C only'))
@@ -729,7 +729,9 @@ class Configure(config.base.Configure):
       if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
       else: setattr(self, flagsArg, '')
       self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
-    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLC_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+    # SYCLC_LINKER_FLAGS is init'ed above in the "for language" loop.
+    # FIXME: these linker flags are init'ed as a list, while others are init'ed as a string. Need to make them consistent.
+    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
       if isinstance(self.argDB[flagsArg],str): val = [self.argDB[flagsArg]]
       else: val = self.argDB[flagsArg]
       setattr(self, flagsArg, val)

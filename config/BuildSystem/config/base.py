@@ -625,8 +625,10 @@ class Configure(script.Script):
     return not (returnCode or len(output))
 
   def getLinkerFlagsName(language):
-    if language in ['C', 'CUDA', 'Cxx', 'FC', 'HIP', 'SYCL']:
+    if language in ['C', 'CUDA', 'Cxx', 'FC', 'HIP']:
       flagsArg = 'LDFLAGS'
+    elif language == 'SYCL':
+      flagsArg = 'SYCLC_LINKER_FLAGS' # refer to SYCL.py. I need standalone sycl linker flags in make macros, so I don't use LDFLAGS
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
