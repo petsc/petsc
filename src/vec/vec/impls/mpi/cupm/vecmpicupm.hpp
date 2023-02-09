@@ -28,29 +28,30 @@ public:
 private:
   PETSC_NODISCARD static Vec_MPI          *VecIMPLCast_(Vec) noexcept;
   PETSC_NODISCARD static constexpr VecType VECIMPLCUPM_() noexcept;
-  PETSC_NODISCARD static PetscErrorCode    VecDestroy_IMPL_(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode    VecResetArray_IMPL_(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode    VecPlaceArray_IMPL_(Vec, const PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode    VecCreate_IMPL_Private_(Vec, PetscBool *, PetscInt, PetscScalar *) noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode creatempicupm_(Vec, PetscDeviceContext, PetscBool /*allocate_missing*/ = PETSC_TRUE, PetscInt /*nghost*/ = 0, PetscScalar * /*host_array*/ = nullptr, PetscScalar * /*device_array*/ = nullptr) noexcept;
+  static PetscErrorCode VecDestroy_IMPL_(Vec) noexcept;
+  static PetscErrorCode VecResetArray_IMPL_(Vec) noexcept;
+  static PetscErrorCode VecPlaceArray_IMPL_(Vec, const PetscScalar *) noexcept;
+  static PetscErrorCode VecCreate_IMPL_Private_(Vec, PetscBool *, PetscInt, PetscScalar *) noexcept;
+
+  static PetscErrorCode creatempicupm_(Vec, PetscDeviceContext, PetscBool /*allocate_missing*/ = PETSC_TRUE, PetscInt /*nghost*/ = 0, PetscScalar * /*host_array*/ = nullptr, PetscScalar * /*device_array*/ = nullptr) noexcept;
 
 public:
   // callable directly via a bespoke function
-  PETSC_NODISCARD static PetscErrorCode creatempicupm(MPI_Comm, PetscInt, PetscInt, PetscInt, Vec *, PetscBool) noexcept;
-  PETSC_NODISCARD static PetscErrorCode creatempicupmwitharrays(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Vec *) noexcept;
+  static PetscErrorCode creatempicupm(MPI_Comm, PetscInt, PetscInt, PetscInt, Vec *, PetscBool) noexcept;
+  static PetscErrorCode creatempicupmwitharrays(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Vec *) noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode duplicate(Vec, Vec *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode bindtocpu(Vec, PetscBool) noexcept;
-  PETSC_NODISCARD static PetscErrorCode norm(Vec, NormType, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode dot(Vec, Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode tdot(Vec, Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode mdot(Vec, PetscInt, const Vec[], PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode dotnorm2(Vec, Vec, PetscScalar *, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode max(Vec, PetscInt *, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode min(Vec, PetscInt *, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setpreallocationcoo(Vec, PetscCount, const PetscInt[]) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setvaluescoo(Vec, const PetscScalar[], InsertMode) noexcept;
+  static PetscErrorCode duplicate(Vec, Vec *) noexcept;
+  static PetscErrorCode bindtocpu(Vec, PetscBool) noexcept;
+  static PetscErrorCode norm(Vec, NormType, PetscReal *) noexcept;
+  static PetscErrorCode dot(Vec, Vec, PetscScalar *) noexcept;
+  static PetscErrorCode tdot(Vec, Vec, PetscScalar *) noexcept;
+  static PetscErrorCode mdot(Vec, PetscInt, const Vec[], PetscScalar *) noexcept;
+  static PetscErrorCode dotnorm2(Vec, Vec, PetscScalar *, PetscScalar *) noexcept;
+  static PetscErrorCode max(Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode min(Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode setpreallocationcoo(Vec, PetscCount, const PetscInt[]) noexcept;
+  static PetscErrorCode setvaluescoo(Vec, const PetscScalar[], InsertMode) noexcept;
 };
 
 template <device::cupm::DeviceType T>

@@ -39,74 +39,74 @@ private:
   PETSC_NODISCARD static Vec_Seq          *VecIMPLCast_(Vec) noexcept;
   PETSC_NODISCARD static constexpr VecType VECIMPLCUPM_() noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode VecDestroy_IMPL_(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode VecResetArray_IMPL_(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode VecPlaceArray_IMPL_(Vec, const PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode VecCreate_IMPL_Private_(Vec, PetscBool *, PetscInt, PetscScalar *) noexcept;
+  static PetscErrorCode VecDestroy_IMPL_(Vec) noexcept;
+  static PetscErrorCode VecResetArray_IMPL_(Vec) noexcept;
+  static PetscErrorCode VecPlaceArray_IMPL_(Vec, const PetscScalar *) noexcept;
+  static PetscErrorCode VecCreate_IMPL_Private_(Vec, PetscBool *, PetscInt, PetscScalar *) noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode MaybeIncrementEmptyLocalVec(Vec) noexcept;
+  static PetscErrorCode MaybeIncrementEmptyLocalVec(Vec) noexcept;
 
   // common core for min and max
   template <typename TupleFuncT, typename UnaryFuncT>
-  PETSC_NODISCARD static PetscErrorCode minmax_(TupleFuncT &&, UnaryFuncT &&, Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode minmax_(TupleFuncT &&, UnaryFuncT &&, Vec, PetscInt *, PetscReal *) noexcept;
   // common core for pointwise binary and pointwise unary thrust functions
   template <typename BinaryFuncT>
-  PETSC_NODISCARD static PetscErrorCode pointwisebinary_(BinaryFuncT &&, Vec, Vec, Vec) noexcept;
+  static PetscErrorCode pointwisebinary_(BinaryFuncT &&, Vec, Vec, Vec) noexcept;
   template <typename UnaryFuncT>
-  PETSC_NODISCARD static PetscErrorCode pointwiseunary_(UnaryFuncT &&, Vec, Vec /*out*/ = nullptr) noexcept;
+  static PetscErrorCode pointwiseunary_(UnaryFuncT &&, Vec, Vec /*out*/ = nullptr) noexcept;
   // mdot dispatchers
-  PETSC_NODISCARD static PetscErrorCode mdot_(/* use complex = */ std::true_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
-  PETSC_NODISCARD static PetscErrorCode mdot_(/* use complex = */ std::false_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
+  static PetscErrorCode mdot_(/* use complex = */ std::true_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
+  static PetscErrorCode mdot_(/* use complex = */ std::false_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
   template <std::size_t... Idx>
-  PETSC_NODISCARD static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, util::index_sequence<Idx...>) noexcept;
+  static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, util::index_sequence<Idx...>) noexcept;
   template <int>
-  PETSC_NODISCARD static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, PetscInt &) noexcept;
+  static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, PetscInt &) noexcept;
   template <std::size_t... Idx>
-  PETSC_NODISCARD static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, util::index_sequence<Idx...>) noexcept;
+  static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, util::index_sequence<Idx...>) noexcept;
   template <int>
-  PETSC_NODISCARD static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, PetscInt &) noexcept;
+  static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, PetscInt &) noexcept;
   // common core for the various create routines
-  PETSC_NODISCARD static PetscErrorCode createseqcupm_(Vec, PetscDeviceContext, PetscScalar * /*host_ptr*/ = nullptr, PetscScalar * /*device_ptr*/ = nullptr) noexcept;
+  static PetscErrorCode createseqcupm_(Vec, PetscDeviceContext, PetscScalar * /*host_ptr*/ = nullptr, PetscScalar * /*device_ptr*/ = nullptr) noexcept;
 
 public:
   // callable directly via a bespoke function
-  PETSC_NODISCARD static PetscErrorCode createseqcupm(MPI_Comm, PetscInt, PetscInt, Vec *, PetscBool) noexcept;
-  PETSC_NODISCARD static PetscErrorCode createseqcupmwithbotharrays(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Vec *) noexcept;
+  static PetscErrorCode createseqcupm(MPI_Comm, PetscInt, PetscInt, Vec *, PetscBool) noexcept;
+  static PetscErrorCode createseqcupmwithbotharrays(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Vec *) noexcept;
 
   // callable indirectly via function pointers
-  PETSC_NODISCARD static PetscErrorCode duplicate(Vec, Vec *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode aypx(Vec, PetscScalar, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode axpy(Vec, PetscScalar, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode pointwisedivide(Vec, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode pointwisemult(Vec, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode reciprocal(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode waxpy(Vec, PetscScalar, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode maxpy(Vec, PetscInt, const PetscScalar[], Vec *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode dot(Vec, Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode mdot(Vec, PetscInt, const Vec[], PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode set(Vec, PetscScalar) noexcept;
-  PETSC_NODISCARD static PetscErrorCode scale(Vec, PetscScalar) noexcept;
-  PETSC_NODISCARD static PetscErrorCode tdot(Vec, Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode copy(Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode swap(Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode axpby(Vec, PetscScalar, PetscScalar, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode axpbypcz(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode norm(Vec, NormType, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode dotnorm2(Vec, Vec, PetscScalar *, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode destroy(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode conjugate(Vec) noexcept;
+  static PetscErrorCode duplicate(Vec, Vec *) noexcept;
+  static PetscErrorCode aypx(Vec, PetscScalar, Vec) noexcept;
+  static PetscErrorCode axpy(Vec, PetscScalar, Vec) noexcept;
+  static PetscErrorCode pointwisedivide(Vec, Vec, Vec) noexcept;
+  static PetscErrorCode pointwisemult(Vec, Vec, Vec) noexcept;
+  static PetscErrorCode reciprocal(Vec) noexcept;
+  static PetscErrorCode waxpy(Vec, PetscScalar, Vec, Vec) noexcept;
+  static PetscErrorCode maxpy(Vec, PetscInt, const PetscScalar[], Vec *) noexcept;
+  static PetscErrorCode dot(Vec, Vec, PetscScalar *) noexcept;
+  static PetscErrorCode mdot(Vec, PetscInt, const Vec[], PetscScalar *) noexcept;
+  static PetscErrorCode set(Vec, PetscScalar) noexcept;
+  static PetscErrorCode scale(Vec, PetscScalar) noexcept;
+  static PetscErrorCode tdot(Vec, Vec, PetscScalar *) noexcept;
+  static PetscErrorCode copy(Vec, Vec) noexcept;
+  static PetscErrorCode swap(Vec, Vec) noexcept;
+  static PetscErrorCode axpby(Vec, PetscScalar, PetscScalar, Vec) noexcept;
+  static PetscErrorCode axpbypcz(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec) noexcept;
+  static PetscErrorCode norm(Vec, NormType, PetscReal *) noexcept;
+  static PetscErrorCode dotnorm2(Vec, Vec, PetscScalar *, PetscScalar *) noexcept;
+  static PetscErrorCode destroy(Vec) noexcept;
+  static PetscErrorCode conjugate(Vec) noexcept;
   template <PetscMemoryAccessMode>
-  PETSC_NODISCARD static PetscErrorCode getlocalvector(Vec, Vec) noexcept;
+  static PetscErrorCode getlocalvector(Vec, Vec) noexcept;
   template <PetscMemoryAccessMode>
-  PETSC_NODISCARD static PetscErrorCode restorelocalvector(Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode max(Vec, PetscInt *, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode min(Vec, PetscInt *, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode sum(Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode shift(Vec, PetscScalar) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setrandom(Vec, PetscRandom) noexcept;
-  PETSC_NODISCARD static PetscErrorCode bindtocpu(Vec, PetscBool) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setpreallocationcoo(Vec, PetscCount, const PetscInt[]) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setvaluescoo(Vec, const PetscScalar[], InsertMode) noexcept;
+  static PetscErrorCode restorelocalvector(Vec, Vec) noexcept;
+  static PetscErrorCode max(Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode min(Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode sum(Vec, PetscScalar *) noexcept;
+  static PetscErrorCode shift(Vec, PetscScalar) noexcept;
+  static PetscErrorCode setrandom(Vec, PetscRandom) noexcept;
+  static PetscErrorCode bindtocpu(Vec, PetscBool) noexcept;
+  static PetscErrorCode setpreallocationcoo(Vec, PetscCount, const PetscInt[]) noexcept;
+  static PetscErrorCode setvaluescoo(Vec, const PetscScalar[], InsertMode) noexcept;
 };
 
 // ==========================================================================================
@@ -1596,7 +1596,7 @@ namespace
 {
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCreateSeqCUPMAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt n, Vec *v) noexcept
+inline PetscErrorCode VecCreateSeqCUPMAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt n, Vec *v) noexcept
 {
   PetscFunctionBegin;
   PetscValidPointer(v, 4);
@@ -1605,7 +1605,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCreateSeqCUPMAsync(T &&VecSeq_CUPM_Impl
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCreateSeqCUPMWithArraysAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v) noexcept
+inline PetscErrorCode VecCreateSeqCUPMWithArraysAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v) noexcept
 {
   PetscFunctionBegin;
   if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
@@ -1615,7 +1615,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCreateSeqCUPMWithArraysAsync(T &&VecSeq
 }
 
 template <PetscMemoryAccessMode mode, typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
@@ -1625,7 +1625,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayAsync_Private(T &&VecSeq_CU
 }
 
 template <PetscMemoryAccessMode mode, typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
@@ -1634,7 +1634,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayAsync_Private(T &&VecSe
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync_Private<PETSC_MEMORY_ACCESS_READ_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
@@ -1642,7 +1642,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayAsync(T &&VecSeq_CUPM_Impls
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync_Private<PETSC_MEMORY_ACCESS_READ_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
@@ -1650,7 +1650,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayAsync(T &&VecSeq_CUPM_I
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync_Private<PETSC_MEMORY_ACCESS_READ>(std::forward<T>(VecSeq_CUPM_Impls), v, const_cast<PetscScalar **>(a)));
@@ -1658,7 +1658,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayReadAsync(T &&VecSeq_CUPM_I
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync_Private<PETSC_MEMORY_ACCESS_READ>(std::forward<T>(VecSeq_CUPM_Impls), v, const_cast<PetscScalar **>(a)));
@@ -1666,7 +1666,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayReadAsync(T &&VecSeq_CU
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync_Private<PETSC_MEMORY_ACCESS_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
@@ -1674,7 +1674,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayWriteAsync(T &&VecSeq_CUPM_
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync_Private<PETSC_MEMORY_ACCESS_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
@@ -1682,7 +1682,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayWriteAsync(T &&VecSeq_C
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMPlaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
+inline PetscErrorCode VecCUPMPlaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 2);
@@ -1691,7 +1691,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMPlaceArrayAsync(T &&VecSeq_CUPM_Imp
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMReplaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
+inline PetscErrorCode VecCUPMReplaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 2);
@@ -1700,7 +1700,7 @@ PETSC_NODISCARD inline PetscErrorCode VecCUPMReplaceArrayAsync(T &&VecSeq_CUPM_I
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMResetArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin) noexcept
+inline PetscErrorCode VecCUPMResetArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 2);

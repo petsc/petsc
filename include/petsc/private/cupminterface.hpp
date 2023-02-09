@@ -530,7 +530,7 @@ struct Interface : InterfaceImpl<T> {
     #define PETSC_PKG_CUDA_VERSION_GE(...) 0
     #define CUPM_DEFINED_PETSC_PKG_CUDA_VERSION_GE
   #endif
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMGetMemType(const void *data, PetscMemType *type, PetscBool *registered = nullptr, PetscBool *managed = nullptr) noexcept
+  static PetscErrorCode PetscCUPMGetMemType(const void *data, PetscMemType *type, PetscBool *registered = nullptr, PetscBool *managed = nullptr) noexcept
   {
     cupmPointerAttributes_t attr;
     cupmError_t             cerr;
@@ -586,7 +586,7 @@ struct Interface : InterfaceImpl<T> {
 
   // these change what the arguments mean, so need to namespace these
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMallocAsync(M **ptr, std::size_t n, cupmStream_t stream = nullptr) noexcept
+  static PetscErrorCode PetscCUPMMallocAsync(M **ptr, std::size_t n, cupmStream_t stream = nullptr) noexcept
   {
     static_assert(!std::is_void<M>::value, "");
 
@@ -610,7 +610,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMalloc(M **ptr, std::size_t n) noexcept
+  static PetscErrorCode PetscCUPMMalloc(M **ptr, std::size_t n) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMallocAsync(ptr, n));
@@ -618,7 +618,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMallocHost(M **ptr, std::size_t n, unsigned int flags = cupmHostAllocDefault) noexcept
+  static PetscErrorCode PetscCUPMMallocHost(M **ptr, std::size_t n, unsigned int flags = cupmHostAllocDefault) noexcept
   {
     static_assert(!std::is_void<M>::value, "");
 
@@ -630,7 +630,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <typename D>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpyAsync(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind, cupmStream_t stream = nullptr, bool use_async = false) noexcept
+  static PetscErrorCode PetscCUPMMemcpyAsync(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind, cupmStream_t stream = nullptr, bool use_async = false) noexcept
   {
     static_assert(!std::is_void<D>::value, "");
     const auto size = n * sizeof(D);
@@ -672,7 +672,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <typename D>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpy(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind) noexcept
+  static PetscErrorCode PetscCUPMMemcpy(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMemcpyAsync(dest, src, n, kind));
@@ -680,7 +680,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemsetAsync(M *ptr, int value, std::size_t n, cupmStream_t stream = nullptr, bool use_async = false) noexcept
+  static PetscErrorCode PetscCUPMMemsetAsync(M *ptr, int value, std::size_t n, cupmStream_t stream = nullptr, bool use_async = false) noexcept
   {
     static_assert(!std::is_void<M>::value, "");
 
@@ -699,7 +699,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemset(M *ptr, int value, std::size_t n) noexcept
+  static PetscErrorCode PetscCUPMMemset(M *ptr, int value, std::size_t n) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMemsetAsync(ptr, value, n));
@@ -764,7 +764,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <std::size_t block_size = 256, std::size_t warp_size = 32, typename F, typename... Args>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMLaunchKernel1D(std::size_t n, std::size_t sharedMem, cupmStream_t stream, F &&func, Args &&...kernelArgs) noexcept
+  static PetscErrorCode PetscCUPMLaunchKernel1D(std::size_t n, std::size_t sharedMem, cupmStream_t stream, F &&func, Args &&...kernelArgs) noexcept
   {
     static_assert(block_size > 0, "");
     static_assert(warp_size > 0, "");

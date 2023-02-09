@@ -27,14 +27,14 @@ public:
 private:
   static bool initialized_;
 
-  PETSC_NODISCARD static PetscErrorCode finalize_() noexcept
+  static PetscErrorCode finalize_() noexcept
   {
     PetscFunctionBegin;
     initialized_ = false;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode initialize_(PetscInt id, DeviceContext *dci) noexcept
+  static PetscErrorCode initialize_(PetscInt id, DeviceContext *dci) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscDeviceCheckDeviceCount_Internal(id));
@@ -53,23 +53,23 @@ public:
 
   // All of these functions MUST be static in order to be callable from C, otherwise they
   // get the implicit 'this' pointer tacked on
-  PETSC_NODISCARD static PetscErrorCode destroy(PetscDeviceContext dctx) noexcept
+  static PetscErrorCode destroy(PetscDeviceContext dctx) noexcept
   {
     PetscFunctionBegin;
     delete static_cast<PetscDeviceContext_IMPLS *>(dctx->data);
     dctx->data = nullptr;
     PetscFunctionReturn(PETSC_SUCCESS);
   };
-  PETSC_NODISCARD static PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode setUp(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }; // Nothing to setup
-  PETSC_NODISCARD static PetscErrorCode query(PetscDeviceContext, PetscBool *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode synchronize(PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode getBlasHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode getSolverHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode getStreamHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode beginTimer(PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  PETSC_NODISCARD static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode setUp(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }; // Nothing to setup
+  static PetscErrorCode query(PetscDeviceContext, PetscBool *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode synchronize(PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode getBlasHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode getSolverHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode getStreamHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode beginTimer(PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
 };
 
 } // namespace impl

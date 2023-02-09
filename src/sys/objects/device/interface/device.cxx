@@ -302,7 +302,7 @@ PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
 struct DefaultDeviceType : public Petsc::RegisterFinalizeable<DefaultDeviceType> {
   PetscDeviceType type = PETSC_DEVICE_HARDWARE_DEFAULT_TYPE;
 
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept
+  PetscErrorCode finalize_() noexcept
   {
     PetscFunctionBegin;
     type = PETSC_DEVICE_HARDWARE_DEFAULT_TYPE;

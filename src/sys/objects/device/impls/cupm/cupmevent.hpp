@@ -24,10 +24,10 @@ class CUPMEventPool : impl::Interface<T>, public RegisterFinalizeable<CUPMEventP
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
 
-  PETSC_NODISCARD PetscErrorCode allocate(cupmEvent_t *) noexcept;
-  PETSC_NODISCARD PetscErrorCode deallocate(cupmEvent_t *) noexcept;
+  PetscErrorCode allocate(cupmEvent_t *) noexcept;
+  PetscErrorCode deallocate(cupmEvent_t *) noexcept;
 
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
+  PetscErrorCode finalize_() noexcept;
 
 private:
   std::stack<cupmEvent_t> pool_;
@@ -115,8 +115,8 @@ public:
   CUPMEvent(const CUPMEvent &)            = delete;
   CUPMEvent &operator=(const CUPMEvent &) = delete;
 
-  PETSC_NODISCARD cupmEvent_t    get() noexcept;
-  PETSC_NODISCARD PetscErrorCode record(cupmStream_t) noexcept;
+  PETSC_NODISCARD cupmEvent_t get() noexcept;
+  PetscErrorCode              record(cupmStream_t) noexcept;
 
   explicit operator bool() const noexcept;
 

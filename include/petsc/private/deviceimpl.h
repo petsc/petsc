@@ -397,7 +397,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContex
 namespace
 {
 
-PETSC_NODISCARD inline PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, PetscObject obj, PetscMemoryAccessMode mode, const char name[])
+inline PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, PetscObject obj, PetscMemoryAccessMode mode, const char name[])
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextMarkIntentFromID(dctx, obj->id, mode, name));

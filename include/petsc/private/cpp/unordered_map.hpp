@@ -95,9 +95,9 @@ public:
   PETSC_NODISCARD size_type capacity() const noexcept;
   PETSC_NODISCARD bool      empty() const noexcept;
 
-  PETSC_NODISCARD PetscErrorCode reserve(size_type) noexcept;
-  PETSC_NODISCARD PetscErrorCode resize(size_type) noexcept;
-  PETSC_NODISCARD PetscErrorCode clear() noexcept;
+  PetscErrorCode reserve(size_type) noexcept;
+  PetscErrorCode resize(size_type) noexcept;
+  PetscErrorCode clear() noexcept;
 
   PETSC_NODISCARD bool occupied(khash_int) const noexcept;
   PETSC_NODISCARD bool occupied(const_iterator) const noexcept;
@@ -124,7 +124,7 @@ protected:
   PETSC_NODISCARD const_iterator make_iterator_(khash_int) const noexcept;
 
   template <typename T>
-  PETSC_NODISCARD PetscErrorCode khash_find_(T &&, khash_int *) const noexcept;
+  PetscErrorCode khash_find_(T &&, khash_int *) const noexcept;
 
   // emplacement for the hash map, where key and value are constructed separately
   template <typename KeyType, typename... ValueTypeArgs>
@@ -187,19 +187,19 @@ private:
   PETSC_NODISCARD bool        khash_is_either_(khash_int) const noexcept;
 
   template <unsigned, bool>
-  PETSC_NODISCARD static PetscErrorCode khash_set_flag_(khash_int, std::vector<flags_type> &) noexcept;
+  static PetscErrorCode khash_set_flag_(khash_int, std::vector<flags_type> &) noexcept;
   template <bool>
-  PETSC_NODISCARD static PetscErrorCode khash_set_deleted_(khash_int, std::vector<flags_type> &) noexcept;
+  static PetscErrorCode khash_set_deleted_(khash_int, std::vector<flags_type> &) noexcept;
   template <bool>
-  PETSC_NODISCARD static PetscErrorCode khash_set_empty_(khash_int, std::vector<flags_type> &) noexcept;
+  static PetscErrorCode khash_set_empty_(khash_int, std::vector<flags_type> &) noexcept;
   template <bool>
-  PETSC_NODISCARD static PetscErrorCode khash_set_both_(khash_int, std::vector<flags_type> &) noexcept;
+  static PetscErrorCode khash_set_both_(khash_int, std::vector<flags_type> &) noexcept;
   template <bool>
-  PETSC_NODISCARD PetscErrorCode khash_set_deleted_(khash_int) noexcept;
+  PetscErrorCode khash_set_deleted_(khash_int) noexcept;
   template <bool>
-  PETSC_NODISCARD PetscErrorCode khash_set_empty_(khash_int) noexcept;
+  PetscErrorCode khash_set_empty_(khash_int) noexcept;
   template <bool>
-  PETSC_NODISCARD PetscErrorCode khash_set_both_(khash_int) noexcept;
+  PetscErrorCode khash_set_both_(khash_int) noexcept;
 
   // produce the default bit pattern:
   //
@@ -240,8 +240,8 @@ private:
   template <typename KeyType, typename ValueConstructor>
   PETSC_NODISCARD std::pair<iterator, bool> find_and_emplace_final_(KeyType &&, ValueConstructor &&) noexcept;
 
-  PETSC_NODISCARD PetscErrorCode khash_maybe_rehash_() noexcept;
-  PETSC_NODISCARD PetscErrorCode khash_erase_(khash_int) noexcept;
+  PetscErrorCode khash_maybe_rehash_() noexcept;
+  PetscErrorCode khash_erase_(khash_int) noexcept;
 
   std::vector<value_type> values_{};
   std::vector<flags_type> flags_{};
@@ -383,7 +383,7 @@ private:
   table_type *map_ = nullptr;
   khash_int   it_  = 0;
 
-  PETSC_NODISCARD PetscErrorCode check_iterator_inbounds_(int map_begin_offset = 0, int map_end_offset = 0) const noexcept
+  PetscErrorCode check_iterator_inbounds_(int map_begin_offset = 0, int map_end_offset = 0) const noexcept
   {
     PetscFunctionBegin;
     if (PetscDefined(USE_DEBUG)) {

@@ -60,16 +60,16 @@ public:
   }
   #endif
 
-  PETSC_NODISCARD PetscErrorCode        try_allocate(void **, size_type, align_type, bool *) noexcept;
-  PETSC_NODISCARD PetscErrorCode        allocate(void **, size_type, align_type, bool        * = nullptr) noexcept;
-  PETSC_NODISCARD PetscErrorCode        deallocate(void **, size_type, align_type) noexcept;
-  PETSC_NODISCARD static PetscErrorCode get_attributes(const void *, size_type *, align_type *) noexcept;
+  PetscErrorCode        try_allocate(void **, size_type, align_type, bool *) noexcept;
+  PetscErrorCode        allocate(void **, size_type, align_type, bool        * = nullptr) noexcept;
+  PetscErrorCode        deallocate(void **, size_type, align_type) noexcept;
+  static PetscErrorCode get_attributes(const void *, size_type *, align_type *) noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode unpoison(const void *, size_type *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode repoison(const void *, size_type) noexcept;
+  static PetscErrorCode unpoison(const void *, size_type *) noexcept;
+  static PetscErrorCode repoison(const void *, size_type) noexcept;
 
   template <typename T>
-  PETSC_NODISCARD PetscErrorCode for_each(T &&) noexcept;
+  PetscErrorCode for_each(T &&) noexcept;
 
   PETSC_NODISCARD pool_type       &pool() noexcept { return pool_; }
   PETSC_NODISCARD const pool_type &pool() const noexcept { return pool_; }
@@ -81,14 +81,14 @@ private:
 
   PETSC_NODISCARD static constexpr size_type total_size_(size_type, align_type) noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode valid_alignment_(align_type) noexcept;
-  PETSC_NODISCARD static PetscErrorCode extract_header_(void *, AllocationHeader **, bool = true) noexcept;
-  PETSC_NODISCARD static PetscErrorCode allocate_ptr_(size_type, align_type, void **) noexcept;
+  static PetscErrorCode valid_alignment_(align_type) noexcept;
+  static PetscErrorCode extract_header_(void *, AllocationHeader **, bool = true) noexcept;
+  static PetscErrorCode allocate_ptr_(size_type, align_type, void **) noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode delete_ptr_(void **) noexcept;
+  static PetscErrorCode delete_ptr_(void **) noexcept;
 
-  PETSC_NODISCARD PetscErrorCode clear_(size_type * = nullptr) noexcept;
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
+  PetscErrorCode clear_(size_type * = nullptr) noexcept;
+  PetscErrorCode finalize_() noexcept;
 };
 
 // ==========================================================================================
@@ -785,14 +785,14 @@ public:
   using value_type = T;
 
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode construct(value_type *ptr, Args &&...args) const noexcept
+  PetscErrorCode construct(value_type *ptr, Args &&...args) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().construct_(ptr, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode destroy(value_type *ptr) const noexcept
+  PetscErrorCode destroy(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().destroy_(ptr));
@@ -800,14 +800,14 @@ public:
   }
 
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode reset(value_type *val, Args &&...args) const noexcept
+  PetscErrorCode reset(value_type *val, Args &&...args) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().reset_(val, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode invalidate(value_type *ptr) const noexcept
+  PetscErrorCode invalidate(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().invalidate_(ptr));
@@ -816,7 +816,7 @@ public:
 
 protected:
   template <typename... Args>
-  PETSC_NODISCARD static PetscErrorCode construct_(value_type *ptr, Args &&...args) noexcept
+  static PetscErrorCode construct_(value_type *ptr, Args &&...args) noexcept
   {
     PetscFunctionBegin;
     PetscValidPointer(ptr, 1);
@@ -824,7 +824,7 @@ protected:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode destroy_(value_type *ptr) noexcept
+  static PetscErrorCode destroy_(value_type *ptr) noexcept
   {
     PetscFunctionBegin;
     if (ptr) {
@@ -835,14 +835,14 @@ protected:
   }
 
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode reset_(value_type *val, Args &&...args) const noexcept
+  PetscErrorCode reset_(value_type *val, Args &&...args) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().construct(val, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode invalidate_(value_type *ptr) const noexcept
+  PetscErrorCode invalidate_(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().destroy(ptr));
@@ -882,8 +882,8 @@ public:
   ~ObjectPool() noexcept;
 
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode allocate(value_type **, Args &&...) noexcept;
-  PETSC_NODISCARD PetscErrorCode deallocate(value_type **) noexcept;
+  PetscErrorCode allocate(value_type **, Args &&...) noexcept;
+  PetscErrorCode deallocate(value_type **) noexcept;
 
   PETSC_NODISCARD constructor_type       &constructor() noexcept { return pair_.first(); }
   PETSC_NODISCARD const constructor_type &constructor() const noexcept { return pair_.first(); }
@@ -897,7 +897,7 @@ private:
   using size_type  = typename allocator_type::size_type;
 
   friend base_type;
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
+  PetscErrorCode finalize_() noexcept;
 };
 
 // ==========================================================================================

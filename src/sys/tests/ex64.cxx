@@ -172,7 +172,7 @@ public:
   Printer<mapped_type>            value_printer;
   std::function<value_type(void)> generator;
 
-  PETSC_NODISCARD PetscErrorCode view_map(const map_type &map) const noexcept
+  PetscErrorCode view_map(const map_type &map) const noexcept
   {
     std::ostringstream oss;
 
@@ -200,7 +200,7 @@ public:
     } \
   } while (0)
 
-  PETSC_NODISCARD PetscErrorCode check_size_capacity_coherent(map_type &map) const noexcept
+  PetscErrorCode check_size_capacity_coherent(map_type &map) const noexcept
   {
     const auto msize = map.size();
     const auto mcap  = map.capacity();
@@ -214,7 +214,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode check_size_capacity_coherent(map_type &map, std::size_t expected_size, std::size_t expected_min_capacity) const noexcept
+  PetscErrorCode check_size_capacity_coherent(map_type &map, std::size_t expected_size, std::size_t expected_min_capacity) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(check_size_capacity_coherent(map));
@@ -223,7 +223,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test_insert(map_type &map) noexcept
+  PetscErrorCode test_insert(map_type &map) noexcept
   {
     auto key             = key_type{};
     auto value           = mapped_type{};
@@ -359,7 +359,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test_insert() noexcept
+  PetscErrorCode test_insert() noexcept
   {
     map_type map;
 
@@ -368,7 +368,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test_find(map_type &map) noexcept
+  PetscErrorCode test_find(map_type &map) noexcept
   {
     PetscFunctionBegin;
     {
@@ -400,7 +400,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test_find() noexcept
+  PetscErrorCode test_find() noexcept
   {
     map_type map;
 
@@ -409,7 +409,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test_erase(map_type &map) noexcept
+  PetscErrorCode test_erase(map_type &map) noexcept
   {
     auto           sample_values = this->make_key_values(57);
     const map_type backup(sample_values.cbegin(), sample_values.cend());
@@ -493,7 +493,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test_erase() noexcept
+  PetscErrorCode test_erase() noexcept
   {
     map_type map;
 
@@ -504,7 +504,7 @@ public:
 
   // stupid dummy function because auto-lambdas are C++14
   template <typename It>
-  PETSC_NODISCARD PetscErrorCode test_iterators(map_type &map, It it, It it2) noexcept
+  PetscErrorCode test_iterators(map_type &map, It it, It it2) noexcept
   {
     constexpr std::size_t max_iter  = 10000;
     constexpr auto        is_normal = std::is_same<It, typename map_type::iterator>::value;
@@ -557,7 +557,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test_misc() noexcept
+  PetscErrorCode test_misc() noexcept
   {
     const auto sample_values = this->make_key_values(97);
     map_type   map(sample_values.begin(), sample_values.end());
@@ -600,7 +600,7 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD PetscErrorCode test() noexcept
+  PetscErrorCode test() noexcept
   {
     PetscFunctionBegin;
     PetscCall(this->test_insert());

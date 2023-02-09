@@ -85,9 +85,9 @@ private:
 
   // this exists purely to satisfy the compiler so the tag-based dispatch works for the other
   // handles
-  PETSC_NODISCARD static PetscErrorCode initialize_handle_(stream_tag, PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
+  static PetscErrorCode initialize_handle_(stream_tag, PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
 
-  PETSC_NODISCARD static PetscErrorCode create_handle_(blas_tag, cupmBlasHandle_t &handle) noexcept
+  static PetscErrorCode create_handle_(blas_tag, cupmBlasHandle_t &handle) noexcept
   {
     PetscLogEvent event;
 
@@ -110,7 +110,7 @@ private:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode initialize_handle_(blas_tag tag, PetscDeviceContext dctx) noexcept
+  static PetscErrorCode initialize_handle_(blas_tag tag, PetscDeviceContext dctx) noexcept
   {
     const auto dci    = impls_cast_(dctx);
     auto      &handle = blashandles_[dctx->device->deviceId];
@@ -122,7 +122,7 @@ private:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode initialize_handle_(solver_tag, PetscDeviceContext dctx) noexcept
+  static PetscErrorCode initialize_handle_(solver_tag, PetscDeviceContext dctx) noexcept
   {
     const auto    dci    = impls_cast_(dctx);
     auto         &handle = solverhandles_[dctx->device->deviceId];
@@ -139,7 +139,7 @@ private:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode check_current_device_(PetscDeviceContext dctxl, PetscDeviceContext dctxr) noexcept
+  static PetscErrorCode check_current_device_(PetscDeviceContext dctxl, PetscDeviceContext dctxr) noexcept
   {
     const auto devidl = dctxl->device->deviceId, devidr = dctxr->device->deviceId;
 
@@ -152,9 +152,9 @@ private:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode check_current_device_(PetscDeviceContext dctx) noexcept { return check_current_device_(dctx, dctx); }
+  static PetscErrorCode check_current_device_(PetscDeviceContext dctx) noexcept { return check_current_device_(dctx, dctx); }
 
-  PETSC_NODISCARD static PetscErrorCode finalize_() noexcept
+  static PetscErrorCode finalize_() noexcept
   {
     PetscFunctionBegin;
     for (auto &&handle : blashandles_) {
@@ -181,7 +181,7 @@ private:
     return pool;
   }
 
-  PETSC_NODISCARD static PetscErrorCode check_memtype_(PetscMemType mtype, const char mess[]) noexcept
+  static PetscErrorCode check_memtype_(PetscMemType mtype, const char mess[]) noexcept
   {
     PetscFunctionBegin;
     PetscCheck(PetscMemTypeHost(mtype) || (mtype == PETSC_MEMTYPE_DEVICE) || (mtype == PETSC_MEMTYPE_CUPM()), PETSC_COMM_SELF, PETSC_ERR_SUP, "%s device context can only handle %s (pinned) host or device memory", cupmName(), mess);
@@ -191,26 +191,26 @@ private:
 public:
   // All of these functions MUST be static in order to be callable from C, otherwise they
   // get the implicit 'this' pointer tacked on
-  PETSC_NODISCARD static PetscErrorCode destroy(PetscDeviceContext) noexcept;
-  PETSC_NODISCARD static PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setUp(PetscDeviceContext) noexcept;
-  PETSC_NODISCARD static PetscErrorCode query(PetscDeviceContext, PetscBool *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept;
-  PETSC_NODISCARD static PetscErrorCode synchronize(PetscDeviceContext) noexcept;
+  static PetscErrorCode destroy(PetscDeviceContext) noexcept;
+  static PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType) noexcept;
+  static PetscErrorCode setUp(PetscDeviceContext) noexcept;
+  static PetscErrorCode query(PetscDeviceContext, PetscBool *) noexcept;
+  static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept;
+  static PetscErrorCode synchronize(PetscDeviceContext) noexcept;
   template <typename Handle_t>
-  PETSC_NODISCARD static PetscErrorCode getHandle(PetscDeviceContext, void *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode beginTimer(PetscDeviceContext) noexcept;
-  PETSC_NODISCARD static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode memAlloc(PetscDeviceContext, PetscBool, PetscMemType, std::size_t, std::size_t, void **) noexcept;
-  PETSC_NODISCARD static PetscErrorCode memFree(PetscDeviceContext, PetscMemType, void **) noexcept;
-  PETSC_NODISCARD static PetscErrorCode memCopy(PetscDeviceContext, void *PETSC_RESTRICT, const void *PETSC_RESTRICT, std::size_t, PetscDeviceCopyMode) noexcept;
-  PETSC_NODISCARD static PetscErrorCode memSet(PetscDeviceContext, PetscMemType, void *, PetscInt, std::size_t) noexcept;
-  PETSC_NODISCARD static PetscErrorCode createEvent(PetscDeviceContext, PetscEvent) noexcept;
-  PETSC_NODISCARD static PetscErrorCode recordEvent(PetscDeviceContext, PetscEvent) noexcept;
-  PETSC_NODISCARD static PetscErrorCode waitForEvent(PetscDeviceContext, PetscEvent) noexcept;
+  static PetscErrorCode getHandle(PetscDeviceContext, void *) noexcept;
+  static PetscErrorCode beginTimer(PetscDeviceContext) noexcept;
+  static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept;
+  static PetscErrorCode memAlloc(PetscDeviceContext, PetscBool, PetscMemType, std::size_t, std::size_t, void **) noexcept;
+  static PetscErrorCode memFree(PetscDeviceContext, PetscMemType, void **) noexcept;
+  static PetscErrorCode memCopy(PetscDeviceContext, void *PETSC_RESTRICT, const void *PETSC_RESTRICT, std::size_t, PetscDeviceCopyMode) noexcept;
+  static PetscErrorCode memSet(PetscDeviceContext, PetscMemType, void *, PetscInt, std::size_t) noexcept;
+  static PetscErrorCode createEvent(PetscDeviceContext, PetscEvent) noexcept;
+  static PetscErrorCode recordEvent(PetscDeviceContext, PetscEvent) noexcept;
+  static PetscErrorCode waitForEvent(PetscDeviceContext, PetscEvent) noexcept;
 
   // not a PetscDeviceContext method, this registers the class
-  PETSC_NODISCARD static PetscErrorCode initialize(PetscDevice) noexcept;
+  static PetscErrorCode initialize(PetscDevice) noexcept;
 
   // clang-format off
   const _DeviceContextOps ops = {

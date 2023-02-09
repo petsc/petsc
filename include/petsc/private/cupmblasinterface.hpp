@@ -275,7 +275,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
 
-  PETSC_NODISCARD static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
     if (handle) PetscFunctionReturn(PETSC_SUCCESS);
@@ -292,7 +292,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode SetHandleStream(const cupmSolverHandle_t &handle, const cupmStream_t &stream) noexcept
+  static PetscErrorCode SetHandleStream(const cupmSolverHandle_t &handle, const cupmStream_t &stream) noexcept
   {
     cupmStream_t cupmStream;
 
@@ -302,7 +302,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
     if (handle) {
@@ -371,21 +371,21 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
 
-  PETSC_NODISCARD static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
     if (!handle) PetscCallHIPSOLVER(hipsolverCreate(&handle));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode SetHandleStream(cupmSolverHandle_t handle, cupmStream_t stream) noexcept
+  static PetscErrorCode SetHandleStream(cupmSolverHandle_t handle, cupmStream_t stream) noexcept
   {
     PetscFunctionBegin;
     PetscCallHIPSOLVER(hipsolverSetStream(handle, stream));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
     if (handle) {
@@ -451,7 +451,7 @@ template <DeviceType T>
 struct BlasInterface : BlasInterfaceImpl<T> {
   PETSC_CUPMBLAS_IMPL_CLASS_HEADER(blasinterface_type, T);
 
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMBlasSetPointerModeFromPointer(cupmBlasHandle_t handle, const void *ptr) noexcept
+  static PetscErrorCode PetscCUPMBlasSetPointerModeFromPointer(cupmBlasHandle_t handle, const void *ptr) noexcept
   {
     auto mtype = PETSC_MEMTYPE_HOST;
 
@@ -461,7 +461,7 @@ struct BlasInterface : BlasInterfaceImpl<T> {
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode checkCupmBlasIntCast(PetscInt x) noexcept
+  static PetscErrorCode checkCupmBlasIntCast(PetscInt x) noexcept
   {
     PetscFunctionBegin;
     PetscCheck((std::is_same<PetscInt, cupmBlasInt_t>::value) || (x <= std::numeric_limits<cupmBlasInt_t>::max()), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for %s, which may be restricted to 32 bit integers", x, cupmBlasName());
