@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
   PetscCall(VecViewFromOptions(v, NULL, "-global_vec_view"));
 
-  if (0 && test_read) {
+  if (test_read) {
     PetscCall(DMCreateGlobalVector(dm, &rv));
     PetscCall(PetscObjectSetName((PetscObject)rv, "V"));
     /* Test native read */
@@ -152,7 +152,6 @@ int main(int argc, char **argv)
     args: -petscpartitioner_type simple -verbose -globaltonatural_sf_view
   test:
     suffix: 1
-    TODO: broken
     requires: triangle hdf5
     nsize: 2
     args: -petscpartitioner_type simple -verbose -global_vec_view hdf5:V.h5:native -test_read
