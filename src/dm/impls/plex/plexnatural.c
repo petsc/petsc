@@ -227,12 +227,27 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
+  MPI_Comm           comm;
   PetscMPIInt        size;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_GlobalToNaturalBegin, dm, 0, 0, 0));
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   if (dm->sfNatural) {
+    if (PetscDefined(USE_DEBUG)) {
+      PetscSection gs;
+      PetscInt     Nl, n;
+
+      PetscCall(PetscSFGetGraph(dm->sfNatural, NULL, &Nl, NULL, NULL));
+      PetscCall(VecGetLocalSize(nv, &n));
+      PetscCheck(n == Nl, comm, PETSC_ERR_ARG_INCOMP, "Natural vector local size %" PetscInt_FMT " != %" PetscInt_FMT " local size of natural section", n, Nl);
+
+      PetscCall(DMGetGlobalSection(dm, &gs));
+      PetscCall(PetscSectionGetConstrainedStorageSize(gs, &Nl));
+      PetscCall(VecGetLocalSize(gv, &n));
+      PetscCheck(n == Nl, comm, PETSC_ERR_ARG_INCOMP, "Global vector local size %" PetscInt_FMT " != %" PetscInt_FMT " local size of global section", n, Nl);
+    }
     PetscCall(VecGetArray(nv, &outarray));
     PetscCall(VecGetArrayRead(gv, &inarray));
     PetscCall(PetscSFBcastBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *)inarray, outarray, MPI_REPLACE));
