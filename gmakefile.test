@@ -422,44 +422,54 @@ report_tests: starttime $(TESTTARGETS)
 check_output:
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
 
-# Do not how how to invoke test from makefile
+# If users make is a gnumake then these messages are provided even if the user does not do make -f gmakefile.test
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
 ifeq ($(HASGMAKEFILE),gmakefile)
-helpdeps:=help-make help-targets
-makefile="gmakefile"
-other_help="To see full test help: make -f gmakefile.test help"
+helpdeps:= help-nontest
 else
-helpdeps:=help-make help-targets help-test
-makefile="gmakefile.test"
-other_help=""
+helpdeps:= help-test
 endif
 
-help: ${helpdeps}
-	-@echo "Above is from: ${helpdeps}"
-	-@echo "${other_help}"
+help: help-make ${helpdeps}
+	-@echo ""
 
 help-make:
 	-@echo
-	-@echo "Basic build usage:"
-	-@echo "   make -f ${makefile} <options>"
-	-@echo
-	-@echo "Options:"
-	-@echo "  V=0           Very quiet builds"
-	-@echo "  V=1           Verbose builds"
+	-@echo "Basic usage:"
+	-@echo "   make  rule <V=1 for verbose output> <other options>"
 	-@echo
 
-help-targets:
-	-@echo "All makefile targets and their dependencies:"
-	-@grep ^[a-z] ${makefile} | grep : | grep -v =
+help-nontest:
+	-@echo "Available rules:"
+	-@echo "   all - build (update) the PETSc and related libraries in parallel"
+	-@echo "   libs - build (update) the PETSc and related libraries"
+	-@echo "   check - run a basic check that the libraries are built correctly and can be used"
+	-@echo "   "
+	-@echo "   getlinklibs - print the libraries that a PETSc application must link against"
+	-@echo "   getincludedirs - print the include directories that a PETSc application must be compiled against"
+	-@echo "   getcflags - print the C compiler flags PETSc is using"
+	-@echo "   getcxxflags - print the C++ compiler flags PETSc is using"
+	-@echo "   getfortranflags - print the Fortran compiler flags PETSc is using"
+	-@echo "   "
+	-@echo "   alltests - run the entire PETSc test suite"
+	-@echo "   test - use \"make -f gmakefile.test help\" for help on running the extensive tests"
 	-@echo
-	-@echo
+	-@echo "Developer rules:"
+	-@echo "   clean - delete libraries and Fortran module files"
+	-@echo "   lint - run lint on the source code, including its embedded documentation"
+	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
+	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
+	-@echo "   deletefortranstubs - delete the generated Fortran stubs/interface definitions"
+	-@echo "   checkbadSource - check the source code for violations of coding standards"
+	-@echo "   abitest - Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD"
+	-@echo "   reconfigure - delete libraries and Fortran module files and run the previously run configure again"
+	-@echo "   "
 
 help-test:
-	-@echo "Basic test usage:"
-	-@echo "   make -f ${makefile} test <options>"
+	-@echo "Test usage:"
+	-@echo "   make -f gmakefile.test test <options>"
 	-@echo
 	-@echo "Options:"
-	-@echo "  V=1               Verbose output (-v to scripts)"
 	-@echo "  NO_RM=1           Do not remove the executables after running"
 	-@echo "  REPLACE=1         Replace the output in PETSC_DIR source tree (-m to test scripts)"
 	-@echo "  OUTPUT=1          Show only the errors on stdout"
@@ -509,4 +519,9 @@ help-test:
 	-@echo "  To build an executable, give full path to location:"
 	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/sys/tests/ex1'
 	-@echo "  or make the test with NO_RM=1"
+	-@echo
+
+help-targets:
+	-@echo "All makefile targets and their dependencies:"
+	-@grep ^[a-z] ${makefile} | grep : | grep -v =
 	-@echo

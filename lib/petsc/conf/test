@@ -69,4 +69,9 @@ ifneq (,$(findstring emcc,$(CC)))
 	-@chmod u+x $@
 endif
 
-include ${PETSC_DIR}/lib/petsc/conf/test.common
+help:
+	-@echo ""
+	-@echo "make applicationname - compiles applicationname.[c,cxx,F,F90] file into an executable"
+	-@echo "make clean - delete any object files and executables in the current directory"
+	-@echo "make libs - rebuilds any needed changes to the PETSc libraries"
+	-@echo ""
