@@ -21,7 +21,7 @@ if __name__ == '__main__':
     '--with-clanguage=cxx',
     '--with-single-library=0',
     '--with-visibility=1',
-    '--download-hpddm',
+    #'--download-hpddm', temporarily disable hpddm as snes_tutorials-ex19_hpddm_cuda_ksp_hpddm_type-gcrodr+ksp_hpddm_precision-double fails in CI on compute-08 [with nvhpc/22.3]
     # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang
     # on Mac OS X, MSVC on Windows), you must set -ccbin appropriately in CUDAFLAGS, as in the example for PGI below:
     # 'CUDAFLAGS=-ccbin pgc++',
