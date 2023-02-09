@@ -597,7 +597,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
         PetscCall(VecGetLocalSize(originalv, &n));
         PetscCall(PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL));
         if (n == nroots) {
-          PetscCall(DMGetGlobalVector(dm, &v));
+          PetscCall(DMPlexCreateNaturalVector(dm, &v));
           PetscCall(DMPlexGlobalToNaturalBegin(dm, originalv, v));
           PetscCall(DMPlexGlobalToNaturalEnd(dm, originalv, v));
           PetscCall(PetscObjectGetName((PetscObject)originalv, &vecname));
@@ -622,7 +622,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
     if (isseq) PetscCall(VecView_Seq(v, viewer));
     else PetscCall(VecView_MPI(v, viewer));
   }
-  if (v != originalv) PetscCall(DMRestoreGlobalVector(dm, &v));
+  if (v != originalv) PetscCall(VecDestroy(&v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -697,13 +697,13 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
           Vec         v;
           const char *vecname;
 
-          PetscCall(DMGetGlobalVector(dm, &v));
+          PetscCall(DMPlexCreateNaturalVector(dm, &v));
           PetscCall(PetscObjectGetName((PetscObject)originalv, &vecname));
           PetscCall(PetscObjectSetName((PetscObject)v, vecname));
           PetscCall(VecLoad_Plex_HDF5_Native_Internal(v, viewer));
           PetscCall(DMPlexNaturalToGlobalBegin(dm, v, originalv));
           PetscCall(DMPlexNaturalToGlobalEnd(dm, v, originalv));
-          PetscCall(DMRestoreGlobalVector(dm, &v));
+          PetscCall(VecDestroy(&v));
 #else
           SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
