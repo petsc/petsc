@@ -20,11 +20,12 @@ class Configure(config.base.Configure):
     self.headerPrefix     = ''
     self.substPrefix      = ''
     self.fortranMangling  = 'unchanged'
-    self.fincs            = []
-    self.flibs            = []
     self.fmainlibs        = []
-    self.clibs            = []
-    self.cxxlibs          = []
+    self.fincs            = []
+    self.flibs            = []  # libraries needed for linking using the C or C++ compiler Fortran source code compiled with Fortran
+    self.clibs            = []  # libraries needed for linking using the C++ or Fortran compiler C source code compiled with C
+    self.cxxlibs          = []  # libraries needed for linking using the C or Fortran compiler C++ source code compiled with C++
+                                # clibs is only used in this file. The final link line that PETSc users use includes cxxlibs and flibs
     self.skipdefaultpaths = []
     self.cxxCompileC      = False
     self.cxxRestrict      = ' '
@@ -160,7 +161,7 @@ class Configure(config.base.Configure):
     return found
 
   def checkCLibraries(self):
-    '''Determines the libraries needed to link with C compiled code'''
+    '''Determines the libraries needed to link using the C++ or Fortran compiler C source code compiled with C. Result is stored in clibs'''
     skipclibraries = 1
     if hasattr(self.setCompilers, 'FC'):
       self.setCompilers.saveLog()
@@ -443,7 +444,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
 
   def checkCxxLibraries(self):
-    '''Determines the libraries needed to link with C++ from C and Fortran'''
+    '''Determines the libraries needed to link using the C or Fortran compiler C++ source code compiled with C++. Result is stored in cxxlibs'''
     skipcxxlibraries = 1
     self.setCompilers.saveLog()
     body   = '''#include <iostream>\n#include <vector>\nvoid asub(void)\n{std::vector<int> v;\ntry  { throw 20;  }  catch (int e)  { std::cout << "An exception occurred";  }}'''
@@ -833,7 +834,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     return
 
   def checkFortranLibraries(self):
-    '''Substitutes for FLIBS the libraries needed to link with Fortran
+    '''Substitutes for FLIBS the libraries needed to link using the C or C++ compiler Fortran source code compiled with Fortran. Result is stored in flibs.
 
     This macro is intended to be used in those situations when it is
     necessary to mix, e.g. C++ and Fortran 77, source code into a single
