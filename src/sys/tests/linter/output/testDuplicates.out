@@ -1,5 +1,5 @@
 <--- FIXED --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 0: ./src/sys/tests/linter/testDuplicates.c:10:24
 'b' of type 'PetscScalar *' (a.k.a. 'double *')
   8 : PetscValidIntPointer(a, 1);
@@ -472,5 +472,5 @@ Duplicate function found previous identical usage [-fduplicate-function]:
   115:   /* remove */
   116:   PetscValidIntPointer(a, 1);
   117:   PetscValidScalarPointer(b, 2);
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 <--- LEFT --->

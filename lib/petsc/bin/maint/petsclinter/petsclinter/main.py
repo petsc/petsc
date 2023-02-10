@@ -33,7 +33,7 @@ def main(
   petsc_arch -- $PETSC_ARCH
 
   Keyword arguments:
-  src_path             -- alternative directory (or single file) to use as src root (default: $PETSC_DIR/src)
+  src_path             -- directory (or file) to lint (default: $PETSC_DIR/src)
   clang_dir            -- directory containing libclang.[so|dylib|dll] (default: None)
   clang_lib            -- direct path to libclang.[so|dylib|dll], overrrides clang_dir if set (default: None)
   verbose             -- display debugging statements (default: False)
@@ -53,27 +53,49 @@ def main(
   if extra_header_includes is None:
     extra_header_includes = []
 
+  def root_sync_print(*args, **kwargs):
+    if args or kwargs:
+      print('[ROOT]', *args, **kwargs)
+    return
+  pl.sync_print = root_sync_print
+
   # pre-processing setup
   if bool(apply_patches) and bool(test_output_dir):
     raise RuntimeError('Test directory and apply patches are both non-zero. It is probably not a good idea to apply patches over the test directory!')
   clang_dir, clang_lib = pl.util.initialize_libclang(clang_dir=clang_dir, clang_lib=clang_lib)
 
   petsc_dir = pl.Path(petsc_dir).resolve()
-  src_path  = petsc_dir / 'src' if src_path is None else pl.Path(src_path).resolve()
+  if src_path is None:
+    src_path = [petsc_dir / 'src']
+  else:
+    if isinstance(src_path, (str, pl.Path)):
+      src_path = [src_path]
+    if not isinstance(src_path, (list, tuple)):
+      raise RuntimeError(f'Source path must be a :ist or Tuple, not {type(src_path)}')
+    src_path = [pl.Path(s).resolve() for s in src_path]
+
   patch_dir = petsc_dir / 'petscLintPatches' if patch_dir is None else pl.Path(patch_dir).resolve()
+  if patch_dir.exists() and not patch_dir.is_dir():
+    raise RuntimeError(f'Patch Directory (as the name suggests) must be a directory, not {patch_dir}')
+
   if test_output_dir == '__at_src__':
-    if src_path.is_dir():
-      test_output_dir = src_path / 'output'
-    elif src_path.is_file():
-      test_output_dir = src_path.parent / 'output'
+    if len(src_path) != 1:
+      raise RuntimeError(
+        f'Can only use default test output dir for single file or directory, not {len(src_path)}'
+      )
+
+    test_src_path = src_path[0]
+    if test_src_path.is_dir():
+      test_output_dir = test_src_path / 'output'
+    elif test_src_path.is_file():
+      test_output_dir = test_src_path.parent / 'output'
     else:
-      raise RuntimeError(f'Got neither a directory or file as src_path {src_path}')
+      raise RuntimeError(f'Got neither a directory or file as src_path {test_src_path}')
 
   if test_output_dir is not None and not test_output_dir.exists():
     raise RuntimeError(f'Test Output Directory {test_output_dir} does not appear to exist')
 
   pl.checks.filter_check_function_map(check_function_filter)
-  root_print_prefix = '[ROOT]'
   compiler_flags    = pl.util.build_compiler_flags(
     petsc_dir, petsc_arch, extra_compiler_flags=extra_compiler_flags, verbose=verbose
   )
@@ -90,7 +112,7 @@ def main(
 
     def __exit__(self, *args, **kwargs):
       if verbose:
-        pl.sync_print(root_print_prefix, 'Deleting precompiled header', self.pch)
+        pl.sync_print('Deleting precompiled header', self.pch)
         self.pch.unlink()
       return
 
@@ -104,39 +126,49 @@ def main(
   if test_output_dir is not None:
     from petsclinter.test_main import test_main
 
+    # reset the printer
+    pl.sync_print = print
     pl.sync_print('', end='', flush=True)
+    assert len(src_path) == 1
     return test_main(
-      petsc_dir, src_path, test_output_dir, patches, errors_fixed, errors_left,
+      petsc_dir, src_path[0], test_output_dir, patches, errors_fixed, errors_left,
       replace=replace_tests, verbose=verbose
     )
   elif patches:
     import time
+    import shutil
 
     patch_dir.mkdir(exist_ok=True)
     mangle_postfix = f'_{int(time.time())}.patch'
     root_dir       = f'--directory={patch_dir.anchor}'
+    patch_exec     = shutil.which('patch')
+
+    if patch_exec is None:
+      # couldn't find it, but let's just try out the bare name and hope it works,
+      # otherwise this will error below anyways
+      patch_exec = 'patch'
 
     for fname, patch in patches:
-      mangled_rel = fname.append_name(mangle_postfix)
-      if mangled_rel.parent != src_path.parent:
-        # not in same directory
-        mangled_rel = mangled_rel.relative_to(src_path)
-      mangled_file = patch_dir / str(mangled_rel).replace(os.path.sep, '_')
-      if verbose: pl.sync_print(root_print_prefix, 'Writing patch to file', mangled_file)
+      # mangled_rel = fname.append_name(mangle_postfix)
+      # assert mangled_rel.parent == src_path[0].parent
+      # not in same directory
+      # mangled_rel = mangled_rel.relative_to(src_path)
+      mangled_file = patch_dir / str(fname.append_name(mangle_postfix)).replace(os.path.sep, '_')
+      if verbose: pl.sync_print('Writing patch to file', mangled_file)
       mangled_file.write_text(patch)
 
     if apply_patches:
-      if verbose: pl.sync_print(root_print_prefix, 'Applying patches from patch directory', patch_dir)
+      if verbose: pl.sync_print('Applying patches from patch directory', patch_dir)
       for patch_file in patch_dir.glob('*' + mangle_postfix):
-        if verbose: pl.sync_print(root_print_prefix, 'Applying patch', patch_file)
+        if verbose: pl.sync_print('Applying patch', patch_file)
         output = pl.util.subprocess_run(
-          ['patch', root_dir, '--strip=0', '--unified', f'--input={patch_file}'],
+          [patch_exec, root_dir, '--strip=0', '--unified', f'--input={patch_file}'],
           check=True, universal_newlines=True, capture_output=True
         )
         if verbose: pl.sync_print(output.stdout)
 
   ret        = 0
-  format_str = ' '.join([root_print_prefix, '{:=^85}'])
+  format_str = '{:=^85}'
   if warnings and verbose:
     pl.sync_print(format_str.format(' Found Warnings '))
     pl.sync_print('\n'.join(s for tup in warnings for _, s in tup))
@@ -158,7 +190,7 @@ def main(
       pl.sync_print('Patch files written to', patch_dir)
       pl.sync_print('Apply manually using:')
       pl.sync_print(
-        f'  patch {root_dir} --strip=0 --unified --input={patch_dir/("*" + mangle_postfix)}'
+        f'  {patch_exec} {root_dir} --strip=0 --unified --input={patch_dir / ("*" + mangle_postfix)}'
       )
       if ret != 0:
         ret = 12
@@ -211,7 +243,7 @@ def __build_arg_parser(parent_parsers=None):
   group_petsc.add_argument('--PETSC_DIR', default=petsc_dir, help='if this option is unused defaults to environment variable $PETSC_DIR', dest='petsc_dir')
   group_petsc.add_argument('--PETSC_ARCH', default=petsc_arch, help='if this option is unused defaults to environment variable $PETSC_ARCH', dest='petsc_arch')
 
-  parser.add_argument('-s', '--src-path', default=default_src_dir, help='path to file or directory containing source (e.g. $SLEPC_DIR/src)', dest='src_path')
+  parser.add_argument('src_path', default=default_src_dir, help='path to files or directory containing source (e.g. $SLEPC_DIR/src)', nargs='*')
   add_bool_argument(parser, '-v', '--verbose', nargs='?', const=True, default=False, help='verbose progress printed to screen')
 
   check_function_map_keys = list(pl.checks._register.check_function_map.keys())

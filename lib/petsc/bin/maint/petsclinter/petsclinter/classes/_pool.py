@@ -30,7 +30,7 @@ allow_file_extensions = ('.c', '.cpp', '.cxx', '.cu', '.cc', '.h', '.hpp', '.inc
 class WorkerPool(mp.queues.JoinableQueue):
   __slots__ = (
     'parallel', 'error_queue', 'return_queue', 'lock', 'workers', 'num_workers', 'timeout',
-    'verbose', 'prefix', 'warnings', 'errors_left', 'errors_fixed', 'patches', 'linter'
+    'verbose', 'warnings', 'errors_left', 'errors_fixed', 'patches', 'linter'
   )
 
   class QueueSignal(enum.IntEnum):
@@ -43,34 +43,38 @@ class WorkerPool(mp.queues.JoinableQueue):
     ERRORS_FIXED = enum.auto()
     EXIT_QUEUE   = enum.auto()
 
-  def __init__(self, num_workers, timeout=2, verbose=False, prefix=None, **kwargs):
+  def __init__(self, num_workers, timeout=2, verbose=False, **kwargs):
     if num_workers < 0:
       num_workers = max(mp.cpu_count() - 1, 1)
-
-    if prefix is None:
-      prefix = '[ROOT]'
 
     super().__init__(num_workers, **kwargs, ctx=mp.get_context())
     self.num_workers  = num_workers
     self.timeout      = timeout
     self.verbose      = verbose
-    self.prefix       = prefix
     self.warnings     = []
     self.errors_left  = []
     self.errors_fixed = []
     self.patches      = []
-    if num_workers in {0, 1}:
-      self.__print(f'Number of worker processes ({num_workers}) too small, disabling multiprocessing')
+    if num_workers in (0, 1):
       self.parallel     = False
       self.error_queue  = None
       self.return_queue = None
       self.lock         = None
+      self.__print(f'Number of worker processes ({num_workers}) too small, disabling multiprocessing')
     else:
-      self.__print(f'Number of worker processes ({num_workers}) sufficient, enabling multiprocessing')
       self.parallel     = True
       self.error_queue  = mp.Queue()
       self.return_queue = mp.Queue()
-      self.lock         = mp.RLock()
+      lock              = mp.RLock()
+      self.lock         = lock
+
+      old_sync_print = pl.sync_print
+      def lock_sync_print(*args, **kwargs):
+        with lock:
+          old_sync_print(*args, **kwargs)
+        return
+      pl.sync_print = lock_sync_print
+      self.__print(f'Number of worker processes ({num_workers}) sufficient, enabling multiprocessing')
     return
 
   @timeout(seconds=10)
@@ -85,8 +89,7 @@ class WorkerPool(mp.queues.JoinableQueue):
 
   def __print(self, *args, **kwargs):
     if self.verbose:
-      if args or kwargs:
-        pl.sync_print(self.prefix, *args, **kwargs)
+      pl.sync_print(*args, **kwargs)
     return
 
   def __consume_results(self):
@@ -153,12 +156,11 @@ class WorkerPool(mp.queues.JoinableQueue):
         worker.start()
     else:
       self.linter = Linter(
-        compiler_flags,
-        clang_options=clang_options, prefix=self.prefix, verbose=self.verbose, werror=werror
+        compiler_flags, clang_options=clang_options, verbose=self.verbose, werror=werror
       )
     return self
 
-  def walk(self, src_path, exclude_dirs=None, exclude_dir_suff=None, allow_file_suff=None):
+  def walk(self, src_path_list, exclude_dirs=None, exclude_dir_suff=None, allow_file_suff=None):
     if exclude_dirs is None:
       exclude_dirs = exclude_dir_names
     if exclude_dir_suff is None:
@@ -166,12 +168,14 @@ class WorkerPool(mp.queues.JoinableQueue):
     if allow_file_suff is None:
       allow_file_suff = allow_file_extensions
 
-    if src_path.is_file():
-      self.put(src_path)
-    else:
+    for src_path in src_path_list:
+      if src_path.is_file():
+        self.put(src_path)
+        continue
+
       _, initial_dirs, _ = next(os.walk(src_path))
       initial_dirs = [d for d in initial_dirs if d not in exclude_dirs]
-      initial_dirs = {str(src_path/d) for d in initial_dirs if not d.endswith(exclude_dir_suff)}
+      initial_dirs = {str(src_path / d) for d in initial_dirs if not d.endswith(exclude_dir_suff)}
       for root, dirs, files in os.walk(src_path):
         self.__print('Processing directory', root)
         dirs[:] = [d for d in dirs if d not in exclude_dirs]

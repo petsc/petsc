@@ -7,4 +7,4 @@ from ._utility import *
 from ._clang   import *
 from ._timeout import timeout
 
-__export_symbols__ = ['sync_print', 'get_clang_function', 'timeout']
+__export_symbols__ = ['get_clang_function', 'timeout']

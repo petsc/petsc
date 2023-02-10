@@ -768,7 +768,7 @@ help-lint:
 	-@echo
 
 test-lint:
-	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --src-path ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
 
 check_petsc4py_rst:
 	@${RM} -f petsc4py_rst.log

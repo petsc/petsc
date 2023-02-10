@@ -1,5 +1,5 @@
 <--- FIXED --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 0: ./src/sys/tests/linter/testValidFunctionDocStrings.c:77:16
 'testIllFormedFunctionDocString' of type 'PetscErrorCode (PetscViewer, PetscInt, PetscScalar *, PetscBool)' (a.k.a. 'int (_p_PetscViewer *, int, double *, PetscBool)')
   75: @*/
@@ -229,7 +229,7 @@ Docstring name 'testTerbleSpelingDocstring' does not match symbol. Assuming you 
   102:   eiusmod tempor incididunt ut labore et dolore magna aliqua.
   103: 
 
-Unknown section header 'input prametirs', assuming you meant 'Input Parameters' [-fdoc-section-header-spelling]:
+Unknown section header 'input prametirs', assuming you meant 'Input Parameter' [-fdoc-section-header-spelling]:
   102:   eiusmod tempor incididunt ut labore et dolore magna aliqua.
   103: 
 > 104:   input prametirs:
@@ -237,7 +237,7 @@ Unknown section header 'input prametirs', assuming you meant 'Input Parameters' 
   105: + viewer - a PetsViewer
   106: - x - a PetscInt
 
-Unknown section header 'output Psrammmetrs', assuming you meant 'Output Parameters' [-fdoc-section-header-spelling]:
+Unknown section header 'output Psrammmetrs', assuming you meant 'Output Parameter' [-fdoc-section-header-spelling]:
   106: - x - a PetscInt
   107: 
 > 108:   output Psrammmetrs:
@@ -709,9 +709,9 @@ Function requires custom fortran interface but missing 'C' from docstring header
 > 419: PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), int (*bar)(int bar_parm1, double bar_parm2, float bar_parm3), void (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3))
                                                                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   420: {
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 <--- LEFT --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 0: ./src/sys/tests/linter/testValidFunctionDocStrings.c:77:16
 'testIllFormedFunctionDocString' of type 'PetscErrorCode (PetscViewer, PetscInt, PetscScalar *, PetscBool)' (a.k.a. 'int (_p_PetscViewer *, int, double *, PetscBool)')
   75: @*/
@@ -793,7 +793,7 @@ Heading must appear alone on a line, any content must be on the next line [-fdoc
   63: incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident,
   64: sunt in culpa qui officia deserunt mollit anim id est laborum example.
 
-Multiple 'Level' subheadings. Much like Highlanders, there can only be one [-fdoc-inline-list-section-header-unique]:
+Multiple 'Level' subheadings. Much like Highlanders, there can only be one [-fdoc-section-header-unique]:
   50: . z - a nonexistent parameter
   51: 
 > 52:   level: Lorem ipsum dolor sit amet
@@ -839,7 +839,7 @@ Docstring missing synopsis [-fdoc-synopsis-missing-description]:
 
 ./src/sys/tests/linter/testValidFunctionDocStrings.c:83:1 Note: Expected 'testIllFormedMinimalDocString - a very useful description'
 
-Required section 'Level' not found [-fdoc-inline-list-section-header-missing]:
+Required section 'Level' not found [-fdoc-section-header-missing]:
   80: }
   81: 
 > 82: /*
@@ -1152,6 +1152,12 @@ Undocumented parameter 'unknown' not found in parameter section [-fdoc-param-lis
   285:   Level: beginner
   286: 
 
+./src/sys/tests/linter/testValidFunctionDocStrings.c:289:45 Note: Parameter 'unknown' defined here:
+  288: M@*/
+> 289: PetscErrorCode testExplicitSynopsis_Private(PetscScalar unknown, PetscInt foo, PetscReal bar, void *baz)
+                                                   ^^^^^^^^^^^^^^^^^^^
+  290: {
+
 ERROR 12: ./src/sys/tests/linter/testValidFunctionDocStrings.c:310:16
 'testBadDocStringMissingChar' of type 'PetscErrorCode (PetscInt)' (a.k.a. 'int (int)')
   308: .seealso: `testBadDocString()`
@@ -1241,6 +1247,12 @@ Undocumented parameter 'arg' not found in parameter section [-fdoc-param-list-fu
   376:   Level: beg
   377: 
 
+./src/sys/tests/linter/testValidFunctionDocStrings.c:381:48 Note: Parameter 'arg' defined here:
+  380: 
+> 381: PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)
+                                                      ^^^^^^^
+  382: {
+
 Unknown Level subheading 'beg', expected one of beginner, intermediate, advanced, developer, or deprecated [-fdoc-inline-list-level-spelling]:
   374: . another_arg_asd22 - another arg
   375: 
@@ -1281,4 +1293,4 @@ Extra docstring parameter 'foo_parm3' not found in symbol parameter list [-fdoc-
          ^^^^^^^^^
   398: 
   399:   Calling sequence of bar:
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------

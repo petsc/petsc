@@ -12,17 +12,6 @@ import petsclinter  as pl
 
 from .. import __version__
 
-# synchronized print function, should be used everywhere
-sync_print = print
-
-def set_sync_print(print_fn=None):
-  if print_fn is None:
-    print_fn = print
-  global sync_print
-  old_sync_print = sync_print
-  sync_print     = print_fn
-  return old_sync_print
-
 def subprocess_run(*args, **kwargs):
   """
   lightweight wrapper to hoist the ugly version check out of the regular code, turns a
@@ -146,7 +135,7 @@ def get_clang_sys_includes():
   ).splitlines()
   return [f'-I{pl.Path(i.strip()).resolve()}' for i in includes if i]
 
-def build_compiler_flags(petsc_dir, petsc_arch, extra_compiler_flags=None, verbose=False, print_prefix='[ROOT]'):
+def build_compiler_flags(petsc_dir, petsc_arch, extra_compiler_flags=None, verbose=False):
   """
   build the baseline set of compiler flags, these are passed to all translation unit parse attempts
   """
@@ -166,10 +155,10 @@ def build_compiler_flags(petsc_dir, petsc_arch, extra_compiler_flags=None, verbo
   petsc_includes = get_petsc_extra_includes(petsc_dir, petsc_arch)
   compiler_flags = get_clang_sys_includes() + misc_flags + petsc_includes + extra_compiler_flags
   if verbose:
-    pl.sync_print('\n'.join([f'{print_prefix} Compile flags:', *compiler_flags]))
+    pl.sync_print('\n'.join(['Compile flags:', *compiler_flags]))
   return compiler_flags
 
-def build_precompiled_header(petsc_dir, compiler_flags, extra_header_includes=None, verbose=False, print_prefix='[ROOT]', pch_clang_options=None):
+def build_precompiled_header(petsc_dir, compiler_flags, extra_header_includes=None, verbose=False, pch_clang_options=None):
   """
   create a precompiled header from petsc.h, and all of the private headers, this not only saves a lot
   of time, but is critical to finding struct definitions. Header contents are not parsed during the
@@ -252,7 +241,7 @@ def build_precompiled_header(petsc_dir, compiler_flags, extra_header_includes=No
     if diags:
       diagerrs = '\n'+'\n'.join(str(d) for _, d in diags.values())
       if verbose:
-        pl.sync_print(print_prefix, 'Included header has errors, removing', diagerrs)
+        pl.sync_print('Included header has errors, removing', diagerrs)
       mega_header_lines = [(hdr, hfi) for hdr, hfi in mega_header_lines if hdr not in diags]
     else:
       break
@@ -261,7 +250,7 @@ def build_precompiled_header(petsc_dir, compiler_flags, extra_header_includes=No
     # user figure out their own busted header files
     mega_header += '\n'.join(extra_header_includes)
     if verbose:
-      pl.sync_print('\n'.join([f'{print_prefix} Mega header:', mega_header]))
+      pl.sync_print(f'Mega header:\n{mega_header}')
     tu = index.parse(
       mega_header_name,
       args=compiler_flags, unsaved_files=[(mega_header_name, mega_header)], options=pch_clang_options
@@ -270,10 +259,10 @@ def build_precompiled_header(petsc_dir, compiler_flags, extra_header_includes=No
       pl.sync_print('\n'.join(map(str, tu.diagnostics)))
       raise clx.LibclangError('\n\nWarnings or errors generated when creating the precompiled header. This usually means that the provided libclang setup is faulty. If you used the auto-detection mechanism to find libclang then perhaps try specifying the location directly.')
   elif verbose:
-    pl.sync_print('\n'.join([f'{print_prefix} Mega header:', mega_header]))
+    pl.sync_print(f'Mega header:\n{mega_header}')
   precompiled_header.unlink(missing_ok=True)
   tu.save(precompiled_header)
   compiler_flags.extend(['-include-pch', str(precompiled_header)])
   if verbose:
-    pl.sync_print(print_prefix, 'Saving precompiled header', precompiled_header)
+    pl.sync_print('Saving precompiled header', precompiled_header)
   return precompiled_header

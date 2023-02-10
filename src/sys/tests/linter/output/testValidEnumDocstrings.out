@@ -1,5 +1,5 @@
 <--- FIXED --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 0: ./src/sys/tests/linter/testValidEnumDocstrings.c:14:9
 'WellFormedEnum' of type 'WellFormedEnum'
   12: .seealso: Lorem
@@ -150,9 +150,9 @@ Seealso entry 'WellFormedEnum' is duplicate [-fdoc-inline-list-seealso-duplicate
 > 46: .seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
                                                       ^^^^^^^^^^^^^^
   47: */
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 <--- LEFT --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 1: ./src/sys/tests/linter/testValidEnumDocstrings.c:29:9
 'IllFormedEnum' of type 'IllFormedEnum'
   27: Level: advanced
@@ -175,7 +175,7 @@ Synopsis seems to be missing a description separator; I suspect you may be using
   22: 
   23: $ SIT- A sit
 
-Required section '.seealso' not found [-fdoc-inline-list-section-header-missing]:
+Required section '.seealso' not found [-fdoc-section-header-missing]:
   18: } WellFormedEnum;
   19: 
 > 20: /*E
@@ -199,7 +199,7 @@ ERROR 2: ./src/sys/tests/linter/testValidEnumDocstrings.c:48:9
 > 49:   FOO
 > 50: } BadSpellingEnum;
 
-Required section 'Level' not found [-fdoc-inline-list-section-header-missing]:
+Required section 'Level' not found [-fdoc-section-header-missing]:
   34: } IllFormedEnum;
   35: 
 > 36: /*E
@@ -216,4 +216,4 @@ Required section 'Level' not found [-fdoc-inline-list-section-header-missing]:
 > 47: */
   48: typedef enum {
   49:   FOO
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------

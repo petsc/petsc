@@ -241,7 +241,7 @@ class Sections:
 
       try:
         guessed = self.guess_heading(text, cache_result=False, strict=True)
-      except SectionNotFoundError:
+      except GuessHeadingFailError:
         return Verdict.NOT_HEADING
       return Verdict.IS_HEADING if guessed else Verdict.NOT_HEADING
 
@@ -260,20 +260,20 @@ class Sections:
       return handle_header_with_colon(text)
     return handle_header_without_colon(text)
 
-  def guess_heading(self, line, **kwargs):
-    def guess(item):
-      titles = self.find(item, **kwargs).titles
-      if len(titles) == 1:
-        return titles
-      return difflib.get_close_matches(item, titles, n=1)
-
+  def guess_heading(self, line, strict=False, **kwargs):
     strp = line.split(':', maxsplit=1)[0].strip()
     if strp:
-      attempts = (strp, strp.split(maxsplit=1)[0].strip(), strp.title())
+      for attempt in (strp, strp.split(maxsplit=1)[0].strip(), strp.title()):
+        found_match = self.find(attempt, **kwargs).titles
+        if len(found_match) != 1:
+          found_match = difflib.get_close_matches(attempt, found_match, n=1)
 
-      for attempt, match_found in zip(attempts, map(guess, attempts)):
-        if match_found:
-          return attempt, match_found[0]
+        if found_match:
+          match_name = found_match[0]
+          if strict and match_name == '__UNKNOWN_SECTION__':
+            break
+          return attempt, match_name
+
     raise GuessHeadingFailError(f'Could not guess heading for:\n{line}')
 
 @DiagnosticManager.register(
@@ -715,7 +715,7 @@ class PetscDocString(DocBase):
     """
     if heading == Verdict.MAYBE_HEADING:
       try:
-        name, matched = self.guess_heading(line)
+        name, matched = self.guess_heading(line, strict=True)
       except GuessHeadingFailError as ghfe:
         # Not being able to guess the heading here is OK since we only *think* it's a
         # heading

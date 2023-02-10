@@ -146,35 +146,30 @@ class Linter:
   Object to manage the collection and processing of errors during a lint run.
   """
   __slots__ = (
-    'flags', 'clang_opts', 'prefix', 'verbose', 'werror', 'lock', 'err_prefix', 'warn_prefix', 'index',
-    'errors', 'warnings', 'patches'
+    'flags', 'clang_opts', 'verbose', 'werror', 'err_prefix', 'warn_prefix', 'index', 'errors',
+    'warnings', 'patches'
   )
 
-  def __init__(self, compiler_flags, clang_options=None, prefix=None, verbose=False, werror=False, lock=None):
+  def __init__(self, compiler_flags, clang_options=None, verbose=False, werror=False):
     if clang_options is None:
       clang_options = pl.util.base_clang_options
-    if prefix is None:
-      prefix = '[ROOT]'
 
     self.flags       = compiler_flags
     self.clang_opts  = clang_options
-    self.prefix      = prefix
     self.verbose     = verbose
     self.werror      = werror
-    self.lock        = lock
-    self.err_prefix  = f'{prefix} {"-" * 85}'
-    self.warn_prefix = f'{prefix} {"%" * 85}'
+    self.err_prefix  = f'{"-" * 92}'
+    self.warn_prefix = f'{"%" * 92}'
     self.index       = clx.Index.create()
     self.clear()
     return
 
   def __str__(self):
-    prefix_str = f"Prefix:        '{self.prefix}'"
     flag_str   = f'Compiler Flags: {self.flags}'
     clang_str  = f'Clang Options:  {self.clang_opts}'
     lock_str   = f'Lock:           {self.lock is not None}'
     show_str   = f'Verbose:        {self.verbose}'
-    print_list = [prefix_str, flag_str, clang_str, lock_str, show_str]
+    print_list = [flag_str, clang_str, lock_str, show_str]
     error_str  = self.get_all_errors()
     if error_str:
       print_list.append(error_str)
@@ -189,19 +184,8 @@ class Linter:
   def __exit__(self, exception_type, *args):
     if not exception_type:
       if self.verbose:
-        self.__print(self.get_all_warnings(join_to_string=True))
-      self.__print(self.get_all_errors())
-    return
-
-  def __print(self, *args, **kwargs):
-    args = tuple([a for a in args if a])
-    if not args and not kwargs:
-      return
-    if self.lock:
-      with self.lock:
-        pl.sync_print(*args, **kwargs)
-    else:
-      pl.sync_print(*args, **kwargs)
+        pl.sync_print(self.get_all_warnings(join_to_string=True))
+      pl.sync_print(self.get_all_errors())
     return
 
   def _check_duplicate_function_calls(self, processed_funcs):
@@ -362,10 +346,10 @@ class Linter:
     """
     self.clear()
     if self.verbose:
-      self.__print(self.prefix, 'Processing file     ', filename)
+      pl.sync_print('Processing file     ', filename)
     tu = self.index.parse(str(filename), args=self.flags, options=self.clang_opts)
     if self.verbose and tu.diagnostics:
-      self.__print('\n'.join({f'{self.prefix} {d}' for d in map(str, tu.diagnostics)}))
+      pl.sync_print('\n'.join(map(str, tu.diagnostics)))
     self.process(tu)
     return self
 
@@ -474,7 +458,7 @@ class Linter:
     for files in reversed(self.errors):
       errors = self.errors[files]
       last   = errors[next(reversed(errors))]
-      self.__print(last[0], last[1][-1])
+      pl.sync_print(last[0], last[1][-1])
       break
     return
 
@@ -560,6 +544,8 @@ class Linter:
     """
     Given a set of patches, collapse all patches and return the minimal set of diffs required
     """
+    diff_line_re = re.compile(r'^@@ -([0-9,]+) \+([0-9,]+) @@')
+
     def combine(filename, patches):
       fstr  = str(filename)
       diffs = []
@@ -571,7 +557,7 @@ class Linter:
             fromfile=fstr, tofile=fstr, fromfiledate=rn, tofiledate=rn, n=patch.ctxlines
           )
         )
-        tmp[2] = re.sub(r'^@@ -([0-9,]+) \+([0-9,]+) @@', Addline(patch.extent.start.line), tmp[2])
+        tmp[2] = diff_line_re.sub(Addline(patch.extent.start.line), tmp[2])
         # only the first diff should get the file heading
         diffs.append(tmp[2:] if diffs else tmp)
       diffs = ''.join(itertools.chain.from_iterable(diffs))

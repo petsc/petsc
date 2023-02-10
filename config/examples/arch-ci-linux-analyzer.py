@@ -35,7 +35,6 @@ configure_options = [
   '--download-pnetcdf=1',
   '--download-zlib=1',
   '--download-exodusii=1',
-  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

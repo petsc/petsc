@@ -273,9 +273,9 @@ class SectionBase(DocBase):
       heading_loc = docstring.make_source_range(heading, text, loc.start.line)
       correct     = transform(heading)
       if heading != correct and any(t in correct for t in self.titles):
-        mess = f'Invalid header spelling. Expected \'{correct}\' found \'{heading}\''
         docstring.add_error_from_source_range(
-          diag, mess, heading_loc, patch=Patch(heading_loc, correct)
+          diag, f'Invalid header spelling. Expected \'{correct}\' found \'{heading}\'',
+          heading_loc, patch=Patch(heading_loc, correct)
         )
         continue
 
@@ -286,12 +286,10 @@ class SectionBase(DocBase):
           docstring.cursor, Diagnostic(diag, f'Unknown section \'{heading}\'', self.extent.start)
         )
       else:
-        if heading.endswith('s') and not matchname.endswith('s'):
-          # assume the heading is correctly pluralized
-          matchname += 's'
-        mess = f'Unknown section header \'{heading}\', assuming you meant \'{matchname}\''
         docstring.add_error_from_source_range(
-          diag, mess, heading_loc, patch=Patch(heading_loc, matchname)
+          diag,
+          f'Unknown section header \'{heading}\', assuming you meant \'{matchname}\'',
+          heading_loc, patch=Patch(heading_loc, matchname)
         )
     return
 

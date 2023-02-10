@@ -5,6 +5,9 @@
 """
 import sys
 
+# synchronized print function, should be used everywhere
+sync_print = print
+
 from . import __version__
 
 if sys.version_info < __version__.__MIN_PYTHON_VERSION__:

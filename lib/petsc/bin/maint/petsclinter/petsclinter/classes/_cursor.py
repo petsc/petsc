@@ -289,9 +289,10 @@ class Cursor:
         # -1 gives you EOL
         fnline = SourceLocation.from_position(cursor.translation_unit, begin.line, -1)
         extent = SourceRange.from_locations(begin, fnline)
-    return _util.get_formatted_source_from_source_range(
-      extent, num_before_context=nbefore, num_after_context=nafter, num_context=nboth, **kwargs
-    )
+    kwargs.setdefault('num_before_context', nbefore)
+    kwargs.setdefault('num_after_context', nafter)
+    kwargs.setdefault('num_context', nboth)
+    return _util.get_formatted_source_from_source_range(extent, **kwargs)
 
   def formatted(self, **kwargs):
     return self.get_formatted_source_from_cursor(self, **kwargs)

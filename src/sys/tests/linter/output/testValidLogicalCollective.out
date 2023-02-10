@@ -1,5 +1,5 @@
 <--- FIXED --->
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 ERROR 0: ./src/sys/tests/linter/testValidLogicalCollective.c:8:37
 'd' of type 'PetscBool'
   6 : 
@@ -179,5 +179,5 @@ Argument number doesn't match for 'c'. Expected '3', found '7' [-fmatching-arg-n
                                                                           ^^^^^^^^^^
   4: {
   5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
-[ROOT] -------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 <--- LEFT --->
