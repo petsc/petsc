@@ -1256,7 +1256,7 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
     suggest = ''
     if self.download:
       suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
-      if self.argDB['download-'+self.package]:
+      if self.argDB['download-'+self.package] and hasattr(self, 'basePackageDir'):
         suggest += ' after running "rm -rf ' + self.basePackageDir +'"\n'
         suggest += 'DO NOT DO THIS if you rely on the exact version of the currently installed ' + self.name
     if self.minversion:
