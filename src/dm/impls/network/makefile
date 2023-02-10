@@ -1,6 +1,6 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = networkcreate.c network.c networkmonitor.c
+SOURCEC  = networkcreate.c network.c networkmonitor.c networkview.c
 SOURCEF  =
 SOURCEH  =
 DIRS     = tests
