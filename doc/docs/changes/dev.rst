@@ -111,6 +111,8 @@ Changes: Development
 
 .. rubric:: IS:
 
+- Change ``ISDuplicate()`` to preserve the block size of the input in the output
+
 .. rubric:: VecScatter / PetscSF:
 
 - Change ``PetscSFConcatenate()`` to accept ``PetscSFConcatenateRootMode`` parameter; add option to concatenate root spaces globally
