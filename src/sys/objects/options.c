@@ -1011,8 +1011,8 @@ PetscErrorCode PetscOptionsLeftError(void)
     for (i = 0; i < defaultoptions->N; i++) {
       if (!defaultoptions->used[i]) {
         if (PetscCIOption(defaultoptions->names[i])) continue;
-        if (defaultoptions->values[i]) PetscCall((*PetscErrorPrintf)("Option left: name:-%s value: %s source: %s\n", defaultoptions->names[i], defaultoptions->values[i], PetscOptionSources[defaultoptions->source[i]]));
-        else PetscCall((*PetscErrorPrintf)("Option left: name:-%s (no value) source: %s\n", defaultoptions->names[i], PetscOptionSources[defaultoptions->source[i]]));
+        if (defaultoptions->values[i]) PetscCall((*PetscErrorPrintf)("  Option left: name:-%s value: %s source: %s\n", defaultoptions->names[i], defaultoptions->values[i], PetscOptionSources[defaultoptions->source[i]]));
+        else PetscCall((*PetscErrorPrintf)("  Option left: name:-%s (no value) source: %s\n", defaultoptions->names[i], PetscOptionSources[defaultoptions->source[i]]));
       }
     }
   }
