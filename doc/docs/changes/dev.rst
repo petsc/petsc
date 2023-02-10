@@ -190,6 +190,8 @@ Changes: Development
 .. rubric:: DMNetwork:
   - Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork
   - Add DMNetworkGetNumEdges to retrieve the local and global number of edges in DMNetwork
+  - Add the ability to use ``DMView()`` on a DMNetwork with a PetscViewer with format ``PETSC_VIEWER_ASCII_CSV``
+  - Add the ability to use ``-dmnetwork_view draw`` and ``-dmnetwork_view_distributed draw`` to visualize a DMNetwork with an associated coordinate DM. This currently requires the configured Python environment to have ``matplotlib`` and ``pandas`` installed
 
 .. rubric:: DMStag:
 

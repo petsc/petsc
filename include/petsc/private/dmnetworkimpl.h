@@ -160,4 +160,6 @@ PETSC_INTERN PetscErrorCode DMNetworkInitializeNonTopological(DM);
 PETSC_INTERN PetscErrorCode DMNetworkInitializeToDefault(DM);
 PETSC_INTERN PetscErrorCode DMNetworkInitializeToDefault_NonShared(DM);
 
+PETSC_INTERN PetscErrorCode DMCreateCoordinateDM_Network(DM, DM *);
+
 #endif /* _NETWORKIMPL_H */
