@@ -1081,7 +1081,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject)
 
    Options Database Keys:
    Multigrid options(inherited):
-+  -pc_mg_cycles <1> - 1 for V cycle, 2 for W-cycle (`MGSetCycles()`)
++  -pc_mg_cycle_type <v> - v for V cycle, w for W-cycle (`PCMGSetCycleType()`)
 .  -pc_mg_distinct_smoothup - Should one configure the up and down smoothers separately (`PCMGSetDistinctSmoothUp()`)
 -  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
 
