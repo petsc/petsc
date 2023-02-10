@@ -852,6 +852,20 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       else:
         skipfortranlibraries = 0
         self.logWrite(self.setCompilers.restoreLog())
+        oldLibs = self.setCompilers.LIBS
+        self.setCompilers.LIBS = '-lgfortran '+self.setCompilers.LIBS
+        self.setCompilers.saveLog()
+        if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
+          self.logWrite(self.setCompilers.restoreLog())
+          self.logPrint('Fortran requires -lgfortran to link with C compiler', 3, 'compilers')
+          self.setCompilers.LIBS = oldLibs
+          self.flibs.append('-lgfortran')
+          skipfortranlibraries = 1
+        else:
+          self.logWrite(self.setCompilers.restoreLog())
+          self.setCompilers.LIBS = oldLibs
+          self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
+          skipfortranlibraries = 0
         if iscray:
           oldLibs = self.setCompilers.LIBS
           self.setCompilers.LIBS = '-lmpifort_cray '+self.setCompilers.LIBS
