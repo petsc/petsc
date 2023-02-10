@@ -902,6 +902,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     import retrieval
     self.retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     self.retriever.setup()
+    self.retriever.ver = self.petscdir.version
     self.retriever.setupURLs(self.package,self.download,self.gitsubmodules,self.gitPreReqCheck())
 
   def downLoad(self):

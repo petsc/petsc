@@ -2,7 +2,6 @@ from __future__ import absolute_import
 import logger
 
 import os
-from urllib.request import urlretrieve
 from urllib import parse as urlparse_local
 import config.base
 import socket
@@ -23,6 +22,7 @@ class Retriever(logger.Logger):
     self.link_urls = []
     self.tarball_urls = []
     self.stamp = None
+    self.ver = 'unknown'
     return
 
   def isGitURL(self, url):
@@ -199,9 +199,13 @@ Unable to download package %s from: %s
     else:
       # fetch remote file
       try:
+        from urllib.request import Request, urlopen
         sav_timeout = socket.getdefaulttimeout()
         socket.setdefaulttimeout(30)
-        urlretrieve(url, localFile)
+        req = Request(url)
+        req.headers['User-Agent'] = 'PetscConfigure/'+self.ver
+        with open(localFile, 'wb') as f:
+          f.write(urlopen(req).read())
         socket.setdefaulttimeout(sav_timeout)
       except Exception as e:
         socket.setdefaulttimeout(sav_timeout)
