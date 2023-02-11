@@ -1763,7 +1763,10 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
   PetscValidHeaderSpecific(*dm, DM_CLASSID, 1);
   PetscCall(PetscObjectGetComm((PetscObject)*dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
+  if (size == 1) {
+    oldDMnetwork->cloneshared->distributecalled = PETSC_TRUE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 
   PetscCheck(!overlap, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "overlap %" PetscInt_FMT " != 0 is not supported yet", overlap);
 
