@@ -798,7 +798,6 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
 +  obj - the PETSc object; this must be cast with a (`PetscObject`), for example,
          `PetscObjectCompose`((`PetscObject`)mat,...);
 .  name - name associated with the child function
-.  fname - name of the function
 -  fptr - function pointer
 
    Level: advanced
