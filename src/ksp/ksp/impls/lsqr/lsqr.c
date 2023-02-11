@@ -622,7 +622,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
 
      In exact arithmetic the LSQR method (with no preconditioning) is identical to the `KSPCG` algorithm applied to the normal equations.
      The preconditioned variant was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations.
-     It appears the implementation with preconditioner tracks the true norm of the residual and uses that in the convergence test.
+     It appears the implementation with preconditioning tracks the true norm of the residual and uses that in the convergence test.
 
    Developer Note:
     How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies
