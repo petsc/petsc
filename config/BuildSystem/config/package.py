@@ -541,46 +541,6 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       return [inc for inc in iDirs if os.path.exists(inc)]
     return os.path.join(prefix, includeDir)
 
-  def checkPackageInDefaultLocations(self,mess):
-    '''This does not work for the reasons below so is turned off; perhaps the simpler model of just use ls'''
-    '''to look for the offending library files and includes files would work'''
-    '''Errors if the package is found by the compiler in a default location, such as /usr/local'''
-    '''This will miss some cases with libraries, for example if --download-hdf5 --download-pnetcdf is used because'''
-    '''it has to remove the current install directory from the search path where hdf5 is stored, hence even if pnetcdf is in /usr/lib'''
-    '''the test will fail since its required dependency hdf5 cannot be found. If the include file is found it will still detect the problem'''
-    self.logPrint(self.PACKAGE+': Checking if package is already installed in default locations, will error if this is the case')
-
-    # need to remove the PETSc prefix library and include locations from the search otherwise it will find the packages
-    # own previous install and think it is in the default location. Note: The configure model for handling libs and include
-    # directories by simply shoving them into global variables is terrible, but we are stuck with it.
-    self.pushLanguage('Cxx')
-    flagsArg = self.getPreprocessorFlagsArg()
-    oldLibs = self.setCompilers.LIBS
-    oldincludes = getattr(self.compilers, flagsArg)
-    loc = self.defaultInstallDir
-    newLibs = ' '.join([x for x in oldLibs.split(' ') if not x == '-L'+loc])
-    newincludes = ' '.join([x for x in oldincludes.split(' ') if not x == '-I'+loc])
-    self.setCompilers.LIBS = newLibs
-    setattr(self.compilers, flagsArg, newincludes)
-
-    for lib in self.generateLibList(''):
-      if not lib: continue
-      self.logWrite('Checking for '+str(lib)+' in "default locations" '+newLibs+'\n')
-      self.logWrite('Checking for '+str(self.includes)+' in "default locations" '+newincludes+'\n')
-      self.libraries.saveLog()
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}) or (self.includes and self.checkInclude([], self.includes)):
-        self.logWrite(self.libraries.restoreLog())
-        raise RuntimeError('You requested that PETSc '+mess+' but configure has detected the package already installed in a compiler default location\n\
-(for example /usr/ or /usr/local) you must remove this installation to use the install you desire')
-      else:
-        self.logWrite(self.libraries.restoreLog())
-
-    self.logPrint(self.PACKAGE+': Not already installed in default locations')
-    # put back the old list of libs and includes
-    setattr(self.compilers, flagsArg, oldincludes)
-    self.setCompilers.LIBS = oldLibs
-    self.popLanguage()
-
   def addToArgs(self,args,key,value):
     found = 0
     for i in range(0,len(args)):
@@ -590,11 +550,6 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     if not found: args.append(key+'="'+value+'"')
 
   def generateGuesses(self):
-    #if 'download-'+self.package in self.argDB and self.argDB['download-'+self.package]:
-      #self.checkPackageInDefaultLocations('install '+self.package)
-    #if not self.package == 'mpi' and 'with-'+self.package+'-dir' in self.argDB and not self.argDB['with-'+self.package+'-dir'] == os.path.join('/usr','local'):
-      #self.checkPackageInDefaultLocations('use '+self.package+' installed at '+self.argDB['with-'+self.package+'-dir'])
-
     d = self.checkDownload()
     if d:
       if not self.liblist or not self.liblist[0] or self.builtafterpetsc :
