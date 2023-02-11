@@ -267,7 +267,7 @@ PETSC_EXTERN PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESCheck_Internal(SNES, DM, Vec);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve;
-PETSC_EXTERN PetscLogEvent SNES_Setup;
+PETSC_EXTERN PetscLogEvent SNES_SetUp;
 PETSC_EXTERN PetscLogEvent SNES_LineSearch;
 PETSC_EXTERN PetscLogEvent SNES_FunctionEval;
 PETSC_EXTERN PetscLogEvent SNES_JacobianEval;

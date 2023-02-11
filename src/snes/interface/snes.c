@@ -10,7 +10,7 @@ PetscFunctionList SNESList              = NULL;
 
 /* Logging support */
 PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
-PetscLogEvent SNES_Solve, SNES_Setup, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve, SNES_ObjectiveEval;
+PetscLogEvent SNES_Solve, SNES_SetUp, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve, SNES_ObjectiveEval;
 
 /*@
    SNESSetErrorIfNotConverged - Causes `SNESSolve()` to generate an error if the solver has not converged.
@@ -3170,7 +3170,7 @@ PetscErrorCode SNESSetUp(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (snes->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscLogEventBegin(SNES_Setup, snes, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(SNES_SetUp, snes, 0, 0, 0));
 
   if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, SNESNEWTONLS));
 
@@ -3251,7 +3251,7 @@ PetscErrorCode SNESSetUp(SNES snes)
       }
     }
   }
-  PetscCall(PetscLogEventEnd(SNES_Setup, snes, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(SNES_SetUp, snes, 0, 0, 0));
   snes->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
