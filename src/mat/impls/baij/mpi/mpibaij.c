@@ -2672,7 +2672,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs, const P
 
    Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`, `MatCreateMPIBAIJWithArrays()`, `MPIBAIJ`
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`, `MatCreateMPIBAIJWithArrays()`, `MPIBAIJ`
 @*/
 PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {
@@ -2856,7 +2856,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
     `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
     space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
 
-.seealso: MATBAIJ`, MATSEQBAIJ`, `MatCreateBAIJ`
+.seealso: `Mat`, MATBAIJ`, MATSEQBAIJ`, `MatCreateBAIJ`
 M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat, MatType, MatReuse, Mat *);
@@ -2952,33 +2952,30 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
 
   Level: beginner
 
-.seealso: `MatCreateBAIJ()`, `MATSEQBAIJ`, `MATMPIBAIJ`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
+.seealso: `Mat`, `MatCreateBAIJ()`, `MATSEQBAIJ`, `MATMPIBAIJ`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 M*/
 
 /*@C
    MatMPIBAIJSetPreallocation - Allocates memory for a sparse parallel matrix in `MATMPIBAIJ` format
-   (block compressed row).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameters
-   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
-   performance can be increased by more than a factor of 50.
+   (block compressed row).
 
    Collective
 
    Input Parameters:
 +  B - the matrix
 .  bs   - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
+          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows
            of the in diagonal portion of the local (possibly different for each block
-           row) or NULL.  If you plan to factor the matrix you must leave room for the diagonal entry and
+           row) or `NULL`.  If you plan to factor the matrix you must leave room for the diagonal entry and
            set it even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
-           each block row) or NULL.
+           each block row) or `NULL`.
 
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
@@ -2986,7 +2983,14 @@ M*/
 +   -mat_block_size - size of the blocks to use
 -   -mat_use_hash_table <fact> - set hash table factor
 
+   Level: intermediate
+
    Notes:
+   For good matrix assembly performance
+   the user should preallocate the matrix storage by setting the parameters
+   `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).  By setting these parameters accurately,
+   performance can be increased by more than a factor of 50.
+
    If `PETSC_DECIDE` or  `PETSC_DETERMINE` is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
 
@@ -2997,10 +3001,10 @@ M*/
    local matrix (a rectangular submatrix).
 
    The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either d_nz or d_nnz (not both).  Set
-   d_nz=PETSC_DEFAULT and d_nnz=NULL for PETSc to control dynamic
+   the local submatrix with either `d_nz` or `d_nnz` (not both).  Set
+   `d_nz` = `PETSC_DEFAULT` and `d_nnz` = `NULL` for PETSc to control dynamic
    memory allocation.  Likewise, specify preallocated storage for the
-   off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
+   off-diagonal part of the local submatrix with `o_nz` or `o_nnz` (not both).
 
    Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
    the figure below we depict these three local rows and all columns (0-11).
@@ -3019,21 +3023,19 @@ M*/
    o (off-diagonal) submatrix.  Note that the d and the o submatrices are
    stored simply in the `MATSEQBAIJ` format for compressed row storage.
 
-   Now d_nz should indicate the number of block nonzeros per row in the d matrix,
-   and o_nz should indicate the number of block nonzeros per row in the o matrix.
+   Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
+   and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
+   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
    matrices.
 
    You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option -info and look for messages with the string
+   You can also run with the option `-info` and look for messages with the string
    malloc in them to see if additional memory allocation was needed.
 
-   Level: intermediate
-
-.seealso: `MATMPIBAIJ`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatMPIBAIJSetPreallocationCSR()`, `PetscSplitOwnership()`
+.seealso: `Mat`, `MATMPIBAIJ`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatMPIBAIJSetPreallocationCSR()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
@@ -3047,10 +3049,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
 
 /*@C
    MatCreateBAIJ - Creates a sparse parallel matrix in `MATBAIJ` format
-   (block compressed row).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameters
-   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
-   performance can be increased by more than a factor of 50.
+   (block compressed row).
 
    Collective
 
@@ -3085,11 +3084,18 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
 +   -mat_block_size - size of the blocks to use
 -   -mat_use_hash_table <fact> - set hash table factor
 
+   Level: intermediate
+
+   Notes:
+   For good matrix assembly performance
+   the user should preallocate the matrix storage by setting the parameters
+   `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).  By setting these parameters accurately,
+   performance can be increased by more than a factor of 50.
+
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqBAIJSetPreallocation()`]
 
-   Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
    A nonzero block is any block that as 1 or more nonzeros in it
@@ -3108,9 +3114,9 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
 
    The user can specify preallocated storage for the diagonal part of
    the local submatrix with either d_nz or d_nnz (not both).  Set
-   d_nz=PETSC_DEFAULT and d_nnz=NULL for PETSc to control dynamic
+   `d_nz` = `PETSC_DEFAULT` and `d_nnz` = `NULL` for PETSc to control dynamic
    memory allocation.  Likewise, specify preallocated storage for the
-   off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
+   off-diagonal part of the local submatrix with `o_nz` or `o_nnz` (not both).
 
    Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
    the figure below we depict these three local rows and all columns (0-11).
@@ -3129,16 +3135,14 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
    o (off-diagonal) submatrix.  Note that the d and the o submatrices are
    stored simply in the `MATSEQBAIJ` format for compressed row storage.
 
-   Now d_nz should indicate the number of block nonzeros per row in the d matrix,
-   and o_nz should indicate the number of block nonzeros per row in the o matrix.
+   Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
+   and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
+   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
    matrices.
 
-   Level: intermediate
-
-.seealso: `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
 PetscErrorCode MatCreateBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {
@@ -3359,7 +3363,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat mat, PetscViewer viewer)
 
    Level: advanced
 
-.seealso: `MATMPIBAIJ`, `MatSetOption()`
+.seealso: `Mat`, `MATMPIBAIJ`, `MatSetOption()`
 @*/
 PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat mat, PetscReal fact)
 {
@@ -3420,7 +3424,7 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 
   Level: advanced
 
-.seealso: `MatSetValuesBlocked()`
+.seealso: `Mat`, `MatSetValuesBlocked()`
 @*/
 PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *min, const PetscInt im[], PetscInt *nin, const PetscInt in[], const MatScalar v[], InsertMode *addvin)
 {
@@ -3555,7 +3559,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *min, const Pets
    Level: intermediate
 
    Notes:
-       The i, j, and a arrays ARE copied by this routine into the internal format used by PETSc;
+       The `i`, `j`, and `a` arrays ARE copied by this routine into the internal format used by PETSc;
      thus you CANNOT change the matrix entries by changing the values of a[] after you have
      called this routine. Use `MatCreateMPIAIJWithSplitArrays()` to avoid needing to copy the arrays.
 
@@ -3564,9 +3568,9 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *min, const Pets
      block, followed by the second column of the first block etc etc.  That is, the blocks are contiguous in memory
      with column-major ordering within blocks.
 
-       The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
+       The `i` and `j` indices are 0 based, and i indices are indices corresponding to the local `j` array.
 
-.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPIBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)

@@ -292,7 +292,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI communicator
 
    Output Parameter:
@@ -306,7 +306,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
    This is only a primitive "parallel" random number generator, it should NOT
    be used for sophisticated parallel Monte Carlo methods since it will very likely
    not have the correct statistics across processors. You can provide your own
-   parallel generator using PetscRandomRegister();
+   parallel generator using `PetscRandomRegister()`;
 
    If you create a `PetscRandom()` using `PETSC_COMM_SELF` on several processors then
    the SAME random numbers will be generated on all those processors. Use `PETSC_COMM_WORLD`
@@ -326,7 +326,6 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 .seealso: `PetscRandomSetType()`, `PetscRandomGetValue()`, `PetscRandomGetValueReal()`, `PetscRandomSetInterval()`,
           `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomType`, `PetscRandom`
 @*/
-
 PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
 {
   PetscRandom rr;

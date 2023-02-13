@@ -254,8 +254,10 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
    Not Collective
 
    Input Parameters:
-+  name - name of a new user-defined matrix type
--  routine_create - routine to create method context
++  sname - name of a new user-defined matrix type
+-  function - routine to create method context
+
+   Level: advanced
 
    Note:
    `MatRegister()` may be called multiple times to add several user-defined solvers.
@@ -269,8 +271,6 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 $     MatSetType(Mat,"my_mat")
    or at runtime via the option
 $     -mat_type my_mat
-
-   Level: advanced
 
 .seealso: `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/
@@ -294,6 +294,8 @@ MatRootName MatRootNameList = NULL;
 .     sname - the name of the sequential matrix type, for example, `MATSEQAIJ`
 -     mname - the name of the parallel matrix type, for example, `MATMPIAIJ`
 
+  Level: developer
+
   Note:
   The matrix rootname should not be confused with the base type of the function `PetscObjectBaseTypeCompare()`
 
@@ -302,8 +304,6 @@ MatRootName MatRootNameList = NULL;
       size of the communicator but it is implemented by simply having additional `VecCreate_RootName()` registerer routines that dispatch to the
       appropriate creation routine. Why have two different ways of implementing the same functionality for different types of objects? It is
       confusing.
-
-  Level: developer
 
 .seealso: `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
 @*/

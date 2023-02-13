@@ -5372,7 +5372,7 @@ PetscFunctionList MatSeqAIJList = NULL;
 -  matype   - matrix type
 
    Options Database Key:
-.  -mat_seqai_type  <method> - for example seqaijcrl
+.  -mat_seqaij_type  <method> - for example seqaijcrl
 
   Level: intermediate
 

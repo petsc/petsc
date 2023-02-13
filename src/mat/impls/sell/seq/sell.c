@@ -52,33 +52,34 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
 
  Input Parameters:
  +  B - The `MATSEQSELL` matrix
- .  nz - number of nonzeros per row (same for all rows)
- -  nnz - array containing the number of nonzeros in the various rows
- (possibly different for each row) or NULL
+ .  rlenmax - number of nonzeros per row (same for all rows)
+ -  rlen - array containing the number of nonzeros in the various rows
+ (possibly different for each row) or `NULL`
+
+ Level: intermediate
 
  Notes:
- If nnz is given then nz is ignored.
+ If `rlen` is given then `rlenmax` is ignored.
 
- Specify the preallocated storage with either nz or nnz (not both).
- Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
+ Specify the preallocated storage with either `rlenmax` or `rlen` (not both).
+ Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
  allocation.  For large problems you MUST preallocate memory or you
  will get TERRIBLE performance, see the users' manual chapter on matrices.
 
  You can call `MatGetInfo()` to get information on how effective the preallocation was;
  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
- You can also run with the option -info and look for messages with the string
+ You can also run with the option `-info` and look for messages with the string
  malloc in them to see if additional memory allocation was needed.
 
- Developers: Use nz of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
+ Developers Note:
+ Use `rlenmax` of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
  entries or columns indices.
 
  The maximum number of nonzeos in any row should be as accurate as possible.
  If it is underestimated, you will get bad performance due to reallocation
- (MatSeqXSELLReallocateSELL).
+ (`MatSeqXSELLReallocateSELL()`).
 
- Level: intermediate
-
- .seealso: `MATSEQSELL`, `MATSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
+ .seealso: `Mat`, `MATSEQSELL`, `MATSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
  @*/
 PetscErrorCode MatSeqSELLSetPreallocation(Mat B, PetscInt rlenmax, const PetscInt rlen[])
 {
@@ -1926,7 +1927,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
 
  Level: intermediate
 
- .seealso: `MATSEQSELL`, `MatSeqSELLGetArray()`, `MatSeqSELLRestoreArrayF90()`
+ .seealso: `Mat`, `MATSEQSELL`, `MatSeqSELLGetArray()`, `MatSeqSELLRestoreArrayF90()`
  @*/
 PetscErrorCode MatSeqSELLRestoreArray(Mat A, PetscScalar **array)
 {
@@ -2071,7 +2072,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B)
 
    Level: beginner
 
-.seealso: `MatCreateSeqSell()`, `MATSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
+.seealso: `Mat`, `MatCreateSeqSell()`, `MATSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
 /*MC
@@ -2126,7 +2127,7 @@ M*/
 . * - Hong Zhang, Richard T. Mills, Karl Rupp, and Barry F. Smith, Vectorized Parallel Sparse Matrix-Vector Multiplication in {PETSc} Using {AVX-512},
    Proceedings of the 47th International Conference on Parallel Processing, 2018.
 
-.seealso: `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSell()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
+.seealso: `Mat`, `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSell()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
 M*/
 
 /*@C
@@ -2159,7 +2160,7 @@ M*/
 
  Level: intermediate
 
- .seealso: `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
+ .seealso: `Mat`, `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
  @*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt maxallocrow, const PetscInt rlen[], Mat *A)
 {

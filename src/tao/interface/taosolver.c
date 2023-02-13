@@ -144,13 +144,13 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   Input Parameters:
 . tao - the Tao context
 
+  Level: beginner
+
   Notes:
   The user must set up the Tao with calls to `TaoSetSolution()`, `TaoSetObjective()`, `TaoSetGradient()`, and (if using 2nd order method) `TaoSetHessian()`.
 
-  You should call `TaoGetConvergedReason()` or run with -tao_converged_reason to determine if the optimization algorithm actually succeeded or
+  You should call `TaoGetConvergedReason()` or run with `-tao_converged_reason` to determine if the optimization algorithm actually succeeded or
   why it failed.
-
-  Level: beginner
 
 .seealso: `Tao`, `TaoCreate()`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoGetConvergedReason()`, `TaoSetUp()`
  @*/
@@ -204,13 +204,13 @@ PetscErrorCode TaoSolve(Tao tao)
   Input Parameters:
 . tao - the Tao context
 
+  Level: advanced
+
   Notes:
   The user will not need to explicitly call `TaoSetUp()`, as it will
   automatically be called in `TaoSolve()`.  However, if the user
   desires to call it explicitly, it should come after `TaoCreate()`
   and any TaoSetSomething() routines, but before `TaoSolve()`.
-
-  Level: advanced
 
 .seealso: `Tao`, `TaoCreate()`, `TaoSolve()`
 @*/
@@ -314,10 +314,10 @@ PetscErrorCode TaoDestroy(Tao *tao)
 +  tao - Tao context
 -  flag - `PETSC_TRUE` or `PETSC_FALSE`
 
+   Level: advanced
+
    Notes:
    See `SNESKSPSetUseEW()` for customization details.
-
-   Level: advanced
 
    Reference:
    S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an
@@ -370,11 +370,11 @@ PetscErrorCode TaoKSPSetUseEW(Tao tao, PetscBool flag)
 . -tao_view - prints information about the Tao after solving
 - -tao_converged_reason - prints the reason Tao stopped iterating
 
-  Notes:
+  Level: beginner
+
+  Note:
   To see all options, run your program with the -help option or consult the
  user's manual. Should be called after `TaoCreate()` but before `TaoSolve()`
-
-  Level: beginner
 
 .seealso: `Tao`, `TaoCreate()`, `TaoSolve()`
 @*/
@@ -556,6 +556,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 -  name - command line option
 
    Level: intermediate
+
 .seealso: `Tao`, `TaoView`, `PetscObjectViewFromOptions()`, `TaoCreate()`
 @*/
 PetscErrorCode TaoViewFromOptions(Tao A, PetscObject obj, const char name[])
@@ -578,6 +579,8 @@ PetscErrorCode TaoViewFromOptions(Tao A, PetscObject obj, const char name[])
   Options Database Key:
 . -tao_view - Calls `TaoView()` at the end of `TaoSolve()`
 
+  Level: beginner
+
   Notes:
   The available visualization contexts include
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
@@ -585,8 +588,6 @@ PetscErrorCode TaoViewFromOptions(Tao A, PetscObject obj, const char name[])
          output where only the first processor opens
          the file.  All other processors send their
          data to the first processor to print.
-
-  Level: beginner
 
 .seealso: `PetscViewerASCIIOpen()`
 @*/
@@ -730,6 +731,18 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
   iterate information from the previous `TaoSolve()`. This feature is disabled by
   default.
 
+  Logically Collective
+
+  Input Parameters:
++ tao - the Tao context
+- recycle - boolean flag
+
+  Options Database Keys:
+. -tao_recycle_history <true,false> - reuse the history
+
+  Level: intermediate
+
+  Notes:
   For conjugate gradient methods (`TAOBNCG`), this re-uses the latest search direction
   from the previous `TaoSolve()` call when computing the first search direction in a
   new solution. By default, CG methods set the first search direction to the
@@ -742,19 +755,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 
   For any other algorithm, this setting has no effect.
 
-  Logically collective
-
-  Input Parameters:
-+ tao - the Tao context
-- recycle - boolean flag
-
-  Options Database Keys:
-. -tao_recycle_history <true,false> - reuse the history
-
-  Level: intermediate
-
 .seealso: `TaoGetRecycleHistory()`, `TAOBNCG`, `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTR`, `TAOBQNKTL`
-
 @*/
 PetscErrorCode TaoSetRecycleHistory(Tao tao, PetscBool recycle)
 {
@@ -769,7 +770,7 @@ PetscErrorCode TaoSetRecycleHistory(Tao tao, PetscBool recycle)
   TaoGetRecycleHistory - Retrieve the boolean flag for re-using iterate information
   from the previous `TaoSolve()`. This feature is disabled by default.
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 . tao - the Tao context
@@ -780,7 +781,6 @@ PetscErrorCode TaoSetRecycleHistory(Tao tao, PetscBool recycle)
   Level: intermediate
 
 .seealso: `TaoSetRecycleHistory()`, `TAOBNCG`, `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTR`, `TAOBQNKTL`
-
 @*/
 PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
 {
@@ -794,7 +794,7 @@ PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
 /*@
   TaoSetTolerances - Sets parameters used in Tao convergence tests
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + tao - the Tao context
@@ -808,17 +808,18 @@ PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
 - -tao_gttol <gttol> - Sets gttol
 
   Stopping Criteria:
-$ ||g(X)||                            <= gatol
-$ ||g(X)|| / |f(X)|                   <= grtol
-$ ||g(X)|| / ||g(X0)||                <= gttol
-
-  Notes:
-  Use PETSC_DEFAULT to leave one or more tolerances unchanged.
+.vb
+  ||g(X)||                            <= gatol
+  ||g(X)|| / |f(X)|                   <= grtol
+  ||g(X)|| / ||g(X0)||                <= gttol
+.ve
 
   Level: beginner
 
-.seealso: `TaoGetTolerances()`
+  Note:
+  Use `PETSC_DEFAULT` to leave one or more tolerances unchanged.
 
+.seealso: `TaoGetTolerances()`
 @*/
 PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, PetscReal gttol)
 {
@@ -860,24 +861,23 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 /*@
   TaoSetConstraintTolerances - Sets constraint tolerance parameters used in Tao convergence tests
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + tao - the Tao context
-. catol - absolute constraint tolerance, constraint norm must be less than catol for used for gatol convergence criteria
-- crtol - relative constraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
+. catol - absolute constraint tolerance, constraint norm must be less than `catol` for used for gatol convergence criteria
+- crtol - relative constraint tolerance, constraint norm must be less than `crtol` for used for gatol, gttol convergence criteria
 
   Options Database Keys:
 + -tao_catol <catol> - Sets catol
 - -tao_crtol <crtol> - Sets crtol
 
-  Notes:
-  Use PETSC_DEFAULT to leave any tolerance unchanged.
-
   Level: intermediate
 
-.seealso: `TaoGetTolerances()`, `TaoGetConstraintTolerances()`, `TaoSetTolerances()`
+  Notes:
+  Use `PETSC_DEFAULT` to leave any tolerance unchanged.
 
+.seealso: `TaoGetTolerances()`, `TaoGetConstraintTolerances()`, `TaoSetTolerances()`
 @*/
 PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal crtol)
 {
@@ -909,14 +909,14 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 /*@
   TaoGetConstraintTolerances - Gets constraint tolerance parameters used in Tao  convergence tests
 
-  Not ollective
+  Not Collective
 
   Input Parameter:
 . tao - the Tao context
 
   Output Parameters:
-+ catol - absolute constraint tolerance, constraint norm must be less than catol for used for gatol convergence criteria
-- crtol - relative constraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
++ catol - absolute constraint tolerance, constraint norm must be less than `catol` for used for gatol convergence criteria
+- crtol - relative constraint tolerance, constraint norm must be less than `crtol` for used for gatol, gttol convergence criteria
 
   Level: intermediate
 
@@ -965,7 +965,7 @@ PetscErrorCode TaoSetFunctionLowerBound(Tao tao, PetscReal fmin)
    When an approximate solution with an objective value below this number
    has been found, the solver will terminate.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 .  tao - the Tao solver context
@@ -1123,7 +1123,7 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao, PetscInt *maxits)
 /*@
    TaoSetInitialTrustRegionRadius - Sets the initial trust region radius.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao - a Tao optimization solver
@@ -2181,7 +2181,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
+/*@C
    TaoRegister - Adds a method to the Tao package for unconstrained minimization.
 
    Synopsis:
@@ -2192,9 +2192,6 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
    Input Parameters:
 +  sname - name of a new user-defined solver
 -  func - routine to Create method context
-
-   Note:
-   `TaoRegister()` may be called multiple times to add several user-defined solvers.
 
    Sample usage:
 .vb
@@ -2208,8 +2205,11 @@ $     -tao_type my_solver
 
    Level: advanced
 
+   Note:
+   `TaoRegister()` may be called multiple times to add several user-defined solvers.
+
 .seealso: `Tao`, `TaoSetType()`, `TaoRegisterAll()`, `TaoRegisterDestroy()`
-M*/
+@*/
 PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
 {
   PetscFunctionBegin;
@@ -2226,7 +2226,7 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
 
    Level: advanced
 
-.seealso: `TaoRegisterAll()`, `TaoRegister()`
+.seealso: `Tao`, `TaoRegisterAll()`, `TaoRegister()`
 @*/
 PetscErrorCode TaoRegisterDestroy(void)
 {
@@ -2253,7 +2253,7 @@ PetscErrorCode TaoRegisterDestroy(void)
 
    Level: intermediate
 
-.seealso: `TaoGetLinearSolveIterations()`, `TaoGetResidualNorm()`, `TaoGetObjective()`
+.seealso: `Tao`, `TaoGetLinearSolveIterations()`, `TaoGetResidualNorm()`, `TaoGetObjective()`
 @*/
 PetscErrorCode TaoGetIterationNumber(Tao tao, PetscInt *iter)
 {
@@ -2278,10 +2278,11 @@ PetscErrorCode TaoGetIterationNumber(Tao tao, PetscInt *iter)
 
    Level: intermediate
 
-   Developer Note: This is the 2-norm of the residual, we cannot use `TaoGetGradientNorm()` because that has
-                   a different meaning. For some reason Tao sometimes calls the gradient the residual.
+   Developer Note:
+   This is the 2-norm of the residual, we cannot use `TaoGetGradientNorm()` because that has
+   a different meaning. For some reason Tao sometimes calls the gradient the residual.
 
-.seealso: `TaoGetLinearSolveIterations()`, `TaoGetIterationNumber()`, `TaoGetObjective()`
+.seealso: `Tao`, `TaoGetLinearSolveIterations()`, `TaoGetIterationNumber()`, `TaoGetObjective()`
 @*/
 PetscErrorCode TaoGetResidualNorm(Tao tao, PetscReal *value)
 {
@@ -2303,7 +2304,7 @@ PetscErrorCode TaoGetResidualNorm(Tao tao, PetscReal *value)
 
    Level: developer
 
-.seealso: `TaoGetLinearSolveIterations()`
+.seealso: `Tao`, `TaoGetLinearSolveIterations()`
 @*/
 PetscErrorCode TaoSetIterationNumber(Tao tao, PetscInt iter)
 {
@@ -2329,13 +2330,13 @@ PetscErrorCode TaoSetIterationNumber(Tao tao, PetscInt iter)
    Output Parameter:
 .  iter - iteration number
 
-   Notes:
-   The total iteration count is updated after each solve, if there is a current
-   TaoSolve() in progress then those iterations are not yet counted.
-
    Level: intermediate
 
-.seealso: `TaoGetLinearSolveIterations()`
+   Notes:
+   The total iteration count is updated after each solve, if there is a current
+   `TaoSolve()` in progress then those iterations are not yet counted.
+
+.seealso: `Tao`, `TaoGetLinearSolveIterations()`
 @*/
 PetscErrorCode TaoGetTotalIterationNumber(Tao tao, PetscInt *iter)
 {
@@ -2357,7 +2358,7 @@ PetscErrorCode TaoGetTotalIterationNumber(Tao tao, PetscInt *iter)
 
    Level: developer
 
-.seealso: `TaoGetLinearSolveIterations()`
+.seealso: `Tao`, `TaoGetLinearSolveIterations()`
 @*/
 PetscErrorCode TaoSetTotalIterationNumber(Tao tao, PetscInt iter)
 {
@@ -2378,21 +2379,24 @@ PetscErrorCode TaoSetTotalIterationNumber(Tao tao, PetscInt iter)
   Input Parameters:
 + tao - the Tao context
 - reason - one of
-$     `TAO_CONVERGED_ATOL` (2),
-$     `TAO_CONVERGED_RTOL` (3),
-$     `TAO_CONVERGED_STEPTOL` (4),
-$     `TAO_CONVERGED_MINF` (5),
-$     `TAO_CONVERGED_USER` (6),
-$     `TAO_DIVERGED_MAXITS` (-2),
-$     `TAO_DIVERGED_NAN` (-4),
-$     `TAO_DIVERGED_MAXFCN` (-5),
-$     `TAO_DIVERGED_LS_FAILURE` (-6),
-$     `TAO_DIVERGED_TR_REDUCTION` (-7),
-$     `TAO_DIVERGED_USER` (-8),
-$     `TAO_CONTINUE_ITERATING` (0)
+.vb
+     TAO_CONVERGED_ATOL (2),
+     TAO_CONVERGED_RTOL (3),
+     TAO_CONVERGED_STEPTOL (4),
+     TAO_CONVERGED_MINF (5),
+     TAO_CONVERGED_USER (6),
+     TAO_DIVERGED_MAXITS (-2),
+     TAO_DIVERGED_NAN (-4),
+     TAO_DIVERGED_MAXFCN (-5),
+     TAO_DIVERGED_LS_FAILURE (-6),
+     TAO_DIVERGED_TR_REDUCTION (-7),
+     TAO_DIVERGED_USER (-8),
+     TAO_CONTINUE_ITERATING (0)
+.ve
 
    Level: intermediate
 
+.seealso: `Tao`
 @*/
 PetscErrorCode TaoSetConvergedReason(Tao tao, TaoConvergedReason reason)
 {
@@ -2413,19 +2417,21 @@ PetscErrorCode TaoSetConvergedReason(Tao tao, TaoConvergedReason reason)
 
    Output Parameter:
 .  reason - one of
-$  `TAO_CONVERGED_GATOL` (3)           ||g(X)|| < gatol
-$  `TAO_CONVERGED_GRTOL` (4)           ||g(X)|| / f(X)  < grtol
-$  `TAO_CONVERGED_GTTOL` (5)           ||g(X)|| / ||g(X0)|| < gttol
-$  `TAO_CONVERGED_STEPTOL` (6)         step size small
-$  `TAO_CONVERGED_MINF` (7)            F < F_min
-$  `TAO_CONVERGED_USER` (8)            User defined
-$  `TAO_DIVERGED_MAXITS` (-2)          its > maxits
-$  `TAO_DIVERGED_NAN` (-4)             Numerical problems
-$  `TAO_DIVERGED_MAXFCN` (-5)          fevals > max_funcsals
-$  `TAO_DIVERGED_LS_FAILURE` (-6)      line search failure
-$  `TAO_DIVERGED_TR_REDUCTION` (-7)    trust region failure
-$  `TAO_DIVERGED_USER` (-8)             (user defined)
-$  `TAO_CONTINUE_ITERATING` (0)
+.vb
+  TAO_CONVERGED_GATOL (3)           ||g(X)|| < gatol
+  TAO_CONVERGED_GRTOL (4)           ||g(X)|| / f(X)  < grtol
+  TAO_CONVERGED_GTTOL (5)           ||g(X)|| / ||g(X0)|| < gttol
+  TAO_CONVERGED_STEPTOL (6)         step size small
+  TAO_CONVERGED_MINF (7)            F < F_min
+  TAO_CONVERGED_USER (8)            User defined
+  TAO_DIVERGED_MAXITS (-2)          its > maxits
+  TAO_DIVERGED_NAN (-4)             Numerical problems
+  TAO_DIVERGED_MAXFCN (-5)          fevals > max_funcsals
+  TAO_DIVERGED_LS_FAILURE (-6)      line search failure
+  TAO_DIVERGED_TR_REDUCTION (-7)    trust region failure
+  TAO_DIVERGED_USER (-8)             (user defined)
+  TAO_CONTINUE_ITERATING (0)
+.ve
 
    where
 +  X - current solution
@@ -2441,7 +2447,6 @@ $  `TAO_CONTINUE_ITERATING` (0)
    Level: intermediate
 
 .seealso: `TaoSetConvergenceTest()`, `TaoSetTolerances()`
-
 @*/
 PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
 {
@@ -2474,7 +2479,7 @@ PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
    Notes:
    Tao returns the values set by the solvers in the routine `TaoMonitor()`.
 
-   If any of the output arguments are set to NULL, no corresponding value will be returned.
+   If any of the output arguments are set to `NULL`, no corresponding value will be returned.
 
 .seealso: `TaoMonitor()`, `TaoGetConvergedReason()`
 @*/
@@ -2569,16 +2574,18 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 .  resid - array to hold residual history
 .  cnorm - array to hold constraint violation history
 .  lits - integer array holds the number of linear iterations for each Tao iteration
-.  na  - size of obj, resid, and cnorm
+.  na  - size of `obj`, `resid`, and `cnorm`
 -  reset - `PETSC_TRUE` indicates each new minimization resets the history counter to zero,
            else it continues storing new values for new minimizations after the old ones
+
+   Level: intermediate
 
    Notes:
    If set, Tao will fill the given arrays with the indicated
    information at each iteration.  If 'obj','resid','cnorm','lits' are
-   *all* NULL then space (using size na, or 1000 if na is `PETSC_DECIDE` or
+   *all* `NULL` then space (using size `na`, or 1000 if na is `PETSC_DECIDE` or
    `PETSC_DEFAULT`) is allocated for the history.
-   If not all are NULL, then only the non-NULL information categories
+   If not all are `NULL`, then only the non-`NULL` information categories
    will be stored, the others will be ignored.
 
    Any convergence information after iteration number 'na' will not be stored.
@@ -2587,10 +2594,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
    of accurate performance monitoring, when no I/O should be done
    during the section of code that is being timed.
 
-   Level: intermediate
-
 .seealso: `TaoGetConvergenceHistory()`
-
 @*/
 PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resid[], PetscReal cnorm[], PetscInt lits[], PetscInt na, PetscBool reset)
 {
@@ -2630,23 +2634,25 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 .  resid - array used to hold residual history
 .  cnorm - array used to hold constraint violation history
 .  lits  - integer array used to hold linear solver iteration count
--  nhist  - size of obj, resid, cnorm, and lits
+-  nhist  - size of `obj`, `resid`, `cnorm`, and `lits`
+
+   Level: advanced
 
    Notes:
     This routine must be preceded by calls to `TaoSetConvergenceHistory()`
     and `TaoSolve()`, otherwise it returns useless information.
 
-    The calling sequence for this routine in Fortran is
-$   call TaoGetConvergenceHistory(Tao tao, PetscInt nhist, PetscErrorCode ierr)
-
    This routine is useful, e.g., when running a code for purposes
    of accurate performance monitoring, when no I/O should be done
    during the section of code that is being timed.
 
-   Level: advanced
+   Fortran Note:
+   The calling sequence is
+.vb
+   call TaoGetConvergenceHistory(Tao tao, PetscInt nhist, PetscErrorCode ierr)
+.ve
 
 .seealso: `Tao`, `TaoSolve()`, `TaoSetConvergenceHistory()`
-
 @*/
 PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **resid, PetscReal **cnorm, PetscInt **lits, PetscInt *nhist)
 {
