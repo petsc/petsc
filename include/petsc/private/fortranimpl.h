@@ -35,13 +35,14 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
 */
 #define FIXCHAR(a, n, b) \
   { \
-    if (a == PETSC_NULL_CHARACTER_Fortran) { \
-      b = a = NULL; \
+    if ((a) == PETSC_NULL_CHARACTER_Fortran) { \
+      (b) = (a) = NULL; \
     } else { \
-      while ((n > 0) && (a[n - 1] == ' ')) n--; \
-      *ierr = PetscMalloc1(n + 1, &b); \
+      while (((n) > 0) && ((a)[(n)-1] == ' ')) (n)--; \
+      *ierr = PetscMalloc1((n) + 1, &(b)); \
       if (*ierr) return; \
-      *ierr = PetscStrncpy(b, a, n + 1); \
+      *ierr  = PetscMemcpy((b), (a), (n)); \
+      (b)[n] = '\0'; \
       if (*ierr) return; \
     } \
   }

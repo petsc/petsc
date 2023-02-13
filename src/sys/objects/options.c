@@ -1626,7 +1626,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
       *ptr++ = '-';
       name++;
     }
-    PetscCall(PetscStrncpy(ptr, pre, sizeof(buf) + (size_t)(ptr - buf)));
+    PetscCall(PetscStrncpy(ptr, pre, sizeof(buf) - ((ptr == buf) ? 0 : 1)));
     PetscCall(PetscStrlcat(buf, name, sizeof(buf)));
     name = buf;
   }

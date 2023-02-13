@@ -50,7 +50,7 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 @*/
 PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char *lname, size_t llen, PetscBool *found)
 {
-  char  *buf, *par2, suffix[16], *gz = NULL, *so;
+  char  *buf, *par2, suffix[16], *gz = NULL, *so = NULL;
   size_t len;
 
   PetscFunctionBegin;

@@ -266,16 +266,23 @@ static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
   if (s) PetscAssert(n, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Requires an output string of length at least 1 to hold the termination character");
   if (t) {
     PetscAssertPointer_Private(s, 1);
-    if (n > 1) {
-#if PetscHasBuiltin(__builtin_strncpy)
-      (__builtin_strncpy(s, t, n - 1));
-#else
-      (strncpy(s, t, n - 1));
+#if defined(__GNUC__) && !defined(__clang__)
+  #if __GNUC__ >= 8
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-truncation"
+  #endif
 #endif
-      s[n - 1] = '\0';
-    } else {
-      s[0] = '\0';
-    }
+#if PetscHasBuiltin(__builtin_strncpy)
+    __builtin_strncpy(s, t, n);
+#else
+    strncpy(s, t, n);
+#endif
+#if defined(__GNUC__) && !defined(__clang__)
+  #if __GNUC__ >= 8
+    #pragma GCC diagnostic pop
+  #endif
+#endif
+    s[n - 1] = '\0';
   } else if (s) {
     s[0] = '\0';
   }
