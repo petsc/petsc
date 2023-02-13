@@ -68,8 +68,8 @@ Changes: 2.3.3
 
 -  changed PCMGSetCycles() and PCMGSetCyclesOnLevel() to
    PCMGSetCycleType() and PCMGSetCycleTypeOnLevel() that take a
-   PCMGCycleType as argument and changed -pc_mg_cycle_type 1 or 2 to
-   -pc_mg_cycles v or w
+   PCMGCycleType as argument and changed -pc_mg_cycles 1 or 2 to
+   -pc_mg_cycle_type v or w
 -  added PCMGMultiplicativeSetCycles() and
    -pc_mg_multiplicative_cycles
 -  PCMGSetInterpolate() --> PCMGSetInterpolation()
