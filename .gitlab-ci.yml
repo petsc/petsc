@@ -573,7 +573,8 @@ linux-cuda-single-cxx:
     - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
-    LOAD_MODULES: nvhpc/22.3
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
+    LOAD_MODULES: nvhpc-22.11-gcc-11.3.0-vmvmbrx
     TEST_OPTS: -j15 query=requires queryval=cuda
 
 linux-cuda-uni-pkgs:
