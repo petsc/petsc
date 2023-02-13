@@ -1,4 +1,5 @@
 #include <petscksp.h>
+#include "petsc/private/petscimpl.h"
 
 static char help[] = "Solves a linear system using PCHPDDM.\n\n";
 
@@ -12,7 +13,6 @@ int main(int argc, char **args)
   const PetscInt *idx;
   PetscMPIInt     rank, size;
   PetscInt        m, N = 1;
-  const char     *deft = MATAIJ;
   PetscViewer     viewer;
   char            dir[PETSC_MAX_PATH_LEN], name[PETSC_MAX_PATH_LEN], type[256];
   PetscBool3      share = PETSC_BOOL3_UNKNOWN;
@@ -68,12 +68,11 @@ int main(int argc, char **args)
   PetscCall(MatSetOption(aux, MAT_SYMMETRIC, PETSC_TRUE));
   /* ready for testing */
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "", "");
-  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, 256, &flg));
+  PetscCall(PetscStrcpy(type, MATAIJ));
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, type, type, 256, &flg));
   PetscOptionsEnd();
-  if (flg) {
-    PetscCall(MatConvert(A, type, MAT_INPLACE_MATRIX, &A));
-    PetscCall(MatConvert(aux, type, MAT_INPLACE_MATRIX, &aux));
-  }
+  PetscCall(MatConvert(A, type, MAT_INPLACE_MATRIX, &A));
+  PetscCall(MatConvert(aux, type, MAT_INPLACE_MATRIX, &aux));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPGetPC(ksp, &pc));
@@ -191,6 +190,57 @@ int main(int argc, char **args)
       PetscCheck(info2.count > info1.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp", info2.count, info1.count);
     } else PetscCheck(info2.count > info1.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp", info2.count, info1.count);
   }
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+  if (N == 1) {
+    flg = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-successive_solves", &flg, NULL));
+    if (flg) {
+      KSPConvergedReason reason[2];
+      PetscInt           iterations[3];
+      PetscCall(KSPGetConvergedReason(ksp, reason));
+      PetscCall(KSPGetTotalIterations(ksp, iterations));
+      PetscCall(PetscOptionsClearValue(NULL, "-ksp_converged_reason"));
+      flg = PETSC_FALSE;
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_block_splitting", &flg, NULL));
+      if (!flg) {
+        PetscCall(MatCreate(PETSC_COMM_SELF, &aux));
+        PetscCall(ISCreate(PETSC_COMM_SELF, &is));
+        PetscCall(PetscSNPrintf(name, sizeof(name), "%s/is_%d_%d.dat", dir, rank, size));
+        PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, &viewer));
+        PetscCall(ISLoad(is, viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(PetscSNPrintf(name, sizeof(name), "%s/Neumann_%d_%d.dat", dir, rank, size));
+        PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, &viewer));
+        PetscCall(MatLoad(aux, viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(MatSetBlockSizesFromMats(aux, A, A));
+        PetscCall(MatSetOption(aux, MAT_SYMMETRIC, PETSC_TRUE));
+        PetscCall(MatConvert(aux, type, MAT_INPLACE_MATRIX, &aux));
+      }
+      PetscCall(MatCreateVecs(A, NULL, &b));
+      PetscCall(PetscObjectStateIncrease((PetscObject)A));
+      if (!flg) PetscCall(PCHPDDMSetAuxiliaryMat(pc, NULL, aux, NULL, NULL));
+      PetscCall(VecSet(b, 1.0));
+      PetscCall(KSPSolve(ksp, b, b));
+      PetscCall(KSPGetConvergedReason(ksp, reason + 1));
+      PetscCall(KSPGetTotalIterations(ksp, iterations + 1));
+      iterations[1] -= iterations[0];
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 2, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converged for the same reason or with the same number of iterations (+/- 2)");
+      PetscCall(PetscObjectStateIncrease((PetscObject)A));
+      if (!flg) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
+      PetscCall(PCSetFromOptions(pc));
+      PetscCall(VecSet(b, 1.0));
+      PetscCall(KSPSolve(ksp, b, b));
+      PetscCall(KSPGetConvergedReason(ksp, reason + 1));
+      PetscCall(KSPGetTotalIterations(ksp, iterations + 2));
+      iterations[2] -= iterations[0] + iterations[1];
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 2, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converged for the same reason or with the same number of iterations (+/- 2)");
+      PetscCall(VecDestroy(&b));
+      PetscCall(ISDestroy(&is));
+      PetscCall(MatDestroy(&aux));
+    }
+  }
+#endif
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());
@@ -221,7 +271,7 @@ int main(int argc, char **args)
         suffix: geneo_block_splitting
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-15.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[6-9]/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
-        args: -pc_hpddm_coarse_p 2 -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_block_splitting -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_gen_non_hermitian -mat_type {{aij baij}shared output}
+        args: -pc_hpddm_coarse_p 2 -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_block_splitting -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_gen_non_hermitian -mat_type {{aij baij}shared output} -successive_solves
       test:
         suffix: geneo_share
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
@@ -235,7 +285,7 @@ int main(int argc, char **args)
         suffix: geneo_share_cholesky
         output_file: output/ex76_geneo_share.out
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
-        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -mat_type {{aij baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp {{false true}shared output}
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -mat_type {{aij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp {{false true}shared output} -successive_solves
       test:
         suffix: geneo_share_cholesky_matstructure
         output_file: output/ex76_geneo_share.out
@@ -252,12 +302,12 @@ int main(int argc, char **args)
         suffix: geneo_share_lu_matstructure
         output_file: output/ex76_geneo_share.out
         # extra -pc_factor_mat_solver_type mumps needed to avoid failures with PETSc LU
-        args: -pc_hpddm_levels_1_sub_pc_type lu -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure {{same different}shared output} -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_pc_factor_mat_solver_type mumps
+        args: -pc_hpddm_levels_1_sub_pc_type lu -mat_type aij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure {{same different}shared output} -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_pc_factor_mat_solver_type mumps -successive_solves
       test:
         suffix: geneo_share_not_asm
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
-        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp true -pc_hpddm_levels_1_pc_type gasm
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp true -pc_hpddm_levels_1_pc_type gasm -successive_solves
 
    test:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
