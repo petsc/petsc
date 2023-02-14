@@ -18,7 +18,7 @@ struct _n_PetscViewers {
 
    Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerDestroy()`, `PetscViewers()`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 @*/
 PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 {
@@ -62,7 +62,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 /*@C
    PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewer` collection
 
-   Not Collective, but the resulting `PetscViewer` will be collective object on viewers
+   Collective if the viewer has not previously be obtained.
 
    Input Parameters:
 +   viewers - object created with `PetscViewersCreate()`
@@ -103,11 +103,11 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 
   Input Parameters:
 + nmon      - The new monitor
-. nmctx     - The new monitor context, or NULL
-. nmdestroy - The new monitor destroy function, or NULL
+. nmctx     - The new monitor context, or `NULL`
+. nmdestroy - The new monitor destroy function, or `NULL`
 . mon       - The old monitor
-. mctx      - The old monitor context, or NULL
-- mdestroy  - The old monitor destroy function, or NULL
+. mctx      - The old monitor context, or `NULL`
+- mdestroy  - The old monitor destroy function, or `NULL`
 
   Output Parameter:
 . identical - `PETSC_TRUE` if the monitors are the same

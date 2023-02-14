@@ -184,8 +184,6 @@ struct _p_KSP {
   PetscInt  setfromoptionscalled;
   PetscBool skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
 
-  PetscViewer eigviewer; /* Viewer where computed eigenvalues are displayed */
-
   PetscErrorCode (*presolve)(KSP, Vec, Vec, void *);
   PetscErrorCode (*postsolve)(KSP, Vec, Vec, void *);
   void *prectx, *postctx;

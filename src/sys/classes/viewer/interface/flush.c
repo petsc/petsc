@@ -12,7 +12,7 @@
 
    Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerCreate()`, `PetscViewerDestroy()`,
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerWriteable()`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerCreate()`, `PetscViewerDestroy()`,
           `PetscViewerSetType()`
 @*/
 PetscErrorCode PetscViewerFlush(PetscViewer viewer)

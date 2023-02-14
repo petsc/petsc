@@ -693,8 +693,7 @@ static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool isExplicit,
     if (format == PETSC_VIEWER_DRAW_CONTOUR) {
       PetscCall(KSPPlotEigenContours_Private(ksp, neig, r, c));
     } else {
-      if (!ksp->eigviewer) PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, NULL, isExplicit ? "Explicitly Computed Eigenvalues" : "Iteratively Computed Eigenvalues", PETSC_DECIDE, PETSC_DECIDE, 400, 400, &ksp->eigviewer));
-      PetscCall(PetscViewerDrawGetDraw(ksp->eigviewer, 0, &draw));
+      PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
       PetscCall(PetscDrawSPCreate(draw, 1, &drawsp));
       PetscCall(PetscDrawSPReset(drawsp));
       for (i = 0; i < neig; ++i) PetscCall(PetscDrawSPAddPoint(drawsp, r + i, c + i));
@@ -1430,7 +1429,6 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   if ((*ksp)->convergeddestroy) PetscCall((*(*ksp)->convergeddestroy)((*ksp)->cnvP));
   PetscCall(KSPMonitorCancel((*ksp)));
   PetscCall(KSPConvergedReasonViewCancel((*ksp)));
-  PetscCall(PetscViewerDestroy(&(*ksp)->eigviewer));
   PetscCall(PetscHeaderDestroy(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

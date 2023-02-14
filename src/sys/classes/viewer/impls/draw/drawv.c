@@ -497,8 +497,11 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer, PetscViewer v)
   PetscDraw         draw;
   PetscInt          i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data;
+  PetscBool         iascii;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(v, "Draw viewer is of type %s\n", vdraw->drawtype));
   /*  If the PetscViewer has just been created then no vdraw->draw yet
       exists so this will not actually call the viewer on any draws. */
   for (i = 0; i < vdraw->draw_base; i++) {
