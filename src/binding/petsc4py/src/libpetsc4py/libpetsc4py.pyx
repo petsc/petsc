@@ -659,7 +659,7 @@ cdef inline PetscErrorCode MatDestroy_Python_inner(
 cdef PetscErrorCode MatDestroy_Python(
     PetscMat mat,
     ) \
-    except PETSC_ERR_PYTHON nogil:
+    nogil except PETSC_ERR_PYTHON:
 
     FunctionBegin(b"MatDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
@@ -1502,7 +1502,7 @@ cdef inline PetscErrorCode PCDestroy_Python_inner(
 cdef PetscErrorCode PCDestroy_Python(
     PetscPC pc,
     ) \
-    except PETSC_ERR_PYTHON nogil:
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"PCDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
@@ -1825,7 +1825,7 @@ cdef inline PetscErrorCode KSPDestroy_Python_inner(
 cdef PetscErrorCode KSPDestroy_Python(
     PetscKSP ksp,
     ) \
-    except PETSC_ERR_PYTHON nogil:
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"KSPDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
@@ -2195,7 +2195,7 @@ cdef inline PetscErrorCode SNESDestroy_Python_inner(
 cdef PetscErrorCode SNESDestroy_Python(
     PetscSNES snes,
     ) \
-    except PETSC_ERR_PYTHON nogil:
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"SNESDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
@@ -2569,7 +2569,7 @@ cdef inline PetscErrorCode TSDestroy_Python_inner(
 cdef PetscErrorCode TSDestroy_Python(
     PetscTS ts,
     ) \
-    except PETSC_ERR_PYTHON nogil:
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"TSDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
@@ -2996,7 +2996,7 @@ cdef inline PetscErrorCode TaoDestroy_Python_inner(
 cdef PetscErrorCode TaoDestroy_Python(
     PetscTAO tao,
     ) \
-    except PETSC_ERR_PYTHON nogil:
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"TaoDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
