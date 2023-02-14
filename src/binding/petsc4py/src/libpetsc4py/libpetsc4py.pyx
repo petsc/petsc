@@ -643,10 +643,24 @@ cdef PetscErrorCode MatCreate_Python(
     Py_INCREF(<PyObject*>mat.data)
     return FunctionEnd()
 
-cdef PetscErrorCode MatDestroy_Python(
+cdef inline PetscErrorCode MatDestroy_Python_inner(
     PetscMat mat,
     ) \
     except PETSC_ERR_PYTHON with gil:
+    try:
+        addRef(mat)
+        MatPythonSetContext(mat, NULL)
+    finally:
+        delRef(mat)
+        Py_DECREF(<PyObject*>mat.data)
+        mat.data = NULL
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode MatDestroy_Python(
+    PetscMat mat,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
+
     FunctionBegin(b"MatDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat, b"MatPythonSetType_C",
@@ -659,15 +673,8 @@ cdef PetscErrorCode MatDestroy_Python(
             <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectChangeTypeName(
             <PetscObject>mat, NULL) )
-    #
-    if not Py_IsInitialized(): return FunctionEnd()
-    try:
-        addRef(mat)
-        MatPythonSetContext(mat, NULL)
-    finally:
-        delRef(mat)
-        Py_DECREF(<PyObject*>mat.data)
-        mat.data = NULL
+
+    if Py_IsInitialized(): MatDestroy_Python_inner(mat)
     return FunctionEnd()
 
 cdef PetscErrorCode MatSetFromOptions_Python(
@@ -1479,10 +1486,23 @@ cdef PetscErrorCode PCCreate_Python(
     Py_INCREF(<PyObject*>pc.data)
     return FunctionEnd()
 
-cdef PetscErrorCode PCDestroy_Python(
+cdef inline PetscErrorCode PCDestroy_Python_inner(
     PetscPC pc,
     ) \
     except PETSC_ERR_PYTHON with gil:
+    try:
+        addRef(pc)
+        PCPythonSetContext(pc, NULL)
+    finally:
+        delRef(pc)
+        Py_DECREF(<PyObject*>pc.data)
+        pc.data = NULL
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode PCDestroy_Python(
+    PetscPC pc,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"PCDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
@@ -1491,14 +1511,7 @@ cdef PetscErrorCode PCDestroy_Python(
             <PetscObject>pc, b"PCPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
-    if not Py_IsInitialized(): return FunctionEnd()
-    try:
-        addRef(pc)
-        PCPythonSetContext(pc, NULL)
-    finally:
-        delRef(pc)
-        Py_DECREF(<PyObject*>pc.data)
-        pc.data = NULL
+    if Py_IsInitialized(): PCDestroy_Python_inner(pc)
     return FunctionEnd()
 
 cdef PetscErrorCode PCSetUp_Python(
@@ -1796,10 +1809,23 @@ cdef PetscErrorCode KSPCreate_Python(
             ksp, KSP_NORM_UNPRECONDITIONED, PC_SYMMETRIC, 1) )
     return FunctionEnd()
 
-cdef PetscErrorCode KSPDestroy_Python(
+cdef inline PetscErrorCode KSPDestroy_Python_inner(
     PetscKSP ksp,
     ) \
     except PETSC_ERR_PYTHON with gil:
+    try:
+        addRef(ksp)
+        KSPPythonSetContext(ksp, NULL)
+    finally:
+        delRef(ksp)
+        Py_DECREF(<PyObject*>ksp.data)
+        ksp.data = NULL
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode KSPDestroy_Python(
+    PetscKSP ksp,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"KSPDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
@@ -1808,14 +1834,7 @@ cdef PetscErrorCode KSPDestroy_Python(
             <PetscObject>ksp, b"KSPPythonGetType_C",
             <PetscVoidFunction>NULL))
     #
-    if not Py_IsInitialized(): return FunctionEnd()
-    try:
-        addRef(ksp)
-        KSPPythonSetContext(ksp, NULL)
-    finally:
-        delRef(ksp)
-        Py_DECREF(<PyObject*>ksp.data)
-        ksp.data = NULL
+    if Py_IsInitialized(): KSPDestroy_Python_inner(ksp)
     return FunctionEnd()
 
 cdef PetscErrorCode KSPSetUp_Python(
@@ -2160,10 +2179,23 @@ cdef PetscErrorCode SNESCreate_Python(
     Py_INCREF(<PyObject*>snes.data)
     return FunctionEnd()
 
-cdef PetscErrorCode SNESDestroy_Python(
+cdef inline PetscErrorCode SNESDestroy_Python_inner(
     PetscSNES snes,
     ) \
     except PETSC_ERR_PYTHON with gil:
+    try:
+        addRef(snes)
+        SNESPythonSetContext(snes, NULL)
+    finally:
+        delRef(snes)
+        Py_DECREF(<PyObject*>snes.data)
+        snes.data = NULL
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode SNESDestroy_Python(
+    PetscSNES snes,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"SNESDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
@@ -2172,14 +2204,7 @@ cdef PetscErrorCode SNESDestroy_Python(
             <PetscObject>snes, b"SNESPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
-    if not Py_IsInitialized(): return FunctionEnd()
-    try:
-        addRef(snes)
-        SNESPythonSetContext(snes, NULL)
-    finally:
-        delRef(snes)
-        Py_DECREF(<PyObject*>snes.data)
-        snes.data = NULL
+    if Py_IsInitialized(): SNESDestroy_Python_inner(snes)
     return FunctionEnd()
 
 cdef PetscErrorCode SNESSetUp_Python(
@@ -2528,10 +2553,23 @@ cdef PetscErrorCode TSCreate_Python(
     Py_INCREF(<PyObject*>ts.data)
     return FunctionEnd()
 
-cdef PetscErrorCode TSDestroy_Python(
+cdef inline PetscErrorCode TSDestroy_Python_inner(
     PetscTS ts,
     ) \
     except PETSC_ERR_PYTHON with gil:
+    try:
+        addRef(ts)
+        TSPythonSetContext(ts, NULL)
+    finally:
+        delRef(ts)
+        Py_DECREF(<PyObject*>ts.data)
+        ts.data = NULL
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode TSDestroy_Python(
+    PetscTS ts,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"TSDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
@@ -2540,14 +2578,7 @@ cdef PetscErrorCode TSDestroy_Python(
             <PetscObject>ts, b"TSPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
-    if not Py_IsInitialized(): return FunctionEnd()
-    try:
-        addRef(ts)
-        TSPythonSetContext(ts, NULL)
-    finally:
-        delRef(ts)
-        Py_DECREF(<PyObject*>ts.data)
-        ts.data = NULL
+    if Py_IsInitialized(): TSDestroy_Python_inner(ts)
     return FunctionEnd()
 
 cdef PetscErrorCode TSSetUp_Python(
@@ -2949,10 +2980,23 @@ cdef PetscErrorCode TaoCreate_Python(
     Py_INCREF(<PyObject*>tao.data)
     return FunctionEnd()
 
-cdef PetscErrorCode TaoDestroy_Python(
+cdef inline PetscErrorCode TaoDestroy_Python_inner(
     PetscTAO tao,
     ) \
     except PETSC_ERR_PYTHON with gil:
+    try:
+        addRef(tao)
+        TaoPythonSetContext(tao, NULL)
+    finally:
+        delRef(tao)
+        Py_DECREF(<PyObject*>tao.data)
+        tao.data = NULL
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode TaoDestroy_Python(
+    PetscTAO tao,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
     FunctionBegin(b"TaoDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
@@ -2961,14 +3005,7 @@ cdef PetscErrorCode TaoDestroy_Python(
             <PetscObject>tao, b"TaoPythonGetType_C",
             <PetscVoidFunction>NULL) )
     #
-    if not Py_IsInitialized(): return FunctionEnd()
-    try:
-        addRef(tao)
-        TaoPythonSetContext(tao, NULL)
-    finally:
-        delRef(tao)
-        Py_DECREF(<PyObject*>tao.data)
-        tao.data = NULL
+    if Py_IsInitialized(): TaoDestroy_Python_inner(tao)
     return FunctionEnd()
 
 cdef PetscErrorCode TaoSetUp_Python(
