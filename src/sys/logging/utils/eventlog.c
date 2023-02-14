@@ -851,7 +851,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   eventInfo->CpuToGpuSize -= petsc_ctog_sz_th;
   eventInfo->GpuToCpuSize -= petsc_gtoc_sz_th;
   eventInfo->GpuFlops -= petsc_gflops_th;
-  eventInfo->GpuTime -= petsc_gtime_th;
+  eventInfo->GpuTime -= petsc_gtime;
 #endif
   if (PetscLogMemory) {
     PetscLogDouble usage;
@@ -910,7 +910,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   eventInfo->CpuToGpuSize += petsc_ctog_sz_th;
   eventInfo->GpuToCpuSize += petsc_gtoc_sz_th;
   eventInfo->GpuFlops += petsc_gflops_th;
-  eventInfo->GpuTime += petsc_gtime_th;
+  eventInfo->GpuTime += petsc_gtime;
 #endif
   if (PetscLogMemory) {
     PetscLogDouble usage, musage;
