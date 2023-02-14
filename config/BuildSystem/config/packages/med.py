@@ -11,6 +11,7 @@ class Configure(config.package.CMakePackage):
     self.liblist           = [['libmedC.a','libmed.a'],['libmedC.a']]
     self.needsMath         = 1
     self.precisions        = ['double'];
+    self.buildLanguages    = ['Cxx']    
     return
 
   def setupDependencies(self, framework):
