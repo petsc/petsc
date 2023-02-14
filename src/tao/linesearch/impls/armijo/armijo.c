@@ -153,10 +153,9 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   }
 
   /* Calculate reference value (MAX) */
-  ref = armP->memory[0];
-  idx = 0;
-
-  for (i = 1; i < armP->memorySize; i++) {
+  ref = *f;
+  idx = armP->current;
+  for (i = 0; i < armP->memorySize; i++) {
     if (armP->memory[i] > ref) {
       ref = armP->memory[i];
       idx = i;
