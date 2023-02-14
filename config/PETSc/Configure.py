@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import pickle
+import textwrap
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -875,7 +876,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.addDefine('ARCH','"'+self.installdir.petscArch+'"')
     return
 
-  def configureCoverage(self, lang, extra_coverage_flags=None, extra_debug_flags=None):
+  def configureCoverageForLang(self, lang, extra_coverage_flags=None, extra_debug_flags=None):
     """
     Check that a compiler accepts code-coverage flags. If the compiler does accept code-coverage flags
     try to set debugging flags equivalent to -Og.
@@ -888,8 +889,15 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     On success:
     - defines PETSC_USE_COVERAGE to 1
     """
+    try:
+      import inspect
+
+      FUNC_NAME = inspect.currentframe().f_code.co_name
+    except:
+      FUNC_NAME = 'Unknown'
+
     def log_print(msg, *args, **kwargs):
-      self.logPrint('checkCoverage: '+str(msg), *args, **kwargs)
+      self.logPrint('{}(): {}'.format(FUNC_NAME, msg), *args, **kwargs)
       return
 
     def quoted(string):
@@ -903,37 +911,57 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       return ret
 
     log_print('Checking coverage flag for language {}'.format(lang))
+
+    compiler = self.getCompiler(lang=lang)
+    if self.setCompilers.isGNU(compiler, self.log):
+      compiler_kind = 'GNU'
+    elif self.setCompilers.isClang(compiler, self.log):
+      compiler_kind = 'clang'
+    else:
+      compiler_kind = ''
+
     if not self.argDB['with-coverage']:
       log_print('coverage was disabled from command line or default')
       return
 
-    compiler  = self.getCompiler(lang=lang)
-    is_gnuish = self.setCompilers.isGNU(compiler, self.log) or self.setCompilers.isClang(compiler, self.log)
-
     # if not gnuish and we don't have a set of extra flags, bail
-    if not is_gnuish and extra_coverage_flags is None:
+    if compiler_kind not in {'GNU', 'clang'} and extra_coverage_flags is None:
       log_print('Don\'t know how to add coverage for compiler {}. Only know how to add coverage for gnu-like compilers (either gcc or clang). Skipping it!'.format(quoted(compiler)))
       return
 
     coverage_flags = make_flag_list('--coverage', extra_coverage_flags)
     log_print('Checking set of coverage flags: {}'.format(coverage_flags))
 
-    found = 0
+    found = None
     with self.Language(lang):
       with self.setCompilers.Language(lang):
         for flag in coverage_flags:
-          if self.setCompilers.checkCompilerFlag(flag) and self.checkLink():
-            # compilerOnly = False, the linker also needs to see the coverage flag
-            self.setCompilers.insertCompilerFlag(flag, False)
-            found = 1
-            break
+          # the linker also needs to see the coverage flag
+          with self.setCompilers.extraCompilerFlags([flag], compilerOnly=False) as skip_flags:
+            if not skip_flags and self.checkRun():
+              # flag was accepted
+              found = flag
+              break
+
           log_print(
             'Compiler {} did not accept coverage flag {}'.format(quoted(compiler), quoted(flag))
           )
 
-    if not found:
-      log_print('Compiler {} did not accept ANY coverage flags: {}, bailing!'.format(quoted(compiler), coverage_flags))
-      return
+        if found is None:
+          log_print(
+            'Compiler {} did not accept ANY coverage flags: {}, bailing!'.format(
+              quoted(compiler), coverage_flags
+            )
+          )
+          return
+
+        # must do this exactly here since:
+        #
+        # 1. setCompilers.extraCompilerFlags() will reset the compiler flags on __exit__()
+        #    (so cannot do it in the loop)
+        # 2. we need to set the compiler flag while setCompilers.Language() is still in
+        #    effect (so cannot do it outside the with statements)
+        self.setCompilers.insertCompilerFlag(flag, False)
 
     if not self.functions.haveFunction('__gcov_dump'):
       self.functions.checkClassify(['__gcov_dump'])
@@ -968,6 +996,35 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           break
 
     self.addDefine('USE_COVERAGE', 1)
+    return
+
+  def configureCoverage(self):
+    for LANG in ['C', 'Cxx', 'CUDA', 'HIP', 'SYCL', 'FC']:
+      compilerName = LANG.upper() if LANG in {'Cxx', 'FC'} else LANG + 'C'
+      if hasattr(self.setCompilers, compilerName):
+        kwargs = {}
+        if LANG in {'CUDA'}:
+          # nvcc preprocesses the base file into a bunch of intermediate files, which are
+          # then compiled by the host compiler. Why is this a problem?  Because the
+          # generated coverage data is based on these preprocessed source files! So gcov
+          # tries to read it later, but since its in the tmp directory it cannot. Thus we
+          # need to keep them around (in a place we know about).
+          nvcc_tmp_dir = os.path.join(self.petscdir.dir, self.arch.arch, 'nvcc_tmp')
+          try:
+            os.mkdir(nvcc_tmp_dir)
+          except FileExistsError:
+            pass
+          kwargs['extra_coverage_flags'] = [
+            '-Xcompiler --coverage -Xcompiler -fPIC --keep --keep-dir={}'.format(nvcc_tmp_dir)
+          ]
+          if self.kokkos.found:
+            # yet again the kokkos nvcc_wrapper goes out of its way to be as useless as
+            # possible. Its default arch (sm_35) is actually too low to compile kokkos,
+            # for whatever reason this works if you dont use the --keep and --keep-dir
+            # flags above.
+            kwargs['extra_coverage_flags'].append('-arch=native')
+            kwargs['extra_debug_flags'] = ['-Xcompiler -Og']
+        self.executeTest(self.configureCoverageForLang, args=[LANG], kargs=kwargs)
     return
 
   def configureCoverageExecutable(self):
@@ -1239,32 +1296,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureAtoll)
-    for LANG in ['C', 'Cxx', 'CUDA', 'HIP', 'SYCL', 'FC']:
-      compilerName = LANG.upper() if LANG in {'Cxx', 'FC'} else LANG+'C'
-      if hasattr(self.setCompilers, compilerName):
-        kwargs = {}
-        if LANG in {'CUDA'}:
-          # nvcc preprocesses the base file into a bunch of intermediate files, which are
-          # then compiled by the host compiler. Why is this a problem?  Because the
-          # generated coverage data is based on these preprocessed source files! So gcov
-          # tries to read it later, but since its in the tmp directory it cannot. Thus we
-          # need to keep them around (in a place we know about).
-          nvcc_tmp_dir = os.path.join(self.petscdir.dir, self.arch.arch, 'nvcc_tmp')
-          try:
-            os.mkdir(nvcc_tmp_dir)
-          except FileExistsError:
-            pass
-          kwargs['extra_coverage_flags'] = [
-            '-Xcompiler --coverage -Xcompiler -fPIC --keep --keep-dir={}'.format(nvcc_tmp_dir)
-          ]
-          if self.kokkos.found:
-            # yet again the kokkos nvcc_wrapper goes out of its way to be as useless as
-            # possible. Its default arch (sm_35) is actually too low to compile kokkos,
-            # for whatever reason this works if you dont use the --keep and --keep-dir
-            # flags above.
-            kwargs['extra_coverage_flags'].append('-arch=native')
-          kwargs['extra_debug_flags'] = ['-Xcompiler -Og']
-        self.executeTest(self.configureCoverage, args=[LANG], kargs=kwargs)
+    self.executeTest(self.configureCoverage)
     self.executeTest(self.configureCoverageExecutable)
     self.executeTest(self.configureStrictPetscErrorCode)
 
