@@ -3,8 +3,6 @@ Power network: nb = 9, ngen = 3, nload = 3, nbranch = 9
 [1] Total local nvertices 0 + 7 = 7, nedges 0 + 7 = 7
 [2] Total local nvertices 0 + 0 = 0, nedges 0 + 0 = 0
 [3] Total local nvertices 0 + 0 = 0, nedges 0 + 0 = 0
-
-After DMSetUp, DMView:
 DM Object: 4 MPI processes
   type: network
   NSubnets: 2; NEdges: 16; NVertices: 15; NSharedVertices: 1.
@@ -34,8 +32,6 @@ DM Object: 4 MPI processes
                                            ----> subnet[1].0
   [2] nEdges: 0; nVertices: 0; nSharedVertices: 0
   [3] nEdges: 0; nVertices: 0; nSharedVertices: 0
-
-After DMNetworkDistribute, DMView:
 DM Object: 4 MPI processes
   type: network
   NSubnets: 2; NEdges: 16; NVertices: 15; NSharedVertices: 1.

@@ -170,6 +170,16 @@ builtin and then its argument prototype would still apply. */
       self.addDefine('HAVE_MMAP', 1)
     return
 
+  def checkMkstemp(self):
+    '''Check for mkstemp() to avoid using tmpnam as it is often deprecated'''
+    if self.checkLink('#include <stdlib.h>\n#include <string.h>', 'char filename[100];\n strcpy(filename, "/tmp/fileXXXXXX");\n mkstemp(filename)'):
+      self.addDefine('HAVE_MKSTEMP', 1)
+
+  def checkTmpnam_s(self):
+    '''Check for tmpnam_s() to avoid using tmpnam as it is often deprecated'''
+    if self.checkLink('#include <stdio.h>', 'char filename[L_tmpnam];\n tmpnam_s(filename, sizeof(filename))'):
+      self.addDefine('HAVE_TMPNAM_S', 1)
+
   def configure(self):
     self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVSNPrintf)
@@ -181,4 +191,6 @@ builtin and then its argument prototype would still apply. */
     self.executeTest(self.checkVariableArgumentLists)
     self.executeTest(self.checkClassify, set(self.functions))
     self.executeTest(self.checkMmap)
+    self.executeTest(self.checkMkstemp)
+    self.executeTest(self.checkTmpnam_s)
     return
