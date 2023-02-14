@@ -869,7 +869,7 @@ static PetscErrorCode MatMultAdd_SeqDenseHIP_Private(Mat A, Vec xx, Vec yy, Vec 
     if (!yy) PetscCall(VecSeq_HIP::set(zz, 0.0)); /* mult only */
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscCall(PetscInfo(A, "Matrix-vector product %d x %d on backend\n", A->rmap->n, A->cmap->n));
+  PetscCall(PetscInfo(A, "Matrix-vector product %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", A->rmap->n, A->cmap->n));
   PetscCall(PetscHipBLASIntCast(A->rmap->n, &m));
   PetscCall(PetscHipBLASIntCast(A->cmap->n, &n));
   PetscCall(PetscHIPBLASGetHandle(&hipblasv2handle));
