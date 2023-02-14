@@ -1263,7 +1263,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
   PetscCheck(!(qNc != 1) || !(qNc != numComponents), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
-  PetscCall(PetscMalloc6(numComponents, &funcVal, numComponents, &interpolant, coordDim * Nq, &coords, Nq, &fegeom.detJ, coordDim * coordDim * Nq, &fegeom.J, coordDim * coordDim * Nq, &fegeom.invJ));
+  PetscCall(PetscMalloc6(numComponents, &funcVal, numComponents, &interpolant, coordDim * (Nq + 1), &coords, Nq, &fegeom.detJ, coordDim * coordDim * Nq, &fegeom.J, coordDim * coordDim * Nq, &fegeom.invJ));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
@@ -1380,7 +1380,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
   PetscCheck(!(qNc != 1) || !(qNc != numComponents), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
   /* PetscCall(DMProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX)); */
-  PetscCall(PetscMalloc6(numComponents, &funcVal, coordDim * Nq, &coords, coordDim * coordDim * Nq, &fegeom.J, coordDim * coordDim * Nq, &fegeom.invJ, numComponents * coordDim, &interpolant, Nq, &fegeom.detJ));
+  PetscCall(PetscMalloc6(numComponents, &funcVal, coordDim * (Nq + 1), &coords, coordDim * coordDim * Nq, &fegeom.J, coordDim * coordDim * Nq, &fegeom.invJ, numComponents * coordDim, &interpolant, Nq, &fegeom.detJ));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x        = NULL;
