@@ -223,10 +223,8 @@ PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *colo
   if (ctype == IS_COLORING_LOCAL) {
     if (size == 1) {
       ctype = IS_COLORING_GLOBAL;
-    } else if (dim > 1) {
-      if ((m == 1 && bx == DM_BOUNDARY_PERIODIC) || (n == 1 && by == DM_BOUNDARY_PERIODIC) || (p == 1 && bz == DM_BOUNDARY_PERIODIC)) {
-        SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "IS_COLORING_LOCAL cannot be used for periodic boundary condition having both ends of the domain  on the same process");
-      }
+    } else {
+      PetscCheck((dim == 1) || !((m == 1 && bx == DM_BOUNDARY_PERIODIC) || (n == 1 && by == DM_BOUNDARY_PERIODIC) || (p == 1 && bz == DM_BOUNDARY_PERIODIC)), PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "IS_COLORING_LOCAL cannot be used for periodic boundary condition having both ends of the domain on the same process");
     }
   }
 
