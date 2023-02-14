@@ -796,6 +796,7 @@ class Configure(config.base.Configure):
         #include <random>
         #include <complex>
         #include <iostream>
+        #include <algorithm>
 
         template<class T> void ignore(const T&) { } // silence unused variable warnings
         class valClass
@@ -846,6 +847,8 @@ class Configure(config.base.Configure):
         std::normal_distribution<double> dist(0,1);
         const double x = dist(mt);
         std::cout << x << ret << std::endl;
+        std::vector<std::unique_ptr<double>> vector;
+        std::sort(vector.begin(), vector.end(), [](std::unique_ptr<double> &a, std::unique_ptr<double> &b) { return *a < *b; });
         """
       )
 
