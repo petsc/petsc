@@ -344,7 +344,6 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
@@ -407,7 +406,6 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, &M, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
   col = 2 * s + 1;
@@ -476,7 +474,6 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, NULL, NULL, NULL, &nc, &s, &bx, &by, NULL, NULL));
   PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &nx, &ny, NULL));
@@ -632,14 +629,14 @@ PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
 
 PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 {
-  PetscInt dim, dof, nx, ny, nz, dims[3], starts[3], M, N, P;
-  Mat      A;
-  MPI_Comm comm;
-  MatType  Atype;
-  void (*aij)(void) = NULL, (*baij)(void) = NULL, (*sbaij)(void) = NULL, (*sell)(void) = NULL, (*is)(void) = NULL;
+  PetscInt    dim, dof, nx, ny, nz, dims[3], starts[3], M, N, P;
+  Mat         A;
+  MPI_Comm    comm;
+  MatType     Atype;
   MatType     mtype;
   PetscMPIInt size;
-  DM_DA      *dd = (DM_DA *)da->data;
+  DM_DA      *dd    = (DM_DA *)da->data;
+  void (*aij)(void) = NULL, (*baij)(void) = NULL, (*sbaij)(void) = NULL, (*sell)(void) = NULL, (*is)(void) = NULL;
 
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
@@ -665,7 +662,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   M   = dd->M;
   N   = dd->N;
@@ -860,7 +856,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, NULL, NULL, NULL, &nc, &s, &bx, &by, NULL, &st));
   col = 2 * s + 1;
@@ -963,7 +958,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
@@ -1074,7 +1068,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, &M, &N, NULL, &nc, &s, &bx, &by, NULL, &st));
   if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
@@ -1189,7 +1182,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, &M, &N, NULL, &nc, &s, &bx, &by, NULL, &st));
   col = 2 * s + 1;
@@ -1314,7 +1306,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
@@ -1443,7 +1434,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
 
   /*
          nc - number of components per grid point
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, NULL, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
   PetscCheck(s <= 1, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Matrix creation for 1d not implemented correctly for stencil width larger than 1");
@@ -1602,7 +1592,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, NULL, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
   if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
@@ -1827,7 +1816,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, NULL, NULL, NULL, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
@@ -2156,7 +2144,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
