@@ -1419,15 +1419,17 @@ PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *lm)
     Output Parameter:
 .   coloring - the coloring
 
+    Level: developer
+
     Notes:
     Coloring of matrices can also be computed directly from the sparse matrix nonzero structure via the `MatColoring` object or from the mesh from which the
     matrix comes from (what this function provides). In general using the mesh produces a more optimal coloring (fewer colors).
 
     This produces a coloring with the distance of 2, see `MatSetColoringDistance()` which can be used for efficiently computing Jacobians with `MatFDColoringCreate()`
+    For `DMDA` in three dimensions with periodic boundary conditions the number of grid points in each dimension must be divisible by 2*stencil_width + 1,
+    otherwise an error will be generated.
 
-    Level: developer
-
-.seealso: `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatType()`, `MatColoring`, `MatFDColoringCreate()`
+.seealso: `DM`, `ISColoring`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMSetMatType()`, `MatColoring`, `MatFDColoringCreate()`
 @*/
 PetscErrorCode DMCreateColoring(DM dm, ISColoringType ctype, ISColoring *coloring)
 {
