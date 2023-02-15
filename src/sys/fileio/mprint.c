@@ -145,7 +145,7 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
 #define PETSCDEFAULTBUFFERSIZE 8 * 1024
 
 /*@C
-     PetscVSNPrintf - The PETSc version of vsnprintf(). Ensures that all %g formatted arguments' output contains the decimal point (which
+     PetscVSNPrintf - The PETSc version of `vsnprintf()`. Ensures that all `%g` formatted arguments' output contains the decimal point (which
      is used by the test harness)
 
    Input Parameters:
@@ -160,7 +160,7 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
    This function may be called from an error handler, if an error occurs when it is called by the error handler than likely
    a recursion will occur resulting in a crash of the program.
 
-   If the length of the format string `format` is on the order of `PETSCDEFAULTBUFFERSIZE` (8*1024), unlikely, this function call will perform an `PetscMalloc()`
+   If the length of the format string `format` is on the order of `PETSCDEFAULTBUFFERSIZE` (8 * 1024 bytes), this function will call `PetscMalloc()`
 
 .seealso: `PetscFormatConvert()`, `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscVPrintf()`
 @*/
@@ -261,7 +261,7 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
 
       To use, write your own function for example,
 .vb
-   PetscErrorCode mypetscvfprintf(FILE *fd,const char format[],va_list Argp)
+   PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp)
    {
      PetscErrorCode ierr;
 
@@ -388,7 +388,7 @@ int         petsc_printfqueuelength = 0;
 
     Input Parameters:
 +   comm - the MPI communicator
--   format - the usual printf() format string
+-   format - the usual `printf()` format string
 
    Level: intermediate
 
@@ -458,7 +458,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
     Input Parameters:
 +   comm - the MPI communicator
 .   fd - the file pointer
--   format - the usual printf() format string
+-   format - the usual `printf()` format string
 
     Level: intermediate
 
@@ -595,7 +595,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
     Input Parameters:
 +   comm - the MPI communicator
 .   fd - the file pointer
--   format - the usual printf() format string
+-   format - the usual `printf()` format string
 
     Level: intermediate
 
@@ -612,7 +612,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
 
   PetscFunctionBegin;
   PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCheck(MPI_SUCCESS == MPI_Comm_rank(comm, &rank), comm, PETSC_ERR_MPI, "Error inside MPI_Comm_rank() in PetscFPrintf");
   if (rank == 0) {
     va_list Argp;
     va_start(Argp, format);
