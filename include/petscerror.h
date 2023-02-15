@@ -663,8 +663,9 @@ void PetscCallContinue(PetscErrorCode);
 #else
   #define PetscCallAbort(comm, ...) \
     do { \
+      PetscErrorCode ierr_petsc_call_abort_; \
       PetscStackUpdateLine; \
-      PetscErrorCode ierr_petsc_call_abort_ = __VA_ARGS__; \
+      ierr_petsc_call_abort_ = __VA_ARGS__; \
       if (PetscUnlikely(ierr_petsc_call_abort_ != PETSC_SUCCESS)) { \
         ierr_petsc_call_abort_ = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ierr_petsc_call_abort_, PETSC_ERROR_REPEAT, " "); \
         (void)MPI_Abort(comm, (PetscMPIInt)ierr_petsc_call_abort_); \
@@ -672,8 +673,9 @@ void PetscCallContinue(PetscErrorCode);
     } while (0)
   #define PetscCallContinue(...) \
     do { \
+      PetscErrorCode ierr_petsc_call_continue_; \
       PetscStackUpdateLine; \
-      PetscErrorCode ierr_petsc_call_continue_ = __VA_ARGS__; \
+      ierr_petsc_call_continue_ = __VA_ARGS__; \
       if (PetscUnlikely(ierr_petsc_call_continue_ != PETSC_SUCCESS)) { \
         ierr_petsc_call_continue_ = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ierr_petsc_call_continue_, PETSC_ERROR_REPEAT, " "); \
         (void)ierr_petsc_call_continue_; \
@@ -758,10 +760,10 @@ void PETSCABORT(MPI_Comm, PetscErrorCode);
       if (petscindebugger) { \
         abort(); \
       } else { \
+        PetscMPIInt size_; \
         ierr_petsc_abort_ = __VA_ARGS__; \
-        PetscMPIInt size; \
-        MPI_Comm_size(comm, &size); \
-        if (PetscCIEnabledPortableErrorOutput && size == PetscGlobalSize && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
+        MPI_Comm_size(comm, &size_); \
+        if (PetscCIEnabledPortableErrorOutput && size_ == PetscGlobalSize && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
           MPI_Finalize(); \
           exit(0); \
         } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
