@@ -179,6 +179,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
 #else
   #define PETSC_FORCE_INLINE
 #endif
+
+#if defined(__clang__) || defined(__INTEL_COMPILER) || defined(__ICC)
+  #define PETSC_PRAGMA_UNROLL _Pragma("unroll")
+#else
+  #define PETSC_PRAGMA_UNROLL
+#endif
+
 enum {
   MAT_SEQMAIJ_MAX_TEMPLATE_SIZE = 18
 };
@@ -221,11 +228,11 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMult_MatMultAdd_SeqMAIJ_Templ
       const PetscScalar v_jrow     = v[jrow];
       const PetscInt    N_idx_jrow = N * idx[jrow];
 
-#pragma unroll
+      PETSC_PRAGMA_UNROLL
       for (int k = 0; k < N; ++k) sum[k] += v_jrow * x[N_idx_jrow + k];
     }
 
-#pragma unroll
+    PETSC_PRAGMA_UNROLL
     for (int k = 0; k < N; ++k) {
       const PetscInt z_idx = N * i + k;
 
@@ -277,13 +284,13 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMultTranspose_MatMultTranspos
     const PetscInt     n    = a_i[i + 1] - a_ii;
     PetscScalar        alpha[MAT_SEQMAIJ_MAX_TEMPLATE_SIZE];
 
-#pragma unroll
+    PETSC_PRAGMA_UNROLL
     for (int k = 0; k < N; ++k) alpha[k] = x[N * i + k];
     for (PetscInt j = 0; j < n; ++j) {
       const PetscInt    N_idx_j = N * idx[j];
       const PetscScalar v_j     = v[j];
 
-#pragma unroll
+      PETSC_PRAGMA_UNROLL
       for (int k = 0; k < N; ++k) z[N_idx_j + k] += alpha[k] * v_j;
     }
   }
@@ -294,7 +301,7 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMultTranspose_MatMultTranspos
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------------------*/
+/* -------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_SeqMAIJ_2(Mat A, Vec xx, Vec yy)
 {
@@ -324,7 +331,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_2(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------------------*/
+/* -------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_SeqMAIJ_3(Mat A, Vec xx, Vec yy)
 {
@@ -354,7 +361,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_3(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------ */
 
 static PetscErrorCode MatMult_SeqMAIJ_4(Mat A, Vec xx, Vec yy)
 {
@@ -384,7 +391,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_4(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------ */
 
 static PetscErrorCode MatMult_SeqMAIJ_5(Mat A, Vec xx, Vec yy)
 {
@@ -414,7 +421,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_5(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------ */
 
 static PetscErrorCode MatMult_SeqMAIJ_6(Mat A, Vec xx, Vec yy)
 {
@@ -444,7 +451,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_6(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------ */
 
 static PetscErrorCode MatMult_SeqMAIJ_7(Mat A, Vec xx, Vec yy)
 {
@@ -474,7 +481,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_7(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------ */
 
 static PetscErrorCode MatMult_SeqMAIJ_8(Mat A, Vec xx, Vec yy)
 {
@@ -504,7 +511,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_8(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------ */
 
 static PetscErrorCode MatMult_SeqMAIJ_9(Mat A, Vec xx, Vec yy)
 {
@@ -534,7 +541,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_9(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------ */
 
 static PetscErrorCode MatMult_SeqMAIJ_10(Mat A, Vec xx, Vec yy)
 {
@@ -564,7 +571,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_10(Mat A, Vec xx, Vec yy, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_SeqMAIJ_11(Mat A, Vec xx, Vec yy)
 {
@@ -594,7 +601,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_11(Mat A, Vec xx, Vec yy, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_SeqMAIJ_16(Mat A, Vec xx, Vec yy)
 {
@@ -624,7 +631,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_16(Mat A, Vec xx, Vec yy, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_SeqMAIJ_18(Mat A, Vec xx, Vec yy)
 {
@@ -654,7 +661,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_18(Mat A, Vec xx, Vec yy, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_SeqMAIJ_N(Mat A, Vec xx, Vec yy)
 {
@@ -782,7 +789,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_N(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_MPIMAIJ_dof(Mat A, Vec xx, Vec yy)
 {
@@ -834,7 +841,7 @@ static PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A, Vec xx, Vec yy, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
 
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqMAIJ(Mat C)
 {
@@ -900,7 +907,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
 static PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A, Mat PP, Mat C)
 {
   /* This routine requires testing -- first draft only */
