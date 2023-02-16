@@ -213,25 +213,25 @@ public:
   static PetscErrorCode initialize(PetscDevice) noexcept;
 
   // clang-format off
-  const _DeviceContextOps ops = {
-    destroy,
-    changeStreamType,
-    setUp,
-    query,
-    waitForContext,
-    synchronize,
-    getHandle<blas_tag>,
-    getHandle<solver_tag>,
-    getHandle<stream_tag>,
-    beginTimer,
-    endTimer,
-    memAlloc,
-    memFree,
-    memCopy,
-    memSet,
-    createEvent,
-    recordEvent,
-    waitForEvent
+  static constexpr _DeviceContextOps ops = {
+    PetscDesignatedInitializer(destroy, destroy),
+    PetscDesignatedInitializer(changestreamtype, changeStreamType),
+    PetscDesignatedInitializer(setup, setUp),
+    PetscDesignatedInitializer(query, query),
+    PetscDesignatedInitializer(waitforcontext, waitForContext),
+    PetscDesignatedInitializer(synchronize, synchronize),
+    PetscDesignatedInitializer(getblashandle, getHandle<blas_tag>),
+    PetscDesignatedInitializer(getsolverhandle, getHandle<solver_tag>),
+    PetscDesignatedInitializer(getstreamhandle, getHandle<stream_tag>),
+    PetscDesignatedInitializer(begintimer, beginTimer),
+    PetscDesignatedInitializer(endtimer, endTimer),
+    PetscDesignatedInitializer(memalloc, memAlloc),
+    PetscDesignatedInitializer(memfree, memFree),
+    PetscDesignatedInitializer(memcopy, memCopy),
+    PetscDesignatedInitializer(memset, memSet),
+    PetscDesignatedInitializer(createevent, createEvent),
+    PetscDesignatedInitializer(recordevent, recordEvent),
+    PetscDesignatedInitializer(waitforevent, waitForEvent)
   };
   // clang-format on
 };
@@ -517,6 +517,9 @@ std::array<typename DeviceContext<T>::cupmBlasHandle_t, PETSC_DEVICE_MAX_DEVICES
 
 template <DeviceType T>
 std::array<typename DeviceContext<T>::cupmSolverHandle_t, PETSC_DEVICE_MAX_DEVICES> DeviceContext<T>::solverhandles_ = {};
+
+template <DeviceType T>
+constexpr _DeviceContextOps DeviceContext<T>::ops;
 
 } // namespace impl
 
