@@ -9,7 +9,7 @@ class Configure(config.package.GNUPackage):
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
-    self.gitcommit       = 'aff83e81fce70563edc614edfef76fa998ba96fd' # 2.26.0 + $(MAKE) fix
+    self.gitcommit       = '6907852618b972fe0b5c416d79cc3dea74864734' # master feb-16-2023
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
@@ -174,7 +174,7 @@ class Configure(config.package.GNUPackage):
     # configure:2911: result:
     # configure:2915: error: invalid value of canonical host
     if 'MSYSTEM' in os.environ and os.environ['MSYSTEM'].endswith('64'):
-      args.append('--build=x86_64-linux-gnu --host=x86_64-linux-gnu')
+      args.append('--host=x86_64-linux-gnu')
 
     return args
 
