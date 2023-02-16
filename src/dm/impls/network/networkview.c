@@ -95,12 +95,19 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
     // Acquire a temporary file to write to and open an ASCII/CSV viewer
     PetscCheck(tmpnam_s(filename, sizeof(filename)) == 0, comm, PETSC_ERR_SYS, "Could not acquire temporary file");
 #elif defined(PETSC_HAVE_MKSTEMP) && __STDC_VERSION__ > 199901L
-    size_t numChars;
+    PetscBool isSharedTmp, isTmpOverridden;
+    size_t    numChars;
     // Same thing, but for POSIX systems on which tmpnam is deprecated
     // Note: Configure may detect mkstemp but it will not be defined if compiling for C99, so check additional defines to see if we can use it
-    PetscCall(PetscStrncpy(filename, "/tmp/", sizeof(filename)));
     // Mkstemp requires us to explicitly specify part of the path, but some systems may not like putting files in /tmp/ so have an option for it
-    PetscCall(PetscOptionsGetString(NULL, NULL, "-dmnetwork_view_tmpdir", filename, sizeof(filename), NULL));
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-dmnetwork_view_tmpdir", filename, sizeof(filename), &isTmpOverridden));
+    // If not specified by option try using a shared tmp on the system
+    if (!isTmpOverridden) {
+      PetscCall(PetscGetTmp(comm, filename, sizeof(filename)));
+      PetscCall(PetscSharedTmp(comm, &isSharedTmp));
+    }
+    // Validate that if tmp is not overridden it is at least shared
+    PetscCheck(isTmpOverridden || isSharedTmp, comm, PETSC_ERR_SUP_SYS, "Temporary file directory is not shared between ranks, try using -dmnetwork_view_tmpdir to specify a shared directory");
     // Make sure the filename ends with a '/'
     PetscCall(PetscStrlen(filename, &numChars));
     if (filename[numChars - 1] != '/') {
