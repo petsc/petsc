@@ -456,15 +456,21 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::memCopy(PetscDeviceContex
   PetscFunctionBegin;
   // can't use PetscCUPMMemcpyAsync here since we don't know sizeof(*src)...
   if (mode == PETSC_DEVICE_COPY_HTOH) {
+    const auto cerr = cupmStreamQuery(stream);
+
     // yes this is faster
-    if (cupmStreamQuery(stream) == cupmSuccess) {
+    if (cerr == cupmSuccess) {
       PetscCall(PetscMemcpy(dest, src, n));
       PetscFunctionReturn(0);
+    } else if (cerr == cupmErrorNotReady) {
+      auto PETSC_UNUSED unused = cupmGetLastError();
+
+      static_cast<void>(unused);
+    } else {
+      PetscCallCUPM(cerr);
     }
-    // in case cupmStreamQuery() did not return cupmErrorNotReady
-    PetscCallCUPM(cupmGetLastError());
   }
-  PetscCall(cupmMemcpyAsync(dest, src, n, PetscDeviceCopyModeToCUPMMemcpyKind(mode), stream));
+  PetscCallCUPM(cupmMemcpyAsync(dest, src, n, PetscDeviceCopyModeToCUPMMemcpyKind(mode), stream));
   PetscFunctionReturn(0);
 }
 
