@@ -393,6 +393,16 @@ Krylov Methods
      - ---
      - X
      - X
+   * - Deflated GMRES
+     - ``KSPDGMRES``
+     - ---
+     - X
+     -
+   * - Two-stage with least squares residual minimization
+     - ``KSPTSIRM``
+     - ---
+     - X
+     - X
    * - Conjugate Gradient
      - ``KSPCG``
      - ---
@@ -413,6 +423,31 @@ Krylov Methods
      - ---
      - X
      - X
+   * - Nash Conjugate Gradient with trust region constraint
+     - ``KSPNASH``
+     - ---
+     - X
+     - X
+   * - Conjugate Gradient with trust region constraint
+     - ``KSPSTCG``
+     - ---
+     - X
+     - X
+   * - Gould et al Conjugate Gradient with trust region constraint
+     - ``KSPGLTR``
+     - ---
+     - X
+     - X
+   * - Steinhaug Conjugate Gradient with trust region constraint
+     - ``KSPQCG``
+     - ---
+     - X
+     - X
+   * - Left Conjugate Direction
+     - ``KSPLCD``
+     - ---
+     - X
+     - X
    * - Bi-Conjugate Gradient
      - ``KSPBICG``
      - ---
@@ -423,8 +458,43 @@ Krylov Methods
      - ---
      - X
      - X
+   * - Improved Stabilized Bi-Conjugate Gradient
+     - ``KSPIBCGS``
+     - ---
+     - X
+     - X
    * - Transpose-free QMR
      - ``KSPTFQMR``
+     - ---
+     - X
+     - X
+   * - Tony Chan QMR
+     - ``KSPTCQMR``
+     - ---
+     - X
+     - X
+   * - QMR BiCGStab
+     - ``KSPQMRCGS``
+     - ---
+     - X
+     - X
+   * - Flexible Conjugate Gradients
+     - ``KSPFCG``
+     - ---
+     - X
+     - X
+   * - Flexible stabilized Bi-Conjugate Gradients
+     - ``KSPFBCGS``
+     - ---
+     - X
+     - X
+   * - Flexible stabilized Bi-Conjugate Gradients with fewer reductions
+     - ``KSPFBCGSR``
+     - ---
+     - X
+     - X
+   * - Stabilized Bi-Conjugate Gradients with length :math:`\ell` recurrence
+     - ``KSPBCGSL``
      - ---
      - X
      - X
@@ -455,6 +525,71 @@ Krylov Methods
      - X
    * - SYMMLQ
      - ``KSPSYMMLQ``
+     - ---
+     - X
+     - X
+   * - FETI-DP (reduction to dual-primal sub-problem)
+     - ``KSPFETIDP``
+     - ---
+     - X
+     - X
+   * - Gropp's overlapped reduction Conjugate Gradient
+     - ``KSPGROPPCG``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Gradient
+     - ``KSPPIPECG``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Gradient with residual replacement
+     - ``KSPPIPECGRR``
+     - ---
+     - X
+     - X
+   * - Pipelined depth :math:`\ell` Conjugate Gradient
+     - ``KSPPIPELCG``
+     - ---
+     - X
+     - X
+   * - Pipelined predict-and-recompute Conjugate Gradient
+     - ``KSPPIPEPRCG``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Gradient over iteration pairs
+     - ``KSPPIPECG2``
+     - ---
+     - X
+     - X
+   * - Pipelined flexible Conjugate Gradient
+     - ``KSPPIPEFCG``
+     - ---
+     - X
+     - X
+   * - Pipelined stabilized Bi-Conjugate Gradients
+     - ``KSPPIPEBCGS``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Residual
+     - ``KSPPIPECR``
+     - ---
+     - X
+     - X
+   * - Pipelined flexible GMRES
+     - ``KSPPIPEFGMRES``
+     - ---
+     - X
+     - X
+   * - Pipelined Generalized Conjugate Residual
+     - ``KSPPIPEGCR``
+     - ---
+     - X
+     - X
+   * - Pipelined GMRES
+     - ``KSPPGMRES``
      - ---
      - X
      - X
