@@ -790,7 +790,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
 
     Synopsis:
     #include <petscsys.h>
-    PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],void (*fptr)(void))
+    PetscErrorCode PetscObjectComposeFunction(PetscObject obj, const char name[], void (*fptr)(void))
 
    Logically Collective
 
@@ -803,15 +803,15 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
    Level: advanced
 
    Notes:
-   When the first argument of the function is the object within which it has been composed then `PetscTryMethod()` and `PetscUseMethod()`
+   When the first argument of `fptr` is (or is derived from) a `PetscObject` then `PetscTryMethod()` and `PetscUseMethod()`
    can be used to call the function directly with error checking.
 
-   To remove a registered routine, pass in NULL for fptr().
+   To remove a registered routine, pass in `NULL` for `fptr`.
 
-   PetscObjectComposeFunction() can be used with any PETSc object (such as
+   `PetscObjectComposeFunction()` can be used with any PETSc object (such as
    `Mat`, `Vec`, `KSP`, `SNES`, etc.) or any user-provided object.
 
-   `PetscCallMethod()` is used to call a function that is stored in the objects obj->ops table.
+   `PetscCallMethod()` is used to call a function that is stored in the objects `obj->ops` table.
 
 .seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscTryMethod()`, `PetscUseMethod()`,
           `PetscCallMethod()`
