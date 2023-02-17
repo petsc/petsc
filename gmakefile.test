@@ -96,7 +96,7 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
-ifneq ($(filter-out clean check info libs all checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out help clean check info libs all checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 
@@ -435,7 +435,7 @@ help: help-make ${helpdeps}
 
 help-make:
 	-@echo
-	-@echo "Basic usage:"
+	-@echo "PETSc makefile Basic usage:"
 	-@echo "   make  rule <V=1 for verbose output> <other options>"
 	-@echo
 
@@ -456,13 +456,17 @@ help-nontest:
 	-@echo
 	-@echo "Developer rules:"
 	-@echo "   clean - delete libraries and Fortran module files"
-	-@echo "   lint - run lint on the source code, including its embedded documentation"
 	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
 	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
 	-@echo "   deletefortranstubs - delete the generated Fortran stubs/interface definitions"
 	-@echo "   checkbadSource - check the source code for violations of coding standards"
 	-@echo "   abitest - Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD"
 	-@echo "   reconfigure - delete libraries and Fortran module files and run the previously run configure again"
+	-@echo "   lint - run lint on the source code, including its embedded documentation"
+	-@echo "     Run ${OMAKE} help-lint for lint options"
+	-@echo "   "
+	-@echo "Building website: (run in the doc directory)"
+	-@cd doc; ${OMAKE} help
 	-@echo "   "
 
 help-test:
