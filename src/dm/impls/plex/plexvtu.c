@@ -215,9 +215,9 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
       /* Cell connectivity */
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      <Cells>\n"));
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", boffset));
-      boffset += gpiece[r].nconn * sizeof(PetscInt) + sizeof(PetscInt64);
+      boffset += gpiece[r].nconn * sizeof(PetscVTKInt) + sizeof(PetscInt64);
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", boffset));
-      boffset += gpiece[r].ncells * sizeof(PetscInt) + sizeof(PetscInt64);
+      boffset += gpiece[r].ncells * sizeof(PetscVTKInt) + sizeof(PetscInt64);
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", boffset));
       boffset += gpiece[r].ncells * sizeof(unsigned char) + sizeof(PetscInt64);
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      </Cells>\n"));
