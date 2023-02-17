@@ -190,7 +190,7 @@ def main(
       pl.sync_print('Patch files written to', patch_dir)
       pl.sync_print('Apply manually using:')
       pl.sync_print(
-        f'  {patch_exec} {root_dir} --strip=0 --unified --input={patch_dir / ("*" + mangle_postfix)}'
+        f'  for i in {patch_dir / ("*" + mangle_postfix)}; do {patch_exec} {root_dir} --strip=0 --unified --input=$i; done'
       )
       if ret != 0:
         ret = 12
