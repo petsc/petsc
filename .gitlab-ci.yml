@@ -503,6 +503,7 @@ linux-hip-double:
     - gpu:amd, os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
+    INIT_SCRIPT: /home/users/balay/bin/instinct-mod-init.sh
 
 linux-sycl-double:
   extends:

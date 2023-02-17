@@ -5,8 +5,9 @@ import sys
 import pickle
 import traceback
 
-extraLogs  = []
-petsc_arch = ''
+banner_length = 93
+extraLogs     = []
+petsc_arch    = ''
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
 def fixLang(lang):
