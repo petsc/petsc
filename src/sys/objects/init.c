@@ -7,9 +7,6 @@
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_HAVE_SYS_SYSINFO_H)
-  #include <sys/sysinfo.h>
-#endif
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
 #endif
