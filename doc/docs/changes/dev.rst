@@ -105,6 +105,8 @@ Changes: Development
 
 .. rubric:: PetscViewer:
 
+- The VTK viewers (``.vts``, ``.vtr``, and ``.vtu``) now use ``header_type="UInt64"`` to enable writing large binary appended blocks.
+
 .. rubric:: PetscDraw:
 
 - Add ``PetscDrawSetVisible()`` to set if the drawing surface (the 'window') is visible on its display

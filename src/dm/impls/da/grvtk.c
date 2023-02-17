@@ -68,7 +68,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
 
   PetscCall(PetscFOpen(comm, vtk->filename, "wb", &fp));
   PetscCall(PetscFPrintf(comm, fp, "<?xml version=\"1.0\"?>\n"));
-  PetscCall(PetscFPrintf(comm, fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n", byte_order));
+  PetscCall(PetscFPrintf(comm, fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\" header_type=\"UInt64\">\n", byte_order));
   PetscCall(PetscFPrintf(comm, fp, "  <StructuredGrid WholeExtent=\"%d %" PetscInt_FMT " %d %" PetscInt_FMT " %d %" PetscInt_FMT "\">\n", 0, mx - 1, 0, my - 1, 0, mz - 1));
 
   if (rank == 0) PetscCall(PetscMalloc1(size * 6, &grloc));
@@ -99,7 +99,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
     PetscCall(PetscFPrintf(comm, fp, "    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n", xs, xs + xm - 1, ys, ys + ym - 1, zs, zs + zm - 1));
     PetscCall(PetscFPrintf(comm, fp, "      <Points>\n"));
     PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
-    boffset += 3 * nnodes * sizeof(PetscScalar) + sizeof(int);
+    boffset += 3 * nnodes * sizeof(PetscScalar) + sizeof(PetscInt64);
     PetscCall(PetscFPrintf(comm, fp, "      </Points>\n"));
 
     PetscCall(PetscFPrintf(comm, fp, "      <PointData Scalars=\"ScalarPointData\">\n"));
@@ -128,11 +128,11 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
             fieldname = buf;
           }
           PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
-          boffset += nnodes * sizeof(PetscScalar) + sizeof(int);
+          boffset += nnodes * sizeof(PetscScalar) + sizeof(PetscInt64);
         }
       } else {
         PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, bs, boffset));
-        boffset += bs * nnodes * sizeof(PetscScalar) + sizeof(int);
+        boffset += bs * nnodes * sizeof(PetscScalar) + sizeof(PetscInt64);
       }
     }
     PetscCall(PetscFPrintf(comm, fp, "      </PointData>\n"));
@@ -277,7 +277,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   PetscCall(DMDAGetLocalInfo(da, &info));
   PetscCall(PetscFOpen(comm, vtk->filename, "wb", &fp));
   PetscCall(PetscFPrintf(comm, fp, "<?xml version=\"1.0\"?>\n"));
-  PetscCall(PetscFPrintf(comm, fp, "<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"%s\">\n", byte_order));
+  PetscCall(PetscFPrintf(comm, fp, "<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"%s\" header_type=\"UInt64\">\n", byte_order));
   PetscCall(PetscFPrintf(comm, fp, "  <RectilinearGrid WholeExtent=\"%d %" PetscInt_FMT " %d %" PetscInt_FMT " %d %" PetscInt_FMT "\">\n", 0, mx - 1, 0, my - 1, 0, mz - 1));
 
   if (rank == 0) PetscCall(PetscMalloc1(size * 6, &grloc));
@@ -308,11 +308,11 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
     PetscCall(PetscFPrintf(comm, fp, "    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n", xs, xs + xm - 1, ys, ys + ym - 1, zs, zs + zm - 1));
     PetscCall(PetscFPrintf(comm, fp, "      <Coordinates>\n"));
     PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Xcoord\"  format=\"appended\"  offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
-    boffset += xm * sizeof(PetscScalar) + sizeof(int);
+    boffset += xm * sizeof(PetscScalar) + sizeof(PetscInt64);
     PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Ycoord\"  format=\"appended\"  offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
-    boffset += ym * sizeof(PetscScalar) + sizeof(int);
+    boffset += ym * sizeof(PetscScalar) + sizeof(PetscInt64);
     PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Zcoord\"  format=\"appended\"  offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
-    boffset += zm * sizeof(PetscScalar) + sizeof(int);
+    boffset += zm * sizeof(PetscScalar) + sizeof(PetscInt64);
     PetscCall(PetscFPrintf(comm, fp, "      </Coordinates>\n"));
     PetscCall(PetscFPrintf(comm, fp, "      <PointData Scalars=\"ScalarPointData\">\n"));
     for (link = vtk->link; link; link = link->next) {
@@ -339,11 +339,11 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
             fieldname = buf;
           }
           PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
-          boffset += nnodes * sizeof(PetscScalar) + sizeof(int);
+          boffset += nnodes * sizeof(PetscScalar) + sizeof(PetscInt64);
         }
       } else {
         PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, bs, boffset));
-        boffset += bs * nnodes * sizeof(PetscScalar) + sizeof(int);
+        boffset += bs * nnodes * sizeof(PetscScalar) + sizeof(PetscInt64);
       }
     }
     PetscCall(PetscFPrintf(comm, fp, "      </PointData>\n"));
