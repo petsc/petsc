@@ -240,6 +240,8 @@ int main(int argc, char **args)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M, N));
   PetscCall(MatSetType(A, MATAIJ));
+  PetscCall(MatSeqAIJSetPreallocation(A, PETSC_DEFAULT, NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
   PetscCall(MatSetUp(A));
   PetscCall(MatSetRandom(A, NULL));
   if (M == N && symm) {

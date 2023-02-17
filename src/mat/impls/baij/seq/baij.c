@@ -8,6 +8,19 @@
 #include <petsc/private/kernels/blockinvert.h>
 #include <petsc/private/kernels/blockmatmult.h>
 
+/* defines MatSetValues_Seq_Hash(), MatAssemblyEnd_Seq_Hash(), MatSetUp_Seq_Hash() */
+#define TYPE BAIJ
+#define TYPE_BS
+#include "../src/mat/impls/aij/seq/seqhashmatsetvalues.h"
+#undef TYPE_BS
+#define TYPE_BS _BS
+#define TYPE_BS_ON
+#include "../src/mat/impls/aij/seq/seqhashmatsetvalues.h"
+#undef TYPE_BS
+#include "../src/mat/impls/aij/seq/seqhashmat.h"
+#undef TYPE
+#undef TYPE_BS_ON
+
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat, MatType, MatReuse, Mat *);
 #endif
@@ -2680,13 +2693,6 @@ PetscErrorCode MatCopy_SeqBAIJ(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_SeqBAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  PetscCall(MatSeqBAIJSetPreallocation(A, A->rmap->bs, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatSeqBAIJGetArray_SeqBAIJ(Mat A, PetscScalar *array[])
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
@@ -2942,7 +2948,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /* 29*/ MatSetUp_SeqBAIJ,
+                                       /* 29*/ MatSetUp_Seq_Hash,
                                        NULL,
                                        NULL,
                                        NULL,

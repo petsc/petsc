@@ -602,6 +602,28 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* defines MatSetValues_MPICUSPARSE_Hash() */
+#define TYPE AIJ
+#define TYPE_AIJ
+#define SUB_TYPE_CUSPARSE
+#include "../src/mat/impls/aij/mpi/mpihashmat.h"
+#undef TYPE
+#undef TYPE_AIJ
+#undef SUB_TYPE_CUSPARSE
+
+static PetscErrorCode MatSetUp_MPI_HASH_CUSPARSE(Mat A)
+{
+  Mat_MPIAIJ         *b              = (Mat_MPIAIJ *)A->data;
+  Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE *)b->spptr;
+
+  PetscFunctionBegin;
+  PetscCall(MatSetUp_MPI_Hash(A));
+  PetscCall(MatCUSPARSESetFormat(b->A, MAT_CUSPARSE_MULT, cusparseStruct->diagGPUMatFormat));
+  PetscCall(MatCUSPARSESetFormat(b->B, MAT_CUSPARSE_MULT, cusparseStruct->offdiagGPUMatFormat));
+  A->preallocated = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType, MatReuse reuse, Mat *newmat)
 {
   Mat_MPIAIJ *a;
@@ -631,6 +653,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType, Mat
   A->ops->destroy               = MatDestroy_MPIAIJCUSPARSE;
   A->ops->zeroentries           = MatZeroEntries_MPIAIJCUSPARSE;
   A->ops->productsetfromoptions = MatProductSetFromOptions_MPIAIJBACKEND;
+  A->ops->setup                 = MatSetUp_MPI_HASH_CUSPARSE;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPIAIJCUSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJCUSPARSE));

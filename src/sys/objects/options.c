@@ -911,6 +911,7 @@ static const char *PetscCIOptions[] = {
   "malloc_debug",
   "malloc_dump",
   "malloc_test",
+  "malloc",
   "nox",
   "nox_warning",
   "display",

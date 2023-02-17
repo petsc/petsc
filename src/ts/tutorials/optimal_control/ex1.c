@@ -221,8 +221,6 @@ static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP,
 {
   PetscFunctionBegin;
   PetscCall(MatZeroEntries(DRDP));
-  PetscCall(MatAssemblyBegin(DRDP, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(DRDP, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -263,6 +261,7 @@ int main(int argc, char **argv)
   PetscCall(MatSetSizes(aircraft.A, PETSC_DECIDE, PETSC_DECIDE, 2, 2));
   PetscCall(MatSetFromOptions(aircraft.A));
   PetscCall(MatSetUp(aircraft.A));
+  /* this is to set explicit zeros along the diagonal of the matrix */
   PetscCall(MatAssemblyBegin(aircraft.A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(aircraft.A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatShift(aircraft.A, 1));
@@ -272,6 +271,7 @@ int main(int argc, char **argv)
   PetscCall(MatSetSizes(aircraft.Jacp, PETSC_DECIDE, PETSC_DECIDE, 2, 2 * aircraft.nsteps));
   PetscCall(MatSetFromOptions(aircraft.Jacp));
   PetscCall(MatSetUp(aircraft.Jacp));
+  PetscCall(MatSetOption(aircraft.Jacp, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 2 * aircraft.nsteps, 1, NULL, &aircraft.DRDP));
   PetscCall(MatSetUp(aircraft.DRDP));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, &aircraft.DRDU));
@@ -595,8 +595,6 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir, PetscScalar arr[], Aircraft act
 
   /* initialize tlm variable */
   PetscCall(MatZeroEntries(actx->Jacp));
-  PetscCall(MatAssemblyBegin(actx->Jacp, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(actx->Jacp, MAT_FINAL_ASSEMBLY));
   PetscCall(TSAdjointSetForward(ts, actx->Jacp));
 
   PetscCall(TSSolve(ts, actx->U));

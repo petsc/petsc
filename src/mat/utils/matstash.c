@@ -106,9 +106,7 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
   PetscFunctionBegin;
   PetscCall(PetscMatStashSpaceDestroy(&stash->space_head));
   if (stash->ScatterDestroy) PetscCall((*stash->ScatterDestroy)(stash));
-
   stash->space = NULL;
-
   PetscCall(PetscFree(stash->flg_v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

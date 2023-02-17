@@ -1,5 +1,4 @@
 !
-!   This program tests MatGetDiagonal()
 !
       program main
 #include <petsc/finclude/petscmat.h>
@@ -16,7 +15,7 @@
       PetscCallA(MatCreate(PETSC_COMM_WORLD,m,ierr))
       PetscCallA(MatSetSizes(m,PETSC_DECIDE,PETSC_DECIDE,twelve,twelve,ierr))
       PetscCallA(MatSetFromOptions(m,ierr))
-      PetscCallA(MatSetUp(m,ierr))
+      PetscCallA(MatMPIAIJSetPreallocation(m,PETSC_DEFAULT_INTEGER,PETSC_NULL_INTEGER,PETSC_DEFAULT_INTEGER,PETSC_NULL_INTEGER,ierr))
 
       value = 3.0
       i     = 4

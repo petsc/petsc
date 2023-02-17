@@ -11,6 +11,21 @@
 #define USESHORT
 #include <../src/mat/impls/sbaij/seq/relax.h>
 
+/* defines MatSetValues_Seq_Hash(), MatAssemblyEnd_Seq_Hash(), MatSetUp_Seq_Hash() */
+#define TYPE SBAIJ
+#define TYPE_SBAIJ
+#define TYPE_BS
+#include "../src/mat/impls/aij/seq/seqhashmatsetvalues.h"
+#undef TYPE_BS
+#define TYPE_BS _BS
+#define TYPE_BS_ON
+#include "../src/mat/impls/aij/seq/seqhashmatsetvalues.h"
+#undef TYPE_BS
+#undef TYPE_SBAIJ
+#include "../src/mat/impls/aij/seq/seqhashmat.h"
+#undef TYPE
+#undef TYPE_BS_ON
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
 #endif
@@ -338,48 +353,32 @@ PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A, PetscViewer viewer)
   PetscInt          i, j, bs = A->rmap->bs, k, l, bs2 = a->bs2;
   PetscViewerFormat format;
   PetscInt         *diag;
+  const char       *matname;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  block size is %" PetscInt_FMT "\n", bs));
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    Mat         aij;
-    const char *matname;
+    Mat aij;
 
     if (A->factortype && bs > 1) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "Warning: matrix is factored with bs>1. MatView() with PETSC_VIEWER_ASCII_MATLAB is not supported and ignored!\n"));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &aij));
-    PetscCall(PetscObjectGetName((PetscObject)A, &matname));
-    PetscCall(PetscObjectSetName((PetscObject)aij, matname));
-    PetscCall(MatView(aij, viewer));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectGetName((PetscObject)A, &matname));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectSetName((PetscObject)aij, matname));
+    PetscCall(MatView_SeqAIJ(aij, viewer));
     PetscCall(MatDestroy(&aij));
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
-    PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-    for (i = 0; i < a->mbs; i++) {
-      for (j = 0; j < bs; j++) {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "row %" PetscInt_FMT ":", i * bs + j));
-        for (k = a->i[i]; k < a->i[i + 1]; k++) {
-          for (l = 0; l < bs; l++) {
-#if defined(PETSC_USE_COMPLEX)
-            if (PetscImaginaryPart(a->a[bs2 * k + l * bs + j]) > 0.0 && PetscRealPart(a->a[bs2 * k + l * bs + j]) != 0.0) {
-              PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g + %g i) ", bs * a->j[k] + l, (double)PetscRealPart(a->a[bs2 * k + l * bs + j]), (double)PetscImaginaryPart(a->a[bs2 * k + l * bs + j])));
-            } else if (PetscImaginaryPart(a->a[bs2 * k + l * bs + j]) < 0.0 && PetscRealPart(a->a[bs2 * k + l * bs + j]) != 0.0) {
-              PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g - %g i) ", bs * a->j[k] + l, (double)PetscRealPart(a->a[bs2 * k + l * bs + j]), -(double)PetscImaginaryPart(a->a[bs2 * k + l * bs + j])));
-            } else if (PetscRealPart(a->a[bs2 * k + l * bs + j]) != 0.0) {
-              PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", bs * a->j[k] + l, (double)PetscRealPart(a->a[bs2 * k + l * bs + j])));
-            }
-#else
-            if (a->a[bs2 * k + l * bs + j] != 0.0) PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", bs * a->j[k] + l, (double)a->a[bs2 * k + l * bs + j]));
-#endif
-          }
-        }
-        PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
-      }
-    }
-    PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
+    Mat B;
+
+    PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &B));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectGetName((PetscObject)A, &matname));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectSetName((PetscObject)B, matname));
+    PetscCall(MatView_SeqAIJ(B, viewer));
+    PetscCall(MatDestroy(&B));
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
     PetscFunctionReturn(PETSC_SUCCESS);
   } else {
@@ -567,8 +566,8 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A, PetscViewer viewer)
     Mat         B;
     const char *matname;
     PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &B));
-    PetscCall(PetscObjectGetName((PetscObject)A, &matname));
-    PetscCall(PetscObjectSetName((PetscObject)B, matname));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectGetName((PetscObject)A, &matname));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectSetName((PetscObject)B, matname));
     PetscCall(MatView(B, viewer));
     PetscCall(MatDestroy(&B));
   }
@@ -1113,13 +1112,6 @@ PetscErrorCode MatCopy_SeqSBAIJ(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_SeqSBAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  PetscCall(MatSeqSBAIJSetPreallocation(A, A->rmap->bs, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatSeqSBAIJGetArray_SeqSBAIJ(Mat A, PetscScalar *array[])
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
@@ -1375,7 +1367,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /* 29*/ MatSetUp_SeqSBAIJ,
+                                       /* 29*/ MatSetUp_Seq_Hash,
                                        NULL,
                                        NULL,
                                        NULL,

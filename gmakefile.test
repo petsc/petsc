@@ -451,6 +451,7 @@ help-nontest:
 	-@echo "   getcxxflags - print the C++ compiler flags PETSc is using"
 	-@echo "   getfortranflags - print the Fortran compiler flags PETSc is using"
 	-@echo "   "
+	-@echo "   petsc4pytest - run the entire petc4py test suite"
 	-@echo "   alltests - run the entire PETSc test suite"
 	-@echo "   test - use \"make -f gmakefile.test help\" for help on running the extensive tests"
 	-@echo

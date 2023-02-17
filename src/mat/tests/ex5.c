@@ -217,7 +217,6 @@ int main(int argc, char **args)
    test:
       suffix: 32
       args: -mat_type mpibaij -test_diagonalscale
-      filter: grep -v Mat_
 
    test:
       suffix: 33
@@ -229,7 +228,6 @@ int main(int argc, char **args)
       suffix: 34
       nsize: 3
       args: -mat_type mpibaij -test_diagonalscale
-      filter: grep -v Mat_
 
    test:
       suffix: 3_aijcusparse_1

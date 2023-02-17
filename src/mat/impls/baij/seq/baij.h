@@ -4,6 +4,8 @@
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/ftn-kernels/fsolvebaij.h>
+#include <petsc/private/hashmapijv.h>
+#include <petsc/private/hashsetij.h>
 
 /*
   MATSEQBAIJ format - Block compressed row storage. The i[] and j[]
@@ -21,8 +23,14 @@
 \
   Mat sbaijMat; /* mat in sbaij format */ \
 \
-  MatScalar *idiag;     /* inverse of block diagonal  */ \
-  PetscBool  idiagvalid /* if above has correct/current values */
+  MatScalar *idiag;      /* inverse of block diagonal  */ \
+  PetscBool  idiagvalid; /* if above has correct/current values */ \
+  /* MatSetValues() via hash related fields */ \
+  PetscHMapIJV   ht; \
+  PetscInt      *dnz; \
+  PetscHSetIJ    bht; \
+  PetscInt      *bdnz; \
+  struct _MatOps cops
 
 typedef struct {
   SEQAIJHEADER(MatScalar);

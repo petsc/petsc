@@ -25,7 +25,7 @@ PC Object: 1 MPI process
   Mat Object: 1 MPI process
     type: seqaij
     rows=6, cols=6
-    total: nonzeros=20, allocated nonzeros=30
+    total: nonzeros=20, allocated nonzeros=20
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
 Relative norm of residual 0.000000428, Iterations 04 
@@ -56,7 +56,7 @@ PC Object: 1 MPI process
   Mat Object: 1 MPI process
     type: seqaij
     rows=6, cols=6
-    total: nonzeros=20, allocated nonzeros=30
+    total: nonzeros=20, allocated nonzeros=20
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
 Relative norm of residual 0.000001099, Iterations 03 

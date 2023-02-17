@@ -302,12 +302,10 @@ int main(int argc, char **args)
      suffix: t5_b_baij_bs3
      nsize: 6
      args: -test_id 1 -mat_type baij -block_size 3
-     filter: grep -v Mat_
 
    test:
      suffix: t6_b_sbaij_bs3
      nsize: 6
      args: -test_id 1 -mat_type sbaij -block_size 3
-     filter: grep -v Mat_
 
 TEST*/
