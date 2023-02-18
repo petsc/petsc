@@ -261,16 +261,16 @@ pause-for-approval:
     - if [ ! -z ${RUN_GCOV+x} ]; then make gcov PETSC_GCOV_OPTIONS="${RUN_GCOV_OPTIONS}"; fi
   artifacts:
     reports:
-      junit: ${TEST_ARCH}/tests/testresults.xml
+      junit: arch-*/tests/testresults.xml
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/lib/pkgconfig/petsc.pc
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/${TEST_ARCH}-gcovr-report.json.tar.gz
+    - arch-*/lib/petsc/conf/*.log
+    - arch-*/lib/pkgconfig/petsc.pc
+    - arch-*/tests/testresults.xml
+    - arch-*/tests/test_arch-*_tap.log
+    - arch-*/tests/test_arch-*_err.log
+    - arch-*/arch-*-gcovr-report.json.tar.gz
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
@@ -811,7 +811,7 @@ linux-analyzer:
     LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --verbose --werror"
   artifacts:
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - arch-*/lib/petsc/conf/*.log
     - ./petscLintPatches/*.patch
     expire_in: 4 days
   except:
