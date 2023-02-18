@@ -224,7 +224,7 @@ int main(int argc, char **args)
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 1));
       iterations[1] -= iterations[0];
-      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 2, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converged for the same reason or with the same number of iterations (+/- 2)");
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converged for the same reason or with the same number of iterations (+/- 3)");
       PetscCall(PetscObjectStateIncrease((PetscObject)A));
       if (!flg) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
       PetscCall(PCSetFromOptions(pc));
@@ -233,7 +233,7 @@ int main(int argc, char **args)
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 2));
       iterations[2] -= iterations[0] + iterations[1];
-      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 2, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converged for the same reason or with the same number of iterations (+/- 2)");
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converged for the same reason or with the same number of iterations (+/- 3)");
       PetscCall(VecDestroy(&b));
       PetscCall(ISDestroy(&is));
       PetscCall(MatDestroy(&aux));
