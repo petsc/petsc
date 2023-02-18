@@ -751,7 +751,7 @@ vermin:
 	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 
 lint:
-	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} $(LINTER_OPTIONS)
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS)
 
 help-lint:
 	@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
