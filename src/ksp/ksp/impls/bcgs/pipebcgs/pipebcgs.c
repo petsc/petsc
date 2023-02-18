@@ -225,7 +225,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
     "The communication-hiding pipelined BiCGStab method for the parallel solution of large unsymmetric linear systems",
     Parallel Computing, 65:1-20, 2017.
 
-.seealso: [](chapter_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPFBCGSL`, `KSPSetPCSide()`,
+.seealso: [](chapter_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPSetPCSide()`,
            [](sec_pipelineksp), [](doc_faq_pipelined)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
