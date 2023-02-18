@@ -103,25 +103,6 @@ builtin and then its argument prototype would still apply. */
     found, missing = config.classify(funcs, functional)
     return found, missing
 
-  def checkSysinfo(self):
-    '''Check whether sysinfo takes three arguments, and if it does define HAVE_SYSINFO_3ARG'''
-    self.check('sysinfo')
-    if self.getDefineName('sysinfo') in self.defines:
-      map(self.headers.check, ['sys/sysinfo.h', 'sys/systeminfo.h'])
-      includes = '''
-#ifdef HAVE_SYS_SYSINFO_H
-#  include <sys/sysinfo.h>
-#elif defined(HAVE_SYS_SYSTEMINFO_H)
-#  include <sys/systeminfo.h>
-#else
-#  error "Cannot check sysinfo without special headers"
-#endif
-'''
-      body = 'char buf[10]; long count=10; sysinfo(1, buf, count)'
-      if self.checkLink(includes, body):
-        self.addDefine('HAVE_SYSINFO_3ARG', 1)
-    return
-
   def checkVSNPrintf(self):
     '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
     if self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp = { 0 };char str[6];\nvsnprintf(str,5, "%d", Argp )'):
@@ -181,7 +162,6 @@ builtin and then its argument prototype would still apply. */
       self.addDefine('HAVE_TMPNAM_S', 1)
 
   def configure(self):
-    self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVSNPrintf)
     self.executeTest(self.checkNanosleep)
     self.executeTest(self.checkMemmove)

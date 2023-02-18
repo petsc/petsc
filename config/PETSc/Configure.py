@@ -136,7 +136,7 @@ class Configure(config.base.Configure):
 
     # test for a variety of basic headers and functions
     headersC = map(lambda name: name+'.h',['setjmp','dos','fcntl','float','io','malloc','pwd','strings',
-                                            'unistd','sys/sysinfo','machine/endian','sys/param','sys/procfs','sys/resource',
+                                            'unistd','machine/endian','sys/param','sys/procfs','sys/resource',
                                             'sys/systeminfo','sys/times','sys/utsname',
                                             'sys/socket','sys/wait','netinet/in','netdb','direct','time','Ws2tcpip','sys/types',
                                             'WindowsX','float','ieeefp','stdint','inttypes','immintrin'])
