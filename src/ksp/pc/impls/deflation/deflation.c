@@ -118,7 +118,7 @@ static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc, PetscScala
   /* TODO PETSC_DETERMINE -> compute max eigenvalue with power method */
   def->correct     = PETSC_TRUE;
   def->correctfact = fact;
-  if (def->correct == 0.0) def->correct = PETSC_FALSE;
+  if (def->correctfact == 0.0) def->correct = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -453,6 +453,7 @@ static PetscErrorCode PCApply_Deflation(PC pc, Vec r, Vec z)
 static PetscErrorCode PCSetUp_Deflation(PC pc)
 {
   PC_Deflation    *def = (PC_Deflation *)pc->data;
+  DM               dm;
   KSP              innerksp;
   PC               pcinner;
   Mat              Amat, nextDef = NULL, *mats;
@@ -660,6 +661,8 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     PetscCall(PCAppendOptionsPrefix(def->pc, "deflation_"));
     PetscCall(PCAppendOptionsPrefix(def->pc, prefix));
     PetscCall(PCAppendOptionsPrefix(def->pc, "pc_"));
+    PetscCall(PCGetDM(pc, &dm));
+    PetscCall(PCSetDM(def->pc, dm));
     PetscCall(PCSetFromOptions(def->pc));
     PetscCall(PCSetUp(def->pc));
   }
