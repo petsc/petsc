@@ -7,6 +7,9 @@
   #include "../segmentedmempool.hpp"
   #include "cupmthrustutility.hpp"
 
+  #include <thrust/device_ptr.h>
+  #include <thrust/fill.h>
+
   #include <limits> // std::numeric_limits
 
 namespace Petsc
@@ -140,9 +143,10 @@ inline PetscErrorCode DeviceAllocator<T, P>::set_canary(value_type *ptr, size_ty
 {
   using limit_t           = std::numeric_limits<real_value_type>;
   const value_type canary = limit_t::has_signaling_NaN ? limit_t::signaling_NaN() : limit_t::max();
+  const auto       xptr   = thrust::device_pointer_cast(ptr);
 
   PetscFunctionBegin;
-  PetscCall(impl::ThrustSet<T>(stream->get_stream(), n, ptr, &canary));
+  PetscCallThrust(THRUST_CALL(thrust::fill, stream->get_stream(), xptr, xptr + n, canary));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -2,15 +2,24 @@
 #define PETSCVECSEQCUPM_HPP
 
 #include <petsc/private/veccupmimpl.h>
-#include <petsc/private/randomimpl.h> // for _p_PetscRandom
-#include "../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp"
-#include "../src/sys/objects/device/impls/cupm/cupmallocator.hpp"
-#include "../src/sys/objects/device/impls/cupm/kernels.hpp"
 
 #if defined(__cplusplus)
-  #include <thrust/transform_reduce.h>
+  #include <petsc/private/randomimpl.h> // for _p_PetscRandom
+
+  #include <petsc/private/cpp/utility.hpp> // util::exchange, util::index_sequence
+
+  #include "../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp"
+  #include "../src/sys/objects/device/impls/cupm/kernels.hpp"
+
+  #if PetscDefined(USE_COMPLEX)
+    #include <thrust/transform_reduce.h>
+  #endif
+  #include <thrust/transform.h>
   #include <thrust/reduce.h>
   #include <thrust/functional.h>
+  #include <thrust/tuple.h>
+  #include <thrust/device_ptr.h>
+  #include <thrust/iterator/zip_iterator.h>
   #include <thrust/iterator/counting_iterator.h>
   #include <thrust/inner_product.h>
 
@@ -196,9 +205,24 @@ inline PetscErrorCode VecSeq_CUPM<T>::pointwisebinary_(BinaryFuncT &&binary, Vec
   PetscFunctionBegin;
   if (const auto n = zout->map->n) {
     PetscDeviceContext dctx;
+    cupmStream_t       stream;
 
-    PetscCall(GetHandles_(&dctx));
-    PetscCall(device::cupm::impl::ThrustApplyPointwise<T>(dctx, std::forward<BinaryFuncT>(binary), n, DeviceArrayRead(dctx, xin).data(), DeviceArrayRead(dctx, yin).data(), DeviceArrayWrite(dctx, zout).data()));
+    PetscCall(GetHandles_(&dctx, &stream));
+    // clang-format off
+    PetscCallThrust(
+      const auto dxptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, xin).data());
+
+      THRUST_CALL(
+        thrust::transform,
+        stream,
+        dxptr, dxptr + n,
+        thrust::device_pointer_cast(DeviceArrayRead(dctx, yin).data()),
+        thrust::device_pointer_cast(DeviceArrayWrite(dctx, zout).data()),
+        std::forward<BinaryFuncT>(binary)
+      )
+    );
+    // clang-format on
+    PetscCall(PetscLogFlops(n));
     PetscCall(PetscDeviceContextSynchronize(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(zout));
@@ -215,13 +239,31 @@ inline PetscErrorCode VecSeq_CUPM<T>::pointwiseunary_(UnaryFuncT &&unary, Vec xi
   PetscFunctionBegin;
   if (const auto n = xinout->map->n) {
     PetscDeviceContext dctx;
+    cupmStream_t       stream;
+    const auto         apply = [&](PetscScalar *xinout, PetscScalar *yin = nullptr) {
+      PetscFunctionBegin;
+      // clang-format off
+      PetscCallThrust(
+        const auto xptr = thrust::device_pointer_cast(xinout);
 
-    PetscCall(GetHandles_(&dctx));
+        THRUST_CALL(
+          thrust::transform,
+          stream,
+          xptr, xptr + n,
+          (yin && (yin != xinout)) ? thrust::device_pointer_cast(yin) : xptr,
+          std::forward<UnaryFuncT>(unary)
+        )
+      );
+      PetscFunctionReturn(PETSC_SUCCESS);
+    };
+
+    PetscCall(GetHandles_(&dctx, &stream));
     if (inplace) {
-      PetscCall(device::cupm::impl::ThrustApplyPointwise<T>(dctx, std::forward<UnaryFuncT>(unary), n, DeviceArrayReadWrite(dctx, xinout).data()));
+      PetscCall(apply(DeviceArrayReadWrite(dctx, xinout).data()));
     } else {
-      PetscCall(device::cupm::impl::ThrustApplyPointwise<T>(dctx, std::forward<UnaryFuncT>(unary), n, DeviceArrayRead(dctx, xinout).data(), DeviceArrayWrite(dctx, yin).data()));
+      PetscCall(apply(DeviceArrayRead(dctx, xinout).data(), DeviceArrayWrite(dctx, yin).data()));
     }
+    PetscCall(PetscLogFlops(n));
     PetscCall(PetscDeviceContextSynchronize(dctx));
   } else {
     if (inplace) {
@@ -1010,7 +1052,9 @@ inline PetscErrorCode VecSeq_CUPM<T>::set(Vec xin, PetscScalar alpha) noexcept
     if (alpha == PetscScalar(0.0)) {
       PetscCall(PetscCUPMMemsetAsync(xptr.data(), 0, n, stream));
     } else {
-      PetscCall(device::cupm::impl::ThrustSet<T>(stream, n, xptr.data(), &alpha));
+      const auto dptr = thrust::device_pointer_cast(xptr.data());
+
+      PetscCallThrust(THRUST_CALL(thrust::fill, stream, dptr, dptr + n, alpha));
     }
     if (n) PetscCall(PetscDeviceContextSynchronize(dctx)); // don't sync if we did nothing
   }

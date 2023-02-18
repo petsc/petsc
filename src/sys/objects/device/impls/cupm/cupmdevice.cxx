@@ -25,7 +25,7 @@ class Device<T>::DeviceInternal {
   cupmDeviceProp_t dprop_{}; // cudaDeviceProp appears to be an actual struct, i.e. you can't
                              // initialize it with nullptr or NULL (i've tried)
 
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode CUPMAwareMPI_(bool *));
+  static PetscErrorCode CUPMAwareMPI_(bool *) noexcept;
 
 public:
   // default constructor
@@ -170,7 +170,7 @@ void SilenceVariableIsNotNeededAndWillNotBeEmittedWarning_ThisFunctionShouldNeve
 }
 
 template <DeviceType T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode Device<T>::DeviceInternal::CUPMAwareMPI_(bool *awareness))
+PetscErrorCode Device<T>::DeviceInternal::CUPMAwareMPI_(bool *awareness) noexcept
 {
   constexpr int hbuf[]            = {1, 0};
   int          *dbuf              = nullptr;
@@ -205,7 +205,7 @@ PetscErrorCode Device<T>::finalize_() noexcept
 }
 
 template <DeviceType T>
-PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char *CUPM_VISIBLE_DEVICES())
+PETSC_NODISCARD static PETSC_CONSTEXPR_14 const char *CUPM_VISIBLE_DEVICES() noexcept
 {
   switch (T) {
   case DeviceType::CUDA:
