@@ -3901,15 +3901,18 @@ PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
 
 PetscErrorCode MatSeqDenseInvert(Mat A)
 {
-  Mat_SeqDense   *a              = (Mat_SeqDense *)A->data;
-  PetscInt        bs             = A->rmap->n;
-  MatScalar      *values         = a->v;
-  const PetscReal shift          = 0.0;
-  PetscBool       allowzeropivot = PetscNot(A->erroriffailure), zeropivotdetected = PETSC_FALSE;
+  PetscInt        m;
+  const PetscReal shift = 0.0;
+  PetscBool       allowzeropivot, zeropivotdetected = PETSC_FALSE;
+  PetscScalar    *values;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCall(MatDenseGetArray(A, &values));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  allowzeropivot = PetscNot(A->erroriffailure);
   /* factor and invert each block */
-  switch (bs) {
+  switch (m) {
   case 1:
     values[0] = (PetscScalar)1.0 / (values[0] + shift);
     break;
@@ -3944,12 +3947,13 @@ PetscErrorCode MatSeqDenseInvert(Mat A)
     PetscInt    *v_pivots, *IJ, j;
     PetscScalar *v_work;
 
-    PetscCall(PetscMalloc3(bs, &v_work, bs, &v_pivots, bs, &IJ));
-    for (j = 0; j < bs; j++) IJ[j] = j;
-    PetscCall(PetscKernel_A_gets_inverse_A(bs, values, v_pivots, v_work, allowzeropivot, &zeropivotdetected));
+    PetscCall(PetscMalloc3(m, &v_work, m, &v_pivots, m, &IJ));
+    for (j = 0; j < m; j++) IJ[j] = j;
+    PetscCall(PetscKernel_A_gets_inverse_A(m, values, v_pivots, v_work, allowzeropivot, &zeropivotdetected));
     if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     PetscCall(PetscFree3(v_work, v_pivots, IJ));
   }
   }
+  PetscCall(MatDenseRestoreArray(A, &values));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
