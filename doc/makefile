@@ -10,7 +10,10 @@ LINKCHECKDIR  = _build/linkcheck
 
 # First so that "make" without arguments is like "make help".
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
+	-@echo "   make sphinxhtml - build the HTML website inside a created Python virtual environment (venv)"
+
+# The following does not work because it triggers the loading of docutils that many people may not have in Python
+#	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
 .PHONY: help makefile checklinks
 
