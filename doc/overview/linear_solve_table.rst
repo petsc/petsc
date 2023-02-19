@@ -34,6 +34,13 @@ Preconditioners
      - X
      - X
    * -
+     - Variable Point Block Jacobi
+     - ``PCPBJACOBI``
+     - ``MATAIJ``, ``MATBAIJ``, ``MATSBAIJ``
+     - ---
+     - X
+     - X
+   * -
      - Block Jacobi
      - ``PCBJACOBI``
      - ``MATAIJ``, ``MATBAIJ``, ``MATSBAIJ``
@@ -45,19 +52,33 @@ Preconditioners
      - ``PCSOR``
      - ``MATAIJ``, ``MATSEQDENSE``, ``MATSEQSBAIJ``
      - ---
-     -
+     - X
      - X
    * -
      - Point Block SOR
      -
      - ``MATSEQBAIJ`` (only for ``bs`` = 2,3,4,5)
      - ---
-     -
+     - X
+     - X
+   * -
+     - Kaczmarz
+     - ``PCKACZMARZ``
+     - ``MATAIJ``
+     - ---
+     - X
      - X
    * -
      - Additive Schwarz
      - ``PCASM``
      - ``MATAIJ``, ``MATBAIJ``, ``MATSBAIJ``
+     - ---
+     - X
+     - X
+   * -
+     - Vanka/overlapping patches
+     - ``PCPATCH``
+     - ``MATAIJ``
      - ---
      - X
      - X
@@ -97,6 +118,13 @@ Preconditioners
      - ---
      -
      - X
+   * -
+     - Algebraic recursive multilevel
+     - ``PCPARMS``
+     - ``MATSEQAIJ``
+     - `pARMS <https://www-users.cse.umn.edu/~saad/software/pARMS/>`__
+     -
+     - X
    * - Matrix Free
      - Infrastructure
      - ``PCSHELL``
@@ -126,21 +154,34 @@ Preconditioners
      - X
      - X
    * -
+     - Smoothed Aggregation (ML)
+     - ``PCML``
+     - ``MATAIJ``
+     - `ML/Trilinos <https://trilinos.github.io/ml.html>`__
+     - X
+     - X
+   * -
      - Structured Geometric
-     - ``PCPFMG``
+     - ``PCPFMG``, ``PCSYSPFMG``, ``PCSMG``
      - ``MATHYPRESTRUCT``
      - `hypre <https://hypre.readthedocs.io/en/latest/solvers-smg-pfmg.html>`__
      - X
      -
    * -
      - Classical Algebraic
-     - ``PCHYPRE``, ``PCML``
+     - ``PCHYPRE``, ``PCAMGX``
      - ``MATAIJ``
      - `BoomerAMG/hypre
-       <https://hypre.readthedocs.io/en/latest/solvers-boomeramg.html>`__, `ML/Trilinos
-       <https://trilinos.github.io/ml.html>`__
+       <https://hypre.readthedocs.io/en/latest/solvers-boomeramg.html>`__, `AmgX <https://developer.nvidia.com/amgx>`__
      - X
      -
+   * -
+     - Multi-group MG
+     - ``PCHMG``
+     - ``MATAIJ``
+     - ---
+     - X
+     - X
    * -
      - Domain Decomposition
      - ``PCHPDDM``
@@ -148,6 +189,13 @@ Preconditioners
      - `HPDDM <https://github.com/hpddm/hpddm>`__
      - X
      - X
+   * - Hierarchical matrices
+     - :math:`\mathcal H^2`
+     - ``PCH2OPUS``
+     - ``MATHTOOL``, ``MATH2OPUS``
+     - `H2OPUS <https://github.com/ecrc/h2opus>`__
+     - X
+     -
    * - Physics-based Splitting
      - Relaxation & Schur Complement
      - ``PCFIELDSPLIT``
@@ -156,9 +204,44 @@ Preconditioners
      - X
      - X
    * -
+     - Galerkin composition
+     - ``PCGALERKIN``
+     - Any
+     - ---
+     - X
+     - X
+   * -
+     - Additive/multiplicative
+     - ``PCCOMPOSITE``
+     - Any
+     - ---
+     - X
+     - X
+   * -
      - Least Squares Commutator
      - ``PCLSC``
      - ``MATSCHURCOMPLEMENT``
+     - ---
+     - X
+     - X
+   * - Parallel transformation
+     - Redistribution
+     - ``PCREDISTRIBUTE``
+     - ``MATAIJ``
+     - ---
+     - X
+     - X
+   * -
+     - Telescoping communicator
+     - ``PCTELESCOPE``
+     - ``MATAIJ``
+     - ---
+     - X
+     - X
+   * -
+     - Distribute for MPI
+     - ``PCMPI``
+     - ``MATAIJ``
      - ---
      - X
      - X
@@ -180,6 +263,13 @@ Preconditioners
      - Balancing Domain Decomposition
      - ``PCBDDC``
      - ``MATIS``
+     - ---
+     - X
+     - X
+   * -
+     - 2-level Schwarz wire basket
+     - ``PCEXOTIC``
+     - ``MATAIJ``
      - ---
      - X
      - X
@@ -338,10 +428,17 @@ Direct Solvers
        <https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top.html>`__
      - X
      -
+   * - Direct SVD
+     - Singular value decomposition
+     - ``PCSVD``
+     - Any
+     - ---
+     - X
+     - X
    * - Direct QR
      - QR
-     - `PCQR`
-     - `MATSEQAIJ`
+     - ``PCQR``
+     - ``MATSEQAIJ``
      -  `SuiteSparse QR <https://people.engr.tamu.edu/davis/suitesparse.html>`__
      -
      -
