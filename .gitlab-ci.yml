@@ -926,11 +926,6 @@ mswin-gnu:
     MAKE_CXXFLAGS: -Werror
     MAKE_FFLAGS: -Werror
     DISABLE_TESTS: 1
-  artifacts:
-    reports:
-    paths:
-    - arch-*/lib/petsc/conf/*.log
-    expire_in: 4 days
 
 #mswin-intel:
 #  extends:
