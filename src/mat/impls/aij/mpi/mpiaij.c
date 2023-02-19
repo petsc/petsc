@@ -1095,8 +1095,8 @@ PetscErrorCode MatMultTranspose_MPIAIJ(Mat A, Vec xx, Vec yy)
 PetscErrorCode MatIsTranspose_MPIAIJ(Mat Amat, Mat Bmat, PetscReal tol, PetscBool *f)
 {
   MPI_Comm    comm;
-  Mat_MPIAIJ *Aij  = (Mat_MPIAIJ *)Amat->data, *Bij;
-  Mat         Adia = Aij->A, Bdia, Aoff, Boff, *Aoffs, *Boffs;
+  Mat_MPIAIJ *Aij = (Mat_MPIAIJ *)Amat->data, *Bij = (Mat_MPIAIJ *)Bmat->data;
+  Mat         Adia = Aij->A, Bdia = Bij->A, Aoff, Boff, *Aoffs, *Boffs;
   IS          Me, Notme;
   PetscInt    M, N, first, last, *notme, i;
   PetscBool   lf;
@@ -1104,8 +1104,6 @@ PetscErrorCode MatIsTranspose_MPIAIJ(Mat Amat, Mat Bmat, PetscReal tol, PetscBoo
 
   PetscFunctionBegin;
   /* Easy test: symmetric diagonal block */
-  Bij  = (Mat_MPIAIJ *)Bmat->data;
-  Bdia = Bij->A;
   PetscCall(MatIsTranspose(Adia, Bdia, tol, &lf));
   PetscCall(MPIU_Allreduce(&lf, f, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)Amat)));
   if (!*f) PetscFunctionReturn(PETSC_SUCCESS);
@@ -2907,13 +2905,16 @@ PetscErrorCode MatRetrieveValues_MPIAIJ(Mat mat)
 
 PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
-  Mat_MPIAIJ *b;
+  Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
   PetscMPIInt size;
 
   PetscFunctionBegin;
+  if (B->hash_active) {
+    PetscCall(PetscMemcpy(&B->ops, &b->cops, sizeof(*(B->ops))));
+    B->hash_active = PETSC_FALSE;
+  }
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
-  b = (Mat_MPIAIJ *)B->data;
 
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&b->colmap));
@@ -2924,7 +2925,6 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
   PetscCall(VecDestroy(&b->lvec));
   PetscCall(VecScatterDestroy(&b->Mvctx));
 
-  /* Because the B will have been resized we simply destroy it and create a new one each time */
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
   PetscCall(MatDestroy(&b->B));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
@@ -2932,12 +2932,11 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
   PetscCall(MatSetBlockSizesFromMats(b->B, B, B));
   PetscCall(MatSetType(b->B, MATSEQAIJ));
 
-  if (!B->preallocated) {
-    PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
-    PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
-    PetscCall(MatSetBlockSizesFromMats(b->A, B, B));
-    PetscCall(MatSetType(b->A, MATSEQAIJ));
-  }
+  PetscCall(MatDestroy(&b->A));
+  PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
+  PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
+  PetscCall(MatSetBlockSizesFromMats(b->A, B, B));
+  PetscCall(MatSetType(b->A, MATSEQAIJ));
 
   PetscCall(MatSeqAIJSetPreallocation(b->A, d_nz, d_nnz));
   PetscCall(MatSeqAIJSetPreallocation(b->B, o_nz, o_nnz));
@@ -2949,13 +2948,12 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
 
 PetscErrorCode MatResetPreallocation_MPIAIJ(Mat B)
 {
-  Mat_MPIAIJ *b;
+  Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
-  b = (Mat_MPIAIJ *)B->data;
 
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscHMapIDestroy(&b->colmap));

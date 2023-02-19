@@ -50,14 +50,12 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
   if (symmetric && !aijonly) {
     PetscCall(MatSetType(*A, MATSEQSBAIJ));
     PetscCall(MatSetFromOptions(*A));
-    PetscCall(MatSetUp(*A));
     PetscCall(MatSeqSBAIJSetPreallocation(*A, 1, 0, rownz));
     PetscCall(PetscObjectTypeCompare((PetscObject)(*A), MATSEQSBAIJ, &sametype));
     PetscCheck(sametype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Only AIJ and SBAIJ are supported. Your mattype is not supported");
   } else {
     PetscCall(MatSetType(*A, MATSEQAIJ));
     PetscCall(MatSetFromOptions(*A));
-    PetscCall(MatSetUp(*A));
     PetscCall(MatSeqAIJSetPreallocation(*A, 0, rownz));
     PetscCall(PetscObjectTypeCompare((PetscObject)(*A), MATSEQAIJ, &sametype));
     PetscCheck(sametype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Only AIJ and SBAIJ are supported. Your mattype is not supported");

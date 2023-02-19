@@ -3956,11 +3956,17 @@ PetscErrorCode MatSeqAIJSetPreallocation(Mat B, PetscInt nz, const PetscInt nnz[
 
 PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscInt *nnz)
 {
-  Mat_SeqAIJ *b;
+  Mat_SeqAIJ *b              = (Mat_SeqAIJ *)B->data;
   PetscBool   skipallocation = PETSC_FALSE, realalloc = PETSC_FALSE;
   PetscInt    i;
 
   PetscFunctionBegin;
+  if (B->hash_active) {
+    PetscCall(PetscMemcpy(&B->ops, &b->cops, sizeof(*(B->ops))));
+    PetscCall(PetscHMapIJVDestroy(&b->ht));
+    PetscCall(PetscFree(b->dnz));
+    B->hash_active = PETSC_FALSE;
+  }
   if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
   if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
@@ -3979,9 +3985,6 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
   }
 
   B->preallocated = PETSC_TRUE;
-
-  b = (Mat_SeqAIJ *)B->data;
-
   if (!skipallocation) {
     if (!b->imax) { PetscCall(PetscMalloc1(B->rmap->n, &b->imax)); }
     if (!b->ilen) {

@@ -1918,6 +1918,11 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, PetscInt
   PetscMPIInt   size;
 
   PetscFunctionBegin;
+  if (B->hash_active) {
+    PetscCall(PetscMemcpy(&B->ops, &b->cops, sizeof(*(B->ops))));
+    B->hash_active = PETSC_FALSE;
+  }
+  if (!B->preallocated) PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)B), bs, &B->bstash));
   PetscCall(MatSetBlockSize(B, PetscAbs(bs)));
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
@@ -1958,19 +1963,16 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, PetscInt
   PetscCall(VecDestroy(&b->slvec1b));
   PetscCall(VecScatterDestroy(&b->sMvctx));
 
-  /* Because the B will have been resized we simply destroy it and create a new one each time */
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
   PetscCall(MatDestroy(&b->B));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
   PetscCall(MatSetSizes(b->B, B->rmap->n, size > 1 ? B->cmap->N : 0, B->rmap->n, size > 1 ? B->cmap->N : 0));
   PetscCall(MatSetType(b->B, MATSEQBAIJ));
 
-  if (!B->preallocated) {
-    PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
-    PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
-    PetscCall(MatSetType(b->A, MATSEQSBAIJ));
-    PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)B), bs, &B->bstash));
-  }
+  PetscCall(MatDestroy(&b->A));
+  PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
+  PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
+  PetscCall(MatSetType(b->A, MATSEQSBAIJ));
 
   PetscCall(MatSeqSBAIJSetPreallocation(b->A, bs, d_nz, d_nnz));
   PetscCall(MatSeqBAIJSetPreallocation(b->B, bs, o_nz, o_nnz));
