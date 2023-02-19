@@ -4,12 +4,12 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit = 'v3.2p5'
-    self.download  = ['git://https://bitbucket.org/petsc/pkg-parms.git','https://bitbucket.org/petsc/pkg-metis/get/'+self.gitcommit+'.tar.gz']
+    self.download  = ['git://https://bitbucket.org/petsc/pkg-parms.git','https://bitbucket.org/petsc/pkg-parms/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-parms','pARMS']
     self.functions = ['parms_PCCreate']
     self.includes  = ['parms.h']
     self.liblist   = [['libparms.a']]
-    #self.license   = 'http://www-users.cs.umn.edu/~saad/software/pARMS'
+    #self.license   = 'https://www-users.cs.umn.edu/~saad/software/pARMS'
     self.precisions = ['double']
     return
 
