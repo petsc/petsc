@@ -1285,7 +1285,7 @@ PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
 .ve
 
     The rationale for this support is so that when creating a `TS`, `SNES`, or `KSP` the hierarchy
-    of underlying objects (i.e. `SNES`, `KSP`, `PC`, `Mat`) and their livespans can be completely
+    of underlying objects (i.e. `SNES`, `KSP`, `PC`, `Mat`) and their lifespans can be completely
     managed by the top most level object (i.e. the `TS`, `SNES`, or `KSP`). Another way to look
     at this is when you create a `SNES` you do not NEED to create a `KSP` and attach it to
     the `SNES` object (the `SNES` object manages it for you). Similarly when you create a KSP
