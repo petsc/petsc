@@ -610,7 +610,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    Notes:
      Supports non-square (rectangular) matrices.
 
-     This variant, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
+     This variant, when applied with no preconditioning is identical to the original algorithm in exact arithmetic; however, in practice, with no preconditioning
      due to inexact arithmetic, it can converge differently. Hence when no preconditioner is used (`PCType` `PCNONE`) it automatically reverts to the original algorithm.
 
      With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,A'*A)) since the preconditioner needs to work
@@ -622,7 +622,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
 
      In exact arithmetic the LSQR method (with no preconditioning) is identical to the `KSPCG` algorithm applied to the normal equations.
      The preconditioned variant was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations.
-     It appears the implementation with preconditioner track the true norm of the residual and uses that in the convergence test.
+     It appears the implementation with preconditioning tracks the true norm of the residual and uses that in the convergence test.
 
    Developer Note:
     How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies
