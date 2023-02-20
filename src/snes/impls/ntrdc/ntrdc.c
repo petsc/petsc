@@ -494,12 +494,6 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
       neP->itflag = PETSC_FALSE;
       /* both delta, ynorm, and xnorm are either scaled or unscaled */
       PetscCall(SNESTRDC_Converged_Private(snes, snes->iter, xnorm, ynorm, fnorm, &reason, snes->cnvP));
-      if (!reason) {
-        /* temp_xnorm, temp_ynorm is always unscaled */
-        /* also the inner iteration already calculated the Jacobian and solved the matrix */
-        /* therefore, it should be passing iteration number of iter+1 instead of iter+0 in the first iteration and after */
-        PetscCall((*snes->ops->converged)(snes, snes->iter + 1, temp_xnorm, temp_ynorm, fnorm, &reason, snes->cnvP));
-      }
       /* if multiphase state changes, break out inner iteration */
       if (reason == SNES_BREAKOUT_INNER_ITER) {
         if (bs > 1 && neP->auto_scale_multiphase) {
