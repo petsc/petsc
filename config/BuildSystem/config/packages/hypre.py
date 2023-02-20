@@ -14,6 +14,7 @@ class Configure(config.package.GNUPackage):
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
     self.liblist         = [['libHYPRE.a']]
+    self.buildLanguages  = ['C','Cxx']
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
     self.precisions        = ['double']
     # HYPRE is supposed to work with complex number
@@ -47,8 +48,6 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     self.packageDir = os.path.join(self.packageDir,'src')
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    if not hasattr(self.compilers, 'CXX'):
-      raise RuntimeError('Error: Hypre requires C++ compiler. None specified')
     if not hasattr(self.compilers, 'FC'):
       args.append('--disable-fortran')
     if self.mpi.include:
