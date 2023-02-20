@@ -770,7 +770,10 @@ PETSC_KERNEL_DECL static void mdot_kernel(const PetscScalar *PETSC_RESTRICT x, c
   return;
 }
 
-PETSC_KERNEL_DECL static void sum_kernel(const PetscInt size, PetscScalar *PETSC_RESTRICT results)
+namespace
+{
+
+PETSC_KERNEL_DECL void sum_kernel(const PetscInt size, PetscScalar *PETSC_RESTRICT results)
 {
   int         local_i = 0;
   PetscScalar local_results[8];
@@ -806,6 +809,8 @@ PETSC_KERNEL_DECL static void sum_kernel(const PetscInt size, PetscScalar *PETSC
   });
   return;
 }
+
+} // namespace
 
 } // namespace kernels
 
@@ -1547,11 +1552,41 @@ PETSC_DEVICE_INLINE_DECL void add_coo_values_impl(const PetscScalar *PETSC_RESTR
   return;
 }
 
-PETSC_KERNEL_DECL static void add_coo_values(const PetscScalar *PETSC_RESTRICT v, PetscCount n, const PetscCount *PETSC_RESTRICT jmap1, const PetscCount *PETSC_RESTRICT perm1, InsertMode imode, PetscScalar *PETSC_RESTRICT xv)
+namespace
+{
+
+PETSC_KERNEL_DECL void add_coo_values(const PetscScalar *PETSC_RESTRICT v, PetscCount n, const PetscCount *PETSC_RESTRICT jmap1, const PetscCount *PETSC_RESTRICT perm1, InsertMode imode, PetscScalar *PETSC_RESTRICT xv)
 {
   add_coo_values_impl(v, n, jmap1, perm1, imode, xv, [](PetscCount i) { return i; });
   return;
 }
+
+} // namespace
+
+  #if PetscDefined(USING_HCC)
+namespace do_not_use
+{
+
+// Needed to silence clang warning:
+//
+// warning: function 'FUNCTION NAME' is not needed and will not be emitted
+//
+// The warning is silly, since the function *is* used, however the host compiler does not
+// appear see this. Likely because the function using it is in a template.
+//
+// This warning appeared in clang-11, and still persists until clang-15 (21/02/2023)
+inline void silence_warning_function_sum_kernel_is_not_needed_and_will_not_be_emitted()
+{
+  (void)sum_kernel;
+}
+
+inline void silence_warning_function_add_coo_values_is_not_needed_and_will_not_be_emitted()
+{
+  (void)add_coo_values;
+}
+
+} // namespace do_not_use
+  #endif
 
 } // namespace kernels
 
