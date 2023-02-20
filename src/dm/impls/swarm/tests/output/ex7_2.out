@@ -11,5 +11,5 @@ Labels:
   celltype: 3 strata with value/size (4 (32), 0 (45), 1 (76))
 Field fe:
   adjacency FEM
-Linear ftop_ solve converged due to CONVERGED_RTOL iterations 39
-Total number density:   8.288080569410e-01 (  8.288080569410e-01); x-momentum = 6.37511e-17 (2.9924e-17); energy = 1.77936 error = 1.497468e-15, 100 particles. Use 1 threads
+Linear ftop_ solve converged due to CONVERGED_RTOL iterations 33
+Total number density:   8.268704838253e-01 (  8.268704838253e-01); x-momentum = 4.27684e-17 (1.10249e-16); energy = 1.77555 error = -3.751707e-16, 225 particles. Use 1 threads
