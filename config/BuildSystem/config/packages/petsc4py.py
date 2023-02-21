@@ -73,7 +73,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+self.python.pyexe+' setup.py build )  || \\\n\
+           '+newdir+archflags+self.python.pyexe+' setup.py build ) || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\

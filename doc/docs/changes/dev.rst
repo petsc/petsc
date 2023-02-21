@@ -15,14 +15,14 @@ Changes: Development
 
 .. rubric:: Configure/Build:
 
-- Remove unused preprocessor variables ``PETSC_HAVE_VPRINTF_CHAR``, ``PETSC_HAVE_VFPRINTF_CHAR``, ``PETSC_STAT_MACROS_BROKEN``, ``PETSC_HAVE_FORTRAN_GETARG``, ``PETSC_uid_t``, ``PETSC_gid_t``, ``PETSC_HAVE_PTHREAD_BARRIER_T``, ``PETSC_HAVE_SCHED_CPU_SET_T``, and ``PETSC_HAVE_SYS_SYSCTL_H``
-- Deprecate ``--with-gcov`` configure option. Users should use ``--with-coverage`` instead
+- Remove unused preprocessor variables ``PETSC_HAVE_VPRINTF_CHAR``, ``PETSC_HAVE_VFPRINTF_CHAR``, ``PETSC_STAT_MACROS_BROKEN``, ``PETSC_HAVE_FORTRAN_GETARG``, ``PETSC_uid_t``, ``PETSC_gid_t``, ``PETSC_HAVE_PTHREAD_BARRIER_T``, ``PETSC_HAVE_SCHED_CPU_SET_T``, ``PETSC_HAVE_SYS_SYSCTL_H``, ``PETSC_HAVE_SYS_SYSINFO_H``, and ``PETSC_HAVE_SYSINFO_3ARG``
+- Deprecate ``--with-gcov`` configure option in favor of ``--with-coverage``
 - Add ``--with-coverage-exec`` configure option to specify the coverage-collection tool to be used e.g. ``gcov`` or ``/path/to/llvm-cov-15``
-- Add ``--with-strict-petscerrorcode`` configure option to enable compile-time checking for correct usage of ``PetscErrorCode``, see below.
+- Add ``--with-strict-petscerrorcode`` configure option to enable compile-time checking for correct usage of ``PetscErrorCode``, see below
 
 .. rubric:: Sys:
 
-- Change ``PetscOptionsMonitorDefault()`` to also take in the option source, and ``PetscOptionsMonitorSet()`` to take the new monitor function.
+- Change ``PetscOptionsMonitorDefault()`` to also take in the option source, and ``PetscOptionsMonitorSet()`` to take the new monitor function
 - Deprecate ``PetscTable`` and related functions. Previous users of ``PetscTable`` are encouraged to use the more performant ``PetscHMapI`` instead, though they should note that this requires additional steps and limitations:
 
   #. ``#include <petscctable.h>`` must be swapped for ``#include <petsc/private/hashmapi.h>``. This of course requires that you have access to the private PETSc headers.
@@ -63,7 +63,7 @@ Changes: Development
         PetscCall(PetscPrintf(..., "MPI Window %" PETSC_INTPTR_T_FMT, (PETSC_INTPTR_T)win));
 
 
-- Deprecate ``PETSC_NULL``. Users should prefer ``PETSC_NULLPTR`` as it does the right thing in both C and C++.
+- Deprecate ``PETSC_NULL`` in favor of ``PETSC_NULLPTR`` as it does the right thing in both C and C++
 - Significantly improve lookup and deletion performance of ``PetscFunctionList``. This also improves performance of ``PetscObjectComposeFunction()`` and ``PetscObjectQueryFunction()``.
 - Optionally define ``PetscErrorCode`` as an ``enum``, and tag it as ``PETSC_NODISCARD``. This feature may be enabled by configuring PETSc with ``--with-strict-petscerrorcode`` configure option. This feature allows catching the following logical errors at compile-time:
 
@@ -105,7 +105,7 @@ Changes: Development
 
 .. rubric:: PetscViewer:
 
-- The VTK viewers (``.vts``, ``.vtr``, and ``.vtu``) now use ``header_type="UInt64"`` to enable writing large binary appended blocks.
+- The VTK viewers (``.vts``, ``.vtr``, and ``.vtu``) now use ``header_type="UInt64"`` to enable writing large binary appended blocks
 
 .. rubric:: PetscDraw:
 
@@ -120,7 +120,7 @@ Changes: Development
 .. rubric:: VecScatter / PetscSF:
 
 - Change ``PetscSFConcatenate()`` to accept ``PetscSFConcatenateRootMode`` parameter; add option to concatenate root spaces globally
-- Add ``PetscSFSetGraphFromCoordinates()`` to construct a graph from fuzzy matching of coordinates; such as occurs for projections between different dimensions or for overlapping meshes.
+- Add ``PetscSFSetGraphFromCoordinates()`` to construct a graph from fuzzy matching of coordinates; such as occurs for projections between different dimensions or for overlapping meshes
 
 .. rubric:: PF:
 
@@ -187,7 +187,7 @@ Changes: Development
 - Change ``DMPlexMarkBoundaryFaces()`` to avoid marking faces on the parallel boundary. To get the prior behavior, you can temporarily remove the ``PointSF`` from the ``DM``
 - Add ``-dm_localize_height`` to localize edges and faces
 - Add ``DMPlexCreateHypercubicMesh()`` to create hypercubic meshes needed for QCD
-- Add ``-dm_plex_shape zbox`` option to ``DMSetFromOptions`` to generated born-parallel meshes in Z-ordering (a space-filling curve). This may be used as-is with ``-petscpartitioner_type simple`` or redistributed using ``-petscpartitioner_type parmetis`` (or ``ptscotch``, etc.), which is more scalable than creating a serial mesh to partition and distribute.
+- Add ``-dm_plex_shape zbox`` option to ``DMSetFromOptions()`` to generated born-parallel meshes in Z-ordering (a space-filling curve). This may be used as-is with ``-petscpartitioner_type simple`` or redistributed using ``-petscpartitioner_type parmetis`` (or ``ptscotch``, etc.), which is more scalable than creating a serial mesh to partition and distribute.
 - Add ``DMPlexSetIsoperiodicFaceSF()`` to wrap a non-periodic mesh into periodic while preserving the local point representation for both donor and image sheet. This is supported with ``zbox`` above, and allows single-element periodicity.
 
 .. rubric:: FE/FV:

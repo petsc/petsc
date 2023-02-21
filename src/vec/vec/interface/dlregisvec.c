@@ -203,7 +203,7 @@ PetscErrorCode VecInitializePackage(void)
   PetscCall(PetscLogEventRegister("VecSetValuesCOO", VEC_CLASSID, &VEC_SetValuesCOO));
   PetscCall(PetscLogEventRegister("VecLoad", VEC_CLASSID, &VEC_Load));
   PetscCall(PetscLogEventRegister("VecScatterBegin", VEC_CLASSID, &VEC_ScatterBegin));
-  PetscCall(PetscLogEventRegister("VecScatterEnd  ", VEC_CLASSID, &VEC_ScatterEnd));
+  PetscCall(PetscLogEventRegister("VecScatterEnd", VEC_CLASSID, &VEC_ScatterEnd));
   PetscCall(PetscLogEventRegister("VecSetRandom", VEC_CLASSID, &VEC_SetRandom));
   PetscCall(PetscLogEventRegister("VecReduceArith", VEC_CLASSID, &VEC_ReduceArithmetic));
   PetscCall(PetscLogEventRegister("VecReduceComm", VEC_CLASSID, &VEC_ReduceCommunication));

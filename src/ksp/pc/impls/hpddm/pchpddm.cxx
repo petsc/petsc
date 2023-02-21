@@ -1589,7 +1589,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     PetscCall(ISDestroy(&uis));
   }
   if (algebraic) PetscCall(MatDestroy(&data->aux));
-  if (!ismatis && unsorted != is[0]) {
+  if (unsorted && unsorted != is[0]) {
     PetscCall(ISCopy(unsorted, data->is));
     PetscCall(ISDestroy(&unsorted));
   }
