@@ -121,6 +121,17 @@ class PCHPDDMCoarseCorrectionType(object):
     ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
     BALANCED                 = PC_HPDDM_COARSE_CORRECTION_BALANCED
 
+class PCDeflationSpaceType(object):
+    HAAR                     = PC_DEFLATION_SPACE_HAAR
+    DB2                      = PC_DEFLATION_SPACE_DB2
+    DB4                      = PC_DEFLATION_SPACE_DB4
+    DB8                      = PC_DEFLATION_SPACE_DB8
+    DB16                     = PC_DEFLATION_SPACE_DB16
+    BIORTH22                 = PC_DEFLATION_SPACE_BIORTH22
+    MEYER                    = PC_DEFLATION_SPACE_MEYER
+    AGGERGATION              = PC_DEFLATION_SPACE_AGGREGATION
+    USER                     = PC_DEFLATION_SPACE_USER
+
 class PCFailedReason(object):
     SETUP_ERROR              = PC_SETUP_ERROR
     NOERROR                  = PC_NOERROR
@@ -147,6 +158,7 @@ cdef class PC(Object):
     SchurPreType              = PCFieldSplitSchurPreType
     PatchConstructType        = PCPatchConstructType
     HPDDMCoarseCorrectionType = PCHPDDMCoarseCorrectionType
+    DeflationSpaceType        = PCDeflationSpaceType
     FailedReason              = PCFailedReason
 
     # --- xxx ---
@@ -929,6 +941,51 @@ cdef class PC(Object):
         cdef PetscInt cval = asInt(sym)
         CHKERR( PCSPAISetSp(self.pc, cval) )
 
+    # --- DEFLATION ---
+
+    def setDeflationInitOnly(self, flg):
+        cdef PetscBool cflg = asBool(flg)
+        CHKERR( PCDeflationSetInitOnly(self.pc, cflg) )
+
+    def setDeflationLevels(self, levels):
+        cdef PetscInt clevels = asInt(levels)
+        CHKERR( PCDeflationSetLevels(self.pc, clevels) )
+
+    def setDeflationReductionFactor(self, red):
+        cdef PetscInt cred = asInt(red)
+        CHKERR( PCDeflationSetReductionFactor(self.pc, cred) )
+
+    def setDeflationCorrectionFactor(self, fact):
+        cdef PetscScalar cfact = asScalar(fact)
+        CHKERR( PCDeflationSetCorrectionFactor(self.pc, fact) )
+
+    def setDeflationSpaceToCompute(self, space_type, size):
+        cdef PetscInt csize = asInt(size)
+        cdef PetscPCDeflationSpaceType ctype = space_type
+        CHKERR( PCDeflationSetSpaceToCompute(self.pc, space_type, csize) )
+
+    def setDeflationSpace(self, Mat W, transpose):
+        cdef PetscBool ctranspose = asBool(transpose)
+        CHKERR( PCDeflationSetSpace(self.pc, W.mat, ctranspose) )
+
+    def setDeflationProjectionNullSpaceMat(self, Mat mat):
+        CHKERR( PCDeflationSetProjectionNullSpaceMat(self.pc, mat.mat) )
+
+    def setDeflationCoarseMat(self, Mat mat):
+        CHKERR( PCDeflationSetCoarseMat(self.pc, mat.mat) )
+
+    def getDeflationCoarseKSP(self):
+        cdef KSP ksp = KSP()
+        CHKERR( PCDeflationGetCoarseKSP(self.pc, &ksp.ksp) )
+        PetscINCREF(ksp.obj)
+        return ksp
+
+    def getDeflationPC(self):
+        cdef PC apc = PC()
+        CHKERR( PCDeflationGetPC(self.pc, &apc.pc) )
+        PetscINCREF(apc.obj)
+        return apc
+
 # --------------------------------------------------------------------
 
 del PCType
@@ -943,5 +1000,6 @@ del PCFieldSplitSchurPreType
 del PCFieldSplitSchurFactType
 del PCPatchConstructType
 del PCHPDDMCoarseCorrectionType
+del PCDeflationSpaceType
 
 # --------------------------------------------------------------------
