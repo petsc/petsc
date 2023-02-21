@@ -335,9 +335,6 @@ prepend-path PATH "%s"
       self.setCompilers.pushLanguage('FC')
       self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
-      # apple requires this shared library linker flag on SOME versions of the os
-      if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
-        self.addMakeMacro('DARWIN_COMMONS_USE_DYLIBS',' -Wl,-commons,use_dylibs ')
       self.setCompilers.popLanguage()
 
       # F90 Modules
