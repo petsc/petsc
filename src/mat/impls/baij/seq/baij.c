@@ -3107,11 +3107,21 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType, MatReuse, 
 
 PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt nz, PetscInt *nnz)
 {
-  Mat_SeqBAIJ *b;
+  Mat_SeqBAIJ *b = (Mat_SeqBAIJ *)B->data;
   PetscInt     i, mbs, nbs, bs2;
   PetscBool    flg = PETSC_FALSE, skipallocation = PETSC_FALSE, realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (B->hash_active) {
+    PetscInt bs;
+    PetscCall(PetscMemcpy(&B->ops, &b->cops, sizeof(*(B->ops))));
+    PetscCall(PetscHMapIJVDestroy(&b->ht));
+    PetscCall(MatGetBlockSize(B, &bs));
+    if (bs > 1) PetscCall(PetscHSetIJDestroy(&b->bht));
+    PetscCall(PetscFree(b->dnz));
+    PetscCall(PetscFree(b->bdnz));
+    B->hash_active = PETSC_FALSE;
+  }
   if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
   if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
@@ -3140,7 +3150,6 @@ PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt n
     }
   }
 
-  b = (Mat_SeqBAIJ *)B->data;
   PetscOptionsBegin(PetscObjectComm((PetscObject)B), NULL, "Optimize options for SEQBAIJ matrix 2 ", "Mat");
   PetscCall(PetscOptionsBool("-mat_no_unroll", "Do not optimize for block size (slow)", NULL, flg, &flg, NULL));
   PetscOptionsEnd();

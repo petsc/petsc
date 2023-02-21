@@ -29,7 +29,7 @@ int main(int argc, char **args)
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M * bs, M * bs));
   PetscCall(MatSetBlockSize(A, bs));
-  PetscCall(MatSetUp(A));
+  PetscCall(MatSetUp(A)); /* called so that MatGetLocalSize() will work */
   PetscCall(MatGetLocalSize(A, &m, NULL));
   PetscCall(PetscMalloc1(m / bs, &dnnz));
   for (j = 0; j < m / bs; j++) dnnz[j] = 1;
