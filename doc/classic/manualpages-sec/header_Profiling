@@ -1,4 +1,3 @@
-# Profiling Manual Pages
+# Profiling and Logging
 
 PETSc provides a variety of methods for profiling applications that use the PETSc libraries.
-

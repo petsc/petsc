@@ -1,7 +1,6 @@
-# TAO Optimization Solver Manual Pages
+# Optimization Solvers (Tao)
 
 The Toolkit for Advance Optimization provides an
 interface to create solvers, customize
 them to a particular application, and apply them to a problem.
 Many of the options for TAO can also be set at runtime.
-

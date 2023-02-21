@@ -4,12 +4,6 @@ API-Docs
 
   `MPI Documentation <https://www.open-mpi.org/doc/current/>`__
 
-.. toctree::
-  :maxdepth: 1
-
-  ../changes/index.rst
-  singleindex.md
-
 The manual pages are split into four categories; we recommend that
 you begin with basic functionality and then gradually explore more
 sophisticated library features.
@@ -20,45 +14,18 @@ sophisticated library features.
 - *Developer* - Interfaces intended primarily for library developers
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   AO/index
-   Characteristic/index
-   DM/index
-   DMDA/index
-   DMForest/index
-   DMLabel/index
-   DMMOAB/index
-   DMNetwork/index
-   DMPatch/index
-   DMPlex/index
-   DMPRODUCT/index
-   DMStag/index
-   DMSwarm/index
-   DT/index
-   DUALSPACE/index
-   Draw/index
-   FE/index
-   FV/index
-   IS/index
-   KSP/index
-   LANDAU/index
-   Mat/index
-   MatFD/index
-   MatOrderings/index
-   PC/index
-   PF/index
-   PetscSF/index
-   PetscSection/index
-   Profiling/index
-   SNES/index
-   SNESFAS/index
-   SPACE/index
-   Sensitivity/index
-   Sys/index
-   PetscH/index
-   TS/index
-   Tao/index
-   TaoLineSearch/index
-   Vec/index
-   Viewer/index
+   Vector
+   Matrix
+   DataLayout
+   DataManagement
+   Discretization
+   LinearSolvers
+   NonlinearSolvers
+   Timestepping
+   Optimization
+   Visualization
+   System
+   ../changes/index.rst
+   singleindex.md

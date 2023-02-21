@@ -153,7 +153,7 @@ def createtable(dirname,levels,secname):
       mdfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.md')]
       mdfiles.sort()
       if mdfiles == []:
-            print('Error! Empty directory:',dirname)
+            print('Error! Cannot create table for empty directory:',dirname)
             return None
 
       table = []
@@ -224,7 +224,7 @@ def main():
       PETSC_DIR = sys.argv[1]
       LOC       = sys.argv[2]
       HEADERDIR = (sys.argv[3] if arg_len > 3 else 'doc/classic/manualpages-sec')
-      dirs      = glob.glob(LOC + '/manualpages/*')
+      dirs      = (glob.glob(LOC + '/manualpages/*') if arg_len < 5 else [sys.argv[4]])
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']

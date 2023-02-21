@@ -1,4 +1,3 @@
-# PETSc System Hash Functions Manual Pages
+# Hash Tables
 
 PETSc provides an extensible variety of hash sets and maps based on the khash system.
-

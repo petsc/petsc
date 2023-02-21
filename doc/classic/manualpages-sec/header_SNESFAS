@@ -1,6 +1,5 @@
-# SNESFAS Manual Pages
+# Full Approximation Storage (FAS) nonlinear multigrid
 
 <A HREF="PETSC_DIRsrc/snes/tutorials/index.html">Examples</A><BR>
 
 The `SNESFAS` object is a nonlinear multigrid solver which uses the Full Approximation Storage scheme.
-

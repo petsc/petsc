@@ -1,4 +1,4 @@
-# Preconditioners - PC Manual Pages
+# Preconditioners (PC)
 
 The
 <A HREF="PETSC_DIRmanualpages/KSP/index.html">Scalable Linear Equations Solvers (KSP)</A>
@@ -17,4 +17,3 @@ and then directly calling the PC routines listed below (e.g.,
 PC components can be used directly to create and
 destroy solvers; this is not needed for users but
 is for library developers.
-

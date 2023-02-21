@@ -1,6 +1,5 @@
-# PetscDualSpace Manual Pages
+# Dual Spaces (PetscDualSpace)
 
 <A HREF="PETSC_DIRsrc/dm/dt/dualspace/tutorials/index.html">Examples</A></BR>
 
 The PetscDualSpace class encapsulates a function space.
-

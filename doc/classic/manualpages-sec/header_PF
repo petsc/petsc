@@ -1,4 +1,3 @@
-# PETSc Mathematical Functions Manual Pages
+# Defining your own mathematical functions (PF)
 
   PETSc functions (`PF` objects) are used to compute grid functions, element functions, etc.
-

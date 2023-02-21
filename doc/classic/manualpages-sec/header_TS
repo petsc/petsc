@@ -1,4 +1,4 @@
-# Time-steppers for ODE and DAE - TS Manual Pages
+# Time Stepping ODE and DAE Solvers (TS)
 
 <A HREF="PETSC_DIRsrc/ts/tutorials/index.html">Examples</A><BR>
 
@@ -13,4 +13,3 @@ TS users can also set SNES options directly in application codes by first extrac
 and then directly calling various SNES (and KSP and PC with further unwrapping) routines (e.g.,
 <A HREF="PETSC_DIRmanualpages/PC/PCSetType.html">PCSetType()</A>
 ).
-
