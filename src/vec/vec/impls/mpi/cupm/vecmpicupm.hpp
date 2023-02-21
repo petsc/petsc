@@ -285,17 +285,47 @@ inline PetscErrorCode VecMPI_CUPM<T>::setpreallocationcoo(Vec x, PetscCount ncoo
 namespace kernels
 {
 
-PETSC_KERNEL_DECL static void pack_coo_values(const PetscScalar *PETSC_RESTRICT vv, PetscCount nnz, const PetscCount *PETSC_RESTRICT perm, PetscScalar *PETSC_RESTRICT buf)
+namespace
+{
+
+PETSC_KERNEL_DECL void pack_coo_values(const PetscScalar *PETSC_RESTRICT vv, PetscCount nnz, const PetscCount *PETSC_RESTRICT perm, PetscScalar *PETSC_RESTRICT buf)
 {
   ::Petsc::device::cupm::kernels::util::grid_stride_1D(nnz, [=](PetscCount i) { buf[i] = vv[perm[i]]; });
   return;
 }
 
-PETSC_KERNEL_DECL static void add_remote_coo_values(const PetscScalar *PETSC_RESTRICT vv, PetscCount nnz2, const PetscCount *PETSC_RESTRICT imap2, const PetscCount *PETSC_RESTRICT jmap2, const PetscCount *PETSC_RESTRICT perm2, PetscScalar *PETSC_RESTRICT xv)
+PETSC_KERNEL_DECL void add_remote_coo_values(const PetscScalar *PETSC_RESTRICT vv, PetscCount nnz2, const PetscCount *PETSC_RESTRICT imap2, const PetscCount *PETSC_RESTRICT jmap2, const PetscCount *PETSC_RESTRICT perm2, PetscScalar *PETSC_RESTRICT xv)
 {
   add_coo_values_impl(vv, nnz2, jmap2, perm2, ADD_VALUES, xv, [=](PetscCount i) { return imap2[i]; });
   return;
 }
+
+} // namespace
+
+  #if PetscDefined(USING_HCC)
+namespace do_not_use
+{
+
+// Needed to silence clang warning:
+//
+// warning: function 'FUNCTION NAME' is not needed and will not be emitted
+//
+// The warning is silly, since the function *is* used, however the host compiler does not
+// appear see this. Likely because the function using it is in a template.
+//
+// This warning appeared in clang-11, and still persists until clang-15 (21/02/2023)
+inline void silence_warning_function_pack_coo_values_is_not_needed_and_will_not_be_emitted()
+{
+  (void)pack_coo_values;
+}
+
+inline void silence_warning_function_add_remote_coo_values_is_not_needed_and_will_not_be_emitted()
+{
+  (void)add_remote_coo_values;
+}
+
+} // namespace do_not_use
+  #endif
 
 } // namespace kernels
 
