@@ -15,7 +15,7 @@
    Collective on `PETSC_COMM_WORLD`
 
    Input Parameter:
-.  fp - file pointer.  If fp is NULL, stdout is assumed.
+.  fp - file pointer.  If fp is `NULL`, `stdout` is assumed.
 
    Options Database Key:
 .  -mpidump - Dumps MPI incompleteness during call to PetscFinalize()

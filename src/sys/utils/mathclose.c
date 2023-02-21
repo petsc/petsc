@@ -1,7 +1,7 @@
 #include <petscsys.h>
 
 /*@C
-    PetscIsCloseAtTol - Returns whether the two floating point numbers
+    PetscIsCloseAtTol - Returns whether the two `PetscReal` numbers
        are close at a given relative and absolute tolerances.
 
     Input Parameters:
@@ -10,10 +10,10 @@
 .     rtol - relative tolerance
 -     atol - absolute tolerances
 
+    Level: beginner
+
     Reference:
 .   * -  https://www.python.org/dev/peps/pep-0485/
-
-    Level: beginner
 
 .seealso: `PetscEqualReal()`, `PetscEqualScalar()`
 @*/

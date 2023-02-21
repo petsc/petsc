@@ -30,14 +30,16 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const c
 /*E
   PetscInfoCommFlag - Describes the method by which to filter `PetscInfo()` by communicator size
 
-  Used as an input for `PetscInfoSetFilterCommSelf()`
-
+  Values:
 + `PETSC_INFO_COMM_ALL` - Default uninitialized value. `PetscInfo()` will not filter based on
-communicator size (i.e. will print for all communicators)
+                          communicator size (i.e. will print for all communicators)
 . `PETSC_INFO_COMM_NO_SELF` - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
 - `PETSC_INFO_COMM_ONLY_SELF` - `PetscInfo()` will ONLY print for communicators with size = 1
 
   Level: intermediate
+
+  Note:
+  Used as an input for `PetscInfoSetFilterCommSelf()`
 
 .seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`, `PetscInfoSetFilterCommSelf()`
 E*/

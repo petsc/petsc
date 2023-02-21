@@ -2,7 +2,6 @@
     We define the string operations here. The reason we just do not use
   the standard string routines in the PETSc code is that on some machines
   they are broken or have the wrong prototypes.
-
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STRINGS_H)
@@ -12,7 +11,7 @@
 /*@C
    PetscStrToArray - Separates a string by a character (for example ' ' or '\n') and creates an array of strings
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  s - pointer to string
@@ -20,15 +19,12 @@
 
    Output Parameters:
 +   argc - the number of entries in the array
--   args - an array of the entries with a null at the end
+-   args - an array of the entries with a `NULL` at the end
 
    Level: intermediate
 
    Note:
-    this may be called before PetscInitialize() or after PetscFinalize()
-
-   Fortran Note:
-   Not for use in Fortran
+    This may be called before `PetscInitialize()` or after `PetscFinalize()`
 
    Developer Notes:
    Uses raw `malloc()` and does not call error handlers since this may be used before PETSc is initialized.
@@ -114,7 +110,7 @@ PetscErrorCode PetscStrToArray(const char s[], char sp, int *argc, char ***args)
 /*@C
    PetscStrToArrayDestroy - Frees array created with `PetscStrToArray()`.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Output Parameters:
 +  argc - the number of arguments
@@ -124,9 +120,6 @@ PetscErrorCode PetscStrToArray(const char s[], char sp, int *argc, char ***args)
 
    Note:
     This may be called before `PetscInitialize()` or after `PetscFinalize()`
-
-   Fortran Note:
-   Not for use in Fortran
 
 .seealso: `PetscStrToArray()`
 @*/
@@ -140,10 +133,10 @@ PetscErrorCode PetscStrToArrayDestroy(int argc, char **args)
 /*@C
    PetscStrArrayallocpy - Allocates space to hold a copy of an array of strings then copies the strings
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
-.  s - pointer to array of strings (final string is a null)
+.  s - pointer to array of strings (final string is a `NULL`)
 
    Output Parameter:
 .  t - the copied array string
@@ -151,11 +144,8 @@ PetscErrorCode PetscStrToArrayDestroy(int argc, char **args)
    Level: intermediate
 
    Note:
-   If t has previously been allocated then that memory is lost, you may need to PetscStrArrayDestroy()
+   If `t` has previously been allocated then that memory is lost, you may need to `PetscStrArrayDestroy()`
    the array before calling this routine.
-
-   Fortran Note:
-   Not for use in Fortran
 
 .seealso: `PetscStrallocpy()`, `PetscStrArrayDestroy()`, `PetscStrNArrayallocpy()`
 @*/
@@ -175,15 +165,12 @@ PetscErrorCode PetscStrArrayallocpy(const char *const *list, char ***t)
 /*@C
    PetscStrArrayDestroy - Frees array of strings created with `PetscStrArrayallocpy()`.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Output Parameters:
 .   list - array of strings
 
    Level: intermediate
-
-   Fortran Note:
-    Not for use in Fortran
 
 .seealso: `PetscStrArrayallocpy()`
 @*/
@@ -204,7 +191,7 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
 /*@C
    PetscStrNArrayallocpy - Allocates space to hold a copy of an array of strings then copies the strings
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  n - the number of string entries
@@ -214,9 +201,6 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
 .  t - the copied array string
 
    Level: intermediate
-
-   Fortran Note:
-      Not for use in Fortran
 
 .seealso: `PetscStrallocpy()`, `PetscStrArrayallocpy()`, `PetscStrNArrayDestroy()`
 @*/
@@ -231,16 +215,13 @@ PetscErrorCode PetscStrNArrayallocpy(PetscInt n, const char *const *list, char *
 /*@C
    PetscStrNArrayDestroy - Frees array of strings created with `PetscStrNArrayallocpy()`.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Output Parameters:
 +   n - number of string entries
 -   list - array of strings
 
    Level: intermediate
-
-   Fortran Note:
-    Not for use in Fortran
 
 .seealso: `PetscStrNArrayallocpy()`, `PetscStrArrayallocpy()`
 @*/
@@ -256,15 +237,12 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n, char ***list)
 /*@C
    PetscBasename - returns a pointer to the last entry of a / or \ separated directory path
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  a - pointer to string
 
    Level: intermediate
-
-   Fortran Note:
-    Not for use in Fortran
 
 .seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`, `PetscStrrchr()`, `PetscStrcmp()`, `PetscStrstr()`,
           `PetscTokenCreate()`, `PetscStrToArray()`, `PetscStrInList()`
@@ -284,7 +262,7 @@ const char *PetscBasename(const char a[])
    PetscStrcasecmp - Returns true if the two strings are the same
      except possibly for case.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  a - pointer to first string
@@ -293,13 +271,10 @@ const char *PetscBasename(const char a[])
    Output Parameter:
 .  flg - if the two strings are the same
 
-   Note:
-    Null arguments are ok
-
-   Fortran Note:
-   Not for use in Fortran
-
    Level: intermediate
+
+   Note:
+   `NULL` arguments are ok
 
 .seealso: `PetscStrcmp()`, `PetscStrncmp()`, `PetscStrgrt()`
 @*/
@@ -336,17 +311,14 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
 /*@C
    PetscStrendswithwhich - Determines if a string ends with one of several possible strings
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  a - pointer to string
--  bs - strings to end with (last entry must be NULL)
+-  bs - strings to end with (last entry must be `NULL`)
 
    Output Parameter:
-.  cnt - the index of the string it ends with or the index of NULL
-
-   Fortran Note:
-    Not for use in Fortran
+.  cnt - the index of the string it ends with or the index of `NULL`
 
    Level: intermediate
 
@@ -376,34 +348,28 @@ struct _p_PetscToken {
 };
 
 /*@C
-   PetscTokenFind - Locates next "token" in a string
+   PetscTokenFind - Locates next "token" in a `PetscToken`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 .  a - pointer to token
 
    Output Parameter:
-.  result - location of occurrence, NULL if not found
-
-   Notes:
-     This version is different from the system version in that
-  it allows you to pass a read-only string into the function.
-
-     This version also treats all characters etc. inside a double quote "
-   as a single token.
-
-     For example if the separator character is + and the string is xxxx+y then the first fine will return a pointer to a null terminated xxxx and the
-   second will return a null terminated y
-
-     If the separator character is + and the string is xxxx then the first and only token found will be a pointer to a null terminated xxxx
-
-   Fortran Note:
-    Not for use in Fortran
+.  result - location of occurrence, `NULL` if not found
 
    Level: intermediate
 
-.seealso: `PetscTokenCreate()`, `PetscTokenDestroy()`
+   Notes:
+   Treats all characters etc. inside a double quote "
+   as a single token.
+
+     For example if the separator character is + and the string is xxxx+y then the first fine will return a pointer to a `NULL` terminated xxxx and the
+   second will return a `NULL` terminated y
+
+     If the separator character is + and the string is xxxx then the first and only token found will be a pointer to a `NULL` terminated xxxx
+
+.seealso: `PetscToken`, `PetscTokenCreate()`, `PetscTokenDestroy()`
 @*/
 PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
 {
@@ -442,25 +408,22 @@ PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
 /*@C
    PetscTokenCreate - Creates a `PetscToken` used to find tokens in a string
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  string - the string to look in
 -  b - the separator character
 
    Output Parameter:
-.  t- the token object
+.  t - the token object
+
+   Level: intermediate
 
    Note:
      This version is different from the system version in that
   it allows you to pass a read-only string into the function.
 
-   Fortran Note:
-    Not for use in Fortran
-
-   Level: intermediate
-
-.seealso: `PetscTokenFind()`, `PetscTokenDestroy()`
+.seealso: `PetscToken`, `PetscTokenFind()`, `PetscTokenDestroy()`
 @*/
 PetscErrorCode PetscTokenCreate(const char a[], char b, PetscToken *t)
 {
@@ -478,17 +441,14 @@ PetscErrorCode PetscTokenCreate(const char a[], char b, PetscToken *t)
 /*@C
    PetscTokenDestroy - Destroys a `PetscToken`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 .  a - pointer to token
 
    Level: intermediate
 
-   Fortran Note:
-    Not for use in Fortran
-
-.seealso: `PetscTokenCreate()`, `PetscTokenFind()`
+.seealso: `PetscToken`, `PetscTokenCreate()`, `PetscTokenFind()`
 @*/
 PetscErrorCode PetscTokenDestroy(PetscToken *a)
 {
@@ -500,9 +460,9 @@ PetscErrorCode PetscTokenDestroy(PetscToken *a)
 }
 
 /*@C
-   PetscStrInList - search for string in character-delimited list
+   PetscStrInList - search for a string in character-delimited list
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  str - the string to look for
@@ -510,12 +470,9 @@ PetscErrorCode PetscTokenDestroy(PetscToken *a)
 -  sep - the separator character
 
    Output Parameter:
-.  found - whether str is in list
+.  found - whether `str` is in `list`
 
    Level: intermediate
-
-   Fortran Note:
-    Not for use in Fortran
 
 .seealso: `PetscTokenCreate()`, `PetscTokenFind()`, `PetscStrcmp()`
 @*/
@@ -541,15 +498,12 @@ PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, Pet
 /*@C
    PetscGetPetscDir - Gets the directory PETSc is installed in
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Output Parameter:
 .  dir - the directory
 
    Level: developer
-
-   Fortran Note:
-    Not for use in Fortran
 
 @*/
 PetscErrorCode PetscGetPetscDir(const char *dir[])
@@ -563,27 +517,23 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
 /*@C
    PetscStrreplace - Replaces substrings in string with other substrings
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +   comm - `MPI_Comm` of processors that are processing the string
 .   aa - the string to look in
-.   b - the resulting copy of a with replaced strings (b can be the same as a)
--   len - the length of b
+.   b - the resulting copy of a with replaced strings (`b` can be the same as `a`)
+-   len - the length of `b`
 
    Notes:
-      Replaces   ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
+      Replaces ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
       ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME}, ${HOSTNAME} with appropriate values
       as well as any environmental variables.
 
       `PETSC_LIB_DIR` uses the environmental variable if it exists. `PETSC_ARCH` and `PETSC_DIR` use what
       PETSc was built with and do not use environmental variables.
 
-   Fortran Note:
-      Not for use in Fortran
-
    Level: developer
-
 @*/
 PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t len)
 {
@@ -675,7 +625,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 /*@C
    PetscEListFind - searches list of strings for given string, using case insensitive matching
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  n - number of strings in
@@ -684,12 +634,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 
    Output Parameters:
 +  value - index of matching string (if found)
--  found - boolean indicating whether string was found (can be NULL)
-
-   Fortran Note:
-   Not for use in Fortran
-
-   Level: advanced
+-  found - boolean indicating whether string was found (can be `NULL`)
 
 .seealso: `PetscEnumFind()`
 @*/
@@ -716,18 +661,15 @@ PetscErrorCode PetscEListFind(PetscInt n, const char *const *list, const char *s
 /*@C
    PetscEnumFind - searches enum list of strings for given string, using case insensitive matching
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
-+  enumlist - list of strings to search, followed by enum name, then enum prefix, then NUL
++  enumlist - list of strings to search, followed by enum name, then enum prefix, then `NULL`
 -  str - string to look for
 
    Output Parameters:
 +  value - index of matching string (if found)
--  found - boolean indicating whether string was found (can be NULL)
-
-   Fortran Note:
-   Not for use in Fortran
+-  found - boolean indicating whether string was found (can be `NULL`)
 
    Level: advanced
 
@@ -758,10 +700,12 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
 /*@C
   PetscCIFilename - returns the basename of a file name when the PETSc CI portable error output mode is enabled.
 
-  Not collective
+  Not collective; No Fortran Support
 
   Input Parameter:
 . file - the file name
+
+  Level: developer
 
   Note:
   PETSc CI mode is a mode of running PETSc where output (both error and non-error) is made portable across all systems
@@ -769,19 +713,17 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
 
   This mode is used for all tests in the test harness, it applies to both debug and optimized builds.
 
-  Use the option -petsc_ci to turn on PETSc CI mode. It changes certain output in non-error situations to be portable for
+  Use the option `-petsc_ci` to turn on PETSc CI mode. It changes certain output in non-error situations to be portable for
   all systems, mainly the output of options. It is passed to all PETSc programs automatically by the test harness.
 
   Always uses the Unix / as the file separate even on Microsoft Windows systems
 
-  The option -petsc_ci_portable_error_output attempts to output the same error messages on all systems for the test harness.
+  The option `-petsc_ci_portable_error_output` attempts to output the same error messages on all systems for the test harness.
   In particular the output of filenames and line numbers in PETSc stacks. This is to allow (limited) checking of PETSc
   error handling by the test harness. This options also causes PETSc to attempt to return an error code of 0 so that the test
   harness can process the output for differences in the usual manner as for successful runs. It should be provided to the test
   harness in the args: argument for specific examples. It will not necessarily produce portable output if different errors
   (or no errors) occur on a subset of the MPI ranks.
-
-  Level: developer
 
 .seealso: `PetscCILinenumber()`
 @*/
@@ -794,15 +736,15 @@ const char *PetscCIFilename(const char *file)
 /*@C
   PetscCILinenumber - returns a line number except if `PetscCIEnablePortableErrorOutput` is set when it returns 0
 
-  Not collective
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . linenumber - the initial line number
 
+  Level: developer
+
   Note:
   See `PetscCIFilename()` for details on usage
-
-  Level: developer
 
 .seealso: `PetscCIFilename()`
 @*/

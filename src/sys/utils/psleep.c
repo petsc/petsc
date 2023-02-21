@@ -18,10 +18,10 @@
    Input Parameters:
 .  s - number of seconds to sleep
 
+   Level: intermediate
+
    Note:
    If s is negative waits for keyboard input
-
-   Level: intermediate
 
 @*/
 PetscErrorCode PetscSleep(PetscReal s)

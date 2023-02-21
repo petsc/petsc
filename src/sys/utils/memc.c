@@ -57,7 +57,7 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
      PetscProcessPlacementView - display the MPI rank placement by core
 
   Input Parameter:
-.   viewer - ASCII viewer to display the results on
+.   viewer - `PETSCVIEWERASCII` to display the results on
 
   Level: intermediate
 

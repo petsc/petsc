@@ -50,7 +50,7 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    Collective
 
    Input Parameters:
-+  comm - Communicator to sequentialize.
++  comm - Communicator to sequentialize over
 -  ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
