@@ -161,8 +161,8 @@ Otherwise try --download-make or install "make" with a package manager.''' % sel
     self.addMakeRule('libcxx','${LIBNAME}(${OBJSCXX})')
     self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
-    self.addMakeMacro('OMAKE_PRINTDIR ', self.make+' '+self.printdirflag)
-    self.addMakeMacro('OMAKE', self.make+' '+self.noprintdirflag)
+    self.addMakeMacro('OMAKE_PRINTDIR', self.make+self.printdirflag)
+    self.addMakeMacro('OMAKE', self.make+self.noprintdirflag)
     self.addMakeMacro('MAKE_PAR_OUT_FLG', self.paroutflg)
     return
 

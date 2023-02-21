@@ -1397,7 +1397,8 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       if self.setCompilers.checkCompilerFlag(flag, includes, body):
         self.logWrite(self.setCompilers.restoreLog())
         self.c99flag = flag
-        self.setCompilers.CPPFLAGS += ' ' + flag
+        if flag:
+          self.setCompilers.CPPFLAGS += ' ' + flag
         self.framework.logPrint('Accepted C99 compile flag: '+flag)
         break
       else:
