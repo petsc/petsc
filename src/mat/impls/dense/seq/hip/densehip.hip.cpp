@@ -869,7 +869,7 @@ static PetscErrorCode MatMultAdd_SeqDenseHIP_Private(Mat A, Vec xx, Vec yy, Vec 
     if (!yy) PetscCall(VecSeq_HIP::set(zz, 0.0)); /* mult only */
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscCall(PetscInfo(A, "Matrix-vector product %d x %d on backend\n", A->rmap->n, A->cmap->n));
+  PetscCall(PetscInfo(A, "Matrix-vector product %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", A->rmap->n, A->cmap->n));
   PetscCall(PetscHipBLASIntCast(A->rmap->n, &m));
   PetscCall(PetscHipBLASIntCast(A->cmap->n, &n));
   PetscCall(PetscHIPBLASGetHandle(&hipblasv2handle));
@@ -1419,6 +1419,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseHIP(Mat A, PetscBool flg)
     A->ops->shift                   = MatShift_SeqDenseHIP;
     A->ops->copy                    = MatCopy_SeqDenseHIP;
     A->ops->zeroentries             = MatZeroEntries_SeqDenseHIP;
+    A->ops->setup                   = MatSetUp_SeqDenseHIP;
   } else {
     /* make sure we have an up-to-date copy on the CPU */
     PetscCall(MatSeqDenseHIPCopyFromGPU(A));
@@ -1463,6 +1464,8 @@ static PetscErrorCode MatBindToCPU_SeqDenseHIP(Mat A, PetscBool flg)
     A->ops->shift                   = MatShift_SeqDense;
     A->ops->copy                    = MatCopy_SeqDense;
     A->ops->zeroentries             = MatZeroEntries_SeqDense;
+    A->ops->setup                   = MatSetUp_SeqDense;
+    A->ops->setrandom               = MatSetRandom_SeqDense;
   }
   if (a->cmat) { PetscCall(MatBindToCPU(a->cmat, flg)); }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1536,7 +1539,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseHIP(Mat M, MatType type, MatReuse reu
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaij_seqdensehip_C", MatProductSetFromOptions_SeqAIJ_SeqDense));
   a = (Mat_SeqDense *)B->data;
   PetscCall(VecDestroy(&a->cvec)); /* cvec might be VECSEQ. Destroy it and rebuild a VECSEQHIP when needed */
-  PetscCall(PetscNewLog(B, &dB));
+  PetscCall(PetscNew(&dB));
   B->spptr       = dB;
   B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   PetscCall(MatBindToCPU_SeqDenseHIP(B, PETSC_FALSE));
