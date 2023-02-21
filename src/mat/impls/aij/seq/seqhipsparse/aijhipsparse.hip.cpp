@@ -3652,7 +3652,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEMultStruct_Destroy(Mat_SeqAIJHIPSPARSEMu
         PetscCallHIPSPARSE(hipsparseDestroyHybMat(hybMat));
       } else {
         mat = (CsrMatrix *)(*matstruct)->mat;
-        CsrMatrix_Destroy(&mat);
+        PetscCall(CsrMatrix_Destroy(&mat));
       }
     }
     if ((*matstruct)->descr) PetscCallHIPSPARSE(hipsparseDestroyMatDescr((*matstruct)->descr));
