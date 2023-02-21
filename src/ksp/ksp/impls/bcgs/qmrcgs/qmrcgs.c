@@ -224,7 +224,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 + * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994)
 - * - Ghai, Lu, and Jiao (NLAA 2019)
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPFBCGSL`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPBCGSL`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 {
