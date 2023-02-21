@@ -10,6 +10,7 @@ class Configure(config.package.GNUPackage):
     self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
     self.isMPI                  = 1
+    self.buildLanguages         = ['C','Cxx']
     return
 
   def setupDependencies(self, framework):
@@ -24,8 +25,6 @@ class Configure(config.package.GNUPackage):
     args.append('--with-rsh=ssh')
     args.append('--disable-man-pages')
     args.append('MAKE='+self.make.make)
-    if not hasattr(self.compilers, 'CXX'):
-      raise RuntimeError('Error: OpenMPI requires C++ compiler. None specified')
     if hasattr(self.compilers, 'FC'):
       self.pushLanguage('FC')
       if not self.fortran.fortranIsF90:

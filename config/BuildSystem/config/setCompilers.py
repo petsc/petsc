@@ -1591,7 +1591,8 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcp')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpic++')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
+      if not Configure.isDarwin(self.log):
+        yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
       raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work. See https://petsc.org/release/faq/#invalid-mpi-compilers')
     else:
@@ -1609,7 +1610,8 @@ class Configure(config.base.Configure):
         yield 'mpicxx'
         yield 'mpiicpc'
         yield 'mpCC_r'
-        yield 'mpiCC'
+        if not Configure.isDarwin(self.log):
+          yield 'mpiCC'
         yield 'mpic++'
         yield 'mpCC'
         yield 'mpxlC'
