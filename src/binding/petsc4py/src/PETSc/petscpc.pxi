@@ -119,6 +119,17 @@ cdef extern from * nogil:
         PC_HPDDM_COARSE_CORRECTION_ADDITIVE
         PC_HPDDM_COARSE_CORRECTION_BALANCED
 
+    ctypedef enum PetscPCDeflationSpaceType "PCDeflationSpaceType":
+        PC_DEFLATION_SPACE_HAAR
+        PC_DEFLATION_SPACE_DB2
+        PC_DEFLATION_SPACE_DB4
+        PC_DEFLATION_SPACE_DB8
+        PC_DEFLATION_SPACE_DB16
+        PC_DEFLATION_SPACE_BIORTH22
+        PC_DEFLATION_SPACE_MEYER
+        PC_DEFLATION_SPACE_AGGREGATION
+        PC_DEFLATION_SPACE_USER
+
     ctypedef enum PetscPCFailedReason "PCFailedReason":
         PC_SETUP_ERROR
         PC_NOERROR
@@ -328,6 +339,18 @@ cdef extern from * nogil:
     PetscErrorCode PCSPAISetCacheSize(PetscPC,PetscInt)
     PetscErrorCode PCSPAISetVerbose(PetscPC,PetscInt)
     PetscErrorCode PCSPAISetSp(PetscPC,PetscInt)
+
+    # --- DEFLATION ---
+    PetscErrorCode PCDeflationSetInitOnly(PetscPC,PetscBool)
+    PetscErrorCode PCDeflationSetLevels(PetscPC,PetscInt)
+    PetscErrorCode PCDeflationSetReductionFactor(PetscPC,PetscInt)
+    PetscErrorCode PCDeflationSetCorrectionFactor(PetscPC,PetscScalar)
+    PetscErrorCode PCDeflationSetSpaceToCompute(PetscPC,PetscPCDeflationSpaceType,PetscInt)
+    PetscErrorCode PCDeflationSetSpace(PetscPC,PetscMat,PetscBool)
+    PetscErrorCode PCDeflationSetProjectionNullSpaceMat(PetscPC,PetscMat)
+    PetscErrorCode PCDeflationSetCoarseMat(PetscPC,PetscMat)
+    PetscErrorCode PCDeflationGetCoarseKSP(PetscPC,PetscKSP*)
+    PetscErrorCode PCDeflationGetPC(PetscPC,PetscPC*)
 
     # --- PYTHON ---
     PetscErrorCode PCPythonSetType(PetscPC,char[])
