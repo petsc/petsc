@@ -76,7 +76,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 +  ksp - the Krylov space context
 -  viewer - visualization context
 
-   Options Database Keys:
+   Options Database Key:
 .  -ksp_view - print the `KSP` data structure at the end of each `KSPSolve()` call
 
    Notes:
@@ -319,7 +319,7 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 +  ksp - Krylov solver context
 -  flg - `PETSC_TRUE` or `PETSC_FALSE`
 
-   Options Database Keys:
+   Options Database Key:
 .  -ksp_lag_norm - lag the calculated residual norm
 
    Level: advanced
@@ -449,21 +449,21 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
    Notes:
     If you know the operator Amat has a null space you can use `MatSetNullSpace()` and `MatSetTransposeNullSpace()` to supply the null
-    space to Amat and the `KSP` solvers will automatically use that null space as needed during the solution process.
+    space to `Amat` and the `KSP` solvers will automatically use that null space as needed during the solution process.
 
     All future calls to `KSPSetOperators()` must use the same size matrices!
 
-    Passing a NULL for Amat or Pmat removes the matrix that is currently used.
+    Passing a `NULL` for `Amat` or `Pmat` removes the matrix that is currently used.
 
-    If you wish to replace either Amat or Pmat but leave the other one untouched then
-    first call KSPGetOperators() to get the one you wish to keep, call `PetscObjectReference()`
+    If you wish to replace either `Amat` or `Pmat` but leave the other one untouched then
+    first call `KSPGetOperators()` to get the one you wish to keep, call `PetscObjectReference()`
     on it and then pass it back in in your call to `KSPSetOperators()`.
 
    Developer Notes:
    If the operators have NOT been set with `KSPSetOperators()` then the operators
       are created in the `PC` and returned to the user. In this case, if both operators
       mat and pmat are requested, two DIFFERENT operators will be returned. If
-      only one is requested both operators in the PC will be the same (i.e. as
+      only one is requested both operators in the `PC` will be the same (i.e. as
       if one had called `KSPSetOperators()` with the same argument for both `Mat`s).
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with `MatCreate()`. For example,
@@ -526,7 +526,7 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
 
    Output Parameters:
 +  Amat - the matrix that defines the linear system
--  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as `Amat`.
 
     Level: intermediate
 
@@ -555,7 +555,7 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 
    Output Parameters:
 +  mat - the matrix associated with the linear system was set
--  pmat - matrix associated with the preconditioner was set, usually the same
+-  pmat - matrix associated with the preconditioner was set, usually the same as `mat`
 
    Level: intermediate
 
@@ -727,7 +727,9 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 -  type - a known method
 
    Options Database Key:
-.  -ksp_type  <method> - Sets the method; use -help for a list  of available methods (for instance, cg or gmres)
+.  -ksp_type  <method> - Sets the method; use `-help` for a list  of available methods (for instance, cg or gmres)
+
+   Level: intermediate
 
    Notes:
    See "petsc/include/petscksp.h" for available methods (for instance, `KSPCG` or `KSPGMRES`).
@@ -743,8 +745,6 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   program, and the user's application is taking responsibility for
   choosing the appropriate method.  In other words, this routine is
   not for beginners.
-
-  Level: intermediate
 
   Developer Note:
   `KSPRegister()` is used to add Krylov types to `KSPList` from which they are accessed by `KSPSetType()`.
@@ -861,8 +861,8 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
 . vtype   - A `PetscViewerType` for the output
 . format  - A `PetscViewerFormat` for the output
 . monitor - Monitor routine
-. create  - Creation routine, or NULL
-- destroy - Destruction routine, or NULL
+. create  - Creation routine, or `NULL`
+- destroy - Destruction routine, or `NULL`
 
   Level: advanced
 
