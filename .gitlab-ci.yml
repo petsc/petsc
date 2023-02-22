@@ -1137,6 +1137,7 @@ pages:  # this job name has special meaning to GitLab
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
     - git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/manual/
     - make clean BUILDDIR="../public/release"
+    - git clean -fdxq && rm -rf images
     - git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
     - rm -rf ../public/*/.doctrees
   only:
