@@ -5,31 +5,12 @@ Mesh in 2 dimensions:
   Number of 1-cells per rank: 12
   Number of 2-cells per rank: 4
 Labels:
-  depth: 3 strata with value/size (0 (9), 1 (12), 2 (4))
-  Face Sets: 4 strata with value/size (4 (2), 2 (2), 1 (2), 3 (2))
   marker: 1 strata with value/size (1 (16))
-DM Object: 1 MPI process
+  Face Sets: 4 strata with value/size (4 (2), 2 (2), 1 (2), 3 (2))
+  depth: 3 strata with value/size (0 (9), 1 (12), 2 (4))
+  celltype: 3 strata with value/size (4 (4), 0 (9), 1 (12))
+DM Object: Particles 1 MPI process
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 16 
-  buffer             = 0 
-  allocated          = 16 
-  nfields registered = 5 
-    [  0]     DMSwarm_pid : Mem. usage       = 1.28e-04 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  1]    DMSwarm_rank : Mem. usage       = 6.40e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 2.56e-04 (MB) [rank0]
-                            blocksize        = 2 
-                            atomic size      = 16 [full block, bs=2]
-                            atomic size/item = 8 
-    [  3]  DMSwarm_cellid : Mem. usage       = 6.40e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  4]             f_q : Mem. usage       = 1.28e-04 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-  Total mem. usage                           = 6.40e-04 (MB) (collective)
-Projected L2 Error: 0.18663
+Particles in 2 dimensions:
+  Number of particles per rank: 16
+Projected L2 Error: 2.83392e-16
