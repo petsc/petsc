@@ -379,7 +379,71 @@ inline PetscErrorCode VecMPI_CUPM<T>::setvaluescoo(Vec x, const PetscScalar v[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+namespace
+{
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecCreateMPICUPMAsync(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v) noexcept
+{
+  PetscFunctionBegin;
+  PetscValidPointer(v, 4);
+  PetscCall(VecMPI_CUPM<T>::creatempicupm(comm, 0, n, N, v, PETSC_TRUE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecCreateMPICUPMWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
+{
+  PetscFunctionBegin;
+  if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
+  PetscValidPointer(v, 7);
+  PetscCall(VecMPI_CUPM<T>::creatempicupmwitharrays(comm, bs, n, N, cpuarray, gpuarray, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecCreateMPICUPMWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar gpuarray[], Vec *v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecCreateMPICUPMWithArrays<T>(comm, bs, n, N, nullptr, gpuarray, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+} // anonymous namespace
+
 } // namespace impl
+
+namespace
+{
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecCreateMPICUPMAsync(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v) noexcept
+{
+  PetscFunctionBegin;
+  PetscValidPointer(v, 4);
+  PetscCall(impl::VecMPI_CUPM<T>::creatempicupm(comm, 0, n, N, v, PETSC_TRUE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecCreateMPICUPMWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
+{
+  PetscFunctionBegin;
+  if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
+  PetscValidPointer(v, 7);
+  PetscCall(impl::VecMPI_CUPM<T>::creatempicupmwitharrays(comm, bs, n, N, cpuarray, gpuarray, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecCreateMPICUPMWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar gpuarray[], Vec *v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecCreateMPICUPMWithArrays<T>(comm, bs, n, N, nullptr, gpuarray, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+} // anonymous namespace
 
 } // namespace cupm
 
