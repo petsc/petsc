@@ -1176,7 +1176,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectCompose(PetscObject, const char[], PetscO
 PETSC_EXTERN PetscErrorCode PetscObjectRemoveReference(PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject, const char[], void (*)(void));
-#define PetscObjectComposeFunction(a, b, d) PetscObjectComposeFunction_Private((a), (b), (PetscVoidFunction)(d))
+#define PetscObjectComposeFunction(a, b, ...) PetscObjectComposeFunction_Private((a), (b), (PetscVoidFunction)(__VA_ARGS__))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
