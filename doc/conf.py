@@ -105,6 +105,7 @@ html_theme_options = {
     "use_edit_page_button": True,
     "footer_items": ["copyright", "sphinx-version", "last-updated"],
 #    "secondary_sidebar_items" : ["edit-this-page"],
+     "header_links_before_dropdown": 9,
     "logo": {
         "image_light": os.path.basename(html_logo_light),
         "image_dark": os.path.basename(html_logo_dark)
