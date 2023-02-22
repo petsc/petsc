@@ -1,10 +1,7 @@
+-include ../../../../../../../petscdir.mk
+#requirespackage   'PETSC_HAVE_CUDA'
 
--include ../../../../../../petscdir.mk
-#requirespackage   'PETSC_HAVE_HIP'
-
-ALL: lib
-
-SOURCEHIP= densehip.hip.cpp
+SOURCECU = matseqdensecuda.cu
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

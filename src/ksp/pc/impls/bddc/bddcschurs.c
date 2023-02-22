@@ -1415,7 +1415,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             PetscCall(MatSeqDenseInvertFactors_Private(M));
 #if defined(PETSC_HAVE_CUDA)
           } else if (isdensecuda) {
-            PetscCall(MatSeqDenseCUDAInvertFactors_Private(M));
+            PetscCall(MatSeqDenseCUDAInvertFactors_Internal(M));
 #endif
           } else SETERRQ(PetscObjectComm((PetscObject)M), PETSC_ERR_SUP, "Not implemented for type %s", Stype);
           PetscCall(MatDenseGetArrayRead(M, &vals));

@@ -302,10 +302,10 @@ static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, Pets
 
 PETSC_INTERN PetscErrorCode VecStrideGather_Default(Vec, PetscInt, Vec, InsertMode);
 PETSC_INTERN PetscErrorCode VecStrideScatter_Default(Vec, PetscInt, Vec, InsertMode);
-PETSC_INTERN PetscErrorCode VecReciprocal_Default(Vec);
 PETSC_INTERN PetscErrorCode VecStrideSubSetGather_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 PETSC_INTERN PetscErrorCode VecStrideSubSetScatter_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecReciprocal_Default(Vec);
 #if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject, void *);

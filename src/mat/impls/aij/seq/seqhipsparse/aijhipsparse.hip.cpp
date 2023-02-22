@@ -7,6 +7,7 @@
 #include <petscconf.h>
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/dense/seq/dense.h> // MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Internal()
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/vecimpl.h>
 #undef VecType
@@ -62,7 +63,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat, PetscBool);
 static PetscErrorCode MatSetPreallocationCOO_SeqAIJHIPSPARSE(Mat, PetscCount, PetscInt[], PetscInt[]);
 static PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE(Mat, const PetscScalar[], InsertMode);
 
-PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(Mat, Mat, Mat, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJHIPSPARSE(Mat, MatType, MatReuse, Mat *);
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijhipsparse_hipsparse_band(Mat, MatFactorType, Mat *);
@@ -2336,10 +2336,10 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
   PetscCall(MatDenseRestoreArrayReadAndMemType(B, &barray));
   if (product->type == MATPRODUCT_RARt) {
     PetscCall(MatDenseRestoreArrayWriteAndMemType(mmdata->X, &carray));
-    PetscCall(MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(B, mmdata->X, C, PETSC_FALSE, PETSC_FALSE));
+    PetscCall(MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Internal(B, mmdata->X, C, PETSC_FALSE, PETSC_FALSE));
   } else if (product->type == MATPRODUCT_PtAP) {
     PetscCall(MatDenseRestoreArrayWriteAndMemType(mmdata->X, &carray));
-    PetscCall(MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Private(B, mmdata->X, C, PETSC_TRUE, PETSC_FALSE));
+    PetscCall(MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Internal(B, mmdata->X, C, PETSC_TRUE, PETSC_FALSE));
   } else PetscCall(MatDenseRestoreArrayWriteAndMemType(C, &carray));
   if (mmdata->cisdense) PetscCall(MatConvert(C, MATSEQDENSE, MAT_INPLACE_MATRIX, &C));
   if (!biship) PetscCall(MatConvert(B, MATSEQDENSE, MAT_INPLACE_MATRIX, &B));

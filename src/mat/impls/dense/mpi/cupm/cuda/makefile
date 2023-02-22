@@ -1,8 +1,7 @@
--include ../../../../../petscdir.mk
+-include ../../../../../../../petscdir.mk
+#requirespackage   'PETSC_HAVE_CUDA'
 
-DIRS     = cupm
-SOURCEC  = dense.c densehdf5.c
-SOURCEH  = dense.h
+SOURCECU = matmpidensecuda.cu
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

@@ -2334,7 +2334,7 @@ static PetscErrorCode MatDestroy_MatMatCusparse(void *data)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(Mat, Mat, Mat, PetscBool, PetscBool);
+#include <../src/mat/impls/dense/seq/dense.h> // MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Internal()
 
 static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
 {
@@ -2482,10 +2482,10 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   PetscCall(MatDenseRestoreArrayReadAndMemType(B, &barray));
   if (product->type == MATPRODUCT_RARt) {
     PetscCall(MatDenseRestoreArrayWriteAndMemType(mmdata->X, &carray));
-    PetscCall(MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(B, mmdata->X, C, PETSC_FALSE, PETSC_FALSE));
+    PetscCall(MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Internal(B, mmdata->X, C, PETSC_FALSE, PETSC_FALSE));
   } else if (product->type == MATPRODUCT_PtAP) {
     PetscCall(MatDenseRestoreArrayWriteAndMemType(mmdata->X, &carray));
-    PetscCall(MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(B, mmdata->X, C, PETSC_TRUE, PETSC_FALSE));
+    PetscCall(MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Internal(B, mmdata->X, C, PETSC_TRUE, PETSC_FALSE));
   } else {
     PetscCall(MatDenseRestoreArrayWriteAndMemType(C, &carray));
   }

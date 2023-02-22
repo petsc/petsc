@@ -56,6 +56,14 @@ PetscErrorCode MatFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(PETSC_HAVE_CUDA)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_DENSECUDA(void);
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_DENSEHIP(void);
+#endif
+
 #if defined(PETSC_HAVE_MUMPS)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
@@ -359,20 +367,10 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_petsc));
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE, MAT_FACTOR_QR, MatGetFactor_seqdense_petsc));
 #if defined(PETSC_HAVE_CUDA)
-  PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSE, MAT_FACTOR_LU, MatGetFactor_seqdense_cuda));
-  PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_cuda));
-  PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSE, MAT_FACTOR_QR, MatGetFactor_seqdense_cuda));
-  PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA, MAT_FACTOR_LU, MatGetFactor_seqdense_cuda));
-  PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_cuda));
-  PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA, MAT_FACTOR_QR, MatGetFactor_seqdense_cuda));
+  PetscCall(MatSolverTypeRegister_DENSECUDA());
 #endif
 #if defined(PETSC_HAVE_HIP)
-  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSE, MAT_FACTOR_LU, MatGetFactor_seqdense_hip));
-  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_hip));
-  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSE, MAT_FACTOR_QR, MatGetFactor_seqdense_hip));
-  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSEHIP, MAT_FACTOR_LU, MatGetFactor_seqdense_hip));
-  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSEHIP, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_hip));
-  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSEHIP, MAT_FACTOR_QR, MatGetFactor_seqdense_hip));
+  PetscCall(MatSolverTypeRegister_DENSEHIP());
 #endif
 
   PetscCall(MatSolverTypeRegister(MATSOLVERBAS, MATSEQAIJ, MAT_FACTOR_ICC, MatGetFactor_seqaij_bas));
