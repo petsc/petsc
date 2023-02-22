@@ -32,7 +32,7 @@ class HostAllocator;
 template <DeviceType T, typename PetscType>
 class HostAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
   using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
   using real_value_type = typename base_type::real_value_type;
   using size_type       = typename base_type::size_type;
@@ -83,7 +83,7 @@ class DeviceAllocator;
 template <DeviceType T, typename PetscType>
 class DeviceAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
   using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
   using real_value_type = typename base_type::real_value_type;
   using size_type       = typename base_type::size_type;

@@ -22,7 +22,7 @@ namespace cupm
 template <DeviceType T, unsigned long flags>
 class CUPMEventPool : impl::Interface<T>, public RegisterFinalizeable<CUPMEventPool<T, flags>> {
 public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
   PetscErrorCode allocate(cupmEvent_t *) noexcept;
   PetscErrorCode deallocate(cupmEvent_t *) noexcept;
@@ -103,7 +103,7 @@ class CUPMEvent : impl::Interface<T>, public memory::PoolAllocated<CUPMEvent<T>>
   using pool_type = memory::PoolAllocated<CUPMEvent<T>>;
 
 public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
   constexpr CUPMEvent() noexcept = default;
   ~CUPMEvent() noexcept;
@@ -133,8 +133,9 @@ inline CUPMEvent<T>::~CUPMEvent() noexcept
 }
 
 template <DeviceType T>
-inline CUPMEvent<T>::CUPMEvent(CUPMEvent &&other) noexcept : interface_type(std::move(other)), pool_type(std::move(other)), event_(util::exchange(other.event_, cupmEvent_t{}))
+inline CUPMEvent<T>::CUPMEvent(CUPMEvent &&other) noexcept : pool_type(std::move(other)), event_(util::exchange(other.event_, cupmEvent_t{}))
 {
+  static_assert(std::is_empty<impl::Interface<T>>::value, "");
 }
 
 template <DeviceType T>
@@ -142,8 +143,7 @@ inline CUPMEvent<T> &CUPMEvent<T>::operator=(CUPMEvent &&other) noexcept
 {
   PetscFunctionBegin;
   if (this != &other) {
-    interface_type::operator=(std::move(other));
-    pool_type::     operator=(std::move(other));
+    pool_type::operator=(std::move(other));
     PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().deallocate(&event_));
     event_ = util::exchange(other.event_, cupmEvent_t{});
   }
