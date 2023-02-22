@@ -206,7 +206,7 @@ template <typename T>
 PETSC_NODISCARD inline constexpr PetscObject PetscObjectCast(const T &object) noexcept
 {
   static_assert(Petsc::util::is_derived_petsc_object<T>::value, "If this is a PetscObject then the private definition of the struct must be visible for this to work");
-  return &object->hdr;
+  return (PetscObject)object;
 }
 
 PETSC_NODISCARD inline constexpr PetscObject PetscObjectCast(PetscObject object) noexcept
