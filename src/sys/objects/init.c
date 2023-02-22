@@ -357,9 +357,9 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall(PetscGetVersion(version, 256));
     PetscCall((*PetscHelpPrintf)(comm, "%s\n", version));
     PetscCall((*PetscHelpPrintf)(comm, "%s", PETSC_AUTHOR_INFO));
-    PetscCall((*PetscHelpPrintf)(comm, "See docs/changes/index.html for recent updates.\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "See docs/faq.html for problems.\n"));
-    PetscCall((*PetscHelpPrintf)(comm, "See docs/manualpages/index.html for help. \n"));
+    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/changes for recent updates.\n"));
+    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/faq for problems.\n"));
+    PetscCall((*PetscHelpPrintf)(comm, "See https://petsc.org/release/manualpages for help. \n"));
     PetscCall((*PetscHelpPrintf)(comm, "Libraries linked from %s\n", PETSC_LIB_DIR));
     PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n"));
   }

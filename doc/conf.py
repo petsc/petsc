@@ -83,7 +83,7 @@ bibtex_bibfiles = ['petsc.bib']
 
 myst_enable_extensions = ["dollarmath", "amsmath", "deflist"]
 
-remove_from_toctrees = ['docs/manualpages/*/*','docs/changes/2*','docs/changes/3*']
+remove_from_toctrees = ['manualpages/*/*','changes/2*','changes/3*']
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -137,15 +137,15 @@ latex_engine = 'xelatex'
 
 # How to arrange the documents into LaTeX files, building only the manual.
 latex_documents = [
-        ('docs/manual/index', 'manual.tex', 'PETSc/TAO Users Manual', author, 'manual', False)
+        ('manual/index', 'manual.tex', 'PETSc/TAO Users Manual', author, 'manual', False)
         ]
 
 latex_additional_files = [
-    'images/docs/manual/anl_tech_report/ArgonneLogo.pdf',
-    'images/docs/manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
-    'images/docs/manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
-    'docs/manual/anl_tech_report/first.inc',
-    'docs/manual/anl_tech_report/last.inc',
+    'images/manual/anl_tech_report/ArgonneLogo.pdf',
+    'images/manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
+    'images/manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
+    'manual/anl_tech_report/first.inc',
+    'manual/anl_tech_report/last.inc',
 ]
 
 latex_elements = {

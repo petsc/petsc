@@ -48,7 +48,7 @@ def _update_edit_link(filename, url):
 
 
 def fix_man_page_edit_links(root):
-    base = os.path.join(root, "docs", "manualpages")
+    base = os.path.join(root, "manualpages")
     for root, dirs, filenames in os.walk(base):
         for filename in filenames:
             if filename.endswith(".html"):

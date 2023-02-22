@@ -85,8 +85,8 @@ petsc-dist/config/solaris2.9
 petsc-dist/config/solaris2.9-lam
 petsc-dist/src/da/tests/scripts
 petsc-dist/src/ksp/tests/scripts
-petsc-dist/docs/manualpages/logfile.txt
-petsc-dist/docs/manualpages/manualpages.cit
+petsc-dist/manualpages/logfile.txt
+petsc-dist/manualpages/manualpages.cit
 petsc-dist/bmake/linux-mcs
 petsc-dist/bmake/prefefined/alpha_uni
 petsc-dist/bmake/predefined/linux_superludist

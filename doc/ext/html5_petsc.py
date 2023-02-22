@@ -74,9 +74,9 @@ class PETScHTMLTranslatorMixin:
     custom processing to the generated HTML.
 
     Replaces any string XXX that matches a manual page name with
-    <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/docs/manualpages/YY/XXX.html">XXX</a>
+    <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/manualpages/YY/XXX.html">XXX</a>
     or
-    <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/docs/manualpages/YY/XXX">XXX</a>
+    <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/manualpages/YY/XXX">XXX</a>
     depending on if the Sphinx build is html or dirhtml
     """
 
@@ -89,12 +89,12 @@ class PETScHTMLTranslatorMixin:
     def _get_manpage_map(self) -> Dict[str,str]:
         """ Return the manpage strings to link, as a dict.  """
         if not self._manpage_map:
-            htmlmap_filename = os.path.join('_build_classic', 'docs', 'manualpages', 'htmlmap_modified')
+            htmlmap_filename = os.path.join('_build_classic', 'manualpages', 'htmlmap_modified')
             if not os.path.isfile(htmlmap_filename):
                 raise Exception("Expected file %s not found. Run script to build classic docs subset." %  htmlmap_filename)
             manpage_map_raw = htmlmap_to_dict(htmlmap_filename)
             manpage_prefix_base = PETSC_DOC_OUT_ROOT_PLACEHOLDER
-            manpage_prefix = os.path.join(manpage_prefix_base, 'docs', '')
+            manpage_prefix = os.path.join(manpage_prefix_base, '')
             self._manpage_map = dict_complete_links(manpage_map_raw, manpage_prefix)
         return self._manpage_map
 

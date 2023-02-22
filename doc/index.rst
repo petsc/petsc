@@ -35,15 +35,15 @@ Main Topics
 
    overview/index
    install/index
-   docs/manual/index
-   docs/manualpages/index
+   manual/index
+   manualpages/index
    tutorials/index
    faq/index
    community/index
    developers/index
    miscellaneous/index
 
-* `PETSc/TAO Users Manual in PDF <docs/manual/manual.pdf>`__
+* `PETSc/TAO Users Manual in PDF <manual/manual.pdf>`__
 
 .. _doc_toolkits_use_petsc:
 

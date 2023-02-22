@@ -4,7 +4,7 @@
 #
 #  This creates .html pages for each PETSc man section
 #
-foreach dir ($1/docs/manualpages/man?)
+foreach dir ($1/manualpages/man?)
   pushd $dir
   ls > .tmp
     set REF = $dir:t

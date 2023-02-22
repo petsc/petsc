@@ -124,7 +124,7 @@ ghost points for the seventh process of a two-dimensional, structured
 parallel grid. Each box represents a process; the ghost points for the
 seventh process’s local part of a parallel array are shown in gray.
 
-.. figure:: /images/docs/manual/ghost.*
+.. figure:: /images/manual/ghost.*
    :alt: Ghost Points for Two Stencil Types on the Seventh Process
    :name: fig_ghosts
 
@@ -1347,7 +1347,7 @@ the command
 In Figure :any:`fig_daao` we indicate the orderings for a
 two-dimensional distributed array, divided among four processes.
 
-.. figure:: /images/docs/manual/danumbering.*
+.. figure:: /images/manual/danumbering.*
    :alt: Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processes)
    :name: fig_daao
 

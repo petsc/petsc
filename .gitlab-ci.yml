@@ -1114,7 +1114,7 @@ docs-review:
   script:
     - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 1") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - (make latexpdf SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
-    - cp _build/latex/manual.pdf ../public/html/docs/manual/
+    - cp _build/latex/manual.pdf ../public/html/manual/
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/html/index.html
@@ -1135,7 +1135,7 @@ pages:  # this job name has special meaning to GitLab
   script:
     - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
+    - git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/manual/
     - make clean BUILDDIR="../public/release"
     - git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
     - rm -rf ../public/*/.doctrees

@@ -424,9 +424,9 @@ preconditioning (``PCNONE`` or ``-pc_type none``), a user-provided
 preconditioner matrix, or a user-provided preconditioner shell
 (``PCSHELL``). In other words, matrix-free methods cannot be used if a
 direct solver is to be employed. Details about using matrix-free methods
-are provided in the :doc:`/docs/manual/index`.
+are provided in the :doc:`/manual/index`.
 
-.. figure:: /images/docs/manual/taofig.svg
+.. figure:: /images/manual/taofig.svg
   :name: fig_taocallbacks
 
   Tao use of PETSc and callbacks
@@ -2957,7 +2957,7 @@ access the linear solver with the
 
 command. With access to the KSP object, users can customize it for their
 application to achieve improved performance. Additional details on the
-KSP options in PETSc can be found in the :doc:`/docs/manual/index`.
+KSP options in PETSc can be found in the :doc:`/manual/index`.
 
 Monitors
 ~~~~~~~~
