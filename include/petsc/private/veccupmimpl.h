@@ -20,12 +20,12 @@ PETSC_INTERN PetscErrorCode VecAllocateNVSHMEM_SeqCUDA(Vec);
 
 #if defined(__cplusplus) && PetscDefined(HAVE_DEVICE)
   #include <petsc/private/deviceimpl.h>
+  #include <petsc/private/cupmobject.hpp>
   #include <petsc/private/cupmblasinterface.hpp>
 
   #include <petsc/private/cpp/functional.hpp>
 
-  #include <limits>  // std::numeric_limits
-  #include <cstring> // std::memset
+  #include <limits> // std::numeric_limits
 
 namespace Petsc
 {
@@ -41,82 +41,6 @@ namespace impl
 
 namespace
 {
-
-// ==========================================================================================
-// UseCUPMHostAlloc_
-//
-// A simple RAII helper for PetscMallocSet[CUDA|HIP]Host(). it exists because integrating the
-// regular versions would be an enormous pain to square with the templated types...
-// ==========================================================================================
-template <device::cupm::DeviceType T>
-class UseCUPMHostAlloc_ : device::cupm::impl::Interface<T> {
-public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
-
-  UseCUPMHostAlloc_(bool) noexcept;
-  ~UseCUPMHostAlloc_() noexcept;
-
-  PETSC_NODISCARD bool value() const noexcept;
-
-private:
-    // would have loved to just do
-    //
-    // const auto oldmalloc = PetscTrMalloc;
-    //
-    // but in order to use auto the member needs to be static; in order to be static it must
-    // also be constexpr -- which in turn requires an initializer (also implicitly required by
-    // auto). But constexpr needs a constant expression initializer, so we can't initialize it
-    // with global (mutable) variables...
-  #define DECLTYPE_AUTO(left, right) decltype(right) left = right
-  const DECLTYPE_AUTO(oldmalloc_, PetscTrMalloc);
-  const DECLTYPE_AUTO(oldfree_, PetscTrFree);
-  const DECLTYPE_AUTO(oldrealloc_, PetscTrRealloc);
-  #undef DECLTYPE_AUTO
-  bool v_;
-};
-
-template <device::cupm::DeviceType T>
-inline UseCUPMHostAlloc_<T>::UseCUPMHostAlloc_(bool useit) noexcept : v_(useit)
-{
-  PetscFunctionBegin;
-  if (useit) {
-    // all unused arguments are un-named, this saves having to add PETSC_UNUSED to them all
-    PetscTrMalloc = [](std::size_t sz, PetscBool clear, int, const char *, const char *, void **ptr) {
-      PetscFunctionBegin;
-      PetscCallCUPM(cupmMallocHost(ptr, sz));
-      if (clear) std::memset(*ptr, 0, sz);
-      PetscFunctionReturn(PETSC_SUCCESS);
-    };
-    PetscTrFree = [](void *ptr, int, const char *, const char *) {
-      PetscFunctionBegin;
-      PetscCallCUPM(cupmFreeHost(ptr));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    };
-    PetscTrRealloc = [](std::size_t, int, const char *, const char *, void **) {
-      // REVIEW ME: can be implemented by malloc->copy->free?
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "%s has no realloc()", cupmName());
-    };
-  }
-  PetscFunctionReturnVoid();
-}
-
-template <device::cupm::DeviceType T>
-inline bool UseCUPMHostAlloc_<T>::value() const noexcept
-{
-  return v_;
-}
-
-template <device::cupm::DeviceType T>
-inline UseCUPMHostAlloc_<T>::~UseCUPMHostAlloc_() noexcept
-{
-  PetscFunctionBegin;
-  if (value()) {
-    PetscTrMalloc  = oldmalloc_;
-    PetscTrFree    = oldfree_;
-    PetscTrRealloc = oldrealloc_;
-  }
-  PetscFunctionReturnVoid();
-}
 
 struct no_op {
   template <typename... T>
@@ -158,9 +82,10 @@ class VecMPI_CUPM;
 // VecSeq or VecMPI. This is in effect "inside-out" polymorphism.
 // ==========================================================================================
 template <device::cupm::DeviceType T, typename Derived>
-class Vec_CUPMBase : device::cupm::impl::BlasInterface<T> {
+class Vec_CUPMBase : protected device::cupm::impl::CUPMObject<T> {
 public:
-  PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(cupmBlasInterface_t, T);
+  PETSC_CUPMOBJECT_HEADER(T);
+
   // ==========================================================================================
   // Vec_CUPMBase::vector_array
   //
@@ -169,34 +94,6 @@ public:
   // ==========================================================================================
   template <PetscMemType, PetscMemoryAccessMode>
   class vector_array;
-
-private:
-  // A debug check to ensure that a given pointer-memtype pairing taken from user-land is
-  // actually correct. Errors on mismatch
-  static PetscErrorCode CheckPointerMatchesMemType_(const void *ptr, PetscMemType mtype) noexcept
-  {
-    PetscFunctionBegin;
-    if (PetscDefined(USE_DEBUG) && ptr) {
-      PetscMemType ptr_mtype;
-
-      PetscCall(PetscCUPMGetMemType(ptr, &ptr_mtype));
-      if (mtype == PETSC_MEMTYPE_HOST) {
-        PetscCheck(PetscMemTypeHost(ptr_mtype), PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
-      } else if (mtype == PETSC_MEMTYPE_DEVICE) {
-        // generic "device" memory should only care if the actual memtype is also generically
-        // "device"
-        PetscCheck(PetscMemTypeDevice(ptr_mtype), PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
-      } else {
-        PetscCheck(mtype == ptr_mtype, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Pointer %p declared as %s does not match actual memtype %s", ptr, PetscMemTypeToString(mtype), PetscMemTypeToString(ptr_mtype));
-      }
-    }
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  // The final stop in the GetHandles_/GetFromHandles_ chain. This retrieves the various
-  // compute handles and ensure the given PetscDeviceContext is of the right type
-  static PetscErrorCode GetFromHandleDispatch_(PetscDeviceContext, cupmBlasHandle_t *, cupmStream_t *) noexcept;
-  static PetscErrorCode GetHandleDispatch_(PetscDeviceContext *, cupmBlasHandle_t *, cupmStream_t *) noexcept;
 
 protected:
   static PetscErrorCode VecView_Debug(Vec v, const char *message = "") noexcept
@@ -223,18 +120,6 @@ protected:
     PetscCall(PetscPrintf(comm, "dptr is device mem?  %s\n", PetscBools[static_cast<PetscBool>(PetscMemTypeDevice(mtype))]));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-
-  // Helper routines to retrieve various combinations of handles. The first set (GetHandles_)
-  // gets a PetscDeviceContext along with it, while the second set (GetHandlesFrom_) assumes
-  // you've gotten the PetscDeviceContext already, and retrieves the handles from it. All of
-  // them check that the PetscDeviceContext is of the appropriate type
-  static PetscErrorCode GetHandles_(PetscDeviceContext *, cupmBlasHandle_t * = nullptr, cupmStream_t * = nullptr) noexcept;
-  static PetscErrorCode GetHandles_(PetscDeviceContext *, cupmStream_t *) noexcept;
-  static PetscErrorCode GetHandles_(cupmStream_t *) noexcept;
-  static PetscErrorCode GetHandles_(cupmBlasHandle_t *) noexcept;
-
-  static PetscErrorCode GetHandlesFrom_(PetscDeviceContext, cupmBlasHandle_t *, cupmStream_t * = nullptr) noexcept;
-  static PetscErrorCode GetHandlesFrom_(PetscDeviceContext, cupmStream_t *) noexcept;
 
   // Delete the allocated device array if required and replace it with the given array
   static PetscErrorCode ResetAllocatedDevicePtr_(PetscDeviceContext, Vec, PetscScalar * = nullptr) noexcept;
@@ -289,10 +174,11 @@ public:
   // Get the VecTypes
   PETSC_NODISCARD static constexpr VecType VECSEQCUPM() noexcept;
   PETSC_NODISCARD static constexpr VecType VECMPICUPM() noexcept;
+  PETSC_NODISCARD static constexpr VecType VECCUPM() noexcept;
+
   // Get the VecType of the calling vector
   template <typename U = Derived>
-  PETSC_NODISCARD static constexpr VecType         VECIMPLCUPM() noexcept;
-  PETSC_NODISCARD static constexpr PetscRandomType PETSCDEVICERAND() noexcept;
+  PETSC_NODISCARD static constexpr VecType VECIMPLCUPM() noexcept;
 
   // Call the host destroy function, i.e. VecDestroy_Seq()
   static PetscErrorCode VecDestroy_IMPL(Vec) noexcept;
@@ -312,13 +198,6 @@ public:
   PETSC_NODISCARD static auto HostArrayRead(PetscDeviceContext dctx, Vec v) noexcept PETSC_DECLTYPE_AUTO_RETURNS(vector_array<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ>{dctx, v});
   PETSC_NODISCARD static auto HostArrayWrite(PetscDeviceContext dctx, Vec v) noexcept PETSC_DECLTYPE_AUTO_RETURNS(vector_array<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_WRITE>{dctx, v});
   PETSC_NODISCARD static auto HostArrayReadWrite(PetscDeviceContext dctx, Vec v) noexcept PETSC_DECLTYPE_AUTO_RETURNS(vector_array<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>{dctx, v});
-
-  // disallow implicit conversion
-  template <typename U>
-  PETSC_NODISCARD static UseCUPMHostAlloc_<T> UseCUPMHostAlloc(U) noexcept = delete;
-  // utility for using cupmHostAlloc()
-  PETSC_NODISCARD static UseCUPMHostAlloc_<T> UseCUPMHostAlloc(bool) noexcept;
-  PETSC_NODISCARD static UseCUPMHostAlloc_<T> UseCUPMHostAlloc(PetscBool) noexcept;
 
   // ops-table functions
   static PetscErrorCode create(Vec) noexcept;
@@ -371,47 +250,16 @@ public:
 // ==========================================================================================
 template <device::cupm::DeviceType T, typename D>
 template <PetscMemType MT, PetscMemoryAccessMode MA>
-class Vec_CUPMBase<T, D>::vector_array {
+class Vec_CUPMBase<T, D>::vector_array : public device::cupm::impl::RestoreableArray<T, MT, MA> {
+  using base_type = device::cupm::impl::RestoreableArray<T, MT, MA>;
+
 public:
-  static const auto memory_type = MT;
-  static const auto access_type = MA;
-
-  using value_type        = PetscScalar;
-  using pointer_type      = value_type *;
-  using cupm_pointer_type = cupmScalar_t *;
-
   vector_array(PetscDeviceContext, Vec) noexcept;
   ~vector_array() noexcept;
 
-  constexpr vector_array(vector_array &&) noexcept            = default;
-  constexpr vector_array &operator=(vector_array &&) noexcept = default;
-
-  pointer_type      data() const noexcept;
-  cupm_pointer_type cupmdata() const noexcept;
-
-  operator pointer_type() const noexcept;
-  // in case pointer_type == cupmscalar_pointer_type we don't want this overload to exist, so
-  // we make a dummy template parameter to allow SFINAE to nix it for us
-  template <typename U = pointer_type, typename = util::enable_if_t<!std::is_same<U, cupm_pointer_type>::value>>
-  operator cupm_pointer_type() const noexcept;
-
 private:
-  pointer_type       ptr_  = nullptr;
-  PetscDeviceContext dctx_ = nullptr;
-  Vec                v_    = nullptr;
+  Vec v_ = nullptr;
 };
-
-// ==========================================================================================
-// Vec_CUPMBase::vector_array - Static Variables
-// ==========================================================================================
-
-template <device::cupm::DeviceType T, typename D>
-template <PetscMemType MT, PetscMemoryAccessMode MA>
-const PetscMemType Vec_CUPMBase<T, D>::vector_array<MT, MA>::memory_type;
-
-template <device::cupm::DeviceType T, typename D>
-template <PetscMemType MT, PetscMemoryAccessMode MA>
-const PetscMemoryAccessMode Vec_CUPMBase<T, D>::vector_array<MT, MA>::access_type;
 
 // ==========================================================================================
 // Vec_CUPMBase::vector_array - Public API
@@ -419,10 +267,10 @@ const PetscMemoryAccessMode Vec_CUPMBase<T, D>::vector_array<MT, MA>::access_typ
 
 template <device::cupm::DeviceType T, typename D>
 template <PetscMemType MT, PetscMemoryAccessMode MA>
-inline Vec_CUPMBase<T, D>::vector_array<MT, MA>::vector_array(PetscDeviceContext dctx, Vec v) noexcept : dctx_(dctx), v_(v)
+inline Vec_CUPMBase<T, D>::vector_array<MT, MA>::vector_array(PetscDeviceContext dctx, Vec v) noexcept : base_type{dctx}, v_{v}
 {
   PetscFunctionBegin;
-  PetscCallAbort(PETSC_COMM_SELF, getarray<MT, MA, true>(v, &ptr_, dctx));
+  PetscCallAbort(PETSC_COMM_SELF, Vec_CUPMBase<T, D>::template getarray<MT, MA, true>(v, &this->ptr_, dctx));
   PetscFunctionReturnVoid();
 }
 
@@ -431,116 +279,13 @@ template <PetscMemType MT, PetscMemoryAccessMode MA>
 inline Vec_CUPMBase<T, D>::vector_array<MT, MA>::~vector_array() noexcept
 {
   PetscFunctionBegin;
-  PetscCallAbort(PETSC_COMM_SELF, restorearray<MT, MA>(v_, &ptr_, dctx_));
+  PetscCallAbort(PETSC_COMM_SELF, Vec_CUPMBase<T, D>::template restorearray<MT, MA>(v_, &this->ptr_, this->dctx_));
   PetscFunctionReturnVoid();
-}
-
-template <device::cupm::DeviceType T, typename D>
-template <PetscMemType MT, PetscMemoryAccessMode MA>
-inline typename Vec_CUPMBase<T, D>::template vector_array<MT, MA>::pointer_type Vec_CUPMBase<T, D>::vector_array<MT, MA>::data() const noexcept
-{
-  return ptr_;
-}
-
-template <device::cupm::DeviceType T, typename D>
-template <PetscMemType MT, PetscMemoryAccessMode MA>
-inline typename Vec_CUPMBase<T, D>::template vector_array<MT, MA>::cupm_pointer_type Vec_CUPMBase<T, D>::vector_array<MT, MA>::cupmdata() const noexcept
-{
-  return cupmScalarPtrCast(data());
-}
-
-template <device::cupm::DeviceType T, typename D>
-template <PetscMemType MT, PetscMemoryAccessMode MA>
-inline Vec_CUPMBase<T, D>::vector_array<MT, MA>::operator pointer_type() const noexcept
-{
-  return data();
-}
-
-// in case pointer_type == cupmscalar_pointer_type we don't want this overload to exist, so
-// we make a dummy template parameter to allow SFINAE to nix it for us
-template <device::cupm::DeviceType T, typename D>
-template <PetscMemType MT, PetscMemoryAccessMode MA>
-template <typename U, typename>
-inline Vec_CUPMBase<T, D>::vector_array<MT, MA>::operator cupm_pointer_type() const noexcept
-{
-  return cupmdata();
-}
-
-// ==========================================================================================
-// Vec_CUPMBase - Private API
-// ==========================================================================================
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetFromHandleDispatch_(PetscDeviceContext dctx, cupmBlasHandle_t *handle, cupmStream_t *stream) noexcept
-{
-  PetscFunctionBegin;
-  PetscValidDeviceContext(dctx, 1);
-  if (handle) PetscValidPointer(handle, 2);
-  if (stream) PetscValidPointer(stream, 3);
-  if (PetscDefined(USE_DEBUG)) {
-    PetscDeviceType dtype;
-
-    PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
-    PetscCheckCompatibleDeviceTypes(PETSC_DEVICE_CUPM(), -1, dtype, 1);
-  }
-  if (handle) PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx, handle));
-  if (stream) PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, stream));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetHandleDispatch_(PetscDeviceContext *dctx, cupmBlasHandle_t *handle, cupmStream_t *stream) noexcept
-{
-  PetscDeviceContext dctx_loc = nullptr;
-
-  PetscFunctionBegin;
-  // silence uninitialized variable warnings
-  if (dctx) *dctx = nullptr;
-  PetscCall(PetscDeviceContextGetCurrentContext(&dctx_loc));
-  PetscCall(GetFromHandleDispatch_(dctx_loc, handle, stream));
-  if (dctx) *dctx = dctx_loc;
-  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
 // Vec_CUPMBase - Protected API
 // ==========================================================================================
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetHandles_(PetscDeviceContext *dctx, cupmBlasHandle_t *handle, cupmStream_t *stream) noexcept
-{
-  return GetHandleDispatch_(dctx, handle, stream);
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetHandles_(PetscDeviceContext *dctx, cupmStream_t *stream) noexcept
-{
-  return GetHandles_(dctx, nullptr, stream);
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetHandles_(cupmStream_t *stream) noexcept
-{
-  return GetHandles_(nullptr, stream);
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetHandles_(cupmBlasHandle_t *handle) noexcept
-{
-  return GetHandles_(nullptr, handle);
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetHandlesFrom_(PetscDeviceContext dctx, cupmBlasHandle_t *handle, cupmStream_t *stream) noexcept
-{
-  return GetFromHandleDispatch_(dctx, handle, stream);
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline PetscErrorCode Vec_CUPMBase<T, D>::GetHandlesFrom_(PetscDeviceContext dctx, cupmStream_t *stream) noexcept
-{
-  return GetHandlesFrom_(dctx, nullptr, stream);
-}
 
 template <device::cupm::DeviceType T, typename D>
 inline PetscErrorCode Vec_CUPMBase<T, D>::ResetAllocatedDevicePtr_(PetscDeviceContext dctx, Vec v, PetscScalar *new_value) noexcept
@@ -763,30 +508,16 @@ inline constexpr VecType Vec_CUPMBase<T, D>::VECMPICUPM() noexcept
 }
 
 template <device::cupm::DeviceType T, typename D>
+inline constexpr VecType Vec_CUPMBase<T, D>::VECCUPM() noexcept
+{
+  return T == device::cupm::DeviceType::CUDA ? VECCUDA : VECHIP;
+}
+
+template <device::cupm::DeviceType T, typename D>
 template <typename U>
 inline constexpr VecType Vec_CUPMBase<T, D>::VECIMPLCUPM() noexcept
 {
   return U::VECIMPLCUPM_();
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline constexpr PetscRandomType Vec_CUPMBase<T, D>::PETSCDEVICERAND() noexcept
-{
-  // REVIEW ME: HIP default rng?
-  return T == device::cupm::DeviceType::CUDA ? PETSCCURAND : PETSCRANDER48;
-}
-
-// utility for using cupmHostAlloc()
-template <device::cupm::DeviceType T, typename D>
-inline UseCUPMHostAlloc_<T> Vec_CUPMBase<T, D>::UseCUPMHostAlloc(bool b) noexcept
-{
-  return {b};
-}
-
-template <device::cupm::DeviceType T, typename D>
-inline UseCUPMHostAlloc_<T> Vec_CUPMBase<T, D>::UseCUPMHostAlloc(PetscBool b) noexcept
-{
-  return UseCUPMHostAlloc(static_cast<bool>(b));
 }
 
 // private version that takes a PetscDeviceContext, called by the public variant
@@ -1213,21 +944,10 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::Duplicate_CUPMBase(Vec v, Vec *y, Pets
 template <device::cupm::DeviceType T, typename D>
 inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool usehost, PetscDeviceContext dctx) noexcept
 {
-  const auto change_default_rand_type = [](PetscRandomType target, char **ptr) {
-    PetscFunctionBegin;
-    PetscValidPointer(ptr, 2);
-    PetscValidCharPointer(*ptr, 2);
-    if (std::strcmp(target, *ptr)) {
-      PetscCall(PetscFree(*ptr));
-      PetscCall(PetscStrallocpy(target, ptr));
-    }
-    PetscFunctionReturn(PETSC_SUCCESS);
-  };
-
   PetscFunctionBegin;
   v->boundtocpu = usehost;
   if (usehost) PetscCall(CopyToHost_(dctx, v));
-  PetscCall(change_default_rand_type(usehost ? PETSCRANDER48 : PETSCDEVICERAND(), &v->defaultrandtype));
+  PetscCall(PetscStrFreeAllocpy(usehost ? PETSCRANDER48 : PETSCDEVICERAND(), &v->defaultrandtype));
 
   // set the base functions that are guaranteed to be the same for both
   v->ops->duplicate = D::duplicate;
@@ -1332,16 +1052,21 @@ template <device::cupm::DeviceType T, typename D>
 template <std::size_t NCount, std::size_t NScal>
 inline PetscErrorCode Vec_CUPMBase<T, D>::SetPreallocationCOO_CUPMBase(Vec v, PetscCount, const PetscInt[], PetscDeviceContext dctx, const std::array<CooPair<PetscCount>, NCount> &extra_cntptrs, const std::array<CooPair<PetscScalar>, NScal> &bufptrs) noexcept
 {
-  const auto vimpl = VecIMPLCast(v);
-
   PetscFunctionBegin;
   PetscCall(ResetPreallocationCOO_CUPMBase(v, dctx));
   // need to instantiate the private pointer if not already
   PetscCall(VecCUPMAllocateCheck_(v));
   {
-    const auto vcu = VecCUPMCast(v);
-    // clang-fomat off
-    const auto cntptrs = util::concat_array(util::make_array(make_coo_pair(vcu->jmap1_d, vimpl->jmap1, v->map->n + 1), make_coo_pair(vcu->perm1_d, vimpl->perm1, vimpl->tot1)), extra_cntptrs);
+    const auto vimpl = VecIMPLCast(v);
+    const auto vcu   = VecCUPMCast(v);
+    // clang-format off
+    const auto cntptrs = util::concat_array(
+      util::make_array(
+        make_coo_pair(vcu->jmap1_d, vimpl->jmap1, v->map->n + 1),
+        make_coo_pair(vcu->perm1_d, vimpl->perm1, vimpl->tot1)
+      ),
+      extra_cntptrs
+    );
     // clang-format on
     cupmStream_t stream;
 
@@ -1357,6 +1082,7 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::SetPreallocationCOO_CUPMBase(Vec v, Pe
 }
 
   #define PETSC_VEC_CUPM_BASE_CLASS_HEADER(name, Tp, ...) \
+    PETSC_CUPMOBJECT_HEADER(Tp); \
     using name = ::Petsc::vec::cupm::impl::Vec_CUPMBase<Tp, __VA_ARGS__>; \
     friend name; \
     /* introspection */ \
@@ -1365,12 +1091,10 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::SetPreallocationCOO_CUPMBase(Vec v, Pe
     using name::VECIMPLCUPM; \
     using name::VECSEQCUPM; \
     using name::VECMPICUPM; \
+    using name::VECCUPM; \
     using name::VecView_Debug; \
     /* utility */ \
     using typename name::Vec_CUPM; \
-    using name::UseCUPMHostAlloc; \
-    using name::GetHandles_; \
-    using name::GetHandlesFrom_; \
     using name::VecCUPMAllocateCheck_; \
     using name::VecIMPLAllocateCheck_; \
     using name::HostAllocateCheck_; \
@@ -1399,9 +1123,7 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::SetPreallocationCOO_CUPMBase(Vec v, Pe
     using name::HostArrayWrite; \
     using name::HostArrayReadWrite; \
     using name::ResetPreallocationCOO_CUPMBase; \
-    using name::SetPreallocationCOO_CUPMBase; \
-    /* blas interface */ \
-    PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(cupmBlasInterface_t, Tp)
+    using name::SetPreallocationCOO_CUPMBase
 
 } // namespace impl
 
