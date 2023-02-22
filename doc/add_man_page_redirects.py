@@ -19,11 +19,11 @@ def add_man_page_redirects(root):
     """ Add redirecting .html files for all man pages.
 
     Assumes a particular directory structure relative to root.  For each
-    subdirectory (manual page section) of root/docs/manualpages, enumerate all
+    subdirectory (manual page section) of root/manualpages, enumerate all
     contained directories as names, and add links name.html which redirect to
     name/ (from which a web server will load name/index.html).
     """
-    manualpages_dir = os.path.join(root, "docs", "manualpages")
+    manualpages_dir = os.path.join(root, "manualpages")
     for mansec in os.listdir(manualpages_dir):
         subdirectory = os.path.join(manualpages_dir, mansec)
         if os.path.isdir(subdirectory):

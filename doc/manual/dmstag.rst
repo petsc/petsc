@@ -54,7 +54,7 @@ corner in 3D with ``DMSTAG_BACK_DOWN_LEFT``, and so on.
 
 :numref:`figure_dmstag_indexing` gives a few examples in 2D.
 
-.. figure:: /images/docs/manual/dmstag_indexing.svg
+.. figure:: /images/manual/dmstag_indexing.svg
   :name: figure_dmstag_indexing
 
   Locations in ``DMSTAG`` are indexed according to global element indices (here, two in 2D) and a location name. Elements have unique names but other locations can be referred to in more than one way. Element colors correspond to a parallel decomposition, but locations on the grid have names which are invariant to this. Note that the face on the top right can be referred to as being to the left of a "dummy" element :math:`(3,3)` outside the physical domain.
@@ -66,7 +66,7 @@ strata have different numbers of points (e.g. in 1D there is an "extra" vertex o
 structure is, however, very useful for the *local* representation of the data, so in that case *dummy* DOF
 are included, drawn as grey in  :numref:`figure_dmstag_local_global`.
 
-.. figure:: /images/docs/manual/dmstag_local_global.svg
+.. figure:: /images/manual/dmstag_local_global.svg
   :name: figure_dmstag_local_global
 
   Local and global representations for a 2D ``DMSTAG`` object, 3 by 4 elements, with one degree of freedom on each of the the three strata: element (squares), faces (triangles), and vertices (circles). The cell complex is parallelized across 4 MPI ranks. In the global representation, the colors correspond to which rank holds the native representation of the unknown. The 4 local representations are shown, with an (elementwise) stencil "box" stencil width of 1. Unknownd are color by their native rank. Dummy unknowns, which correspond to no global degree of freedom, are colored grey. Note that the local representations have have a natural block size of 4, and the global representation has no natural block size.
@@ -143,13 +143,13 @@ For local ``Vec``\s, this gives a regular-blocked numbering, with the same numbe
 
 In the global representation, only physical unknowns are numbered (using the same "Z" ordering for unknowns which are present), giving irregular numbers of unknowns, depending on whether a domain boundary is present. See :numref:`figure_dmstag_numbering_global` for an example.
 
-.. figure:: /images/docs/manual/dmstag_numbering_global.svg
+.. figure:: /images/manual/dmstag_numbering_global.svg
   :name: figure_dmstag_numbering_global
 
   Global numbering scheme for a 2D ``DMSTAG`` object with one DOF per stratum. Note that the numbering depends on the parallel decomposition (over 4 ranks, here).
 
 
-.. figure:: /images/docs/manual/dmstag_numbering_local.svg
+.. figure:: /images/manual/dmstag_numbering_local.svg
   :name: figure_dmstag_numbering_local
 
   Local numbering scheme on rank 1 (Cf. :numref:`figure_dmstag_local_global`) for a 2D ``DMSTAG`` object with one DOF per stratum. Note that dummy locations (grey) are used to give a regular block size (here, 4).

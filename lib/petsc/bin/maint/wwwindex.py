@@ -34,7 +34,7 @@ def printindex(outfilename, headfilename, levels, titles, tables):
 
       with open(outfilename, "w") as fd:
           fd.write(headbuf)
-          fd.write('[Manual Pages Table of Contents](/docs/manualpages/index.md)\n')
+          fd.write('[Manual Pages Table of Contents](/manualpages/index.md)\n')
           all_names = []
           fd.write('\n## Manual Pages by Level\n')
           for i, level in enumerate(levels):
@@ -73,7 +73,7 @@ def printindex(outfilename, headfilename, levels, titles, tables):
 def printsingleindex(outfilename, alphabet_dict):
       with open(outfilename, "w") as fd:
           fd.write("# Single Index of all PETSc Manual Pages\n\n")
-          fd.write(" Also see the [Manual page table of contents, by section](/docs/manualpages/index.md).\n\n")
+          fd.write(" Also see the [Manual page table of contents, by section](/manualpages/index.md).\n\n")
           for key in sorted(alphabet_dict.keys()):
                 fd.write("## %s\n\n" % key.upper())
                 fd.write("```{hlist}\n")
@@ -139,7 +139,7 @@ def modifylevel(filename,secname):
       tmpbuf = re.sub('.cxx#', '.cxx.html#', tmpbuf)
 
       # Add footer links
-      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/docs/manualpages/index.md)  \n' + '[Index of all manual pages](/docs/manualpages/singleindex.md)  \n'
+      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/manualpages/index.md)  \n' + '[Index of all manual pages](/manualpages/singleindex.md)  \n'
 
       # write the modified manpage
       with open(filename, "w") as fd:
@@ -224,7 +224,7 @@ def main():
       PETSC_DIR = sys.argv[1]
       LOC       = sys.argv[2]
       HEADERDIR = (sys.argv[3] if arg_len > 3 else 'doc/classic/manualpages-sec')
-      dirs      = glob.glob(LOC + '/docs/manualpages/*')
+      dirs      = glob.glob(LOC + '/manualpages/*')
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']
@@ -246,7 +246,7 @@ def main():
             printindex(outfilename,headfilename,levels,titles,table)
 
       alphabet_dict = createdict(singlelist)
-      outfilename   = LOC + '/docs/manualpages/singleindex.md'
+      outfilename   = LOC + '/manualpages/singleindex.md'
       printsingleindex (outfilename,alphabet_dict)
 
 

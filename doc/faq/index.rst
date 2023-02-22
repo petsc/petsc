@@ -360,7 +360,7 @@ The PETSc distribution is SO Large. How can I reduce my disk space usage?
 #. The directory ``$PETSC_DIR/docs`` contains a set of HTML manual pages in for use with a
    browser. You can delete these pages to save some disk space.
 
-#. The PETSc users manual is provided in PDF format at ``$PETSC_DIR/docs/manual.pdf``. You
+#. The PETSc users manual is provided in PDF format at ``$PETSC_DIR/manual.pdf``. You
    can delete this.
 
 #. The PETSc test suite contains sample output for many of the examples. These are

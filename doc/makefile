@@ -31,14 +31,14 @@ clean-classic-docs:
 clean: clean-classic-docs
 
 images:
-	git clone https://gitlab.com/petsc/images.git -b main-1 --depth=1 images
+	git clone https://gitlab.com/petsc/images.git -b main-2 --depth=1 images
 
 website-deploy: images
 	$(SPHINXBUILD) -b dirhtml "$(SOURCEDIR)" "$(BUILDDIR)"  -T -E -j auto $(SPHINXOPTS)
 
 # use this rule to build the documentation on your machine when working on PETSc documentation
 sphinxhtml:
-	cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; ${RM} -rf _build* docs/manualpages/singlindex.md  docs/manualpages/*/*.md; make  SPHINXOPTS="-T -E -W --keep-going -j 4" html; deactivate
+	cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; ${RM} -rf _build* manualpages/singlindex.md  manualpages/*/*.md; make  SPHINXOPTS="-T -E -W --keep-going -j 4" html; deactivate
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.

@@ -101,7 +101,7 @@ Preconditioners
      - ``PCILU``
      - ``MATSEQAIJ``
      - `SuperLU Sequential ILU solver
-       <../../docs/manualpages/Mat/MATSOLVERSUPERLU.html>`__
+       <../../manualpages/Mat/MATSOLVERSUPERLU.html>`__
      -
      - X
    * -

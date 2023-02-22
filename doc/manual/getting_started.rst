@@ -51,7 +51,7 @@ of these pieces. The figure illustrates the library’s hierarchical
 organization, which enables users to employ the solvers that are most
 appropriate for a particular problem.
 
-.. figure:: /images/docs/manual/library_structure.svg
+.. figure:: /images/manual/library_structure.svg
   :alt: PETSc numerical libraries
   :name: fig_library
 
@@ -88,7 +88,7 @@ this manual can be rather intimidating for new users. Bear in mind that PETSc ca
 efficiently before one understands all of the material presented here.
 Furthermore, the definitive reference for any PETSc function is always
 the online manual page.
-Manual pages for all PETSc functions can be accessed `here <docs/index.html>`__.
+Manual pages for all PETSc functions can be accessed `here <index.html>`__.
 The manual pages provide hyperlinked indices (organized by both concept
 and routine name) to the tutorial examples and enable easy movement
 among related topics.
@@ -496,7 +496,6 @@ when using the PETSc Fortran interface.
     [0]PETSC ERROR: Memory allocated 11282182704 Memory used by process 7075897344
     [0]PETSC ERROR: Try running with -malloc_dump or -malloc_view for info.
     [0]PETSC ERROR: Memory requested 18446744072169447424
-    [0]PETSC ERROR: See https://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
     [0]PETSC ERROR: Petsc Development GIT revision: v3.7.1-224-g9c9a9c5  GIT Date: 2016-05-18 22:43:00 -0500
     [0]PETSC ERROR: ./ex3 on a arch-darwin-double-debug named Patricks-MacBook-Pro-2.local by patrick Mon Jun 27 18:04:03 2016
     [0]PETSC ERROR: Configure options PETSC_DIR=/Users/patrick/petsc PETSC_ARCH=arch-darwin-double-debug --download-mpich --download-f2cblaslapack --with-cc=clang --with-cxx=clang++ --with-fc=gfortran --with-debugging=1 --with-precision=double --with-scalar-type=real --with-viennacl=0 --download-c2html -download-sowing
@@ -720,9 +719,7 @@ PETSc program using MPICH on a macOS laptop. Note that different
 machines will have compilation commands as determined by the
 configuration process. See :any:`sec_writing_application_codes` for
 a discussion about how to compile your PETSc programs. Users who are
-experiencing difficulties linking PETSc programs should refer to the FAQ
-on the PETSc website https://petsc.org/ or given in the file
-``$PETSC_DIR/docs/faq.html``.
+experiencing difficulties linking PETSc programs should refer to the `FAQ <https://petsc.org/release/faq/>`__.
 
 .. code-block:: none
 
@@ -1087,7 +1084,7 @@ Objects are destroyed with
 
    ObjectDestroy(&obj)
 
-.. figure:: /images/docs/manual/objectlife.svg
+.. figure:: /images/manual/objectlife.svg
   :name: fig_objectlife
 
   Sample lifetime of a PETSc object
@@ -1140,7 +1137,7 @@ We conclude this introduction with an overview of the organization of
 the PETSc software. The root directory of PETSc contains the following
 directories:
 
--  ``docs`` (only in the tarball distribution of PETSc; not the git
+-  ``doc`` (only in the tarball distribution of PETSc; not the git
    repository) - All documentation for PETSc. The files ``manual.pdf``
    contains the hyperlinked users manual, suitable for printing or
    on-screen viewering. Includes the subdirectory - ``manualpages``

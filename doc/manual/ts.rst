@@ -1397,7 +1397,7 @@ Using Sundials from PETSc
 Sundials is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
 The ``TS`` library provides an interface to use the CVODE component of
 Sundials directly from PETSc. (To configure PETSc to use Sundials, see
-the installation guide, ``docs/installation/index.htm``.)
+the installation guide, ``installation/index.htm``.)
 
 To use the Sundials integrators, call
 

@@ -7,17 +7,17 @@ PETSc comes with a large number of example codes to illustrate usage. Here, we h
 -  :ref:`Linear Poisson equation on a 2D grid <handson_example_1>`
 
    -  example of linear equation problem
-   -  see also `src/ksp/ksp/tutorials <../../src/ksp/ksp/tutorials/index.html>`__
+   -  see also `src/ksp/ksp/tutorials <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/index.html>`__
 
 -  :ref:`Nonlinear ODE arising from a time-dependent one dimensional PDE <handson_example_2>`
 
    -  example of time-stepping problem
-   -  see also `src/ts/tutorials <../../src/ts/tutorials/index.html>`__
+   -  see also `src/ts/tutorials <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/index.html>`__
 
 -  :ref:`Nonlinear PDE on a structured grid <handson_example_3>`
 
    -  example of nonlinear PDE
-   -  see also `src/snes/tutorials <../../src/snes/tutorials/index.html>`__
+   -  see also `src/snes/tutorials <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/index.html>`__
 
 -  :ref:`Linear Stokes-type PDE on a structured grid <handson_example_4>`
 -  :ref:`Nonlinear time dependent PDE on Unstructured Grid <handson_example_5>`
@@ -46,8 +46,8 @@ WHAT THIS EXAMPLE DEMONSTRATES:
 
 FURTHER DETAILS:
 
--  `Mathematical description of the problem <../../src/ksp/ksp/tutorials/ex50.c.html#line1>`__
--  `the source code <../../src/ksp/ksp/tutorials/ex50.c.html#line21>`__
+-  `Mathematical description of the problem <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex50.c.html#line1>`__
+-  `the source code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex50.c.html#line21>`__
 
 DO THE FOLLOWING:
 
@@ -113,9 +113,9 @@ WHAT THIS EXAMPLE DEMONSTRATES:
 
 FURTHER DETAILS:
 
--  `Mathematical description of the problem <../../src/ts/tutorials/ex2.c.html#line13>`__
+-  `Mathematical description of the problem <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex2.c.html#line13>`__
 -  `the source
-   code <../../src/ts/tutorials/ex2.c.html#line36>`__
+   code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex2.c.html#line36>`__
 
 DO THE FOLLOWING:
 
@@ -178,11 +178,11 @@ WHAT THIS EXAMPLE DEMONSTRATES:
 
 FURTHER DETAILS:
 
--  `Mathematical description of the problem <../../src/snes/tutorials/ex19.c.html#line19>`__
+-  `Mathematical description of the problem <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex19.c.html#line19>`__
 -  `main program source
-   code <../../src/snes/tutorials/ex19.c.html#line94>`__
+   code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex19.c.html#line94>`__
 -  `physics source
-   code <../../src/snes/tutorials/ex19.c.html#line246>`__
+   code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex19.c.html#line246>`__
 
 DO THE FOLLOWING:
 
@@ -336,9 +336,9 @@ WHAT THIS EXAMPLE DEMONSTRATES:
 
 FURTHER DETAILS:
 
--  `Mathematical description of the problem <../../src/ksp/ksp/tutorials/ex42.c.html>`__
--  `main program source code <../../src/ksp/ksp/tutorials/ex42.c.html#line2059>`__
--  `physics source code <../../src/ksp/ksp/tutorials/ex42.c.html#line819>`__
+-  `Mathematical description of the problem <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex42.c.html>`__
+-  `main program source code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex42.c.html#line2059>`__
+-  `physics source code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex42.c.html#line819>`__
 
 DO THE FOLLOWING:
 
@@ -411,9 +411,9 @@ WHAT THIS EXAMPLE DEMONSTRATES:
 
 FURTHER DETAILS:
 
--  `Mathematical description of the problem <../../src/ts/tutorials/ex11.c.html>`__
--  `main program source code <../../src/ts/tutorials/ex11.c.html#line1403>`__
--  `source code of physics modules <../../src/ts/tutorials/ex11.c.html#line186>`__
+-  `Mathematical description of the problem <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex11.c.html>`__
+-  `main program source code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex11.c.html#line1403>`__
+-  `source code of physics modules <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex11.c.html#line186>`__
 
 DO THE FOLLOWING:
 

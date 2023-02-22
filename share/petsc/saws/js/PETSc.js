@@ -138,7 +138,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                         //options text is a link to the appropriate manual page
 
                         var manualDirectory = "all"; //this directory does not exist yet so links will not work for now
-                        $("#"+fullkey).append("<br><a href=\"http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/" +  manualDirectory + "/" + manualSave + ".html\" title=\"" + descriptionSave + "\" id=\"data"+fullkey+vKey+j+"\">"+vKey+"&nbsp</a>");
+                        $("#"+fullkey).append("<br><a href=\"http://www.mcs.anl.gov/petsc/petsc-dev/manualpages/" +  manualDirectory + "/" + manualSave + ".html\" title=\"" + descriptionSave + "\" id=\"data"+fullkey+vKey+j+"\">"+vKey+"&nbsp</a>");
                     }
                 }
 

@@ -405,8 +405,8 @@ allmanpages: chk_loc deletemanualpages
 	-sed -e 's?<T>?Obj?g' -e 's?<t>?obj?g' -e 's?<KeyType>?PetscInt64?g'  -e 's?<ValType>?PetscObject?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
 	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	-${OMAKE_SELF} ACTION=manualpages tree_src LOC=${LOC}
-	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
-	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
+	-@sed -e s%man+../%man+manualpages/% ${LOC}/manualpages/manualpages.cit > ${LOC}/manualpages/htmlmap
+	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/manualpages/htmlmap
 	cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
@@ -432,9 +432,9 @@ alldocclean: deletemanualpages allcleanhtml
 
 # Deletes man pages (.md version)
 deletemanualpages: chk_loc
-	-@if [ -d ${LOC} -a -d ${LOC}/docs/manualpages ]; then \
-          find ${LOC}/docs/manualpages -type f -name "*.md" -exec ${RM} {} \; ;\
-          ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
+	-@if [ -d ${LOC} -a -d ${LOC}/manualpages ]; then \
+          find ${LOC}/manualpages -type f -name "*.md" -exec ${RM} {} \; ;\
+          ${RM} ${LOC}/manualpages/manualpages.cit ;\
         fi
 
 allcleanhtml:
