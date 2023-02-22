@@ -14,13 +14,16 @@
 
    Output Parameters:
 +  J - Jacobian matrix (not altered in this routine)
--  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
+-  B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
 
    Options Database Keys:
 +  -snes_fd - Activates `SNESComputeJacobianDefault()`
+.  -snes_fd_coloring - Activates a faster computation that uses a graph coloring of the matrix
 .  -snes_test_err - Square root of function error tolerance, default square root of machine
                     epsilon (1.e-8 in double, 3.e-4 in single)
 -  -mat_fd_type - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
+
+   Level: intermediate
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
@@ -36,8 +39,6 @@
    evaluations it performs are not counted in what is returned by of `SNESGetNumberFunctionEvals()`.
 
    This function can be provided to `SNESSetJacobian()` along with a dense matrix to hold the Jacobian
-
-   Level: intermediate
 
 .seealso: `SNES`, `SNESSetJacobian()`, `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
 @*/
