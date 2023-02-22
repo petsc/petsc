@@ -4873,37 +4873,42 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C, Mat A, MatDuplicateOption cpva
   c->icol       = NULL;
   c->reallocs   = 0;
 
-  C->assembled    = A->assembled;
-  C->preallocated = A->preallocated;
+  C->assembled = A->assembled;
 
   if (A->preallocated) {
     PetscCall(PetscLayoutReference(A->rmap, &C->rmap));
     PetscCall(PetscLayoutReference(A->cmap, &C->cmap));
 
-    PetscCall(PetscMalloc1(m, &c->imax));
-    PetscCall(PetscMemcpy(c->imax, a->imax, m * sizeof(PetscInt)));
-    PetscCall(PetscMalloc1(m, &c->ilen));
-    PetscCall(PetscMemcpy(c->ilen, a->ilen, m * sizeof(PetscInt)));
+    if (!A->hash_active) {
+      PetscCall(PetscMalloc1(m, &c->imax));
+      PetscCall(PetscMemcpy(c->imax, a->imax, m * sizeof(PetscInt)));
+      PetscCall(PetscMalloc1(m, &c->ilen));
+      PetscCall(PetscMemcpy(c->ilen, a->ilen, m * sizeof(PetscInt)));
 
-    /* allocate the matrix space */
-    if (mallocmatspace) {
-      PetscCall(PetscMalloc3(a->i[m], &c->a, a->i[m], &c->j, m + 1, &c->i));
+      /* allocate the matrix space */
+      if (mallocmatspace) {
+        PetscCall(PetscMalloc3(a->i[m], &c->a, a->i[m], &c->j, m + 1, &c->i));
 
-      c->singlemalloc = PETSC_TRUE;
+        c->singlemalloc = PETSC_TRUE;
 
-      PetscCall(PetscArraycpy(c->i, a->i, m + 1));
-      if (m > 0) {
-        PetscCall(PetscArraycpy(c->j, a->j, a->i[m]));
-        if (cpvalues == MAT_COPY_VALUES) {
-          const PetscScalar *aa;
+        PetscCall(PetscArraycpy(c->i, a->i, m + 1));
+        if (m > 0) {
+          PetscCall(PetscArraycpy(c->j, a->j, a->i[m]));
+          if (cpvalues == MAT_COPY_VALUES) {
+            const PetscScalar *aa;
 
-          PetscCall(MatSeqAIJGetArrayRead(A, &aa));
-          PetscCall(PetscArraycpy(c->a, aa, a->i[m]));
-          PetscCall(MatSeqAIJGetArrayRead(A, &aa));
-        } else {
-          PetscCall(PetscArrayzero(c->a, a->i[m]));
+            PetscCall(MatSeqAIJGetArrayRead(A, &aa));
+            PetscCall(PetscArraycpy(c->a, aa, a->i[m]));
+            PetscCall(MatSeqAIJGetArrayRead(A, &aa));
+          } else {
+            PetscCall(PetscArrayzero(c->a, a->i[m]));
+          }
         }
       }
+      C->preallocated = PETSC_TRUE;
+    } else {
+      PetscCheck(mallocmatspace, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Cannot malloc matrix memory from a non-preallocated matrix");
+      PetscCall(MatSetUp(C));
     }
 
     c->ignorezeroentries = a->ignorezeroentries;

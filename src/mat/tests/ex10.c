@@ -5,7 +5,7 @@ static char help[] = "Tests repeated use of assembly for matrices.\n\n";
 
 int main(int argc, char **args)
 {
-  Mat         C;
+  Mat         C, B;
   PetscInt    i, j, m = 5, n = 2, Ii, J;
   PetscMPIInt rank, size;
   PetscScalar v;
@@ -21,6 +21,9 @@ int main(int argc, char **args)
   PetscCall(MatSetSizes(C, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));
   PetscCall(MatSetFromOptions(C));
   PetscCall(MatSetUp(C));
+  PetscCall(MatDuplicate(C, MAT_DO_NOT_COPY_VALUES, &B)); /* test that SeqAIJ non-preallocated matrices can be duplicated */
+  PetscCall(MatDestroy(&C));
+  C = B;
   for (i = 0; i < m; i++) {
     for (j = 2 * rank; j < 2 * rank + 2; j++) {
       v  = -1.0;
