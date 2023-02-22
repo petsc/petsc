@@ -1515,29 +1515,11 @@ inline PetscErrorCode VecSeq_CUPM<T>::sum(Vec v, PetscScalar *sum) noexcept
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-namespace detail
-{
-
-template <typename T>
-class plus_equals {
-public:
-  using value_type = T;
-
-  PETSC_HOSTDEVICE_DECL constexpr explicit plus_equals(value_type v = value_type{}) noexcept : v_(std::move(v)) { }
-
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL constexpr T operator()(const T &val) const noexcept { return val + v_; }
-
-private:
-  value_type v_;
-};
-
-} // namespace detail
-
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::shift(Vec v, PetscScalar shift) noexcept
 {
   PetscFunctionBegin;
-  PetscCall(pointwiseunary_(detail::plus_equals<PetscScalar>{shift}, v));
+  PetscCall(pointwiseunary_(device::cupm::functors::make_plus_equals(shift), v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
