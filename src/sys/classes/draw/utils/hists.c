@@ -141,7 +141,7 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
   hist->xmin      = PETSC_MAX_REAL;
   hist->xmax      = PETSC_MIN_REAL;
   hist->ymin      = 0.0;
-  hist->ymax      = 0.0;
+  hist->ymax      = 1.0;
   hist->numValues = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -249,8 +249,8 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
   DM                 cdm;
   PetscSection       coordSection;
   Vec                coordinates;
-  const PetscScalar *coords, *array;
-  PetscReal          bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  const PetscScalar *array;
+  PetscReal          lbound[3], ubound[3];
   PetscReal          vbound[2], time;
   PetscBool          flg;
   PetscInt           dim, Nf, f, Nc, comp, vStart, vEnd, cStart, cEnd, c, N, level, step, w = 0;
@@ -274,14 +274,7 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
   PetscCall(DMGetOutputSequenceNumber(dm, &step, &time));
 
   PetscCall(VecGetLocalSize(coordinates, &N));
-  PetscCall(VecGetArrayRead(coordinates, &coords));
-  for (c = 0; c < N; c += dim) {
-    bound[0] = PetscMin(bound[0], PetscRealPart(coords[c]));
-    bound[2] = PetscMax(bound[2], PetscRealPart(coords[c]));
-    bound[1] = PetscMin(bound[1], PetscRealPart(coords[c + 1]));
-    bound[3] = PetscMax(bound[3], PetscRealPart(coords[c + 1]));
-  }
-  PetscCall(VecRestoreArrayRead(coordinates, &coords));
+  PetscCall(DMGetBoundingBox(dm, lbound, ubound));
   PetscCall(PetscDrawClear(draw));
 
   /* Could implement something like DMDASelectFields() */
@@ -318,14 +311,16 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
         PetscCall(VecMax(fv, NULL, &vbound[1]));
         if (vbound[1] <= vbound[0]) vbound[1] = vbound[0] + 1.0;
       }
+
       PetscCall(PetscDrawGetPopup(draw, &popup));
       PetscCall(PetscDrawScalePopup(popup, vbound[0], vbound[1]));
-      PetscCall(PetscDrawSetCoordinates(draw, bound[0], bound[1], bound[2], bound[3]));
-
+      PetscCall(PetscDrawSetCoordinates(draw, lbound[0], lbound[1], ubound[0], ubound[1]));
       PetscCall(VecGetArrayRead(fv, &array));
       for (c = cStart; c < cEnd; ++c) {
-        PetscScalar *coords = NULL, *a   = NULL;
-        PetscInt     numCoords, color[4] = {-1, -1, -1, -1};
+        PetscScalar       *coords = NULL, *a = NULL;
+        const PetscScalar *coords_arr;
+        PetscBool          isDG;
+        PetscInt           numCoords, color[4] = {-1, -1, -1, -1};
 
         PetscCall(DMPlexPointLocalRead(fdm, c, array, &a));
         if (a) {
@@ -351,7 +346,7 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
           }
           PetscCall(DMPlexVecRestoreClosure(fdm, NULL, fv, c, &numVals, &vals));
         }
-        PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords));
+        PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &coords_arr, &coords));
         switch (numCoords) {
         case 6:
         case 12: /* Localized triangle */
@@ -365,7 +360,7 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
         default:
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %" PetscInt_FMT " coordinates", numCoords);
         }
-        PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords));
+        PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &numCoords, &coords_arr, &coords));
       }
       PetscCall(VecRestoreArrayRead(fv, &array));
       PetscCall(PetscDrawFlush(draw));
@@ -1698,15 +1693,14 @@ static PetscErrorCode DMPlexDrawCellHighOrder(DM dm, PetscDraw draw, PetscInt ce
 
 static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 {
-  PetscDraw          draw;
-  DM                 cdm;
-  PetscSection       coordSection;
-  Vec                coordinates;
-  const PetscScalar *coords;
-  PetscReal          xyl[2], xyr[2], bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  PetscReal         *refCoords, *edgeCoords;
-  PetscBool          isnull, drawAffine = PETSC_TRUE;
-  PetscInt           dim, vStart, vEnd, cStart, cEnd, c, N, edgeDiv = 4;
+  PetscDraw    draw;
+  DM           cdm;
+  PetscSection coordSection;
+  Vec          coordinates;
+  PetscReal    xyl[3], xyr[3];
+  PetscReal   *refCoords, *edgeCoords;
+  PetscBool    isnull, drawAffine = PETSC_TRUE;
+  PetscInt     dim, vStart, vEnd, cStart, cEnd, c, edgeDiv = 4;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDim(dm, &dim));
@@ -1724,28 +1718,20 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDrawSetTitle(draw, "Mesh"));
 
-  PetscCall(VecGetLocalSize(coordinates, &N));
-  PetscCall(VecGetArrayRead(coordinates, &coords));
-  for (c = 0; c < N; c += dim) {
-    bound[0] = PetscMin(bound[0], PetscRealPart(coords[c]));
-    bound[2] = PetscMax(bound[2], PetscRealPart(coords[c]));
-    bound[1] = PetscMin(bound[1], PetscRealPart(coords[c + 1]));
-    bound[3] = PetscMax(bound[3], PetscRealPart(coords[c + 1]));
-  }
-  PetscCall(VecRestoreArrayRead(coordinates, &coords));
-  PetscCall(MPIU_Allreduce(&bound[0], xyl, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
-  PetscCall(MPIU_Allreduce(&bound[2], xyr, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCall(DMGetBoundingBox(dm, xyl, xyr));
   PetscCall(PetscDrawSetCoordinates(draw, xyl[0], xyl[1], xyr[0], xyr[1]));
   PetscCall(PetscDrawClear(draw));
 
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *coords = NULL;
-    PetscInt     numCoords;
+    PetscScalar       *coords = NULL;
+    const PetscScalar *coords_arr;
+    PetscInt           numCoords;
+    PetscBool          isDG;
 
-    PetscCall(DMPlexVecGetClosureAtDepth_Internal(dm, coordSection, coordinates, c, 0, &numCoords, &coords));
+    PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &coords_arr, &coords));
     if (drawAffine) PetscCall(DMPlexDrawCell(dm, draw, c, coords));
     else PetscCall(DMPlexDrawCellHighOrder(dm, draw, c, coords, edgeDiv, refCoords, edgeCoords));
-    PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords));
+    PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &numCoords, &coords_arr, &coords));
   }
   if (!drawAffine) PetscCall(PetscFree2(refCoords, edgeCoords));
   PetscCall(PetscDrawFlush(draw));

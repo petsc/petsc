@@ -162,15 +162,20 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void 
 
 static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
 {
+  DM                 sw;
   const PetscScalar *v;
   PetscScalar       *xres;
-  PetscInt           Np, p;
+  PetscInt           Np, p, dim, d;
 
   PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
   PetscCall(VecGetLocalSize(Xres, &Np));
   PetscCall(VecGetArrayRead(V, &v));
   PetscCall(VecGetArray(Xres, &xres));
-  for (p = 0; p < Np; ++p) xres[p] = v[p];
+  Np /= dim;
+  for (p = 0; p < Np; ++p)
+    for (d = 0; d < dim; ++d) xres[p * dim + d] = v[p * dim + d];
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(VecRestoreArray(Xres, &xres));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -247,8 +252,8 @@ static PetscErrorCode SetProblem(TS ts)
     PetscCall(MatSetBlockSize(J, 2 * dim));
     PetscCall(MatSetFromOptions(J));
     PetscCall(MatSetUp(J));
-    PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &user));
-    PetscCall(TSSetRHSJacobian(ts, J, J, RHSJacobian, &user));
+    PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, user));
+    PetscCall(TSSetRHSJacobian(ts, J, J, RHSJacobian, user));
     PetscCall(MatDestroy(&J));
   }
   // Define split system for X and V
@@ -276,12 +281,12 @@ static PetscErrorCode SetProblem(TS ts)
     PetscCall(TSRHSSplitSetIS(ts, "momentum", isv));
     PetscCall(ISDestroy(&isx));
     PetscCall(ISDestroy(&isv));
-    PetscCall(TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunctionX, &user));
-    PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunctionV, &user));
+    PetscCall(TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunctionX, user));
+    PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunctionV, user));
   }
   // Define symplectic formulation U_t = S . G, where G = grad F
   {
-    //PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, &user));
+    //PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, user));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -518,7 +523,6 @@ static PetscErrorCode MigrateParticles(TS ts)
   PetscCall(DMSwarmMigrate(sw, PETSC_TRUE));
   PetscCall(DMSwarmTSRedistribute(ts));
   PetscCall(InitializeSolveAndSwarm(ts, PETSC_FALSE));
-  //PetscCall(VecViewFromOptions(u, NULL, "-sol_migrate_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -571,7 +575,7 @@ int main(int argc, char **argv)
      args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type basicsymplectic -ts_convergence_estimate -convest_num_refine 2 \
-           -dm_view -output_step 50 -error
+           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: bsi_2d_1
        args: -ts_basicsymplectic_type 1
@@ -590,7 +594,7 @@ int main(int argc, char **argv)
      args: -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type theta -ts_theta_theta 0.5 -ts_convergence_estimate -convest_num_refine 2 \
              -mat_type baij -ksp_error_if_not_converged -pc_type lu \
-           -dm_view -output_step 50 -error
+           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: im_2d_0
        args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5
@@ -600,7 +604,7 @@ int main(int argc, char **argv)
      args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 10,10 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 -petscpartitioner_type simple \
            -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
            -ts_type basicsymplectic -ts_convergence_estimate -convest_num_refine 2 \
-           -dm_view -output_step 50
+           -dm_view -output_step 50 -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: bsi_2d_mesh_1
        args: -ts_basicsymplectic_type 1 -error

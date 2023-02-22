@@ -348,13 +348,14 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   for (field = 0; field < Nf; ++field) {
     PetscTabulation Tcoarse;
     PetscObject     obj;
-    PetscReal      *coords;
+    PetscReal      *fieldVals;
     PetscInt        Nc, i;
 
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
     PetscCheck(Nc == 1, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Can only interpolate a scalar field from particles, Nc = %" PetscInt_FMT, Nc);
-    PetscCall(DMSwarmGetField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+
+    PetscCall(DMSwarmGetField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **)&fieldVals));
     for (cell = cStart; cell < cEnd; ++cell) {
       PetscInt *findices, *cindices;
       PetscInt  numFIndices, numCIndices;
@@ -364,7 +365,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices));
-      for (p = 0; p < numCIndices; ++p) CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &coords[cindices[p] * dim], &xi[p * dim]);
+      for (p = 0; p < numCIndices; ++p) CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &fieldVals[cindices[p] * dim], &xi[p * dim]);
       PetscCall(PetscFECreateTabulation((PetscFE)obj, 1, numCIndices, xi, 0, &Tcoarse));
       /* Get elemMat entries by multiplying by weight */
       PetscCall(PetscArrayzero(elemMat, numCIndices * totDim));
@@ -383,7 +384,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       PetscCall(DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(PetscTabulationDestroy(&Tcoarse));
     }
-    PetscCall(DMSwarmRestoreField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+    PetscCall(DMSwarmRestoreField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **)&fieldVals));
   }
   PetscCall(PetscFree3(elemMat, rowIDXs, xi));
   PetscCall(DMSwarmSortRestoreAccess(dmc));
@@ -667,6 +668,7 @@ PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm, const char fieldname[],
   MPI_Comm comm = PetscObjectComm((PetscObject)dm);
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
   PetscCall(DMSwarmCreateVectorFromField_Private(dm, fieldname, comm, vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -690,6 +692,7 @@ PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm, const char fieldname[],
 PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm, const char fieldname[], Vec *vec)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
   PetscCall(DMSwarmDestroyVectorFromField_Private(dm, fieldname, vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -741,6 +744,7 @@ PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm, const char fieldname[], 
 PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm, const char fieldname[], Vec *vec)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
   PetscCall(DMSwarmDestroyVectorFromField_Private(dm, fieldname, vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1062,6 +1066,7 @@ PetscErrorCode DMSwarmGetField(DM dm, const char fieldname[], PetscInt *blocksiz
   DMSwarmDataField gfield;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
   if (!swarm->issetup) PetscCall(DMSetUp(dm));
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldname, &gfield));
   PetscCall(DMSwarmDataFieldGetAccess(gfield));
@@ -1098,6 +1103,7 @@ PetscErrorCode DMSwarmRestoreField(DM dm, const char fieldname[], PetscInt *bloc
   DMSwarmDataField gfield;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldname, &gfield));
   PetscCall(DMSwarmDataFieldRestoreAccess(gfield));
   if (data) *data = NULL;

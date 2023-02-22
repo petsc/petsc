@@ -164,6 +164,8 @@ Changes: Development
 .. rubric:: TS:
 
 - Add ``TSPruneIJacobianColor()`` to improve the MFFD coloring
+- Add argument to ``TSMonitorSPCtxCreate()`` to enable multispecies plots
+- Add ``TSMonitorHGCtxCreate()``, ``TSMonitorHGCtxDestroy()``, ``TSMonitorHGSwarmSolution()`` to support histogram plots of particle swarms
 
 .. rubric:: TAO:
 

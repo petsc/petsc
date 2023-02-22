@@ -1,6 +1,8 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
-#include <petscdmshell.h>
 #include <petscdmda.h>
+#include <petscdmshell.h>
+#include <petscdmplex.h>  // For TSSetFromOptions()
+#include <petscdmswarm.h> // For TSSetFromOptions()
 #include <petscviewer.h>
 #include <petscdraw.h>
 #include <petscconvest.h>
@@ -225,11 +227,11 @@ PetscErrorCode TSSetFromOptions(TS ts)
     PetscCall(TSMonitorSPEigCtxCreate(PETSC_COMM_SELF, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx));
     PetscCall(TSMonitorSet(ts, TSMonitorSPEig, ctx, (PetscErrorCode(*)(void **))TSMonitorSPEigCtxDestroy));
   }
-  PetscCall(PetscOptionsName("-ts_monitor_sp_swarm", "Display particle phase from the DMSwarm", "TSMonitorSPSwarm", &opt));
+  PetscCall(PetscOptionsName("-ts_monitor_sp_swarm", "Display particle phase space from the DMSwarm", "TSMonitorSPSwarm", &opt));
   if (opt) {
     TSMonitorSPCtx ctx;
     PetscInt       howoften = 1, retain = 0;
-    PetscBool      phase = PETSC_TRUE, create = PETSC_TRUE;
+    PetscBool      phase = PETSC_TRUE, create = PETSC_TRUE, multispecies = PETSC_FALSE;
 
     for (PetscInt i = 0; i < ts->numbermonitors; ++i)
       if (ts->monitor[i] == TSMonitorSPSwarmSolution) {
@@ -237,11 +239,39 @@ PetscErrorCode TSSetFromOptions(TS ts)
         break;
       }
     if (create) {
-      PetscCall(PetscOptionsInt("-ts_monitor_sp_swarm", "Display particles phase from the DMSwarm", "TSMonitorSPSwarm", howoften, &howoften, NULL));
+      PetscCall(PetscOptionsInt("-ts_monitor_sp_swarm", "Display particles phase space from the DMSwarm", "TSMonitorSPSwarm", howoften, &howoften, NULL));
       PetscCall(PetscOptionsInt("-ts_monitor_sp_swarm_retain", "Retain n points plotted to show trajectory, -1 for all points", "TSMonitorSPSwarm", retain, &retain, NULL));
       PetscCall(PetscOptionsBool("-ts_monitor_sp_swarm_phase", "Plot in phase space rather than coordinate space", "TSMonitorSPSwarm", phase, &phase, NULL));
-      PetscCall(TSMonitorSPCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, retain, phase, &ctx));
+      PetscCall(PetscOptionsBool("-ts_monitor_sp_swarm_multi_species", "Color particles by particle species", "TSMonitorSPSwarm", multispecies, &multispecies, NULL));
+      PetscCall(TSMonitorSPCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, retain, phase, multispecies, &ctx));
       PetscCall(TSMonitorSet(ts, TSMonitorSPSwarmSolution, ctx, (PetscErrorCode(*)(void **))TSMonitorSPCtxDestroy));
+    }
+  }
+  PetscCall(PetscOptionsName("-ts_monitor_hg_swarm", "Display particle histogram from the DMSwarm", "TSMonitorHGSwarm", &opt));
+  if (opt) {
+    TSMonitorHGCtx ctx;
+    PetscInt       howoften = 1, Ns = 1;
+    PetscBool      velocity = PETSC_FALSE, create = PETSC_TRUE;
+
+    for (PetscInt i = 0; i < ts->numbermonitors; ++i)
+      if (ts->monitor[i] == TSMonitorHGSwarmSolution) {
+        create = PETSC_FALSE;
+        break;
+      }
+    if (create) {
+      DM       sw, dm;
+      PetscInt Nc, Nb;
+
+      PetscCall(TSGetDM(ts, &sw));
+      PetscCall(DMSwarmGetCellDM(sw, &dm));
+      PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &Nc));
+      Nb = PetscMin(20, PetscMax(10, Nc));
+      PetscCall(PetscOptionsInt("-ts_monitor_hg_swarm", "Display particles histogram from the DMSwarm", "TSMonitorHGSwarm", howoften, &howoften, NULL));
+      PetscCall(PetscOptionsBool("-ts_monitor_hg_swarm_velocity", "Plot in velocity space rather than coordinate space", "TSMonitorHGSwarm", velocity, &velocity, NULL));
+      PetscCall(PetscOptionsInt("-ts_monitor_hg_swarm_species", "Number of species to histogram", "TSMonitorHGSwarm", Ns, &Ns, NULL));
+      PetscCall(PetscOptionsInt("-ts_monitor_hg_swarm_bins", "Number of histogram bins", "TSMonitorHGSwarm", Nb, &Nb, NULL));
+      PetscCall(TSMonitorHGCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, Ns, Nb, velocity, &ctx));
+      PetscCall(TSMonitorSet(ts, TSMonitorHGSwarmSolution, ctx, (PetscErrorCode(*)(void **))TSMonitorHGCtxDestroy));
     }
   }
   opt = PETSC_FALSE;
