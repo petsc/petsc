@@ -25,7 +25,7 @@ static PetscErrorCode myF(void *ctx, Vec x, Vec y)
   }
   PetscCall(VecRestoreArray(y, &ay));
   PetscCall(VecRestoreArrayRead(x, &ax));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

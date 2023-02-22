@@ -50,4 +50,7 @@
       PetscErrorCode, parameter :: PETSC_ERR_OPT_OVERWRITE    = 93
       PetscErrorCode, parameter :: PETSC_ERR_WRONG_MPI_SIZE   = 94
       PetscErrorCode, parameter :: PETSC_ERR_USER_INPUT       = 95
-
+      PetscErrorCode, parameter :: PETSC_ERR_GPU_RESOURCE     = 96
+      PetscErrorCode, parameter :: PETSC_ERR_GPU              = 97
+      PetscErrorCode, parameter :: PETSC_ERR_MPI              = 98
+      PetscErrorCode, parameter :: PETSC_ERR_RETURN           = 99

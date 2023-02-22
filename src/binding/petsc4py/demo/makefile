@@ -1,16 +1,18 @@
--include ../../../../petscdir.mk
 .PHONY:all
+-include ../../../../petscdir.mk
+-include ${PETSC_DIR}/lib/petsc/conf/variables
+
 all: petsc
-	${MAKE} -C binary-io
-	${MAKE} -C kspsolve
-	${MAKE} -C bratu2d
-	${MAKE} -C bratu3d
-	${MAKE} -C poisson2d
-	${MAKE} -C poisson3d
-	${MAKE} -C perftest
-	${MAKE} -C wrap-swig
-	${MAKE} -C wrap-f2py
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C binary-io
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C kspsolve
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C bratu2d
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C bratu3d
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C poisson2d
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C poisson3d
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C perftest
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C wrap-swig
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C wrap-f2py
 
 .PHONY:petsc
 petsc:
-	${MAKE} -C petsc-examples
+	-@PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}${PETSC_MPI4PY_PYTHONPATH} ${MAKE} -C petsc-examples

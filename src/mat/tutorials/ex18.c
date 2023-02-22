@@ -33,7 +33,7 @@ static PetscErrorCode CreateFEStruct(FEStruct *fe)
   fe->vertices[6 + 1] = 4;
   fe->vertices[6 + 2] = 3;
   fe->n               = 5;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DestroyFEStruct(FEStruct *fe)
@@ -41,7 +41,7 @@ static PetscErrorCode DestroyFEStruct(FEStruct *fe)
   PetscFunctionBeginUser;
   PetscCall(PetscFree(fe->vertices));
   PetscCall(PetscFree(fe->coo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A)
@@ -53,7 +53,7 @@ static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A)
   PetscCall(MatSetSizes(*A, fe->n, fe->n, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetFromOptions(*A));
 
-  /* determine for each entry in each element stiffness matrix the global row and colum */
+  /* determine for each entry in each element stiffness matrix the global row and column */
   /* since the element is triangular with piecewise linear basis functions there are three degrees of freedom per element, one for each vertex */
   PetscCall(PetscMalloc2(3 * 3 * fe->Ne, &oor, 3 * 3 * fe->Ne, &ooc));
   for (PetscInt e = 0; e < fe->Ne; e++) {
@@ -68,11 +68,11 @@ static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A)
   PetscCall(PetscFree2(oor, ooc));
 
   /* determine the offset into the COO value array the offset of each element stiffness; there are 9 = 3*3 entries for each element stiffness */
-  /* for lists of elements with different numbers of degrees of freedom assocated with each element the offsets will not be uniform */
+  /* for lists of elements with different numbers of degrees of freedom associated with each element the offsets will not be uniform */
   PetscCall(PetscMalloc1(fe->Ne, &fe->coo));
   fe->coo[0] = 0;
   for (PetscInt e = 1; e < fe->Ne; e++) fe->coo[e] = fe->coo[e - 1] + 3 * 3;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FillMatrixCPU(FEStruct *fe, Mat A)
@@ -89,7 +89,7 @@ static PetscErrorCode FillMatrixCPU(FEStruct *fe, Mat A)
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -111,7 +111,7 @@ static PetscErrorCode FillMatrixCPUCOO(FEStruct *fe, Mat A)
   }
   PetscCall(MatSetValuesCOO(A, v, ADD_VALUES));
   PetscCall(PetscFree(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -132,7 +132,7 @@ static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe, Mat A)
   }
   PetscCall(MatSetValuesCOO(A, (PetscScalar *)s, INSERT_VALUES));
   PetscCall(PetscFree(s));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

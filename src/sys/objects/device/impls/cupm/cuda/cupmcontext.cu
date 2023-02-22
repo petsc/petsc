@@ -10,7 +10,7 @@ PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
   PetscCall(cuda_context.initialize(dctx->device));
   dctx->data = new PetscDeviceContext_(CUDA);
   PetscCall(PetscMemcpy(dctx->ops, &cuda_context.ops, sizeof(cuda_context.ops)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Management of CUBLAS and CUSOLVER handles */
@@ -22,7 +22,7 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
   PetscValidPointer(handle, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
   PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx, handle));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
@@ -33,5 +33,5 @@ PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
   PetscValidPointer(handle, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
   PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx, handle));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -41,7 +41,7 @@ PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range *range
   PetscCheck(tag || (range && !range->empty()), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both tag and range cannot be null.");
 
   PetscCall(DMCreateVector_Moab_Private(dm, tag, range, is_global_vec, destroy_tag, vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -70,7 +70,7 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
   PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
 
   *tag = vmoab->tag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -99,7 +99,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
   PetscCall(PetscContainerGetPointer(moabdata, (void **)&vmoab));
 
   *range = *vmoab->tag_range;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -181,7 +181,7 @@ PetscErrorCode DMMoabVecGetArray(DM dm, Vec vec, void *array)
       //(*varray)[dmmoab->llmap[dmmoab->lidmap[((PetscInt)*iter-dmmoab->seqstart)]*dmmoab->numFields+f]]=marray[i];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -260,7 +260,7 @@ PetscErrorCode DMMoabVecRestoreArray(DM dm, Vec vec, void *array)
 #endif
     PetscCall(PetscFree(*varray));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -340,7 +340,7 @@ PetscErrorCode DMMoabVecGetArrayRead(DM dm, Vec vec, void *array)
       //(*varray)[dmmoab->llmap[dmmoab->lidmap[((PetscInt)*iter-dmmoab->seqstart)]*dmmoab->numFields+f]]=marray[i];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -390,7 +390,7 @@ PetscErrorCode DMMoabVecRestoreArrayRead(DM dm, Vec vec, void *array)
     /* Nothing to do but just free the memory allocated before */
     PetscCall(PetscFree(*varray));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Range *userrange, PetscBool is_global_vec, PetscBool destroy_tag, Vec *vec)
@@ -524,7 +524,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
 
   /* set the DM reference to the vector */
   PetscCall(VecSetDM(*vec, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*  DMVecCreateTagName_Moab_Private
@@ -576,7 +576,7 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char **
   PetscCall(PetscSNPrintf(*tag_name, PETSC_MAX_PATH_LEN - 1, "%s_%" PetscInt_FMT, PVEC_PREFIX, global_n));
   mberr = mbiface->tag_set_data(indexTag, &rootset, 1, (const void *)&global_n);
   MBERRNM(mberr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM dm, Vec *gvec)
@@ -587,7 +587,7 @@ PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM dm, Vec *gvec)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(gvec, 2);
   PetscCall(DMCreateVector_Moab_Private(dm, NULL, dmmoab->vowned, PETSC_TRUE, PETSC_TRUE, gvec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm, Vec *lvec)
@@ -598,7 +598,7 @@ PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm, Vec *lvec)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(lvec, 2);
   PetscCall(DMCreateVector_Moab_Private(dm, NULL, dmmoab->vlocal, PETSC_FALSE, PETSC_TRUE, lvec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
@@ -620,7 +620,7 @@ PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
 
   PetscCall(DMCreateVector_Moab_Private(dm, NULL, vmoab->tag_range, vmoab->is_global_vec, PETSC_TRUE, y));
   PetscCall(VecSetDM(*y, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMVecUserDestroy_Moab(void *user)
@@ -641,7 +641,7 @@ PetscErrorCode DMVecUserDestroy_Moab(void *user)
   vmoab->pcomm = NULL;
 #endif
   PetscCall(PetscFree(vmoab));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin_Moab(DM dm, Vec g, InsertMode mode, Vec l)
@@ -650,7 +650,7 @@ PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin_Moab(DM dm, Vec g, InsertMode m
 
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(dmmoab->ltog_sendrecv, g, l, mode, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd_Moab(DM dm, Vec g, InsertMode mode, Vec l)
@@ -659,7 +659,7 @@ PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd_Moab(DM dm, Vec g, InsertMode mod
 
   PetscFunctionBegin;
   PetscCall(VecScatterEnd(dmmoab->ltog_sendrecv, g, l, mode, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin_Moab(DM dm, Vec l, InsertMode mode, Vec g)
@@ -668,7 +668,7 @@ PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin_Moab(DM dm, Vec l, InsertMode m
 
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(dmmoab->ltog_sendrecv, l, g, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd_Moab(DM dm, Vec l, InsertMode mode, Vec g)
@@ -677,5 +677,5 @@ PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd_Moab(DM dm, Vec l, InsertMode mod
 
   PetscFunctionBegin;
   PetscCall(VecScatterEnd(dmmoab->ltog_sendrecv, l, g, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

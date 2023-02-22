@@ -22,13 +22,13 @@ PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
 
   PetscFunctionBeginUser;
   PetscCall(MatMult(A, x, f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx)
 {
   PetscFunctionBeginUser;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ConstructProblem1(Mat A, Vec b)
@@ -45,7 +45,7 @@ PetscErrorCode ConstructProblem1(Mat A, Vec b)
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
@@ -60,7 +60,7 @@ PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
   PetscCall(VecNorm(b, NORM_2, &norm));
   PetscCheck(error / norm <= 1000. * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error / norm));
   PetscCall(VecDestroy(&errorVec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ConstructProblem2(Mat A, Vec b)
@@ -91,7 +91,7 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
@@ -118,7 +118,7 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   PetscCheck(error / norm <= 10000 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", (double)(error / norm));
   PetscCall(VecRestoreArrayRead(u, &uArray));
   PetscCall(VecRestoreArrayRead(b, &bArray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

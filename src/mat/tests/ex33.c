@@ -18,7 +18,7 @@ PetscErrorCode Print_memory(PetscLogDouble mem)
   max_mem = max_mem / 1024.0 / 1024.0;
   min_mem = min_mem / 1024.0 / 1024.0;
   PetscCall(PetscPrintf(MPI_COMM_WORLD, " max and min memory across all processors %.4f Mb, %.4f Mb.\n", (double)max_mem, (double)min_mem));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -75,7 +75,7 @@ PetscErrorCode TestMPIDerivedDataType()
     PetscCallMPI(MPI_Type_free(&rtype2));
   }
   PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)
@@ -102,16 +102,16 @@ int main(int argc, char **args)
     PetscCall(Print_memory(mem));
   }
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, mA, nz, PETSC_NULL, nz, PETSC_NULL, &A));
-  PetscCall(MatSetRandom(A, PETSC_NULL));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, mA, nz, NULL, nz, NULL, &A));
+  PetscCall(MatSetRandom(A, NULL));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After creating A,"));
     PetscCall(Print_memory(mem));
   }
 
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, nX, PETSC_NULL, &X));
-  PetscCall(MatSetRandom(X, PETSC_NULL));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, nX, NULL, &X));
+  PetscCall(MatSetRandom(X, NULL));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After creating X,"));

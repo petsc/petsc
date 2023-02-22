@@ -21,7 +21,7 @@ Label 'cohesive':
 [1]: 12 (1)
 Discrete System with 1 fields
     cell total dim 6 total comp 2
-  Field displacement FEM 2 components (implicit) (Nq 4 Nqc 1) 1-jet
+  Field displacement FEM 2 components (implicit) (Nq 3 Nqc 1) 1-jet
     PetscFE Object: displacement (displacement_) 1 MPI process
       type: basic
       Basic Finite Element in 2 dimensions with 2 components
@@ -37,11 +37,11 @@ Discrete System with 1 fields
         type: lagrange
         Dual space with 2 components, size 6
         Continuous Lagrange dual space
-        Quadrature of order 3 on 4 points (dim 2)
+        Quadrature of order 2 on 3 points (dim 2)
   Weak Form System with 1 fields
     boundary_residual_f0
-      (material, 1) (0, 0)
-      (material, 2) (0, 0)
+      (material, 1) (0, 0) 
+      (material, 2) (0, 0) 
     boundary_jacobian_g0
-      (material, 1) (1, 0)
-      (material, 2) (1, 0)
+      (material, 1) (1, 0) 
+      (material, 2) (1, 0) 

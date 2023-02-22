@@ -63,11 +63,11 @@ int main(int argc, char **argv)
   /*
      Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
-  PetscOptionsGetInt(NULL, NULL, "-mx", &user.mx, NULL);
-  PetscOptionsGetInt(NULL, NULL, "-my", &user.my, NULL);
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &user.mx, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &user.my, NULL));
   N  = user.mx * user.my;
   dt = .5 / PetscMax(user.mx, user.my);
-  PetscOptionsGetReal(NULL, NULL, "-param", &user.param, NULL);
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-param", &user.param, NULL));
   PetscCheck(user.param < param_max && user.param >= param_min, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Parameter is out of range");
 
   /*
@@ -184,6 +184,7 @@ PetscErrorCode FormInitialGuess(Vec X, AppCtx *user)
   PetscReal    temp1, temp, hx, hy;
   PetscScalar *x;
 
+  PetscFunctionBeginUser;
   mx     = user->mx;
   my     = user->my;
   lambda = user->param;
@@ -205,7 +206,7 @@ PetscErrorCode FormInitialGuess(Vec X, AppCtx *user)
     }
   }
   PetscCall(VecRestoreArray(X, &x));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
@@ -218,6 +219,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
   PetscScalar        ut, ub, ul, ur, u, uxx, uyy, sc, *f;
   const PetscScalar *x;
 
+  PetscFunctionBeginUser;
   mx     = user->mx;
   my     = user->my;
   lambda = user->param;
@@ -249,7 +251,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
   }
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
@@ -269,6 +271,7 @@ PetscErrorCode FormJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
   const PetscScalar *x;
   PetscReal          hx, hy, hxdhy, hydhx;
 
+  PetscFunctionBeginUser;
   mx     = user->mx;
   my     = user->my;
   lambda = user->param;
@@ -307,7 +310,7 @@ PetscErrorCode FormJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

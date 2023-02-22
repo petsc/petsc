@@ -35,7 +35,8 @@ configure_options = [
   '--download-ks',
   '--download-codipack=1',
   '--download-adblaslapack=1',
-  '--download-hpddm=1'
+  '--download-hpddm=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

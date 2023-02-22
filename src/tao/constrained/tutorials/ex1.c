@@ -17,7 +17,7 @@ where
 
 #include <petsctao.h>
 
-static char help[] = "Solves constrained optimiztion problem using pdipm.\n\
+static char help[] = "Solves constrained optimization problem using pdipm.\n\
 Input parameters include:\n\
   -tao_type pdipm    : sets Tao solver\n\
   -no_eq             : removes the equaility constraints from the problem\n\
@@ -46,13 +46,13 @@ typedef struct {
 PetscErrorCode InitializeProblem(AppCtx *);
 PetscErrorCode DestroyProblem(AppCtx *);
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
-PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, void *);
+PetscErrorCode FormPDIPMHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormInequalityConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormEqualityConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormInequalityJacobian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormEqualityJacobian(Tao, Vec, Mat, Mat, void *);
 
-PetscErrorCode main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   Tao         tao;
   KSP         ksp;
@@ -102,8 +102,9 @@ PetscErrorCode main(int argc, char **argv)
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
     PetscCall(KSPSetType(ksp, KSPPREONLY));
+    PetscCall(PCSetType(pc, PCCHOLESKY));
     PetscCall(KSPSetFromOptions(ksp));
-    PetscCall(TaoSetHessian(tao, user.H, user.H, FormHessian, (void *)&user));
+    PetscCall(TaoSetHessian(tao, user.H, user.H, FormPDIPMHessian, (void *)&user));
   }
 
   /* Print out an initial view of the problem */
@@ -111,7 +112,7 @@ PetscErrorCode main(int argc, char **argv)
     PetscCall(TaoSetUp(tao));
     PetscCall(VecDuplicate(user.x, &G));
     PetscCall(FormFunctionGradient(tao, user.x, &f, G, (void *)&user));
-    PetscCall(FormHessian(tao, user.x, user.H, user.H, (void *)&user));
+    PetscCall(FormPDIPMHessian(tao, user.x, user.H, user.H, (void *)&user));
     PetscCall(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial point X:\n"));
     PetscCall(VecView(user.x, PETSC_VIEWER_STDOUT_WORLD));
@@ -149,7 +150,7 @@ PetscErrorCode main(int argc, char **argv)
   PetscCall(DestroyProblem(&user));
   PetscCall(TaoDestroy(&tao));
   PetscCall(PetscFinalize());
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode InitializeProblem(AppCtx *user)
@@ -224,7 +225,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscCall(MatSetSizes(user->H, nloc, nloc, user->n, user->n));
   PetscCall(MatSetFromOptions(user->H));
   PetscCall(MatSetUp(user->H));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DestroyProblem(AppCtx *user)
@@ -241,17 +242,15 @@ PetscErrorCode DestroyProblem(AppCtx *user)
   PetscCall(VecDestroy(&user->xu));
   PetscCall(VecDestroy(&user->Xseq));
   PetscCall(VecScatterDestroy(&user->scat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate
    f(x) = (x0 - 2)^2 + (x1 - 2)^2 - 2*(x0 + x1)
-   G = grad f = [2*(x0 - 2) - 2;
-                 2*(x1 - 2) - 2]
+   G = grad f = [2*(x0 - 2) - 2, 2*(x1 - 2) - 2] = 2*X - 6
 */
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ctx)
 {
-  PetscScalar        g;
   const PetscScalar *x;
   MPI_Comm           comm;
   PetscMPIInt        rank;
@@ -261,6 +260,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
   VecScatter         scat = user->scat;
 
   PetscFunctionBegin;
+  /* f = (x0 - 2)^2 + (x1 - 2)^2 - 2*(x0 + x1) */
   PetscCall(PetscObjectGetComm((PetscObject)tao, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
@@ -271,24 +271,24 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
   if (rank == 0) {
     PetscCall(VecGetArrayRead(Xseq, &x));
     fin = (x[0] - 2.0) * (x[0] - 2.0) + (x[1] - 2.0) * (x[1] - 2.0) - 2.0 * (x[0] + x[1]);
-    g   = 2.0 * (x[0] - 2.0) - 2.0;
-    PetscCall(VecSetValue(G, 0, g, INSERT_VALUES));
-    g = 2.0 * (x[1] - 2.0) - 2.0;
-    PetscCall(VecSetValue(G, 1, g, INSERT_VALUES));
     PetscCall(VecRestoreArrayRead(Xseq, &x));
   }
   PetscCallMPI(MPI_Allreduce(&fin, f, 1, MPIU_REAL, MPIU_SUM, comm));
-  PetscCall(VecAssemblyBegin(G));
-  PetscCall(VecAssemblyEnd(G));
-  PetscFunctionReturn(0);
+
+  /* G = 2*X - 6 */
+  PetscCall(VecSet(G, -6.0));
+  PetscCall(VecAXPY(G, 2.0, X));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Evaluate
-   H = fxx + grad (grad g^T*DI) - grad (grad h^T*DE)]
-     = [ 2*(1+de[0]-di[0]+di[1]), 0;
-                   0,             2]
+/* Evaluate PDIPM Hessian, see Eqn(22) in http://doi.org/10.1049/gtd2.12708
+   H = Wxx = fxx        + Jacobian(grad g^T*DE)   - Jacobian(grad h^T*DI)]
+           = fxx        + Jacobin([2*x0; 1]de[0]) - Jacobian([2*x0, -2*x0; -1, 1][di[0] di[1]]^T)
+           = [2 0; 0 2] + [2*de[0]  0;      0  0] - [2*di[0]-2*di[1], 0; 0, 0]
+           = [ 2*(1+de[0]-di[0]+di[1]), 0;
+                          0,            2]
 */
-PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
+PetscErrorCode FormPDIPMHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
 {
   AppCtx            *user = (AppCtx *)ctx;
   Vec                DE, DI;
@@ -339,7 +339,7 @@ PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
   }
   PetscCall(VecScatterDestroy(&Discat));
   PetscCall(VecDestroy(&Diseq));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate
@@ -373,7 +373,7 @@ PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx)
   }
   PetscCall(VecAssemblyBegin(CI));
   PetscCall(VecAssemblyEnd(CI));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate
@@ -404,7 +404,7 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, void *ctx)
   }
   PetscCall(VecAssemblyBegin(CE));
   PetscCall(VecAssemblyEnd(CE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -442,12 +442,11 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, void *c
   PetscCall(VecRestoreArrayRead(Xseq, &x));
   PetscCall(MatAssemblyBegin(JI, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JI, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
-  grad g = [2*x0
-             1.0 ]
+  grad g = [2*x0, 1.0]
 */
 PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx)
 {
@@ -472,7 +471,7 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
   }
   PetscCall(MatAssemblyBegin(JE, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JE, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST
@@ -483,6 +482,13 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
    test:
       args: -tao_converged_reason -tao_gatol 1.e-6 -tao_type pdipm -tao_pdipm_kkt_shift_pd
       requires: mumps
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
+
+   test:
+      suffix: pdipm_2
+      requires: mumps
+      nsize: 2
+      args: -tao_converged_reason -tao_gatol 1.e-6 -tao_type pdipm
       filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
@@ -504,7 +510,7 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
    test:
       suffix: 5
       args: -tao_converged_reason -tao_almm_type classic -no_eq
-      requires: !single
+      requires: !single !defined(PETSCTEST_VALGRIND)
       filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:

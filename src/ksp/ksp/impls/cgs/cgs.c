@@ -10,7 +10,7 @@ static PetscErrorCode KSPSetUp_CGS(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 7));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_CGS(KSP ksp)
@@ -55,7 +55,7 @@ static PetscErrorCode KSPSolve_CGS(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Make the initial Rp == R */
   PetscCall(VecCopy(R, RP));
@@ -123,7 +123,7 @@ static PetscErrorCode KSPSolve_CGS(KSP ksp)
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
   PetscCall(KSPUnwindPreconditioner(ksp, X, T));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -164,5 +164,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

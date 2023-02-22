@@ -17,7 +17,7 @@ PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool sy
 
   PetscFunctionBegin;
   *nn = n;
-  if (!ia) PetscFunctionReturn(0);
+  if (!ia) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscCalloc1(n + 1, &collengths));
   PetscCall(PetscMalloc1(n + 1, &cia));
@@ -52,16 +52,16 @@ PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool sy
   *ia    = cia;
   *ja    = cja;
   *spidx = cspidx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatRestoreColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscInt *spidx[], PetscBool *done)
 {
   PetscFunctionBegin;
 
-  if (!ia) PetscFunctionReturn(0);
+  if (!ia) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(*ia));
   PetscCall(PetscFree(*ja));
   PetscCall(PetscFree(*spidx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

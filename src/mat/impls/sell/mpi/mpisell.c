@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: `MATAIJ`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
+.seealso: `Mat`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
 PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is)
@@ -32,7 +32,7 @@ PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is)
   } else {
     PetscCall(MatDiagonalSet_Default(Y, D, is));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -40,7 +40,7 @@ PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is)
 number to the local number in the off-diagonal part of the local
 storage of the matrix.  When PETSC_USE_CTABLE is used this is scalable at
 a slightly higher hash table cost; without it it is not scalable (each processor
-has an order N integer array but is fast to acess.
+has an order N integer array but is fast to access.
 */
 PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
 {
@@ -56,7 +56,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &sell->colmap));
   for (i = 0; i < n; i++) sell->colmap[sell->garray[i]] = i + 1;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define MatSetValues_SeqSELL_A_Private(row, col, value, addv, orow, ocol) \
@@ -235,7 +235,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
@@ -270,7 +270,7 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], 
       }
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat, Vec, Vec);
@@ -281,12 +281,12 @@ PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode)
   PetscInt     nstash, reallocs;
 
   PetscFunctionBegin;
-  if (sell->donotstash || mat->nooffprocentries) PetscFunctionReturn(0);
+  if (sell->donotstash || mat->nooffprocentries) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(MatStashScatterBegin_Private(mat, &mat->stash, mat->rmap->range));
   PetscCall(MatStashGetInfo_Private(&mat->stash, &nstash, &reallocs));
   PetscCall(PetscInfo(sell->A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
@@ -340,7 +340,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     PetscObjectState state = sell->A->nonzerostate + sell->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatZeroEntries_MPISELL(Mat A)
@@ -350,7 +350,7 @@ PetscErrorCode MatZeroEntries_MPISELL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatZeroEntries(l->A));
   PetscCall(MatZeroEntries(l->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
@@ -365,7 +365,7 @@ PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
   PetscCall((*a->A->ops->mult)(a->A, xx, yy));
   PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall((*a->B->ops->multadd)(a->B, a->lvec, yy, yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
@@ -374,7 +374,7 @@ PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
 
   PetscFunctionBegin;
   PetscCall(MatMultDiagonalBlock(a->A, bb, xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
@@ -386,7 +386,7 @@ PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall((*a->A->ops->multadd)(a->A, xx, yy, zz));
   PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall((*a->B->ops->multadd)(a->B, a->lvec, zz, zz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy)
@@ -401,7 +401,7 @@ PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy)
   /* add partial results together */
   PetscCall(VecScatterBegin(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBool *f)
@@ -418,10 +418,10 @@ PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBo
   Bsell = (Mat_MPISELL *)Bmat->data;
   Bdia  = Bsell->A;
   PetscCall(MatIsTranspose(Adia, Bdia, tol, f));
-  if (!*f) PetscFunctionReturn(0);
+  if (!*f) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)Amat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Hard test: off-diagonal block. This takes a MatCreateSubMatrix. */
   PetscCall(MatGetSize(Amat, &M, &N));
@@ -441,7 +441,7 @@ PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBo
   PetscCall(ISDestroy(&Me));
   PetscCall(ISDestroy(&Notme));
   PetscCall(PetscFree(notme));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
@@ -456,7 +456,7 @@ PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
   /* add partial results together */
   PetscCall(VecScatterBegin(a->Mvctx, a->lvec, zz, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(a->Mvctx, a->lvec, zz, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -471,7 +471,7 @@ PetscErrorCode MatGetDiagonal_MPISELL(Mat A, Vec v)
   PetscCheck(A->rmap->N == A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Supports only square matrix where A->A is diag block");
   PetscCheck(A->rmap->rstart == A->cmap->rstart && A->rmap->rend == A->cmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "row partition must equal col partition");
   PetscCall(MatGetDiagonal(a->A, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatScale_MPISELL(Mat A, PetscScalar aa)
@@ -481,7 +481,7 @@ PetscErrorCode MatScale_MPISELL(Mat A, PetscScalar aa)
   PetscFunctionBegin;
   PetscCall(MatScale(a->A, aa));
   PetscCall(MatScale(a->B, aa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_MPISELL(Mat mat)
@@ -490,7 +490,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N);
+  PetscCall(PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N));
 #endif
   PetscCall(MatStashDestroy_Private(&mat->stash));
   PetscCall(VecDestroy(&sell->diag));
@@ -515,7 +515,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISELLSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpiaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalScaleLocal_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -556,7 +556,7 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Information on VecScatter used in matrix-vector product: \n"));
       PetscCall(VecScatterView(sell->Mvctx, viewer));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     } else if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscInt inodecount, inodelimit, *inodes;
       PetscCall(MatInodeGetInodeSizes(sell->A, &inodecount, &inodes, &inodelimit));
@@ -565,9 +565,9 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "not using I-node (on process 0) routines\n"));
       }
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   } else if (isbinary) {
     if (size == 1) {
@@ -576,13 +576,13 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
     } else {
       /* PetscCall(MatView_MPISELL_Binary(mat,viewer)); */
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (isdraw) {
     PetscDraw draw;
     PetscBool isnull;
     PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
     PetscCall(PetscDrawIsNull(draw, &isnull));
-    if (isnull) PetscFunctionReturn(0);
+    if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   {
@@ -653,7 +653,7 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(MatDestroy(&A));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer)
@@ -666,7 +666,7 @@ PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   if (iascii || isdraw || isbinary || issocket) PetscCall(MatView_MPISELL_ASCIIorDraworSocket(mat, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[])
@@ -676,7 +676,7 @@ PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *
   PetscFunctionBegin;
   PetscCall(MatGetSize(sell->B, NULL, nghosts));
   if (ghosts) *ghosts = sell->garray;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info)
@@ -728,7 +728,7 @@ PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info)
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
@@ -788,7 +788,7 @@ PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr)
@@ -818,7 +818,7 @@ PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr)
     PetscCall(VecScatterEnd(sell->Mvctx, rr, sell->lvec, INSERT_VALUES, SCATTER_FORWARD));
     PetscUseTypeMethod(b, diagonalscale, NULL, sell->lvec);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetUnfactored_MPISELL(Mat A)
@@ -827,7 +827,7 @@ PetscErrorCode MatSetUnfactored_MPISELL(Mat A)
 
   PetscFunctionBegin;
   PetscCall(MatSetUnfactored(a->A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
@@ -845,7 +845,7 @@ PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
   PetscCall(MatEqual(a, c, &flg));
   if (flg) PetscCall(MatEqual(b, d, &flg));
   PetscCall(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str)
@@ -866,14 +866,14 @@ PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str)
     PetscCall(MatCopy(a->A, b->A, str));
     PetscCall(MatCopy(a->B, b->B, str));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetUp_MPISELL(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(MatMPISELLSetPreallocation(A, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode MatConjugate_SeqSELL(Mat);
@@ -887,7 +887,7 @@ PetscErrorCode MatConjugate_MPISELL(Mat mat)
     PetscCall(MatConjugate_SeqSELL(sell->A));
     PetscCall(MatConjugate_SeqSELL(sell->B));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatRealPart_MPISELL(Mat A)
@@ -897,7 +897,7 @@ PetscErrorCode MatRealPart_MPISELL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatRealPart(a->A));
   PetscCall(MatRealPart(a->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatImaginaryPart_MPISELL(Mat A)
@@ -907,7 +907,7 @@ PetscErrorCode MatImaginaryPart_MPISELL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatImaginaryPart(a->A));
   PetscCall(MatImaginaryPart(a->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values)
@@ -917,7 +917,7 @@ PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values)
   PetscFunctionBegin;
   PetscCall(MatInvertBlockDiagonal(a->A, values));
   A->factorerrortype = a->A->factorerrortype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx)
@@ -929,7 +929,7 @@ static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx)
   PetscCall(MatSetRandom(sell->B, rctx));
   PetscCall(MatAssemblyBegin(x, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(x, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsObject)
@@ -937,7 +937,7 @@ PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsOb
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "MPISELL options");
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a)
@@ -954,7 +954,7 @@ PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a)
     sell->nonew = nonew;
   }
   PetscCall(MatShift_Basic(Y, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d)
@@ -969,14 +969,14 @@ PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d
     PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
     *d += rstart;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a)
 {
   PetscFunctionBegin;
   *a = ((Mat_MPISELL *)A->data)->A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------*/
@@ -1142,7 +1142,7 @@ PetscErrorCode MatStoreValues_MPISELL(Mat mat)
   PetscFunctionBegin;
   PetscCall(MatStoreValues(sell->A));
   PetscCall(MatStoreValues(sell->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatRetrieveValues_MPISELL(Mat mat)
@@ -1152,7 +1152,7 @@ PetscErrorCode MatRetrieveValues_MPISELL(Mat mat)
   PetscFunctionBegin;
   PetscCall(MatRetrieveValues(sell->A));
   PetscCall(MatRetrieveValues(sell->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
@@ -1186,7 +1186,7 @@ PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, con
     and MatAssemblyEnd checks was_assembled to determine whether to build garray
   */
   B->assembled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat *newmat)
@@ -1239,13 +1239,13 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
   PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));
   *newmat = mat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
    MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
    For good matrix assembly performance the user should preallocate the matrix storage by
-   setting the parameters d_nz (or d_nnz) and o_nz (or o_nnz).
+   setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
 
    Collective
 
@@ -1255,7 +1255,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            (same value is used for all local rows)
 .  d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
-           or NULL (`PETSC_NULL_INTEGER` in Fortran), if d_nz is used to specify the nonzero structure.
+           or NULL (`PETSC_NULL_INTEGER` in Fortran), if `d_nz` is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e 'm'.
            For matrices that will be factored, you must leave room for (and set)
            the diagonal entry even if it is zero.
@@ -1263,41 +1263,15 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            submatrix (same value is used for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if o_nz is used to specify the nonzero
+           each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if `o_nz` is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
-   If the *_nnz parameter is given then the *_nz parameter is ignored
-
-   The stored row and column indices begin with zero.
-
-   The parallel matrix is partitioned such that the first m0 rows belong to
-   process 0, the next m1 rows belong to process 1, the next m2 rows belong
-   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
-
-   The DIAGONAL portion of the local submatrix of a processor can be defined
-   as the submatrix which is obtained by extraction the part corresponding to
-   the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
-   first row that belongs to the processor, r2 is the last row belonging to
-   the this processor, and c1-c2 is range of indices of the local part of a
-   vector suitable for applying the matrix to.  This is an mxn matrix.  In the
-   common case of a square matrix, the row and column ranges are the same and
-   the DIAGONAL part is also square. The remaining portion of the local
-   submatrix (mxN) constitute the OFF-DIAGONAL portion.
-
-   If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
-
-   You can call `MatGetInfo()` to get information on how effective the preallocation was;
-   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option -info and look for messages with the string
-   malloc in them to see if additional memory allocation was needed.
-
    Example usage:
-
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Lets assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
+   as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1334,10 +1308,10 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
    part as SeqSELL matrices. for eg: proc1 will store [E] as a SeqSELL
    matrix, ans [DF] as another SeqSELL matrix.
 
-   When d_nz, o_nz parameters are specified, d_nz storage elements are
+   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
    allocated for every row of the local diagonal submatrix, and o_nz
    storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_nz and o_nz is to use the max nonzerors per local
+   One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
    rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
    In this case, the values of d_nz,o_nz are:
 .vb
@@ -1350,7 +1324,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
    for proc3. i.e we are using 12+15+10=37 storage locations to store
    34 values.
 
-   When d_nnz, o_nnz parameters are specified, the storage is specified
+   When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
    for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
    In the above case the values for d_nnz,o_nnz are:
 .vb
@@ -1363,7 +1337,33 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
+   Notes:
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
+   The stored row and column indices begin with zero.
+
+   The parallel matrix is partitioned such that the first m0 rows belong to
+   process 0, the next m1 rows belong to process 1, the next m2 rows belong
+   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+
+   The DIAGONAL portion of the local submatrix of a processor can be defined
+   as the submatrix which is obtained by extraction the part corresponding to
+   the rows r1-r2 and columns c1-c2 of the global matrix, where r1 is the
+   first row that belongs to the processor, r2 is the last row belonging to
+   the this processor, and c1-c2 is range of indices of the local part of a
+   vector suitable for applying the matrix to.  This is an mxn matrix.  In the
+   common case of a square matrix, the row and column ranges are the same and
+   the DIAGONAL part is also square. The remaining portion of the local
+   submatrix (mxN) constitute the OFF-DIAGONAL portion.
+
+   If `o_nnz`, `d_nnz` are specified, then `o_nz`, and `d_nz` are ignored.
+
+   You can call `MatGetInfo()` to get information on how effective the preallocation was;
+   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+   You can also run with the option -info and look for messages with the string
+   malloc in them to see if additional memory allocation was needed.
+
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
           `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
 @*/
 PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
@@ -1372,7 +1372,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidType(B, 1);
   PetscTryMethod(B, "MatMPISELLSetPreallocation_C", (Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]), (B, d_nz, d_nnz, o_nz, o_nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1384,7 +1384,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
 
    Level: beginner
 
-.seealso: `MatCreateSell()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
+.seealso: `Mat`, `MatCreateSell()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
 /*@C
@@ -1477,7 +1477,7 @@ M*/
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Lets assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
+   as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -1543,7 +1543,7 @@ M*/
 
    Level: intermediate
 
-.seealso: `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
+.seealso: `Mat`, `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
           `MATMPISELL`, `MatCreateMPISELLWithArrays()`
 @*/
 PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[], Mat *A)
@@ -1561,7 +1561,7 @@ PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
     PetscCall(MatSetType(*A, MATSEQSELL));
     PetscCall(MatSeqSELLSetPreallocation(*A, d_rlenmax, d_rlen));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
@@ -1575,7 +1575,7 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
   if (Ad) *Ad = a->A;
   if (Ao) *Ao = a->B;
   if (colmap) *colmap = a->garray;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1586,14 +1586,15 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
    Input Parameters:
 +    A - the matrix
 .    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
--    row, col - index sets of rows and columns to extract (or NULL)
+.    row - index sets of rows to extract (or `NULL`)
+-    col - index sets of columns to extract (or `NULL`)
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated
 
     Level: developer
 
-.seealso: `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
+.seealso: `Mat`, `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
 @*/
 PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc)
 {
@@ -1642,7 +1643,7 @@ PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS
   if (!row) PetscCall(ISDestroy(&isrowa));
   if (!col) PetscCall(ISDestroy(&iscola));
   PetscCall(PetscLogEventEnd(MAT_Getlocalmatcondensed, A, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -1688,7 +1689,7 @@ PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A, MatType newtype, MatReuse reuse,
   } else {
     *newmat = B;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
@@ -1732,7 +1733,7 @@ PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A, MatType newtype, MatReuse reuse,
   } else {
     *newmat = B;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
@@ -1743,7 +1744,7 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
   PetscFunctionBegin;
   if (flag == SOR_APPLY_UPPER) {
     PetscCall((*mat->A->ops->sor)(mat->A, bb, omega, flag, fshift, lits, 1, xx));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) PetscCall(VecDuplicate(bb, &bb1));
@@ -1802,7 +1803,7 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
   PetscCall(VecDestroy(&bb1));
 
   matin->factorerrortype = mat->A->factorerrortype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1813,7 +1814,7 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
 
   Level: beginner
 
-.seealso: `MATSELL`, `MATSEQSELL` `MatCreateSELL()`
+.seealso: `Mat`, `MATSELL`, `MATSEQSELL` `MatCreateSELL()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
 {
@@ -1853,5 +1854,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpiaij_C", MatConvert_MPISELL_MPIAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDiagonalScaleLocal_C", MatDiagonalScaleLocal_MPISELL));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPISELL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

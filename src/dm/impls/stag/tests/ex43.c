@@ -66,7 +66,7 @@ static PetscErrorCode AssembleSystem(DM dm, Mat A, Vec b)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatGetDiagonal(A, b)); // Get the diagonal, so x should be a constant 1.0
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

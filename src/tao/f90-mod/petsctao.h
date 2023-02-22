@@ -3,6 +3,11 @@
 !
 #include "petsc/finclude/petsctao.h"
 
+      type tTao
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      end type
+      Tao, parameter :: PETSC_NULL_TAO = tTao(0)
+
       PetscEnum, parameter ::  TAO_CONVERGED_GATOL = 3
       PetscEnum, parameter ::  TAO_CONVERGED_GRTOL = 4
       PetscEnum, parameter ::  TAO_CONVERGED_GTTOL = 5

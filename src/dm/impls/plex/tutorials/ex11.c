@@ -40,7 +40,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   PetscCall(PetscOptionsInt("-init_ornt", "Initial orientation for starting mesh", "ex11.c", options->initOrnt, &options->initOrnt, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscBool ignoreOrnt(AppCtx *user, PetscInt o)
@@ -61,7 +61,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o)
@@ -89,7 +89,7 @@ static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o)
     PetscCheck(closure[v] == arrVerts[v] + vStart, comm, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " vertex[%" PetscInt_FMT "]: %" PetscInt_FMT " should be %" PetscInt_FMT " for arrangement %" PetscInt_FMT, cell, v, closure[v], arrVerts[v] + vStart, o);
   }
   PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Transform cell with group operation o */
@@ -127,7 +127,7 @@ static PetscErrorCode ReorientCell(DM dm, PetscInt cell, PetscInt o, PetscBool s
     PetscCall(VecRestoreArrayWrite(coordinates, &coords));
   }
   PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinates, cell, &Nc, &ccoords));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user)
@@ -138,7 +138,7 @@ static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user)
   const char    *name;
 
   PetscFunctionBeginUser;
-  if (!user->genArr) PetscFunctionReturn(0);
+  if (!user->genArr) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
   No = DMPolytopeTypeGetNumArrangments(ct) / 2;
@@ -151,7 +151,7 @@ static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user)
     PetscCall(CheckCellVertices(odm, 0, o));
     PetscCall(DMDestroy(&odm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user)
@@ -164,7 +164,7 @@ static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user)
   const char     *name;
 
   PetscFunctionBeginUser;
-  if (!user->genArr) PetscFunctionReturn(0);
+  if (!user->genArr) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
   PetscCall(DMPlexGetCone(dm, 0, &refcone));
@@ -198,7 +198,7 @@ static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user)
     }
     if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VerifyInverse(DM dm, AppCtx *user)
@@ -211,7 +211,7 @@ static PetscErrorCode VerifyInverse(DM dm, AppCtx *user)
   const char     *name;
 
   PetscFunctionBeginUser;
-  if (!user->genArr) PetscFunctionReturn(0);
+  if (!user->genArr) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
   PetscCall(DMPlexGetCone(dm, 0, &refcone));
@@ -242,7 +242,7 @@ static PetscErrorCode VerifyInverse(DM dm, AppCtx *user)
     PetscCall(DMDestroy(&dm2));
   }
   if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Suppose that point p has the same arrangement as o from canonical, compare the subcells to canonical subcells */
@@ -348,7 +348,7 @@ static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCt
   }
   PetscCall(DMPlexTransformDestroy(&tr));
   PetscCall(DMPlexTransformDestroy(&otr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RefineArrangments(DM dm, AppCtx *user)
@@ -359,7 +359,7 @@ static PetscErrorCode RefineArrangments(DM dm, AppCtx *user)
   const char    *name;
 
   PetscFunctionBeginUser;
-  if (!user->refArr) PetscFunctionReturn(0);
+  if (!user->refArr) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
   No = DMPolytopeTypeGetNumArrangments(ct) / 2;
@@ -377,7 +377,7 @@ static PetscErrorCode RefineArrangments(DM dm, AppCtx *user)
     PetscCall(DMDestroy(&odm));
     PetscCall(DMDestroy(&rdm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

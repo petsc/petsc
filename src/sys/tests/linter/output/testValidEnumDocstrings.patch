@@ -1,0 +1,27 @@
+@@ -13,5 +13,5 @@
+   Level: advanced
+ 
+-.seealso: Lorem
++.seealso: `Lorem`
+ E*/
+ typedef enum {
+@@ -28,4 +28,5 @@
+  $ AMET - An amet
+ $ADAPISCING - an adapiscing
++  
+ Level: advanced
+ */
+@@ -38,5 +38,5 @@
+ 
+ /*E
+-  bdSpllingenUm - Lorem ipsum dolor
++  BadSpellingEnum - Lorem ipsum dolor
+ 
+   Not Collective
+@@ -47,5 +47,5 @@
+   a note
+ 
+-.seealso:                         IllFormedEnum,WellFormedEnum,WellFormedEnum,WellFormedEnum,BadSpellingEnum,BadSpellingEnum
++.seealso: `IllFormedEnum`,`WellFormedEnum`
+ */
+ typedef enum {

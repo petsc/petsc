@@ -14,7 +14,7 @@ cdef extern from * nogil:
         DMDA_ELEMENT_P1
         DMDA_ELEMENT_Q1
 
-    int DMDACreateND(MPI_Comm,
+    PetscErrorCode DMDACreateND(MPI_Comm,
                      PetscInt,PetscInt,                # dim, dof
                      PetscInt,PetscInt,PetscInt,       # M, N, P
                      PetscInt,PetscInt,PetscInt,       # m, n, p
@@ -26,14 +26,14 @@ cdef extern from * nogil:
                      PetscInt,                         # stencil width
                      PetscDM*)
     
-    int DMDASetDof(PetscDM,PetscInt)
-    int DMDASetSizes(PetscDM,PetscInt,PetscInt,PetscInt)
-    int DMDASetNumProcs(PetscDM,PetscInt,PetscInt,PetscInt)
-    int DMDASetBoundaryType(PetscDM,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType)
-    int DMDASetStencilType(PetscDM,PetscDMDAStencilType)
-    int DMDASetStencilWidth(PetscDM,PetscInt)
+    PetscErrorCode DMDASetDof(PetscDM,PetscInt)
+    PetscErrorCode DMDASetSizes(PetscDM,PetscInt,PetscInt,PetscInt)
+    PetscErrorCode DMDASetNumProcs(PetscDM,PetscInt,PetscInt,PetscInt)
+    PetscErrorCode DMDASetBoundaryType(PetscDM,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType)
+    PetscErrorCode DMDASetStencilType(PetscDM,PetscDMDAStencilType)
+    PetscErrorCode DMDASetStencilWidth(PetscDM,PetscInt)
 
-    int DMDAGetInfo(PetscDM,
+    PetscErrorCode DMDAGetInfo(PetscDM,
                     PetscInt*,
                     PetscInt*,PetscInt*,PetscInt*,
                     PetscInt*,PetscInt*,PetscInt*,
@@ -42,46 +42,46 @@ cdef extern from * nogil:
                     PetscDMBoundaryType*,
                     PetscDMBoundaryType*,
                     PetscDMDAStencilType*)
-    int DMDAGetCorners(PetscDM,
+    PetscErrorCode DMDAGetCorners(PetscDM,
                        PetscInt*,PetscInt*,PetscInt*,
                        PetscInt*,PetscInt*,PetscInt*)
-    int DMDAGetGhostCorners(PetscDM,
+    PetscErrorCode DMDAGetGhostCorners(PetscDM,
                             PetscInt*,PetscInt*,PetscInt*,
                             PetscInt*,PetscInt*,PetscInt*)
-    int DMDAGetOwnershipRanges(PetscDM,
+    PetscErrorCode DMDAGetOwnershipRanges(PetscDM,
                                const PetscInt*[],
                                const PetscInt*[],
                                const PetscInt*[])
 
-    int DMDASetUniformCoordinates(PetscDM,
+    PetscErrorCode DMDASetUniformCoordinates(PetscDM,
                                   PetscReal,PetscReal,
                                   PetscReal,PetscReal,
                                   PetscReal,PetscReal)
-    int DMGetBoundingBox(PetscDM,PetscReal[],PetscReal[])
-    int DMGetLocalBoundingBox(PetscDM,PetscReal[],PetscReal[])
+    PetscErrorCode DMGetBoundingBox(PetscDM,PetscReal[],PetscReal[])
+    PetscErrorCode DMGetLocalBoundingBox(PetscDM,PetscReal[],PetscReal[])
 
-    int DMDACreateNaturalVector(PetscDM,PetscVec*)
-    int DMDAGlobalToNaturalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMDAGlobalToNaturalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMDANaturalToGlobalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMDANaturalToGlobalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMDACreateNaturalVector(PetscDM,PetscVec*)
+    PetscErrorCode DMDAGlobalToNaturalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMDAGlobalToNaturalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMDANaturalToGlobalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
+    PetscErrorCode DMDANaturalToGlobalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
 
-    int DMDAGetAO(PetscDM,PetscAO*)
-    int DMDAGetScatter(PetscDM,PetscScatter*,PetscScatter*)
+    PetscErrorCode DMDAGetAO(PetscDM,PetscAO*)
+    PetscErrorCode DMDAGetScatter(PetscDM,PetscScatter*,PetscScatter*)
 
-    int DMDASetRefinementFactor(PetscDM,PetscInt,PetscInt,PetscInt)
-    int DMDAGetRefinementFactor(PetscDM,PetscInt*,PetscInt*,PetscInt*)
-    int DMDASetInterpolationType(PetscDM,PetscDMDAInterpolationType)
-    int DMDAGetInterpolationType(PetscDM,PetscDMDAInterpolationType*)
-    int DMDASetElementType(PetscDM,PetscDMDAElementType)
-    int DMDAGetElementType(PetscDM,PetscDMDAElementType*)
-    int DMDAGetElements(PetscDM,PetscInt*,PetscInt*,const PetscInt**)
-    int DMDARestoreElements(PetscDM,PetscInt*,PetscInt*,const PetscInt**)
+    PetscErrorCode DMDASetRefinementFactor(PetscDM,PetscInt,PetscInt,PetscInt)
+    PetscErrorCode DMDAGetRefinementFactor(PetscDM,PetscInt*,PetscInt*,PetscInt*)
+    PetscErrorCode DMDASetInterpolationType(PetscDM,PetscDMDAInterpolationType)
+    PetscErrorCode DMDAGetInterpolationType(PetscDM,PetscDMDAInterpolationType*)
+    PetscErrorCode DMDASetElementType(PetscDM,PetscDMDAElementType)
+    PetscErrorCode DMDAGetElementType(PetscDM,PetscDMDAElementType*)
+    PetscErrorCode DMDAGetElements(PetscDM,PetscInt*,PetscInt*,const PetscInt**)
+    PetscErrorCode DMDARestoreElements(PetscDM,PetscInt*,PetscInt*,const PetscInt**)
 
-    int DMDASetFieldName(PetscDM,PetscInt,const char[])
-    int DMDAGetFieldName(PetscDM,PetscInt,const char*[])
-    int DMDASetCoordinateName(PetscDM,PetscInt,const char[])
-    int DMDAGetCoordinateName(PetscDM,PetscInt,const char*[])
+    PetscErrorCode DMDASetFieldName(PetscDM,PetscInt,const char[])
+    PetscErrorCode DMDAGetFieldName(PetscDM,PetscInt,const char*[])
+    PetscErrorCode DMDASetCoordinateName(PetscDM,PetscInt,const char[])
+    PetscErrorCode DMDAGetCoordinateName(PetscDM,PetscInt,const char*[])
 
 # --------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ cdef inline PetscDMDAElementType daelementtype(object etype) \
         else: raise ValueError("unknown element type: %s" % etype)
     return etype
 
-cdef inline int DMDAGetDim(PetscDM da, PetscInt *dim) nogil:
+cdef inline PetscErrorCode DMDAGetDim(PetscDM da, PetscInt *dim) nogil:
      return DMDAGetInfo(da, dim,
                         NULL, NULL, NULL,
                         NULL, NULL, NULL,

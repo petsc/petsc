@@ -31,7 +31,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     PetscCheck(!flg || !(len != options->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of order array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, options->Nf);
   }
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSize, Vec u, AppCtx *user)
@@ -59,7 +59,7 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
     }
   }
   PetscCall(PetscFree(closure));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, PetscInt clSize, Vec u, AppCtx *user)
@@ -91,7 +91,7 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
     }
   }
   PetscCall(PetscFree(closure));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
@@ -113,7 +113,7 @@ static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
   }
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   PetscCall(VecRestoreArrayRead(u, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
@@ -146,7 +146,7 @@ static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
     PetscCall(DMPlexVecRestoreClosure(dm, NULL, u, cell, &closureSize, &closure));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
@@ -182,7 +182,7 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
     PetscCall(DMPlexVecRestoreClosure(dm, NULL, u, cell, &closureSize, &closure));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
@@ -301,7 +301,7 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
     PetscCall(PetscSectionSymDestroy(&sym));
   }
   PetscCall(PetscSectionViewFromOptions(s, NULL, "-section_with_sym_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

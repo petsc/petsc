@@ -14,7 +14,7 @@ PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F)
 {
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, 1.0, U, V));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -24,7 +24,7 @@ PetscErrorCode F(PetscReal t, Vec U, Vec V, Vec F)
 {
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, -1.0, V, U));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -89,7 +89,7 @@ PetscErrorCode TSFunction(TS ts, PetscReal t, Vec U, Vec F, void *actx)
   ctx->U = U;
   PetscCall(SNESSolve(ctx->snes, NULL, ctx->V));
   PetscCall((*ctx->f)(t, U, ctx->V, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -101,7 +101,7 @@ PetscErrorCode SNESFunction(SNES snes, Vec V, Vec F, void *actx)
 
   PetscFunctionBeginUser;
   PetscCall((*ctx->F)(ctx->t, ctx->U, V, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -78,7 +78,7 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim)
   PetscCall(DMSwarmMigrate(swarm, PETSC_FALSE));
   PetscCall(DMDestroy(&celldm));
   PetscCall(DMDestroy(&swarm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
@@ -201,7 +201,7 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
   PetscCall(DMView(swarm, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(DMDestroy(&celldm));
   PetscCall(DMDestroy(&swarm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex, PetscInt dim)
@@ -270,7 +270,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex, PetscInt dim)
   PetscCall(DMView(swarm, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(DMDestroy(&celldm));
   PetscCall(DMDestroy(&swarm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

@@ -34,7 +34,7 @@ PetscErrorCode PetscSFInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscSFPackageInitialized) PetscFunctionReturn(0);
+  if (PetscSFPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscSFPackageInitialized = PETSC_TRUE;
   /* Register Class */
   PetscCall(PetscClassIdRegister("Star Forest Graph", &PETSCSF_CLASSID));
@@ -70,7 +70,7 @@ PetscErrorCode PetscSFInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PetscSFFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -88,5 +88,5 @@ PetscErrorCode PetscSFFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&PetscSFList));
   PetscSFPackageInitialized = PETSC_FALSE;
   PetscSFRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

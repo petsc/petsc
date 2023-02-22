@@ -4,13 +4,13 @@
 static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchSetFromOptions_Unit(TaoLineSearch ls, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls, PetscViewer viewer)
@@ -20,7 +20,7 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls, PetscViewer viewe
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Line Search: Unit Step %g.\n", (double)ls->initstep));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Take unit step (newx = startx + initstep*step_direction) */
@@ -33,7 +33,7 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls, Vec x, PetscReal
   PetscCall(TaoLineSearchComputeObjectiveAndGradient(ls, x, f, g));
   PetscCall(TaoLineSearchMonitor(ls, 1, *f, ls->step));
   ls->reason = TAOLINESEARCH_SUCCESS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -58,5 +58,5 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
   ls->ops->view           = TaoLineSearchView_Unit;
   ls->ops->destroy        = TaoLineSearchDestroy_Unit;
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Unit;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

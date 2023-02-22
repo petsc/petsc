@@ -12,7 +12,7 @@
    Input Parameter:
 .  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. Thus must be
          cast with a (`PetscObject`), for example,
-         `PetscObjectComm`((`PetscObjec`t)mat,...);
+         `PetscObjectComm`((`PetscObject`)mat,...);
 
    Output Parameter:
 .  comm - the MPI communicator or `MPI_COMM_NULL` if object is not valid
@@ -50,7 +50,7 @@ PetscErrorCode PetscObjectGetComm(PetscObject obj, MPI_Comm *comm)
   PetscValidHeader(obj, 1);
   PetscValidPointer(comm, 2);
   *comm = obj->comm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -81,7 +81,7 @@ PetscErrorCode PetscObjectGetTabLevel(PetscObject obj, PetscInt *tab)
   PetscValidHeader(obj, 1);
   PetscValidIntPointer(tab, 2);
   *tab = obj->tablevel;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -111,7 +111,7 @@ PetscErrorCode PetscObjectSetTabLevel(PetscObject obj, PetscInt tab)
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   obj->tablevel = tab;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -140,5 +140,5 @@ PetscErrorCode PetscObjectIncrementTabLevel(PetscObject obj, PetscObject oldobj,
   PetscValidHeader(obj, 1);
   if (oldobj) PetscValidHeader(oldobj, 2);
   obj->tablevel = (oldobj ? oldobj->tablevel : 0) + tab;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

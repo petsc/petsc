@@ -1,19 +1,19 @@
 #include <petscsys.h>         /*I   "petscsys.h"   I*/
 #include <petscdevice_cuda.h> /* Needed to provide PetscCallCUDA() */
 
-static PetscErrorCode PetscCUDAHostMalloc(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result)
+static PetscErrorCode PetscCUDAHostMalloc(size_t a, PetscBool, int, const char[], const char[], void **result)
 {
   PetscCallCUDA(cudaMallocHost(result, a));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode PetscCUDAHostFree(void *aa, int lineno, const char function[], const char filename[])
+static PetscErrorCode PetscCUDAHostFree(void *aa, int, const char[], const char[])
 {
   PetscCallCUDA(cudaFreeHost(aa));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode PetscCUDAHostRealloc(size_t a, int lineno, const char function[], const char filename[], void **result)
+static PetscErrorCode PetscCUDAHostRealloc(size_t, int, const char[], const char[], void **)
 {
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "CUDA has no Realloc()");
 }
@@ -46,7 +46,7 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
   PetscTrMalloc   = PetscCUDAHostMalloc;
   PetscTrRealloc  = PetscCUDAHostRealloc;
   PetscTrFree     = PetscCUDAHostFree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -64,5 +64,5 @@ PetscErrorCode PetscMallocResetCUDAHost(void)
   PetscTrMalloc  = PetscMallocOld;
   PetscTrRealloc = PetscReallocOld;
   PetscTrFree    = PetscFreeOld;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

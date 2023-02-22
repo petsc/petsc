@@ -12,17 +12,18 @@ static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
 PetscErrorCode zoomfunction(PetscDraw draw, void *dummy)
 {
-  int         i;
-  MPI_Comm    comm = PetscObjectComm((PetscObject)draw);
+  MPI_Comm    comm;
   PetscMPIInt size, rank;
 
+  PetscFunctionBeginUser;
+  PetscCall(PetscObjectGetComm((PetscObject)draw, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  for (i = rank; i < 256; i += size) {
+  for (int i = rank; i < 256; i += size) {
     PetscReal y = ((PetscReal)i) / (256 - 1);
     PetscCall(PetscDrawLine(draw, 0.0, y, 1.0, y, i));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

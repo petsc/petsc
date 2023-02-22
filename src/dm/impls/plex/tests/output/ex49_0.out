@@ -272,7 +272,7 @@ Number of indices in set 128
 125 49
 126 25
 127 79
-Coordinates by element
+Coordinates by element in bfs order
 [0] 0 <--  0 ( 0.00,  0.00)
 [0] 1 <-- 18 ( 0.25,  0.00)
 [0] 2 <-- 22 ( 0.00,  0.25)
@@ -440,7 +440,7 @@ Number of indices in set 32
 29 49
 30 49
 31 13
-Coordinates by element
+Coordinates by element in bfs order
 [0] 0 <--  0 ( 0.00,  0.00)
 [0] 1 <-- 18 ( 0.25,  0.00)
 [1] 0 <-- 18 ( 0.25,  0.00)

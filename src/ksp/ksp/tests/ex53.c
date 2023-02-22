@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
 
-  PetscCall(PetscOptionsGetInt(PETSC_NULL, PETSC_NULL, "-mat_size", &mat_size, PETSC_NULL));
-  PetscCall(PetscOptionsGetInt(PETSC_NULL, PETSC_NULL, "-method", &method, PETSC_NULL));
-  PetscCall(PetscOptionsGetInt(PETSC_NULL, PETSC_NULL, "-block_size", &block_size, PETSC_NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_size", &mat_size, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-method", &method, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-block_size", &block_size, NULL));
 
   if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  matrix size = %" PetscInt_FMT ", block size = %" PetscInt_FMT "\n", mat_size, block_size));
 

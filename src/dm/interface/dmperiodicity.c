@@ -24,7 +24,7 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
   if (maxCell) *maxCell = dm->maxCell;
   if (Lstart) *Lstart = dm->Lstart;
   if (L) *L = dm->L;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -72,7 +72,7 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
     dm->L = NULL;
   }
   PetscCheck((dm->maxCell && dm->L) || (!dm->maxCell && !dm->L), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cannot set only one of maxCell/L");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -111,7 +111,7 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
       for (d = 0; d < dim; ++d) out[d] = in[d] - dm->L[d] * PetscFloorReal(PetscRealPart(in[d]) / dm->L[d]);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -148,7 +148,7 @@ PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscSca
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const PetscReal anchor[], const PetscReal in[], PetscReal out[])
@@ -167,7 +167,7 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -211,7 +211,7 @@ PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const Petsc
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -235,7 +235,7 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(areLocalized, 2);
   *areLocalized = dm->coordinates[1].dim < 0 ? PETSC_FALSE : PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -262,7 +262,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
   PetscValidBoolPointer(areLocalized, 2);
   PetscCall(DMGetCoordinatesLocalizedLocal(dm, &localized));
   PetscCall(MPIU_Allreduce(&localized, areLocalized, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -294,10 +294,10 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
   /* Cannot automatically localize without L and maxCell right now */
-  if (!L) PetscFunctionReturn(0);
+  if (!L) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(DMGetCoordinatesLocalized(dm, &isLocalized));
-  if (isLocalized) PetscFunctionReturn(0);
+  if (isLocalized) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
@@ -437,5 +437,5 @@ end:
   PetscCall(PetscSectionDestroy(&csDG));
   PetscCall(DMDestroy(&plex));
   PetscCall(DMDestroy(&cplex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

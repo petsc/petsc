@@ -108,7 +108,7 @@ PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsObject)
       dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode       DMCreateGlobalVector_DA(DM, Vec *);
@@ -171,7 +171,7 @@ PetscErrorCode DMLoad_DA(DM da, PetscViewer viewer)
     PetscCall(DMSetCoordinates(da, c));
     PetscCall(VecDestroy(&c));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
@@ -218,7 +218,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
     PetscCheck(cnt == da->Nlocal * numFields / dof, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %" PetscInt_FMT " does not equal expected value %" PetscInt_FMT, cnt, da->Nlocal * numFields / dof);
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), cnt, indices, PETSC_OWN_POINTER, is));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
@@ -262,7 +262,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namel
     for (i = 0; i < dof - 1; i++) PetscCall(PetscObjectReference((PetscObject)da));
     for (i = 0; i < dof; i++) (*dmlist)[i] = da;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMClone_DA(DM dm, DM *newdm)
@@ -280,7 +280,7 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   PetscCall(DMDASetStencilWidth(*newdm, da->s));
   PetscCall(DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz));
   PetscCall(DMSetUp(*newdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
@@ -291,14 +291,14 @@ static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   *flg = da->interptype == DMDA_Q1 ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscFunctionBegin;
   PetscCall(DMDAGetDepthStratum(dm, dim, pStart, pEnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
@@ -326,7 +326,7 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -401,7 +401,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->gtol = NULL;
   dd->ltol = NULL;
   dd->ao   = NULL;
-  PetscStrallocpy(AOBASIC, (char **)&dd->aotype);
+  PetscCall(PetscStrallocpy(AOBASIC, (char **)&dd->aotype));
   dd->base         = -1;
   dd->bx           = DM_BOUNDARY_NONE;
   dd->by           = DM_BOUNDARY_NONE;
@@ -447,7 +447,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->locatepoints              = DMLocatePoints_DA_Regular;
   da->ops->getcompatibility          = DMGetCompatibility_DA;
   PetscCall(PetscObjectComposeFunction((PetscObject)da, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_DMDA));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -474,5 +474,5 @@ PetscErrorCode DMDACreate(MPI_Comm comm, DM *da)
   PetscValidPointer(da, 2);
   PetscCall(DMCreate(comm, da));
   PetscCall(DMSetType(*da, DMDA));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

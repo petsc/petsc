@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)p, &sequential, PETSCPARTITIONERCHACO, NULL));
   if (sequential) goto finally;
 
-  /* test partitioning a graph on a subset of the processess only */
+  /* test partitioning a graph on a subset of the processes only */
   if (rank % 2) {
     PetscCall(PetscPartitionerPartition(p, nparts, 0, NULL, NULL, NULL, targetSection, partSection, &partition));
   } else {

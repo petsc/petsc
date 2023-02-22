@@ -79,7 +79,7 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
   PetscCall(PetscFree2(Lstar, Lstarwcheck));
   PetscCall(PetscFree2(Lstarw, Lx));
   PetscCall(PetscFree(walloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

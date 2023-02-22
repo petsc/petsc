@@ -11,7 +11,7 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
 
   PetscFunctionBegin;
   *mp = p->mp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -35,7 +35,7 @@ PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitione
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidPointer(mp, 2);
   PetscUseMethod(part, "PetscPartitionerMatPartitioningGetMatPartitioning_C", (PetscPartitioner, MatPartitioning *), (part, mp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner part)
@@ -46,7 +46,7 @@ static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner p
   PetscCall(MatPartitioningDestroy(&p->mp));
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "PetscPartitionerMatPartitioningGetMatPartitioning_C", NULL));
   PetscCall(PetscFree(part->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_MatPartitioning_ASCII(PetscPartitioner part, PetscViewer viewer)
@@ -60,7 +60,7 @@ static PetscErrorCode PetscPartitionerView_MatPartitioning_ASCII(PetscPartitione
   PetscCall(PetscViewerASCIIPushTab(viewer));
   if (p->mp) PetscCall(MatPartitioningView(p->mp, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part, PetscViewer viewer)
@@ -72,7 +72,7 @@ static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscPartitionerView_MatPartitioning_ASCII(part, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
@@ -82,7 +82,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartit
   PetscFunctionBegin;
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)p->mp, ((PetscObject)part)->prefix));
   PetscCall(MatPartitioningSetFromOptions(p->mp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *is)
@@ -182,7 +182,7 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
 
   PetscCall(MatDestroy(&matadj));
   *is = is1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerInitialize_MatPartitioning(PetscPartitioner part)
@@ -193,7 +193,7 @@ static PetscErrorCode PetscPartitionerInitialize_MatPartitioning(PetscPartitione
   part->ops->destroy        = PetscPartitionerDestroy_MatPartitioning;
   part->ops->partition      = PetscPartitionerPartition_MatPartitioning;
   PetscCall(PetscObjectComposeFunction((PetscObject)part, "PetscPartitionerMatPartitioningGetMatPartitioning_C", PetscPartitionerMatPartitioningGetMatPartitioning_MatPartitioning));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -214,5 +214,5 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitio
   part->data = p;
   PetscCall(PetscPartitionerInitialize_MatPartitioning(part));
   PetscCall(MatPartitioningCreate(PetscObjectComm((PetscObject)part), &p->mp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

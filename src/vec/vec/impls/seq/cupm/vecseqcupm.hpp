@@ -39,74 +39,74 @@ private:
   PETSC_NODISCARD static Vec_Seq          *VecIMPLCast_(Vec) noexcept;
   PETSC_NODISCARD static constexpr VecType VECIMPLCUPM_() noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode VecDestroy_IMPL_(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode VecResetArray_IMPL_(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode VecPlaceArray_IMPL_(Vec, const PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode VecCreate_IMPL_Private_(Vec, PetscBool *, PetscInt, PetscScalar *) noexcept;
+  static PetscErrorCode VecDestroy_IMPL_(Vec) noexcept;
+  static PetscErrorCode VecResetArray_IMPL_(Vec) noexcept;
+  static PetscErrorCode VecPlaceArray_IMPL_(Vec, const PetscScalar *) noexcept;
+  static PetscErrorCode VecCreate_IMPL_Private_(Vec, PetscBool *, PetscInt, PetscScalar *) noexcept;
 
-  PETSC_NODISCARD static PetscErrorCode MaybeIncrementEmptyLocalVec(Vec) noexcept;
+  static PetscErrorCode MaybeIncrementEmptyLocalVec(Vec) noexcept;
 
   // common core for min and max
   template <typename TupleFuncT, typename UnaryFuncT>
-  PETSC_NODISCARD static PetscErrorCode minmax_(TupleFuncT &&, UnaryFuncT &&, Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode minmax_(TupleFuncT &&, UnaryFuncT &&, Vec, PetscInt *, PetscReal *) noexcept;
   // common core for pointwise binary and pointwise unary thrust functions
   template <typename BinaryFuncT>
-  PETSC_NODISCARD static PetscErrorCode pointwisebinary_(BinaryFuncT &&, Vec, Vec, Vec) noexcept;
+  static PetscErrorCode pointwisebinary_(BinaryFuncT &&, Vec, Vec, Vec) noexcept;
   template <typename UnaryFuncT>
-  PETSC_NODISCARD static PetscErrorCode pointwiseunary_(UnaryFuncT &&, Vec, Vec /*out*/ = nullptr) noexcept;
+  static PetscErrorCode pointwiseunary_(UnaryFuncT &&, Vec, Vec /*out*/ = nullptr) noexcept;
   // mdot dispatchers
-  PETSC_NODISCARD static PetscErrorCode mdot_(/* use complex = */ std::true_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
-  PETSC_NODISCARD static PetscErrorCode mdot_(/* use complex = */ std::false_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
+  static PetscErrorCode mdot_(/* use complex = */ std::true_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
+  static PetscErrorCode mdot_(/* use complex = */ std::false_type, Vec, PetscInt, const Vec[], PetscScalar *, PetscDeviceContext) noexcept;
   template <std::size_t... Idx>
-  PETSC_NODISCARD static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, util::index_sequence<Idx...>) noexcept;
+  static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, util::index_sequence<Idx...>) noexcept;
   template <int>
-  PETSC_NODISCARD static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, PetscInt &) noexcept;
+  static PetscErrorCode mdot_kernel_dispatch_(PetscDeviceContext, cupmStream_t, const PetscScalar *, const Vec[], PetscInt, PetscScalar *, PetscInt &) noexcept;
   template <std::size_t... Idx>
-  PETSC_NODISCARD static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, util::index_sequence<Idx...>) noexcept;
+  static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, util::index_sequence<Idx...>) noexcept;
   template <int>
-  PETSC_NODISCARD static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, PetscInt &) noexcept;
+  static PetscErrorCode maxpy_kernel_dispatch_(PetscDeviceContext, cupmStream_t, PetscScalar *, const PetscScalar *, const Vec *, PetscInt, PetscInt &) noexcept;
   // common core for the various create routines
-  PETSC_NODISCARD static PetscErrorCode createseqcupm_(Vec, PetscDeviceContext, PetscScalar * /*host_ptr*/ = nullptr, PetscScalar * /*device_ptr*/ = nullptr) noexcept;
+  static PetscErrorCode createseqcupm_(Vec, PetscDeviceContext, PetscScalar * /*host_ptr*/ = nullptr, PetscScalar * /*device_ptr*/ = nullptr) noexcept;
 
 public:
   // callable directly via a bespoke function
-  PETSC_NODISCARD static PetscErrorCode createseqcupm(MPI_Comm, PetscInt, PetscInt, Vec *, PetscBool) noexcept;
-  PETSC_NODISCARD static PetscErrorCode createseqcupmwithbotharrays(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Vec *) noexcept;
+  static PetscErrorCode createseqcupm(MPI_Comm, PetscInt, PetscInt, Vec *, PetscBool) noexcept;
+  static PetscErrorCode createseqcupmwithbotharrays(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Vec *) noexcept;
 
   // callable indirectly via function pointers
-  PETSC_NODISCARD static PetscErrorCode duplicate(Vec, Vec *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode aypx(Vec, PetscScalar, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode axpy(Vec, PetscScalar, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode pointwisedivide(Vec, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode pointwisemult(Vec, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode reciprocal(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode waxpy(Vec, PetscScalar, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode maxpy(Vec, PetscInt, const PetscScalar[], Vec *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode dot(Vec, Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode mdot(Vec, PetscInt, const Vec[], PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode set(Vec, PetscScalar) noexcept;
-  PETSC_NODISCARD static PetscErrorCode scale(Vec, PetscScalar) noexcept;
-  PETSC_NODISCARD static PetscErrorCode tdot(Vec, Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode copy(Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode swap(Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode axpby(Vec, PetscScalar, PetscScalar, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode axpbypcz(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode norm(Vec, NormType, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode dotnorm2(Vec, Vec, PetscScalar *, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode destroy(Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode conjugate(Vec) noexcept;
+  static PetscErrorCode duplicate(Vec, Vec *) noexcept;
+  static PetscErrorCode aypx(Vec, PetscScalar, Vec) noexcept;
+  static PetscErrorCode axpy(Vec, PetscScalar, Vec) noexcept;
+  static PetscErrorCode pointwisedivide(Vec, Vec, Vec) noexcept;
+  static PetscErrorCode pointwisemult(Vec, Vec, Vec) noexcept;
+  static PetscErrorCode reciprocal(Vec) noexcept;
+  static PetscErrorCode waxpy(Vec, PetscScalar, Vec, Vec) noexcept;
+  static PetscErrorCode maxpy(Vec, PetscInt, const PetscScalar[], Vec *) noexcept;
+  static PetscErrorCode dot(Vec, Vec, PetscScalar *) noexcept;
+  static PetscErrorCode mdot(Vec, PetscInt, const Vec[], PetscScalar *) noexcept;
+  static PetscErrorCode set(Vec, PetscScalar) noexcept;
+  static PetscErrorCode scale(Vec, PetscScalar) noexcept;
+  static PetscErrorCode tdot(Vec, Vec, PetscScalar *) noexcept;
+  static PetscErrorCode copy(Vec, Vec) noexcept;
+  static PetscErrorCode swap(Vec, Vec) noexcept;
+  static PetscErrorCode axpby(Vec, PetscScalar, PetscScalar, Vec) noexcept;
+  static PetscErrorCode axpbypcz(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec) noexcept;
+  static PetscErrorCode norm(Vec, NormType, PetscReal *) noexcept;
+  static PetscErrorCode dotnorm2(Vec, Vec, PetscScalar *, PetscScalar *) noexcept;
+  static PetscErrorCode destroy(Vec) noexcept;
+  static PetscErrorCode conjugate(Vec) noexcept;
   template <PetscMemoryAccessMode>
-  PETSC_NODISCARD static PetscErrorCode getlocalvector(Vec, Vec) noexcept;
+  static PetscErrorCode getlocalvector(Vec, Vec) noexcept;
   template <PetscMemoryAccessMode>
-  PETSC_NODISCARD static PetscErrorCode restorelocalvector(Vec, Vec) noexcept;
-  PETSC_NODISCARD static PetscErrorCode max(Vec, PetscInt *, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode min(Vec, PetscInt *, PetscReal *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode sum(Vec, PetscScalar *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode shift(Vec, PetscScalar) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setrandom(Vec, PetscRandom) noexcept;
-  PETSC_NODISCARD static PetscErrorCode bindtocpu(Vec, PetscBool) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setpreallocationcoo(Vec, PetscCount, const PetscInt[]) noexcept;
-  PETSC_NODISCARD static PetscErrorCode setvaluescoo(Vec, const PetscScalar[], InsertMode) noexcept;
+  static PetscErrorCode restorelocalvector(Vec, Vec) noexcept;
+  static PetscErrorCode max(Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode min(Vec, PetscInt *, PetscReal *) noexcept;
+  static PetscErrorCode sum(Vec, PetscScalar *) noexcept;
+  static PetscErrorCode shift(Vec, PetscScalar) noexcept;
+  static PetscErrorCode setrandom(Vec, PetscRandom) noexcept;
+  static PetscErrorCode bindtocpu(Vec, PetscBool) noexcept;
+  static PetscErrorCode setpreallocationcoo(Vec, PetscCount, const PetscInt[]) noexcept;
+  static PetscErrorCode setvaluescoo(Vec, const PetscScalar[], InsertMode) noexcept;
 };
 
 // ==========================================================================================
@@ -153,7 +153,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::VecCreate_IMPL_Private_(Vec v, PetscBool *
   PetscCallMPI(MPI_Comm_size(PetscObjectComm(PetscObjectCast(v)), &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must create VecSeq on communicator of size 1, have size %d", size);
   PetscCall(VecCreate_Seq_Private(v, host_array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // for functions with an early return based one vec size we still need to artificially bump the
@@ -177,7 +177,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::MaybeIncrementEmptyLocalVec(Vec v) noexcep
 {
   PetscFunctionBegin;
   if (PetscUnlikely((v->map->n == 0) && (v->map->N != 0))) PetscCall(PetscObjectStateIncrease(PetscObjectCast(v)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -186,7 +186,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::createseqcupm_(Vec v, PetscDeviceContext d
   PetscFunctionBegin;
   PetscCall(base_type::VecCreate_IMPL_Private(v, nullptr, 0, host_array));
   PetscCall(Initialize_CUPMBase(v, PETSC_FALSE, host_array, device_array, dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -203,7 +203,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::pointwisebinary_(BinaryFuncT &&binary, Vec
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(zout));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -230,7 +230,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::pointwiseunary_(UnaryFuncT &&unary, Vec xi
       PetscCall(MaybeIncrementEmptyLocalVec(yin));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -243,7 +243,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::createseqcupm(MPI_Comm comm, PetscInt bs, 
 {
   PetscFunctionBegin;
   PetscCall(Create_CUPMBase(comm, bs, n, n, v, call_set_type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // VecCreateSeqCUPMWithArrays()
@@ -258,7 +258,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::createseqcupmwithbotharrays(MPI_Comm comm,
   // createseqcupm_() is called!
   PetscCall(createseqcupm(comm, bs, n, v, PETSC_FALSE));
   PetscCall(createseqcupm_(*v, dctx, PetscRemoveConstCast(host_array), PetscRemoveConstCast(device_array)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->duplicate
@@ -270,7 +270,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::duplicate(Vec v, Vec *y) noexcept
   PetscFunctionBegin;
   PetscCall(GetHandles_(&dctx));
   PetscCall(Duplicate_CUPMBase(v, y, dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -300,11 +300,11 @@ inline PetscErrorCode VecSeq_CUPM<T>::bindtocpu(Vec v, PetscBool usehost) noexce
   VecSetOp_CUPM(min, VecMin_Seq, min);
   VecSetOp_CUPM(setpreallocationcoo, VecSetPreallocationCOO_Seq, setpreallocationcoo);
   VecSetOp_CUPM(setvaluescoo, VecSetValuesCOO_Seq, setvaluescoo);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
-// VecSeq_CUPM - Public API - Mutatators
+// VecSeq_CUPM - Public API - Mutators
 // ==========================================================================================
 
 // v->ops->getlocalvector or v->ops->getlocalvectorread
@@ -360,7 +360,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::getlocalvector(Vec v, Vec w) noexcept
       PetscCall(DeviceAllocateCheck_(dctx, w));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->restorelocalvector or v->ops->restorelocalvectorread
@@ -396,7 +396,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::restorelocalvector(Vec v, Vec w) noexcept
       PetscCall(PetscFree(w->spptr));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -444,7 +444,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::aypx(Vec yin, PetscScalar alpha, Vec xin) 
     PetscCall(PetscLogGpuFlops((alphaIsOne ? 1 : 2) * n));
   }
   if (sync) PetscCall(PetscDeviceContextSynchronize(dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->axpy
@@ -469,7 +469,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::axpy(Vec yin, PetscScalar alpha, Vec xin) 
   } else {
     PetscCall(VecAXPY_Seq(yin, alpha, xin));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->pointwisedivide
@@ -483,7 +483,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::pointwisedivide(Vec win, Vec xin, Vec yin)
     // note order of arguments! xin and yin are read, win is written!
     PetscCall(pointwisebinary_(thrust::divides<PetscScalar>{}, xin, yin, win));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->pointwisemult
@@ -497,7 +497,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::pointwisemult(Vec win, Vec xin, Vec yin) n
     // note order of arguments! xin and yin are read, win is written!
     PetscCall(pointwisebinary_(thrust::multiplies<PetscScalar>{}, xin, yin, win));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace detail
@@ -521,7 +521,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::reciprocal(Vec xin) noexcept
 {
   PetscFunctionBegin;
   PetscCall(pointwiseunary_(detail::reciprocal{}, xin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->waxpy
@@ -548,7 +548,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::waxpy(Vec win, PetscScalar alpha, Vec xin,
     PetscCall(PetscLogGpuFlops(2 * n));
     PetscCall(PetscDeviceContextSynchronize(dctx));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace kernels
@@ -617,7 +617,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::maxpy_kernel_dispatch_(PetscDeviceContext 
     )
   );
   // clang-format on
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -627,7 +627,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::maxpy_kernel_dispatch_(PetscDeviceContext 
   PetscFunctionBegin;
   PetscCall(maxpy_kernel_dispatch_(dctx, stream, xptr, aptr + yidx, yin + yidx, size, util::make_index_sequence<N>{}));
   yidx += N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->maxpy
@@ -647,7 +647,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::maxpy(Vec xin, PetscInt nv, const PetscSca
 
     // placement of early-return is deliberate, we would like to capture the
     // DeviceArrayReadWrite() call (which calls PetscObjectStateIncreate()) before we bail
-    if (!n || !nv) PetscFunctionReturn(0);
+    if (!n || !nv) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), nv, &d_alpha));
     PetscCall(PetscCUPMMemcpyAsync(d_alpha, alpha, nv, cupmMemcpyHostToDevice, stream));
     PetscCall(PetscLogGpuTimeBegin());
@@ -684,7 +684,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::maxpy(Vec xin, PetscInt nv, const PetscSca
   }
   PetscCall(PetscLogGpuFlops(nv * 2 * n));
   PetscCall(PetscDeviceContextSynchronize(dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -705,7 +705,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::dot(Vec xin, Vec yin, PetscScalar *z) noex
   } else {
     *z = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #define MDOT_WORKGROUP_NUM  128
@@ -770,7 +770,10 @@ PETSC_KERNEL_DECL static void mdot_kernel(const PetscScalar *PETSC_RESTRICT x, c
   return;
 }
 
-PETSC_KERNEL_DECL static void sum_kernel(const PetscInt size, PetscScalar *PETSC_RESTRICT results)
+namespace
+{
+
+PETSC_KERNEL_DECL void sum_kernel(const PetscInt size, PetscScalar *PETSC_RESTRICT results)
 {
   int         local_i = 0;
   PetscScalar local_results[8];
@@ -807,6 +810,8 @@ PETSC_KERNEL_DECL static void sum_kernel(const PetscInt size, PetscScalar *PETSC
   return;
 }
 
+} // namespace
+
 } // namespace kernels
 
 template <device::cupm::DeviceType T>
@@ -825,7 +830,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::mdot_kernel_dispatch_(PetscDeviceContext d
     )
   );
   // clang-format on
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -835,7 +840,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::mdot_kernel_dispatch_(PetscDeviceContext d
   PetscFunctionBegin;
   PetscCall(mdot_kernel_dispatch_(dctx, stream, xarr, yin + yidx, size, results + yidx * MDOT_WORKGROUP_NUM, util::make_index_sequence<N>{}));
   yidx += N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -925,7 +930,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::mdot_(std::false_type, Vec xin, PetscInt n
   // do these now while final reduction is in flight
   PetscCall(PetscLogFlops(nwork));
   PetscCall(PetscDeviceFree(dctx, d_results));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #undef MDOT_WORKGROUP_NUM
@@ -963,7 +968,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::mdot_(std::true_type, Vec xin, PetscInt nv
   PetscCall(PetscCUPMMemcpyAsync(z, d_z, nv, cupmMemcpyDeviceToHost, stream));
   PetscCall(PetscDeviceFree(dctx, d_z));
   // REVIEW ME: flops?????
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->mdot
@@ -986,7 +991,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::mdot(Vec xin, PetscInt nv, const Vec yin[]
   } else {
     PetscCall(PetscArrayzero(z, nv));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->set
@@ -1009,7 +1014,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::set(Vec xin, PetscScalar alpha) noexcept
     }
     if (n) PetscCall(PetscDeviceContextSynchronize(dctx)); // don't sync if we did nothing
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->scale
@@ -1017,7 +1022,7 @@ template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::scale(Vec xin, PetscScalar alpha) noexcept
 {
   PetscFunctionBegin;
-  if (PetscUnlikely(alpha == PetscScalar(1.0))) PetscFunctionReturn(0);
+  if (PetscUnlikely(alpha == PetscScalar(1.0))) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscUnlikely(alpha == PetscScalar(0.0))) {
     PetscCall(set(xin, alpha));
   } else if (const auto n = static_cast<cupmBlasInt_t>(xin->map->n)) {
@@ -1033,7 +1038,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::scale(Vec xin, PetscScalar alpha) noexcept
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(xin));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->tdot
@@ -1053,7 +1058,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::tdot(Vec xin, Vec yin, PetscScalar *z) noe
   } else {
     *z = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->copy
@@ -1061,7 +1066,7 @@ template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::copy(Vec xin, Vec yout) noexcept
 {
   PetscFunctionBegin;
-  if (xin == yout) PetscFunctionReturn(0);
+  if (xin == yout) PetscFunctionReturn(PETSC_SUCCESS);
   if (const auto n = xin->map->n) {
     const auto xmask = xin->offloadmask;
     // silence buggy gcc warning: mode may be used uninitialized in this function
@@ -1123,7 +1128,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::copy(Vec xin, Vec yout) noexcept
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(yout));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->swap
@@ -1131,7 +1136,7 @@ template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::swap(Vec xin, Vec yin) noexcept
 {
   PetscFunctionBegin;
-  if (xin == yin) PetscFunctionReturn(0);
+  if (xin == yin) PetscFunctionReturn(PETSC_SUCCESS);
   if (const auto n = static_cast<cupmBlasInt_t>(xin->map->n)) {
     PetscDeviceContext dctx;
     cupmBlasHandle_t   cupmBlasHandle;
@@ -1145,7 +1150,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::swap(Vec xin, Vec yin) noexcept
     PetscCall(MaybeIncrementEmptyLocalVec(xin));
     PetscCall(MaybeIncrementEmptyLocalVec(yin));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->axpby
@@ -1192,7 +1197,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::axpby(Vec yin, PetscScalar alpha, PetscSca
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(yin));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->axpbypcz
@@ -1203,7 +1208,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::axpbypcz(Vec zin, PetscScalar alpha, Petsc
   if (gamma != PetscScalar(1.0)) PetscCall(scale(zin, gamma));
   PetscCall(axpy(zin, alpha, xin));
   PetscCall(axpy(zin, beta, yin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->norm
@@ -1253,7 +1258,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::norm(Vec xin, NormType type, PetscReal *z)
     z[0]                    = 0.0;
     z[type == NORM_1_AND_2] = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace detail
@@ -1303,7 +1308,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::dotnorm2(Vec s, Vec t, PetscScalar *dp, Pe
     );
     // clang-format on
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace detail
@@ -1321,7 +1326,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::conjugate(Vec xin) noexcept
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_COMPLEX)) PetscCall(pointwiseunary_(detail::conjugate{}, xin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace detail
@@ -1414,7 +1419,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::minmax_(TupleFuncT &&tuple_ftr, UnaryFuncT
   #undef THRUST_MINMAX_REDUCE
   }
   // REVIEW ME: flops?
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->max
@@ -1428,7 +1433,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::max(Vec v, PetscInt *p, PetscReal *m) noex
   *m = PETSC_MIN_REAL;
   // use {} constructor syntax otherwise most vexing parse
   PetscCall(minmax_(tuple_functor{}, unary_functor{}, v, p, m));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->min
@@ -1442,7 +1447,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::min(Vec v, PetscInt *p, PetscReal *m) noex
   *m = PETSC_MAX_REAL;
   // use {} constructor syntax otherwise most vexing parse
   PetscCall(minmax_(tuple_functor{}, unary_functor{}, v, p, m));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->sum
@@ -1463,7 +1468,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::sum(Vec v, PetscScalar *sum) noexcept
   } else {
     *sum = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace detail
@@ -1489,7 +1494,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::shift(Vec v, PetscScalar shift) noexcept
 {
   PetscFunctionBegin;
   PetscCall(pointwiseunary_(detail::plus_equals<PetscScalar>{shift}, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <device::cupm::DeviceType T>
@@ -1509,7 +1514,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::setrandom(Vec v, PetscRandom rand) noexcep
   }
   // REVIEW ME: flops????
   // REVIEW ME: Timing???
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->setpreallocation
@@ -1522,7 +1527,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::setpreallocationcoo(Vec v, PetscCount ncoo
   PetscCall(GetHandles_(&dctx));
   PetscCall(VecSetPreallocationCOO_Seq(v, ncoo, coo_i));
   PetscCall(SetPreallocationCOO_CUPMBase(v, ncoo, coo_i, dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace kernels
@@ -1547,11 +1552,41 @@ PETSC_DEVICE_INLINE_DECL void add_coo_values_impl(const PetscScalar *PETSC_RESTR
   return;
 }
 
-PETSC_KERNEL_DECL static void add_coo_values(const PetscScalar *PETSC_RESTRICT v, PetscCount n, const PetscCount *PETSC_RESTRICT jmap1, const PetscCount *PETSC_RESTRICT perm1, InsertMode imode, PetscScalar *PETSC_RESTRICT xv)
+namespace
+{
+
+PETSC_KERNEL_DECL void add_coo_values(const PetscScalar *PETSC_RESTRICT v, PetscCount n, const PetscCount *PETSC_RESTRICT jmap1, const PetscCount *PETSC_RESTRICT perm1, InsertMode imode, PetscScalar *PETSC_RESTRICT xv)
 {
   add_coo_values_impl(v, n, jmap1, perm1, imode, xv, [](PetscCount i) { return i; });
   return;
 }
+
+} // namespace
+
+  #if PetscDefined(USING_HCC)
+namespace do_not_use
+{
+
+// Needed to silence clang warning:
+//
+// warning: function 'FUNCTION NAME' is not needed and will not be emitted
+//
+// The warning is silly, since the function *is* used, however the host compiler does not
+// appear see this. Likely because the function using it is in a template.
+//
+// This warning appeared in clang-11, and still persists until clang-15 (21/02/2023)
+inline void silence_warning_function_sum_kernel_is_not_needed_and_will_not_be_emitted()
+{
+  (void)sum_kernel;
+}
+
+inline void silence_warning_function_add_coo_values_is_not_needed_and_will_not_be_emitted()
+{
+  (void)add_coo_values;
+}
+
+} // namespace do_not_use
+  #endif
 
 } // namespace kernels
 
@@ -1585,7 +1620,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::setvaluescoo(Vec x, const PetscScalar v[],
 
   if (PetscMemTypeHost(memtype)) PetscCall(PetscDeviceFree(dctx, vv));
   PetscCall(PetscDeviceContextSynchronize(dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -1596,116 +1631,116 @@ namespace
 {
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCreateSeqCUPMAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt n, Vec *v) noexcept
+inline PetscErrorCode VecCreateSeqCUPMAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt n, Vec *v) noexcept
 {
   PetscFunctionBegin;
   PetscValidPointer(v, 4);
   PetscCall(VecSeq_CUPM_Impls.createseqcupm(comm, 0, n, v, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCreateSeqCUPMWithArraysAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v) noexcept
+inline PetscErrorCode VecCreateSeqCUPMWithArraysAsync(T &&VecSeq_CUPM_Impls, MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v) noexcept
 {
   PetscFunctionBegin;
   if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
   PetscValidPointer(v, 7);
   PetscCall(VecSeq_CUPM_Impls.createseqcupmwithbotharrays(comm, bs, n, cpuarray, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <PetscMemoryAccessMode mode, typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscValidPointer(a, 3);
   PetscCall(VecSeq_CUPM_Impls.template getarray<PETSC_MEMTYPE_DEVICE, mode>(v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <PetscMemoryAccessMode mode, typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayAsync_Private(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscCall(VecSeq_CUPM_Impls.template restorearray<PETSC_MEMTYPE_DEVICE, mode>(v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync_Private<PETSC_MEMORY_ACCESS_READ_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync_Private<PETSC_MEMORY_ACCESS_READ_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync_Private<PETSC_MEMORY_ACCESS_READ>(std::forward<T>(VecSeq_CUPM_Impls), v, const_cast<PetscScalar **>(a)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayReadAsync(T &&VecSeq_CUPM_Impls, Vec v, const PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync_Private<PETSC_MEMORY_ACCESS_READ>(std::forward<T>(VecSeq_CUPM_Impls), v, const_cast<PetscScalar **>(a)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMGetArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMGetArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync_Private<PETSC_MEMORY_ACCESS_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMRestoreArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
+inline PetscErrorCode VecCUPMRestoreArrayWriteAsync(T &&VecSeq_CUPM_Impls, Vec v, PetscScalar **a) noexcept
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync_Private<PETSC_MEMORY_ACCESS_WRITE>(std::forward<T>(VecSeq_CUPM_Impls), v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMPlaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
+inline PetscErrorCode VecCUPMPlaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 2);
   PetscCall(VecSeq_CUPM_Impls.template placearray<PETSC_MEMTYPE_DEVICE>(vin, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMReplaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
+inline PetscErrorCode VecCUPMReplaceArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin, const PetscScalar a[]) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 2);
   PetscCall(VecSeq_CUPM_Impls.template replacearray<PETSC_MEMTYPE_DEVICE>(vin, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode VecCUPMResetArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin) noexcept
+inline PetscErrorCode VecCUPMResetArrayAsync(T &&VecSeq_CUPM_Impls, Vec vin) noexcept
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin, VEC_CLASSID, 2);
   PetscCall(VecSeq_CUPM_Impls.template resetarray<PETSC_MEMTYPE_DEVICE>(vin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // anonymous namespace

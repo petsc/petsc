@@ -17,17 +17,17 @@ namespace impl
 
 class DeviceContext {
 public:
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode destroy(PetscDeviceContext)) { return 0; }
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType)) { return 0; }
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode setUp(PetscDeviceContext)) { return 0; }
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode destroy(PetscDeviceContext)) { return PETSC_SUCCESS; }
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType)) { return PETSC_SUCCESS; }
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode setUp(PetscDeviceContext)) { return PETSC_SUCCESS; }
   PETSC_CXX_COMPAT_DECL(PetscErrorCode query(PetscDeviceContext, PetscBool *idle))
   {
     PetscFunctionBegin;
     *idle = PETSC_TRUE; // the host is always idle
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext)) { return 0; }
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode synchronize(PetscDeviceContext)) { return 0; }
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext)) { return PETSC_SUCCESS; }
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode synchronize(PetscDeviceContext)) { return PETSC_SUCCESS; }
   PETSC_CXX_COMPAT_DECL(PetscErrorCode getBlasHandle(PetscDeviceContext, void *)) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); }
   PETSC_CXX_COMPAT_DECL(PetscErrorCode getSolverHandle(PetscDeviceContext, void *)) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); }
   PETSC_CXX_COMPAT_DECL(PetscErrorCode getStreamHandle(PetscDeviceContext, void *)) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); }
@@ -52,5 +52,5 @@ PetscErrorCode PetscDeviceContextCreate_HOST(PetscDeviceContext dctx)
   PetscFunctionBegin;
   PetscAssert(!dctx->data, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscDeviceContext %" PetscInt64_FMT " is of type host, but still has data member %p", PetscObjectCast(dctx)->id, dctx->data);
   PetscCall(PetscArraycpy(dctx->ops, &hostctx.ops, 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -96,14 +96,14 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
     }
   }
   PetscCall(DMDAVecRestoreArray(dm, b, &barray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeInitialGuess(KSP ksp, Vec b, void *ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecSet(b, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, void *ctx)
@@ -169,7 +169,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, void *ctx)
   }
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

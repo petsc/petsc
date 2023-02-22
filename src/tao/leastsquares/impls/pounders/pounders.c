@@ -3,7 +3,7 @@
 static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx)
@@ -22,7 +22,7 @@ static PetscErrorCode pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *
 
   /* now  g = g + b */
   PetscCall(VecAXPY(g, 1.0, mfqP->subb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
@@ -50,7 +50,7 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
   }
   PetscCall(PetscInfo(tao, "Least-squares residual norm: %20.19e\n", (double)*fsum));
   PetscCheck(!PetscIsInfOrNanReal(*fsum), PETSC_COMM_SELF, PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode gqtwrap(Tao tao, PetscReal *gnorm, PetscReal *qmin)
@@ -138,10 +138,10 @@ static PetscErrorCode gqtwrap(Tao tao, PetscReal *gnorm, PetscReal *qmin)
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
   } else {
-    gqt(mfqP->n, mfqP->Hres, mfqP->n, mfqP->Gres, 1.0, mfqP->gqt_rtol, atol, mfqP->gqt_maxits, gnorm, qmin, mfqP->Xsubproblem, &info, &its, mfqP->work, mfqP->work2, mfqP->work3);
+    PetscCall(gqt(mfqP->n, mfqP->Hres, mfqP->n, mfqP->Gres, 1.0, mfqP->gqt_rtol, atol, mfqP->gqt_maxits, gnorm, qmin, mfqP->Xsubproblem, &info, &its, mfqP->work, mfqP->work2, mfqP->work3));
   }
   *qmin *= -1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode pounders_update_res(Tao tao)
@@ -229,7 +229,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)
@@ -248,7 +248,7 @@ static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)
       j++;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
@@ -321,7 +321,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
@@ -444,7 +444,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     for (i = 0; i < mfqP->npmax * mfqP->n * (mfqP->n + 1) / 2; i++) mfqP->L[i] = 0.0;
     for (i = 0; i < mfqP->n; i++) mfqP->L[(mfqP->n * (mfqP->n + 1) / 2) * i + i] = 1.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Only call from modelimprove, addpoint() needs ->Q_tmp and ->work to be set */
@@ -470,7 +470,7 @@ static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
   mfqP->model_indices[mfqP->nmodelpoints] = mfqP->nHist;
   mfqP->nmodelpoints++;
   mfqP->nHist++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
@@ -508,7 +508,7 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
     if (addallpoints != 0) PetscCall(addpoint(tao, mfqP, i));
   }
   if (!addallpoints) PetscCall(addpoint(tao, mfqP, minindex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c)
@@ -552,7 +552,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
     }
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
@@ -899,7 +899,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       tao->reason = TAO_CONVERGED_STEPTOL;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
@@ -1023,7 +1023,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, mfqP->n, mfqP->n, mfqP->Hres, &mfqP->subH));
     PetscCall(TaoSetHessian(mfqP->subtao, mfqP->subH, mfqP->subH, pounders_h, (void *)mfqP));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
@@ -1095,7 +1095,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
     PetscCall(VecDestroy(&mfqP->localfmin));
   }
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -1109,7 +1109,7 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao, PetscOptionItems *Pets
   PetscCall(PetscOptionsInt("-tao_pounders_npmax", "max number of points in model", "", mfqP->npmax, &mfqP->npmax, NULL));
   PetscCall(PetscOptionsBool("-tao_pounders_gqt", "use gqt algorithm for subproblem", "", mfqP->usegqt, &mfqP->usegqt, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
@@ -1129,7 +1129,7 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
       PetscCall(TaoView(mfqP->subtao, viewer));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*MC
   TAOPOUNDERS - POUNDERS derivate-free model-based algorithm for nonlinear least squares
@@ -1175,5 +1175,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   mfqP->gqt_rtol   = 0.001;
   mfqP->gqt_maxits = 50;
   mfqP->workxvec   = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

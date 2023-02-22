@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     /* make sure the vector's array exists */
     PetscCall(VecGetArrayAndMemType(x, &array, &memtype));
     PetscCall(VecRestoreArrayAndMemType(x, &array));
-    PetscCall(WaitForCUDA());
+    PetscCallCUDA(WaitForCUDA());
     PetscCall(PetscTime(&v1));
     PetscCall(VecDestroy(&x));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Iteration %" PetscInt_FMT ": Time= %g\n", i, (double)(v1 - v0)));

@@ -161,7 +161,7 @@ PetscErrorCode random_network(PetscInt nvertex, PetscInt *pnbranch, Node **pnode
   *pedgelist = edgelist;
   *pbranch   = branch;
   *pnode     = node;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormOperator(DM networkdm, Mat A, Vec b)
@@ -258,7 +258,7 @@ PetscErrorCode FormOperator(DM networkdm, Mat A, Vec b)
 
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

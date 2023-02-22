@@ -9,9 +9,9 @@
 /* SUBMANSEC = Sys */
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr)
+  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...)
 #else
-  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr) expr
+  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...) __VA_ARGS__
 #endif
 
 #if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
@@ -21,11 +21,11 @@ PETSC_INTERN PetscErrorCode PetscStackReset(void);
 PETSC_INTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);
 PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
 #else
-  #define PetscStackSetCheck(check)         0
-  #define PetscStackView(file)              0
-  #define PetscStackReset()                 0
-  #define PetscStackCopy(stackin, stackout) 0
-  #define PetscStackPrint(stack, file)      0
+  #define PetscStackSetCheck(check)         PETSC_SUCCESS
+  #define PetscStackView(file)              PETSC_SUCCESS
+  #define PetscStackReset()                 PETSC_SUCCESS
+  #define PetscStackCopy(stackin, stackout) PETSC_SUCCESS
+  #define PetscStackPrint(stack, file)      PETSC_SUCCESS
 #endif
 
 /* These are used internally by PETSc ASCII IO routines*/
@@ -148,44 +148,199 @@ typedef struct _p_PetscObject {
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectDestroyFunction)(PetscObject *); /* force cast in next macro to NEVER use extern "C" style */
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObject, PetscViewer);
 
-/*@C
+#define PetscHeaderInitialize_Private(h, classid, class_name, descr, mansec, comm, destroy, view) \
+  ((PetscErrorCode)(PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h)))
+
+/*MC
     PetscHeaderCreate - Creates a PETSc object of a particular class
 
-    Input Parameters:
-+   classid - the classid associated with this object (for example VEC_CLASSID)
-.   class_name - string name of class; should be static (for example "Vec")
-.   descr - string containing short description; should be static (for example "Vector")
-.   mansec - string indicating section in manual pages; should be static (for example "Vec")
-.   comm - the MPI Communicator
-.   destroy - the destroy routine for this object (for example `VecDestroy()`)
--   view - the view routine for this object (for example `VecView()`)
+  Synopsis:
+  #include <petsc/private/petscimpl.h>
+  PetscErrorCode PetscHeaderCreate(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
 
-    Output Parameter:
-.   h - the newly created object
+  Input Parameters:
++ classid    - The classid associated with this object (for example `VEC_CLASSID`)
+. class_name - String name of class; should be static (for example "Vec"), may be
+               `PETSC_NULLPTR`
+. descr      - String containing short description; should be static (for example "Vector"),
+               may be `PETSC_NULLPTR`
+. mansec     - String indicating section in manual pages; should be static (for example "Vec"),
+               may be `PETSC_NULLPTR`
+. comm       - The MPI Communicator
+. destroy    - The destroy routine for this object (for example `VecDestroy()`)
+- view       - The view routine for this object (for example `VecView()`), may be
+               `PETSC_NULLPTR`
 
-    Level: developer
+  Output Parameter:
+. h - The newly created `PetscObject`
+
+  Notes:
+  Can only be used to create a `PetscObject`. A `PetscObject` is defined as a pointer to a
+  C/C++ structure which satisfies all of the following\:
+
+  1. The first member of the structure must be a `_p_PetscObject`.
+  2. C++ structures must be "Standard Layout". Generally speaking a standard layout class\:
+     - Has no virtual functions or base classes.
+     - Has only standard layout non-static members (if any).
+     - Has only standard layout base classes (if any).
+
+     See https://en.cppreference.com/w/cpp/language/classes#Standard-layout_class for further
+     information.
+
+  Example Usage:
+  Existing `PetscObject`s may be easily created as shown. Unless otherwise stated, a particular
+  objects `destroy` and `view` functions are exactly `<OBJECT_TYPE>Destroy()` and
+  `<OBJECT_TYPE>View()`.
+.vb
+  Vec v;
+
+  PetscHeaderCreate(v, VEC_CLASSID, "Vec", "A distributed vector class", "Vec", PETSC_COMM_WORLD, VecDestroy, VecView);
+.ve
+
+  It is possible to create custom `PetscObject`s, note however that they must abide by the
+  restrictions set forth above.
+.vb
+  // OK, first member of C structure is _p_PetscObject
+  struct MyCPetscObject_s
+  {
+    _p_PetscObject header;
+    int            some_data;
+  };
+  typedef struct *MyCPetscObject_s MyCPetscObject;
+
+  PetscErrorCode MyObjectDestroy(MyObject *);
+  PetscErrorCode MyObjectView(MyObject);
+
+  MyCPetscObject obj;
+
+  // assume MY_PETSC_CLASSID is already registered
+  PetscHeaderCreate(obj, MY_PETSC_CLASSID, "MyObject", "A custom PetscObject", PETSC_NULLPTR, PETSC_COMM_SELF, MyObjectDestroy, MyObjectView);
+
+  // OK, only destroy function must be given, all others may be NULL
+  PetscHeaderCreate(obj, MY_PETSC_CLASSID, PETSC_NULLPTR, PETSC_NULLPTR, PETSC_NULLPTR, PETSC_COMM_SELF, MyObjectDestroy, PETSC_NULLPTR);
+
+  // ERROR must be a single-level pointer
+  PetscHeaderCreate(&obj, ...);
+.ve
+
+  Illustrating proper construction from C++\:
+.vb
+  // ERROR, class is not standard layout, first member must be publicly accessible
+  class BadCppPetscObject
+  {
+    _p_PetscObject header;
+  };
+
+  // ERROR, class is not standard layout, has a virtual function and virtual inheritance
+  class BadCppPetscObject2 : virtual BaseClass
+  {
+  public:
+    _p_PetscObject header;
+
+    virtual void foo();
+  };
+
+  // ERROR, class is not standard layout! Has non-standard layout member
+  class BadCppPetscObject2
+  {
+  public:
+    _p_PetscObject    header;
+    BadCppPetscObject non_standard_layout;
+  };
+
+  // OK, class is standard layout!
+  class GoodCppPetscObject;
+  using MyCppObject = GoodCppPetscObject *;
+
+  // OK, non-virtual inheritance of other standard layout class does not affect layout
+  class GoodCppPetscObject : StandardLayoutClass
+  {
+  public:
+    // OK, non standard layout member is static, does not affect layout
+    static BadCppPetscObject non_standard_layout;
+
+    // OK, first non-static member is _p_PetscObject
+    _p_PetscObject header;
+
+     // OK, non-virtual member functions do not affect class layout
+    void foo();
+
+    // OK, may use "member" functions for destroy and view so long as they are static
+    static PetscErrorCode destroy(MyCppObject *);
+    static PetscErrorCode view(MyCppObject);
+  };
+
+  // OK, usage via pointer
+  MyObject obj;
+
+  PetscHeaderCreate(obj, MY_PETSC_CLASSID, "MyObject", "A custom C++ PetscObject", nullptr, PETSC_COMM_SELF, GoodCppPetscObject::destroy, GoodCppPetscObject::view);
+.ve
+
+  Level: developer
 
 .seealso: `PetscHeaderDestroy()`, `PetscClassIdRegister()`
-
-@*/
-#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) \
-  (PetscNew(&(h)) || PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h))
+M*/
+#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) ((PetscErrorCode)(PetscNew(&(h)) || PetscHeaderInitialize_Private((h), (classid), (class_name), (descr), (mansec), (comm), (destroy), (view))))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
 PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
-/*@C
-    PetscHeaderDestroy - Final step in destroying a PetscObject
+/*MC
+  PetscHeaderDestroy - Final step in destroying a `PetscObject`
 
-    Input Parameters:
-.   h - the header created with `PetscHeaderCreate()`
+  Synopsis:
+  #include <petsc/private/petscimpl.h>
+  PetscErrorCode PetscHeaderDestroy(PetscObject *obj)
 
-    Level: developer
+  Input Parameters:
+. h - A pointer to the header created with `PetscHeaderCreate()`
+
+  Notes:
+  `h` is freed and set to `PETSC_NULLPTR` when this routine returns.
+
+  Example Usage:
+.vb
+  PetscObject obj;
+
+  PetscHeaderCreate(obj, ...);
+  // use obj...
+
+  // note pointer to obj is used
+  PetscHeaderDestroy(&obj);
+.ve
+
+  Note that this routine is the _last_ step when destroying higher-level `PetscObject`s as it
+  deallocates the memory for the structure itself\:
+.vb
+  typedef struct MyPetscObject_s *MyPetscObject;
+  struct MyPetscObject_s
+  {
+    _p_PetscObject  hdr;
+    PetscInt       *foo;
+    PetscScalar    *bar;
+  };
+
+  // assume obj is created/initialized elsewhere...
+  MyPetscObject obj;
+
+  // OK, should dispose of all dynamically allocated resources before calling
+  // PetscHeaderDestroy()
+  PetscFree(obj->foo);
+
+  // OK, dispose of obj
+  PetscHeaderDestroy(&obj);
+
+  // ERROR, obj points to NULL here, accessing obj->bar may result in segmentation violation!
+  // obj->bar is potentially leaked!
+  PetscFree(obj->bar);
+.ve
+
+  Level: developer
 
 .seealso: `PetscHeaderCreate()`
-@*/
-#define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*(h)), PETSC_FALSE) || PetscFree(*(h)))
+M*/
+#define PetscHeaderDestroy(h) ((PetscErrorCode)(PetscHeaderDestroy_Private((PetscObject)(*(h)), PETSC_FALSE) || PetscFree(*(h))))
 
 PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObject, PetscBool);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
@@ -592,7 +747,7 @@ void PetscCheckSorted(PetscInt, T);
 +   obj - the object
 .   name - the name of the method, for example, "KSPGMRESSetRestart_C" for the function `KSPGMRESSetRestart()`
 .   arg_types - the argument types for the method, for example, (KSP,PetscInt)
--   args - the arguements for the method, for example, (ksp,restart))
+-   args - the arguments for the method, for example, (ksp,restart))
 
    Level: developer
 
@@ -624,7 +779,7 @@ M*/
 +   obj - the object
 .   name - the name of the method, for example, "KSPGMRESSetRestart_C" for the function `KSPGMRESSetRestart()`
 .   arg_types - the argument types for the method, for example, (KSP,PetscInt)
--   args - the arguements for the method, for example, (ksp,restart))
+-   args - the arguments for the method, for example, (ksp,restart))
 
    Level: developer
 
@@ -766,14 +921,14 @@ M*/
 
    This routine is logically collective because state equality comparison needs to be possible without communication.
 
-   `Mat` also has `MatGetNonzeroState()` and `MatSetNonzeroState()` for tracking changes to the nonzero structure.
+   `Mat` also has `MatGetNonzeroState()` for tracking changes to the nonzero structure.
 
    Level: developer
 
-.seealso: `PetscObjectStateGet()`, `MatSetNonzeroState()`, `PetscObject`
+.seealso: `PetscObjectStateGet()`, `PetscObject`
 
 M*/
-#define PetscObjectStateIncrease(obj) ((obj)->state++, 0)
+#define PetscObjectStateIncrease(obj) ((obj)->state++, PETSC_SUCCESS)
 
 PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject, PetscObjectState *);
 PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject, PetscObjectState);
@@ -812,7 +967,8 @@ PETSC_EXTERN PetscInt       PetscObjectComposedDataMax;
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataSetInt(obj, id, data) ((((obj)->int_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseInt(obj)) || ((obj)->intcomposeddata[id] = data, (obj)->intcomposedstate[id] = (obj)->state, 0))
+#define PetscObjectComposedDataSetInt(obj, id, data) \
+  ((PetscErrorCode)((((obj)->int_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseInt(obj)) || ((obj)->intcomposeddata[id] = data, (obj)->intcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetInt - retrieve integer data attached to an object with `PetscObjectComposedDataSetInt()`
@@ -842,7 +998,7 @@ M*/
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetInt(obj, id, data, flag) (((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id], flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetInt(obj, id, data, flag) (((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id], flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS)
 
 /*MC
    PetscObjectComposedDataSetIntstar - attach an integer array data to a `PetscObject` that may be accessed with `PetscObjectComposedDataGetIntstar()`
@@ -870,7 +1026,7 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetIntstar(obj, id, data) \
-  ((((obj)->intstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseIntstar(obj)) || ((obj)->intstarcomposeddata[id] = data, (obj)->intstarcomposedstate[id] = (obj)->state, 0))
+  ((PetscErrorCode)((((obj)->intstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseIntstar(obj)) || ((obj)->intstarcomposeddata[id] = data, (obj)->intstarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetIntstar - retrieve integer array data attached to an object with `PetscObjectComposedDataSetIntstar()`
@@ -900,7 +1056,8 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetIntstar(obj, id, data, flag) (((obj)->intstarcomposedstate ? (data = (obj)->intstarcomposeddata[id], flag = (PetscBool)((obj)->intstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetIntstar(obj, id, data, flag) \
+  ((PetscErrorCode)(((obj)->intstarcomposedstate ? (data = (obj)->intstarcomposeddata[id], flag = (PetscBool)((obj)->intstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetReal - attach real data to a `PetscObject` that may be accessed with `PetscObjectComposedDataGetReal()`
@@ -925,7 +1082,8 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataSetReal(obj, id, data) ((((obj)->real_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseReal(obj)) || ((obj)->realcomposeddata[id] = data, (obj)->realcomposedstate[id] = (obj)->state, 0))
+#define PetscObjectComposedDataSetReal(obj, id, data) \
+  ((PetscErrorCode)((((obj)->real_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseReal(obj)) || ((obj)->realcomposeddata[id] = data, (obj)->realcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetReal - retrieve real data attached to an object set with `PetscObjectComposedDataSetReal()`
@@ -953,7 +1111,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetReal(obj, id, data, flag) (((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetReal(obj, id, data, flag) ((PetscErrorCode)(((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetRealstar - attach real array data to a `PetscObject` that may be retrieved with `PetscObjectComposedDataGetRealstar()`
@@ -981,7 +1139,7 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataGetRealstar()`
 M*/
 #define PetscObjectComposedDataSetRealstar(obj, id, data) \
-  ((((obj)->realstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseRealstar(obj)) || ((obj)->realstarcomposeddata[id] = data, (obj)->realstarcomposedstate[id] = (obj)->state, 0))
+  ((PetscErrorCode)((((obj)->realstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseRealstar(obj)) || ((obj)->realstarcomposeddata[id] = data, (obj)->realstarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetRealstar - retrieve real array data attached to an object with `PetscObjectComposedDataSetRealstar()`
@@ -1011,7 +1169,8 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`
 M*/
-#define PetscObjectComposedDataGetRealstar(obj, id, data, flag) (((obj)->realstarcomposedstate ? (data = (obj)->realstarcomposeddata[id], flag = (PetscBool)((obj)->realstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetRealstar(obj, id, data, flag) \
+  ((PetscErrorCode)(((obj)->realstarcomposedstate ? (data = (obj)->realstarcomposeddata[id], flag = (PetscBool)((obj)->realstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetScalar - attach scalar data to a PetscObject that may be retrieved with `PetscObjectComposedDataGetScalar()`
@@ -1037,7 +1196,8 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-  #define PetscObjectComposedDataSetScalar(obj, id, data) ((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, 0))
+  #define PetscObjectComposedDataSetScalar(obj, id, data) \
+    ((PetscErrorCode)((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 #else
   #define PetscObjectComposedDataSetScalar(obj, id, data) PetscObjectComposedDataSetReal(obj, id, data)
 #endif
@@ -1068,7 +1228,8 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-  #define PetscObjectComposedDataGetScalar(obj, id, data, flag) (((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+  #define PetscObjectComposedDataGetScalar(obj, id, data, flag) \
+    ((PetscErrorCode)(((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 #else
   #define PetscObjectComposedDataGetScalar(obj, id, data, flag) PetscObjectComposedDataGetReal(obj, id, data, flag)
 #endif
@@ -1100,7 +1261,7 @@ M*/
 M*/
 #if defined(PETSC_USE_COMPLEX)
   #define PetscObjectComposedDataSetScalarstar(obj, id, data) \
-    ((((obj)->scalarstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalarstar(obj)) || ((obj)->scalarstarcomposeddata[id] = data, (obj)->scalarstarcomposedstate[id] = (obj)->state, 0))
+    ((PetscErrorCode)((((obj)->scalarstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalarstar(obj)) || ((obj)->scalarstarcomposeddata[id] = data, (obj)->scalarstarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 #else
   #define PetscObjectComposedDataSetScalarstar(obj, id, data) PetscObjectComposedDataSetRealstar(obj, id, data)
 #endif
@@ -1134,7 +1295,8 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-  #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) (((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+  #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) \
+    ((PetscErrorCode)(((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 #else
   #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) PetscObjectComposedDataGetRealstar(obj, id, data, flag)
 #endif
@@ -1214,21 +1376,21 @@ typedef ck_spinlock_t PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_init(ck_spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_lock(ck_spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_unlock(ck_spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
   #elif (defined(__cplusplus) && defined(PETSC_HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && defined(PETSC_HAVE_STDATOMIC_H))
     #if defined(__cplusplus)
@@ -1248,22 +1410,22 @@ typedef petsc_atomic_flag PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *spinlock)
 {
   petsc_atomic_flag_clear(spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *spinlock)
 {
   do {
   } while (petsc_atomic_flag_test_and_set(spinlock));
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *spinlock)
 {
   petsc_atomic_flag_clear(spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *spinlock)
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
     #undef petsc_atomic_flag_test_and_set
     #undef petsc_atomic_flag_clear
@@ -1277,22 +1439,22 @@ typedef omp_lock_t PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
 {
   omp_init_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
 {
   omp_set_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
 {
   omp_unset_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
 {
   omp_destroy_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
   #else
     #if defined(__cplusplus)
@@ -1304,10 +1466,10 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
 
 #else
 typedef int PetscSpinlock;
-  #define PetscSpinlockCreate(a)  0
-  #define PetscSpinlockLock(a)    0
-  #define PetscSpinlockUnlock(a)  0
-  #define PetscSpinlockDestroy(a) 0
+  #define PetscSpinlockCreate(a)  PETSC_SUCCESS
+  #define PetscSpinlockLock(a)    PETSC_SUCCESS
+  #define PetscSpinlockUnlock(a)  PETSC_SUCCESS
+  #define PetscSpinlockDestroy(a) PETSC_SUCCESS
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)

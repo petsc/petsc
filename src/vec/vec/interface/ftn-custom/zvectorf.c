@@ -349,14 +349,19 @@ PETSC_EXTERN void vecgetownershiprange3_(Vec *x,PetscInt *low,PetscInt *high, Pe
   *ierr = VecGetOwnershipRange(*x,low,high);
 }
 
-PETSC_EXTERN void vecgetownershipranges_(Vec *x,PetscInt *range,PetscErrorCode *ierr)
+PETSC_EXTERN void vecgetownershipranges_(Vec *x, PetscInt *range, PetscErrorCode *ierr)
 {
-  PetscMPIInt    size;
+  PetscMPIInt     size, mpi_ierr;
   const PetscInt *r;
 
-  *ierr = MPI_Comm_size(PetscObjectComm((PetscObject)*x),&size);if (*ierr) return;
-  *ierr = VecGetOwnershipRanges(*x,&r);if (*ierr) return;
-  *ierr = PetscArraycpy(range,r,size+1);
+  mpi_ierr = MPI_Comm_size(PetscObjectComm((PetscObject)*x), &size);
+  if (mpi_ierr) {
+    *ierr = PETSC_ERR_MPI;
+    return;
+  }
+  *ierr = VecGetOwnershipRanges(*x, &r);
+  if (*ierr) return;
+  *ierr = PetscArraycpy(range, r, size + 1);
 }
 
 PETSC_EXTERN void vecsetoptionsprefix_(Vec *v,char* prefix,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)

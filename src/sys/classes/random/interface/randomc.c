@@ -34,15 +34,15 @@ PetscClassId PETSC_RANDOM_CLASSID;
 PetscErrorCode PetscRandomDestroy(PetscRandom *r)
 {
   PetscFunctionBegin;
-  if (!*r) PetscFunctionReturn(0);
+  if (!*r) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*r, PETSC_RANDOM_CLASSID, 1);
   if (--((PetscObject)(*r))->refct > 0) {
     *r = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if ((*r)->ops->destroy) PetscCall((*(*r)->ops->destroy)(*r));
   PetscCall(PetscHeaderDestroy(r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -68,7 +68,7 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
     PetscValidPointer(seed, 2);
     *seed = r->seed;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -100,7 +100,7 @@ PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed)
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   r->seed = seed;
   PetscCall(PetscInfo(NULL, "Setting seed to %d\n", (int)seed));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -136,7 +136,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
   } else {
     PetscCall(PetscRandomSetType(rnd, defaultType));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -148,7 +148,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
 . rnd - The random number generator context
 
   Options Database Keys:
-+ -random_seed <integer> - provide a seed to the random number generater
++ -random_seed <integer> - provide a seed to the random number generator
 - -random_no_imaginary_part - makes the imaginary part of the random number zero, this is useful when you want the
                               same code to produce the same result when run with real numbers or complex numbers for regression testing purposes
 
@@ -193,7 +193,7 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
 #endif
   PetscOptionsEnd();
   PetscCall(PetscRandomViewFromOptions(rnd, NULL, "-random_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_SAWS)
@@ -218,7 +218,7 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSC_RANDOM_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -283,7 +283,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
     }
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -292,7 +292,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI communicator
 
    Output Parameter:
@@ -306,7 +306,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
    This is only a primitive "parallel" random number generator, it should NOT
    be used for sophisticated parallel Monte Carlo methods since it will very likely
    not have the correct statistics across processors. You can provide your own
-   parallel generator using PetscRandomRegister();
+   parallel generator using `PetscRandomRegister()`;
 
    If you create a `PetscRandom()` using `PETSC_COMM_SELF` on several processors then
    the SAME random numbers will be generated on all those processors. Use `PETSC_COMM_WORLD`
@@ -326,7 +326,6 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 .seealso: `PetscRandomSetType()`, `PetscRandomGetValue()`, `PetscRandomGetValueReal()`, `PetscRandomSetInterval()`,
           `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomType`, `PetscRandom`
 @*/
-
 PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
 {
   PetscRandom rr;
@@ -348,7 +347,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
   rr->seed  = 0x12345678 + 76543 * rank;
   PetscCall(PetscRandomSetType(rr, PETSCRANDER48));
   *r = rr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -381,5 +380,5 @@ PetscErrorCode PetscRandomSeed(PetscRandom r)
 
   PetscUseTypeMethod(r, seed);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -15,7 +15,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = (x[0] + x[1]) * Nc + c;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* {x, y, z} */
@@ -23,7 +23,7 @@ static PetscErrorCode linear2(PetscInt dim, PetscReal time, const PetscReal x[],
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = x[c];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* {u_x, u_y, u_z} */
@@ -62,7 +62,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscCall(PetscOptionsBool("-submesh", "Flag for trying boundary submesh", "ex23.c", options->submesh, &options->submesh, NULL));
   PetscCall(PetscOptionsBool("-auxfield", "Flag for trying auxiliary fields", "ex23.c", options->auxfield, &options->auxfield, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -72,7 +72,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, PetscInt dim, PetscBool simplex, AppCtx *user)
@@ -91,7 +91,7 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscInt dim, PetscBool simplex
   PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupOutputDiscretization(DM dm, PetscInt dim, PetscBool simplex, AppCtx *user)
@@ -106,7 +106,7 @@ static PetscErrorCode SetupOutputDiscretization(DM dm, PetscInt dim, PetscBool s
   PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSubdomainMesh(DM dm, DMLabel *domLabel, DM *subdm, AppCtx *user)
@@ -127,7 +127,7 @@ static PetscErrorCode CreateSubdomainMesh(DM dm, DMLabel *domLabel, DM *subdm, A
   PetscCall(DMViewFromOptions(*subdm, NULL, "-sub_dm_view"));
   if (domLabel) *domLabel = label;
   else PetscCall(DMLabelDestroy(&label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, AppCtx *user)
@@ -148,7 +148,7 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, App
   PetscCall(DMViewFromOptions(*subdm, NULL, "-sub_dm_view"));
   if (bdLabel) *bdLabel = label;
   else PetscCall(DMLabelDestroy(&label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user)
@@ -169,7 +169,7 @@ static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user
   PetscCall(DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, *la));
   PetscCall(VecViewFromOptions(*la, NULL, "-local_aux_view"));
   PetscCall(PetscFree(afuncs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user)
@@ -203,7 +203,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   PetscCall(DMRestoreLocalVector(dm, &lx));
   PetscCall(PetscFree(funcs));
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user)
@@ -240,7 +240,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   PetscCall(DMRestoreLocalVector(dm, &lu));
   PetscCall(PetscFree2(funcs, afuncs));
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLabel label, Vec la, const char name[], AppCtx *user)
@@ -278,7 +278,7 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   PetscCall(DMRestoreLocalVector(dmIn, &lu));
   PetscCall(PetscFree2(funcs, afuncs));
   if (dmAux) PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

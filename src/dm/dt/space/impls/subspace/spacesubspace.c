@@ -35,7 +35,7 @@ static PetscErrorCode PetscSpaceDestroy_Subspace(PetscSpace sp)
   PetscCall(PetscFree(subsp));
   sp->data = NULL;
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePolynomialGetTensor_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer)
@@ -85,7 +85,7 @@ static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscSpaceView(subsp->origSpace, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
@@ -246,7 +246,7 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
     PetscCall(DMRestoreWorkArray(sp->dm, npoints * origNb * origNc, MPIU_REAL, &inB));
   }
   PetscCall(DMRestoreWorkArray(sp->dm, npoints * origDim, MPIU_REAL, &inpoints));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp)
@@ -256,7 +256,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp)
   PetscFunctionBegin;
   PetscCall(PetscNew(&subsp));
   sp->data = (void *)subsp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceGetDimension_Subspace(PetscSpace sp, PetscInt *dim)
@@ -266,7 +266,7 @@ static PetscErrorCode PetscSpaceGetDimension_Subspace(PetscSpace sp, PetscInt *d
   PetscFunctionBegin;
   subsp = (PetscSpace_Subspace *)sp->data;
   *dim  = subsp->Nb;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp)
@@ -376,7 +376,7 @@ static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp)
   }
   PetscCall(PetscFree3(allPoints, allWeights, B));
   subsp->Q = V;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpacePolynomialGetTensor_Subspace(PetscSpace sp, PetscBool *poly)
@@ -409,7 +409,7 @@ static PetscErrorCode PetscSpacePolynomialGetTensor_Subspace(PetscSpace sp, Pets
       if (maxnnz > 1) *poly = PETSC_FALSE;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp)
@@ -421,7 +421,7 @@ static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp)
   sp->ops->getdimension = PetscSpaceGetDimension_Subspace;
   sp->ops->evaluate     = PetscSpaceEvaluate_Subspace;
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePolynomialGetTensor_C", PetscSpacePolynomialGetTensor_Subspace));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dualSubspace, PetscReal *x, PetscReal *Jx, PetscReal *u, PetscReal *Ju, PetscCopyMode copymode, PetscSpace *subspace)
@@ -496,5 +496,5 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
   PetscCall(PetscObjectReference((PetscObject)dualSubspace));
   subsp->dualSubspace = dualSubspace;
   PetscCall(PetscSpaceInitialize_Subspace(*subspace));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

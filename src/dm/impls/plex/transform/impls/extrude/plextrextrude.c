@@ -19,7 +19,7 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
@@ -63,7 +63,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, 
   }
   PetscCall(PetscFree(thicknesses));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Determine the implicit dimension pre-extrusion (either the implicit dimension of the DM or of a point in the active set for the transform).
@@ -109,7 +109,7 @@ static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform 
   ex->cdimEx = ex->cdim == dimExtPointG ? ex->cdim + 1 : ex->cdim;
   PetscCheck(ex->dimEx <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Topological dimension for extruded mesh %" PetscInt_FMT " must not exceed 3", ex->dimEx);
   PetscCheck(ex->cdimEx <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension for extruded mesh %" PetscInt_FMT " must not exceed 3", ex->cdimEx);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, DM dm, DM tdm)
@@ -121,7 +121,7 @@ static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, D
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMSetDimension(tdm, ex->dimEx));
   PetscCall(DMSetCoordinateDim(tdm, ex->cdimEx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -446,7 +446,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
     if (ex->symmetric)
       for (l = 0; l <= ex->layers; ++l) ex->layerPos[l] -= ex->thickness / 2.;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
@@ -461,7 +461,7 @@ static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
   PetscCall(PetscFree5(ex->Nt, ex->target, ex->size, ex->cone, ex->ornt));
   PetscCall(PetscFree(ex->layerPos));
   PetscCall(PetscFree(ex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
@@ -473,10 +473,10 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
   PetscFunctionBeginHot;
   *rnew = r;
   *onew = DMPolytopeTypeComposeOrientation(tct, o, so);
-  if (!so) PetscFunctionReturn(0);
+  if (!so) PetscFunctionReturn(PETSC_SUCCESS);
   if (trType) {
     PetscCall(DMLabelGetValue(tr->trType, sp, &rt));
-    if (rt >= 100) PetscFunctionReturn(0);
+    if (rt >= 100) PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (ex->useTensor) {
     switch (sct) {
@@ -525,7 +525,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformCellTransform_Extrude(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
@@ -559,7 +559,7 @@ static PetscErrorCode DMPlexTransformCellTransform_Extrude(DMPlexTransform tr, D
     *cone   = ex->cone[source];
     *ornt   = ex->ornt[source];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Computes new vertex along normal */
@@ -653,7 +653,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   for (d = 0; d < dEx; ++d) normal[d] *= norm == 0.0 ? 1.0 : 1. / PetscSqrtReal(norm);
   for (d = 0; d < dEx; ++d) out[d] = normal[d] * ex->layerPos[r];
   for (d = 0; d < ex->cdim; ++d) out[d] += in[d];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformInitialize_Extrude(DMPlexTransform tr)
@@ -667,7 +667,7 @@ static PetscErrorCode DMPlexTransformInitialize_Extrude(DMPlexTransform tr)
   tr->ops->celltransform         = DMPlexTransformCellTransform_Extrude;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_Extrude;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinates_Extrude;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
@@ -690,7 +690,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
   PetscCall(DMGetCoordinateDim(dm, &ex->cdim));
   PetscCall(DMPlexTransformExtrudeSetLayers(tr, 1));
   PetscCall(DMPlexTransformInitialize_Extrude(tr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -716,7 +716,7 @@ PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *lay
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidIntPointer(layers, 2);
   *layers = ex->layers;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -741,7 +741,7 @@ PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt laye
   ex->layers = layers;
   PetscCall(PetscFree(ex->layerPos));
   PetscCall(PetscCalloc1(ex->layers + 1, &ex->layerPos));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -767,7 +767,7 @@ PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal 
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidRealPointer(thickness, 2);
   *thickness = ex->thickness;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -791,7 +791,7 @@ PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal 
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscCheck(thickness > 0., PetscObjectComm((PetscObject)tr), PETSC_ERR_ARG_OUTOFRANGE, "Height of layers %g must be positive", (double)thickness);
   ex->thickness = thickness;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -819,7 +819,7 @@ PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *us
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidBoolPointer(useTensor, 2);
   *useTensor = ex->useTensor;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -844,7 +844,7 @@ PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool use
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->useTensor = useTensor;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -870,7 +870,7 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidBoolPointer(symmetric, 2);
   *symmetric = ex->symmetric;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -893,7 +893,7 @@ PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->symmetric = symmetric;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -925,7 +925,7 @@ PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal nor
   } else {
     for (d = 0; d < ex->cdimEx; ++d) normal[d] = 0.;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -950,7 +950,7 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->useNormal = PETSC_TRUE;
   for (d = 0; d < ex->cdimEx; ++d) ex->normal[d] = normal[d];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -981,7 +981,7 @@ PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->normalFunc = normalFunc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1013,5 +1013,5 @@ PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt
     PetscCheck(thicknesses[t] > 0., PetscObjectComm((PetscObject)tr), PETSC_ERR_ARG_OUTOFRANGE, "Thickness %g of layer %" PetscInt_FMT " must be positive", (double)thicknesses[t], t);
     ex->thicknesses[t] = thicknesses[t];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

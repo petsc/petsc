@@ -78,7 +78,7 @@
           for (k = 0; k < BS; k++) /* Compiler either unrolls (BS=1) or vectorizes (BS=2,4,8,etc) this loop */ \
             p[i * MBS + j * BS + k] = u[idx[i] * MBS + j * BS + k]; \
     } \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
 /* DEF_Action - macro defining a UnpackAndInsert routine that unpacks data from a contiguous buffer
@@ -120,7 +120,7 @@
         for (j = 0; j < M; j++) \
           for (k = 0; k < BS; k++) u[idx[i] * MBS + j * BS + k] = p[i * MBS + j * BS + k]; \
     } \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
 /* DEF_UnpackAndOp - macro defining a UnpackAndOp routine where Op should not be Insert
@@ -163,7 +163,7 @@
         for (j = 0; j < M; j++) \
           for (k = 0; k < BS; k++) OpApply(Op, u[idx[i] * MBS + j * BS + k], p[i * MBS + j * BS + k]); \
     } \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
 #define DEF_FetchAndOp(Type, BS, EQ, Opname, Op, OpApply) \
@@ -184,7 +184,7 @@
           p[l + j * BS + k] = tmp; \
         } \
     } \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
 #define DEF_ScatterAndOp(Type, BS, EQ, Opname, Op, OpApply) \
@@ -217,7 +217,7 @@
           for (k = 0; k < BS; k++) OpApply(Op, v[t + j * BS + k], u[s + j * BS + k]); \
       } \
     } \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
 #define DEF_FetchAndOpLocal(Type, BS, EQ, Opname, Op, OpApply) \
@@ -238,7 +238,7 @@
           OpApply(Op, rdata[r + j * BS + k], ldata[l + j * BS + k]); \
         } \
     } \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
 /* Pack, Unpack/Fetch ops */
@@ -414,7 +414,7 @@ DEF_DumbType(DumbInt, 1, 1) DEF_DumbType(DumbInt, 2, 1) DEF_DumbType(DumbInt, 4,
     }
   }
   PetscCall(PetscFree(link));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkCreate(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, const void *leafdata, MPI_Op op, PetscSFOperation sfop, PetscSFLink *mylink)
@@ -427,12 +427,12 @@ PetscErrorCode PetscSFLinkCreate(PetscSF sf, MPI_Datatype unit, PetscMemType roo
     PetscCall(PetscSFLinkNvshmemCheck(sf, rootmtype, rootdata, leafmtype, leafdata, &use_nvshmem));
     if (use_nvshmem) {
       PetscCall(PetscSFLinkCreate_NVSHMEM(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, sfop, mylink));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
 #endif
   PetscCall(PetscSFLinkCreate_MPI(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, sfop, mylink));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Return root/leaf buffers and MPI requests attached to the link for MPI communication in the given direction.
@@ -492,7 +492,7 @@ PetscErrorCode PetscSFLinkGetMPIBuffersAndRequests(PetscSF sf, PetscSFLink link,
   if (leafbuf) *leafbuf = link->leafbuf[PETSCSF_REMOTE][leafmtype_mpi];
   if (rootreqs) *rootreqs = link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi];
   if (leafreqs) *leafreqs = link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkGetInUse(PetscSF sf, MPI_Datatype unit, const void *rootdata, const void *leafdata, PetscCopyMode cmode, PetscSFLink *mylink)
@@ -516,7 +516,7 @@ PetscErrorCode PetscSFLinkGetInUse(PetscSF sf, MPI_Datatype unit, const void *ro
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "invalid cmode");
       }
       *mylink = link;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Could not find pack");
@@ -533,7 +533,7 @@ PetscErrorCode PetscSFLinkReclaim(PetscSF sf, PetscSFLink *mylink)
   link->next     = bas->avail;
   bas->avail     = link;
   *mylink        = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Error out on unsupported overlapped communications */
@@ -555,14 +555,14 @@ PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf, MPI_Datatype unit
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFLinkMemcpy_Host(PetscSFLink link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n)
 {
   PetscFunctionBegin;
   if (n) PetscCall(PetscMemcpy(dst, src, n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf, PetscSFLink link, MPI_Datatype unit)
@@ -739,7 +739,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf, PetscSFLink link, MPI_Datatype 
   if (!link->isbuiltin) PetscCallMPI(MPI_Type_dup(unit, &link->unit));
 
   link->Memcpy = PetscSFLinkMemcpy_Host;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link, PetscMemType mtype, MPI_Op op, PetscBool atomic, PetscErrorCode (**UnpackAndOp)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, const void *))
@@ -792,7 +792,7 @@ PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink link, PetscMemType mtype, M
     else if (op == MPI_MINLOC) *UnpackAndOp = link->da_UnpackAndMinloc;
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link, PetscMemType mtype, MPI_Op op, PetscBool atomic, PetscErrorCode (**ScatterAndOp)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, PetscInt, PetscSFPackOpt, const PetscInt *, void *))
@@ -845,7 +845,7 @@ PetscErrorCode PetscSFLinkGetScatterAndOp(PetscSFLink link, PetscMemType mtype, 
     else if (op == MPI_MINLOC) *ScatterAndOp = link->da_ScatterAndMinloc;
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link, PetscMemType mtype, MPI_Op op, PetscBool atomic, PetscErrorCode (**FetchAndOp)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, void *))
@@ -858,7 +858,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link, PetscMemType mtype, MP
   else if (PetscMemTypeDevice(mtype) && !atomic) *FetchAndOp = link->d_FetchAndAdd;
   else if (PetscMemTypeDevice(mtype) && atomic) *FetchAndOp = link->da_FetchAndAdd;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link, PetscMemType mtype, MPI_Op op, PetscBool atomic, PetscErrorCode (**FetchAndOpLocal)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, void *))
@@ -871,7 +871,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link, PetscMemType mtyp
   else if (PetscMemTypeDevice(mtype) && !atomic) *FetchAndOpLocal = link->d_FetchAndAddLocal;
   else if (PetscMemTypeDevice(mtype) && atomic) *FetchAndOpLocal = link->da_FetchAndAddLocal;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf, PetscSFLink link, PetscSFScope scope, MPI_Op op)
@@ -888,7 +888,7 @@ static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf, 
 #endif
       PetscCall(PetscLogFlops(flops));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf, PetscSFLink link, PetscSFScope scope, MPI_Op op)
@@ -904,7 +904,7 @@ static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf, 
 #endif
       PetscCall(PetscLogFlops(flops));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* When SF could not find a proper UnpackAndOp() from link, it falls back to MPI_Reduce_local.
@@ -935,7 +935,7 @@ static inline PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,
       PetscCallMPI(MPIU_Reduce_local(buf, (char *)data + start * link->unitbytes, count, link->unit, op));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No unpacking reduction operation for this MPI_Op");
 #endif
@@ -956,7 +956,7 @@ static inline PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No unpacking reduction operation for this MPI_Op");
 #endif
@@ -993,7 +993,7 @@ PetscErrorCode PetscSFLinkPackRootData_Private(PetscSF sf, PetscSFLink link, Pet
     PetscCall((*Pack)(link, count, start, opt, rootindices, rootdata, link->rootbuf[scope][rootmtype]));
   }
   PetscCall(PetscLogEventEnd(PETSCSF_Pack, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Pack leafdata to leafbuf */
@@ -1013,7 +1013,7 @@ PetscErrorCode PetscSFLinkPackLeafData_Private(PetscSF sf, PetscSFLink link, Pet
     PetscCall((*Pack)(link, count, start, opt, leafindices, leafdata, link->leafbuf[scope][leafmtype]));
   }
   PetscCall(PetscLogEventEnd(PETSCSF_Pack, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Pack rootdata to rootbuf, which are in the same memory space */
@@ -1029,7 +1029,7 @@ PetscErrorCode PetscSFLinkPackRootData(PetscSF sf, PetscSFLink link, PetscSFScop
   PetscCall(PetscLogEventBegin(PETSCSF_Pack, sf, 0, 0, 0));
   if (bas->rootbuflen[scope]) PetscCall(PetscSFLinkPackRootData_Private(sf, link, scope, rootdata));
   PetscCall(PetscLogEventEnd(PETSCSF_Pack, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* Pack leafdata to leafbuf, which are in the same memory space */
 PetscErrorCode PetscSFLinkPackLeafData(PetscSF sf, PetscSFLink link, PetscSFScope scope, const void *leafdata)
@@ -1042,7 +1042,7 @@ PetscErrorCode PetscSFLinkPackLeafData(PetscSF sf, PetscSFLink link, PetscSFScop
   PetscCall(PetscLogEventBegin(PETSCSF_Pack, sf, 0, 0, 0));
   if (sf->leafbuflen[scope]) PetscCall(PetscSFLinkPackLeafData_Private(sf, link, scope, leafdata));
   PetscCall(PetscLogEventEnd(PETSCSF_Pack, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkUnpackRootData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *rootdata, MPI_Op op)
@@ -1066,7 +1066,7 @@ PetscErrorCode PetscSFLinkUnpackRootData_Private(PetscSF sf, PetscSFLink link, P
     }
   }
   PetscCall(PetscSFLinkLogFlopsAfterUnpackRootData(sf, link, scope, op));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkUnpackLeafData_Private(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *leafdata, MPI_Op op)
@@ -1089,7 +1089,7 @@ PetscErrorCode PetscSFLinkUnpackLeafData_Private(PetscSF sf, PetscSFLink link, P
     }
   }
   PetscCall(PetscSFLinkLogFlopsAfterUnpackLeafData(sf, link, scope, op));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* Unpack rootbuf to rootdata, which are in the same memory space */
 PetscErrorCode PetscSFLinkUnpackRootData(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *rootdata, MPI_Op op)
@@ -1104,7 +1104,7 @@ PetscErrorCode PetscSFLinkUnpackRootData(PetscSF sf, PetscSFLink link, PetscSFSc
     if (link->PostUnpack) PetscCall((*link->PostUnpack)(sf, link, PETSCSF_LEAF2ROOT)); /* Used by SF nvshmem */
     if (PetscMemTypeDevice(link->rootmtype) && link->SyncDevice && sf->unknown_input_stream) PetscCall((*link->SyncDevice)(link));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Unpack leafbuf to leafdata for remote (common case) or local (rare case when rootmtype != leafmtype) */
@@ -1118,7 +1118,7 @@ PetscErrorCode PetscSFLinkUnpackLeafData(PetscSF sf, PetscSFLink link, PetscSFSc
     if (link->PostUnpack) PetscCall((*link->PostUnpack)(sf, link, PETSCSF_ROOT2LEAF)); /* Used by SF nvshmem */
     if (PetscMemTypeDevice(link->leafmtype) && link->SyncDevice && sf->unknown_input_stream) PetscCall((*link->SyncDevice)(link));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* FetchAndOp rootdata with rootbuf, it is a kind of Unpack on rootdata, except it also updates rootbuf */
@@ -1141,7 +1141,7 @@ PetscErrorCode PetscSFLinkFetchAndOpRemote(PetscSF sf, PetscSFLink link, void *r
   }
   PetscCall(PetscSFLinkLogFlopsAfterUnpackRootData(sf, link, PETSCSF_REMOTE, op));
   PetscCall(PetscLogEventEnd(PETSCSF_Unpack, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFLinkScatterLocal(PetscSF sf, PetscSFLink link, PetscSFDirection direction, void *rootdata, void *leafdata, MPI_Op op)
@@ -1157,7 +1157,7 @@ PetscErrorCode PetscSFLinkScatterLocal(PetscSF sf, PetscSFLink link, PetscSFDire
   PetscBool      dstdups;
 
   PetscFunctionBegin;
-  if (!buflen) PetscFunctionReturn(0);
+  if (!buflen) PetscFunctionReturn(PETSC_SUCCESS);
   if (rootmtype != leafmtype) { /* The cross memory space local scatter is done by pack, copy and unpack */
     if (direction == PETSCSF_ROOT2LEAF) {
       PetscCall(PetscSFLinkPackRootData(sf, link, PETSCSF_LOCAL, rootdata));
@@ -1202,7 +1202,7 @@ PetscErrorCode PetscSFLinkScatterLocal(PetscSF sf, PetscSFLink link, PetscSFDire
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Fetch rootdata to leafdata and leafupdate locally */
@@ -1216,7 +1216,7 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf, PetscSFLink link, void *ro
   PetscSFPackOpt     leafopt = NULL, rootopt = NULL;
 
   PetscFunctionBegin;
-  if (!bas->rootbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(0);
+  if (!bas->rootbuflen[PETSCSF_LOCAL]) PetscFunctionReturn(PETSC_SUCCESS);
   if (rootmtype != leafmtype) {
     /* The local communication has to go through pack and unpack */
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Doing PetscSFFetchAndOp with rootdata and leafdata on opposite side of CPU and GPU");
@@ -1226,7 +1226,7 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf, PetscSFLink link, void *ro
     PetscCall(PetscSFLinkGetFetchAndOpLocal(link, rootmtype, op, bas->rootdups[PETSCSF_LOCAL], &FetchAndOpLocal));
     PetscCall((*FetchAndOpLocal)(link, count, rootstart, rootopt, rootindices, rootdata, leafstart, leafopt, leafindices, leafdata, leafupdate));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1326,7 +1326,7 @@ finish:
     for (r = 0; r < n; r++) opt->offset[r + 1] = opt->offset[r] + opt->dx[r] * opt->dy[r] * opt->dz[r];
     *out = opt;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscSFDestroyPackOpt(PetscSF sf, PetscMemType mtype, PetscSFPackOpt *out)
@@ -1339,7 +1339,7 @@ static inline PetscErrorCode PetscSFDestroyPackOpt(PetscSF sf, PetscMemType mtyp
     PetscCall(PetscFree(opt));
     *out = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
@@ -1413,7 +1413,7 @@ PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
     if (!bas->rootcontig[0] && !ismulti) PetscCall(PetscCheckDupsInt(bas->rootbuflen[0], bas->irootloc, &bas->rootdups[0]));
     if (!bas->rootcontig[1] && !ismulti) PetscCall(PetscCheckDupsInt(bas->rootbuflen[1], bas->irootloc + bas->ioffset[bas->ndiranks], &bas->rootdups[1]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFResetPackFields(PetscSF sf)
@@ -1430,5 +1430,5 @@ PetscErrorCode PetscSFResetPackFields(PetscSF sf)
     PetscCall(PetscSFDestroyPackOpt(sf, PETSC_MEMTYPE_DEVICE, &bas->rootpackopt_d[i]));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

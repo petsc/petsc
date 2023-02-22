@@ -23,7 +23,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B, PetscInt d_nz, co
   PetscCall(MatSeqAIJSetPreallocation(b->A, d_nz, d_nnz));
   PetscCall(MatSeqAIJSetPreallocation(b->B, o_nz, o_nnz));
   B->preallocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_MPIAIJViennaCL(Mat A, MatAssemblyType mode)
@@ -40,14 +40,14 @@ PetscErrorCode MatAssemblyEnd_MPIAIJViennaCL(Mat A, MatAssemblyType mode)
     PetscCall(VecDestroy(&b->lvec));
     PetscCall(VecCreateSeqViennaCL(PETSC_COMM_SELF, m, &b->lvec));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_MPIAIJViennaCL(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy_MPIAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
@@ -60,7 +60,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", MatMPIAIJSetPreallocation_MPIAIJViennaCL));
   A->ops->assemblyend = MatAssemblyEnd_MPIAIJViennaCL;
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPIAIJVIENNACL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -120,7 +120,7 @@ PetscErrorCode MatCreateAIJViennaCL(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
     PetscCall(MatSetType(*A, MATSEQAIJVIENNACL));
     PetscCall(MatSeqAIJSetPreallocation(*A, d_nz, d_nnz));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC

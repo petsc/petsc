@@ -1,7 +1,6 @@
 #ifndef __SEQAIJKOKKOSIMPL_HPP
 #define __SEQAIJKOKKOSIMPL_HPP
 
-#include <petscaijdevice.h>
 #include <petsc/private/vecimpl_kokkos.hpp>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <KokkosSparse_CrsMatrix.hpp>
@@ -187,7 +186,7 @@ struct Mat_SeqAIJKokkos {
     PetscFunctionBegin;
     csrmatT = KokkosCsrMatrix(); /* Overwrite with empty matrices */
     csrmatH = KokkosCsrMatrix();
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 

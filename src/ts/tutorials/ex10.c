@@ -84,7 +84,7 @@ static PetscErrorCode RDDestroy(RD *rd)
   PetscFunctionBeginUser;
   PetscCall(DMDestroy(&(*rd)->da));
   PetscCall(PetscFree(*rd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* The paper has a time derivative for material energy (Eq 2) which is a dependent variable (computable from temperature
@@ -186,7 +186,7 @@ static PetscErrorCode RDStateView(RD rd, Vec X, Vec Xdot, Vec F)
   PetscCall(DMDAVecRestoreArrayRead(rd->da, Xdot, (void *)&xdot));
   PetscCall(DMDAVecRestoreArrayRead(rd->da, F, (void *)&f));
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscScalar RDRadiation(RD rd, const RDNode *n, RDNode *dn)
@@ -269,7 +269,7 @@ static PetscErrorCode RDGetLocalArrays(RD rd, TS ts, Vec X, Vec Xdot, PetscReal 
   PetscCall(DMDAVecGetArray(rd->da, *X0loc, x0));
   PetscCall(DMDAVecGetArray(rd->da, *Xloc, x));
   PetscCall(DMDAVecGetArray(rd->da, *Xloc_t, xdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RDRestoreLocalArrays(RD rd, Vec *X0loc, RDNode **x0, Vec *Xloc, RDNode **x, Vec *Xloc_t, RDNode **xdot)
@@ -281,7 +281,7 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd, Vec *X0loc, RDNode **x0, Vec *
   PetscCall(DMRestoreLocalVector(rd->da, X0loc));
   PetscCall(DMRestoreLocalVector(rd->da, Xloc));
   PetscCall(DMRestoreLocalVector(rd->da, Xloc_t));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PETSC_UNUSED RDCheckDomain_Private(RD rd, TS ts, Vec X, PetscBool *in)
@@ -298,7 +298,7 @@ static PetscErrorCode PETSC_UNUSED RDCheckDomain_Private(RD rd, TS ts, Vec X, Pe
     PetscCall(SNESSetFunctionDomainError(snes));
     PetscCall(PetscInfo(ts, "Domain violation at %" PetscInt_FMT " field %" PetscInt_FMT " value %g\n", minloc / 2, minloc % 2, (double)min));
   } else *in = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Energy and temperature must remain positive */
@@ -306,7 +306,7 @@ static PetscErrorCode PETSC_UNUSED RDCheckDomain_Private(RD rd, TS ts, Vec X, Pe
   do { \
     PetscBool _in; \
     PetscCall(RDCheckDomain_Private(rd, ts, X, &_in)); \
-    if (!_in) PetscFunctionReturn(0); \
+    if (!_in) PetscFunctionReturn(PETSC_SUCCESS); \
   } while (0)
 
 static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
@@ -322,7 +322,7 @@ static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
   PetscCall(RDGetLocalArrays(rd, ts, X, Xdot, &Theta, &dt, &X0loc, &x0, &Xloc, &x, &Xloc_t, &xdot));
   PetscCall(DMDAVecGetArray(rd->da, F, &f));
   PetscCall(DMDAGetLocalInfo(rd->da, &info));
-  VecZeroEntries(F);
+  PetscCall(VecZeroEntries(F));
 
   hx = rd->L / (info.mx - 1);
 
@@ -374,7 +374,7 @@ static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
   PetscCall(RDRestoreLocalArrays(rd, &X0loc, &x0, &Xloc, &x, &Xloc_t, &xdot));
   PetscCall(DMDAVecRestoreArray(rd->da, F, &f));
   if (rd->monitor_residual) PetscCall(RDStateView(rd, X, Xdot, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -482,7 +482,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscR
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate interpolants and derivatives at a select quadrature point */
@@ -619,7 +619,7 @@ static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscRe
       deriv[q][j]  = refderiv[q][j] / hx;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -708,7 +708,7 @@ static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
   PetscCall(DMRestoreLocalVector(rd->da, &Floc));
 
   if (rd->monitor_residual) PetscCall(RDStateView(rd, X, Xdot, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -784,7 +784,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscR
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Temperature that is in equilibrium with the radiation density */
@@ -822,7 +822,7 @@ static PetscErrorCode RDInitialState(RD rd, Vec X)
     }
   }
   PetscCall(DMDAVecRestoreArray(rd->da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RDView(RD rd, Vec X, PetscViewer viewer)
@@ -862,7 +862,7 @@ static PetscErrorCode RDView(RD rd, Vec X, PetscViewer viewer)
   PetscCall(VecView(Y, viewer));
   PetscCall(VecDestroy(&Y));
   PetscCall(DMDestroy(&da));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RDTestDifferentiation(RD rd)
@@ -969,7 +969,7 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     PetscCall(PetscPrintf(comm, "drad {%g,%g}, fdrad {%g,%g}, diff {%g,%g}\n", (double)PetscRealPart(drad.E), (double)PetscRealPart(drad.T), (double)PetscRealPart(fdrad.E), (double)PetscRealPart(fdrad.T), (double)PetscRealPart(drad.E - drad.E),
                           (double)PetscRealPart(drad.T - fdrad.T)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd)
@@ -1100,7 +1100,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd)
   PetscCall(DMDASetUniformCoordinates(rd->da, 0., 1., 0., 0., 0., 0.));
 
   *inrd = rd;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

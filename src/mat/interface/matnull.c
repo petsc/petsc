@@ -28,7 +28,7 @@ PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Ma
   PetscValidHeaderSpecific(sp, MAT_NULLSPACE_CLASSID, 1);
   sp->remove = rem;
   sp->rmctx  = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -58,7 +58,7 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp, PetscBool *has_const, PetscI
   if (has_const) *has_const = sp->has_cnst;
   if (n) *n = sp->n;
   if (vecs) *vecs = sp->vecs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -155,7 +155,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
     PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)coords), PETSC_FALSE, nmodes, vec, sp));
     for (i = 0; i < nmodes; i++) PetscCall(VecDestroy(&vec[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -195,7 +195,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -288,7 +288,7 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm, PetscBool has_cnst, PetscInt n,
   }
 
   *SP = sp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -308,11 +308,11 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp)
   PetscInt i;
 
   PetscFunctionBegin;
-  if (!*sp) PetscFunctionReturn(0);
+  if (!*sp) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*sp), MAT_NULLSPACE_CLASSID, 1);
   if (--((PetscObject)(*sp))->refct > 0) {
     *sp = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   for (i = 0; i < (*sp)->n; i++) PetscCall(VecLockReadPop((*sp)->vecs[i]));
@@ -320,7 +320,7 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp)
   PetscCall(VecDestroyVecs((*sp)->n, &(*sp)->vecs));
   PetscCall(PetscFree((*sp)->alpha));
   PetscCall(PetscHeaderDestroy(sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -342,7 +342,7 @@ PetscErrorCode MatNullSpaceRemove(MatNullSpace sp, Vec vec)
   PetscInt    i, N;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
+  if (!sp) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(sp, MAT_NULLSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
 
@@ -362,7 +362,7 @@ PetscErrorCode MatNullSpaceRemove(MatNullSpace sp, Vec vec)
   }
 
   if (sp->remove) PetscCall((*sp->remove)(sp, vec, sp->rmctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -445,5 +445,5 @@ PetscErrorCode MatNullSpaceTest(MatNullSpace sp, Mat mat, PetscBool *isNull)
   PetscCheck(!sp->remove, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   PetscCall(VecDestroy(&l));
   if (isNull) *isNull = consistent;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

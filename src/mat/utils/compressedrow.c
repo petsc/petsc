@@ -59,5 +59,5 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A, PetscInt nrows, Mat_Com
     compressedrow->i      = cpi;
     compressedrow->rindex = ridx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

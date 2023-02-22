@@ -20,7 +20,7 @@ PetscErrorCode TestRenumber(IS is, IS mult)
   PetscCall(ISRenumber(is, mult, NULL, &nis));
   PetscCall(ISView(nis, NULL));
   PetscCall(ISDestroy(&nis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -34,6 +34,13 @@ Preconditioners
      - X
      - X
    * -
+     - Variable Point Block Jacobi
+     - ``PCPBJACOBI``
+     - ``MATAIJ``, ``MATBAIJ``, ``MATSBAIJ``
+     - ---
+     - X
+     - X
+   * -
      - Block Jacobi
      - ``PCBJACOBI``
      - ``MATAIJ``, ``MATBAIJ``, ``MATSBAIJ``
@@ -45,19 +52,33 @@ Preconditioners
      - ``PCSOR``
      - ``MATAIJ``, ``MATSEQDENSE``, ``MATSEQSBAIJ``
      - ---
-     -
+     - X
      - X
    * -
      - Point Block SOR
      -
      - ``MATSEQBAIJ`` (only for ``bs`` = 2,3,4,5)
      - ---
-     -
+     - X
+     - X
+   * -
+     - Kaczmarz
+     - ``PCKACZMARZ``
+     - ``MATAIJ``
+     - ---
+     - X
      - X
    * -
      - Additive Schwarz
      - ``PCASM``
      - ``MATAIJ``, ``MATBAIJ``, ``MATSBAIJ``
+     - ---
+     - X
+     - X
+   * -
+     - Vanka/overlapping patches
+     - ``PCPATCH``
+     - ``MATAIJ``
      - ---
      - X
      - X
@@ -97,6 +118,13 @@ Preconditioners
      - ---
      -
      - X
+   * -
+     - Algebraic recursive multilevel
+     - ``PCPARMS``
+     - ``MATSEQAIJ``
+     - `pARMS <https://www-users.cse.umn.edu/~saad/software/pARMS/>`__
+     -
+     - X
    * - Matrix Free
      - Infrastructure
      - ``PCSHELL``
@@ -126,21 +154,34 @@ Preconditioners
      - X
      - X
    * -
+     - Smoothed Aggregation (ML)
+     - ``PCML``
+     - ``MATAIJ``
+     - `ML/Trilinos <https://trilinos.github.io/ml.html>`__
+     - X
+     - X
+   * -
      - Structured Geometric
-     - ``PCPFMG``
+     - ``PCPFMG``, ``PCSYSPFMG``, ``PCSMG``
      - ``MATHYPRESTRUCT``
      - `hypre <https://hypre.readthedocs.io/en/latest/solvers-smg-pfmg.html>`__
      - X
      -
    * -
      - Classical Algebraic
-     - ``PCHYPRE``, ``PCML``
+     - ``PCHYPRE``, ``PCAMGX``
      - ``MATAIJ``
      - `BoomerAMG/hypre
-       <https://hypre.readthedocs.io/en/latest/solvers-boomeramg.html>`__, `ML/Trilinos
-       <https://trilinos.github.io/ml.html>`__
+       <https://hypre.readthedocs.io/en/latest/solvers-boomeramg.html>`__, `AmgX <https://developer.nvidia.com/amgx>`__
      - X
      -
+   * -
+     - Multi-group MG
+     - ``PCHMG``
+     - ``MATAIJ``
+     - ---
+     - X
+     - X
    * -
      - Domain Decomposition
      - ``PCHPDDM``
@@ -148,6 +189,13 @@ Preconditioners
      - `HPDDM <https://github.com/hpddm/hpddm>`__
      - X
      - X
+   * - Hierarchical matrices
+     - :math:`\mathcal H^2`
+     - ``PCH2OPUS``
+     - ``MATHTOOL``, ``MATH2OPUS``
+     - `H2OPUS <https://github.com/ecrc/h2opus>`__
+     - X
+     -
    * - Physics-based Splitting
      - Relaxation & Schur Complement
      - ``PCFIELDSPLIT``
@@ -156,9 +204,44 @@ Preconditioners
      - X
      - X
    * -
+     - Galerkin composition
+     - ``PCGALERKIN``
+     - Any
+     - ---
+     - X
+     - X
+   * -
+     - Additive/multiplicative
+     - ``PCCOMPOSITE``
+     - Any
+     - ---
+     - X
+     - X
+   * -
      - Least Squares Commutator
      - ``PCLSC``
      - ``MATSCHURCOMPLEMENT``
+     - ---
+     - X
+     - X
+   * - Parallel transformation
+     - Redistribution
+     - ``PCREDISTRIBUTE``
+     - ``MATAIJ``
+     - ---
+     - X
+     - X
+   * -
+     - Telescoping communicator
+     - ``PCTELESCOPE``
+     - ``MATAIJ``
+     - ---
+     - X
+     - X
+   * -
+     - Distribute for MPI
+     - ``PCMPI``
+     - ``MATAIJ``
      - ---
      - X
      - X
@@ -180,6 +263,13 @@ Preconditioners
      - Balancing Domain Decomposition
      - ``PCBDDC``
      - ``MATIS``
+     - ---
+     - X
+     - X
+   * -
+     - 2-level Schwarz wire basket
+     - ``PCEXOTIC``
+     - ``MATAIJ``
      - ---
      - X
      - X
@@ -233,7 +323,7 @@ Direct Solvers
      -
      -
      - ``MATAIJ``, ``MATBAIJ``
-     - `MUMPS <http://mumps.enseeiht.fr/>`__
+     - `MUMPS <https://mumps-solver.org/>`__
      - X
      - X
    * -
@@ -305,7 +395,7 @@ Direct Solvers
      -
      -
      - ``MATSBAIJ``
-     - `MUMPS <https://mumps.enseeiht.fr/>`__
+     - `MUMPS <https://mumps-solver.org/>`__
      - X
      - X
    * -
@@ -338,10 +428,17 @@ Direct Solvers
        <https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top.html>`__
      - X
      -
+   * - Direct SVD
+     - Singular value decomposition
+     - ``PCSVD``
+     - Any
+     - ---
+     - X
+     - X
    * - Direct QR
      - QR
-     - `PCQR`
-     - `MATSEQAIJ`
+     - ``PCQR``
+     - ``MATSEQAIJ``
      -  `SuiteSparse QR <https://people.engr.tamu.edu/davis/suitesparse.html>`__
      -
      -
@@ -393,6 +490,16 @@ Krylov Methods
      - ---
      - X
      - X
+   * - Deflated GMRES
+     - ``KSPDGMRES``
+     - ---
+     - X
+     -
+   * - Two-stage with least squares residual minimization
+     - ``KSPTSIRM``
+     - ---
+     - X
+     - X
    * - Conjugate Gradient
      - ``KSPCG``
      - ---
@@ -413,6 +520,31 @@ Krylov Methods
      - ---
      - X
      - X
+   * - Nash Conjugate Gradient with trust region constraint
+     - ``KSPNASH``
+     - ---
+     - X
+     - X
+   * - Conjugate Gradient with trust region constraint
+     - ``KSPSTCG``
+     - ---
+     - X
+     - X
+   * - Gould et al Conjugate Gradient with trust region constraint
+     - ``KSPGLTR``
+     - ---
+     - X
+     - X
+   * - Steinhaug Conjugate Gradient with trust region constraint
+     - ``KSPQCG``
+     - ---
+     - X
+     - X
+   * - Left Conjugate Direction
+     - ``KSPLCD``
+     - ---
+     - X
+     - X
    * - Bi-Conjugate Gradient
      - ``KSPBICG``
      - ---
@@ -423,8 +555,43 @@ Krylov Methods
      - ---
      - X
      - X
+   * - Improved Stabilized Bi-Conjugate Gradient
+     - ``KSPIBCGS``
+     - ---
+     - X
+     - X
    * - Transpose-free QMR
      - ``KSPTFQMR``
+     - ---
+     - X
+     - X
+   * - Tony Chan QMR
+     - ``KSPTCQMR``
+     - ---
+     - X
+     - X
+   * - QMR BiCGStab
+     - ``KSPQMRCGS``
+     - ---
+     - X
+     - X
+   * - Flexible Conjugate Gradients
+     - ``KSPFCG``
+     - ---
+     - X
+     - X
+   * - Flexible stabilized Bi-Conjugate Gradients
+     - ``KSPFBCGS``
+     - ---
+     - X
+     - X
+   * - Flexible stabilized Bi-Conjugate Gradients with fewer reductions
+     - ``KSPFBCGSR``
+     - ---
+     - X
+     - X
+   * - Stabilized Bi-Conjugate Gradients with length :math:`\ell` recurrence
+     - ``KSPBCGSL``
      - ---
      - X
      - X
@@ -455,6 +622,71 @@ Krylov Methods
      - X
    * - SYMMLQ
      - ``KSPSYMMLQ``
+     - ---
+     - X
+     - X
+   * - FETI-DP (reduction to dual-primal sub-problem)
+     - ``KSPFETIDP``
+     - ---
+     - X
+     - X
+   * - Gropp's overlapped reduction Conjugate Gradient
+     - ``KSPGROPPCG``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Gradient
+     - ``KSPPIPECG``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Gradient with residual replacement
+     - ``KSPPIPECGRR``
+     - ---
+     - X
+     - X
+   * - Pipelined depth :math:`\ell` Conjugate Gradient
+     - ``KSPPIPELCG``
+     - ---
+     - X
+     - X
+   * - Pipelined predict-and-recompute Conjugate Gradient
+     - ``KSPPIPEPRCG``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Gradient over iteration pairs
+     - ``KSPPIPECG2``
+     - ---
+     - X
+     - X
+   * - Pipelined flexible Conjugate Gradient
+     - ``KSPPIPEFCG``
+     - ---
+     - X
+     - X
+   * - Pipelined stabilized Bi-Conjugate Gradients
+     - ``KSPPIPEBCGS``
+     - ---
+     - X
+     - X
+   * - Pipelined Conjugate Residual
+     - ``KSPPIPECR``
+     - ---
+     - X
+     - X
+   * - Pipelined flexible GMRES
+     - ``KSPPIPEFGMRES``
+     - ---
+     - X
+     - X
+   * - Pipelined Generalized Conjugate Residual
+     - ``KSPPIPEGCR``
+     - ---
+     - X
+     - X
+   * - Pipelined GMRES
+     - ``KSPPGMRES``
      - ---
      - X
      - X

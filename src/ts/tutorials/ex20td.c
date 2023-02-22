@@ -14,7 +14,7 @@ Choose one of the two at runtime by -sa_method {track,global}. \n";
    [u2'] = [mu2(t)*((1-u1^2)*u2-u1)]
    (with initial conditions & params independent)
 
-   Define uref to be solution with initail conditions (2,-2/3), mu=(1,1e3)
+   Define uref to be solution with initial conditions (2,-2/3), mu=(1,1e3)
    - u_ref : (1.5967,-1.02969)
 
    Define const function as cost = 2-norm(u - u_ref);
@@ -116,7 +116,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
   PetscCall(VecRestoreArrayRead(user->mu1, &mu1));
   PetscCall(VecRestoreArrayRead(user->mu2, &mu2));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
@@ -144,7 +144,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArrayRead(user->mu1, &mu1));
   PetscCall(VecRestoreArrayRead(user->mu2, &mu2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------ Jacobian wrt parameters for tracking method ------------------ */
@@ -165,7 +165,7 @@ PetscErrorCode RHSJacobianP_track(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------ Jacobian wrt parameters for global method ------------------ */
@@ -190,7 +190,7 @@ PetscErrorCode RHSJacobianP_global(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Dump solution to console if called */
@@ -199,7 +199,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n Solution at time %e is \n", (double)t));
   PetscCall(VecView(U, PETSC_VIEWER_STDOUT_WORLD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Customized adjoint monitor to keep track of local
@@ -223,7 +223,7 @@ PetscErrorCode AdjointMonitor(TS ts, PetscInt steps, PetscReal time, Vec u, Pets
      it integrates to. Only the second call is useful for transferring
      local sensitivities to the global array. */
   if (curr_step == user->adj_idx) {
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(VecGetArrayRead(*mu, &sensmu_loc));
     PetscCall(VecGetArray(user->sens_mu1, &sensmu1_glob));
@@ -233,7 +233,7 @@ PetscErrorCode AdjointMonitor(TS ts, PetscInt steps, PetscReal time, Vec u, Pets
     PetscCall(VecRestoreArray(user->sens_mu1, &sensmu1_glob));
     PetscCall(VecRestoreArray(user->sens_mu2, &sensmu2_glob));
     PetscCall(VecRestoreArrayRead(*mu, &sensmu_loc));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 }
 

@@ -49,7 +49,7 @@ static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, P
       maxVolumes[c - cStart] = vol * refRatio;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscInt vStart, PetscInt vEnd, PetscReal refRatio, Vec *metricVec)
@@ -155,7 +155,7 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
   PetscCall(VecDestroy(&mb));
   PetscCall(MatDestroy(&A));
   PetscCall(DMDestroy(&udm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -177,7 +177,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   PetscCall(DMPlexGetRefinementLimit(dm, &refinementLimit));
   PetscCall(DMPlexGetRefinementFunction(dm, &refinementFunc));
-  if (refinementLimit == 0.0 && !refinementFunc && !adaptLabel) PetscFunctionReturn(0);
+  if (refinementLimit == 0.0 && !refinementFunc && !adaptLabel) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(PetscOptionsGetString(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_adaptor", genname, sizeof(genname), &flg));
@@ -242,7 +242,7 @@ gotit:
   PetscCall(DMCopyDisc(dm, *dmRefined));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *dmRefined));
   if (localized) PetscCall(DMLocalizeCoordinates(*dmRefined));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmCoarsened)
@@ -267,7 +267,7 @@ PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ad
   PetscCall(DMCopyDisc(dm, *dmCoarsened));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *dmCoarsened));
   if (localized) PetscCall(DMLocalizeCoordinates(*dmCoarsened));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmAdapted)
@@ -319,5 +319,5 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLa
     PetscCall(DMPlexSetRefinementUniform(dm, PETSC_FALSE));
     PetscCall(DMPlexRefine_Internal(dm, NULL, adaptLabel, NULL, dmAdapted));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

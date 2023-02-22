@@ -52,7 +52,7 @@ PetscErrorCode SPARSEPACKqmdmrg(const PetscInt *xadj, const PetscInt *adjncy, Pe
   --adjncy;
   --xadj;
 
-  if (*nhdsze <= 0) PetscFunctionReturn(0);
+  if (*nhdsze <= 0) PetscFunctionReturn(PETSC_SUCCESS);
   i__1 = *nhdsze;
   for (inhd = 1; inhd <= i__1; ++inhd) {
     root         = nbrhd[inhd];
@@ -146,5 +146,5 @@ PetscErrorCode SPARSEPACKqmdmrg(const PetscInt *xadj, const PetscInt *adjncy, Pe
     }
   L1400:;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

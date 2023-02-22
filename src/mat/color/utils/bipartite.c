@@ -68,5 +68,5 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc, Pets
   PetscCall(PetscFree(rowdata));
   PetscCall(PetscFree(rowleaf));
   PetscCall(PetscFree(colleaf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

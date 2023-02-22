@@ -81,7 +81,7 @@ PetscErrorCode InitialConditions(DM da, Vec U)
      Restore access to vector
   */
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

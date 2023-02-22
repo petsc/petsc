@@ -24,7 +24,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm0;
   else ksp->rnorm = 0;
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecSet(um1, 0.0));
   PetscCall(VecCopy(r, u));
@@ -147,14 +147,14 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   }
   PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
   PetscCall(KSPUnwindPreconditioner(ksp, x, vtmp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, TCQMR_VECS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -191,5 +191,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
   ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

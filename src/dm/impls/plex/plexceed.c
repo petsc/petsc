@@ -151,7 +151,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
   *offsets = restr_indices;
   PetscCall(PetscSectionGetStorageSize(section, l_size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_LIBCEED)
@@ -178,7 +178,7 @@ PetscErrorCode DMPlexGetCeedRestriction(DM dm, DMLabel domain_label, PetscInt la
 {
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(ERestrict, 2);
+  PetscValidPointer(ERestrict, 6);
   if (!dm->ceedERestrict) {
     PetscInt            num_cells, cell_size, num_comp, lvec_size, *restr_indices;
     CeedElemRestriction elem_restr;
@@ -191,7 +191,7 @@ PetscErrorCode DMPlexGetCeedRestriction(DM dm, DMLabel domain_label, PetscInt la
     dm->ceedERestrict = elem_restr;
   }
   *ERestrict = dm->ceedERestrict;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

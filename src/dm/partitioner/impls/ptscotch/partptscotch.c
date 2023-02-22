@@ -88,7 +88,7 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   SCOTCH_archExit(&archdat);
   SCOTCH_stratExit(&stradat);
   SCOTCH_graphExit(&grafdat);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalance, SCOTCH_Num vtxdist[], SCOTCH_Num xadj[], SCOTCH_Num adjncy[], SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[], MPI_Comm comm)
@@ -121,7 +121,7 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
   PetscCallPTSCOTCH(SCOTCH_dgraphInit(&grafdat, comm));
   PetscCallPTSCOTCH(SCOTCH_dgraphBuild(&grafdat, 0, vertlocnbr, vertlocnbr, xadj, xadj + 1, veloloctab, NULL, edgelocnbr, edgelocnbr, adjncy, NULL, edloloctab));
   PetscCallPTSCOTCH(SCOTCH_stratInit(&stradat));
-  PetscCall(SCOTCH_stratDgraphMapBuild(&stradat, flagval, procglbnbr, nparts, kbalval));
+  PetscCallPTSCOTCH(SCOTCH_stratDgraphMapBuild(&stradat, flagval, procglbnbr, nparts, kbalval));
   PetscCallPTSCOTCH(SCOTCH_archInit(&archdat));
   if (tpart) { /* target partition weights */
     PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, nparts, tpart));
@@ -134,7 +134,7 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
   SCOTCH_archExit(&archdat);
   SCOTCH_stratExit(&stradat);
   SCOTCH_dgraphExit(&grafdat);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_PTSCOTCH */
@@ -148,7 +148,7 @@ static PetscErrorCode PetscPartitionerDestroy_PTScotch(PetscPartitioner part)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_free(&p->pcomm));
   PetscCall(PetscFree(part->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_PTScotch_ASCII(PetscPartitioner part, PetscViewer viewer)
@@ -160,7 +160,7 @@ static PetscErrorCode PetscPartitionerView_PTScotch_ASCII(PetscPartitioner part,
   PetscCall(PetscViewerASCIIPrintf(viewer, "using partitioning strategy %s\n", PTScotchStrategyList[p->strategy]));
   PetscCall(PetscViewerASCIIPrintf(viewer, "using load imbalance ratio %g\n", (double)p->imbalance));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_PTScotch(PetscPartitioner part, PetscViewer viewer)
@@ -172,7 +172,7 @@ static PetscErrorCode PetscPartitionerView_PTScotch(PetscPartitioner part, Petsc
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscPartitionerView_PTScotch_ASCII(part, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
@@ -187,7 +187,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner p
   PetscCall(PetscOptionsEList("-petscpartitioner_ptscotch_strategy", "Partitioning strategy", "", slist, nlist, slist[p->strategy], &p->strategy, &flag));
   PetscCall(PetscOptionsReal("-petscpartitioner_ptscotch_imbalance", "Load imbalance ratio", "", p->imbalance, &p->imbalance, &flag));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
@@ -221,7 +221,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
   if (vtxdist[size] == 0) {
     PetscCall(PetscFree2(vtxdist, assignment));
     PetscCall(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Calculate vertex weights */
@@ -284,7 +284,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
   PetscCall(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
 
   PetscCall(PetscFree2(vtxdist, assignment));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-ptscotch.");
 #endif
@@ -298,7 +298,7 @@ static PetscErrorCode PetscPartitionerInitialize_PTScotch(PetscPartitioner part)
   part->ops->destroy        = PetscPartitionerDestroy_PTScotch;
   part->ops->partition      = PetscPartitionerPartition_PTScotch;
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_PTScotch;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -330,5 +330,5 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner par
 
   PetscCall(PetscPartitionerInitialize_PTScotch(part));
   PetscCall(PetscCitationsRegister(PTScotchPartitionerCitation, &PTScotchPartitionerCite));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

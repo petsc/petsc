@@ -20,6 +20,7 @@ configure_options = [
   '--download-parmetis=1',
   '--download-scalapack=1',
   '--download-mumps=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

@@ -55,7 +55,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * (a->nz) - A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatForwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
@@ -68,7 +68,7 @@ PetscErrorCode MatForwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscInt           i, nz;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
@@ -88,7 +88,7 @@ PetscErrorCode MatForwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscCall(PetscLogFlops(a->nz - A->cmap->n));
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
@@ -101,7 +101,7 @@ PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscInt           i, nz;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
@@ -119,7 +119,7 @@ PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
@@ -132,7 +132,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscInt           i, nz;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
@@ -163,5 +163,5 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscCall(PetscLogFlops(2.0 * a->nz - A->cmap->n));
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -32,7 +32,7 @@ static PetscErrorCode DMDAGetElements_1D(DM dm, PetscInt *nel, PetscInt *nen, co
   *nel = da->ne;
   *nen = da->nen;
   *e   = da->e;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDAGetElements_2D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
@@ -97,7 +97,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm, PetscInt *nel, PetscInt *nen, co
   *nel = da->ne;
   *nen = da->nen;
   *e   = da->e;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
@@ -176,7 +176,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
   *nel = da->ne;
   *nen = da->nen;
   *e   = da->e;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -219,7 +219,7 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
   if (gx) *gx = xs;
   if (gy) *gy = ys;
   if (gz) *gz = zs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -278,7 +278,7 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
     if (mx) *mx = xe - xs - 1;
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -305,7 +305,7 @@ PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidLogicalCollectiveEnum(da, etype, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isda));
-  if (!isda) PetscFunctionReturn(0);
+  if (!isda) PetscFunctionReturn(PETSC_SUCCESS);
   if (dd->elementtype != etype) {
     PetscCall(PetscFree(dd->e));
     PetscCall(ISDestroy(&dd->ecorners));
@@ -315,7 +315,7 @@ PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
     dd->nen         = 0;
     dd->e           = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -344,7 +344,7 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
   PetscCall(PetscObjectTypeCompare((PetscObject)da, DMDA, &isda));
   PetscCheck(isda, PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Not for DM type %s", ((PetscObject)da)->type_name);
   *etype = dd->elementtype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -394,7 +394,7 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
     *nel = dd->ne;
     *nen = dd->nen;
     *e   = dd->e;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (dim == -1) {
     *nel = 0;
@@ -407,7 +407,7 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
   } else if (dim == 3) {
     PetscCall(DMDAGetElements_3D(dm, nel, nen, e));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -448,7 +448,7 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
     PetscCall(DMDARestoreElements(dm, &nel, &nen, &e));
   }
   *is = dd->ecorners;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -482,7 +482,7 @@ PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const Pe
   *nel = 0;
   *nen = -1;
   *e   = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -504,5 +504,5 @@ PetscErrorCode DMDARestoreSubdomainCornersIS(DM dm, IS *is)
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(*is, IS_CLASSID, 2);
   *is = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

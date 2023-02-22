@@ -1,29 +1,11 @@
 #ifndef PETSCAIJDEVICE_H
 #define PETSCAIJDEVICE_H
 
-#include <petscmat.h>
+#include <petsc/private/matimpl.h>
 
 /* SUBMANSEC = Mat */
 
-#define CSRDataStructure(datatype) \
-  PetscInt *i; \
-  PetscInt *j; \
-  datatype *a; \
-  PetscInt  n; \
-  PetscInt  ignorezeroentries;
-
-typedef struct {
-  CSRDataStructure(PetscScalar)
-} PetscCSRDataStructure;
-
-struct _n_SplitCSRMat {
-  PetscInt              cstart, cend, rstart, rend;
-  PetscCSRDataStructure diag, offdiag;
-  PetscInt             *colmap;
-  PetscInt              M; // number of columns for out of bounds check
-  PetscMPIInt           rank;
-  PetscBool             allocated_indices;
-};
+typedef struct _n_SplitCSRMat *PetscSplitCSRDataStructure;
 
 /* 64-bit floating-point version of atomicAdd() is only natively supported by
    CUDA devices of compute capability 6.x and higher. See also sfcuda.cu
@@ -114,7 +96,7 @@ __device__ double atomicAdd(double *x, double y)
   #define SETERR return PETSC_ERR_ARG_OUTOFRANGE
 #endif
 
-#if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__) || defined(PETSC_HAVE_HIP)
 __device__
 #elif defined(KOKKOS_INLINE_FUNCTION)
 KOKKOS_INLINE_FUNCTION
@@ -144,15 +126,15 @@ static
 .seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
           `MatCUSPARSEGetDeviceMatWrite()`, `MatSetValuesCOO()`
 @*/
-  PetscErrorCode
+  int
   MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)
 {
-  MatScalar       value;
+  PetscScalar     value;
   const PetscInt *rp1, *rp2 = NULL, *ai = d_mat->diag.i, *aj = d_mat->diag.j;
   const PetscInt *bi = d_mat->offdiag.i, *bj = d_mat->offdiag.j;
-  MatScalar      *ba = d_mat->offdiag.a, *aa = d_mat->diag.a;
+  PetscScalar    *ba = d_mat->offdiag.a, *aa = d_mat->diag.a;
   PetscInt        nrow1, nrow2 = 0, _i, low1, high1, low2 = 0, high2 = 0, t, lastcol1, lastcol2 = 0, inserted;
-  MatScalar      *ap1, *ap2 = NULL;
+  PetscScalar    *ap1, *ap2 = NULL;
   PetscBool       roworiented = PETSC_TRUE;
   PetscInt        i, j, row, col;
   const PetscInt  rstart = d_mat->rstart, rend = d_mat->rend, cstart = d_mat->cstart, cend = d_mat->cend, M = d_mat->M;
@@ -194,13 +176,12 @@ static
       }
     }
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 #undef MatSetValues_SeqAIJ_A_Private
 #undef MatSetValues_SeqAIJ_B_Private
 #undef SETERR
 #undef PetscAtomicAdd
-#undef PetscCSRDataStructure_
 
 #endif

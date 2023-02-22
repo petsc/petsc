@@ -22,5 +22,5 @@ PetscErrorCode FillMatrixCUDACOO(FEStruct *fe, Mat A)
   FillValues<<<(fe->Ne + 255) / 256, 256>>>(fe->Ne, v);
   PetscCall(MatSetValuesCOO(A, v, INSERT_VALUES));
   PetscCallCUDA(cudaFree(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -25,7 +25,7 @@ static PetscErrorCode ISDestroy_Block(IS is)
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetLocalSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", NULL));
   PetscCall(PetscFree(is->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISLocate_Block(IS is, PetscInt key, PetscInt *location)
@@ -59,7 +59,7 @@ static PetscErrorCode ISLocate_Block(IS is, PetscInt key, PetscInt *location)
     }
   }
   if (*location >= 0) *location = *location * bs + mkey;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISGetIndices_Block(IS in, const PetscInt *idx[])
@@ -85,7 +85,7 @@ static PetscErrorCode ISGetIndices_Block(IS in, const PetscInt *idx[])
       *idx = NULL;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISRestoreIndices_Block(IS is, const PetscInt *idx[])
@@ -101,7 +101,7 @@ static PetscErrorCode ISRestoreIndices_Block(IS is, const PetscInt *idx[])
     /* F90Array1dCreate() inside ISRestoreArrayF90() does not keep array when zero length array */
     PetscCheck(is->map->n <= 0 || *idx == sub->idx, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must restore with value from ISGetIndices()");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISInvertPermutation_Block(IS is, PetscInt nlocal, IS *isout)
@@ -121,7 +121,7 @@ static PetscErrorCode ISInvertPermutation_Block(IS is, PetscInt nlocal, IS *isou
     PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, n, ii, PETSC_OWN_POINTER, isout));
     PetscCall(ISSetPermutation(*isout));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No inversion written yet for block IS");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
@@ -168,7 +168,7 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   } else if (ibinary) PetscCall(ISView_Binary(is, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISSort_Block(IS is)
@@ -180,7 +180,7 @@ static PetscErrorCode ISSort_Block(IS is)
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   PetscCall(PetscIntSortSemiOrdered(n / bs, sub->idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISSortRemoveDups_Block(IS is)
@@ -201,14 +201,14 @@ static PetscErrorCode ISSortRemoveDups_Block(IS is)
   }
   PetscCall(PetscLayoutDestroy(&is->map));
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), nb * bs, PETSC_DECIDE, bs, &is->map));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISSorted_Block(IS is, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscCall(ISGetInfo(is, IS_SORTED, IS_LOCAL, PETSC_TRUE, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISSortedLocal_Block(IS is, PetscBool *flg)
@@ -225,7 +225,7 @@ static PetscErrorCode ISSortedLocal_Block(IS is, PetscBool *flg)
     if (idx[i] < idx[i - 1]) break;
   if (i < n) *flg = PETSC_FALSE;
   else *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISUniqueLocal_Block(IS is, PetscBool *flg)
@@ -251,7 +251,7 @@ static PetscErrorCode ISUniqueLocal_Block(IS is, PetscBool *flg)
   if (i < n) *flg = PETSC_FALSE;
   else *flg = PETSC_TRUE;
   PetscCall(PetscFree(idxcopy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISPermutationLocal_Block(IS is, PetscBool *flg)
@@ -277,7 +277,7 @@ static PetscErrorCode ISPermutationLocal_Block(IS is, PetscBool *flg)
   if (i < n) *flg = PETSC_FALSE;
   else *flg = PETSC_TRUE;
   PetscCall(PetscFree(idxcopy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISIntervalLocal_Block(IS is, PetscBool *flg)
@@ -294,7 +294,7 @@ static PetscErrorCode ISIntervalLocal_Block(IS is, PetscBool *flg)
     if (idx[i] != idx[i - 1] + 1) break;
   if (i < n) *flg = PETSC_FALSE;
   else *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISDuplicate_Block(IS is, IS *newIS)
@@ -307,7 +307,7 @@ static PetscErrorCode ISDuplicate_Block(IS is, IS *newIS)
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   n /= bs;
   PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)is), bs, n, sub->idx, PETSC_COPY_VALUES, newIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISCopy_Block(IS is, IS isy)
@@ -319,7 +319,7 @@ static PetscErrorCode ISCopy_Block(IS is, IS isy)
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   PetscCall(PetscArraycpy(isy_block->idx, is_block->idx, n / bs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISOnComm_Block(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
@@ -332,7 +332,7 @@ static PetscErrorCode ISOnComm_Block(IS is, MPI_Comm comm, PetscCopyMode mode, I
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   PetscCall(ISCreateBlock(comm, bs, n / bs, sub->idx, mode, newis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISShift_Block(IS is, PetscInt shift, IS isy)
@@ -346,7 +346,7 @@ static PetscErrorCode ISShift_Block(IS is, PetscInt shift, IS isy)
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   shift /= bs;
   for (i = 0; i < n / bs; i++) isby->idx[i] = isb->idx[i] + shift;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISSetBlockSize_Block(IS is, PetscInt bs)
@@ -354,7 +354,7 @@ static PetscErrorCode ISSetBlockSize_Block(IS is, PetscInt bs)
   PetscFunctionBegin;
   PetscCheck(is->map->bs <= 0 || bs == is->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize %" PetscInt_FMT " (to %" PetscInt_FMT ") if ISType is ISBLOCK", is->map->bs, bs);
   PetscCall(PetscLayoutSetBlockSize(is->map, bs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISToGeneral_Block(IS inis)
@@ -376,7 +376,7 @@ static PetscErrorCode ISToGeneral_Block(IS inis)
     PetscCall(ISSetType(inis, ISGENERAL));
     PetscCall(ISGeneralSetIndices(inis, n, idx, PETSC_OWN_POINTER));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _ISOps myops = {ISGetIndices_Block, ISRestoreIndices_Block, ISInvertPermutation_Block, ISSort_Block, ISSortRemoveDups_Block, ISSorted_Block, ISDuplicate_Block, ISDestroy_Block, ISView_Block, ISLoad_Default, ISCopy_Block, ISToGeneral_Block, ISOnComm_Block, ISSetBlockSize_Block, NULL, ISLocate_Block,
@@ -418,7 +418,7 @@ PetscErrorCode ISBlockSetIndices(IS is, PetscInt bs, PetscInt n, const PetscInt 
   PetscFunctionBegin;
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISBlockSetIndices_C", (IS, PetscInt, PetscInt, const PetscInt[], PetscCopyMode), (is, bs, n, idx, mode));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISBlockSetIndices_Block(IS is, PetscInt bs, PetscInt n, const PetscInt idx[], PetscCopyMode mode)
@@ -461,7 +461,7 @@ static PetscErrorCode ISBlockSetIndices_Block(IS is, PetscInt bs, PetscInt n, co
     is->min = PETSC_MAX_INT;
     is->max = PETSC_MIN_INT;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -507,7 +507,7 @@ PetscErrorCode ISCreateBlock(MPI_Comm comm, PetscInt bs, PetscInt n, const Petsc
   PetscCall(ISCreate(comm, is));
   PetscCall(ISSetType(*is, ISBLOCK));
   PetscCall(ISBlockSetIndices(*is, bs, n, idx, mode));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISBlockGetIndices_Block(IS is, const PetscInt *idx[])
@@ -516,13 +516,13 @@ static PetscErrorCode ISBlockGetIndices_Block(IS is, const PetscInt *idx[])
 
   PetscFunctionBegin;
   *idx = sub->idx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISBlockRestoreIndices_Block(IS is, const PetscInt *idx[])
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -547,7 +547,7 @@ PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscUseMethod(is, "ISBlockGetIndices_C", (IS, const PetscInt *[]), (is, idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -569,7 +569,7 @@ PetscErrorCode ISBlockRestoreIndices(IS is, const PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscUseMethod(is, "ISBlockRestoreIndices_C", (IS, const PetscInt *[]), (is, idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -591,7 +591,7 @@ PetscErrorCode ISBlockGetLocalSize(IS is, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscUseMethod(is, "ISBlockGetLocalSize_C", (IS, PetscInt *), (is, size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISBlockGetLocalSize_Block(IS is, PetscInt *size)
@@ -602,7 +602,7 @@ static PetscErrorCode ISBlockGetLocalSize_Block(IS is, PetscInt *size)
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   *size = n / bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -624,7 +624,7 @@ PetscErrorCode ISBlockGetSize(IS is, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscUseMethod(is, "ISBlockGetSize_C", (IS, PetscInt *), (is, size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISBlockGetSize_Block(IS is, PetscInt *size)
@@ -635,7 +635,7 @@ static PetscErrorCode ISBlockGetSize_Block(IS is, PetscInt *size)
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetSize(is->map, &N));
   *size = N / bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is)
@@ -652,5 +652,5 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is)
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetSize_C", ISBlockGetSize_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetLocalSize_C", ISBlockGetLocalSize_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISShift_C", ISShift_Block));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

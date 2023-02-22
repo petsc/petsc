@@ -10,7 +10,19 @@ extern "C" int EGlite_inTopology(const ego, const double *);
 #if defined(PETSC_HAVE_TETGEN_TETLIBRARY_NEEDED)
   #define TETLIBRARY
 #endif
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-parameter"
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include <tetgen.h>
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic pop
+#endif
 
 /* This is to fix the tetrahedron orientation from TetGen */
 static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCorners, PetscInt cells[])
@@ -26,7 +38,7 @@ static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCo
   } while (0)
   for (coff = 0; coff < bound; coff += numCorners) SWAP(cells[coff], cells[coff + 1]);
 #undef SWAP
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
@@ -242,7 +254,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
         PetscReal centroid[3] = {0., 0., 0.};
         PetscInt  b;
 
-        /* Deterimine what body the cell's centroid is located in */
+        /* Determine what body the cell's centroid is located in */
         if (!interpolate) {
           PetscSection coordSection;
           Vec          coordinates;
@@ -290,7 +302,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_FALSE));
   }
   PetscCall(DMUniversalLabelDestroy(&universal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
@@ -523,7 +535,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
         PetscReal centroid[3] = {0., 0., 0.};
         PetscInt  b;
 
-        /* Deterimine what body the cell's centroid is located in */
+        /* Determine what body the cell's centroid is located in */
         if (!interpolate) {
           PetscSection coordSection;
           Vec          coordinates;
@@ -570,5 +582,5 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     }
     PetscCall(DMPlexSetRefinementUniform(*dmRefined, PETSC_FALSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

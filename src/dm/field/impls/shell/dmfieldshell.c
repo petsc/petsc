@@ -15,7 +15,7 @@ PetscErrorCode DMFieldShellGetContext(DMField field, void *ctx)
   PetscCall(PetscObjectTypeCompare((PetscObject)field, DMFIELDSHELL, &flg));
   if (flg) *(void **)ctx = ((DMField_Shell *)(field->data))->ctx;
   else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Cannot get context from non-shell shield");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldDestroy_Shell(DMField field)
@@ -25,7 +25,7 @@ static PetscErrorCode DMFieldDestroy_Shell(DMField field)
   PetscFunctionBegin;
   if (shell->destroy) PetscCall((*(shell->destroy))(field));
   PetscCall(PetscFree(field->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQuadrature quad, PetscDataType type, void *B, void *D, void *H)
@@ -138,7 +138,7 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
   PetscCall(VecDestroy(&pushforward));
   PetscCall(PetscFree(pfArray));
   PetscCall(PetscFEGeomDestroy(&geom));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellEvaluateFVDefault(DMField field, IS pointIS, PetscDataType type, void *B, void *D, void *H)
@@ -171,7 +171,7 @@ PetscErrorCode DMFieldShellEvaluateFVDefault(DMField field, IS pointIS, PetscDat
   PetscCall(VecDestroy(&pushforward));
   PetscCall(PetscFree(pfArray));
   PetscCall(PetscFEGeomDestroy(&geom));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellSetDestroy(DMField field, PetscErrorCode (*destroy)(DMField))
@@ -181,7 +181,7 @@ PetscErrorCode DMFieldShellSetDestroy(DMField field, PetscErrorCode (*destroy)(D
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   shell->destroy = destroy;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellSetEvaluate(DMField field, PetscErrorCode (*evaluate)(DMField, Vec, PetscDataType, void *, void *, void *))
@@ -189,7 +189,7 @@ PetscErrorCode DMFieldShellSetEvaluate(DMField field, PetscErrorCode (*evaluate)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   field->ops->evaluate = evaluate;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellSetEvaluateFE(DMField field, PetscErrorCode (*evaluateFE)(DMField, IS, PetscQuadrature, PetscDataType, void *, void *, void *))
@@ -197,7 +197,7 @@ PetscErrorCode DMFieldShellSetEvaluateFE(DMField field, PetscErrorCode (*evaluat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   field->ops->evaluateFE = evaluateFE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellSetEvaluateFV(DMField field, PetscErrorCode (*evaluateFV)(DMField, IS, PetscDataType, void *, void *, void *))
@@ -205,7 +205,7 @@ PetscErrorCode DMFieldShellSetEvaluateFV(DMField field, PetscErrorCode (*evaluat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   field->ops->evaluateFV = evaluateFV;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellSetGetDegree(DMField field, PetscErrorCode (*getDegree)(DMField, IS, PetscInt *, PetscInt *))
@@ -213,7 +213,7 @@ PetscErrorCode DMFieldShellSetGetDegree(DMField field, PetscErrorCode (*getDegre
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   field->ops->getDegree = getDegree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldShellSetCreateDefaultQuadrature(DMField field, PetscErrorCode (*createDefaultQuadrature)(DMField, IS, PetscQuadrature *))
@@ -221,7 +221,7 @@ PetscErrorCode DMFieldShellSetCreateDefaultQuadrature(DMField field, PetscErrorC
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   field->ops->createDefaultQuadrature = createDefaultQuadrature;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldInitialize_Shell(DMField field)
@@ -234,7 +234,7 @@ static PetscErrorCode DMFieldInitialize_Shell(DMField field)
   field->ops->getDegree               = NULL;
   field->ops->createDefaultQuadrature = NULL;
   field->ops->view                    = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMFieldCreate_Shell(DMField field)
@@ -245,7 +245,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_Shell(DMField field)
   PetscCall(PetscNew(&shell));
   field->data = shell;
   PetscCall(DMFieldInitialize_Shell(field));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldCreateShell(DM dm, PetscInt numComponents, DMFieldContinuity continuity, void *ctx, DMField *field)
@@ -262,5 +262,5 @@ PetscErrorCode DMFieldCreateShell(DM dm, PetscInt numComponents, DMFieldContinui
   shell      = (DMField_Shell *)b->data;
   shell->ctx = ctx;
   *field     = b;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

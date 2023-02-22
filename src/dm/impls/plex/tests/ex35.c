@@ -55,7 +55,7 @@ static PetscErrorCode EstimateMemory(DM dm, PetscLogDouble *est)
   imem += supportMem + supportSecMem;
   *est = ((PetscLogDouble)imem) * sizeof(PetscInt) + ((PetscLogDouble)rmem) * sizeof(PetscReal);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Estimated memory %" PetscInt_FMT "\n", (PetscInt)*est));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

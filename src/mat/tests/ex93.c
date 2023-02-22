@@ -174,7 +174,7 @@ PetscErrorCode testPTAPRectangular(void)
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&P));
   PetscCall(MatDestroy(&C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

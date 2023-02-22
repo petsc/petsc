@@ -27,7 +27,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscDrawIsNull(draw, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscDrawCoordinateToPixel(draw, xmin, ymin, &xstart, &ystart));
   PetscCall(PetscDrawCoordinateToPixel(draw, xmax, ymax, &xend, &yend));
@@ -44,7 +44,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
       if (flg) PetscCall(PetscDrawPointPixel(draw, i, j, c));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -70,7 +70,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, coordinatetopixel, x, y, i, j);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -96,7 +96,7 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscRea
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, pixeltocoordinate, i, j, x, y);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -119,5 +119,5 @@ PetscErrorCode PetscDrawRectangle(PetscDraw draw, PetscReal xl, PetscReal yl, Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, rectangle, xl, yl, xr, yr, c1, c2, c3, c4);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

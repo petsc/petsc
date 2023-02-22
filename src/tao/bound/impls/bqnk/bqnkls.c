@@ -22,5 +22,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao)
   bnk->update_type = BNK_UPDATE_STEP;
   bqnk             = (TAO_BQNK *)bnk->ctx;
   bqnk->solve      = TaoSolve_BNLS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

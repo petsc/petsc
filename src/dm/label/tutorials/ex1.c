@@ -43,7 +43,7 @@ PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
     PetscCall(ISDestroy(&tmpIS));
     PetscCall(ISDestroy(&labelIS));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
@@ -61,7 +61,7 @@ PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
   /* Test passing NULL, must not fail */
   PetscCall(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, NULL, NULL));
   PetscCall(PetscFree(msg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1)
@@ -78,7 +78,7 @@ PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1)
   PetscCheck(!same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Compare label \"%s\" with \"%s\": %s\n", name0, name1, msg));
   PetscCall(PetscFree(msg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
@@ -96,7 +96,7 @@ PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
   /* Test passing NULL, must not fail */
   PetscCall(DMCompareLabels(dm0, dm1, NULL, NULL));
   PetscCall(PetscFree(msg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1)
@@ -113,7 +113,7 @@ PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1)
   PetscCheck(!same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Labels of DMs \"%s\" and \"%s\" differ: %s\n", name0, name1, msg));
   PetscCall(PetscFree(msg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateMesh(const char name[], DM *newdm)
@@ -139,7 +139,7 @@ PetscErrorCode CreateMesh(const char name[], DM *newdm)
   PetscCall(DMSetFromOptions(dm));
   PetscCall(PetscObjectSetName((PetscObject)dm, name));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestEphemeralLabels(DM dm)
@@ -165,7 +165,7 @@ static PetscErrorCode TestEphemeralLabels(DM dm)
   PetscCall(CheckLabelsSame(label, labelTmp));
   PetscCall(DMLabelDestroy(&labelTmp));
   PetscCall(DMDestroy(&tdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -315,7 +315,7 @@ int main(int argc, char **argv)
       else PetscCall(DMLabelSetValue(labelB, p, 17));
     }
     PetscCall(DMLabelFilter(labelB, lStart, lEnd));
-    CheckLabelsSame(labelA, labelB);
+    PetscCall(CheckLabelsSame(labelA, labelB));
     PetscCall(DMRemoveLabel(dm, "labelA", NULL));
     PetscCall(DMRemoveLabel(dm, "labelB", NULL));
   }

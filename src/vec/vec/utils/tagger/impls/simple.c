@@ -9,7 +9,7 @@ PetscErrorCode VecTaggerDestroy_Simple(VecTagger tagger)
   PetscFunctionBegin;
   PetscCall(PetscFree(smpl->box));
   PetscCall(PetscFree(tagger->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger tagger, PetscOptionItems *PetscOptionsObject)
@@ -36,7 +36,7 @@ PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger tagger, PetscOptionItems
     PetscCall(VecTaggerSetBox_Simple(tagger, (VecTaggerBox *)inBoxVals));
   }
   PetscCall(PetscFree(inBoxVals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
@@ -45,7 +45,7 @@ PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
 
   PetscFunctionBegin;
   PetscCheck(smpl->box, PetscObjectComm((PetscObject)tagger), PETSC_ERR_ARG_WRONGSTATE, "Must set a box before calling setup.");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer)
@@ -72,7 +72,7 @@ PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "]\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTaggerSetBox_Simple(VecTagger tagger, VecTaggerBox *box)
@@ -90,7 +90,7 @@ PetscErrorCode VecTaggerSetBox_Simple(VecTagger tagger, VecTaggerBox *box)
     PetscCall(PetscMalloc1(bs, &(smpl->box)));
     for (i = 0; i < bs; i++) smpl->box[i] = box[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTaggerGetBox_Simple(VecTagger tagger, const VecTaggerBox **box)
@@ -101,7 +101,7 @@ PetscErrorCode VecTaggerGetBox_Simple(VecTagger tagger, const VecTaggerBox **box
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID, 1);
   PetscValidPointer(box, 2);
   *box = smpl->box;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTaggerCreate_Simple(VecTagger tagger)
@@ -116,5 +116,5 @@ PetscErrorCode VecTaggerCreate_Simple(VecTagger tagger)
   tagger->ops->computeis      = VecTaggerComputeIS_FromBoxes;
   PetscCall(PetscNew(&smpl));
   tagger->data = smpl;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

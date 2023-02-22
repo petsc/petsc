@@ -4,7 +4,7 @@
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n \
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
-The flow can be driven with the lid or with bouyancy or both:\n\
+The flow can be driven with the lid or with buoyancy or both:\n\
   -lidvelocity &ltlid&gt, where &ltlid&gt = dimensionless velocity of lid\n\
   -grashof &ltgr&gt, where &ltgr&gt = dimensionless temperature gradent\n\
   -prandtl &ltpr&gt, where &ltpr&gt = dimensionless thermal/momentum diffusity ratio\n\
@@ -227,7 +227,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X)
      Restore vector
   */
   PetscCall(DMDAVecRestoreArrayWrite(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr)
@@ -359,7 +359,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
      Flop count (multiply-adds are counted as 2 operations)
   */
   PetscCall(PetscLogFlops(84.0 * info->ym * info->xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -635,7 +635,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   PetscCall(PetscLogFlops(tot_its * (84.0 + 41.0 + 26.0)));
   PetscCall(DMRestoreLocalVector(da, &localX));
   if (B) PetscCall(DMRestoreLocalVector(da, &localB));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST
@@ -1208,5 +1208,18 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       requires: !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)
       args: -da_refine 100 -petsc_ci_portable_error_output -error_output_stdout
       filter: grep -E -v "(options_left|memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
+
+   testset:
+      requires: hpddm cuda
+      args: -snes_monitor -ksp_converged_reason -ksp_type hpddm -pc_type jacobi -dm_mat_type aijcusparse -dm_vec_type cuda
+      test:
+        suffix: hpddm_cuda
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 15/Linear solve converged due to CONVERGED_RTOL iterations 14/g"
+        args: -ksp_hpddm_type {{gmres gcrodr}separate output} -ksp_hpddm_precision {{single double}shared output}
+      test:
+        suffix: hpddm_cuda_right
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 15/Linear solve converged due to CONVERGED_RTOL iterations 14/g"
+        args: -ksp_hpddm_type gcrodr -ksp_pc_side right
+        output_file: output/ex19_hpddm_cuda_ksp_hpddm_type-gcrodr.out
 
 TEST*/

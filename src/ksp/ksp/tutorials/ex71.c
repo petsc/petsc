@@ -193,7 +193,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported PDE %d", options->pde);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)
@@ -224,13 +224,13 @@ int main(int argc, char **args)
   switch (user.dim) {
   case 3:
     PetscCall(DMDACreate3d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, user.per[2] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, nodes[0], nodes[1], nodes[2], PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                           user.dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da));
+                           user.dof, 1, NULL, NULL, NULL, &da));
     break;
   case 2:
-    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, nodes[0], nodes[1], PETSC_DECIDE, PETSC_DECIDE, user.dof, 1, PETSC_NULL, PETSC_NULL, &da));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, nodes[0], nodes[1], PETSC_DECIDE, PETSC_DECIDE, user.dof, 1, NULL, NULL, &da));
     break;
   case 1:
-    PetscCall(DMDACreate1d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, nodes[0], user.dof, 1, PETSC_NULL, &da));
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD, user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE, nodes[0], user.dof, 1, NULL, &da));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, user.dim);
@@ -248,9 +248,9 @@ int main(int argc, char **args)
     PetscCall(DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     switch (user.dim) {
     case 3:
-      user.cells[2] = P - !user.per[2];
+      user.cells[2] = P - !user.per[2]; /* fall through */
     case 2:
-      user.cells[1] = N - !user.per[1];
+      user.cells[1] = N - !user.per[1]; /* fall through */
     case 1:
       user.cells[0] = M - !user.per[0];
       break;

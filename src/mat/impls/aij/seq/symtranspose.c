@@ -50,7 +50,7 @@ PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A, Mat *B)
   at->nonew   = 0;
   at->maxnz   = ati[an];
   *B          = At;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
@@ -130,7 +130,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
   } else if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderMerge(A, &At));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -174,7 +174,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A, PetscInt rstart, Pet
   *Atj = atj;
 
   PetscCall(PetscLogEventEnd(MAT_Getsymtransreduced, A, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -185,7 +185,7 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A, PetscInt *Ati[], PetscInt *
 {
   PetscFunctionBegin;
   PetscCall(MatGetSymbolicTransposeReduced_SeqAIJ(A, 0, A->rmap->N, Ati, Atj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A, PetscInt *ati[], PetscInt *atj[])
@@ -193,5 +193,5 @@ PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A, PetscInt *ati[], PetscI
   PetscFunctionBegin;
   PetscCall(PetscFree(*ati));
   PetscCall(PetscFree(*atj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

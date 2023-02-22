@@ -37,7 +37,7 @@ static PetscErrorCode replace_submats(Mat A, IS isu, IS isp)
   PetscCall(MatDestroy(&nA12));
   PetscCall(MatDestroy(&nA21));
   PetscCall(MatDestroy(&nA22));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode LSCLoadTestOperators(Mat *A11, Mat *A12, Mat *A21, Mat *A22, Vec *b1, Vec *b2)
@@ -68,7 +68,7 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11, Mat *A12, Mat *A21, Mat *A22, Vec 
   PetscCall(VecLoad(*b1, viewer));
   PetscCall(VecLoad(*b2, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode LoadTestMatrices(Mat *_A, Vec *_x, Vec *_b, IS *_isu, IS *_isp)
@@ -140,7 +140,7 @@ PetscErrorCode LoadTestMatrices(Mat *_A, Vec *_x, Vec *_b, IS *_isu, IS *_isp)
   *_A   = A;
   *_x   = x;
   *_b   = b;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode port_lsd_bfbt(void)
@@ -189,7 +189,7 @@ PetscErrorCode port_lsd_bfbt(void)
       VecScatter  uscat, pscat;
       Mat         A11, A22;
 
-      /* grab matrices and create the compatable u,p vectors */
+      /* grab matrices and create the compatible u,p vectors */
       PetscCall(MatCreateSubMatrix(A, isu, isu, MAT_INITIAL_MATRIX, &A11));
       PetscCall(MatCreateSubMatrix(A, isp, isp, MAT_INITIAL_MATRIX, &A22));
 
@@ -258,7 +258,7 @@ PetscErrorCode port_lsd_bfbt(void)
   PetscCall(VecDestroy(&b));
   PetscCall(ISDestroy(&isu));
   PetscCall(ISDestroy(&isp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

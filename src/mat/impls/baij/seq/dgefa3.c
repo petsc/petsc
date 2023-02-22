@@ -148,5 +148,5 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a, PetscRe
       ay[2] = stmp;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

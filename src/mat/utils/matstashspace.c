@@ -7,7 +7,7 @@ PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2, PetscInt n, PetscMatStashSpac
   PetscMatStashSpace a;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscMalloc(sizeof(struct _MatStashSpace), &a));
   PetscCall(PetscMalloc3(n * bs2, &(a->space_head), n, &a->idx, n, &a->idy));
@@ -24,7 +24,7 @@ PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2, PetscInt n, PetscMatStashSpac
   }
   a->total_space_size += n;
   *space = a;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Copy the values in space into arrays val, idx and idy. Then destroy space */
@@ -46,7 +46,7 @@ PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2, PetscMatStashSpace *sp
     PetscCall(PetscFree(*space));
     *space = a;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace *space)
@@ -61,5 +61,5 @@ PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace *space)
     *space = a;
   }
   *space = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

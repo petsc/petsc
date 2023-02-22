@@ -88,14 +88,14 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
   /* int    verbose    */ /* verbose == 0 specifies that SPAI is silent
                               verbose == 1 prints timing and matrix statistics */
 
-  PetscCall(bspai(ispai->B, &ispai->M, stdout, ispai->epsilon, ispai->nbsteps, ispai->max, ispai->maxnew, ispai->block_size, ispai->cache_size, ispai->verbose));
+  PetscCallExternal(bspai, ispai->B, &ispai->M, stdout, ispai->epsilon, ispai->nbsteps, ispai->max, ispai->maxnew, ispai->block_size, ispai->cache_size, ispai->verbose);
 
   PetscCall(ConvertMatrixToMat(PetscObjectComm((PetscObject)pc), ispai->M, &ispai->PM));
 
   /* free the SPAI matrices */
   sp_free_matrix(ispai->B);
   sp_free_matrix(ispai->M);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_SPAI(PC pc, Vec xx, Vec y)
@@ -105,7 +105,7 @@ static PetscErrorCode PCApply_SPAI(PC pc, Vec xx, Vec y)
   PetscFunctionBegin;
   /* Now using PETSc's multiply */
   PetscCall(MatMult(ispai->PM, xx, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_SPAI(PC pc, Mat X, Mat Y)
@@ -115,7 +115,7 @@ static PetscErrorCode PCMatApply_SPAI(PC pc, Mat X, Mat Y)
   PetscFunctionBegin;
   /* Now using PETSc's multiply */
   PetscCall(MatMatMult(ispai->PM, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_SPAI(PC pc)
@@ -134,7 +134,7 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetCacheSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetVerbose_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetSp_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_SPAI(PC pc, PetscViewer viewer)
@@ -154,7 +154,7 @@ static PetscErrorCode PCView_SPAI(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "    verbose %d\n", ispai->verbose));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    sp %d\n", ispai->sp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSPAISetEpsilon_SPAI(PC pc, PetscReal epsilon1)
@@ -163,7 +163,7 @@ static PetscErrorCode PCSPAISetEpsilon_SPAI(PC pc, PetscReal epsilon1)
 
   PetscFunctionBegin;
   ispai->epsilon = (double)epsilon1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSPAISetNBSteps_SPAI(PC pc, PetscInt nbsteps1)
@@ -172,7 +172,7 @@ static PetscErrorCode PCSPAISetNBSteps_SPAI(PC pc, PetscInt nbsteps1)
 
   PetscFunctionBegin;
   ispai->nbsteps = (int)nbsteps1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* added 1/7/99 g.h. */
@@ -182,7 +182,7 @@ static PetscErrorCode PCSPAISetMax_SPAI(PC pc, PetscInt max1)
 
   PetscFunctionBegin;
   ispai->max = (int)max1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSPAISetMaxNew_SPAI(PC pc, PetscInt maxnew1)
@@ -191,7 +191,7 @@ static PetscErrorCode PCSPAISetMaxNew_SPAI(PC pc, PetscInt maxnew1)
 
   PetscFunctionBegin;
   ispai->maxnew = (int)maxnew1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSPAISetBlockSize_SPAI(PC pc, PetscInt block_size1)
@@ -200,7 +200,7 @@ static PetscErrorCode PCSPAISetBlockSize_SPAI(PC pc, PetscInt block_size1)
 
   PetscFunctionBegin;
   ispai->block_size = (int)block_size1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSPAISetCacheSize_SPAI(PC pc, PetscInt cache_size)
@@ -209,7 +209,7 @@ static PetscErrorCode PCSPAISetCacheSize_SPAI(PC pc, PetscInt cache_size)
 
   PetscFunctionBegin;
   ispai->cache_size = (int)cache_size;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSPAISetVerbose_SPAI(PC pc, PetscInt verbose)
@@ -218,7 +218,7 @@ static PetscErrorCode PCSPAISetVerbose_SPAI(PC pc, PetscInt verbose)
 
   PetscFunctionBegin;
   ispai->verbose = (int)verbose;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSPAISetSp_SPAI(PC pc, PetscInt sp)
@@ -227,7 +227,7 @@ static PetscErrorCode PCSPAISetSp_SPAI(PC pc, PetscInt sp)
 
   PetscFunctionBegin;
   ispai->sp = (int)sp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -254,7 +254,7 @@ PetscErrorCode PCSPAISetEpsilon(PC pc, PetscReal epsilon1)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetEpsilon_C", (PC, PetscReal), (pc, epsilon1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -281,7 +281,7 @@ PetscErrorCode PCSPAISetNBSteps(PC pc, PetscInt nbsteps1)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetNBSteps_C", (PC, PetscInt), (pc, nbsteps1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* added 1/7/99 g.h. */
@@ -301,7 +301,7 @@ PetscErrorCode PCSPAISetMax(PC pc, PetscInt max1)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetMax_C", (PC, PetscInt), (pc, max1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -320,7 +320,7 @@ PetscErrorCode PCSPAISetMaxNew(PC pc, PetscInt maxnew1)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetMaxNew_C", (PC, PetscInt), (pc, maxnew1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -356,7 +356,7 @@ PetscErrorCode PCSPAISetBlockSize(PC pc, PetscInt block_size1)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetBlockSize_C", (PC, PetscInt), (pc, block_size1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -380,7 +380,7 @@ PetscErrorCode PCSPAISetCacheSize(PC pc, PetscInt cache_size)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetCacheSize_C", (PC, PetscInt), (pc, cache_size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -401,7 +401,7 @@ PetscErrorCode PCSPAISetVerbose(PC pc, PetscInt verbose)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetVerbose_C", (PC, PetscInt), (pc, verbose));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -427,7 +427,7 @@ PetscErrorCode PCSPAISetSp(PC pc, PetscInt sp)
 {
   PetscFunctionBegin;
   PetscTryMethod(pc, "PCSPAISetSp_C", (PC, PetscInt), (pc, sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_SPAI(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -457,7 +457,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc, PetscOptionItems *PetscOption
   PetscCall(PetscOptionsInt("-pc_spai_sp", "", "PCSPAISetSp", ispai->sp, &sp, &flg));
   if (flg) PetscCall(PCSPAISetSp(pc, sp));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -521,7 +521,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetCacheSize_C", PCSPAISetCacheSize_SPAI));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetVerbose_C", PCSPAISetVerbose_SPAI));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetSp_C", PCSPAISetSp_SPAI));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -643,7 +643,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A, Mat AT, matrix **B)
   order_pointers(M);
   M->maxnz = calc_maxnz(M);
   *B       = M;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -704,7 +704,7 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm, matrix *B, Mat *PB)
 
   PetscCall(MatAssemblyBegin(*PB, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*PB, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -743,5 +743,5 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm, vector *v, Vec *Pv)
   PetscCall(VecAssemblyEnd(*Pv));
 
   PetscCall(PetscFree(global_indices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

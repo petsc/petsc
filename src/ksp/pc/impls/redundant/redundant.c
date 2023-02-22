@@ -32,7 +32,7 @@ PetscErrorCode PCFactorSetShiftType_Redundant(PC pc, MatFactorShiftType shifttyp
     red->shifttypeset = PETSC_TRUE;
     red->shifttype    = shifttype;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_Redundant(PC pc, PetscViewer viewer)
@@ -60,7 +60,7 @@ static PetscErrorCode PCView_Redundant(PC pc, PetscViewer viewer)
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, " Redundant solver preconditioner"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -177,7 +177,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
   if (pc->setfromoptionscalled) PetscCall(KSPSetFromOptions(red->ksp));
   PetscCall(KSPSetUp(red->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_Redundant(PC pc, Vec x, Vec y)
@@ -189,7 +189,7 @@ static PetscErrorCode PCApply_Redundant(PC pc, Vec x, Vec y)
   if (!red->useparallelmat) {
     PetscCall(KSPSolve(red->ksp, x, y));
     PetscCall(KSPCheckSolve(red->ksp, pc, y));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* scatter x to xdup */
@@ -215,7 +215,7 @@ static PetscErrorCode PCApply_Redundant(PC pc, Vec x, Vec y)
   PetscCall(VecScatterEnd(red->scatterout, red->ydup, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecResetArray(red->ydup));
   PetscCall(VecRestoreArray(red->ysub, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_Redundant(PC pc, Vec x, Vec y)
@@ -227,7 +227,7 @@ static PetscErrorCode PCApplyTranspose_Redundant(PC pc, Vec x, Vec y)
   if (!red->useparallelmat) {
     PetscCall(KSPSolveTranspose(red->ksp, x, y));
     PetscCall(KSPCheckSolve(red->ksp, pc, y));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* scatter x to xdup */
@@ -253,7 +253,7 @@ static PetscErrorCode PCApplyTranspose_Redundant(PC pc, Vec x, Vec y)
   PetscCall(VecScatterEnd(red->scatterout, red->ydup, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecResetArray(red->ydup));
   PetscCall(VecRestoreArray(red->ysub, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_Redundant(PC pc)
@@ -271,7 +271,7 @@ static PetscErrorCode PCReset_Redundant(PC pc)
   }
   PetscCall(MatDestroy(&red->pmats));
   PetscCall(KSPReset(red->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_Redundant(PC pc)
@@ -288,7 +288,7 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCRedundantGetOperators_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorSetShiftType_C", NULL));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_Redundant(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -299,7 +299,7 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc, PetscOptionItems *PetscO
   PetscOptionsHeadBegin(PetscOptionsObject, "Redundant options");
   PetscCall(PetscOptionsInt("-pc_redundant_number", "Number of redundant pc", "PCRedundantSetNumber", red->nsubcomm, &red->nsubcomm, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc, PetscInt nreds)
@@ -308,7 +308,7 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc, PetscInt nreds)
 
   PetscFunctionBegin;
   red->nsubcomm = nreds;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -331,7 +331,7 @@ PetscErrorCode PCRedundantSetNumber(PC pc, PetscInt nredundant)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCheck(nredundant > 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "num of redundant pc %" PetscInt_FMT " must be positive", nredundant);
   PetscTryMethod(pc, "PCRedundantSetNumber_C", (PC, PetscInt), (pc, nredundant));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc, VecScatter in, VecScatter out)
@@ -347,7 +347,7 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc, VecScatter in, VecS
   PetscCall(PetscObjectReference((PetscObject)out));
   PetscCall(VecScatterDestroy(&red->scatterout));
   red->scatterout = out;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -373,7 +373,7 @@ PetscErrorCode PCRedundantSetScatter(PC pc, VecScatter in, VecScatter out)
   PetscValidHeaderSpecific(in, PETSCSF_CLASSID, 2);
   PetscValidHeaderSpecific(out, PETSCSF_CLASSID, 3);
   PetscTryMethod(pc, "PCRedundantSetScatter_C", (PC, VecScatter, VecScatter), (pc, in, out));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp)
@@ -418,7 +418,7 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp)
     PetscCall(KSPAppendOptionsPrefix(red->ksp, "redundant_"));
   }
   *innerksp = red->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -442,7 +442,7 @@ PetscErrorCode PCRedundantGetKSP(PC pc, KSP *innerksp)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(innerksp, 2);
   PetscUseMethod(pc, "PCRedundantGetKSP_C", (PC, KSP *), (pc, innerksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc, Mat *mat, Mat *pmat)
@@ -452,7 +452,7 @@ static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc, Mat *mat, Mat *pm
   PetscFunctionBegin;
   if (mat) *mat = red->pmats;
   if (pmat) *pmat = red->pmats;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -478,7 +478,7 @@ PetscErrorCode PCRedundantGetOperators(PC pc, Mat *mat, Mat *pmat)
   if (mat) PetscValidPointer(mat, 2);
   if (pmat) PetscValidPointer(pmat, 3);
   PetscUseMethod(pc, "PCRedundantGetOperators_C", (PC, Mat *, Mat *), (pc, mat, pmat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -530,5 +530,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCRedundantGetKSP_C", PCRedundantGetKSP_Redundant));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCRedundantGetOperators_C", PCRedundantGetOperators_Redundant));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorSetShiftType_C", PCFactorSetShiftType_Redundant));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -416,7 +416,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex5.c", options->testNum, &options->testNum, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-cohesive_fields", "The number of cohesive fields", "ex5.c", options->cohesiveFields, &options->cohesiveFields, NULL, 0));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
@@ -520,7 +520,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscCall(DMViewFromOptions(idm, NULL, "-in_dm_view"));
   PetscCall(DMDestroy(dm));
   *dm = idm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
@@ -573,7 +573,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
     PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL));
     PetscCall(DMCreateLabel(dm, "fault"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
@@ -643,7 +643,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscCall(DMViewFromOptions(idm, NULL, "-in_dm_view"));
   PetscCall(DMDestroy(dm));
   *dm = idm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
@@ -733,7 +733,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscCall(DMViewFromOptions(idm, NULL, "-in_dm_view"));
   PetscCall(DMDestroy(dm));
   *dm = idm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateFaultLabel(DM dm)
@@ -750,7 +750,7 @@ static PetscErrorCode CreateFaultLabel(DM dm)
     PetscCall(DMPlexGetHeightStratum(dm, h, &pStart, &pEnd));
     for (p = pMax; p < pEnd; ++p) PetscCall(DMLabelSetValue(label, p, 1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
@@ -787,7 +787,7 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
   }
 
   PetscCall(DMCreateDS(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -1015,7 +1015,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestMesh(DM dm, AppCtx *user)
@@ -1024,7 +1024,7 @@ static PetscErrorCode TestMesh(DM dm, AppCtx *user)
   PetscCall(DMPlexCheckSymmetry(dm));
   PetscCall(DMPlexCheckSkeleton(dm, 0));
   PetscCall(DMPlexCheckFaces(dm, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestDiscretization(DM dm, AppCtx *user)
@@ -1034,21 +1034,21 @@ static PetscErrorCode TestDiscretization(DM dm, AppCtx *user)
   PetscFunctionBegin;
   PetscCall(DMGetSection(dm, &s));
   PetscCall(PetscObjectViewFromOptions((PetscObject)s, NULL, "-local_section_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode r(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode rp1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = x[d] + (d > 0 ? 1.0 : 0.0);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -1057,7 +1057,7 @@ static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], Pet
   u[0] = -x[1];
   u[1] = x[0];
   for (d = 2; d < dim; ++d) u[d] = x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* \lambda \cdot (\psi_u^- - \psi_u^+) */
@@ -1185,7 +1185,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscCall(DMRestoreLocalVector(dm, &locF));
   PetscCall(MatDestroy(&J));
   PetscCall(ISDestroy(&cohesiveCells));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

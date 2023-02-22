@@ -44,7 +44,7 @@ PetscErrorCode AOView(AO ao, PetscViewer viewer)
 
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ao, viewer));
   PetscUseTypeMethod(ao, view, viewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -66,7 +66,7 @@ PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)ao, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -84,11 +84,11 @@ PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[])
 PetscErrorCode AODestroy(AO *ao)
 {
   PetscFunctionBegin;
-  if (!*ao) PetscFunctionReturn(0);
+  if (!*ao) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*ao), AO_CLASSID, 1);
   if (--((PetscObject)(*ao))->refct > 0) {
     *ao = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*ao));
@@ -97,7 +97,7 @@ PetscErrorCode AODestroy(AO *ao)
   /* destroy the internal part */
   if ((*ao)->ops->destroy) PetscCall((*(*ao)->ops->destroy)(*ao));
   PetscCall(PetscHeaderDestroy(ao));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/vec/is/is/impls/general/general.h>
@@ -146,7 +146,7 @@ PetscErrorCode AOPetscToApplicationIS(AO ao, IS is)
   PetscCall(ISRestoreIndices(is, (const PetscInt **)&ia));
   /* updated cached values (sorted, min, max, etc.)*/
   PetscCall(ISSetUp_General(is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -189,7 +189,7 @@ PetscErrorCode AOApplicationToPetscIS(AO ao, IS is)
   PetscCall(ISRestoreIndices(is, (const PetscInt **)&ia));
   /* updated cached values (sorted, min, max, etc.)*/
   PetscCall(ISSetUp_General(is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -224,7 +224,7 @@ PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[])
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   if (n) PetscValidIntPointer(ia, 3);
   PetscUseTypeMethod(ao, petsctoapplication, n, ia);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -259,7 +259,7 @@ PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[])
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   if (n) PetscValidIntPointer(ia, 3);
   PetscUseTypeMethod(ao, applicationtopetsc, n, ia);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -294,7 +294,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt ar
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidIntPointer(array, 3);
   PetscUseTypeMethod(ao, petsctoapplicationpermuteint, block, array);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -329,7 +329,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt ar
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidIntPointer(array, 3);
   PetscUseTypeMethod(ao, applicationtopetscpermuteint, block, array);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -364,7 +364,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal 
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidRealPointer(array, 3);
   PetscUseTypeMethod(ao, petsctoapplicationpermutereal, block, array);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -399,7 +399,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal 
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidRealPointer(array, 3);
   PetscUseTypeMethod(ao, applicationtopetscpermutereal, block, array);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -431,7 +431,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
     PetscCall(AOSetType(ao, def));
   }
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -469,7 +469,7 @@ PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc)
   PetscCall(ISDestroy(&ao->ispetsc));
   ao->isapp   = isapp;
   ao->ispetsc = ispetsc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -502,5 +502,5 @@ PetscErrorCode AOCreate(MPI_Comm comm, AO *ao)
 
   PetscCall(PetscHeaderCreate(aonew, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));
   *ao = aonew;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

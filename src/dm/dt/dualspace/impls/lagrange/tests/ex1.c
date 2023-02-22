@@ -82,7 +82,7 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
     }
     *nDofs = (tracek * fiber0 + tracekm1 * fiber1) * nCopies;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs)
@@ -155,7 +155,7 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
     }
     *nDofs = (tracek * fiber0 + tracekm1 * fiber1) * nCopies;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscBool continuous, PetscInt nCopies)
@@ -294,7 +294,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
     PetscCall(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF));
   }
   PetscCall(PetscDualSpaceDestroy(&sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

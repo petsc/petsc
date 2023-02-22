@@ -18,7 +18,7 @@ PetscErrorCode pyramidNormal(PetscInt dim, PetscReal time, const PetscReal x[], 
 
   for (d = 0; d < dim; ++d) u[d] = x[d] - apex[d];
   for (d = dim; d < 3; ++d) u[d] = 0.0 - apex[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -33,7 +33,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsIntArray("-bd", "The boundaries to be extruded", "ex44.c", options->bd, &n, &flg));
   options->Nbd = flg ? n : 0;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
@@ -43,7 +43,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
@@ -54,7 +54,7 @@ static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
   PetscFunctionBegin;
   if (!ctx->Nbd) {
     *adaptLabel = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMGetLabel(dm, ctx->bdLabel, &label));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Adaptation Label", adaptLabel));
@@ -71,7 +71,7 @@ static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
     PetscCall(ISRestoreIndices(bdIS, &points));
     PetscCall(ISDestroy(&bdIS));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

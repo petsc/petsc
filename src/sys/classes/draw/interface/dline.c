@@ -31,7 +31,7 @@ PetscErrorCode PetscDrawGetBoundingBox(PetscDraw draw, PetscReal *xl, PetscReal 
   if (yl) *yl = draw->boundbox_yl;
   if (xr) *xr = draw->boundbox_xr;
   if (yr) *yr = draw->boundbox_yr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -57,7 +57,7 @@ PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw draw, PetscReal *x, PetscReal 
   PetscValidRealPointer(y, 3);
   *x = draw->currentpoint_x[draw->currentpoint];
   *y = draw->currentpoint_y[draw->currentpoint];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -79,7 +79,7 @@ PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   draw->currentpoint_x[draw->currentpoint] = x;
   draw->currentpoint_y[draw->currentpoint] = y;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -102,7 +102,7 @@ PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw draw, PetscReal x, PetscReal 
   PetscCheck(draw->currentpoint <= 19, PETSC_COMM_SELF, PETSC_ERR_SUP, "You have pushed too many current points");
   draw->currentpoint_x[++draw->currentpoint] = x;
   draw->currentpoint_y[draw->currentpoint]   = y;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -122,7 +122,7 @@ PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCheck(draw->currentpoint-- > 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "You have popped too many current points");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -145,7 +145,7 @@ PetscErrorCode PetscDrawLine(PetscDraw draw, PetscReal xl, PetscReal yl, PetscRe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, line, xl, yl, xr, yr, cl);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -168,7 +168,7 @@ PetscErrorCode PetscDrawArrow(PetscDraw draw, PetscReal xl, PetscReal yl, PetscR
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, arrow, xl, yl, xr, yr, cl);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -191,7 +191,7 @@ PetscErrorCode PetscDrawLineSetWidth(PetscDraw draw, PetscReal width)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, linesetwidth, width);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -220,5 +220,5 @@ PetscErrorCode PetscDrawLineGetWidth(PetscDraw draw, PetscReal *width)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidRealPointer(width, 2);
   PetscUseTypeMethod(draw, linegetwidth, width);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

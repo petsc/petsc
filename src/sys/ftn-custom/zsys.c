@@ -23,9 +23,9 @@ void flush__(int unit)
 }
 #endif
 
-PETSC_EXTERN void petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
+PETSC_EXTERN void petscoffsetfortran_(PetscScalar *x, PetscScalar *y, size_t *shift, PetscErrorCode *ierr)
 {
-  *ierr  = 0;
+  *ierr  = PETSC_SUCCESS;
   *shift = y - x;
 }
 

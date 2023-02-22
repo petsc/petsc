@@ -87,7 +87,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC);
 PetscErrorCode PCRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PCRegisterAllCalled) PetscFunctionReturn(0);
+  if (PCRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PCRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PCRegister(PCNONE, PCCreate_None));
@@ -162,5 +162,5 @@ PetscErrorCode PCRegisterAll(void)
   PetscCall(PCRegister(PCH2OPUS, PCCreate_H2OPUS));
 #endif
   PetscCall(PCRegister(PCMPI, PCCreate_MPI));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

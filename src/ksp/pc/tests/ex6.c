@@ -5,8 +5,9 @@ static char help[] = "Creates a matrix using 9 pt stencil, and uses it to test M
 
 #include <petscksp.h>
 
-PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
+static PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
 {
+  PetscFunctionBeginUser;
   Ke[0]  = H / 6.0;
   Ke[1]  = -.125 * H;
   Ke[2]  = H / 12.0;
@@ -23,16 +24,21 @@ PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
   Ke[13] = H / 12.0;
   Ke[14] = -.125 * H;
   Ke[15] = H / 6.0;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode FormElementRhs(PetscReal x, PetscReal y, PetscReal H, PetscScalar *r)
+
+#if 0
+// unused
+static PetscErrorCode FormElementRhs(PetscReal x, PetscReal y, PetscReal H, PetscScalar *r)
 {
+  PetscFunctionBeginUser;
   r[0] = 0.;
   r[1] = 0.;
   r[2] = 0.;
   r[3] = 0.0;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif
 
 int main(int argc, char **args)
 {
@@ -75,7 +81,7 @@ int main(int argc, char **args)
     PetscCall(PCASMCreateSubdomains2D(m + 1, m + 1, x1, x2, 1, ol, &Nsub2, &is2, &islocal2));
 
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "flg == 1 => both index sets are same\n"));
-    if (Nsub1 != Nsub2) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: No of indes sets don't match\n"));
+    if (Nsub1 != Nsub2) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: No of index sets don't match\n"));
 
     for (i = 0; i < Nsub1; ++i) {
       PetscCall(ISEqual(is1[i], is2[i], &flg));

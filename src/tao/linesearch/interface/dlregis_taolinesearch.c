@@ -19,7 +19,7 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&TaoLineSearchList));
   TaoLineSearchPackageInitialized = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -35,7 +35,7 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
 PetscErrorCode TaoLineSearchInitializePackage(void)
 {
   PetscFunctionBegin;
-  if (TaoLineSearchPackageInitialized) PetscFunctionReturn(0);
+  if (TaoLineSearchPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TaoLineSearchPackageInitialized = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(PetscClassIdRegister("TaoLineSearch", &TAOLINESEARCH_CLASSID));
@@ -48,5 +48,5 @@ PetscErrorCode TaoLineSearchInitializePackage(void)
   PetscCall(PetscLogEventRegister("TaoLSEval", TAOLINESEARCH_CLASSID, &TAOLINESEARCH_Eval));
 #endif
   PetscCall(PetscRegisterFinalize(TaoLineSearchFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

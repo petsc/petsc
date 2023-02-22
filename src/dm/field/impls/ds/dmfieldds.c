@@ -29,7 +29,7 @@ static PetscErrorCode DMFieldDestroy_DS(DMField field)
     for (i = 0; i < dsfield->height; i++) PetscCall(PetscObjectDereference(dsfield->discDG[i]));
   PetscCall(PetscFree(dsfield->discDG));
   PetscCall(PetscFree(dsfield));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldView_DS(DMField field, PetscViewer viewer)
@@ -51,7 +51,7 @@ static PetscErrorCode DMFieldView_DS(DMField field, PetscViewer viewer)
   PetscCheck(!dsfield->multifieldVec, PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "View of subfield not implemented yet");
   PetscCall(VecView(dsfield->vec, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, PetscObject discList[], PetscObject *disc)
@@ -64,7 +64,7 @@ static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, Pet
     if (id == PETSCFE_CLASSID) PetscCall(PetscFECreateHeightTrace((PetscFE)discList[0], height, (PetscFE *)&discList[height]));
   }
   *disc = discList[height];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* y[m,c] = A[m,n,c] . b[n] */
@@ -113,14 +113,14 @@ PetscErrorCode DMFieldGetClosure_Internal(DMField field, PetscInt cell, PetscBoo
   PetscCall(PetscArraycpy(*values, cvalues, *Nc));
   PetscCall(VecRestoreArrayRead(dsfield->vecDG, array));
   *isDG = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 cg:
   /* Use continuous values */
   PetscCall(DMFieldGetDM(field, &fdm));
   PetscCall(DMGetLocalSection(fdm, &s));
   PetscCall(PetscSectionGetField(s, dsfield->fieldNum, &s));
   PetscCall(DMPlexVecGetClosure(fdm, s, dsfield->vec, cell, Nc, values));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldRestoreClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
@@ -137,7 +137,7 @@ PetscErrorCode DMFieldRestoreClosure_Internal(DMField field, PetscInt cell, Pets
     PetscCall(DMGetLocalSection(fdm, &s));
     PetscCall(DMPlexVecRestoreClosure(fdm, s, dsfield->vec, cell, Nc, (PetscScalar **)values));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Reorganize interface so that I can reuse a tabulation rather than mallocing each time */
@@ -223,7 +223,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
     PetscCall(PetscTabulationDestroy(&T));
   } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented");
   if (!isStride) PetscCall(ISRestoreIndices(pointIS, &points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H)
@@ -440,7 +440,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscCall(PetscFree3(cellPoints, coordsReal, coordsRef));
   PetscCallMPI(MPI_Type_free(&pointType));
   PetscCall(PetscSFDestroy(&cellSF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataType type, void *B, void *D, void *H)
@@ -647,7 +647,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   if (H) PetscCall(DMRestoreWorkArray(field->dm, N * dimC * dimC, mpitype, &qH));
   PetscCall(PetscFEGeomDestroy(&geom));
   PetscCall(PetscQuadratureDestroy(&quad));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldGetDegree_DS(DMField field, IS pointIS, PetscInt *minDegree, PetscInt *maxDegree)
@@ -679,7 +679,7 @@ static PetscErrorCode DMFieldGetDegree_DS(DMField field, IS pointIS, PetscInt *m
     PetscCall(PetscFEGetBasisSpace(fe, &sp));
     PetscCall(PetscSpaceGetDegree(sp, minDegree, maxDegree));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldGetFVQuadrature_Internal(DMField field, IS pointIS, PetscQuadrature *quad)
@@ -707,7 +707,7 @@ PetscErrorCode DMFieldGetFVQuadrature_Internal(DMField field, IS pointIS, PetscQ
     }
     PetscCall(ISRestoreIndices(pointIS, &points));
   } else PetscCall(DMFieldCreateDefaultQuadrature(field, pointIS, quad));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointIS, PetscQuadrature *quad)
@@ -736,12 +736,12 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
   if (h < dsfield->height) {
     PetscCall(DMFieldDSGetHeightDisc(field, h, dsfield->disc, &disc));
     PetscCall(PetscObjectGetClassId(disc, &id));
-    if (id != PETSCFE_CLASSID) PetscFunctionReturn(0);
+    if (id != PETSCFE_CLASSID) PetscFunctionReturn(PETSC_SUCCESS);
     fe = (PetscFE)disc;
     PetscCall(PetscFEGetQuadrature(fe, quad));
     PetscCall(PetscObjectReference((PetscObject)*quad));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, PetscQuadrature quad, PetscFEGeom *geom)
@@ -1051,7 +1051,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
   }
   PetscCall(ISRestoreIndices(pointIS, &points));
   PetscCall(ISDestroy(&cellIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldInitialize_DS(DMField field)
@@ -1065,7 +1065,7 @@ static PetscErrorCode DMFieldInitialize_DS(DMField field)
   field->ops->createDefaultQuadrature = DMFieldCreateDefaultQuadrature_DS;
   field->ops->view                    = DMFieldView_DS;
   field->ops->computeFaceData         = DMFieldComputeFaceData_DS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMFieldCreate_DS(DMField field)
@@ -1076,7 +1076,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_DS(DMField field)
   PetscCall(PetscNew(&dsfield));
   field->data = dsfield;
   PetscCall(DMFieldInitialize_DS(field));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldCreateDSWithDG(DM dm, DM dmDG, PetscInt fieldNum, Vec vec, Vec vecDG, DMField *field)
@@ -1138,12 +1138,12 @@ PetscErrorCode DMFieldCreateDSWithDG(DM dm, DM dmDG, PetscInt fieldNum, Vec vec,
     dsfield->vecDG = vecDG;
   }
   *field = b;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec, DMField *field)
 {
   PetscFunctionBegin;
   PetscCall(DMFieldCreateDSWithDG(dm, NULL, fieldNum, vec, NULL, field));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

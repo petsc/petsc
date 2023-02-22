@@ -47,7 +47,7 @@ static PetscErrorCode VecMergedDot_Private(Vec U, Vec W, Vec R, PetscInt normtyp
   PetscCall(VecRestoreArrayRead(U, (const PetscScalar **)&PU));
   PetscCall(VecRestoreArrayRead(W, (const PetscScalar **)&PW));
   PetscCall(VecRestoreArrayRead(R, (const PetscScalar **)&PR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*   VecMergedDot2_Private function merges the dot products for lambda_1 and lambda_4 */
@@ -75,7 +75,7 @@ static PetscErrorCode VecMergedDot2_Private(Vec N, Vec M, Vec W, PetscScalar *wm
   PetscCall(VecRestoreArrayRead(W, (const PetscScalar **)&PW));
   PetscCall(VecRestoreArrayRead(N, (const PetscScalar **)&PN));
   PetscCall(VecRestoreArrayRead(M, (const PetscScalar **)&PM));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*   VecMergedOpsShort_Private function merges the dot products, AXPY and SAXPY operations for all vectors for iteration 0  */
@@ -297,7 +297,7 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
   PetscCall(VecRestoreArray(vm, (PetscScalar **)&pm));
   PetscCall(VecRestoreArray(vn, (PetscScalar **)&pn));
   PetscCall(VecRestoreArray(vu, (PetscScalar **)&pu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*   VecMergedOps_Private function merges the dot products, AXPY and SAXPY operations for all vectors for iteration > 0  */
@@ -526,7 +526,7 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
   PetscCall(VecRestoreArray(vm, (PetscScalar **)&pm));
   PetscCall(VecRestoreArray(vn, (PetscScalar **)&pn));
   PetscCall(VecRestoreArray(vu, (PetscScalar **)&pu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -540,7 +540,7 @@ static PetscErrorCode KSPSetUp_PIPECG2(KSP ksp)
   PetscFunctionBegin;
   /* get work vectors needed by PIPECG2 */
   PetscCall(KSPSetWorkVecs(ksp, 20));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -645,7 +645,7 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
   ksp->rnorm = dp;
 
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   for (i = 2; i < ksp->max_it; i += 2) {
     if (i == 2) {
@@ -712,7 +712,7 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
   }
 
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -754,5 +754,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG2(KSP ksp)
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

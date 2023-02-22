@@ -44,5 +44,6 @@ if __name__ == '__main__':
     '--download-tetgen',
     '--download-triangle',
     '--download-zlib',
+    '--with-strict-petscerrorcode',
   ]
   configure.petsc_configure(configure_options)

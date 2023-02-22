@@ -22,7 +22,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF, void *);
 PetscErrorCode PFRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PFRegisterAllCalled) PetscFunctionReturn(0);
+  if (PFRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PFRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PFRegister(PFCONSTANT, PFCreate_Constant));
@@ -32,5 +32,5 @@ PetscErrorCode PFRegisterAll(void)
 #if defined(PETSC_HAVE_MATLAB)
   PetscCall(PFRegister(PFMATLAB, PFCreate_Matlab));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

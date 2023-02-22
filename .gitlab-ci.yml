@@ -17,7 +17,6 @@ stages:
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
-  PETSC_OPTIONS:  -checkfunctionlist
   TIMEOUT: 450
 
 #
@@ -68,13 +67,12 @@ check-ci-settings:
     - nproc
     - lscpu
     - ccache --zero-stats
-    - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
-    - printf "PYTHON:${PYTHON}\n"
+  script:
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
     - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
-  script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
+    - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
@@ -122,7 +120,7 @@ ompi-cuda:
 mpich-cxx-py3:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11
+    CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11 --with-strict-petscerrorcode
     TEST_SEARCH: snes_tutorials-ex48%
     LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
 
@@ -136,7 +134,7 @@ uni-complex-float-int64:
 c99-mlib-static-py:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 --with-strict-petscerrorcode CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
     ENABLE_CHECK: 1
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
@@ -242,6 +240,9 @@ pause-for-approval:
 .stage-23:
   extends: .test
   script:
+    - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
+    - if [ ! -z ${GCOV_MODULES+x} ]; then module --trace load ${GCOV_MODULES}; module list; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
     - if [ ! -z ${RUN_GCOV+x} ]; then gcovr --version; fi
     - if [ -d ${HOME}/petsc-hash-pkgs/ ]; then find ${HOME}/petsc-hash-pkgs/ -maxdepth 1 -mindepth 1 -type d -mtime +25 -exec rm -rf {} \; ; fi
     - printf "PATH:$PATH\n"
@@ -250,26 +251,26 @@ pause-for-approval:
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
-    - ./config/examples/${TEST_ARCH}.py
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check
+    - ./config/examples/${TEST_ARCH}.py || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
     - make updatedatafiles
     - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
-    - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS}; fi
+    - if [ -z ${DISABLE_TESTS+x} ]; then make cleantest && make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS} || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi; fi
     - if [ ! -z ${RUN_GCOV_OPTIONS+x} ]; then printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n"; fi
     - if [ ! -z ${RUN_GCOV+x} ]; then make gcov PETSC_GCOV_OPTIONS="${RUN_GCOV_OPTIONS}"; fi
   artifacts:
     reports:
-      junit: ${TEST_ARCH}/tests/testresults.xml
+      junit: arch-*/tests/testresults.xml
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/lib/pkgconfig/petsc.pc
-    - ${TEST_ARCH}/tests/testresults.xml
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
-    - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/${TEST_ARCH}-gcovr-report.json.tar.gz
+    - arch-*/lib/petsc/conf/*.log
+    - arch-*/lib/pkgconfig/petsc.pc
+    - arch-*/tests/testresults.xml
+    - arch-*/tests/test_arch-*_tap.log
+    - arch-*/tests/test_arch-*_err.log
+    - arch-*/arch-*-gcovr-report.json.tar.gz
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
@@ -294,8 +295,6 @@ pause-for-approval:
     - nproc
     - lscpu
     - ccache --zero-stats
-    - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
-    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
   after_script:
     - date
     - ccache --show-stats
@@ -312,6 +311,21 @@ pause-for-approval:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
     MAKE_FFLAGS: -Werror
+
+.coverage-generate:
+  variables:
+    RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
+
+.coverage-generate-u18:
+  extends: .coverage-generate
+  variables:
+    GCOV_MODULES: py-gcovr-5.2-gcc-7.5.0-o7fu4xq python-3.9.13-gcc-7.5.0-fq67pdh
+
+.coverage-generate-u22:
+  extends: .coverage-generate
+  variables:
+    GCOV_MODULES: py-gcovr-5.2-gcc-11.2.0-wcsmyet
 
 .freebsd_test:
   variables:
@@ -339,7 +353,6 @@ pause-for-approval:
     - sw_vers -productVersion
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
-    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
   after_script:
     - date
     - ccache --show-stats
@@ -469,7 +482,7 @@ freebsd-cxx-pkgs-opt:
   tags:
     - os:fbsd
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkfunctionlist
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
 
 freebsd-pkgs-opt:
@@ -489,6 +502,7 @@ linux-hip-double:
     - gpu:amd, os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
+    INIT_SCRIPT: /home/users/balay/bin/instinct-mod-init.sh
 
 linux-sycl-double:
   extends:
@@ -505,6 +519,7 @@ linux-cuda-pkgs-gcov:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-generate-u22
   tags:
     - cuda-stage3
   variables:
@@ -517,9 +532,6 @@ linux-cuda-pkgs-gcov:
     # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
     # shell, and I could not manage to escape it enough times...
     TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='requires,requires,requires%OR%name'
-    LOAD_MODULES: py-gcovr-5.2-gcc-11.2.0-wcsmyet
-    RUN_GCOV: 1
-    RUN_GCOV_OPTIONS: --decisions
 
 linux-cuda112-omp:
   extends:
@@ -561,7 +573,8 @@ linux-cuda-single-cxx:
     - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
-    LOAD_MODULES: nvhpc/22.3
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
+    LOAD_MODULES: nvhpc-22.11-gcc-11.3.0-vmvmbrx
     TEST_OPTS: -j15 query=requires queryval=cuda
 
 linux-cuda-uni-pkgs:
@@ -573,6 +586,18 @@ linux-cuda-uni-pkgs:
   variables:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
     TEST_OPTS: -j20 query=requires queryval=cuda
+
+linux-clang-cuda:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - cuda-stage3
+  variables:
+    TEST_ARCH: arch-ci-linux-clang-cuda
+    TEST_OPTS: -j 1  queryval='cuda*,snes*' query='requires%OR%name'
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
+    LOAD_MODULES: llvm-15.0.7-gcc-11.3.0-pjldtxf cuda-11.5.2-gcc-11.3.0-jkoottx gcc-11.3.0-gcc-11.3.0-pgrvke5
 
 linux-viennacl:
   extends:
@@ -647,13 +672,12 @@ linux-cxx-cmplx-pkgs-64idx-gcov:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-generate-u18
   tags:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx-gcov
     LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
-    RUN_GCOV: 1
-    RUN_GCOV_OPTIONS: --decisions
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
@@ -704,25 +728,22 @@ linux-pkgs-gcov:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-generate-u18
   tags:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
-    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
-    RUN_GCOV: 1
-    RUN_GCOV_OPTIONS: --decisions
 
 linux-matlab-ilp64-gcov:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-generate-u18
   tags:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
-    LOAD_MODULES: matlab/R2018a python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
-    RUN_GCOV: 1
-    RUN_GCOV_OPTIONS: --decisions
+    LOAD_MODULES: matlab/R2018a
   allow_failure: true
 
 linux-pgi:
@@ -742,18 +763,6 @@ linux-nagfor:
     - .linux_test_nofflags
   tags:
     - gce-nfs, linux-mcpu
-  script:
-    - rm -f naglicenseproblem
-    - printf "PATH:$PATH\n"
-    - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
-    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - printf "./config/examples/${TEST_ARCH}.py\n"
-    - cat ./config/examples/${TEST_ARCH}.py
-    - ./config/examples/${TEST_ARCH}.py || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
-    - make updatedatafiles
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS} || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
   variables:
     LOAD_MODULES: nag/6.1
     TEST_ARCH: arch-ci-linux-nagfor
@@ -796,13 +805,13 @@ linux-analyzer:
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py
     - make LINTER_OPTIONS="${LINTER_OPTIONS}" test-lint
-    - make LINTER_OPTIONS="${LINTER_OPTIONS}" lint
+    - make LINTER_OPTIONS="${LINTER_OPTIONS} -fdoc-* no" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
     LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --verbose --werror"
   artifacts:
     paths:
-    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - arch-*/lib/petsc/conf/*.log
     - ./petscLintPatches/*.patch
     expire_in: 4 days
   except:
@@ -917,11 +926,6 @@ mswin-gnu:
     MAKE_CXXFLAGS: -Werror
     MAKE_FFLAGS: -Werror
     DISABLE_TESTS: 1
-  artifacts:
-    reports:
-    paths:
-    - arch-*/lib/petsc/conf/*.log
-    expire_in: 4 days
 
 #mswin-intel:
 #  extends:
@@ -976,7 +980,7 @@ osx-cxx-pkgs-opt:
   tags:
     - os:macos, opt
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkfunctionlist
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
 
@@ -1016,10 +1020,10 @@ analyze-coverage:
   before_script:
     - date
     - hostname
+  script:
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
     - ${PYTHON} --version
     - gcovr --version
-  script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi

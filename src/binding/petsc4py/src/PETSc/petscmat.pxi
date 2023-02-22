@@ -187,211 +187,211 @@ cdef extern from * nogil:
         MAT_SORTED_FULL
         MAT_OPTION_MAX
 
-    int MatView(PetscMat,PetscViewer)
-    int MatDestroy(PetscMat*)
-    int MatCreate(MPI_Comm,PetscMat*)
+    PetscErrorCode MatView(PetscMat,PetscViewer)
+    PetscErrorCode MatDestroy(PetscMat*)
+    PetscErrorCode MatCreate(MPI_Comm,PetscMat*)
 
-    int MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscLGMap,PetscMat*)
-    int MatISGetLocalMat(PetscMat,PetscMat*)
-    int MatISGetMPIXAIJ(PetscMat,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscLGMap,PetscMat*)
+    PetscErrorCode MatISGetLocalMat(PetscMat,PetscMat*)
+    PetscErrorCode MatISGetMPIXAIJ(PetscMat,PetscMatReuse,PetscMat*)
 
-    int MatCreateScatter(MPI_Comm,PetscScatter,PetscMat*)
-    int MatScatterSetVecScatter(PetscMat,PetscScatter)
-    int MatScatterGetVecScatter(PetscMat,PetscScatter*)
+    PetscErrorCode MatCreateScatter(MPI_Comm,PetscScatter,PetscMat*)
+    PetscErrorCode MatScatterSetVecScatter(PetscMat,PetscScatter)
+    PetscErrorCode MatScatterGetVecScatter(PetscMat,PetscScatter*)
 
-    int MatCreateNormal(PetscMat,PetscMat*)
-    int MatCreateTranspose(PetscMat,PetscMat*)
-    int MatCreateNormalHermitian(PetscMat,PetscMat*)
-    int MatCreateHermitianTranspose(PetscMat,PetscMat*)
-    int MatCreateLRC(PetscMat,PetscMat,PetscVec,PetscMat,PetscMat*)
-    int MatCreateSubMatrixVirtual(PetscMat,PetscIS,PetscIS,PetscMat*)
-    int MatCreateRedundantMatrix(PetscMat,PetscInt,MPI_Comm,PetscMatReuse,PetscMat*)
-    int MatCreateNest(MPI_Comm,PetscInt,PetscIS[],PetscInt,PetscIS[],PetscMat[],PetscMat*)
-    int MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void*,PetscMat*)
-    int MatCreateH2OpusFromMat(PetscMat,PetscInt,const PetscReal[],PetscBool,PetscReal,PetscInt,PetscInt,PetscInt,PetscReal,PetscMat*)
-    int MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
-    int MatCreateMPIAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
-    int MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+    PetscErrorCode MatCreateNormal(PetscMat,PetscMat*)
+    PetscErrorCode MatCreateTranspose(PetscMat,PetscMat*)
+    PetscErrorCode MatCreateNormalHermitian(PetscMat,PetscMat*)
+    PetscErrorCode MatCreateHermitianTranspose(PetscMat,PetscMat*)
+    PetscErrorCode MatCreateLRC(PetscMat,PetscMat,PetscVec,PetscMat,PetscMat*)
+    PetscErrorCode MatCreateSubMatrixVirtual(PetscMat,PetscIS,PetscIS,PetscMat*)
+    PetscErrorCode MatCreateRedundantMatrix(PetscMat,PetscInt,MPI_Comm,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,PetscIS[],PetscInt,PetscIS[],PetscMat[],PetscMat*)
+    PetscErrorCode MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void*,PetscMat*)
+    PetscErrorCode MatCreateH2OpusFromMat(PetscMat,PetscInt,const PetscReal[],PetscBool,PetscReal,PetscInt,PetscInt,PetscInt,PetscReal,PetscMat*)
+    PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+    PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+    PetscErrorCode MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
 
-    int MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
-    int MatSetBlockSize(PetscMat,PetscInt)
-    int MatSetBlockSizes(PetscMat,PetscInt,PetscInt)
-    int MatSetType(PetscMat,PetscMatType)
-    int MatSetVecType(PetscMat,PetscVecType)
-    int MatGetVecType(PetscMat,PetscVecType*)
-    int MatSetOption(PetscMat,PetscMatOption,PetscBool)
-    int MatGetOption(PetscMat,PetscMatOption,PetscBool*)
+    PetscErrorCode MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
+    PetscErrorCode MatSetBlockSize(PetscMat,PetscInt)
+    PetscErrorCode MatSetBlockSizes(PetscMat,PetscInt,PetscInt)
+    PetscErrorCode MatSetType(PetscMat,PetscMatType)
+    PetscErrorCode MatSetVecType(PetscMat,PetscVecType)
+    PetscErrorCode MatGetVecType(PetscMat,PetscVecType*)
+    PetscErrorCode MatSetOption(PetscMat,PetscMatOption,PetscBool)
+    PetscErrorCode MatGetOption(PetscMat,PetscMatOption,PetscBool*)
 
     enum: MAT_SKIP_ALLOCATION
-    int MatSeqAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[])
-    int MatMPIAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
-    int MatSeqBAIJSetPreallocation (PetscMat,PetscInt,PetscInt,PetscInt[])
-    int MatMPIBAIJSetPreallocation (PetscMat,PetscInt,PetscInt,PetscInt[],PetscInt,PetscInt[])
-    int MatSeqSBAIJSetPreallocation(PetscMat,PetscInt,PetscInt,PetscInt[])
-    int MatMPISBAIJSetPreallocation(PetscMat,PetscInt,PetscInt,PetscInt[],PetscInt,PetscInt[])
-    int MatSeqAIJSetPreallocationCSR  (PetscMat,         PetscInt[],PetscInt[],PetscScalar[])
-    int MatMPIAIJSetPreallocationCSR  (PetscMat,         PetscInt[],PetscInt[],PetscScalar[])
-    int MatSeqBAIJSetPreallocationCSR (PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
-    int MatMPIBAIJSetPreallocationCSR (PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
-    int MatSeqSBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
-    int MatMPISBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
-    int MatSeqDenseSetPreallocation(PetscMat,PetscScalar[])
-    int MatMPIDenseSetPreallocation(PetscMat,PetscScalar[])
-    int MatISSetPreallocation(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
+    PetscErrorCode MatSeqAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[])
+    PetscErrorCode MatMPIAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
+    PetscErrorCode MatSeqBAIJSetPreallocation (PetscMat,PetscInt,PetscInt,PetscInt[])
+    PetscErrorCode MatMPIBAIJSetPreallocation (PetscMat,PetscInt,PetscInt,PetscInt[],PetscInt,PetscInt[])
+    PetscErrorCode MatSeqSBAIJSetPreallocation(PetscMat,PetscInt,PetscInt,PetscInt[])
+    PetscErrorCode MatMPISBAIJSetPreallocation(PetscMat,PetscInt,PetscInt,PetscInt[],PetscInt,PetscInt[])
+    PetscErrorCode MatSeqAIJSetPreallocationCSR  (PetscMat,         PetscInt[],PetscInt[],PetscScalar[])
+    PetscErrorCode MatMPIAIJSetPreallocationCSR  (PetscMat,         PetscInt[],PetscInt[],PetscScalar[])
+    PetscErrorCode MatSeqBAIJSetPreallocationCSR (PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
+    PetscErrorCode MatMPIBAIJSetPreallocationCSR (PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
+    PetscErrorCode MatSeqSBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
+    PetscErrorCode MatMPISBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
+    PetscErrorCode MatSeqDenseSetPreallocation(PetscMat,PetscScalar[])
+    PetscErrorCode MatMPIDenseSetPreallocation(PetscMat,PetscScalar[])
+    PetscErrorCode MatISSetPreallocation(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
 
-    int MatSetOptionsPrefix(PetscMat,char[])
-    int MatAppendOptionsPrefix(PetscMat,char[])
-    int MatGetOptionsPrefix(PetscMat,char*[])
-    int MatSetFromOptions(PetscMat)
-    int MatSetUp(PetscMat)
+    PetscErrorCode MatSetOptionsPrefix(PetscMat,char[])
+    PetscErrorCode MatAppendOptionsPrefix(PetscMat,char[])
+    PetscErrorCode MatGetOptionsPrefix(PetscMat,char*[])
+    PetscErrorCode MatSetFromOptions(PetscMat)
+    PetscErrorCode MatSetUp(PetscMat)
 
-    int MatGetType(PetscMat,PetscMatType*)
-    int MatGetSize(PetscMat,PetscInt*,PetscInt*)
-    int MatGetLocalSize(PetscMat,PetscInt*,PetscInt*)
-    int MatGetBlockSize(PetscMat,PetscInt*)
-    int MatGetBlockSizes(PetscMat,PetscInt*,PetscInt*)
-    int MatGetOwnershipRange(PetscMat,PetscInt*,PetscInt*)
-    int MatGetOwnershipRanges(PetscMat,const PetscInt*[])
-    int MatGetOwnershipRangeColumn(PetscMat,PetscInt*,PetscInt*)
-    int MatGetOwnershipRangesColumn(PetscMat,const PetscInt*[])
-    int MatGetOwnershipIS(PetscMat,PetscIS*,PetscIS*)
-    int MatNestGetISs(PetscMat,PetscIS*,PetscIS*)
-    int MatNestGetLocalISs(PetscMat,PetscIS*,PetscIS*)
-    int MatNestGetSize(PetscMat,PetscInt*,PetscInt*)
-    int MatNestGetSubMat(PetscMat,PetscInt,PetscInt,PetscMat*)
+    PetscErrorCode MatGetType(PetscMat,PetscMatType*)
+    PetscErrorCode MatGetSize(PetscMat,PetscInt*,PetscInt*)
+    PetscErrorCode MatGetLocalSize(PetscMat,PetscInt*,PetscInt*)
+    PetscErrorCode MatGetBlockSize(PetscMat,PetscInt*)
+    PetscErrorCode MatGetBlockSizes(PetscMat,PetscInt*,PetscInt*)
+    PetscErrorCode MatGetOwnershipRange(PetscMat,PetscInt*,PetscInt*)
+    PetscErrorCode MatGetOwnershipRanges(PetscMat,const PetscInt*[])
+    PetscErrorCode MatGetOwnershipRangeColumn(PetscMat,PetscInt*,PetscInt*)
+    PetscErrorCode MatGetOwnershipRangesColumn(PetscMat,const PetscInt*[])
+    PetscErrorCode MatGetOwnershipIS(PetscMat,PetscIS*,PetscIS*)
+    PetscErrorCode MatNestGetISs(PetscMat,PetscIS*,PetscIS*)
+    PetscErrorCode MatNestGetLocalISs(PetscMat,PetscIS*,PetscIS*)
+    PetscErrorCode MatNestGetSize(PetscMat,PetscInt*,PetscInt*)
+    PetscErrorCode MatNestGetSubMat(PetscMat,PetscInt,PetscInt,PetscMat*)
 
-    int MatEqual(PetscMat,PetscMat,PetscBool*)
-    int MatLoad(PetscMat,PetscViewer)
-    int MatDuplicate(PetscMat,PetscMatDuplicateOption,PetscMat*)
-    int MatCopy(PetscMat,PetscMat,PetscMatStructure)
-    int MatTranspose(PetscMat,PetscMatReuse,PetscMat*)
-    int MatTransposeSetPrecursor(PetscMat,PetscMat)
-    int MatHermitianTranspose(PetscMat,PetscMatReuse,PetscMat*)
-    int MatConvert(PetscMat,PetscMatType,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatEqual(PetscMat,PetscMat,PetscBool*)
+    PetscErrorCode MatLoad(PetscMat,PetscViewer)
+    PetscErrorCode MatDuplicate(PetscMat,PetscMatDuplicateOption,PetscMat*)
+    PetscErrorCode MatCopy(PetscMat,PetscMat,PetscMatStructure)
+    PetscErrorCode MatTranspose(PetscMat,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatTransposeSetPrecursor(PetscMat,PetscMat)
+    PetscErrorCode MatHermitianTranspose(PetscMat,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatConvert(PetscMat,PetscMatType,PetscMatReuse,PetscMat*)
 
-    int MatIsSymmetric(PetscMat,PetscReal,PetscBool*)
-    int MatIsStructurallySymmetric(PetscMat,PetscBool*)
-    int MatIsHermitian(PetscMat,PetscReal,PetscBool*)
-    int MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
-    int MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
-    int MatIsTranspose(PetscMat,PetscMat,PetscReal,PetscBool*)
+    PetscErrorCode MatIsSymmetric(PetscMat,PetscReal,PetscBool*)
+    PetscErrorCode MatIsStructurallySymmetric(PetscMat,PetscBool*)
+    PetscErrorCode MatIsHermitian(PetscMat,PetscReal,PetscBool*)
+    PetscErrorCode MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
+    PetscErrorCode MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
+    PetscErrorCode MatIsTranspose(PetscMat,PetscMat,PetscReal,PetscBool*)
 
-    int MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
+    PetscErrorCode MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
 
-    int MatSetValue(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
-    int MatSetValues(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
-    int MatSetValuesBlocked(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    PetscErrorCode MatSetValue(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
+    PetscErrorCode MatSetValues(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    PetscErrorCode MatSetValuesBlocked(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
 
-    int MatSetLocalToGlobalMapping(PetscMat,PetscLGMap,PetscLGMap)
-    int MatGetLocalToGlobalMapping(PetscMat,PetscLGMap*,PetscLGMap*)
-    int MatSetValueLocal(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
-    int MatSetValuesLocal(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
-    int MatSetValuesBlockedLocal(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    PetscErrorCode MatSetLocalToGlobalMapping(PetscMat,PetscLGMap,PetscLGMap)
+    PetscErrorCode MatGetLocalToGlobalMapping(PetscMat,PetscLGMap*,PetscLGMap*)
+    PetscErrorCode MatSetValueLocal(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
+    PetscErrorCode MatSetValuesLocal(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
+    PetscErrorCode MatSetValuesBlockedLocal(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],PetscInsertMode)
 
-    int MatSetStencil(PetscMat,PetscInt,const PetscInt[],const PetscInt[],PetscInt)
+    PetscErrorCode MatSetStencil(PetscMat,PetscInt,const PetscInt[],const PetscInt[],PetscInt)
     ctypedef struct PetscMatStencil "MatStencil":
         PetscInt k,j,i,c
-    int MatSetValuesStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscInt,const PetscMatStencil[],const PetscScalar[],PetscInsertMode)
-    int MatSetValuesBlockedStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscInt,const PetscMatStencil[],const PetscScalar[],PetscInsertMode)
+    PetscErrorCode MatSetValuesStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscInt,const PetscMatStencil[],const PetscScalar[],PetscInsertMode)
+    PetscErrorCode MatSetValuesBlockedStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscInt,const PetscMatStencil[],const PetscScalar[],PetscInsertMode)
 
-    int MatGetValues(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[])
-    int MatGetRow(PetscMat,PetscInt,PetscInt*,const PetscInt*[],const PetscScalar*[])
-    int MatRestoreRow(PetscMat,PetscInt,PetscInt*,const PetscInt*[],const PetscScalar*[])
-    int MatGetRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
-    int MatRestoreRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
-    int MatGetColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
-    int MatRestoreColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
+    PetscErrorCode MatGetValues(PetscMat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[])
+    PetscErrorCode MatGetRow(PetscMat,PetscInt,PetscInt*,const PetscInt*[],const PetscScalar*[])
+    PetscErrorCode MatRestoreRow(PetscMat,PetscInt,PetscInt*,const PetscInt*[],const PetscScalar*[])
+    PetscErrorCode MatGetRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
+    PetscErrorCode MatRestoreRowIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
+    PetscErrorCode MatGetColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
+    PetscErrorCode MatRestoreColumnIJ(PetscMat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt*[],const PetscInt*[],PetscBool*)
 
-    int MatZeroEntries(PetscMat)
-    int MatStoreValues(PetscMat)
-    int MatRetrieveValues(PetscMat)
-    int MatAssemblyBegin(PetscMat,PetscMatAssemblyType)
-    int MatAssemblyEnd(PetscMat,PetscMatAssemblyType)
-    int MatAssembled(PetscMat,PetscBool*)
+    PetscErrorCode MatZeroEntries(PetscMat)
+    PetscErrorCode MatStoreValues(PetscMat)
+    PetscErrorCode MatRetrieveValues(PetscMat)
+    PetscErrorCode MatAssemblyBegin(PetscMat,PetscMatAssemblyType)
+    PetscErrorCode MatAssemblyEnd(PetscMat,PetscMatAssemblyType)
+    PetscErrorCode MatAssembled(PetscMat,PetscBool*)
 
-    int MatDiagonalSet(PetscMat,PetscVec,PetscInsertMode)
-    int MatDiagonalScale(PetscMat,PetscVec,PetscVec)
-    int MatScale(PetscMat,PetscScalar)
-    int MatShift(PetscMat,PetscScalar)
-    int MatChop(PetscMat,PetscReal)
-    int MatSetRandom(PetscMat,PetscRandom)
-    int MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
-    int MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
-    int MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
-    int MatMatTransposeMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
-    int MatTransposeMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    PetscErrorCode MatDiagonalSet(PetscMat,PetscVec,PetscInsertMode)
+    PetscErrorCode MatDiagonalScale(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatScale(PetscMat,PetscScalar)
+    PetscErrorCode MatShift(PetscMat,PetscScalar)
+    PetscErrorCode MatChop(PetscMat,PetscReal)
+    PetscErrorCode MatSetRandom(PetscMat,PetscRandom)
+    PetscErrorCode MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
+    PetscErrorCode MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
+    PetscErrorCode MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    PetscErrorCode MatMatTransposeMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    PetscErrorCode MatTransposeMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
 
-    int MatPtAP(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
-    int MatRARt(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
-    int MatMatMatMult(PetscMat,PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
-    int MatSeqAIJKron(PetscMat,PetscMat,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatPtAP(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    PetscErrorCode MatRARt(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    PetscErrorCode MatMatMatMult(PetscMat,PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    PetscErrorCode MatSeqAIJKron(PetscMat,PetscMat,PetscMatReuse,PetscMat*)
 
-    int MatInterpolate(PetscMat,PetscVec,PetscVec)
-    int MatInterpolateAdd(PetscMat,PetscVec,PetscVec,PetscVec)
-    int MatRestrict(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatInterpolate(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatInterpolateAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatRestrict(PetscMat,PetscVec,PetscVec)
 
-    int MatPermute(PetscMat,PetscIS,PetscIS,PetscMat*)
-    int MatPermuteSparsify(PetscMat,PetscInt,PetscReal,PetscReal,PetscIS,PetscIS,PetscMat*)
+    PetscErrorCode MatPermute(PetscMat,PetscIS,PetscIS,PetscMat*)
+    PetscErrorCode MatPermuteSparsify(PetscMat,PetscInt,PetscReal,PetscReal,PetscIS,PetscIS,PetscMat*)
 
-    int MatMerge(MPI_Comm,PetscMat,PetscInt,PetscMatReuse,PetscMat*)
-    int MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,PetscMatReuse,PetscMat*)
-    int MatCreateSubMatrices(PetscMat,PetscInt,PetscIS[],PetscIS[],PetscMatReuse,PetscMat*[])
-    int MatIncreaseOverlap(PetscMat,PetscInt,PetscIS[],PetscInt)
-    int MatGetDiagonalBlock(PetscMat,PetscMat*)
-    int MatGetLocalSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
-    int MatRestoreLocalSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
-    int MatDestroyMatrices(PetscInt,PetscMat*[])
+    PetscErrorCode MatMerge(MPI_Comm,PetscMat,PetscInt,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,PetscMatReuse,PetscMat*)
+    PetscErrorCode MatCreateSubMatrices(PetscMat,PetscInt,PetscIS[],PetscIS[],PetscMatReuse,PetscMat*[])
+    PetscErrorCode MatIncreaseOverlap(PetscMat,PetscInt,PetscIS[],PetscInt)
+    PetscErrorCode MatGetDiagonalBlock(PetscMat,PetscMat*)
+    PetscErrorCode MatGetLocalSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
+    PetscErrorCode MatRestoreLocalSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
+    PetscErrorCode MatDestroyMatrices(PetscInt,PetscMat*[])
 
-    int MatConjugate(PetscMat)
-    int MatRealPart(PetscMat)
-    int MatImaginaryPart(PetscMat)
+    PetscErrorCode MatConjugate(PetscMat)
+    PetscErrorCode MatRealPart(PetscMat)
+    PetscErrorCode MatImaginaryPart(PetscMat)
 
-    int MatZeroRows(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
-    int MatFindZeroRows(PetscMat,PetscIS*)
+    PetscErrorCode MatZeroRows(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatFindZeroRows(PetscMat,PetscIS*)
 
-    int MatZeroRowsColumns(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsColumnsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsColumnsStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsColumns(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsColumnsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+    PetscErrorCode MatZeroRowsColumnsStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscScalar,PetscVec,PetscVec)
 
-    int MatGetDiagonal(PetscMat,PetscVec)
-    int MatGetRowSum(PetscMat,PetscVec)
-    int MatInvertBlockDiagonal(PetscMat,const PetscScalar**)
-    int MatGetRowMax(PetscMat,PetscVec,PetscInt[])
-    int MatGetRowMaxAbs(PetscMat,PetscVec,PetscInt[])
-    int MatGetColumnVector(PetscMat,PetscVec,PetscInt)
+    PetscErrorCode MatGetDiagonal(PetscMat,PetscVec)
+    PetscErrorCode MatGetRowSum(PetscMat,PetscVec)
+    PetscErrorCode MatInvertBlockDiagonal(PetscMat,const PetscScalar**)
+    PetscErrorCode MatGetRowMax(PetscMat,PetscVec,PetscInt[])
+    PetscErrorCode MatGetRowMaxAbs(PetscMat,PetscVec,PetscInt[])
+    PetscErrorCode MatGetColumnVector(PetscMat,PetscVec,PetscInt)
 
-    int MatNorm(PetscMat,PetscNormType,PetscReal*)
+    PetscErrorCode MatNorm(PetscMat,PetscNormType,PetscReal*)
 
-    int MatMult(PetscMat,PetscVec,PetscVec)
-    int MatMultAdd(PetscMat,PetscVec,PetscVec,PetscVec)
-    int MatMultTranspose(PetscMat,PetscVec,PetscVec)
-    int MatMultTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
-    int MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
-    int MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatMult(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatMultAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatMultTranspose(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatMultTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
 
-    int MatBindToCPU(PetscMat,PetscBool)
-    int MatBoundToCPU(PetscMat,PetscBool*)
+    PetscErrorCode MatBindToCPU(PetscMat,PetscBool)
+    PetscErrorCode MatBoundToCPU(PetscMat,PetscBool*)
 
-    int MatSOR(PetscMat,PetscVec,PetscReal,PetscMatSORType,PetscReal,PetscInt,PetscInt,PetscVec)
+    PetscErrorCode MatSOR(PetscMat,PetscVec,PetscReal,PetscMatSORType,PetscReal,PetscInt,PetscInt,PetscVec)
 
-    int MatGetOrdering(PetscMat,PetscMatOrderingType,PetscIS*,PetscIS*)
-    int MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
+    PetscErrorCode MatGetOrdering(PetscMat,PetscMatOrderingType,PetscIS*,PetscIS*)
+    PetscErrorCode MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
 
-    int MatISFixLocalEmpty(PetscMat,PetscBool)
-    int MatISGetLocalMat(PetscMat,PetscMat*)
-    int MatISRestoreLocalMat(PetscMat,PetscMat*)
-    int MatISSetLocalMat(PetscMat,PetscMat)
+    PetscErrorCode MatISFixLocalEmpty(PetscMat,PetscBool)
+    PetscErrorCode MatISGetLocalMat(PetscMat,PetscMat*)
+    PetscErrorCode MatISRestoreLocalMat(PetscMat,PetscMat*)
+    PetscErrorCode MatISSetLocalMat(PetscMat,PetscMat)
 
-    int MatH2OpusOrthogonalize(PetscMat)
-    int MatH2OpusCompress(PetscMat,PetscReal)
-    int MatH2OpusLowRankUpdate(PetscMat,PetscMat,PetscMat,PetscScalar)
+    PetscErrorCode MatH2OpusOrthogonalize(PetscMat)
+    PetscErrorCode MatH2OpusCompress(PetscMat,PetscReal)
+    PetscErrorCode MatH2OpusLowRankUpdate(PetscMat,PetscMat,PetscMat,PetscScalar)
 
-    int MatMissingDiagonal(Mat,PetscBool*,PetscInt*)
+    PetscErrorCode MatMissingDiagonal(Mat,PetscBool*,PetscInt*)
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":
         MAT_SHIFT_NONE
         MAT_SHIFT_NONZERO
@@ -414,105 +414,105 @@ cdef extern from * nogil:
         PetscLogDouble fill_ratio_given, fill_ratio_needed
         PetscLogDouble factor_mallocs
 
-    int MatGetInfo(PetscMat,PetscMatInfoType,PetscMatInfo*)
+    PetscErrorCode MatGetInfo(PetscMat,PetscMatInfoType,PetscMatInfo*)
 
-    int MatFactorInfoInitialize(PetscMatFactorInfo*)
+    PetscErrorCode MatFactorInfoInitialize(PetscMatFactorInfo*)
 
-    int MatCholeskyFactor(PetscMat,PetscIS,PetscMatFactorInfo*)
-    int MatCholeskyFactorSymbolic(PetscMat,PetscIS,PetscMatFactorInfo*,PetscMat*)
-    int MatCholeskyFactorNumeric(PetscMat,PetscMatFactorInfo*,PetscMat*)
-    int MatLUFactor(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*)
-    int MatILUFactor(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*)
-    int MatICCFactor(PetscMat,PetscIS,PetscMatFactorInfo*)
-    int MatLUFactorSymbolic(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*,PetscMat*)
-    int MatILUFactorSymbolic(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*,PetscMat*)
-    int MatICCFactorSymbolic(PetscMat,PetscIS,PetscMatFactorInfo*,PetscMat*)
-    int MatLUFactorNumeric(PetscMat,PetscMatFactorInfo*,PetscMat*)
-    int MatILUDTFactor(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*,PetscMat*)
-    int MatGetInertia(PetscMat,PetscInt*,PetscInt*,PetscInt*)
-    int MatSetUnfactored(PetscMat)
+    PetscErrorCode MatCholeskyFactor(PetscMat,PetscIS,PetscMatFactorInfo*)
+    PetscErrorCode MatCholeskyFactorSymbolic(PetscMat,PetscIS,PetscMatFactorInfo*,PetscMat*)
+    PetscErrorCode MatCholeskyFactorNumeric(PetscMat,PetscMatFactorInfo*,PetscMat*)
+    PetscErrorCode MatLUFactor(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*)
+    PetscErrorCode MatILUFactor(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*)
+    PetscErrorCode MatICCFactor(PetscMat,PetscIS,PetscMatFactorInfo*)
+    PetscErrorCode MatLUFactorSymbolic(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*,PetscMat*)
+    PetscErrorCode MatILUFactorSymbolic(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*,PetscMat*)
+    PetscErrorCode MatICCFactorSymbolic(PetscMat,PetscIS,PetscMatFactorInfo*,PetscMat*)
+    PetscErrorCode MatLUFactorNumeric(PetscMat,PetscMatFactorInfo*,PetscMat*)
+    PetscErrorCode MatILUDTFactor(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*,PetscMat*)
+    PetscErrorCode MatGetInertia(PetscMat,PetscInt*,PetscInt*,PetscInt*)
+    PetscErrorCode MatSetUnfactored(PetscMat)
 
-    int MatLRCGetMats(PetscMat,PetscMat*,PetscMat*,PetscVec*,PetscMat*)
+    PetscErrorCode MatLRCGetMats(PetscMat,PetscMat*,PetscMat*,PetscVec*,PetscMat*)
 
-    int MatMumpsSetIcntl(PetscMat,PetscInt,PetscInt)
-    int MatMumpsGetIcntl(PetscMat,PetscInt,PetscInt*)
-    int MatMumpsSetCntl(PetscMat,PetscInt,PetscReal)
-    int MatMumpsGetCntl(PetscMat,PetscInt,PetscReal*)
-    int MatMumpsGetInfo(PetscMat,PetscInt,PetscInt*)
-    int MatMumpsGetInfog(PetscMat,PetscInt,PetscInt*)
-    int MatMumpsGetRinfo(PetscMat,PetscInt,PetscReal*)
-    int MatMumpsGetRinfog(PetscMat,PetscInt,PetscReal*)
+    PetscErrorCode MatMumpsSetIcntl(PetscMat,PetscInt,PetscInt)
+    PetscErrorCode MatMumpsGetIcntl(PetscMat,PetscInt,PetscInt*)
+    PetscErrorCode MatMumpsSetCntl(PetscMat,PetscInt,PetscReal)
+    PetscErrorCode MatMumpsGetCntl(PetscMat,PetscInt,PetscReal*)
+    PetscErrorCode MatMumpsGetInfo(PetscMat,PetscInt,PetscInt*)
+    PetscErrorCode MatMumpsGetInfog(PetscMat,PetscInt,PetscInt*)
+    PetscErrorCode MatMumpsGetRinfo(PetscMat,PetscInt,PetscReal*)
+    PetscErrorCode MatMumpsGetRinfog(PetscMat,PetscInt,PetscReal*)
 
-    int MatForwardSolve(PetscMat,PetscVec,PetscVec)
-    int MatBackwardSolve(PetscMat,PetscVec,PetscVec)
-    int MatSolve(PetscMat,PetscVec,PetscVec)
-    int MatSolveTranspose(PetscMat,PetscVec,PetscVec)
-    int MatSolveAdd(PetscMat,PetscVec,PetscVec,PetscVec)
-    int MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
-    int MatMatSolve(PetscMat,PetscMat,PetscMat)
+    PetscErrorCode MatForwardSolve(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatBackwardSolve(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatSolve(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatSolveTranspose(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatSolveAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatMatSolve(PetscMat,PetscMat,PetscMat)
 
-    int MatComputeExplicitOperator(PetscMat,PetscMat*)
-    int MatUseScaledForm(PetscMat,PetscBool)
-    int MatScaleSystem(PetscMat,PetscVec,PetscVec)
-    int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatComputeExplicitOperator(PetscMat,PetscMat*)
+    PetscErrorCode MatUseScaledForm(PetscMat,PetscBool)
+    PetscErrorCode MatScaleSystem(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
-    int MatDenseSetLDA(PetscMat,PetscInt)
-    int MatDenseGetLDA(PetscMat,PetscInt*)
-    int MatDenseGetLocalMatrix(PetscMat,PetscMat*)
-    int MatDenseGetArray(PetscMat,PetscScalar*[])
-    int MatDenseRestoreArray(PetscMat,PetscScalar*[])
-    int MatDenseGetArrayWrite(PetscMat,PetscScalar*[])
-    int MatDenseRestoreArrayWrite(PetscMat,PetscScalar*[])
-    int MatDenseGetArrayRead(PetscMat,const PetscScalar*[])
-    int MatDenseRestoreArrayRead(PetscMat,const PetscScalar*[])
-    int MatDenseGetColumnVec(PetscMat,PetscInt,PetscVec*)
-    int MatDenseRestoreColumnVec(PetscMat,PetscInt,PetscVec*)
-    int MatDenseGetColumnVecRead(PetscMat,PetscInt,PetscVec*)
-    int MatDenseRestoreColumnVecRead(PetscMat,PetscInt,PetscVec*)
-    int MatDenseGetColumnVecWrite(PetscMat,PetscInt,PetscVec*)
-    int MatDenseRestoreColumnVecWrite(PetscMat,PetscInt,PetscVec*)
-    int MatDenseCUDAGetArray(PetscMat,PetscScalar*[])
-    int MatDenseCUDARestoreArray(PetscMat,PetscScalar*[])
-    int MatDenseCUDAGetArrayWrite(PetscMat,PetscScalar*[])
-    int MatDenseCUDARestoreArrayWrite(PetscMat,PetscScalar*[])
-    int MatDenseCUDAGetArrayRead(PetscMat,const PetscScalar*[])
-    int MatDenseCUDARestoreArrayRead(PetscMat,const PetscScalar*[])
+    PetscErrorCode MatDenseSetLDA(PetscMat,PetscInt)
+    PetscErrorCode MatDenseGetLDA(PetscMat,PetscInt*)
+    PetscErrorCode MatDenseGetLocalMatrix(PetscMat,PetscMat*)
+    PetscErrorCode MatDenseGetArray(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseRestoreArray(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseGetArrayWrite(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseRestoreArrayWrite(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseGetArrayRead(PetscMat,const PetscScalar*[])
+    PetscErrorCode MatDenseRestoreArrayRead(PetscMat,const PetscScalar*[])
+    PetscErrorCode MatDenseGetColumnVec(PetscMat,PetscInt,PetscVec*)
+    PetscErrorCode MatDenseRestoreColumnVec(PetscMat,PetscInt,PetscVec*)
+    PetscErrorCode MatDenseGetColumnVecRead(PetscMat,PetscInt,PetscVec*)
+    PetscErrorCode MatDenseRestoreColumnVecRead(PetscMat,PetscInt,PetscVec*)
+    PetscErrorCode MatDenseGetColumnVecWrite(PetscMat,PetscInt,PetscVec*)
+    PetscErrorCode MatDenseRestoreColumnVecWrite(PetscMat,PetscInt,PetscVec*)
+    PetscErrorCode MatDenseCUDAGetArray(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseCUDARestoreArray(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseCUDAGetArrayWrite(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseCUDARestoreArrayWrite(PetscMat,PetscScalar*[])
+    PetscErrorCode MatDenseCUDAGetArrayRead(PetscMat,const PetscScalar*[])
+    PetscErrorCode MatDenseCUDARestoreArrayRead(PetscMat,const PetscScalar*[])
 
-    int MatPythonSetType(PetscMat,char[])
-    int MatPythonGetType(PetscMat,char*[])
+    PetscErrorCode MatPythonSetType(PetscMat,char[])
+    PetscErrorCode MatPythonGetType(PetscMat,char*[])
 
 cdef extern from "custom.h" nogil:
-    int MatGetCurrentMemType(PetscMat,PetscMemType*)
-    int MatIsPreallocated(PetscMat,PetscBool*)
-    int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*,PetscBool*)
+    PetscErrorCode MatGetCurrentMemType(PetscMat,PetscMemType*)
+    PetscErrorCode MatIsPreallocated(PetscMat,PetscBool*)
+    PetscErrorCode MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*,PetscBool*)
 
 cdef extern from "libpetsc4py.h":
-    int MatPythonSetContext(PetscMat,void*)
-    int MatPythonGetContext(PetscMat,void**)
+    PetscErrorCode MatPythonSetContext(PetscMat,void*)
+    PetscErrorCode MatPythonGetContext(PetscMat,void**)
 
 # -----------------------------------------------------------------------------
 
 cdef extern from * nogil:
-    int MatNullSpaceDestroy(PetscNullSpace*)
-    int MatNullSpaceView(PetscNullSpace,PetscViewer)
-    int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
+    PetscErrorCode MatNullSpaceDestroy(PetscNullSpace*)
+    PetscErrorCode MatNullSpaceView(PetscNullSpace,PetscViewer)
+    PetscErrorCode MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
-    int MatNullSpaceCreateRigidBody(PetscVec,PetscNullSpace*)
-    int MatNullSpaceGetVecs(PetscNullSpace,PetscBool*,PetscInt*,const PetscVec*[])
-    int MatNullSpaceRemove(PetscNullSpace,PetscVec)
-    int MatNullSpaceTest(PetscNullSpace,PetscMat,PetscBool*)
+    PetscErrorCode MatNullSpaceCreateRigidBody(PetscVec,PetscNullSpace*)
+    PetscErrorCode MatNullSpaceGetVecs(PetscNullSpace,PetscBool*,PetscInt*,const PetscVec*[])
+    PetscErrorCode MatNullSpaceRemove(PetscNullSpace,PetscVec)
+    PetscErrorCode MatNullSpaceTest(PetscNullSpace,PetscMat,PetscBool*)
 
-    ctypedef int MatNullSpaceFunction(PetscNullSpace,
+    ctypedef PetscErrorCode MatNullSpaceFunction(PetscNullSpace,
                                       PetscVec,
                                       void*) except PETSC_ERR_PYTHON
-    int MatNullSpaceSetFunction(PetscNullSpace,MatNullSpaceFunction*,void*)
+    PetscErrorCode MatNullSpaceSetFunction(PetscNullSpace,MatNullSpaceFunction*,void*)
 
-    int MatSetNullSpace(PetscMat,PetscNullSpace)
-    int MatGetNullSpace(PetscMat,PetscNullSpace*)
-    int MatSetTransposeNullSpace(PetscMat,PetscNullSpace)
-    int MatGetTransposeNullSpace(PetscMat,PetscNullSpace*)
-    int MatSetNearNullSpace(PetscMat,PetscNullSpace)
-    int MatGetNearNullSpace(PetscMat,PetscNullSpace*)
+    PetscErrorCode MatSetNullSpace(PetscMat,PetscNullSpace)
+    PetscErrorCode MatGetNullSpace(PetscMat,PetscNullSpace*)
+    PetscErrorCode MatSetTransposeNullSpace(PetscMat,PetscNullSpace)
+    PetscErrorCode MatGetTransposeNullSpace(PetscMat,PetscNullSpace*)
+    PetscErrorCode MatSetNearNullSpace(PetscMat,PetscNullSpace)
+    PetscErrorCode MatGetNearNullSpace(PetscMat,PetscNullSpace*)
 
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
@@ -520,7 +520,7 @@ cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     PetscINCREF(ob.obj)
     return ob
 
-cdef int NullSpace_Function(
+cdef PetscErrorCode NullSpace_Function(
     PetscNullSpace n,
     PetscVec       v,
     void *         ctx,
@@ -529,7 +529,7 @@ cdef int NullSpace_Function(
     cdef Vec vec = ref_Vec(v)
     (function, args, kargs) = nsp.get_attr('__function__')
     function(nsp, vec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
@@ -668,12 +668,12 @@ cdef inline PetscMatInfoType infotype(object info) \
 
 # -----------------------------------------------------------------------------
 
-cdef inline int Mat_Sizes(
+cdef inline PetscErrorCode Mat_Sizes(
     object size, object bsize,
     PetscInt *r, PetscInt *c,
     PetscInt *m, PetscInt *n,
     PetscInt *M, PetscInt *N,
-    ) except -1:
+    ) except PETSC_ERR_PYTHON:
     # unpack row and column sizes
     cdef object rsize, csize
     try:
@@ -689,15 +689,15 @@ cdef inline int Mat_Sizes(
     # split row and column sizes
     Sys_Sizes(rsize, rbsize, r, m, M)
     Sys_Sizes(csize, cbsize, c, n, N)
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int Mat_Create(
+cdef inline PetscErrorCode Mat_Create(
     PetscMatType mtype,
     object comm,
     object size,
     object bsize,
     PetscMat *A,
-    ) except -1:
+    ) except PETSC_ERR_PYTHON:
     # communicator
     cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
     # sizes and block sizes
@@ -714,9 +714,9 @@ cdef inline int Mat_Create(
     CHKERR( MatSetBlockSizes(mat, rbs, cbs) )
     CHKERR( MatSetType(mat, mtype) )
     A[0] = mat
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
+cdef inline PetscErrorCode Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except PETSC_ERR_PYTHON:
     #
     cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE, aijis=PETSC_FALSE
     CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij, &aijis))
@@ -765,9 +765,9 @@ cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
         CHKERR( MatMPISBAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
     if aijis == PETSC_TRUE:
         CHKERR( MatISSetPreallocation(A, d_nz, d_nnz, o_nz, o_nnz) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int Mat_AllocAIJ_CSR(PetscMat A, object CSR) except -1:
+cdef inline PetscErrorCode Mat_AllocAIJ_CSR(PetscMat A, object CSR) except PETSC_ERR_PYTHON:
     #
     cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE, aijis=PETSC_FALSE
     CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij, &aijis))
@@ -816,14 +816,14 @@ cdef inline int Mat_AllocAIJ_CSR(PetscMat A, object CSR) except -1:
     if sbaij == PETSC_TRUE:
         CHKERR( MatSeqSBAIJSetPreallocationCSR(A, bs, i, j, v) )
         CHKERR( MatMPISBAIJSetPreallocationCSR(A, bs, i, j, v) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int Mat_AllocAIJ(PetscMat A,object NNZ, object CSR) except -1:
+cdef inline PetscErrorCode Mat_AllocAIJ(PetscMat A,object NNZ, object CSR) except PETSC_ERR_PYTHON:
     if CSR is not None:
         return Mat_AllocAIJ_CSR(A, CSR)
     if NNZ is not None:
         return Mat_AllocAIJ_NNZ(A, NNZ)
-    return 0
+    return PETSC_SUCCESS
 
 cdef inline object Mat_AllocDense(PetscMat A, object array):
     cdef PetscInt m=0, N=0
@@ -842,7 +842,7 @@ cdef inline object Mat_AllocDense(PetscMat A, object array):
 
 # -----------------------------------------------------------------------------
 
-ctypedef int MatSetValuesFcn(PetscMat,
+ctypedef PetscErrorCode MatSetValuesFcn(PetscMat,
                              PetscInt,const PetscInt*,
                              PetscInt,const PetscInt*,
                              const PetscScalar*,PetscInsertMode)
@@ -855,9 +855,9 @@ cdef inline MatSetValuesFcn* matsetvalues_fcn(int blocked, int local):
     else:                 setvalues = MatSetValues
     return setvalues
 
-cdef inline int matsetvalues(PetscMat A,
+cdef inline PetscErrorCode matsetvalues(PetscMat A,
                              object oi, object oj, object ov,
-                             object oaddv, int blocked, int local) except -1:
+                             object oaddv, int blocked, int local) except PETSC_ERR_PYTHON:
     # block size
     cdef PetscInt rbs=1, cbs=1
     if blocked: CHKERR( MatGetBlockSizes(A, &rbs, &cbs) )
@@ -879,12 +879,12 @@ cdef inline int matsetvalues(PetscMat A,
     cdef PetscInsertMode addv = insertmode(oaddv)
     # actual call
     CHKERR( setvalues(A, ni, i, nj, j, v, addv) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int matsetvalues_rcv(PetscMat A,
+cdef inline PetscErrorCode matsetvalues_rcv(PetscMat A,
                                  object oi, object oj, object ov,
                                  object oaddv,
-                                 int blocked, int local) except -1:
+                                 int blocked, int local) except PETSC_ERR_PYTHON:
     # block size
     cdef PetscInt rbs=1, cbs=1
     if blocked: CHKERR( MatGetBlockSizes(A, &rbs, &cbs) )
@@ -936,13 +936,13 @@ cdef inline int matsetvalues_rcv(PetscMat A,
                           <PetscInt>si, &i[k*si],
                           <PetscInt>sj, &j[k*sj],
                           &v[k*sv], addv) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int matsetvalues_ijv(PetscMat A,
+cdef inline PetscErrorCode matsetvalues_ijv(PetscMat A,
                                  object oi, object oj, object ov,
                                  object oaddv,
                                  object om,
-                                 int blocked, int local) except -1:
+                                 int blocked, int local) except PETSC_ERR_PYTHON:
     # block size
     cdef PetscInt rbs=1, cbs=1
     if blocked: CHKERR( MatGetBlockSizes(A, &rbs, &cbs) )
@@ -999,14 +999,14 @@ cdef inline int matsetvalues_ijv(PetscMat A,
         else:
             sval = v + i[k]
             CHKERR( setvalues(A, 1, &irow, ncol, icol, sval, addv) )
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int matsetvalues_csr(PetscMat A,
+cdef inline PetscErrorCode matsetvalues_csr(PetscMat A,
                                  object oi, object oj, object ov,
                                  object oaddv,
-                                 int blocked, int local) except -1:
+                                 int blocked, int local) except PETSC_ERR_PYTHON:
     matsetvalues_ijv(A, oi, oj, ov, oaddv, None, blocked, local)
-    return 0
+    return PETSC_SUCCESS
 
 cdef inline matgetvalues(PetscMat mat,
                          object orows, object ocols, object values):
@@ -1028,7 +1028,7 @@ cdef inline matgetvalues(PetscMat mat,
 # -----------------------------------------------------------------------------
 
 cdef extern from "custom.h":
-    int MatFactorInfoDefaults(PetscBool,PetscBool,PetscMatFactorInfo*)
+    PetscErrorCode MatFactorInfoDefaults(PetscBool,PetscBool,PetscMatFactorInfo*)
 
 cdef inline PetscMatFactorShiftType matfactorshifttype(object st) \
     except <PetscMatFactorShiftType>(-1):
@@ -1042,10 +1042,10 @@ cdef inline PetscMatFactorShiftType matfactorshifttype(object st) \
         else: raise ValueError("unknown shift type: %s" % st)
     return st
 
-cdef int matfactorinfo(PetscBool inc, PetscBool chol, object opts,
-                       PetscMatFactorInfo *info) except -1:
+cdef PetscErrorCode matfactorinfo(PetscBool inc, PetscBool chol, object opts,
+                       PetscMatFactorInfo *info) except PETSC_ERR_PYTHON:
     CHKERR( MatFactorInfoDefaults(inc,chol,info) )
-    if opts is None: return 0
+    if opts is None: return PETSC_SUCCESS
     cdef dict options = dict(opts)
     #
     cdef fill = options.pop('fill', None)
@@ -1087,7 +1087,7 @@ cdef int matfactorinfo(PetscBool inc, PetscBool chol, object opts,
     if options:
         raise ValueError("unknown options: %s"
                          % list(options.keys()))
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
@@ -1105,7 +1105,7 @@ cdef object mat_getitem(Mat self, object ij):
     return matgetvalues(self.mat, rows, cols, None)
 
 
-cdef int mat_setitem(Mat self, object ij, object v) except -1:
+cdef PetscErrorCode mat_setitem(Mat self, object ij, object v) except PETSC_ERR_PYTHON:
     cdef PetscInt M=0, N=0
     rows, cols = ij
     if isinstance(rows, slice):
@@ -1117,7 +1117,7 @@ cdef int mat_setitem(Mat self, object ij, object v) except -1:
         start, stop, stride = cols.indices(toInt(N))
         cols = arange(start, stop, stride)
     matsetvalues(self.mat, rows, cols, v, None, 0, 0)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 

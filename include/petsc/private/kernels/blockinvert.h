@@ -44,7 +44,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
    pivots - integer work array of length bs
    W      -  bs by 1 work array
 */
-#define PetscKernel_A_gets_inverse_A(bs, A, pivots, W, allowzeropivot, zeropivotdetected) (PetscLINPACKgefa((A), (bs), (pivots), (allowzeropivot), (zeropivotdetected)) || PetscLINPACKgedi((A), (bs), (pivots), (W)))
+#define PetscKernel_A_gets_inverse_A(bs, A, pivots, W, allowzeropivot, zeropivotdetected) ((PetscErrorCode)(PetscLINPACKgefa((A), (bs), (pivots), (allowzeropivot), (zeropivotdetected)) || PetscLINPACKgedi((A), (bs), (pivots), (W))))
 
 /* -----------------------------------------------------------------------*/
 

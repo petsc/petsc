@@ -201,6 +201,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw, PetscReal, Pets
 PETSC_EXTERN PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawGetBoundingBox(PetscDraw, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 
+PETSC_EXTERN PetscErrorCode PetscDrawSetVisible(PetscDraw, PetscBool);
+
 /*E
     PetscDrawButton - Used to determine which button was pressed
 
@@ -421,7 +423,7 @@ M*/
       PetscCallMPI(MPI_Allreduce(&_Petsc_xioerr_local, &_Petsc_xioerr, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
       if (_Petsc_xioerr) { \
         PetscCall(PetscDrawSetType((draw), PETSC_DRAW_NULL)); \
-        PetscFunctionReturn(0); \
+        PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
     } \

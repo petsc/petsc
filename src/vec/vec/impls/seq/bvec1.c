@@ -24,14 +24,14 @@ static PetscErrorCode VecXDot_Seq_Private(Vec xin, Vec yin, PetscScalar *z, Pets
   PetscCallBLAS("BLASdot", *z = BLASfn(&bn, ya, &one, xa, &one));
   PetscCall(VecRestoreArrayRead(xin, &xa));
   PetscCall(VecRestoreArrayRead(yin, &ya));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDot_Seq(Vec xin, Vec yin, PetscScalar *z)
 {
   PetscFunctionBegin;
   PetscCall(VecXDot_Seq_Private(xin, yin, z, BLASdot_));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTDot_Seq(Vec xin, Vec yin, PetscScalar *z)
@@ -42,7 +42,7 @@ PetscErrorCode VecTDot_Seq(Vec xin, Vec yin, PetscScalar *z)
     dot(&bn, xa, &one, ya, &one)
   */
   PetscCall(VecXDot_Seq_Private(yin, xin, z, BLASdotu_));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
@@ -61,7 +61,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
     PetscCallBLAS("BLASscal", BLASscal_(&bn, &alpha, xarray, &one));
     PetscCall(VecRestoreArray(xin, &xarray));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecAXPY_Seq(Vec yin, PetscScalar alpha, Vec xin)
@@ -82,7 +82,7 @@ PetscErrorCode VecAXPY_Seq(Vec yin, PetscScalar alpha, Vec xin)
     PetscCall(VecRestoreArrayRead(xin, &xarray));
     PetscCall(VecRestoreArray(yin, &yarray));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecAXPBY_Seq(Vec yin, PetscScalar a, PetscScalar b, Vec xin)
@@ -113,7 +113,7 @@ PetscErrorCode VecAXPBY_Seq(Vec yin, PetscScalar a, PetscScalar b, Vec xin)
     PetscCall(VecRestoreArray(yin, &yy));
     PetscCall(PetscLogFlops(flops));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecAXPBYPCZ_Seq(Vec zin, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec xin, Vec yin)
@@ -142,5 +142,5 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin, PetscScalar alpha, PetscScalar beta, Pet
   PetscCall(VecRestoreArrayRead(yin, &yy));
   PetscCall(VecRestoreArray(zin, &zz));
   PetscCall(PetscLogFlops(flops));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

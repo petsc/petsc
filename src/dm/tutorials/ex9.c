@@ -1,4 +1,4 @@
-static char help[] = "Demonstrates HDF5 vector input/ouput\n\n";
+static char help[] = "Demonstrates HDF5 vector input/output\n\n";
 
 #include <petscsys.h>
 #include <petscdm.h>
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "DMDA VecView/VecLoad example", "");
   {
     ndof = 1;
-    PetscOptionsBoundedInt("-ndof", "Number of DOF's in DMDA", "", ndof, &ndof, NULL, 1);
+    PetscCall(PetscOptionsBoundedInt("-ndof", "Number of DOF's in DMDA", "", ndof, &ndof, NULL, 1));
   }
   PetscOptionsEnd();
 

@@ -41,7 +41,7 @@ PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*fun
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscPartitionerList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
@@ -67,7 +67,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitio
 PetscErrorCode PetscPartitionerRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscPartitionerRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscPartitionerRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscPartitionerRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis));
@@ -77,7 +77,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERSHELL, PetscPartitionerCreate_Shell));
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERGATHER, PetscPartitionerCreate_Gather));
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERMATPARTITIONING, PetscPartitionerCreate_MatPartitioning));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscBool PetscPartitionerPackageInitialized = PETSC_FALSE;
@@ -96,7 +96,7 @@ PetscErrorCode PetscPartitionerFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&PetscPartitionerList));
   PetscPartitionerPackageInitialized = PETSC_FALSE;
   PetscPartitionerRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -112,7 +112,7 @@ PetscErrorCode PetscPartitionerInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscPartitionerPackageInitialized) PetscFunctionReturn(0);
+  if (PetscPartitionerPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscPartitionerPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
@@ -135,5 +135,5 @@ PetscErrorCode PetscPartitionerInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PetscPartitionerFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

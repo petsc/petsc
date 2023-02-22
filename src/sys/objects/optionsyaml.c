@@ -35,7 +35,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
   char     name[PETSC_MAX_OPTION_NAME] = "", prefix[PETSC_MAX_OPTION_NAME] = "";
 
   PetscFunctionBegin;
-  if (node->type == YAML_SCALAR_NODE && !STR(node)[0]) PetscFunctionReturn(0); /* empty */
+  if (node->type == YAML_SCALAR_NODE && !STR(node)[0]) PetscFunctionReturn(PETSC_SUCCESS); /* empty */
   PetscCheck(node->type == YAML_MAPPING_NODE, comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
   for (yaml_node_pair_t *pair = MAP(node).start; pair < MAP(node).top; pair++) {
     yaml_node_t *keynode = yaml_document_get_node(doc, pair->key);
@@ -148,7 +148,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 
     } else SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar, sequence or mapping");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions options, const char in_str[], PetscOptionSource source)
@@ -172,7 +172,7 @@ PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions options, const 
     yaml_document_delete(&doc);
   } while (root);
   yaml_parser_delete(&parser);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@C
    PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the options database from a string
@@ -196,7 +196,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionsInsertStringYAML_Private(options, in_str, PETSC_OPT_CODE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -260,7 +260,7 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, c
 
   PetscCallMPI(MPI_Bcast(&yamlLength, 1, MPI_INT, 0, comm));
   PetscCheck(!require || yamlLength >= 0, comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
-  if (yamlLength < 0) PetscFunctionReturn(0);
+  if (yamlLength < 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (rank) PetscCall(PetscMalloc1(yamlLength + 1, &yamlString));
   PetscCallMPI(MPI_Bcast(yamlString, yamlLength + 1, MPI_CHAR, 0, comm));
@@ -270,7 +270,7 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, c
   (void)PetscYAMLSetComm(prev);
 
   PetscCall(PetscFree(yamlString));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if !defined(PETSC_HAVE_YAML)

@@ -5,27 +5,27 @@ static PetscErrorCode PCApply_Mat(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMult(pc->pmat, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_Mat(PC pc, Mat X, Mat Y)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMult(pc->pmat, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_Mat(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMultTranspose(pc->pmat, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_Mat(PC pc)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -55,5 +55,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
   pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = NULL;
   pc->ops->applysymmetricright = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

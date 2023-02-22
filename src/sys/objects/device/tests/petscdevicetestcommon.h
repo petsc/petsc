@@ -18,28 +18,28 @@ static inline PetscErrorCode AssertDeviceExists(PetscDevice device)
 {
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode AssertDeviceDoesNotExist(PetscDevice device)
 {
   PetscFunctionBegin;
   PetscCheck(!device, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDevice was not destroyed for type %s", PetscDeviceTypes[device->type]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode AssertDeviceContextExists(PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode AssertDeviceContextDoesNotExist(PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscCheck(!dctx, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext was not destroyed");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode AssertPetscStreamTypesValidAndEqual(PetscStreamType left, PetscStreamType right, const char *errStr)
@@ -48,7 +48,7 @@ static inline PetscErrorCode AssertPetscStreamTypesValidAndEqual(PetscStreamType
   PetscValidStreamType(left, 1);
   PetscValidStreamType(right, 2);
   PetscCheck(left == right, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, errStr, PetscStreamTypes[left], PetscStreamTypes[right]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode AssertPetscDeviceTypesValidAndEqual(PetscDeviceType left, PetscDeviceType right, const char *errStr)
@@ -57,7 +57,7 @@ static inline PetscErrorCode AssertPetscDeviceTypesValidAndEqual(PetscDeviceType
   PetscValidDeviceType(left, 1);
   PetscValidDeviceType(right, 2);
   PetscCheck(left == right, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, errStr, PetscDeviceTypes[left], PetscDeviceTypes[right]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode AssertPetscDevicesValidAndEqual(PetscDevice left, PetscDevice right, const char *errStr)
@@ -65,7 +65,7 @@ static inline PetscErrorCode AssertPetscDevicesValidAndEqual(PetscDevice left, P
   PetscFunctionBegin;
   PetscCheckCompatibleDevices(left, 1, right, 2);
   PetscCheck(left == right, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "%s: %p != %p", errStr, left, right);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode AssertPetscDeviceContextsValidAndEqual(PetscDeviceContext left, PetscDeviceContext right, const char *errStr)
@@ -73,6 +73,6 @@ static inline PetscErrorCode AssertPetscDeviceContextsValidAndEqual(PetscDeviceC
   PetscFunctionBegin;
   PetscCheckCompatibleDeviceContexts(left, 1, right, 2);
   PetscCheck(left == right, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "%s", errStr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSCDEVICETESTCOMMON_H */

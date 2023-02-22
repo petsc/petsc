@@ -96,7 +96,7 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
-ifneq ($(filter-out clean check info libs all checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out help clean check info libs all checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 
@@ -108,16 +108,18 @@ endif
 
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $($(CLANGUAGE)FLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
 PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
-PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(MPICXX_INCLUDES) $(CUDAC_FLAGS) --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS)"
+PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(MPICXX_INCLUDES) $(CUDAC_FLAGS) $(CUDAPP_FLAGS) $(CUDA_HOSTFLAGS)
 PETSC_COMPILE.hip.cpp = $(call quiet,HIPC)   -c $(MPICXX_INCLUDES) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPFLAGS) $(HIPPPFLAGS) $(HIPOPTFLAGS) $(HIPC_DEPFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(HIP_DEPFLAGS)
 PETSC_COMPILE.sycl.cxx = $(call quiet,SYCLC) -c $(MPICXX_INCLUDES) $(SYCLC_FLAGS) $(SYCLPP_FLAGS) $(SYCLFLAGS) $(SYCLPPFLAGS) $(SYCLOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(SYCL_DEPFLAGS)
-PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(MPICXX_INCLUDES) $(CUDAC_FLAGS) --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDA_CXXFLAGS)"
+PETSC_GENDEPS.cu = ${CUDA_PETSC_GENDEPS}
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
   KOKC = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda
   KOKKOS_COMPILE = $(call quiet,KOKC) -c $(CUDAC_FLAGS) ${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES)
+else ifneq ($(KOKKOS_USE_CUDACLANG_COMPILER),)
+  KOKKOS_COMPILE = $(PETSC_COMPILE.cu)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
   KOKKOS_COMPILE = $(PETSC_COMPILE.hip.cpp)
 else ifneq ($(KOKKOS_USE_SYCL_COMPILER),)
@@ -153,7 +155,7 @@ testsrcs-rel := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs
 testsrcs := $(foreach sfile, $(testsrcs-rel), $(TESTSRCDIR)/$(sfile))
 
 # workaround win32fe failure
-ifneq (,$(findstring win32fe,$(call quiet,$(cc_name))))
+ifneq (,$(findstring win_,$(call quiet,$(cc_name))))
 $(TESTDIR)/ts/tutorials/multirate/ex6: | $(TESTDIR)/ts/tutorials/multirate/ex5
 $(TESTDIR)/ts/tutorials/multirate/ex8: | $(TESTDIR)/ts/tutorials/multirate/ex6
 endif
@@ -420,44 +422,59 @@ report_tests: starttime $(TESTTARGETS)
 check_output:
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --check-output
 
-# Do not how how to invoke test from makefile
+# If users make is a gnumake then these messages are provided even if the user does not do make -f gmakefile.test
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
 ifeq ($(HASGMAKEFILE),gmakefile)
-helpdeps:=help-make help-targets
-makefile="gmakefile"
-other_help="To see full test help: make -f gmakefile.test help"
+helpdeps:= help-nontest
 else
-helpdeps:=help-make help-targets help-test
-makefile="gmakefile.test"
-other_help=""
+helpdeps:= help-test
 endif
 
-help: ${helpdeps}
-	-@echo "Above is from: ${helpdeps}"
-	-@echo "${other_help}"
+help: help-make ${helpdeps}
+	-@echo ""
 
 help-make:
 	-@echo
-	-@echo "Basic build usage:"
-	-@echo "   make -f ${makefile} <options>"
-	-@echo
-	-@echo "Options:"
-	-@echo "  V=0           Very quiet builds"
-	-@echo "  V=1           Verbose builds"
+	-@echo "PETSc makefile Basic usage:"
+	-@echo "   make  rule <V=1 for verbose output> <other options>"
 	-@echo
 
-help-targets:
-	-@echo "All makefile targets and their dependencies:"
-	-@grep ^[a-z] ${makefile} | grep : | grep -v =
+help-nontest:
+	-@echo "Available rules:"
+	-@echo "   all - build (update) the PETSc and related libraries in parallel"
+	-@echo "   libs - build (update) the PETSc and related libraries"
+	-@echo "   check - run a basic check that the libraries are built correctly and can be used"
+	-@echo "   "
+	-@echo "   getlinklibs - print the libraries that a PETSc application must link against"
+	-@echo "   getincludedirs - print the include directories that a PETSc application must be compiled against"
+	-@echo "   getcflags - print the C compiler flags PETSc is using"
+	-@echo "   getcxxflags - print the C++ compiler flags PETSc is using"
+	-@echo "   getfortranflags - print the Fortran compiler flags PETSc is using"
+	-@echo "   "
+	-@echo "   petsc4pytest - run the entire petsc4py test suite"
+	-@echo "   alltests - run the entire PETSc test suite"
+	-@echo "   test - use \"make -f gmakefile.test help\" for help on running the extensive tests"
 	-@echo
-	-@echo
+	-@echo "Developer rules:"
+	-@echo "   clean - delete libraries and Fortran module files"
+	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
+	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
+	-@echo "   deletefortranstubs - delete the generated Fortran stubs/interface definitions"
+	-@echo "   checkbadSource - check the source code for violations of coding standards"
+	-@echo "   abitest - Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD"
+	-@echo "   reconfigure - delete libraries and Fortran module files and run the previously run configure again"
+	-@echo "   lint - run lint on the source code, including its embedded documentation"
+	-@echo "     Run ${OMAKE} help-lint for lint options"
+	-@echo "   "
+	-@echo "Building website: (run in the doc directory)"
+	-@cd doc; ${OMAKE} help
+	-@echo "   "
 
 help-test:
-	-@echo "Basic test usage:"
-	-@echo "   make -f ${makefile} test <options>"
+	-@echo "Test usage:"
+	-@echo "   make -f gmakefile.test test <options>"
 	-@echo
 	-@echo "Options:"
-	-@echo "  V=1               Verbose output (-v to scripts)"
 	-@echo "  NO_RM=1           Do not remove the executables after running"
 	-@echo "  REPLACE=1         Replace the output in PETSC_DIR source tree (-m to test scripts)"
 	-@echo "  OUTPUT=1          Show only the errors on stdout"
@@ -507,4 +524,9 @@ help-test:
 	-@echo "  To build an executable, give full path to location:"
 	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/sys/tests/ex1'
 	-@echo "  or make the test with NO_RM=1"
+	-@echo
+
+help-targets:
+	-@echo "All makefile targets and their dependencies:"
+	-@grep ^[a-z] ${makefile} | grep : | grep -v =
 	-@echo

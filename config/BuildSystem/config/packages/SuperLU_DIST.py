@@ -12,9 +12,8 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
     self.liblist          = [['libsuperlu_dist.a']]
-    # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
-    # However it should work with intel ifort.
-    self.downloadonWindows= 1
+    # SuperLU_DIST CMake requires working MPI_C_COMPILER (i.e. mpicc) but that is not provided with Microsoft and Intel Windows compilers and Microsoft Windows MPI
+    # self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
     self.precisions       = ['double','single']

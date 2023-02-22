@@ -15,7 +15,7 @@ static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *P
   PetscCall(PetscOptionsBool("-snes_anderson_monitor", "Monitor steps of Anderson Mixing", "SNES", ngmres->monitor ? PETSC_TRUE : PETSC_FALSE, &monitor, NULL));
   if (monitor) ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSolve_Anderson(SNES snes)
@@ -66,7 +66,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(VecNorm(F, NORM_2, &fnorm));
   } else {
@@ -85,7 +85,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
   PetscCall(SNESMonitor(snes, 0, fnorm));
   PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   k_restart = 0;
   l         = 0;
@@ -103,7 +103,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
       PetscCall(SNESGetConvergedReason(snes->npc, &reason));
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       PetscCall(SNESGetNPCFunction(snes, FM, &fMnorm));
       if (ngmres->andersonBeta != 1.0) PetscCall(VecAXPBY(XM, (1.0 - ngmres->andersonBeta), ngmres->andersonBeta, X));
@@ -159,10 +159,10 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, snes->iter));
     PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
-    if (snes->reason) PetscFunctionReturn(0);
+    if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -235,5 +235,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   ngmres->epsilonB            = 0.1;
 
   ngmres->andersonBeta = 1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

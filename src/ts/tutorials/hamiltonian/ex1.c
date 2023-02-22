@@ -50,7 +50,7 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   vres[0] = -user->omega * user->omega * x[0];
   PetscCall(VecRestoreArray(Vres, &vres));
   PetscCall(VecRestoreArrayRead(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
@@ -64,7 +64,7 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   xres[0] = v[0];
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(VecRestoreArray(Xres, &xres));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
@@ -80,7 +80,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
   r[1] = -user->omega * user->omega * u[0];
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(R, &r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
@@ -100,7 +100,7 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ct
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "At time %.6lf, Energy = %8g, Modified Energy = %8g\n", (double)t, (double)energy, (double)menergy));
     PetscCall(VecRestoreArrayRead(U, &u));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -130,8 +130,8 @@ int main(int argc, char **argv)
   user.nts   = 100;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitor", &monitor, NULL));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Physical parameters", NULL);
-  PetscCall(PetscOptionsReal("-omega", "parameter", "<64>", user.omega, &user.omega, PETSC_NULL));
-  PetscCall(PetscOptionsInt("-next_output", "time steps for next output point", "<100>", user.nts, &user.nts, PETSC_NULL));
+  PetscCall(PetscOptionsReal("-omega", "parameter", "<64>", user.omega, &user.omega, NULL));
+  PetscCall(PetscOptionsInt("-next_output", "time steps for next output point", "<100>", user.nts, &user.nts, NULL));
   PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -2,7 +2,7 @@
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscsf.h>
 
-/*  Data stuctures for basic parallel dense matrix  */
+/*  Data structures for basic parallel dense matrix  */
 
 typedef struct {  /* used by MatMatMultxxx_MPIDense_MPIDense() */
   Mat Ae, Be, Ce; /* matrix in Elemental format */

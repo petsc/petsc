@@ -40,7 +40,7 @@ Earlier contributors to PETSc include:
    ``SNESPATCH``;
 
 -  Paulo Goldfeld - the balancing Neumann-Neumann preconditioner
-   (```PCNN``);
+   (``PCNN``);
 
 -  Matt Hille;
 
@@ -153,7 +153,7 @@ PETSc interfaces to many external software packages including:
 -  | MUMPS - see page , MUltifrontal Massively Parallel sparse direct
      Solver developed by Patrick Amestoy, Iain Duff, Jacko Koster, and
      Jean-Yves L’Excellent;
-   | http://mumps.enseeiht.fr/
+   | https://mumps-solver.org/
 
 -  | Party - A graph partitioning package;
 

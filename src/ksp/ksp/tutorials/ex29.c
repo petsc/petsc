@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   if (testsolver) {
     PetscCall(KSPGetSolution(ksp, &x));
     PetscCall(KSPGetRhs(ksp, &b));
-    KSPSetDMActive(ksp, PETSC_FALSE);
+    PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
     PetscCall(KSPSolve(ksp, b, x));
     {
 #if defined(PETSC_USE_LOG)
@@ -131,7 +131,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
     PetscCall(MatNullSpaceRemove(nullspace, b));
     PetscCall(MatNullSpaceDestroy(&nullspace));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscReal centerRho, PetscReal *rho)
@@ -142,7 +142,7 @@ PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, Pets
   } else {
     *rho = 1.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
@@ -261,7 +261,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
     PetscCall(MatSetNullSpace(J, nullspace));
     PetscCall(MatNullSpaceDestroy(&nullspace));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

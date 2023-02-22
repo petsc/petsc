@@ -28,7 +28,7 @@
 #
 #  This script should be run with bash, because it uses the 'echo -n' option.
 
-FBLASLAPACK=f2cblaslapack-3.8.0.q1
+FBLASLAPACK=f2cblaslapack-3.8.0.q2
 
 if [ $# -lt 2 ]
 then
@@ -415,6 +415,7 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 			/\\/\\*  *\\.\\. .*\\*\\//d;
 			s/extern integer mymaxloc_\\([^)]*\\);//g;
 			s/myexit_\\(void\\)/mecago_()/g;
+			s/char subnam\\[([0-9]+)\\]/char subnam[\\1] = {0}/g;
 			$( for i in sqrt sin cos log exp; do
 				echo "s/([^a-zA-Z_1-9]+)${i}([^a-zA-Z_1-9]+)/\\1M(${i})\\2/g;"
 			done )

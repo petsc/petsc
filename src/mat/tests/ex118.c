@@ -132,7 +132,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
 
   PetscFunctionBegin;
   nev = iu - il;
-  if (nev <= 0) PetscFunctionReturn(0);
+  if (nev <= 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecDuplicate(evec[0], &vt1));
   PetscCall(VecDuplicate(evec[0], &vt2));
@@ -182,5 +182,5 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
 
   PetscCall(VecDestroy(&vt2));
   PetscCall(VecDestroy(&vt1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

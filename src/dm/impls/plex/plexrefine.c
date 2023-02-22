@@ -59,7 +59,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
     PetscCall(PetscSFSetFromOptions(*sfProcess));
     PetscCall(PetscSFSetGraph(*sfProcess, size, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -98,7 +98,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   }
   PetscCall(DMPlexTransformDestroy(&tr));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd - pStart, fpoints, PETSC_OWN_POINTER, fpointIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -121,7 +121,7 @@ PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
   if (type) PetscValidCharPointer(type, 2);
   PetscCall(PetscFree(mesh->transformType));
   PetscCall(PetscStrallocpy(type, &mesh->transformType));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -145,7 +145,7 @@ PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
   PetscValidPointer(type, 2);
   *type = mesh->transformType;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -166,7 +166,7 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
   mesh->refinementUniform = refinementUniform;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -190,7 +190,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
   PetscValidBoolPointer(refinementUniform, 2);
   *refinementUniform = mesh->refinementUniform;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -211,7 +211,7 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->refinementLimit = refinementLimit;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -236,7 +236,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   PetscValidRealPointer(refinementLimit, 2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
   *refinementLimit = mesh->refinementLimit;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -262,7 +262,7 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->refinementFunc = refinementFunc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -291,7 +291,7 @@ PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFu
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(refinementFunc, 2);
   *refinementFunc = mesh->refinementFunc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
@@ -336,7 +336,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     ((DM_Plex *)(*rdm)->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
   }
   PetscCall(DMViewFromOptions(dm, NULL, "-postref_dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
@@ -390,5 +390,5 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
       cdm = rdm[r];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

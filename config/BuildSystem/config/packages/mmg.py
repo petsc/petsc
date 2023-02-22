@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'befc9a39b14ea564d5ae8f34e3804e99b9df2be7' # jolivet/feature-mmg-install-3.19.0-alpha oct-06-2022
-    self.download         = ['git://https://github.com/prj-/mmg.git','https://github.com/prj-/mmg/archive/'+self.gitcommit+'.tar.gz']
+    self.gitcommit        = '9bd0023fe5f4a7de55d2959dd8dd4bf5d6929a36' # develop dec-22-2022
+    self.download         = ['git://https://github.com/MmgTools/mmg.git','https://github.com/MmgTools/mmg/archive/'+self.gitcommit+'.tar.gz']
     self.versionname      = 'MMG_VERSION_RELEASE'
     self.includes         = ['mmg/libmmg.h']
     self.liblist          = [['libmmg.a','libmmg3d.a']]
@@ -26,7 +26,7 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_ELAS=OFF')
     args.append('-DUSE_VTK=OFF')
-    args.append('-DUSE_POINTMAP=ON')
+    args.append('-DMMG_INSTALL_PRIVATE_HEADERS=ON')
     args.append('-DSCOTCH_DIR:STRING="'+self.ptscotch.directory+'"')
     if self.getDefaultIndexSize() == 64:
       int64_t = '''

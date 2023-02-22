@@ -15,9 +15,9 @@ int main(int argc, char **args)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, 6, 6, 12, 12, NULL, &A));
-  PetscCall(MatDenseGetArray(A, &Av));
+  PetscCall(MatDenseGetArrayAndMemType(A, &Av, NULL));
   for (i = 0; i < 6 * 12; i++) Av[i] = (PetscScalar)i;
-  PetscCall(MatDenseRestoreArray(A, &Av));
+  PetscCall(MatDenseRestoreArrayAndMemType(A, &Av));
 
   /* Load matrices */
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "ex191matrix", FILE_MODE_WRITE, &fd));

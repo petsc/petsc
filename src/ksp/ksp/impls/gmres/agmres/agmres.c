@@ -58,7 +58,7 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
   /* Init the ring of processors for the roddec orthogonalization */
   PetscCall(KSPAGMRESRoddecInitNeighboor(ksp));
 
-  if (agmres->neig < 1) PetscFunctionReturn(0);
+  if (agmres->neig < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Allocate space for the deflation */
   PetscCall(PetscMalloc1(N, &agmres->select));
@@ -67,7 +67,7 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
   /*  PetscCall(PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul)); */
   PetscCall(PetscMalloc3(N * N, &agmres->Q, N * N, &agmres->Z, N, &agmres->beta));
   PetscCall(PetscMalloc2((N + 1), &agmres->perm, (2 * neig * N), &agmres->iwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -88,7 +88,7 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result)
     PetscCall(VecCopy(ksp->vec_sol, ptr));
   }
   if (result) *result = ptr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Computes the shifts  needed to generate stable basis vectors (through the Newton polynomials)
@@ -138,7 +138,7 @@ PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   ksp->its        = kspgmres->its;
   if (kspgmres->reason == KSP_CONVERGED_RTOL) {
     ksp->reason = KSP_CONVERGED_RTOL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
   /* Now, compute the Shifts values */
   PetscCall(PetscMalloc2(max_k, &Rshift, max_k, &Ishift));
@@ -149,7 +149,7 @@ PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   agmres->HasShifts = PETSC_TRUE;
   /* Restore KSP view options */
   if (flg) PetscCall(PetscOptionsSetValue(NULL, "-ksp_view", ""));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Computes the shift values (Ritz values) needed to generate stable basis vectors
@@ -182,7 +182,7 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   ksp->guess_zero = PETSC_FALSE;
   if (ksp->reason == KSP_CONVERGED_RTOL) {
     PetscCall(PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0, 0, 0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
 
   if ((agmres->r == 0) && (agmres->neig > 0)) { /* Compute the eigenvalues for the shifts and the eigenvectors (to augment the Newton basis) */
@@ -209,7 +209,7 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
     PetscCall(KSPSolve_DGMRES(ksp));
 
     ksp->guess_zero = PETSC_FALSE;
-    if (ksp->reason == KSP_CONVERGED_RTOL) PetscFunctionReturn(0);
+    if (ksp->reason == KSP_CONVERGED_RTOL) PetscFunctionReturn(PETSC_SUCCESS);
     else ksp->reason = KSP_CONVERGED_ITERATING;
     if (agmres->neig > 0) { /* Compute the eigenvalues for the shifts) and the eigenvectors (to augment the Newton basis */
       agmres->HasSchur = PETSC_FALSE;
@@ -236,7 +236,7 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   agmres->HasShifts = PETSC_TRUE;
   ksp->max_it       = max_it;
   PetscCall(PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -345,7 +345,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
     j++;
   }
   PetscCall(PetscLogEventEnd(KSP_AGMRESBuildBasis, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -390,7 +390,7 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
   for (j = max_k; j < KspSize; j++) { /* take into account the norm of the augmented vectors */
     for (i = 0; i <= j + 1; i++) *H(i, j) = *RLOC(i, j + 1) / Scale[j];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -444,7 +444,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   PetscCall(KSPUnwindPreconditioner(ksp, VEC_TMP, VEC_TMP_MATOP));
   /* add the solution to the previous one */
   PetscCall(VecAXPY(ksp->vec_sol, 1.0, VEC_TMP));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -473,7 +473,7 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount, KSP ksp)
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
     PetscCall(PetscInfo(ksp, "Converged due to zero residual norm on entry\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall((*ksp->converged)(ksp, ksp->its, res, &ksp->reason, ksp->cnvP));
   /* Build the Krylov basis with Newton polynomials */
@@ -495,7 +495,7 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscCall(KSPMonitor(ksp, ksp->its, res));
 
   *itcount = KspSize;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
@@ -547,7 +547,7 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user has provided nonzero initial guess */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_AGMRES(KSP ksp)
@@ -575,7 +575,7 @@ static PetscErrorCode KSPDestroy_AGMRES(KSP ksp)
     PetscCall(PetscFree(agmres->beta));
   }
   PetscCall(KSPDestroy_DGMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
@@ -597,8 +597,7 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, " restart=%" PetscInt_FMT " using %s\n", agmres->max_k, cstr));
     PetscCall(PetscViewerASCIIPrintf(viewer, " %s\n", Nstr));
     PetscCall(PetscViewerASCIIPrintf(viewer, " Number of matvecs : %" PetscInt_FMT "\n", agmres->matvecs));
-    if (agmres->force) PetscCall(PetscViewerASCIIPrintf(viewer, " Adaptive strategy is used: FALSE\n"));
-    else PetscViewerASCIIPrintf(viewer, " Adaptive strategy is used: TRUE\n");
+    PetscCall(PetscViewerASCIIPrintf(viewer, " Adaptive strategy is used: %s\n", PetscBools[agmres->force]));
     if (agmres->DeflPrecond) {
       PetscCall(PetscViewerASCIIPrintf(viewer, " STRATEGY OF DEFLATION: PRECONDITIONER \n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Frequency of extracted eigenvalues = %" PetscInt_FMT "\n", agmres->neig));
@@ -613,7 +612,7 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, "%s restart %" PetscInt_FMT, cstr, agmres->max_k));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -638,7 +637,7 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscO
   PetscCall(PetscOptionsReal("-ksp_agmres_MinRatio", "Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed", "KSPGMRESSetMinRatio", agmres->smv, &agmres->smv, NULL));
   PetscCall(PetscOptionsReal("-ksp_agmres_MaxRatio", "Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed", "KSPGMRESSetMaxRatio", agmres->bgv, &agmres->bgv, &flg));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -745,5 +744,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   agmres->HasSchur    = PETSC_FALSE;
   agmres->DeflPrecond = PETSC_FALSE;
   PetscCall(PetscObjectGetNewTag((PetscObject)ksp, &agmres->tag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

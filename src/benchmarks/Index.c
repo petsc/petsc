@@ -103,7 +103,7 @@ int test1(void)
   PetscCall(PetscFree(x));
   PetscCall(PetscFree(y));
   PetscCall(PetscRandomDestroy(&r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int test2(void)
@@ -174,7 +174,7 @@ int test2(void)
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
 
   PetscCall(PetscRandomDestroy(&r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int BlastCache(void)
@@ -200,5 +200,5 @@ int BlastCache(void)
   for (i=0; i<n; i++) b[i] = 3.0*x[i] + 2.0*y[i] + 3.3*a[i] - 25.*b[i];
   for (i=0; i<n; i++) z[i] = 3.0*x[i] + 2.0*y[i] + 3.3*a[i] - 25.*b[i];
   PetscCall(PetscFree(x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

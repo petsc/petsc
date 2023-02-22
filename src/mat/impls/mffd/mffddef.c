@@ -80,7 +80,7 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx, Vec U, Vec a, PetscScalar *
 
     if (nrm == 0.0) {
       *zeroa = PETSC_TRUE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     *zeroa = PETSC_FALSE;
 
@@ -95,7 +95,7 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx, Vec U, Vec a, PetscScalar *
     *h = ctx->currenth;
   }
   ctx->count++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -121,7 +121,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer)
   */
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)hctx->umin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -140,7 +140,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems *Pe
   PetscOptionsHeadBegin(PetscOptionsObject, "Finite difference matrix free parameters");
   PetscCall(PetscOptionsReal("-mat_mffd_umin", "umin", "MatMFFDDSSetUmin", hctx->umin, &hctx->umin, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -157,7 +157,7 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(ctx->hctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -174,7 +174,7 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat, PetscReal umin)
   PetscCheck(ctx, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "MatMFFDDSSetUmin() attached to non-shell matrix");
   hctx       = (MatMFFD_DS *)ctx->hctx;
   hctx->umin = umin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -199,7 +199,7 @@ PetscErrorCode MatMFFDDSSetUmin(Mat A, PetscReal umin)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscTryMethod(A, "MatMFFDDSSetUmin_C", (Mat, PetscReal), (A, umin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -246,5 +246,5 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_DS;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat, "MatMFFDDSSetUmin_C", MatMFFDDSSetUmin_DS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

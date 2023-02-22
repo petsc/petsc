@@ -22,7 +22,7 @@ static PetscErrorCode ViewOffsets(DM dm, Vec X)
   }
   if (X) PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(PetscFree(elem_restr_offsets));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

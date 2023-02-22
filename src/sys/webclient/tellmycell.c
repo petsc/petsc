@@ -83,5 +83,5 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm, const char number[], const char me
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

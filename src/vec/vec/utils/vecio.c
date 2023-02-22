@@ -58,7 +58,7 @@ PetscErrorCode VecView_Binary(Vec vec, PetscViewer viewer)
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)vec, &pre));
     if (rank == 0 && info) PetscCall(PetscFPrintf(PETSC_COMM_SELF, info, "-%svecload_block_size %" PetscInt_FMT "\n", pre ? pre : "", PetscAbs(vec->map->bs)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
@@ -105,7 +105,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   PetscCall(VecGetArray(vec, &array));
   PetscCall(PetscViewerBinaryReadAll(viewer, array, n, s, N, PETSC_SCALAR));
   PetscCall(VecRestoreArray(vec, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_HDF5)
@@ -137,7 +137,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   } else {
     PetscCall(VecReplaceArray(xin, x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -181,7 +181,7 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   PetscCall(VecRestoreArray(xin, &x));
   adios_selection_delete(sel);
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -225,7 +225,7 @@ PetscErrorCode VecLoad_Default(Vec newvec, PetscViewer viewer)
   {
     PetscCall(VecLoad_Binary(newvec, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -254,5 +254,5 @@ PetscErrorCode VecChop(Vec v, PetscReal tol)
     if (PetscAbsScalar(a[i]) < tol) a[i] = 0.0;
   }
   PetscCall(VecRestoreArray(v, &a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

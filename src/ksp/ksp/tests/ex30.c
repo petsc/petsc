@@ -310,7 +310,7 @@ int main(int argc, char **args)
       - KSPView() prints information about the linear solver.
     */
     if (table && ckrnorm) {
-      char       *matrixname, kspinfo[120];
+      char       *matrixname = NULL, kspinfo[120];
       PetscViewer viewer;
 
       /*

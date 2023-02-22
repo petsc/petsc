@@ -32,5 +32,6 @@ if __name__ == '__main__':
     '--download-kokkos-cmake-arguments=-DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF', # avoid warnings caused by broken [[deprecated]] in Intel compiler
     '--download-cmake', # need cmake-3.16+ to build Kokkos
     '--download-raja',
+    '--with-strict-petscerrorcode',
   ]
   configure.petsc_configure(configure_options)

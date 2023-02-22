@@ -7,19 +7,19 @@ cdef extern from * nogil:
     PetscRandomType PETSCRANDER48
     PetscRandomType PETSCRANDOM123
 
-    int PetscRandomCreate(MPI_Comm,PetscRandom*)
-    int PetscRandomDestroy(PetscRandom*)
-    int PetscRandomView(PetscRandom,PetscViewer)
+    PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*)
+    PetscErrorCode PetscRandomDestroy(PetscRandom*)
+    PetscErrorCode PetscRandomView(PetscRandom,PetscViewer)
 
-    int PetscRandomSetType(PetscRandom,PetscRandomType)
-    int PetscRandomGetType(PetscRandom,PetscRandomType*)
-    int PetscRandomSetFromOptions(PetscRandom)
+    PetscErrorCode PetscRandomSetType(PetscRandom,PetscRandomType)
+    PetscErrorCode PetscRandomGetType(PetscRandom,PetscRandomType*)
+    PetscErrorCode PetscRandomSetFromOptions(PetscRandom)
 
-    int PetscRandomGetValue(PetscRandom,PetscScalar*)
-    int PetscRandomGetValueReal(PetscRandom,PetscReal*)
-    int PetscRandomGetValueImaginary(PetscRandom,PetscScalar*)
-    int PetscRandomGetInterval(PetscRandom,PetscScalar*,PetscScalar*)
-    int PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar)
-    int PetscRandomSetSeed(PetscRandom,unsigned long)
-    int PetscRandomGetSeed(PetscRandom,unsigned long*)
-    int PetscRandomSeed(PetscRandom)
+    PetscErrorCode PetscRandomGetValue(PetscRandom,PetscScalar*)
+    PetscErrorCode PetscRandomGetValueReal(PetscRandom,PetscReal*)
+    PetscErrorCode PetscRandomGetValueImaginary(PetscRandom,PetscScalar*)
+    PetscErrorCode PetscRandomGetInterval(PetscRandom,PetscScalar*,PetscScalar*)
+    PetscErrorCode PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar)
+    PetscErrorCode PetscRandomSetSeed(PetscRandom,unsigned long)
+    PetscErrorCode PetscRandomGetSeed(PetscRandom,unsigned long*)
+    PetscErrorCode PetscRandomSeed(PetscRandom)

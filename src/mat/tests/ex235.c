@@ -9,7 +9,7 @@ static PetscErrorCode myMult(Mat S, Vec x, Vec y)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
   PetscCall(MatMult(A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode myGetDiagonal(Mat S, Vec d)
@@ -19,7 +19,7 @@ static PetscErrorCode myGetDiagonal(Mat S, Vec d)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
   PetscCall(MatGetDiagonal(A, d));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode shiftandscale(Mat A, Vec *D)
@@ -54,7 +54,7 @@ static PetscErrorCode shiftandscale(Mat A, Vec *D)
   *D = d;
   PetscCall(VecDestroy(&ll));
   PetscCall(VecDestroy(&rr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

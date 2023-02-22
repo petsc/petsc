@@ -45,7 +45,7 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
     names = names->next;
   }
   if (!found) *rootType = inType;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatGetMPIMatType_Private - Gets the MPI type corresponding to the input matrix's type (e.g., MATMPIAIJ for MATSEQAIJ)
@@ -83,7 +83,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
     names = names->next;
   }
   PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_SUP, "No corresponding parallel (MPI) type for this matrix");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -117,7 +117,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
 
   /* make this special case fast */
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, matype, &sametype));
-  if (sametype) PetscFunctionReturn(0);
+  if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* suppose with one MPI process, one created an MPIAIJ (mpiaij) matrix with MatCreateMPIAIJWithArrays(), and later tried
      to change its type via '-mat_type aijcusparse'. Even there is only one MPI rank, we need to adapt matype to
@@ -140,7 +140,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   }
 
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, matype, &sametype));
-  if (sametype) PetscFunctionReturn(0);
+  if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(MatList, matype, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Mat type given: %s", matype);
@@ -148,7 +148,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   if (mat->assembled && ((PetscObject)mat)->type_name) PetscCall(PetscStrbeginswith(matype, ((PetscObject)mat)->type_name, &subclass));
   if (subclass) { /* mat is a subclass of the requested 'matype'? */
     PetscCall(MatConvert(mat, matype, MAT_INPLACE_MATRIX, &mat));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscTryTypeMethod(mat, destroy);
   mat->ops->destroy = NULL;
@@ -172,7 +172,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
 
   /* create the new data structure */
   PetscCall((*r)(mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -196,7 +196,7 @@ PetscErrorCode MatGetType(Mat mat, MatType *type)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)mat)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -220,7 +220,7 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(vtype, 2);
   *vtype = mat->defaultvectype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -245,7 +245,7 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscCall(PetscFree(mat->defaultvectype));
   PetscCall(PetscStrallocpy(vtype, &mat->defaultvectype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -254,8 +254,10 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
    Not Collective
 
    Input Parameters:
-+  name - name of a new user-defined matrix type
--  routine_create - routine to create method context
++  sname - name of a new user-defined matrix type
+-  function - routine to create method context
+
+   Level: advanced
 
    Note:
    `MatRegister()` may be called multiple times to add several user-defined solvers.
@@ -270,8 +272,6 @@ $     MatSetType(Mat,"my_mat")
    or at runtime via the option
 $     -mat_type my_mat
 
-   Level: advanced
-
 .seealso: `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/
 PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
@@ -279,7 +279,7 @@ PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 MatRootName MatRootNameList = NULL;
@@ -294,6 +294,8 @@ MatRootName MatRootNameList = NULL;
 .     sname - the name of the sequential matrix type, for example, `MATSEQAIJ`
 -     mname - the name of the parallel matrix type, for example, `MATMPIAIJ`
 
+  Level: developer
+
   Note:
   The matrix rootname should not be confused with the base type of the function `PetscObjectBaseTypeCompare()`
 
@@ -302,8 +304,6 @@ MatRootName MatRootNameList = NULL;
       size of the communicator but it is implemented by simply having additional `VecCreate_RootName()` registerer routines that dispatch to the
       appropriate creation routine. Why have two different ways of implementing the same functionality for different types of objects? It is
       confusing.
-
-  Level: developer
 
 .seealso: `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
 @*/
@@ -323,5 +323,5 @@ PetscErrorCode MatRegisterRootName(const char rname[], const char sname[], const
     while (next->next) next = next->next;
     next->next = names;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

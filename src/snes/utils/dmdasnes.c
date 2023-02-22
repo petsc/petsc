@@ -26,7 +26,7 @@ static PetscErrorCode DMSNESDestroy_DMDA(DMSNES sdm)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(sdm->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm, DMSNES sdm)
@@ -34,7 +34,7 @@ static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm, DMSNES sdm)
   PetscFunctionBegin;
   PetscCall(PetscNew((DMSNES_DA **)&sdm->data));
   if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data, oldsdm->data, sizeof(DMSNES_DA)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDASNESGetContext(DM dm, DMSNES sdm, DMSNES_DA **dmdasnes)
@@ -47,7 +47,7 @@ static PetscErrorCode DMDASNESGetContext(DM dm, DMSNES sdm, DMSNES_DA **dmdasnes
     sdm->ops->duplicate = DMSNESDuplicate_DMDA;
   }
   *dmdasnes = (DMSNES_DA *)sdm->data;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ctx)
@@ -105,7 +105,7 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ct
   }
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
   if (snes->domainerror) PetscCall(VecSetInf(F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob, void *ctx)
@@ -133,7 +133,7 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob,
     PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   }
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Routine is called by example, hence must be labeled PETSC_EXTERN */
@@ -198,7 +198,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -241,7 +241,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode 
   if (!sdm->ops->computejacobian) { /* Call us for the Jacobian too, can be overridden by the user. */
     PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobian_DMDA, dmdasnes));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -284,7 +284,7 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
   if (!sdm->ops->computejacobian) { /* Call us for the Jacobian too, can be overridden by the user. */
     PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobian_DMDA, dmdasnes));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -323,7 +323,7 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalI
   dmdasnes->jacobianlocalctx = ctx;
 
   PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobian_DMDA, dmdasnes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -362,7 +362,7 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
   dmdasnes->jacobianlocalctx = ctx;
 
   PetscCall(DMSNESSetJacobian(dm, SNESComputeJacobian_DMDA, dmdasnes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -399,7 +399,7 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ct
   dmdasnes->objectivelocalctx = ctx;
 
   PetscCall(DMSNESSetObjective(dm, SNESComputeObjective_DMDA, dmdasnes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -437,7 +437,7 @@ PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, DMDASNESObjectiveVec func, vo
   dmdasnes->objectivelocalctx = ctx;
 
   PetscCall(DMSNESSetObjective(dm, SNESComputeObjective_DMDA, dmdasnes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESComputePicard_DMDA(SNES snes, Vec X, Vec F, void *ctx)
@@ -482,7 +482,7 @@ static PetscErrorCode SNESComputePicard_DMDA(SNES snes, Vec X, Vec F, void *ctx)
   }
   PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Mat B, void *ctx)
@@ -509,7 +509,7 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -554,5 +554,5 @@ PetscErrorCode DMDASNESSetPicardLocal(DM dm, InsertMode imode, PetscErrorCode (*
 
   PetscCall(DMSNESSetPicard(dm, SNESComputePicard_DMDA, SNESComputePicardJacobian_DMDA, dmdasnes));
   PetscCall(DMSNESSetMFFunction(dm, SNESComputeFunction_DMDA, dmdasnes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

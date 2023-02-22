@@ -9,7 +9,7 @@ PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc, PetscReal *weight
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(G, &s, &e));
   for (i = s; i < e; i++) weights[i - s] = i;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc, PetscReal *weights)
@@ -29,7 +29,7 @@ PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc, PetscReal *weights
     weights[i - s] = PetscAbsReal(r);
   }
   PetscCall(PetscRandomDestroy(&rand));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees)
@@ -102,7 +102,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees
   PetscCall(ISDestroy(&ris));
   PetscCall(PetscFree3(seen, idxbuf, distbuf));
   PetscCall(MatDestroyMatrices(1, &lGs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc, PetscReal *weights)
@@ -129,7 +129,7 @@ PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc, PetscReal *w
   }
   PetscCall(PetscRandomDestroy(&rand));
   PetscCall(PetscFree(degrees));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *weights)
@@ -303,7 +303,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, PetscReal *w
   PetscCall(ISDestroy(&ris));
   PetscCall(PetscFree3(seen, idxbuf, distbuf));
   PetscCall(MatDestroyMatrices(1, &lGs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, PetscInt **lperm)
@@ -342,7 +342,7 @@ PetscErrorCode MatColoringCreateWeights(MatColoring mc, PetscReal **weights, Pet
     }
   }
   if (weights) *weights = wts;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatColoringSetWeights(MatColoring mc, PetscReal *weights, PetscInt *lperm)
@@ -371,5 +371,5 @@ PetscErrorCode MatColoringSetWeights(MatColoring mc, PetscReal *weights, PetscIn
     mc->user_weights = NULL;
     mc->user_lperm   = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

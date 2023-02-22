@@ -262,7 +262,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(G, &g));
   PetscCall(PetscLogFlops(67.0 * mx * my));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -287,7 +287,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
   PetscFunctionBeginUser;
   /* Evaluate the Hessian entries*/
   PetscCall(QuadraticH(user, X, H));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -454,7 +454,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   PetscCall(MatAssemblyEnd(Hessian, MAT_FINAL_ASSEMBLY));
 
   PetscCall(PetscLogFlops(199.0 * mx * my));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -542,7 +542,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -585,7 +585,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
     /* Restore vectors */
     PetscCall(VecRestoreArray(X, &x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

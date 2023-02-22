@@ -177,22 +177,21 @@
 
       DM             da
       PetscInt       mx,xs,xe,gxs,gxe
-      PetscOffset    ixx,ixxdot,iff
-      PetscScalar    xx(0:1),xxdot(0:1),ff(0:1)
+      PetscScalar,pointer :: xx(:),xxdot(:),ff(:)
 
       PetscCall(TSGetDM(ts,da,ierr))
       PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
 ! Get access to vector data
-      PetscCall(VecGetArrayRead(X,xx,ixx,ierr))
-      PetscCall(VecGetArrayRead(Xdot,xxdot,ixxdot,ierr))
-      PetscCall(VecGetArray(F,ff,iff,ierr))
+      PetscCall(VecGetArrayReadF90(X,xx,ierr))
+      PetscCall(VecGetArrayReadF90(Xdot,xxdot,ierr))
+      PetscCall(VecGetArrayF90(F,ff,ierr))
 
-      PetscCall(FormIFunctionLocal(mx,xs,xe,gxs,gxe,xx(ixx),xxdot(ixxdot),ff(iff),user(user_a),user(user_k),user(user_s),ierr))
+      PetscCall(FormIFunctionLocal(mx,xs,xe,gxs,gxe,xx,xxdot,ff,user(user_a),user(user_k),user(user_s),ierr))
 
-      PetscCall(VecRestoreArrayRead(X,xx,ixx,ierr))
-      PetscCall(VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr))
-      PetscCall(VecRestoreArray(F,ff,iff,ierr))
+      PetscCall(VecRestoreArrayReadF90(X,xx,ierr))
+      PetscCall(VecRestoreArrayReadF90(Xdot,xxdot,ierr))
+      PetscCall(VecRestoreArrayF90(F,ff,ierr))
       end subroutine
 
       subroutine FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,x,f,a,k,s,ierr)
@@ -259,8 +258,7 @@
       DM             da
       Vec            Xloc
       PetscInt       mx,xs,xe,gxs,gxe
-      PetscOffset    ixx,iff
-      PetscScalar    xx(0:1),ff(0:1)
+      PetscScalar,pointer :: xx(:),ff(:)
 
       PetscCall(TSGetDM(ts,da,ierr))
       PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
@@ -274,13 +272,13 @@
       PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr))
 
 ! Get access to vector data
-      PetscCall(VecGetArrayRead(Xloc,xx,ixx,ierr))
-      PetscCall(VecGetArray(F,ff,iff,ierr))
+      PetscCall(VecGetArrayReadF90(Xloc,xx,ierr))
+      PetscCall(VecGetArrayF90(F,ff,ierr))
 
-      PetscCall(FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,xx(ixx),ff(iff),user(user_a),user(user_k),user(user_s),ierr))
+      PetscCall(FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,xx,ff,user(user_a),user(user_k),user(user_s),ierr))
 
-      PetscCall(VecRestoreArrayRead(Xloc,xx,ixx,ierr))
-      PetscCall(VecRestoreArray(F,ff,iff,ierr))
+      PetscCall(VecRestoreArrayReadF90(Xloc,xx,ierr))
+      PetscCall(VecRestoreArrayF90(F,ff,ierr))
       PetscCall(DMRestoreLocalVector(da,Xloc,ierr))
       end subroutine
 
@@ -366,18 +364,17 @@
 
       DM             da
       PetscInt       mx,xs,xe,gxs,gxe
-      PetscOffset    ixx
-      PetscScalar    xx(0:1)
+      PetscScalar,pointer :: xx(:)
 
       PetscCall(TSGetDM(ts,da,ierr))
       PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
 ! Get access to vector data
-      PetscCall(VecGetArray(X,xx,ixx,ierr))
+      PetscCall(VecGetArrayF90(X,xx,ierr))
 
-      PetscCall(FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,xx(ixx),user(user_a),user(user_k),user(user_s),ierr))
+      PetscCall(FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,xx,user(user_a),user(user_k),user(user_s),ierr))
 
-      PetscCall(VecRestoreArray(X,xx,ixx,ierr))
+      PetscCall(VecRestoreArrayF90(X,xx,ierr))
       end subroutine
 
 !/*TEST

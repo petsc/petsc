@@ -154,7 +154,6 @@ int main(int argc, char **args)
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, m, n));
   PetscCall(MatSetType(B, MATAIJ));
   PetscCall(MatSetFromOptions(B));
-  PetscCall(MatSetUp(B));
   PetscCall(MatSetLocalToGlobalMapping(B, rmap, cmap));
   PetscCall(MatMPIAIJSetPreallocation(B, 3, NULL, 3, NULL));
   PetscCall(MatMPIBAIJSetPreallocation(B, 1, 3, NULL, 3, NULL));
@@ -808,7 +807,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func)
     PetscCall(MatMultTransposeEqual(A, B, 3, &okt));
     PetscCheck(ok && okt, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d", func, ok, okt);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, PetscScalar diag)
@@ -919,7 +918,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
     PetscCall(MatDestroy(&B));
     PetscCall(MatDestroy(&B2));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

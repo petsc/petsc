@@ -31,6 +31,7 @@ configure_options = [
   # CC: Warning: Option -std=c++03 passed to ld, if ld is invoked, ignored otherwise
   # to stderr, so don't use flag at all
   '--with-cxx-dialect=0',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

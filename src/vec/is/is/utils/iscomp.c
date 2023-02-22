@@ -45,13 +45,13 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
 
   if (is1 == is2) {
     *flg = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is1), PetscObjectComm((PetscObject)is2), &mflg));
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
     *flg = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(ISGetSize(is1, &sz1));
@@ -85,7 +85,7 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
     PetscCall(PetscObjectGetComm((PetscObject)is1, &comm));
     PetscCall(MPIU_Allreduce(&flag, flg, 1, MPIU_BOOL, MPI_MIN, comm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -126,13 +126,13 @@ PetscErrorCode ISEqualUnsorted(IS is1, IS is2, PetscBool *flg)
 
   if (is1 == is2) {
     *flg = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is1), PetscObjectComm((PetscObject)is2), &mflg));
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
     *flg = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(ISGetSize(is1, &sz1));
@@ -155,5 +155,5 @@ PetscErrorCode ISEqualUnsorted(IS is1, IS is2, PetscBool *flg)
     PetscCall(PetscObjectGetComm((PetscObject)is1, &comm));
     PetscCall(MPIU_Allreduce(&flag, flg, 1, MPIU_BOOL, MPI_MIN, comm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

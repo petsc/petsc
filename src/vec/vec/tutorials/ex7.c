@@ -30,7 +30,7 @@ int main(int argc, char **args)
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
 
-  PetscInitializeFortran();
+  PetscCall(PetscInitializeFortran());
 
   PetscCall(VecCreate(PETSC_COMM_WORLD, &vec));
   PetscCall(VecSetSizes(vec, PETSC_DECIDE, m));
@@ -64,7 +64,8 @@ PETSC_INTERN void ex7c_(Vec *fvec, int *fcomm, PetscErrorCode *ierr)
 
   /* Some PETSc/MPI operations on Vec/Communicator objects */
   *ierr = VecGetSize(*fvec, &vsize);
-  *ierr = MPI_Barrier(comm);
+  if (*ierr) return;
+  if (MPI_Barrier(comm)) *ierr = PETSC_ERR_MPI;
 }
 
 /*TEST

@@ -25,7 +25,7 @@ PetscErrorCode SPARSEPACKrevrse(const PetscInt *n, PetscInt *perm)
     perm[in] = swap;
     --in;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*****************************************************************/
@@ -80,7 +80,7 @@ PetscErrorCode SPARSEPACKgennd(const PetscInt *neqns, const PetscInt *xadj, cons
     if (!mask[i]) goto L300;
     root = i;
     /*              FIND A SEPARATOR AND NUMBER THE NODES NEXT.*/
-    SPARSEPACKfndsep(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &xls[1], &ls[1]);
+    PetscCall(SPARSEPACKfndsep(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &xls[1], &ls[1]));
     num += nsep;
     if (num >= *neqns) goto L400;
     goto L200;
@@ -90,6 +90,6 @@ PetscErrorCode SPARSEPACKgennd(const PetscInt *neqns, const PetscInt *xadj, cons
 /*        LAST, ROUTINE REVRSE IS CALLED TO ADJUST THE*/
 /*        ORDERING VECTOR.*/
 L400:
-  SPARSEPACKrevrse(neqns, &perm[1]);
-  PetscFunctionReturn(0);
+  PetscCall(SPARSEPACKrevrse(neqns, &perm[1]));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

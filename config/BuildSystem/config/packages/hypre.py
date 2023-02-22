@@ -4,16 +4,17 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.26.0'
+    self.version         = '2.27.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
-    self.gitcommit       = 'aff83e81fce70563edc614edfef76fa998ba96fd' # 2.26.0 + $(MAKE) fix
+    self.gitcommit       = '6907852618b972fe0b5c416d79cc3dea74864734' # master feb-16-2023
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
     self.liblist         = [['libHYPRE.a']]
+    self.buildLanguages  = ['C','Cxx']
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
     self.precisions        = ['double']
     # HYPRE is supposed to work with complex number
@@ -47,8 +48,6 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     self.packageDir = os.path.join(self.packageDir,'src')
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    if not hasattr(self.compilers, 'CXX'):
-      raise RuntimeError('Error: Hypre requires C++ compiler. None specified')
     if not hasattr(self.compilers, 'FC'):
       args.append('--disable-fortran')
     if self.mpi.include:
@@ -174,7 +173,7 @@ class Configure(config.package.GNUPackage):
     # configure:2911: result:
     # configure:2915: error: invalid value of canonical host
     if 'MSYSTEM' in os.environ and os.environ['MSYSTEM'].endswith('64'):
-      args.append('--build=x86_64-linux-gnu --host=x86_64-linux-gnu')
+      args.append('--host=x86_64-linux-gnu')
 
     return args
 

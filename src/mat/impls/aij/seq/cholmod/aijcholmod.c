@@ -47,14 +47,14 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A, PetscBool values, cholmod_spa
   C->dtype  = CHOLMOD_DOUBLE;
   C->sorted = 1;
   C->packed = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatFactorGetSolverType_seqaij_cholmod(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCHOLMOD;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Almost a copy of MatGetFactor_seqsbaij_cholmod, yuck */
@@ -95,5 +95,5 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A, MatFactorType fty
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_CHOLESKY]));
   PetscCall(CholmodStart(B));
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -69,7 +69,7 @@ static inline PetscErrorCode PetscViewerHDF5ResetAttachedDMPlexStorageVersion(Pe
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)v, DMPLEX_STORAGE_VERSION_READING_KEY, NULL));
   PetscCall(PetscObjectCompose((PetscObject)v, DMPLEX_STORAGE_VERSION_WRITING_KEY, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 #endif

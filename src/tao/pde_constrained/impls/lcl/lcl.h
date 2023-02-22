@@ -62,9 +62,9 @@ typedef struct {
   Mat jacobian_state_inv0; /* Inverse of Jacobian wrt U */
   Mat R;
 
-  Vec lamda;  /* Lagrange Multiplier */
-  Vec lamda0; /* Lagrange Multiplier */
-  Vec lamda1; /* Lagrange Multiplier */
+  Vec lambda;  /* Lagrange Multiplier */
+  Vec lambda0; /* Lagrange Multiplier */
+  Vec lambda1; /* Lagrange Multiplier */
 
   Vec       WL;  /* Work vector */
   PetscReal rho; /* Penalty parameter */

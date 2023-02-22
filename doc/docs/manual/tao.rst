@@ -1689,7 +1689,7 @@ impacted at each iteration.
 
 Two options can be set specifically for the Nelder-Mead algorithm:
 
-``-tao_nm_lamda <value>``
+``-tao_nm_lambda <value>``
    sets the initial set of vectors (:math:`x_0` plus ``value`` in each
    coordinate direction); the default value is :math:`1`.
 
@@ -3029,7 +3029,7 @@ The line search routines involve several parameters, which are set to
 defaults that are reasonable for many applications. The user can
 override the defaults by using the following options
 
--  ``-tao_ls_maxfev <max>``
+-  ``-tao_ls_max_funcs <max>``
 
 -  ``-tao_ls_stepmin <min>``
 
@@ -3220,7 +3220,7 @@ gradient method.
        iter++;
      }
 
-     PetscFunctionReturn(0);
+     PetscFunctionReturn(PETSC_SUCCESS);
    }
 
 The first line of this routine casts the second argument to a pointer to
@@ -3328,7 +3328,7 @@ conjugate gradient algorithm shown above can be implemented as follows.
      PetscCall(TaoLineSearchSetType(tao->linesearch, morethuente_type));
      PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
 
-     PetscFunctionReturn(0);
+     PetscFunctionReturn(PETSC_SUCCESS);
    }
    EXTERN_C_END
 
@@ -3373,7 +3373,7 @@ and the ``TAO_CG`` structure.
      PetscFree(tao->data);
      tao->data = NULL;
 
-     PetscFunctionReturn(0);
+     PetscFunctionReturn(PETSC_SUCCESS);
    }
 
 This routine is called from within the ``TaoDestroy()`` routine. Only
@@ -3403,7 +3403,7 @@ have the following form.
      PetscCall(VecDuplicate(tao->solution,&cg->X_old));
      PetscCall(VecDuplicate(tao->solution,&cg->G_old));
 
-     PetscFunctionReturn(0);
+     PetscFunctionReturn(PETSC_SUCCESS);
    }
 
 SetFromOptions Routine
@@ -3423,7 +3423,7 @@ following form.
      PetscCall(PetscOptionsReal("-tao_cg_eta","restart tolerance","",cg->eta,&cg->eta,0));
      PetscCall(PetscOptionsReal("-tao_cg_delta_min","minimum delta value","",cg->delta_min,&cg->delta_min,0));
      PetscCall(PetscOptionsReal("-tao_cg_delta_max","maximum delta value","",cg->delta_max,&cg->delta_max,0));
-     PetscFunctionReturn(0);
+     PetscFunctionReturn(PETSC_SUCCESS);
    }
 
 View Routine
@@ -3446,7 +3446,7 @@ form.
      PetscCall(PetscViewerASCIIPrintf(viewer,"Grad. steps: %d\n",cg->ngradsteps));
      PetscCall(PetscViewerASCIIPrintf(viewer,"Reset steps: %d\n",cg->nresetsteps));
      PetscCall(PetscViewerASCIIPopTab(viewer));
-     PetscFunctionReturn(0);
+     PetscFunctionReturn(PETSC_SUCCESS);
    }
 
 Registering the Solver

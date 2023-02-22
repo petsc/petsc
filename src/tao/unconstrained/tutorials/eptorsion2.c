@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   PC        pc;
   AppCtx    user;
 
-  PetscInitialize(&argc, &argv, (char *)0, help);
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /* Specify default dimension of the problem */
   user.param = 5.0;
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&user.localX));
   PetscCall(DMDestroy(&user.dm));
 
-  PetscFinalize();
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -177,7 +177,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
   }
   PetscCall(VecAssemblyBegin(X));
   PetscCall(VecAssemblyEnd(X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------ */
@@ -320,7 +320,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
   PetscCall((PetscErrorCode)MPI_Allreduce((void *)&floc, (void *)f, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
 
   PetscCall(PetscLogFlops((ye - ysm) * (xe - xsm) * 20 + (xep - xs) * (yep - ys) * 16));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void *ctx)
@@ -394,7 +394,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void *ctx)
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(PetscLogFlops(9 * xm * ym + 49 * xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

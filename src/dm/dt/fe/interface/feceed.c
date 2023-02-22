@@ -20,9 +20,9 @@ PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
-  if (fe->ceed == ceed) PetscFunctionReturn(0);
+  if (fe->ceed == ceed) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallCEED(CeedReferenceCopy(ceed, &fe->ceed));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -51,7 +51,7 @@ PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
-  PetscValidBoolPointer(basis, 2);
+  PetscValidPointer(basis, 2);
   if (!fe->ceedBasis && fe->ceed) {
     PetscCall(PetscFEGetSpatialDimension(fe, &dim));
     PetscCall(PetscFEGetNumComponents(fe, &Nc));
@@ -62,7 +62,7 @@ PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
     PetscCallCEED(CeedBasisCreateTensorH1Lagrange(fe->ceed, dim, Nc, deg + 1, (ord + 1) / 2, CEED_GAUSS, &fe->ceedBasis));
   }
   *basis = fe->ceedBasis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

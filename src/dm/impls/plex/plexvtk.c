@@ -70,7 +70,7 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
@@ -220,7 +220,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
   }
   PetscCall(PetscFree(corners));
   *totalCells = totCells;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
@@ -260,7 +260,7 @@ static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
   } else {
     PetscCallMPI(MPI_Send(&numCells, 1, MPIU_INT, 0, tag, comm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
@@ -401,7 +401,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
     PetscCall(PetscFree(localValues));
   }
   PetscCall(VecRestoreArray(v, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale, PetscBool nameComplex, PetscInt imag)
@@ -435,7 +435,7 @@ static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, Pet
     PetscCall(PetscFPrintf(comm, fp, "LOOKUP_TABLE default\n"));
   }
   PetscCall(DMPlexVTKWriteSection_ASCII(dm, section, globalSection, field, fp, enforceDof, precision, scale, imag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
@@ -627,7 +627,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   }
   /* Cleanup */
   PetscCall(PetscFClose(comm, fp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -665,5 +665,5 @@ PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

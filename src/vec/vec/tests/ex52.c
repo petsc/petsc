@@ -14,7 +14,7 @@ static PetscErrorCode CheckVecSumReturn(Vec v, PetscScalar expected)
   PetscFunctionBegin;
   PetscCall(VecSum(v, &actual));
   PetscCheck(PetscIsCloseAtTolScalar(actual, expected, 1e-12, 0.0), PETSC_COMM_SELF, PETSC_ERR_PLIB, "VecSum() returned %g + %gi, expected %g + %gi", (double)PetscRealPart(actual), (double)PetscImaginaryPart(actual), (double)PetscRealPart(expected), (double)PetscImaginaryPart(expected));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

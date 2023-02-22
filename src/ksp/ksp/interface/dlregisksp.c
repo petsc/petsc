@@ -31,7 +31,7 @@ PetscErrorCode PCFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&PCMGCoarseList));
   PCPackageInitialized = PETSC_FALSE;
   PCRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -49,7 +49,7 @@ PetscErrorCode PCInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PCPackageInitialized) PetscFunctionReturn(0);
+  if (PCPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PCPackageInitialized = PETSC_TRUE;
   /* Initialize subpackages */
   PetscCall(PCGAMGInitializePackage());
@@ -107,7 +107,7 @@ PetscErrorCode PCInitializePackage(void)
   PetscCall(PetscObjectComposedDataRegister(&PetscMGLevelId));
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PCFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 const char *const        KSPCGTypes[]                 = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
@@ -138,7 +138,7 @@ PetscErrorCode KSPFinalizePackage(void)
   KSPPackageInitialized       = PETSC_FALSE;
   KSPRegisterAllCalled        = PETSC_FALSE;
   KSPMonitorRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -156,7 +156,7 @@ PetscErrorCode KSPInitializePackage(void)
   PetscBool opt, pkg, cls;
 
   PetscFunctionBegin;
-  if (KSPPackageInitialized) PetscFunctionReturn(0);
+  if (KSPPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   KSPPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Krylov Solver", &KSP_CLASSID));
@@ -199,7 +199,7 @@ PetscErrorCode KSPInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(KSPFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -214,7 +214,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void)
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
   PetscCall(KSPInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

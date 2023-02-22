@@ -385,7 +385,7 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 M*/
   #define PetscOptionsHeadEnd() \
     do { \
-      if (PetscOptionsObject->count != 1) PetscFunctionReturn(0); \
+      if (PetscOptionsObject->count != 1) PetscFunctionReturn(PETSC_SUCCESS); \
     } while (0)
 
   #define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadEnd() (since version 3.18)\"") PetscOptionsHeadEnd(__VA_ARGS__)

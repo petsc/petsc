@@ -43,7 +43,7 @@ configure_options = [
   #'--download-suitesparse=1',
   #'--download-chaco=1',
   #'--download-spai=1',
-
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

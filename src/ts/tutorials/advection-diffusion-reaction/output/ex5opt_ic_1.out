@@ -26,13 +26,13 @@
  25 TAO,  Function value: 1.61783e-12,  Residual: 1.39233e-06 
  26 TAO,  Function value: 7.62118e-13,  Residual: 1.34544e-06 
  27 TAO,  Function value: 6.31521e-13,  Residual: 1.16261e-06 
- 28 TAO,  Function value: 3.92009e-13,  Residual: 8.49227e-07 
+ 28 TAO,  Function value: 3.92009e-13,  Residual: 8.49226e-07 
 Tao Object: 1 MPI process
   type: blmvm
   Gradient steps: 0
   Mat Object: (tao_blmvm_) 1 MPI process
     type: lmvmbfgs
-    rows=8192, cols=8192
+    rows=8192, cols=8192, bs=2
       Scale type: DIAGONAL
       Scale history: 1
       Scale params: alpha=1., beta=0.5, rho=1.
@@ -44,7 +44,7 @@ Tao Object: 1 MPI process
       Number of resets: 1
       Mat Object: (tao_blmvm_J0_) 1 MPI process
         type: lmvmdiagbroyden
-        rows=8192, cols=8192
+        rows=8192, cols=8192, bs=2
           Scale history: 1
           Scale params: alpha=1., beta=0.5, rho=1.
           Convex factor: theta=0.125
@@ -62,7 +62,7 @@ Tao Object: 1 MPI process
     total number of function/gradient evaluations=1
     Termination reason: 1
   convergence tolerances: gatol=1e-06,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=8.49227e-07
+  Residual in Function/Gradient:=8.49226e-07
   Objective value=3.92009e-13
   total number of iterations=28,                          (max: 2000)
   total number of function/gradient evaluations=30,      (max: 4000)

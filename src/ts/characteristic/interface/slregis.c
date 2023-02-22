@@ -15,7 +15,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&CharacteristicList));
   CharacteristicPackageInitialized = PETSC_FALSE;
   CharacteristicRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -33,7 +33,7 @@ PetscErrorCode CharacteristicInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (CharacteristicPackageInitialized) PetscFunctionReturn(0);
+  if (CharacteristicPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   CharacteristicPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Method of Characteristics", &CHARACTERISTIC_CLASSID));
@@ -65,7 +65,7 @@ PetscErrorCode CharacteristicInitializePackage(void)
   }
   /* Process package finalizer */
   PetscCall(PetscRegisterFinalize(CharacteristicFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -78,7 +78,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(void)
 {
   PetscFunctionBegin;
   PetscCall(CharacteristicInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

@@ -37,7 +37,7 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm, Mat *J)
   PetscCall(PetscFree2(cols, vals));
   PetscCall(MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDestroy_Redundant(DM dm)
@@ -48,7 +48,7 @@ static PetscErrorCode DMDestroy_Redundant(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", NULL));
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   PetscCall(PetscFree(dm->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm, Vec *gvec)
@@ -66,7 +66,7 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm, Vec *gvec)
   PetscCall(DMGetLocalToGlobalMapping(dm, &ltog));
   PetscCall(VecSetLocalToGlobalMapping(*gvec, ltog));
   PetscCall(VecSetDM(*gvec, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateLocalVector_Redundant(DM dm, Vec *lvec)
@@ -81,7 +81,7 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm, Vec *lvec)
   PetscCall(VecSetSizes(*lvec, red->N, red->N));
   PetscCall(VecSetType(*lvec, dm->vectype));
   PetscCall(VecSetDM(*lvec, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode imode, Vec g)
@@ -121,13 +121,13 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode im
   }
   PetscCall(VecRestoreArrayRead(l, &lv));
   PetscCall(VecRestoreArray(g, &gv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLocalToGlobalEnd_Redundant(DM dm, Vec l, InsertMode imode, Vec g)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm, Vec g, InsertMode imode, Vec l)
@@ -149,19 +149,19 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm, Vec g, InsertMode im
   }
   PetscCall(VecRestoreArrayRead(g, &gv));
   PetscCall(VecRestoreArray(l, &lv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGlobalToLocalEnd_Redundant(DM dm, Vec g, InsertMode imode, Vec l)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSetUp_Redundant(DM dm)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer)
@@ -172,7 +172,7 @@ static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "redundant: rank=%d N=%" PetscInt_FMT "\n", red->rank, red->N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateColoring_Redundant(DM dm, ISColoringType ctype, ISColoring *coloring)
@@ -196,7 +196,7 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm, ISColoringType ctype, IS
   for (i = 0; i < nloc; i++) colors[i] = i;
   PetscCall(ISColoringCreate(PetscObjectComm((PetscObject)dm), red->N, nloc, colors, PETSC_OWN_POINTER, coloring));
   PetscCall(ISColoringSetType(*coloring, ctype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRefine_Redundant(DM dmc, MPI_Comm comm, DM *dmf)
@@ -209,7 +209,7 @@ static PetscErrorCode DMRefine_Redundant(DM dmc, MPI_Comm comm, DM *dmf)
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)dmc), comm, &flag));
   PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT, PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "cannot change communicators");
   PetscCall(DMRedundantCreate(comm, redc->rank, redc->N, dmf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsen_Redundant(DM dmf, MPI_Comm comm, DM *dmc)
@@ -222,7 +222,7 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf, MPI_Comm comm, DM *dmc)
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)dmf), comm, &flag));
   PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "cannot change communicators");
   PetscCall(DMRedundantCreate(comm, redf->rank, redf->N, dmc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc, DM dmf, Mat *P, Vec *scale)
@@ -247,7 +247,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc, DM dmf, Mat *P, Ve
   PetscCall(MatAssemblyBegin(*P, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY));
   if (scale) PetscCall(DMCreateInterpolationScale(dmc, dmf, *P, scale));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -272,7 +272,7 @@ PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N)
   PetscValidLogicalCollectiveMPIInt(dm, rank, 2);
   PetscValidLogicalCollectiveInt(dm, N, 3);
   PetscTryMethod(dm, "DMRedundantSetSize_C", (DM, PetscMPIInt, PetscInt), (dm, rank, N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -297,7 +297,7 @@ PetscErrorCode DMRedundantGetSize(DM dm, PetscMPIInt *rank, PetscInt *N)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidType(dm, 1);
   PetscUseMethod(dm, "DMRedundantGetSize_C", (DM, PetscMPIInt *, PetscInt *), (dm, rank, N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRedundantSetSize_Redundant(DM dm, PetscMPIInt rank, PetscInt N)
@@ -317,7 +317,7 @@ static PetscErrorCode DMRedundantSetSize_Redundant(DM dm, PetscMPIInt rank, Pets
   for (i = 0; i < red->N; i++) globals[i] = i;
   PetscCall(ISLocalToGlobalMappingDestroy(&dm->ltogmap));
   PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), 1, red->N, globals, PETSC_OWN_POINTER, &dm->ltogmap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRedundantGetSize_Redundant(DM dm, PetscInt *rank, PetscInt *N)
@@ -327,13 +327,13 @@ static PetscErrorCode DMRedundantGetSize_Redundant(DM dm, PetscInt *rank, PetscI
   PetscFunctionBegin;
   if (rank) *rank = red->rank;
   if (N) *N = red->N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSetUpGLVisViewer_Redundant(PetscObject odm, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -375,7 +375,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMRedundantSetSize_C", DMRedundantSetSize_Redundant));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMRedundantGetSize_C", DMRedundantGetSize_Redundant));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_Redundant));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -404,5 +404,5 @@ PetscErrorCode DMRedundantCreate(MPI_Comm comm, PetscMPIInt rank, PetscInt N, DM
   PetscCall(DMSetType(*dm, DMREDUNDANT));
   PetscCall(DMRedundantSetSize(*dm, rank, N));
   PetscCall(DMSetUp(*dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

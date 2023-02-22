@@ -62,3 +62,10 @@ int main(int argc, char **argv)
   PetscCall(PetscFinalize());
   return 0;
 }
+
+/*TEST
+
+  test:
+    TODO: MatCreateSeqBAIJWithArrays() is broken, it leaks imax and ilen arrays
+
+TEST*/

@@ -35,13 +35,13 @@ static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin, const char disp
   XiWin->cmap       = DefaultColormap(XiWin->disp, XiWin->screen);
   XiWin->background = WhitePixel(XiWin->disp, XiWin->screen);
   XiWin->foreground = BlackPixel(XiWin->disp, XiWin->screen);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
 {
   PetscFunctionBegin;
-  if (!XiWin) PetscFunctionReturn(0);
+  if (!XiWin) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(XiWin->font));
   if (XiWin->disp) {
 #if defined(PETSC_HAVE_SETJMP_H)
@@ -61,7 +61,7 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
     PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf, &jmpbuf, sizeof(jmpbuf)));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -80,7 +80,7 @@ static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin, PetscDrawXiPixVal 
   XiWin->gc.cur_pix   = fg;
   XiWin->gc.set       = XCreateGC(XiWin->disp, RootWindow(XiWin->disp, XiWin->screen), GCFunction | GCForeground, &gcvalues);
   PetscCheck(XiWin->gc.set, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to create X graphics context");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -92,7 +92,7 @@ PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin, const char display[])
   PetscCall(PetscDrawXiOpenDisplay(XiWin, display));
   PetscCall(PetscDrawXiCreateGC(XiWin, XiWin->foreground));
   PetscCall(PetscDrawXiFontFixed(XiWin, 6, 10, &XiWin->font));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -117,12 +117,12 @@ static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin)
       case DestroyNotify:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Window was not properly created");
       case Expose:
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
         /* else ignore event */
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -217,7 +217,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin, char *label, 
      windows.  We wait here for the window to be created or to die */
   PetscCall(PetscDrawXiWaitMap(XiWin));
   XSelectInput(XiWin->disp, XiWin->win, NoEventMask);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin, char *name, int x, int y, int nx, int ny)
@@ -227,7 +227,7 @@ PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin, char *name, int x, int
   PetscCall(PetscDrawXiDisplayWindow(XiWin, name, x, y, nx, ny));
   XSetWindowBackground(XiWin->disp, XiWin->win, XiWin->background);
   XClearWindow(XiWin->disp, XiWin->win);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -241,7 +241,7 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin, Window win)
   XiWin->win = win;
   XGetWindowAttributes(XiWin->disp, XiWin->win, &attributes);
   PetscCall(PetscDrawSetColormap_X(XiWin, attributes.colormap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X *XiWin)
@@ -252,7 +252,7 @@ PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X *XiWin)
   PetscDrawXiSetPixVal(XiWin, XiWin->background);
   XFillRectangle(XiWin->disp, XiWin->drw, XiWin->gc.set, 0, 0, XiWin->w, XiWin->h);
   XSync(XiWin->disp, False);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X *XiWin, int w, int h)
@@ -263,7 +263,7 @@ PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X *XiWin, int w, int h)
   XResizeWindow(XiWin->disp, XiWin->win, (unsigned int)w, (unsigned int)h);
   XWindowEvent(XiWin->disp, XiWin->win, StructureNotifyMask, &event);
   XSelectInput(XiWin->disp, XiWin->win, NoEventMask);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin, int *x, int *y, int *w, int *h)
@@ -288,5 +288,5 @@ PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin, int *x, int *y, int *w
   if (y) *y = yy;
   if (w) *w = (int)ww;
   if (h) *h = (int)hh;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

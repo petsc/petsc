@@ -21,7 +21,7 @@ PetscErrorCode PetscDrawClear(PetscDraw draw)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   if (draw->saveonclear) PetscCall(PetscDrawSave(draw));
   PetscTryTypeMethod(draw, clear);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -41,7 +41,7 @@ PetscErrorCode PetscDrawBOP(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, beginpage);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*@
    PetscDrawEOP - Ends a page or frame on the selected graphical device.
@@ -60,5 +60,5 @@ PetscErrorCode PetscDrawEOP(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, endpage);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -4,17 +4,17 @@ cdef extern from * nogil:
 
     ctypedef PetscSFType PetscScatterType  "VecScatterType"
 
-    int VecScatterView(PetscScatter,PetscViewer)
-    int VecScatterDestroy(PetscScatter*)
-    int VecScatterSetUp(PetscScatter)
-    int VecScatterCreate(PetscVec,PetscIS,PetscVec,PetscIS,PetscScatter*)
-    int VecScatterSetFromOptions(PetscScatter)
-    int VecScatterSetType(PetscScatter,PetscScatterType)
-    int VecScatterGetType(PetscScatter,PetscScatterType*)
-    int VecScatterCopy(PetscScatter, PetscScatter*)
-    int VecScatterCreateToAll(PetscVec,PetscScatter*,PetscVec*)
-    int VecScatterCreateToZero(PetscVec,PetscScatter*,PetscVec*)
-    int VecScatterBegin(PetscScatter,PetscVec,PetscVec,PetscInsertMode,PetscScatterMode)
-    int VecScatterEnd(PetscScatter,PetscVec,PetscVec,PetscInsertMode,PetscScatterMode)
+    PetscErrorCode VecScatterView(PetscScatter,PetscViewer)
+    PetscErrorCode VecScatterDestroy(PetscScatter*)
+    PetscErrorCode VecScatterSetUp(PetscScatter)
+    PetscErrorCode VecScatterCreate(PetscVec,PetscIS,PetscVec,PetscIS,PetscScatter*)
+    PetscErrorCode VecScatterSetFromOptions(PetscScatter)
+    PetscErrorCode VecScatterSetType(PetscScatter,PetscScatterType)
+    PetscErrorCode VecScatterGetType(PetscScatter,PetscScatterType*)
+    PetscErrorCode VecScatterCopy(PetscScatter, PetscScatter*)
+    PetscErrorCode VecScatterCreateToAll(PetscVec,PetscScatter*,PetscVec*)
+    PetscErrorCode VecScatterCreateToZero(PetscVec,PetscScatter*,PetscVec*)
+    PetscErrorCode VecScatterBegin(PetscScatter,PetscVec,PetscVec,PetscInsertMode,PetscScatterMode)
+    PetscErrorCode VecScatterEnd(PetscScatter,PetscVec,PetscVec,PetscInsertMode,PetscScatterMode)
 
 # --------------------------------------------------------------------

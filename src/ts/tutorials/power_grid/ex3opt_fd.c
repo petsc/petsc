@@ -40,7 +40,7 @@ PetscErrorCode monitor(Tao tao, AppCtx *ctx)
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(G, &g));
   fclose(fp);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetType(tao, TAOBLMVM));
-  if (printtofile) PetscCall(TaoSetMonitor(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, PETSC_NULL));
+  if (printtofile) PetscCall(TaoSetMonitor(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, NULL));
   PetscCall(TaoSetMaximumIterations(tao, 30));
   /*
      Optimization starts
@@ -173,6 +173,7 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscInt           direction[2];
   PetscBool          terminate[2];
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(P, &x_ptr));
   ctx->Pm = x_ptr[0];
   PetscCall(VecRestoreArrayRead(P, &x_ptr));
@@ -239,7 +240,7 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscCall(MatDestroy(&A));
   PetscCall(VecDestroy(&U));
   PetscCall(TSDestroy(&ts));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

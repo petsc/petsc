@@ -50,7 +50,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   PetscCall(PetscFree3(B, D, H));
   PetscCall(PetscQuadratureDestroy(&quad));
   PetscCall(PetscSpaceDestroy(&sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

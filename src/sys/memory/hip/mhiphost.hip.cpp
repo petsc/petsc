@@ -4,13 +4,13 @@
 PETSC_EXTERN PetscErrorCode PetscHIPHostMalloc(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result)
 {
   PetscCallHIP(hipHostMalloc(result, a));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostFree(void *aa, int lineno, const char function[], const char filename[])
 {
   PetscCallHIP(hipHostFree(aa));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostRealloc(size_t a, int lineno, const char function[], const char filename[], void **result)
@@ -46,7 +46,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocSetHIPHost(void)
   PetscTrMalloc   = PetscHIPHostMalloc;
   PetscTrRealloc  = PetscHIPHostRealloc;
   PetscTrFree     = PetscHIPHostFree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -64,5 +64,5 @@ PETSC_EXTERN PetscErrorCode PetscMallocResetHIPHost(void)
   PetscTrMalloc  = PetscMallocOld;
   PetscTrRealloc = PetscReallocOld;
   PetscTrFree    = PetscFreeOld;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

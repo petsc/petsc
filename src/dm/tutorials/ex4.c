@@ -19,7 +19,7 @@ PetscErrorCode myfunction(void *ctx, PetscInt n, const PetscScalar *xy, PetscSca
     u[2 * i]     = xy[2 * i];
     u[2 * i + 1] = xy[2 * i + 1];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

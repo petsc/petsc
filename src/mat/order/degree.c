@@ -19,7 +19,7 @@
 /*    OUTPUT PARAMETERS -*/
 /*       DEG - ARRAY CONTAINING THE DEGREES OF THE NODES IN*/
 /*             THE COMPONENT.*/
-/*       CCSIZE-SIZE OF THE COMPONENT SPECIFED BY MASK AND ROOT*/
+/*       CCSIZE-SIZE OF THE COMPONENT SPECIFIED BY MASK AND ROOT*/
 /*    WORKING PARAMETER -*/
 /*       LS - A TEMPORARY VECTOR USED TO STORE THE NODES OF THE*/
 /*              COMPONENT LEVEL BY LEVEL.*/
@@ -88,5 +88,5 @@ L100:
     node       = ls[i];
     xadj[node] = -xadj[node];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

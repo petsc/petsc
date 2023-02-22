@@ -332,7 +332,7 @@ PetscErrorCode InitialConditions(DM da, Vec U)
      Restore vectors
   */
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
@@ -354,7 +354,7 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
     l[j][i].v = 1.0;
     PetscCall(DMDAVecRestoreArray(da, lambda, &l));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u, Field **udot, Field **f, void *ptr)
@@ -390,7 +390,7 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u
     }
   }
   PetscCall(PetscLogFlops(16.0 * xm * ym));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *ptr)
@@ -522,7 +522,7 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   delete[] f_c;
   delete[] u_c;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSFunctionPassive(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
@@ -602,7 +602,7 @@ PetscErrorCode RHSFunctionPassive(TS ts, PetscReal ftime, Vec U, Vec F, void *pt
   PetscCall(DMRestoreLocalVector(da, &localF));
   PetscCall(DMRestoreLocalVector(da, &localU));
   PetscCall(PetscLogFlops(16.0 * xm * ym));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSFunctionActive(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
@@ -747,7 +747,7 @@ PetscErrorCode RHSFunctionActive(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr
   delete[] f_c;
   delete[] u_c;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IJacobianAdolc(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -783,7 +783,7 @@ PetscErrorCode IJacobianAdolc(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, 
   */
   PetscCall(VecRestoreArrayRead(localU, &u_vec));
   PetscCall(DMRestoreLocalVector(da, &localU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IJacobianByHand(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -913,7 +913,7 @@ PetscErrorCode IJacobianByHand(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a,
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatSetOption(B, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobianByHand(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
@@ -1044,7 +1044,7 @@ PetscErrorCode RHSJacobianByHand(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatSetOption(B, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobianAdolc(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
@@ -1080,7 +1080,7 @@ PetscErrorCode RHSJacobianAdolc(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *c
   */
   PetscCall(VecRestoreArray(localU, &u_vec));
   PetscCall(DMRestoreLocalVector(da, &localU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

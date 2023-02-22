@@ -82,5 +82,5 @@ PetscErrorCode MINPACKsetr(PetscInt *m, PetscInt *n, PetscInt *indrow, PetscInt 
       ++iwa[ir];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

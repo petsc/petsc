@@ -8,14 +8,14 @@ PetscErrorCode PCApply_None(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(VecCopy(x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMatApply_None(PC pc, Mat X, Mat Y)
 {
   PetscFunctionBegin;
   PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -44,5 +44,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
   pc->ops->applysymmetricright = PCApply_None;
 
   pc->data = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

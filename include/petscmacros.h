@@ -111,6 +111,10 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   #define PETSC_SINGLE_LIBRARY_INTERN PETSC_EXTERN
 #endif
 
+#if !defined(__has_feature)
+  #define __has_feature(x) 0
+#endif
+
 /*MC
   PetscHasAttribute - Determine whether a particular __attribute__ is supported by the compiler
 
@@ -418,13 +422,14 @@ M*/
 /*MC
   PETSC_NODISCARD - Mark the return value of a function as non-discardable
 
+  Not available in Fortran
+
+  Level: beginner
+
   Notes:
   Hints to the compiler that the return value of a function must be captured. A diagnostic may
-  (but is not required) be emitted if the value is discarded. It is safe to use this in C
-  and C++ source files.
-
-  Fortran Notes:
-  Not available in Fortran
+  (but is not required to) be emitted if the value is discarded. It is safe to use this in both
+  C and C++ source files.
 
   Example Usage:
 .vb
@@ -448,18 +453,11 @@ M*/
   Foo(x);          // Warning: Ignoring temporary created by a constructor declared 'nodiscard'
 .ve
 
-  Developer Notes:
-  It is highly recommended if not downright required that any PETSc routines written in C++
-  returning a PetscErrorCode be marked `PETSC_NODISCARD`. Ignoring the return value of PETSc
-  routines is not supported; unhandled errors may leave PETSc in an unrecoverable state.
-
-  Level: beginner
-
 .seealso: `PETSC_NULLPTR`, `PETSC_CONSTEXPR_14`
 M*/
 
 /* C++11 features */
-#if defined(__cplusplus)
+#if defined(__cplusplus) || (PETSC_C_VERSION >= 23)
   #define PETSC_NULLPTR nullptr
 #else
   #define PETSC_NULLPTR NULL
@@ -474,16 +472,16 @@ M*/
 
 /* C++17 features */
 #if PETSC_CPP_VERSION >= 17
-  #define PETSC_NODISCARD    [[nodiscard]]
   #define PETSC_CONSTEXPR_17 constexpr
 #else
-  #if PetscHasAttribute(warn_unused_result)
-    #define PETSC_NODISCARD __attribute__((warn_unused_result))
-  #endif
   #define PETSC_CONSTEXPR_17
 #endif
 
-#ifndef PETSC_NODISCARD
+#if (PETSC_CPP_VERSION >= 17) || (PETSC_C_VERSION >= 23)
+  #define PETSC_NODISCARD [[nodiscard]]
+#elif PetscHasAttribute(warn_unused_result)
+  #define PETSC_NODISCARD __attribute__((warn_unused_result))
+#else
   #define PETSC_NODISCARD
 #endif
 
@@ -608,7 +606,10 @@ M*/
 
 .seealso: `SETERRABORT()`, `PETSCABORT()`, `PETSC_ATTRIBUTE_COLD`, `PetscAssume()`
 M*/
-#if defined(__GNUC__)
+#if PETSC_CPP_VERSION >= 23
+  #include <utility>
+  #define PetscUnreachable() std::unreachable()
+#elif defined(__GNUC__)
   /* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
   #define PetscUnreachable() __builtin_unreachable()
 #elif defined(_MSC_VER) /* MSVC */
@@ -686,7 +687,9 @@ M*/
 
 .seealso: `PetscAssert()`
 M*/
-#if defined(_MSC_VER) // msvc
+#if PETSC_CPP_VERSION >= 23
+  #define PetscAssume(...) [[assume(__VA_ARGS__)]]
+#elif defined(_MSC_VER) // msvc
   #define PetscAssume(...) __assume(__VA_ARGS__)
 #elif defined(__clang__) && PetscHasBuiltin(__builtin_assume) // clang
   #define PetscAssume(...) \
@@ -718,7 +721,7 @@ M*/
   // }
   //
   // Here gcc would (if just using builtin_expect()) emit 2 calls to bar(). Note we still have
-  // cond "tested" in the condition, but this is done to silence set-but-unused variable warnings
+  // cond "tested" in the condition, but this is done to silence unused-but-set variable warnings
   #define PetscAssume(...) \
     do { \
       if (0 && (__VA_ARGS__)) PetscUnreachable(); \
@@ -1117,7 +1120,7 @@ M*/
 M*/
   #define PetscMacroReturns(retexpr, ...) PetscMacroReturns_(retexpr, __VA_ARGS__)
 
-  #define PetscMacroReturnStandard(...) PetscMacroReturns(0, __VA_ARGS__)
+  #define PetscMacroReturnStandard(...) PetscMacroReturns(PETSC_SUCCESS, __VA_ARGS__)
 
 #endif /* !PETSC_SKIP_VARIADIC_MACROS */
 

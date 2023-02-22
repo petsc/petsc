@@ -37,6 +37,8 @@ int main(int argc, char **argv)
 
   PetscCall(VecSetValue(x, rank * n, rank * n, INSERT_VALUES));
   PetscCall(VecSetValue(x, rank * n + 1, rank * n + 1, INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "----\n"));

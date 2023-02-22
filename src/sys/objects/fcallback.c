@@ -30,7 +30,7 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
   }
   PetscCall(PetscFree(_classbase));
   _maxclassid = PETSC_SMALLEST_CLASSID;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -94,7 +94,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *su
 
     base->maxsubtypecount = PetscMax(base->maxsubtypecount, link->max - PETSC_SMALLEST_FORTRAN_CALLBACK);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -126,5 +126,5 @@ PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid, PetscFortranCa
     *numbase    = 0;
     *numsubtype = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

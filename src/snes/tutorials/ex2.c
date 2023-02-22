@@ -187,8 +187,9 @@ int main(int argc, char **argv)
 PetscErrorCode FormInitialGuess(Vec x)
 {
   PetscScalar pfive = .50;
+  PetscFunctionBeginUser;
   PetscCall(VecSet(x, pfive));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -216,6 +217,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
   PetscScalar       *ff, d;
   PetscInt           i, n;
 
+  PetscFunctionBeginUser;
   /*
      Get pointers to vector data.
        - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -243,7 +245,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(f, &ff));
   PetscCall(VecRestoreArrayRead(g, &gg));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -266,6 +268,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
   PetscScalar        A[3], d;
   PetscInt           i, n, j[3];
 
+  PetscFunctionBeginUser;
   /*
      Get pointer to vector data
   */
@@ -319,7 +322,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
     PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -342,10 +345,11 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
   MonitorCtx *monP = (MonitorCtx *)ctx;
   Vec         x;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iter = %" PetscInt_FMT ", SNES Function norm %g\n", its, (double)fnorm));
   PetscCall(SNESGetSolution(snes, &x));
   PetscCall(VecView(x, monP->viewer));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

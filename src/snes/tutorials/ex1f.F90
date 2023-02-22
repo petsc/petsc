@@ -43,18 +43,6 @@
 
       external FormFunction, FormJacobian, MyLineSearch
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                   Macro definitions
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  Macros to make clearer the process of setting values in vectors and
-!  getting values from vectors.  These vectors are used in the routines
-!  FormFunction() and FormJacobian().
-!   - The element lx_a(ib) is element ib in the vector x
-!
-#define lx_a(ib) lx_v(lx_i + (ib))
-#define lf_a(ib) lf_v(lf_i + (ib))
-!
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -195,30 +183,25 @@
       integer dummy(*)
 
 !  Declarations for use with local arrays
-
-      PetscScalar  lx_v(2),lf_v(2)
-      PetscOffset  lx_i,lf_i
+      PetscScalar,pointer :: lx_v(:),lf_v(:)
 
 !  Get pointers to vector data.
-!    - For default PETSc vectors, VecGetArray() returns a pointer to
-!      the data array.  Otherwise, the routine is implementation dependent.
-!    - You MUST call VecRestoreArray() when you no longer need access to
+!    - VecGetArrayF90() returns a pointer to the data array.
+!    - You MUST call VecRestoreArrayF90() when you no longer need access to
 !      the array.
-!    - Note that the Fortran interface to VecGetArray() differs from the
-!      C version.  See the Fortran chapter of the users manual for details.
 
-      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
-      PetscCall(VecGetArray(f,lf_v,lf_i,ierr))
+      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
+      PetscCall(VecGetArrayF90(f,lf_v,ierr))
 
 !  Compute function
 
-      lf_a(1) = lx_a(1)*lx_a(1) + lx_a(1)*lx_a(2) - 3.0
-      lf_a(2) = lx_a(1)*lx_a(2) + lx_a(2)*lx_a(2) - 6.0
+      lf_v(1) = lx_v(1)*lx_v(1) + lx_v(1)*lx_v(2) - 3.0
+      lf_v(2) = lx_v(1)*lx_v(2) + lx_v(2)*lx_v(2) - 6.0
 
 !  Restore vectors
 
-      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
-      PetscCall(VecRestoreArray(f,lf_v,lf_i,ierr))
+      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
+      PetscCall(VecRestoreArrayF90(f,lf_v,ierr))
 
       return
       end
@@ -250,13 +233,12 @@
 
 !  Declarations for use with local arrays
 
-      PetscScalar lx_v(2)
-      PetscOffset lx_i
+      PetscScalar,pointer :: lx_v(:)
 
 !  Get pointer to vector data
 
       i2 = 2
-      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
 
 !  Compute Jacobian entries and insert into matrix.
 !   - Since this is such a small problem, we set all entries for
@@ -266,15 +248,15 @@
 
       idx(1) = 0
       idx(2) = 1
-      A(1) = 2.0*lx_a(1) + lx_a(2)
-      A(2) = lx_a(1)
-      A(3) = lx_a(2)
-      A(4) = lx_a(1) + 2.0*lx_a(2)
+      A(1) = 2.0*lx_v(1) + lx_v(2)
+      A(2) = lx_v(1)
+      A(3) = lx_v(2)
+      A(4) = lx_v(1) + 2.0*lx_v(2)
       PetscCall(MatSetValues(B,i2,idx,i2,idx,A,INSERT_VALUES,ierr))
 
 !  Restore vector
 
-      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
 
 !  Assemble matrix
 

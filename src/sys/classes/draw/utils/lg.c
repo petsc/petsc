@@ -48,7 +48,7 @@ PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, cons
     lg->y[lg->loc++] = y[i];
   }
   lg->nopts++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -104,7 +104,7 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
     lg->y[lg->loc++] = y[i];
   }
   lg->nopts++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -166,5 +166,5 @@ PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal **xx, 
   }
   lg->loc += n * lg->dim;
   lg->nopts += n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

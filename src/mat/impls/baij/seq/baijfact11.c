@@ -213,7 +213,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C, Mat A, const MatFacto
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 4 * 4 * 4 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatLUFactorNumeric_SeqBAIJ_4 -
@@ -331,7 +331,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *i
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 4 * 4 * 4 * n)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
@@ -533,7 +533,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C, Mat A
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 4 * 4 * 4 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -641,7 +641,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B, Mat A, const 
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 4 * 4 * 4 * n)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_SSE)
@@ -1086,7 +1086,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B, Mat A, co
   PetscCall(PetscLogFlops(1.333333333333 * bs * bs2 * b->mbs));
   /* Flop Count from inverting diagonal blocks */
   SSE_SCOPE_END;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat C)
@@ -1529,7 +1529,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   PetscCall(PetscLogFlops(1.333333333333 * bs * bs2 * b->mbs));
   /* Flop Count from inverting diagonal blocks */
   SSE_SCOPE_END;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A, const MatFactorInfo *info)
@@ -1972,7 +1972,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A
   PetscCall(PetscLogFlops(1.333333333333 * bs * bs2 * b->mbs));
   /* Flop Count from inverting diagonal blocks */
   SSE_SCOPE_END;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

@@ -302,7 +302,7 @@ M*/
 PetscErrorCode TSRosWRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSRosWRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSRosWRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSRosWRegisterAllCalled = PETSC_TRUE;
 
   {
@@ -580,7 +580,7 @@ PetscErrorCode TSRosWRegisterAll(void)
   PetscCall(TSRosWRegisterRos4(TSROSWSHAMP4, 0.5, PETSC_DEFAULT, PETSC_DEFAULT, 0, 125. / 108.));
   PetscCall(TSRosWRegisterRos4(TSROSWVELDD4, 0.22570811482256823492, PETSC_DEFAULT, PETSC_DEFAULT, 0, -1.355958941201148));
   PetscCall(TSRosWRegisterRos4(TSROSW4L, 0.57282, PETSC_DEFAULT, PETSC_DEFAULT, 0, -1.093502252409163));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -608,7 +608,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
     PetscCall(PetscFree(link));
   }
   TSRosWRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -622,11 +622,11 @@ PetscErrorCode TSRosWRegisterDestroy(void)
 PetscErrorCode TSRosWInitializePackage(void)
 {
   PetscFunctionBegin;
-  if (TSRosWPackageInitialized) PetscFunctionReturn(0);
+  if (TSRosWPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TSRosWPackageInitialized = PETSC_TRUE;
   PetscCall(TSRosWRegisterAll());
   PetscCall(PetscRegisterFinalize(TSRosWFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -642,7 +642,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
   PetscFunctionBegin;
   TSRosWPackageInitialized = PETSC_FALSE;
   PetscCall(TSRosWRegisterDestroy());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -774,7 +774,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   PetscCall(PetscArraycpy(t->binterpt, binterpt, s * pinterp));
   link->next      = RosWTableauList;
   RosWTableauList = link;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -910,7 +910,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2
     PetscCheck(PetscAbs(misfit) <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_SUP, "Assumptions violated, could not construct a third order embedded method");
   }
   PetscCall(TSRosWRegister(name, 4, 4, &A[0][0], &Gamma[0][0], b, bm, 0, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -942,7 +942,7 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts, PetscInt order, Vec U, PetscBoo
       PetscCall(VecMAXPY(U, tab->s, w, ros->Y));
     } else PetscCall(VecCopy(ts->vec_sol, U));
     if (done) *done = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (order == tab->order - 1) {
     if (!tab->bembedt) goto unavailable;
     if (ros->status == TS_STEP_INCOMPLETE) { /* Use embedded completion formula */
@@ -955,14 +955,14 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts, PetscInt order, Vec U, PetscBoo
       PetscCall(VecMAXPY(U, tab->s, w, ros->Y));
     }
     if (done) *done = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 unavailable:
   if (done) *done = PETSC_FALSE;
   else
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Rosenbrock-W '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.", tab->name,
             tab->order, order);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRollBack_RosW(TS ts)
@@ -971,7 +971,7 @@ static PetscErrorCode TSRollBack_RosW(TS ts)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(ros->vec_sol_prev, ts->vec_sol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStep_RosW(TS ts)
@@ -1086,7 +1086,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, rejections));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U)
@@ -1136,7 +1136,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U)
   PetscCall(VecAXPY(U, 1, ros->vec_sol_prev));
 
   PetscCall(PetscFree(bt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -1147,10 +1147,10 @@ static PetscErrorCode TSRosWTableauReset(TS ts)
   RosWTableau tab = ros->tableau;
 
   PetscFunctionBegin;
-  if (!tab) PetscFunctionReturn(0);
+  if (!tab) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecDestroyVecs(tab->s, &ros->Y));
   PetscCall(PetscFree(ros->work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_RosW(TS ts)
@@ -1164,7 +1164,7 @@ static PetscErrorCode TSReset_RosW(TS ts)
   PetscCall(VecDestroy(&ros->Zdot));
   PetscCall(VecDestroy(&ros->Zstage));
   PetscCall(VecDestroy(&ros->vec_sol_prev));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage)
@@ -1192,7 +1192,7 @@ static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Yst
       PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Zstage", Zstage));
     } else *Zstage = rw->Zstage;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRosWRestoreVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage)
@@ -1210,13 +1210,13 @@ static PetscErrorCode TSRosWRestoreVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec 
   if (Zstage) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Zstage", Zstage));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsenHook_TSRosW(DM fine, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRestrictHook_TSRosW(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
@@ -1238,13 +1238,13 @@ static PetscErrorCode DMRestrictHook_TSRosW(DM fine, Mat restrct, Vec rscale, Ma
   PetscCall(VecPointwiseMult(Zstagec, rscale, Zstagec));
   PetscCall(TSRosWRestoreVecs(ts, fine, &Ydot, &Ystage, &Zdot, &Zstage));
   PetscCall(TSRosWRestoreVecs(ts, coarse, &Ydotc, &Ystagec, &Zdotc, &Zstagec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainHook_TSRosW(DM fine, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
@@ -1271,7 +1271,7 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm, VecScatter gscat, Ve
 
   PetscCall(TSRosWRestoreVecs(ts, dm, &Ydot, &Ystage, &Zdot, &Zstage));
   PetscCall(TSRosWRestoreVecs(ts, subdm, &Ydots, &Ystages, &Zdots, &Zstages));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1295,7 +1295,7 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes, Vec U, Vec F, TS ts)
   PetscCall(TSComputeIFunction(ts, ros->stage_time, Ystage, Ydot, F, PETSC_FALSE));
   ts->dm = dmsave;
   PetscCall(TSRosWRestoreVecs(ts, dm, &Ydot, &Zdot, &Ystage, &Zstage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes, Vec U, Mat A, Mat B, TS ts)
@@ -1314,7 +1314,7 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes, Vec U, Mat A, Mat B, TS
   PetscCall(TSComputeIJacobian(ts, ros->stage_time, Ystage, Ydot, shift, A, B, PETSC_TRUE));
   ts->dm = dmsave;
   PetscCall(TSRosWRestoreVecs(ts, dm, &Ydot, &Zdot, &Ystage, &Zstage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRosWTableauSetUp(TS ts)
@@ -1325,7 +1325,7 @@ static PetscErrorCode TSRosWTableauSetUp(TS ts)
   PetscFunctionBegin;
   PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &ros->Y));
   PetscCall(PetscMalloc1(tab->s, &ros->work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_RosW(TS ts)
@@ -1370,7 +1370,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
       PetscCall(MatDestroy(&Amat));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
 
@@ -1401,7 +1401,7 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems *PetscOption
   /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
   PetscCall(TSGetSNES(ts, &snes));
   if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, SNESKSPONLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_RosW(TS ts, PetscViewer viewer)
@@ -1425,7 +1425,7 @@ static PetscErrorCode TSView_RosW(TS ts, PetscViewer viewer)
     PetscCall(PetscFormatRealArray(buf, sizeof(buf), "% 8.6f", tab->s, abscissa));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Abscissa of A+Gamma = %s\n", buf));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
@@ -1441,7 +1441,7 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
   /* function and Jacobian context for SNES when used with TS is always ts object */
   PetscCall(SNESSetFunction(snes, NULL, NULL, ts));
   PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1463,7 +1463,7 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(roswtype, 2);
   PetscTryMethod(ts, "TSRosWSetType_C", (TS, TSRosWType), (ts, roswtype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1486,7 +1486,7 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSRosWGetType_C", (TS, TSRosWType *), (ts, rostype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1507,7 +1507,7 @@ PetscErrorCode TSRosWSetRecomputeJacobian(TS ts, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSRosWSetRecomputeJacobian_C", (TS, PetscBool), (ts, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRosWGetType_RosW(TS ts, TSRosWType *rostype)
@@ -1516,7 +1516,7 @@ static PetscErrorCode TSRosWGetType_RosW(TS ts, TSRosWType *rostype)
 
   PetscFunctionBegin;
   *rostype = ros->tableau->name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRosWSetType_RosW(TS ts, TSRosWType rostype)
@@ -1528,7 +1528,7 @@ static PetscErrorCode TSRosWSetType_RosW(TS ts, TSRosWType rostype)
   PetscFunctionBegin;
   if (ros->tableau) {
     PetscCall(PetscStrcmp(ros->tableau->name, rostype, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (link = RosWTableauList; link; link = link->next) {
     PetscCall(PetscStrcmp(link->tab.name, rostype, &match));
@@ -1537,7 +1537,7 @@ static PetscErrorCode TSRosWSetType_RosW(TS ts, TSRosWType rostype)
       ros->tableau = &link->tab;
       if (ts->setupcalled) PetscCall(TSRosWTableauSetUp(ts));
       ts->default_adapt_type = ros->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", rostype);
@@ -1549,7 +1549,7 @@ static PetscErrorCode TSRosWSetRecomputeJacobian_RosW(TS ts, PetscBool flg)
 
   PetscFunctionBegin;
   ros->recompute_jacobian = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_RosW(TS ts)
@@ -1564,7 +1564,7 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRosWGetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRosWSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRosWSetRecomputeJacobian_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------ */
@@ -1661,5 +1661,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRosWSetRecomputeJacobian_C", TSRosWSetRecomputeJacobian_RosW));
 
   PetscCall(TSRosWSetType(ts, TSRosWDefault));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

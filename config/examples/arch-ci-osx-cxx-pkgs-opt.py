@@ -57,6 +57,7 @@ configure_options = [
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
   '--download-htool=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

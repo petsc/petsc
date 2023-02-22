@@ -23,7 +23,7 @@ PetscErrorCode IFunctionView(AppCtx *ctx, PetscViewer v)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryWrite(v, &ctx->k, 1, PETSC_SCALAR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IFunctionLoad(AppCtx **ctx, PetscViewer v)
@@ -31,7 +31,7 @@ PetscErrorCode IFunctionLoad(AppCtx **ctx, PetscViewer v)
   PetscFunctionBegin;
   PetscCall(PetscNew(ctx));
   PetscCall(PetscViewerBinaryRead(v, &(*ctx)->k, 1, NULL, PETSC_SCALAR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -53,7 +53,7 @@ PetscErrorCode IFunctionPassive(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppC
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(VecRestoreArrayRead(Udot, &udot));
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -90,7 +90,7 @@ PetscErrorCode IFunctionActive1(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppC
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(VecRestoreArrayRead(Udot, &udot));
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -127,7 +127,7 @@ PetscErrorCode IFunctionActive2(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppC
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(VecRestoreArrayRead(Udot, &udot));
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -143,7 +143,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A
   PetscCall(VecGetArrayRead(U, &u));
   PetscCall(PetscAdolcComputeIJacobian(1, 2, A, u, a, appctx->adctx));
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -165,7 +165,7 @@ static PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *ctx)
   u[2] = uinit[1] + uinit[2] - u[1];
   PetscCall(VecRestoreArray(U, &u));
   PetscCall(VecRestoreArrayRead(ctx->initialsolution, &uinit));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

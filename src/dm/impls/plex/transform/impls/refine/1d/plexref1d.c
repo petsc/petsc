@@ -33,7 +33,7 @@ static PetscErrorCode DMPlexTransformSetUp_1D(DMPlexTransform tr)
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformGetSubcellOrientation_1D(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
@@ -51,7 +51,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_1D(DMPlexTransform tr
   default:
     PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
@@ -75,7 +75,7 @@ static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPoly
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
@@ -95,7 +95,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr, Petsc
     PetscCall(DMLabelDestroy(&active));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformView_1D(DMPlexTransform tr, PetscViewer viewer)
@@ -117,14 +117,14 @@ static PetscErrorCode DMPlexTransformView_1D(DMPlexTransform tr, PetscViewer vie
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformDestroy_1D(DMPlexTransform tr)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(tr->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformInitialize_1D(DMPlexTransform tr)
@@ -138,7 +138,7 @@ static PetscErrorCode DMPlexTransformInitialize_1D(DMPlexTransform tr)
   tr->ops->celltransform         = DMPlexTransformCellTransform_1D;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_1D;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_1D(DMPlexTransform tr)
@@ -151,5 +151,5 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_1D(DMPlexTransform tr)
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_1D(tr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

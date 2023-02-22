@@ -11,12 +11,12 @@
       PetscErrorCode ierr
       PetscMPIInt rank
       PetscViewer v
-      PetscInt i,j,ia(1),ja(1)
-      PetscInt n,icol(1),rstart
+      PetscInt i,j
+      PetscInt n,rstart
       PetscInt zero,one,rend
-      PetscBool   done
-      PetscOffset iia,jja,aaa,iicol
-      PetscScalar aa(1)
+      PetscBool   done,bb
+      PetscScalar,pointer :: aa(:)
+      PetscInt,pointer :: ia(:),ja(:),icol(:)
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
@@ -27,7 +27,7 @@
       PetscCallA(MatLoad(A,v,ierr))
       PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      PetscCallA(MatMPIAIJGetSeqAIJ(A,Ad,Ao,icol,iicol,ierr))
+      PetscCallA(MatMPIAIJGetSeqAIJF90(A,Ad,Ao,icol,ierr))
       PetscCallA(MatGetOwnershipRange(A,rstart,rend,ierr))
 !
 !   Print diagonal portion of matrix
@@ -35,29 +35,31 @@
       PetscCallA(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr))
       zero = 0
       one  = 1
-      PetscCallA(MatGetRowIJ(Ad,one,zero,zero,n,ia,iia,ja,jja,done,ierr))
-      PetscCallA(MatSeqAIJGetArray(Ad,aa,aaa,ierr))
+      bb = .true.
+      PetscCallA(MatGetRowIJF90(Ad,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJGetArrayF90(Ad,aa,ierr))
       do 10, i=1,n
-        write(7+rank,*) 'row ',i+rstart,' number nonzeros ',ia(iia+i+1)-ia(iia+i)
-        do 20, j=ia(iia+i),ia(iia+i+1)-1
-          write(7+rank,*)'  ',j,ja(jja+j)+rstart,aa(aaa+j)
+        write(7+rank,*) 'row ',i+rstart,' number nonzeros ',ia(i+1)-ia(i)
+        do 20, j=ia(i),ia(i+1)-1
+          write(7+rank,*)'  ',j,ja(j)+rstart,aa(j)
  20     continue
  10   continue
-      PetscCallA(MatRestoreRowIJ(Ad,one,zero,zero,n,ia,iia,ja,jja,done,ierr))
-      PetscCallA(MatSeqAIJRestoreArray(Ad,aa,aaa,ierr))
+      PetscCallA(MatRestoreRowIJF90(Ad,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJRestoreArrayF90(Ad,aa,ierr))
 !
 !   Print off-diagonal portion of matrix
 !
-      PetscCallA(MatGetRowIJ(Ao,one,zero,zero,n,ia,iia,ja,jja,done,ierr))
-      PetscCallA(MatSeqAIJGetArray(Ao,aa,aaa,ierr))
+      PetscCallA(MatGetRowIJF90(Ao,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJGetArrayF90(Ao,aa,ierr))
       do 30, i=1,n
-        write(7+rank,*) 'row ',i+rstart,' number nonzeros ',ia(iia+i+1)-ia(iia+i)
-        do 40, j=ia(iia+i),ia(iia+i+1)-1
-          write(7+rank,*)'  ',j,icol(iicol+ja(jja+j))+1,aa(aaa+j)
+        write(7+rank,*) 'row ',i+rstart,' number nonzeros ',ia(i+1)-ia(i)
+        do 40, j=ia(i),ia(i+1)-1
+          write(7+rank,*)'  ',j,icol(ja(j))+1,aa(j)
  40     continue
  30   continue
-      PetscCallA(MatRestoreRowIJ(Ao,one,zero,zero,n,ia,iia,ja,jja,done,ierr))
-      PetscCallA(MatSeqAIJRestoreArray(Ao,aa,aaa,ierr))
+      PetscCallA(MatMPIAIJRestoreSeqAIJF90(A,Ad,Ao,icol,ierr))
+      PetscCallA(MatRestoreRowIJF90(Ao,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJRestoreArrayF90(Ao,aa,ierr))
 
       PetscCallA(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr))
 

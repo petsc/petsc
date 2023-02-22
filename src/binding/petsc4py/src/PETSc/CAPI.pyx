@@ -11,7 +11,7 @@ cdef inline int setref(void *d, void *s) except -1:
 
 # -- Error --
 
-cdef api int PyPetscError_Set(int ierr):
+cdef api int PyPetscError_Set(PetscErrorCode ierr):
     return SETERR(ierr)
 
 # -- Comm --

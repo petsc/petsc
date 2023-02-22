@@ -51,7 +51,7 @@ PetscErrorCode PCMGFCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
       if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGKCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool transpose, PetscBool matapp)
@@ -101,5 +101,5 @@ PetscErrorCode PCMGKCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
     PetscCall(KSPCheckSolve(mglevels[l - 1]->smoothd, pc, mglevels[l - 1]->x));
   }
   if (mglevels[l - 1]->eventsmoothsolve) PetscCall(PetscLogEventEnd(mglevels[l - 1]->eventsmoothsolve, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

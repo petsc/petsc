@@ -22,7 +22,7 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
   }
   PetscCall(VecRestoreArray(d, &dptr));
   PetscCall(VecRestoreArrayRead(g, &gptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
@@ -46,7 +46,7 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
   }
   PetscCall(VecRestoreArray(gv, &gptr));
   PetscCall(VecRestoreArrayRead(x, &xptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_OWLQN(Tao tao)
@@ -73,7 +73,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, iter, f, gnorm, 0.0, step));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Set initial scaling for the function */
   delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm * gnorm);
@@ -215,7 +215,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 
     if ((int)ls_status < 0) break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
@@ -237,7 +237,7 @@ static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
   PetscCall(VecGetSize(tao->solution, &N));
   PetscCall(MatCreateLMVMBFGS(((PetscObject)tao)->comm, n, N, &lmP->M));
   PetscCall(MatLMVMAllocate(lmP->M, tao->solution, tao->gradient));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -254,7 +254,7 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
     PetscCall(VecDestroy(&lmP->GV));
   }
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -267,7 +267,7 @@ static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems *PetscOp
   PetscCall(PetscOptionsReal("-tao_owlqn_lambda", "regulariser weight", "", 100, &lmP->lambda, NULL));
   PetscOptionsHeadEnd();
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -285,7 +285,7 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %" PetscInt_FMT "\n", lm->grad));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -327,5 +327,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
   PetscCall(TaoLineSearchSetType(tao->linesearch, owarmijo_type));
   PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
   PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, tao->hdr.prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

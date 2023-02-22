@@ -22,7 +22,7 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetUp_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -67,7 +67,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
   if (!res) {
     ksp->reason = KSP_CONVERGED_ATOL;
     PetscCall(PetscInfo(ksp, "Converged due to zero residual norm on entry\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
@@ -182,7 +182,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
    */
   /* Form the solution (or the solution so far) */
   PetscCall(KSPPGMRESBuildSoln(RS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -220,14 +220,14 @@ static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPDestroy_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -254,7 +254,7 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 
   if (it < 0) {                        /* no pgmres steps have been performed */
     PetscCall(VecCopy(vguess, vdest)); /* VecCopy() is smart, exits immediately if vguess == vdest */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* solve the upper triangular system - RS is the right side and HH is
@@ -278,7 +278,7 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   } else {
     PetscCall(VecWAXPY(vdest, 1.0, VEC_TEMP, vguess));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -350,7 +350,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
     PetscReal delta = PetscSqrtReal(PetscSqr(PetscAbsScalar(hh[it])) + PetscSqr(PetscAbsScalar(hh[it + 1])));
     if (delta == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     cc[it] = hh[it] / delta;     /* new cosine value */
@@ -369,7 +369,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
     *res = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -402,7 +402,7 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
 
   PetscCall(KSPPGMRESBuildSoln(pgmres->nrs, ksp->vec_sol, ptr, ksp, pgmres->it));
   if (result) *result = ptr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -411,14 +411,14 @@ PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
   PetscCall(KSPSetFromOptions_GMRES(ksp, PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP pipelined GMRES Options");
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPReset_PGMRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPReset_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -494,5 +494,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   pgmres->Rsvd           = NULL;
   pgmres->orthogwork     = NULL;
   pgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

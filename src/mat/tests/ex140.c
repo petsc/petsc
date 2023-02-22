@@ -51,7 +51,7 @@ PetscErrorCode RunHasOperationTest()
     PetscCall(MatDestroy(&A));
     PetscCall(PetscOptionsClearValue(NULL, opts));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -59,7 +59,8 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscPythonInitialize(NULL, NULL));
-  PetscCall(RunHasOperationTest(); PetscPythonPrintError());
+  PetscCall(RunHasOperationTest());
+  PetscCall(PetscPythonPrintError());
   PetscCall(PetscFinalize());
   return 0;
 }

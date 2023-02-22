@@ -70,9 +70,9 @@ const char *const PetscDeviceInitTypes[] = {
 #ifdef __cplusplus
 #include <petsc/private/cpp/type_traits.hpp>
 
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_NONE) == 0, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_LAZY) == 1, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_EAGER) == 2, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_INIT_NONE) == 0, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_INIT_LAZY) == 1, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_INIT_EAGER) == 2, "");
 
 static_assert(
   PETSC_STATIC_ARRAY_LENGTH(PetscDeviceInitTypes) == 6,
@@ -96,7 +96,7 @@ static PetscErrorCode PetscDeviceRegisterEvent_Private(const char name[], PetscC
   PetscFunctionBegin;
   PetscCall(PetscLogEventRegister(name, id, event));
   PetscCall(PetscLogEventSetCollective(*event, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -115,7 +115,7 @@ PetscErrorCode PetscDeviceFinalizePackage(void)
 {
   PetscFunctionBegin;
   registered = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -132,7 +132,7 @@ PetscErrorCode PetscDeviceInitializePackage(void)
 {
   PetscFunctionBegin;
   PetscCheck(PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT()), PETSC_COMM_SELF, PETSC_ERR_SUP, "PETSc is not configured with device support (PETSC_DEVICE_DEFAULT = '%s')", PetscDeviceTypes[PETSC_DEVICE_DEFAULT()]);
-  if (PetscLikely(registered)) PetscFunctionReturn(0);
+  if (PetscLikely(registered)) PetscFunctionReturn(PETSC_SUCCESS);
   registered = PETSC_TRUE;
   PetscCall(PetscRegisterFinalize(PetscDeviceFinalizePackage));
   // class registration
@@ -164,5 +164,5 @@ PetscErrorCode PetscDeviceInitializePackage(void)
 
     PetscCall(PetscInfoProcessClass("device", PETSC_STATIC_ARRAY_LENGTH(classids), classids));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -81,7 +81,7 @@ static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, P
   *_x    = x;
   *_y    = y;
   *_b    = b;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&ytmp));
 
   if (qr) {
-    /* setup rectanglar */
+    /* setup rectangular */
     PetscCall(createMatsAndVecs(m, n, nrhs, full, &mat, &RHS, &SOLU, &x, &y, &b));
     PetscCall(VecDuplicate(y, &ytmp));
 

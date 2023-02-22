@@ -2,7 +2,7 @@
 #include <petsc/private/dmstagimpl.h>
 
 /*@C
-    DMStagRestrictSimple - restricts data from a fine to a coarse DMStag, in the simplest way
+    DMStagRestrictSimple - restricts data from a fine to a coarse `DMSTAG`, in the simplest way
 
     Values on coarse cells are averages of all fine cells that they cover.
     Thus, values on vertices are injected, values on edges are averages
@@ -10,17 +10,16 @@
     d dimensions are averages of $2^d$ underlying elements.
 
     Input Parameters:
-+   dmf - fine DM
-.   xf - data on fine DM
--   dmc - coarse DM
++   dmf - fine `DM`
+.   xf - data on fine `DM`
+-   dmc - coarse `DM`
 
     Output Parameter:
-.   xc - data on coarse DM
+.   xc - data on coarse `DM`
 
     Level: advanced
 
-.seealso: DMRestrict(), DMCoarsen(), DMSTAG, DMCreateInjection()
-
+.seealso: [](chapter_stag), `DMSTAG`, `DM`, `DMRestrict()`, `DMCoarsen()`, `DMSTAG`, `DMCreateInjection()`
 @*/
 PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
 {
@@ -42,7 +41,7 @@ PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
     SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT "", dim);
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Code duplication note: the next two functions are nearly identical, save the inclusion of the element terms */
@@ -117,7 +116,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation1d_a_b_Private(DM dmc, DM
       PetscCall(MatSetValuesLocal(A, 1, &ir, 1, &ic, &weight, INSERT_VALUES));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -324,7 +323,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_0_a_b_Private(DM dmc, 
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -857,7 +856,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM dmc
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -933,7 +932,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM d
       PetscCall(MatSetValuesLocal(A, 1, &ir, 1, &ic, &weight, INSERT_VALUES));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -1055,7 +1054,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM dmc, DM
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -1233,5 +1232,5 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction3d_0_0_a_b_Private(DM dmc, 
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

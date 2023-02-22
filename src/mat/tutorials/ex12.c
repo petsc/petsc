@@ -53,7 +53,7 @@ PetscErrorCode PadMatrix(Mat A, Vec v, PetscScalar c, Mat *B)
   PetscCall(VecRestoreArrayRead(v, &vv));
   PetscCall(PetscFree(cnt));
   PetscCall(PetscFree(indices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

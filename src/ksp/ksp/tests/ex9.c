@@ -28,7 +28,7 @@ static PetscErrorCode replace_submats(Mat A)
   }
   PetscCall(PetscFree(r));
   PetscCall(PetscFree(c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

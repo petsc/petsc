@@ -10,7 +10,7 @@ static PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJMKL(Mat B, PetscInt bs, 
   PetscCall(MatMPIBAIJSetPreallocation_MPIBAIJ(B, bs, d_nz, d_nnz, o_nz, o_nnz));
   PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(b->A, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &b->A));
   PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(b->B, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &b->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReuse reuse, Mat *newmat)
@@ -23,23 +23,11 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIBAIJMKL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIBAIJSetPreallocation_C", MatMPIBAIJSetPreallocation_MPIBAIJMKL));
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   MatCreateBAIJMKL - Creates a sparse parallel matrix in `MATBAIJMKL` format
-   (block compressed row).
-   This type inherits from `MATBAIJ` and is largely identical, but uses sparse BLAS
-   routines from Intel MKL whenever possible.
-   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
-   operations are currently supported.
-   If the installed version of MKL supports the "SpMV2" sparse
-   inspector-executor routines, then those are used by default.
-   Default PETSc kernels are used otherwise.
-   For good matrix assembly performance the user should preallocate the matrix
-   storage by setting the parameters d_nz (or d_nnz) and o_nz (or o_nnz).
-   By setting these parameters accurately, performance can be increased by more
-   than a factor of 50.
+   MatCreateBAIJMKL - Creates a sparse parallel matrix in `MATBAIJMKL` format (block compressed row).
 
    Collective
 
@@ -79,6 +67,18 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
    Notes:
+   This type inherits from `MATBAIJ` and is largely identical, but uses sparse BLAS
+   routines from Intel MKL whenever possible.
+   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
+   operations are currently supported.
+   If the installed version of MKL supports the "SpMV2" sparse
+   inspector-executor routines, then those are used by default.
+   Default PETSc kernels are used otherwise.
+   For good matrix assembly performance the user should preallocate the matrix
+   storage by setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
+   By setting these parameters accurately, performance can be increased by more
+   than a factor of 50.
+
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
    A nonzero block is any block that as 1 or more nonzeros in it
@@ -96,10 +96,10 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
    local matrix (a rectangular submatrix).
 
    The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either d_nz or d_nnz (not both).  Set
-   d_nz = `PETSC_DEFAULT` and d_nnz = NULL for PETSc to control dynamic
+   the local submatrix with either `d_nz` or `d_nnz` (not both).  Set
+   `d_nz` = `PETSC_DEFAULT` and `d_nnz` = `NULL` for PETSc to control dynamic
    memory allocation.  Likewise, specify preallocated storage for the
-   off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
+   off-diagonal part of the local submatrix with `o_nz` or `o_nnz` (not both).
 
    Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
    the figure below we depict these three local rows and all columns (0-11).
@@ -118,10 +118,10 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
    o (off-diagonal) submatrix.  Note that the d and the o submatrices are
    stored simply in the `MATSEQBAIJMKL` format for compressed row storage.
 
-   Now d_nz should indicate the number of block nonzeros per row in the d matrix,
-   and o_nz should indicate the number of block nonzeros per row in the o matrix.
+   Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
+   and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
+   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
    or you will get TERRIBLE performance; see the users' manual chapter on
    matrices.
 
@@ -145,7 +145,7 @@ PetscErrorCode MatCreateBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
     PetscCall(MatSetType(*A, MATSEQBAIJMKL));
     PetscCall(MatSeqBAIJSetPreallocation(*A, bs, d_nz, d_nnz));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
@@ -153,7 +153,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATMPIBAIJ));
   PetscCall(MatConvert_MPIBAIJ_MPIBAIJMKL(A, MATMPIBAIJMKL, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC

@@ -84,7 +84,7 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
       }
       if (lambda <= steptol) {
         PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       maxstep    = .95 * lambda; /* forbid the search from ever going back to the "failed" length that generates Nan or Inf */
       lambda     = .5 * (lambda + lambda_old);
@@ -149,7 +149,7 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
     PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
   }
   if (lambda <= steptol) PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -186,5 +186,5 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
   linesearch->ops->setup          = NULL;
 
   linesearch->max_its = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

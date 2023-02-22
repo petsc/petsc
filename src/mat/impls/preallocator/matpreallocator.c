@@ -20,7 +20,7 @@ PetscErrorCode MatDestroy_Preallocator(Mat A)
   PetscCall(PetscFree(A->data));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatPreallocatorPreallocate_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetUp_Preallocator(Mat A)
@@ -39,7 +39,7 @@ PetscErrorCode MatSetUp_Preallocator(Mat A)
   /* arrays are for blocked rows/cols */
   mbs = m / bs;
   PetscCall(PetscCalloc4(mbs, &p->dnz, mbs, &p->onz, mbs, &p->dnzu, mbs, &p->onzu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
@@ -77,7 +77,7 @@ PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
@@ -88,7 +88,7 @@ PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
   PetscCall(MatStashScatterBegin_Private(A, &A->stash, A->rmap->range));
   PetscCall(MatStashGetInfo_Private(&A->stash, &nstash, &reallocs));
   PetscCall(PetscInfo(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
@@ -120,19 +120,19 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
   }
   PetscCall(MatStashScatterEnd_Private(&A->stash));
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &p->nooffproc, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_Preallocator(Mat A, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetOption_Preallocator(Mat A, MatOption op, PetscBool flg)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, Mat A)
@@ -192,7 +192,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -233,7 +233,7 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A)
   PetscValidLogicalCollectiveBool(mat, fill, 2);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
   PetscUseMethod(mat, "MatPreallocatorPreallocate_C", (Mat, PetscBool, Mat), (mat, fill, A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -282,5 +282,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A)
   /* special MATPREALLOCATOR functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatPreallocatorPreallocate_C", MatPreallocatorPreallocate_Preallocator));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATPREALLOCATOR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

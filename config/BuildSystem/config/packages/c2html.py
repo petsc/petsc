@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'v0.9.4-p1'
+    self.gitcommit         = 'v0.9.4-p2'
     self.download          = ['git://https://gitlab.com/petsc/pkg-c2html.git' ,
                               'https://gitlab.com/petsc/pkg-c2html/-/archive/'+self.gitcommit+'/pkg-c2html-'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['pkg-c2html']
@@ -13,6 +13,7 @@ class Configure(config.package.GNUPackage):
     self.parallelMake      = 0
     self.lookforbydefault  = 1
     self.executablename    = 'c2html'
+    self.skippackagelibincludedirs = 1
 
   def setupHelp(self, help):
     import nargs
@@ -41,9 +42,10 @@ class Configure(config.package.GNUPackage):
 
   def Install(self):
     # check if flex or lex are in PATH
-    self.getExecutable('flex')
-    self.getExecutable('lex')
-    if not hasattr(self, 'flex') and not hasattr(self, 'lex'):
+    if not hasattr(self.programs, 'flex') and not hasattr(self.programs, 'lex'):
+      self.programs.getExecutable('flex', getFullPath = 1)
+      self.programs.getExecutable('lex')
+    if not hasattr(self.programs, 'flex') and not hasattr(self.programs, 'lex'):
       raise RuntimeError('Cannot build c2html. It requires either "flex" or "lex" in PATH. Please install flex and retry.\nOr disable c2html with --with-c2html=0')
     return config.package.GNUPackage.Install(self)
 

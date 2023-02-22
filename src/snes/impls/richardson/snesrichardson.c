@@ -3,7 +3,7 @@
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -19,7 +19,7 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
   PetscFunctionBegin;
   PetscCall(SNESReset_NRichardson(snes));
   PetscCall(PetscFree(snes->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -37,7 +37,7 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
   PetscFunctionBegin;
   PetscCheck(snes->npcside != PC_RIGHT, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "NRichardson only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -53,7 +53,7 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES Richardson options");
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -72,7 +72,7 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) { }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -114,7 +114,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(VecNorm(F, NORM_2, &fnorm));
   } else {
@@ -130,7 +130,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   } else {
     PetscCall(VecCopy(F, Y));
@@ -144,7 +144,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
   /* test convergence */
   PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Call general purpose update function */
   PetscTryTypeMethod(snes, update, snes->iter);
@@ -153,7 +153,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   snes->ttol = fnorm * snes->rtol;
   /* test convergence */
   PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   for (i = 1; i < maxits + 1; i++) {
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
@@ -197,7 +197,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       PetscCall(SNESGetConvergedReason(snes->npc, &reason));
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     } else {
       PetscCall(VecCopy(F, Y));
@@ -207,7 +207,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -266,5 +266,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
     snes->max_its   = 10000;
     snes->stol      = 1e-20;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

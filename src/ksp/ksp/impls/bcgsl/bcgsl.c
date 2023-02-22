@@ -54,7 +54,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
   else ksp->rnorm = 0.0;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecSet(VVU[0], 0.0));
   alpha = 0.;
@@ -83,10 +83,10 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
     PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
 
     PetscCall((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
-    if (ksp->reason < 0) PetscFunctionReturn(0);
+    if (ksp->reason < 0) PetscFunctionReturn(PETSC_SUCCESS);
     if (ksp->reason) {
       if (bcgsl->delta > 0.0) PetscCall(VecAXPY(VX, 1.0, VXR));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     /* BiCG part */
@@ -98,7 +98,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
       KSPCheckDot(ksp, rho1);
       if (rho1 == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       beta = alpha * (rho1 / rho0);
       rho0 = rho1;
@@ -113,7 +113,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
       KSPCheckDot(ksp, sigma);
       if (sigma == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       alpha = rho1 / sigma;
 
@@ -143,7 +143,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
         ksp->rnorm = nrm0;
 
         PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-        if (ksp->reason < 0) PetscFunctionReturn(0);
+        if (ksp->reason < 0) PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
 
@@ -169,7 +169,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
 #endif
         if (bierr != 0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
-          PetscFunctionReturn(0);
+          PetscFunctionReturn(PETSC_SUCCESS);
         }
         /* Apply pseudo-inverse */
         max_s = bcgsl->s[0];
@@ -191,7 +191,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
         PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("Lower", &bell, &MZa[1 + ldMZ], &ldMZ, &bierr));
         if (bierr != 0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
-          PetscFunctionReturn(0);
+          PetscFunctionReturn(PETSC_SUCCESS);
         }
         PetscCall(PetscArraycpy(&AY0c[1], &MZb[1], bcgsl->ell));
         PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("Lower", &bell, &ione, &MZa[1 + ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
@@ -205,7 +205,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
       PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("Lower", &neqs, &MZa[1 + ldMZ], &ldMZ, &bierr));
       if (bierr != 0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       PetscCall(PetscArraycpy(&AY0c[1], &MZb[1], bcgsl->ell - 1));
       PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1 + ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
@@ -249,7 +249,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
     for (h = bcgsl->ell; h > 0 && omega == 0.0; h--) omega = AY0c[h];
     if (omega == 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     PetscCall(VecMAXPY(VX, bcgsl->ell, AY0c + 1, VVR));
@@ -290,7 +290,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -325,7 +325,7 @@ PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
     }
   }
   bcgsl->delta = delta;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -350,7 +350,7 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp, PetscBool use_pinv)
 
   PetscFunctionBegin;
   bcgsl->pinv = use_pinv;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -390,7 +390,7 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
     bcgsl->bConvex  = uMROR;
     ksp->setupstage = KSP_SETUP_NEW;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -432,7 +432,7 @@ PetscErrorCode KSPBCGSLSetEll(KSP ksp, PetscInt ell)
     bcgsl->ell      = ell;
     ksp->setupstage = KSP_SETUP_NEW;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
@@ -447,7 +447,7 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Ell = %" PetscInt_FMT "\n", bcgsl->ell));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Delta = %g\n", (double)bcgsl->delta));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -483,7 +483,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscCall(PetscOptionsBool("-ksp_bcgsl_pinv", "Polynomial correction via pseudoinverse", "KSPBCGSLSetUsePseudoinverse", flg, &flg, NULL));
   PetscCall(KSPBCGSLSetUsePseudoinverse(ksp, flg));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
@@ -496,7 +496,7 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscCall(PetscMalloc5(ldMZ, &AY0c, ldMZ, &AYlc, ldMZ, &AYtc, ldMZ * ldMZ, &MZa, ldMZ * ldMZ, &MZb));
   PetscCall(PetscBLASIntCast(5 * ell, &bcgsl->lwork));
   PetscCall(PetscMalloc5(bcgsl->lwork, &bcgsl->work, ell, &bcgsl->s, ell * ell, &bcgsl->u, ell * ell, &bcgsl->v, 5 * ell, &bcgsl->realwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPReset_BCGSL(KSP ksp)
@@ -507,7 +507,7 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp)
   PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
   PetscCall(PetscFree5(AY0c, AYlc, AYtc, MZa, MZb));
   PetscCall(PetscFree5(bcgsl->work, bcgsl->s, bcgsl->u, bcgsl->v, bcgsl->realwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
@@ -515,7 +515,7 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPReset_BCGSL(ksp));
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -589,5 +589,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 
   /* Set the threshold for when exact residuals will be used */
   bcgsl->delta = 0.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

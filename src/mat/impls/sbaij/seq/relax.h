@@ -120,7 +120,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(2.0 * (2.0 * a->nz - nonzerorow) - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(USESHORT)
@@ -311,5 +311,5 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, 
 
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(VecRestoreArrayRead(bb, &b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

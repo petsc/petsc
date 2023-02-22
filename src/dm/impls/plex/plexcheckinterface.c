@@ -35,7 +35,7 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
   PetscCall(PetscFree2(rreq, sreq));
   *rsize_out = rsize;
   *rarr_out  = rarr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO VecExchangeBegin/End */
@@ -66,7 +66,7 @@ static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsrank
   PetscCall(PetscFree2(rsize, rarr));
   PetscCall(PetscFree4(ssize, sarr, rreq, sreq));
   *rvecs = rvecs_;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], PetscInt *rremote1[])
@@ -90,7 +90,7 @@ static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], Petsc
     PetscCall(PetscArraycpy(&(*rremote1)[o], &rremote[o], n));
     PetscCall(PetscSortIntWithArray(n, &(*rremote1)[o], &(*rmine1)[o]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF sf, PetscInt rmine[], Vec *coordinatesPerRank[])
@@ -114,7 +114,7 @@ static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF 
     PetscCall(ISDestroy(&pointsPerRank));
     PetscCall(ISDestroy(&conesPerRank));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(PetscSF sf, PetscSF imsf, PetscInt *irmine1[])
@@ -138,7 +138,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
     for (i = 0; i < n; i++) (*irmine1)[o + i] = mRootsOrigNumbering[irmine[o + i]];
   }
   PetscCall(PetscFree(mRootsOrigNumbering));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -150,7 +150,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   Level: developer
 
   Notes:
-  For example, if there is an edge (rank,index)=(0,2) connecting points cone(0,2)=[(0,0),(0,1)] in this order, and the point SF containts connections 0 <- (1,0), 1 <- (1,1) and 2 <- (1,2),
+  For example, if there is an edge (rank,index)=(0,2) connecting points cone(0,2)=[(0,0),(0,1)] in this order, and the point SF contains connections 0 <- (1,0), 1 <- (1,1) and 2 <- (1,2),
   then this check would pass if the edge (1,2) has cone(1,2)=[(1,0),(1,1)]. By contrast, if cone(1,2)=[(1,1),(1,0)], then this check would fail.
 
   This is mainly intended for debugging/testing purposes. Does not check cone orientation, for this purpose use `DMPlexCheckFaces()`.
@@ -189,11 +189,11 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &myrank));
   PetscCallMPI(MPI_Comm_size(comm, &commsize));
-  if (commsize < 2) PetscFunctionReturn(0);
+  if (commsize < 2) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetPointSF(dm, &sf));
-  if (!sf) PetscFunctionReturn(0);
+  if (!sf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &mine, &remote));
-  if (nroots < 0) PetscFunctionReturn(0);
+  if (nroots < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(dm->coordinates[0].x || dm->coordinates[0].xl, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote));
@@ -275,5 +275,5 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   /* destroy received stuff */
   for (r = 0; r < niranks; r++) PetscCall(VecDestroy(&recCoordinatesPerRank[r]));
   PetscCall(PetscFree(recCoordinatesPerRank));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

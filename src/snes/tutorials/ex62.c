@@ -141,7 +141,7 @@ static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal 
     u[0] += PetscSqr(x[c]);
     u[c] = 2.0 * PetscSqr(x[0]) - 2.0 * x[0] * x[c];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode quadratic_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -150,7 +150,7 @@ static PetscErrorCode quadratic_p(PetscInt dim, PetscReal time, const PetscReal 
 
   u[0] = -0.5 * dim;
   for (d = 0; d < dim; ++d) u[0] += x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -202,7 +202,7 @@ static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], 
     u[0] += PetscSinReal(PETSC_PI * x[c]);
     u[c] = -PETSC_PI * PetscCosReal(PETSC_PI * x[0]) * x[c];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode trig_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -210,7 +210,7 @@ static PetscErrorCode trig_p(PetscInt dim, PetscReal time, const PetscReal x[], 
   PetscInt d;
 
   for (d = 0, u[0] = 0.0; d < dim; ++d) u[0] += PetscSinReal(2.0 * PETSC_PI * x[d]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -236,7 +236,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, PETSC_STATIC_ARRAY_LENGTH(SolTypes) - 3, SolTypes[options->sol], &sol, NULL));
   options->sol = (SolType)sol;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -246,7 +246,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
@@ -274,7 +274,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
       PetscCall(PetscViewerDestroy(&viewer));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
@@ -322,20 +322,20 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
     constants[0] = param->mu; /* dynamic shear viscosity, Pa s */
     PetscCall(PetscDSSetConstants(ds, 1, constants));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
@@ -366,7 +366,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
     PetscCall(PetscObjectCompose(pressure, "nullspace", (PetscObject)nullspacePres));
     PetscCall(MatNullSpaceDestroy(&nullspacePres));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupProblem(DM dm, PetscErrorCode (*setupEqn)(DM, AppCtx *), AppCtx *user)
@@ -400,7 +400,7 @@ static PetscErrorCode SetupProblem(DM dm, PetscErrorCode (*setupEqn)(DM, AppCtx 
     PetscCall(DMSetNullSpaceConstructor(cdm, 1, CreatePressureNullSpace));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

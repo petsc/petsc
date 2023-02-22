@@ -27,7 +27,7 @@ static PetscErrorCode ReadMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(PetscObjectSetName((PetscObject)*dm, "Input Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -100,7 +100,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsEnd();
 
   if (options->transform) PetscCall(PetscPrintf(comm, "Using random transforms\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
@@ -138,7 +138,7 @@ static PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar ve
   PetscCall(DMSetCoordinatesLocal(dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define RelativeError(a, b) PetscAbs(a - b) / (1.0 + PetscMax(PetscAbs(a), PetscAbs(b)))
@@ -169,7 +169,7 @@ static PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, 
     }
   }
   PetscCheck(RelativeError(detJ, detJEx) < 10 * PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid |J| = %g != %g diff %g", (double)detJ, (double)detJEx, (double)(detJ - detJEx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx)
@@ -186,7 +186,7 @@ static PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, 
     if (normalEx) PetscCheck(RelativeError(normal[d], normalEx[d]) < tol, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT ", Invalid normal[%" PetscInt_FMT "]: %g != %g", cell, d, (double)normal[d], (double)normalEx[d]);
   }
   if (volEx) PetscCheck(RelativeError(volEx, vol) < tol, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT ", Invalid volume = %g != %g diff %g", cell, (double)vol, (double)volEx, (double)(vol - volEx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckGaussLaw(DM dm, PetscInt cell)
@@ -200,9 +200,9 @@ static PetscErrorCode CheckGaussLaw(DM dm, PetscInt cell)
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
-  if (dim != cdim) PetscFunctionReturn(0);
+  if (dim != cdim) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetCellType(dm, cell, &ct));
-  if (ct == DM_POLYTOPE_TRI_PRISM_TENSOR) PetscFunctionReturn(0);
+  if (ct == DM_POLYTOPE_TRI_PRISM_TENSOR) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
   PetscCall(DMPlexGetCone(dm, cell, &cone));
   PetscCall(DMPlexGetConeOrientation(dm, cell, &ornt));
@@ -214,7 +214,7 @@ static PetscErrorCode CheckGaussLaw(DM dm, PetscInt cell)
   }
   for (d = 0; d < cdim; ++d)
     PetscCheck(PetscAbsReal(integral[d]) < tol, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " Surface integral for component %" PetscInt_FMT ": %g != 0. as it should be for a constant field", cell, d, (double)integral[d]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx, PetscReal centroidEx[], PetscReal normalEx[], PetscReal volEx, PetscReal faceCentroidEx[], PetscReal faceNormalEx[], PetscReal faceVolEx[])
@@ -429,7 +429,7 @@ static PetscErrorCode CheckCell(DM dm, PetscInt cell, PetscBool transform, Petsc
     PetscCall(PetscFree5(v0ExT, JExT, invJExT, centroidExT, normalExT));
     PetscCall(PetscFree2(faceCentroidExT, faceNormalExT));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool transform)
@@ -467,7 +467,7 @@ static PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool transform)
   }
   /* Cleanup */
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool transform)
@@ -505,7 +505,7 @@ static PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool transform)
   }
   /* Cleanup */
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool transform)
@@ -529,7 +529,7 @@ static PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool transform)
   }
   /* Cleanup */
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool transform)
@@ -553,7 +553,7 @@ static PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool transform)
   }
   /* Cleanup */
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestHexahedronCurved(MPI_Comm comm)
@@ -573,7 +573,7 @@ static PetscErrorCode TestHexahedronCurved(MPI_Comm comm)
     PetscCall(CheckCell(dm, 0, PETSC_FALSE, NULL, NULL, NULL, 0.0, centroidEx, normalEx, volEx, NULL, NULL, NULL));
   }
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This wedge is a tensor product cell, rather than a normal wedge */
@@ -607,7 +607,7 @@ static PetscErrorCode TestWedge(MPI_Comm comm, PetscBool transform)
   }
   /* Cleanup */
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

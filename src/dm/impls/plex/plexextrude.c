@@ -26,7 +26,7 @@
   Level: intermediate
 
   Notes:
-  Extrusion is implemented as a `DMPlexTransform`, so that new mesh points are produced from old mesh points. In the exmaple below,
+  Extrusion is implemented as a `DMPlexTransform`, so that new mesh points are produced from old mesh points. In the example below,
 we begin with an edge (v0, v3). It is extruded for two layers. The original vertex v0 produces two edges, e1 and e2, and three vertices,
 v0, v2, and v2. Similarly, vertex v3 produces e3, e4, v3, v4, and v5. The original edge produces itself, e5 and e6, as well as face1 and
 face2. The new mesh points are given the same labels as the original points which produced them. Thus, if v0 had a label value 1, then so
@@ -93,7 +93,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
     ((DM_Plex *)(*edm)->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
     ((DM_Plex *)(*edm)->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
@@ -101,5 +101,5 @@ PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
   PetscFunctionBegin;
   PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, NULL, NULL, edm));
   PetscCall(DMViewFromOptions(*edm, NULL, "-check_extrude"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

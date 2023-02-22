@@ -84,6 +84,7 @@ PetscErrorCode ComputeFunction(SNES snes, Vec x, Vec f, void *ctx)
   PetscScalar const *xarray;
   PetscScalar       *farray;
 
+  PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   hx = 1.0 / (PetscReal)(Mx - 1);
   PetscCall(DMGetLocalVector(da, &xlocal));
@@ -144,7 +145,7 @@ PetscErrorCode ComputeFunction(SNES snes, Vec x, Vec f, void *ctx)
     PetscCall(DMDAVecRestoreArray(da, f, &ff));
   }
   PetscCall(DMRestoreLocalVector(da, &xlocal));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode ComputeJacobian(SNES snes, Vec x, Mat J, Mat B, void *ctx)
 {
@@ -153,6 +154,7 @@ PetscErrorCode ComputeJacobian(SNES snes, Vec x, Mat J, Mat B, void *ctx)
   PetscScalar hx, *xx;
   Vec         xlocal;
 
+  PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   hx = 1.0 / (PetscReal)(Mx - 1);
   PetscCall(DMGetLocalVector(da, &xlocal));
@@ -174,7 +176,7 @@ PetscErrorCode ComputeJacobian(SNES snes, Vec x, Mat J, Mat B, void *ctx)
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   PetscCall(DMDAVecRestoreArray(da, xlocal, &xx));
   PetscCall(DMRestoreLocalVector(da, &xlocal));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

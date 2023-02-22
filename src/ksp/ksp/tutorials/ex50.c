@@ -96,7 +96,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
   PetscCall(MatNullSpaceRemove(nullspace, b));
   PetscCall(MatNullSpaceDestroy(&nullspace));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, void *ctx)
@@ -183,7 +183,7 @@ PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
   PetscCall(MatSetNullSpace(J, nullspace));
   PetscCall(MatNullSpaceDestroy(&nullspace));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

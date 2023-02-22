@@ -698,7 +698,7 @@ cdef class Vec(Object):
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.vec, &comm) )
         cdef int size = -1
-        CHKERR( MPI_Comm_size(comm, &size) )
+        CHKERR( <PetscErrorCode>MPI_Comm_size(comm, &size) )
         return array_i(size+1, rng)
 
     def createLocalVector(self):

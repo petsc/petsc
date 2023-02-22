@@ -34,7 +34,7 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
     PetscCall(SNESGetFunctionDomainError(snes, &domainerror));
     if (domainerror) {
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
 
@@ -57,7 +57,7 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
   /* copy the solution over */
   PetscCall(VecCopy(W, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -88,5 +88,5 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch
   linesearch->ops->reset          = NULL;
   linesearch->ops->view           = NULL;
   linesearch->ops->setup          = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

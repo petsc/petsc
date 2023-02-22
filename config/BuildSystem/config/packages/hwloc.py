@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version           = '2.8.0'
-    self.download          = ['http://www.open-mpi.org/software/hwloc/v2.8/downloads/hwloc-'+self.version+'.tar.gz',
+    self.version           = '2.9.0'
+    self.download          = ['https://download.open-mpi.org/release/hwloc/v2.9/hwloc-'+self.version+'.tar.gz',
                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hwloc-'+self.version+'.tar.gz']
     self.functions         = ['hwloc_topology_init']
     self.includes          = ['hwloc.h']
@@ -47,6 +47,3 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.configure(self)
     if self.found and self.directory:
       self.getExecutable('lstopo',    path=os.path.join(self.directory,'bin'), getFullPath = 1)
-
-
-

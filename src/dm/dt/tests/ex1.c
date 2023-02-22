@@ -27,7 +27,7 @@ static PetscErrorCode CheckPoints(const char *name, PetscInt npoints, const Pets
     }
   }
   PetscCall(PetscFree3(B, D, D2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef PetscErrorCode (*quadratureFunc)(PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal[], PetscReal[]);
@@ -43,7 +43,7 @@ static PetscErrorCode CheckQuadrature_Basics(PetscInt npoints, PetscReal alpha, 
   for (i = 0; i < npoints; i++) {
     PetscCheck(w[i] > 0., PETSC_COMM_SELF, PETSC_ERR_PLIB, "Quadrature weight not positive, %" PetscInt_FMT " points, alpha = %g, beta = %g, i = %" PetscInt_FMT ", w[i] = %g", npoints, (double)alpha, (double)beta, i, (double)w[i]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal x[], const PetscReal w[], PetscInt nexact)
@@ -92,7 +92,7 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
     }
   }
   PetscCall(PetscFree2(Pi, Pj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, PetscReal beta, quadratureFunc func, PetscInt nexact)
@@ -134,7 +134,7 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
   PetscDTGaussQuadratureNewton_Internal = (PetscBool)!PetscDTGaussQuadratureNewton_Internal;
 #endif
   PetscCall(PetscFree2(x, w));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -63,7 +63,7 @@ PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
     }
     PetscCall(VecRestoreArray(yy, &y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -94,7 +94,7 @@ PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
   if (type == NORM_2 || type == NORM_1 || type == NORM_FROBENIUS || type == NORM_INFINITY || type == NORM_1_AND_2) {
     PetscCall(MatGetColumnReductions(A, type, norms));
   } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown NormType");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -118,7 +118,7 @@ PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[])
 {
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_SUM_REALPART, sums));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -142,7 +142,7 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[])
 {
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_SUM_IMAGINARYPART, sums));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -183,7 +183,7 @@ PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
   for (i = 0; i < n; i++) sums[i] += work[i] * PETSC_i;
   PetscCall(PetscFree(work));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -207,7 +207,7 @@ PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[])
 {
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_MEAN_REALPART, means));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -231,7 +231,7 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[])
 {
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_MEAN_IMAGINARYPART, means));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -272,7 +272,7 @@ PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
   for (i = 0; i < n; i++) means[i] += work[i] * PETSC_i;
   PetscCall(PetscFree(work));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -303,5 +303,5 @@ PetscErrorCode MatGetColumnReductions(Mat A, PetscInt type, PetscReal reductions
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscUseTypeMethod(A, getcolumnreductions, type, reductions);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

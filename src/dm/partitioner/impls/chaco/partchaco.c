@@ -23,13 +23,13 @@ static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(p));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Chaco_ASCII(PetscPartitioner part, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscViewer viewer)
@@ -41,7 +41,7 @@ static PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscVie
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscPartitionerView_Chaco_ASCII(part, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_CHACO)
@@ -105,7 +105,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   }
   if (!numVertices) { /* distributed case, return if not holding the graph */
     PetscCall(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   FREE_GRAPH = 0; /* Do not let Chaco free my memory */
   for (i = 0; i < start[numVertices]; ++i) ++adjacency[i];
@@ -164,7 +164,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   PetscCheck(global_method != INERTIAL_METHOD, PETSC_COMM_SELF, PETSC_ERR_SUP, "Inertial partitioning not yet supported");
   PetscCall(PetscFree(assignment));
   for (i = 0; i < start[numVertices]; ++i) --adjacency[i];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-chaco.");
 #endif
@@ -177,7 +177,7 @@ static PetscErrorCode PetscPartitionerInitialize_Chaco(PetscPartitioner part)
   part->ops->view      = PetscPartitionerView_Chaco;
   part->ops->destroy   = PetscPartitionerDestroy_Chaco;
   part->ops->partition = PetscPartitionerPartition_Chaco;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -199,5 +199,5 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner part)
 
   PetscCall(PetscPartitionerInitialize_Chaco(part));
   PetscCall(PetscCitationsRegister(ChacoPartitionerCitation, &ChacoPartitionerCite));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

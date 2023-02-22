@@ -49,5 +49,5 @@ PetscErrorCode DMDAGetGhostCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z,
   if (m) *m = (dd->Xe - dd->Xs) / w;
   if (n) *n = (dd->Ye - dd->Ys);
   if (p) *p = (dd->Ze - dd->Zs);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

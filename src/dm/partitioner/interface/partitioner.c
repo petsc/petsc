@@ -31,7 +31,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)part, name, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscPartitionerRegisterAll());
   PetscCall(PetscFunctionListFind(PetscPartitionerList, name, &r));
@@ -42,7 +42,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   PetscCall(PetscMemzero(part->ops, sizeof(*part->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)part, name));
   PetscCall((*r)(part));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -66,7 +66,7 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidPointer(name, 2);
   *name = ((PetscObject)part)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -87,7 +87,7 @@ PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A, PetscObject o
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCPARTITIONER_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -121,7 +121,7 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
     PetscCall(PetscViewerASCIIPrintf(v, "  use vertex weights: %d\n", part->usevwgt));
   }
   PetscTryTypeMethod(part, view, v);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char **defaultType)
@@ -143,7 +143,7 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
     *defaultType = PETSCPARTITIONERSIMPLE;
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -184,7 +184,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)part, PetscOptionsObject));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -204,7 +204,7 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscTryTypeMethod(part, setup);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -224,7 +224,7 @@ PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscTryTypeMethod(part, reset);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -242,12 +242,12 @@ PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
 PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 {
   PetscFunctionBegin;
-  if (!*part) PetscFunctionReturn(0);
+  if (!*part) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
 
   if (--((PetscObject)(*part))->refct > 0) {
     *part = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   ((PetscObject)(*part))->refct = 0;
 
@@ -257,7 +257,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
   PetscCall(PetscViewerDestroy(&(*part)->viewerGraph));
   PetscTryTypeMethod((*part), destroy);
   PetscCall(PetscHeaderDestroy(part));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -350,7 +350,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     }
   }
   if (part->viewer) PetscCall(PetscPartitionerView(part, part->viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -387,5 +387,5 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   p->usevwgt = PETSC_TRUE;
 
   *part = p;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

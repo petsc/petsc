@@ -18,18 +18,18 @@ struct _n_PetscViewers {
 
    Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerDestroy()`, `PetscViewers()`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 @*/
 PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 {
   int i;
 
   PetscFunctionBegin;
-  if (!*v) PetscFunctionReturn(0);
+  if (!*v) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 0; i < (*v)->n; i++) PetscCall(PetscViewerDestroy(&(*v)->viewer[i]));
   PetscCall(PetscFree((*v)->viewer));
   PetscCall(PetscFree(*v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -56,13 +56,13 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
   (*v)->comm = comm;
 
   PetscCall(PetscCalloc1(64, &(*v)->viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
    PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewer` collection
 
-   Not Collective, but the resulting `PetscViewer` will be collective object on viewers
+   Collective if the viewer has not previously be obtained.
 
    Input Parameters:
 +   viewers - object created with `PetscViewersCreate()`
@@ -93,7 +93,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
   }
   if (!viewers->viewer[n]) PetscCall(PetscViewerCreate(viewers->comm, &viewers->viewer[n]));
   *viewer = viewers->viewer[n];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -103,11 +103,11 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 
   Input Parameters:
 + nmon      - The new monitor
-. nmctx     - The new monitor context, or NULL
-. nmdestroy - The new monitor destroy function, or NULL
+. nmctx     - The new monitor context, or `NULL`
+. nmdestroy - The new monitor destroy function, or `NULL`
 . mon       - The old monitor
-. mctx      - The old monitor context, or NULL
-- mdestroy  - The old monitor destroy function, or NULL
+. mctx      - The old monitor context, or `NULL`
+- mdestroy  - The old monitor destroy function, or `NULL`
 
   Output Parameter:
 . identical - `PETSC_TRUE` if the monitors are the same
@@ -131,5 +131,5 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, Pe
       if (mdestroy) PetscCall((*mdestroy)(&nmctx));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

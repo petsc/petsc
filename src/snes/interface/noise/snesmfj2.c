@@ -35,7 +35,7 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
   PetscCall(MatNullSpaceDestroy(&ctx->sp));
   if (ctx->jorge || ctx->compute_err) PetscCall(SNESDiffParameterDestroy_More(ctx->data));
   PetscCall(PetscFree(ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -56,7 +56,7 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)ctx->umin));
     if (ctx->compute_err) PetscCall(PetscViewerASCIIPrintf(viewer, "    freq_err=%" PetscInt_FMT " (frequency for computing err)\n", ctx->compute_err_freq));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -145,7 +145,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
   if (mat->nullsp) PetscCall(MatNullSpaceRemove(mat->nullsp, y));
 
   PetscCall(PetscLogEventEnd(MATMFFD_Mult, a, y, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -258,7 +258,7 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
   PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (void (*)(void))SNESMatrixFreeView2_Private));
   PetscCall(MatSetUp(*J));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -300,7 +300,7 @@ PetscErrorCode MatSNESMFMoreSetParameters(Mat mat, PetscReal error, PetscReal um
       ctx->need_h = PETSC_FALSE;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes)
@@ -312,5 +312,5 @@ PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes)
   PetscCall(SNESGetJacobian(snes, &mat, NULL, NULL, NULL));
   PetscCall(MatShellGetContext(mat, &ctx));
   if (ctx) ctx->need_h = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

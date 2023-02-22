@@ -76,14 +76,14 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 {
   PetscInt d;
   for (d = 0; d < Nc; ++d) u[d] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   for (d = 0; d < Nc; ++d) u[d] = 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -123,7 +123,7 @@ static PetscErrorCode trig_trig_x(PetscInt dim, PetscReal time, const PetscReal 
 
   x[0] = R0 * PetscCosReal(p->omega * time + theta0);
   x[1] = R0 * PetscSinReal(p->omega * time + theta0);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode trig_trig_u(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
@@ -131,30 +131,30 @@ static PetscErrorCode trig_trig_u(PetscInt dim, PetscReal time, const PetscReal 
 
   u[0] = -p->omega * X[1];
   u[1] = p->omega * X[0];
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode trig_trig_u_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
   u[1] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode trig_trig_p(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
 {
   p[0] = X[0] + X[1] - 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode trig_trig_T(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
 {
   T[0] = time + X[0] + X[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode trig_trig_T_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
 {
   T[0] = 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_trig_trig_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -312,7 +312,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsRealArray("-part_upper", "The upper right corner of the particle box", "ex77.c", options->partUpper, &n, NULL));
   PetscCall(PetscOptionsInt("-Npb", "The initial number of particles per box dimension", "ex77.c", options->Npb, &options->Npb, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupParameters(AppCtx *user)
@@ -329,7 +329,7 @@ static PetscErrorCode SetupParameters(AppCtx *user)
   PetscCall(PetscBagRegisterReal(bag, &p->alpha, 1.0, "alpha", "Thermal diffusivity"));
   PetscCall(PetscBagRegisterReal(bag, &p->T_in, 1.0, "T_in", "Inlet temperature"));
   PetscCall(PetscBagRegisterReal(bag, &p->omega, 1.0, "omega", "Rotation speed in MMS benchmark"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -339,7 +339,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
@@ -416,7 +416,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscCall(PetscDSSetExactSolutionTimeDerivative(prob, 0, exactFuncs_t[0], ctx));
   PetscCall(PetscDSSetExactSolutionTimeDerivative(prob, 1, exactFuncs_t[1], ctx));
   PetscCall(PetscDSSetExactSolutionTimeDerivative(prob, 2, exactFuncs_t[2], ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* x_t = v
@@ -475,7 +475,7 @@ static PetscErrorCode FreeStreaming(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
   PetscCall(VecRestoreArrayRead(pvel, &v));
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMRestoreGlobalVector(sdm, &pvel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetInitialParticleConditions(TS ts, Vec u)
@@ -535,7 +535,7 @@ static PetscErrorCode SetInitialParticleConditions(TS ts, Vec u)
   default:
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONG, "Invalid particle layout type %s", partLayoutTypes[PetscMin(user->partLayout, NUM_PART_LAYOUT_TYPES)]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, DM sdm, AppCtx *user)
@@ -661,7 +661,7 @@ static PetscErrorCode SetupDiscretization(DM dm, DM sdm, AppCtx *user)
   }
   PetscCall(PetscObjectSetName((PetscObject)sdm, "Particles"));
   PetscCall(DMViewFromOptions(sdm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt ofield, PetscInt nfield, MatNullSpace *nullSpace)
@@ -679,7 +679,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt ofield, PetscInt n
   PetscCall(VecViewFromOptions(vec, NULL, "-pressure_nullspace_view"));
   PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullSpace));
   PetscCall(VecDestroy(&vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RemoveDiscretePressureNullspace_Private(TS ts, Vec u)
@@ -692,7 +692,7 @@ static PetscErrorCode RemoveDiscretePressureNullspace_Private(TS ts, Vec u)
   PetscCall(CreatePressureNullSpace(dm, 1, 1, &nullsp));
   PetscCall(MatNullSpaceRemove(nullsp, u));
   PetscCall(MatNullSpaceDestroy(&nullsp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Make the discrete pressure discretely divergence free */
@@ -703,7 +703,7 @@ static PetscErrorCode RemoveDiscretePressureNullspace(TS ts)
   PetscFunctionBeginUser;
   PetscCall(TSGetSolution(ts, &u));
   PetscCall(RemoveDiscretePressureNullspace_Private(ts, u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetInitialConditions(TS ts, Vec u)
@@ -716,7 +716,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   PetscCall(TSGetTime(ts, &t));
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));
   PetscCall(RemoveDiscretePressureNullspace_Private(ts, u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
@@ -750,7 +750,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
   PetscCall(VecViewFromOptions(v, NULL, "-exact_vec_view"));
   PetscCall(DMRestoreGlobalVector(dm, &v));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Note that adv->x0 will not be correct after migration */
@@ -788,7 +788,7 @@ static PetscErrorCode ComputeParticleError(TS ts, Vec u, Vec e)
   PetscCall(VecRestoreArrayRead(adv->x0, &xp0));
   PetscCall(VecRestoreArrayRead(u, &xp));
   PetscCall(VecRestoreArrayWrite(e, &ep));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
@@ -825,7 +825,7 @@ static PetscErrorCode MonitorParticleError(TS ts, PetscInt step, PetscReal time,
   PetscCall(PetscObjectGetTabLevel((PetscObject)ts, &tl));
   for (l = 0; l < tl; ++l) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\t"));
   PetscCall(PetscPrintf(comm, "Timestep: %04d time = %-8.4g \t L_2 Particle Error: [%2.3g]\n", (int)step, (double)time, (double)error));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode AdvectParticles(TS ts)
@@ -864,7 +864,7 @@ static PetscErrorCode AdvectParticles(TS ts)
     PetscCall(DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor));
   }
   PetscCall(DMViewFromOptions(sdm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

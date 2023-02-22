@@ -13,7 +13,7 @@ static char help[] = "Solve a toy 3D problem on a staggered grid\n\n";
 
   Boundary conditions give prescribed flow perpendicular to the boundaries,
   and zero derivative perpendicular to them (free slip). This involves
-  using a modifed stencil at the boundaries. Another option would be to
+  using a modified stencil at the boundaries. Another option would be to
   use DM_BOUNDARY_GHOSTED in DMStagCreate3d() and a matrix-free operator (MATSHELL)
   making use of the uniformly-available ghost layer.
 
@@ -1758,7 +1758,7 @@ static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPr
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyEnd(rhs));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Create a pressure-only DMStag and use it to generate a nullspace vector
@@ -1788,7 +1788,7 @@ static PetscErrorCode AttachNullspace(DM dmSol, Mat A)
   PetscCall(VecDestroy(&constantPressure));
   PetscCall(MatSetNullSpace(A, matNullSpace));
   PetscCall(MatNullSpaceDestroy(&matNullSpace));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef)
@@ -1835,7 +1835,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef)
   PetscCall(DMLocalToGlobal(dmSol, solRefLocal, INSERT_VALUES, solRef));
   PetscCall(DMRestoreLocalVector(dmCoord, &coordLocal));
   PetscCall(DMRestoreLocalVector(dmSol, &solRefLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
@@ -1852,7 +1852,7 @@ static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
   errRel = errAbs / normsolRef;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error (abs): %g\nError (rel): %g\n", (double)errAbs, (double)errRel));
   PetscCall(VecDestroy(&diff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

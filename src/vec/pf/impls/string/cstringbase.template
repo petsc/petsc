@@ -44,6 +44,6 @@ int PETSCVEC_DLLEXPORT PFApply_String(void *value,int n,Scalar *in,Scalar *out)
     out[_NOUT_*i+4] = f5;
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 EXTERN_C_END

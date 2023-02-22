@@ -65,7 +65,7 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
   } catch (char *ex) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -106,7 +106,7 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y)
   PetscCall(VecViennaCLRestoreArrayRead(x, &xarray));
   PetscCall(VecViennaCLRestoreArrayWrite(y, &yarray));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -135,7 +135,7 @@ static PetscErrorCode PCDestroy_SAVIENNACL(PC pc)
       Free the private data structure that was hanging off the PC
   */
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -143,7 +143,7 @@ static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *Petsc
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SAVIENNACL options");
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -191,5 +191,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc)
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

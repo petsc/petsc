@@ -20,7 +20,7 @@ static PetscErrorCode TestOpen(PetscFileMode mode, PetscViewer *viewer)
   PetscCall(PetscViewerBinaryGetSkipInfo(*viewer, &skipinfo));
   PetscCall(PetscViewerBinaryGetSkipHeader(*viewer, &skipheader));
   PetscCall(PetscViewerBinaryGetSkipOptions(*viewer, &skipoptions));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestWrite(PetscViewer viewer)
@@ -53,7 +53,7 @@ static PetscErrorCode TestWrite(PetscViewer viewer)
 
   PetscCall(PetscViewerBinaryWrite(viewer, &idata, 1, PETSC_INT));
   PetscCall(PetscViewerBinaryWrite(viewer, &rdata, 1, PETSC_REAL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestRead(PetscViewer viewer)
@@ -99,7 +99,7 @@ static PetscErrorCode TestRead(PetscViewer viewer)
   PetscCall(PetscViewerBinaryRead(viewer, &rdata, 1, NULL, PETSC_REAL));
   PetscCheck(idata == 42, comm, PETSC_ERR_FILE_UNEXPECTED, "Unexpected idata=%" PetscInt_FMT, idata);
   PetscCheck(rdata == 42, comm, PETSC_ERR_FILE_UNEXPECTED, "Unexpected rdata=%g", (double)rdata);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestEOF(PetscViewer viewer)
@@ -111,7 +111,7 @@ static PetscErrorCode TestEOF(PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscViewerRead(viewer, &data, 1, &count, PETSC_CHAR));
   PetscCheck(!count, comm, PETSC_ERR_FILE_UNEXPECTED, "Expected EOF");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestClose(PetscViewer *viewer)
@@ -122,7 +122,7 @@ static PetscErrorCode TestClose(PetscViewer *viewer)
   PetscCall(PetscViewerFileGetMode(*viewer, &mode));
   if (mode == FILE_MODE_READ) PetscCall(TestEOF(*viewer));
   PetscCall(PetscViewerDestroy(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

@@ -12,7 +12,7 @@ static PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp)
   PetscFunctionBegin;
   /* get work vectors needed by PIPECGRR */
   PetscCall(KSPSetWorkVecs(ksp, 9));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -94,7 +94,7 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
   PetscCall(KSPMonitor(ksp, 0, dp));
   ksp->rnorm = dp;
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /*  test for convergence  */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(MatNorm(Amat, NORM_INFINITY, &Anorm));
   PetscCall(VecGetSize(B, &nsize));
@@ -167,7 +167,7 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
       PetscCall(KSPLogResidualHistory(ksp, dp));
       PetscCall(KSPMonitor(ksp, i, dp));
       PetscCall((*ksp->converged)(ksp, i, dp, &ksp->reason, ksp->cnvP));
-      if (ksp->reason) PetscFunctionReturn(0);
+      if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     if (i == 0) {
@@ -236,7 +236,7 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
 
   } while (i <= ksp->max_it);
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -284,5 +284,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

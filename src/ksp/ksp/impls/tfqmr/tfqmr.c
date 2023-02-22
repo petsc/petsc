@@ -6,7 +6,7 @@ static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPTFQMR");
   PetscCall(KSPSetWorkVecs(ksp, 9));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
@@ -43,7 +43,7 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   PetscCall(KSPMonitor(ksp, 0, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Make the initial Rp == R */
   PetscCall(VecCopy(R, RP));
@@ -119,7 +119,7 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
   PetscCall(KSPUnwindPreconditioner(ksp, X, T));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -155,5 +155,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -22,7 +22,7 @@ static PetscErrorCode sourlj(DM dm, Vec X, Mat J, Mat P, void *ptr)
   PetscCall(DMGetDMSNES(dm, &sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.lj, (PetscVoidFunction *) &func, &ctx));
   PetscCallFortranVoidFunction((*func)(&dm, &X, &J, &P, ctx, &ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN void dmsnessetjacobianlocal_(DM *dm, void (*jac)(DM*,Vec*,Mat*,Mat*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)
@@ -43,7 +43,7 @@ static PetscErrorCode sourlf(DM dm, Vec X, Vec F, void *ptr)
   PetscCall(DMGetDMSNES(dm, &sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.lf, (PetscVoidFunction *) &func, &ctx));
   PetscCallFortranVoidFunction((*func)(&dm, &X, &F, ctx, &ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN void dmsnessetfunctionlocal_(DM *dm, void (*func)(DM*,Vec*,Vec*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)

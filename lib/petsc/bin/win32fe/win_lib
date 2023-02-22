@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+#
+#  Wrapper for Microsoft Windows lib using win32fe as a full path compiler
+#
+#  Cygwin CMake insists on passing qc so we replace it with the correct value
+#
+p=`dirname $0`
+flags=`echo $* | sed -e s'?qc ? -a ?g'`
+${p}/win32fe lib ${flags}

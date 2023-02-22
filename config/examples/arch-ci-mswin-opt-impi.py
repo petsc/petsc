@@ -17,11 +17,14 @@ if __name__ == '__main__':
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-debugging=0',
     '--with-blaslapack-lib=-L'+oamkldir+' mkl_intel_lp64_dll.lib mkl_sequential_dll.lib mkl_core_dll.lib',
-    '--with-cc=win32fe cl',
-    '--with-cxx=win32fe cl',
-    '--with-fc=win32fe ifort',
+    '--with-cc=cl',
+    '--with-cxx=cl',
+    '--with-fc=ifort',
     '--with-mpi-include='+oampidir+'/include',
     '--with-mpi-lib='+oampidir+'/lib/release/impi.lib',
-    '-with-mpiexec='+oampidir+'/bin/mpiexec -localonly',
+    '--with-mpiexec='+oampidir+'/bin/mpiexec -localonly',
+    '--download-metis',
+    '--download-parmetis',
+    '--with-strict-petscerrorcode=0',
   ]
   configure.petsc_configure(configure_options)

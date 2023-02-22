@@ -48,7 +48,7 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   agmres->size  = size;
   agmres->First = First;
   agmres->Last  = Last;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *c, PetscReal *s, PetscReal *r, PetscInt make_r)
@@ -96,7 +96,7 @@ static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *c, PetscReal *s, PetscRea
       *s = PetscSqrtReal(1.e0 - (*c) * (*c));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -134,7 +134,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscCall(PetscLogEventBegin(KSP_AGMRESRoddec, ksp, 0, 0, 0));
   PetscCall(PetscArrayzero(agmres->Rloc, N * N));
   /* check input arguments */
-  PetscCheck(nvec >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "The number of input vectors shoud be positive");
+  PetscCheck(nvec >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "The number of input vectors should be positive");
   PetscCall(VecGetLocalSize(VEC_V(0), &nloc));
   PetscCall(PetscBLASIntCast(nloc, &bnloc));
   PetscCheck(nvec <= nloc, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "In QR factorization, the number of local rows should be greater or equal to the number of columns");
@@ -219,7 +219,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
    */
   PetscCallMPI(MPI_Bcast(agmres->Rloc, N * N, MPIU_SCALAR, Last, comm));
   PetscCall(PetscLogEventEnd(KSP_AGMRESRoddec, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -306,5 +306,5 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   }
   PetscCall(VecRestoreArray(Out, &zloc));
   PetscCall(PetscFree(y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

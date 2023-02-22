@@ -13,12 +13,12 @@ static PetscErrorCode LabelPoints(DM dm)
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL));
-  if (!flg) PetscFunctionReturn(0);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMCreateLabel(dm, "test"));
   PetscCall(DMGetLabel(dm, "test", &label));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) PetscCall(DMLabelSetValue(label, p, p));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
@@ -29,10 +29,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(LabelPoints(*dm));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "post_label_"));
+  PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, NULL));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -40,7 +40,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
    * */
   if (issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT) {
     PetscCall(PetscCommDestroy(&scomm));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* if the sub-communicator is petsc_comm_self,
    * user also does not care the sub-communicator
@@ -48,7 +48,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
   PetscCallMPI(MPI_Comm_compare(scomm, PETSC_COMM_SELF, &issamecomm));
   if (issamecomm == MPI_IDENT || issamecomm == MPI_CONGRUENT) {
     PetscCall(PetscCommDestroy(&scomm));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCallMPI(MPI_Comm_rank(scomm, &srank));
   PetscCallMPI(MPI_Comm_size(scomm, &ssize));
@@ -167,5 +167,5 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
   PetscCall(ISDestroy(&is_sc));
   PetscCall(ISDestroy(&partitioning));
   PetscCall(PetscCommDestroy(&scomm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

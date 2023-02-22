@@ -73,7 +73,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+self.python.pyexe+' setup.py build )  || \\\n\
+           '+newdir+archflags+self.python.pyexe+' setup.py build ) || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
@@ -103,7 +103,7 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4pytest', '',
         ['@echo "*** Testing petsc4py on ${PETSC4PY_NP} processes ***"',
          '@PYTHONPATH=%s:${PETSC_MPI4PY_PYTHONPATH}:${PYTHONPATH} PETSC_OPTIONS="%s" ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
-             (installLibPath, '{PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump ${PETSC_TEST_OPTIONS}', self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
+             (installLibPath, '${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump ${PETSC_TEST_OPTIONS}', self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
          '@echo "====================================="'])
 
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:

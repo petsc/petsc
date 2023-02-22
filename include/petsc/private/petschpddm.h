@@ -35,7 +35,7 @@ struct PC_HPDDM {
   IS                          is;                                           /* global numbering of the auxiliary matrix */
   PetscInt                    N;                                            /* number of levels */
   PCHPDDMCoarseCorrectionType correction;                                   /* type of coarse correction */
-  PetscBool                   Neumann;                                      /* aux is the local Neumann matrix? */
+  PetscBool3                  Neumann;                                      /* aux is the local Neumann matrix? */
   PetscBool                   log_separate;                                 /* separate events for each level? */
   PetscBool                   share;                                        /* shared subdomain KSP between SLEPc and PETSc? */
   PetscBool                   deflation;                                    /* aux is the local deflation space? */
@@ -58,6 +58,9 @@ PETSC_EXTERN PetscLogEvent  PC_HPDDM_Next;
 PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool *);
 PETSC_INTERN const char     HPDDMCitation[];
 PETSC_INTERN PetscBool      HPDDMCite;
+#if PetscDefined(HAVE_CUDA) && PetscDefined(HAVE_HPDDM)
+PETSC_INTERN PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *, const PetscScalar *, PetscScalar *, PetscInt, MPI_Comm);
+#endif
 
 #include <HPDDM.hpp>
 

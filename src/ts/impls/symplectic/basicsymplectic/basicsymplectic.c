@@ -57,7 +57,7 @@ M*/
 PetscErrorCode TSBasicSymplecticRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSBasicSymplecticRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSBasicSymplecticRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSBasicSymplecticRegisterAllCalled = PETSC_TRUE;
   {
     PetscReal c[1] = {1.0}, d[1] = {1.0};
@@ -76,7 +76,7 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
     PetscReal c[4] = {1.0 / 2.0 / (2.0 - CUBEROOTOFTWO), (1.0 - CUBEROOTOFTWO) / 2.0 / (2.0 - CUBEROOTOFTWO), (1.0 - CUBEROOTOFTWO) / 2.0 / (2.0 - CUBEROOTOFTWO), 1.0 / 2.0 / (2.0 - CUBEROOTOFTWO)}, d[4] = {1.0 / (2.0 - CUBEROOTOFTWO), -CUBEROOTOFTWO / (2.0 - CUBEROOTOFTWO), 1.0 / (2.0 - CUBEROOTOFTWO), 0};
     PetscCall(TSBasicSymplecticRegister(TSBASICSYMPLECTIC4, 4, 4, c, d));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -101,7 +101,7 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
     PetscCall(PetscFree(link));
   }
   TSBasicSymplecticRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -115,11 +115,11 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 PetscErrorCode TSBasicSymplecticInitializePackage(void)
 {
   PetscFunctionBegin;
-  if (TSBasicSymplecticPackageInitialized) PetscFunctionReturn(0);
+  if (TSBasicSymplecticPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TSBasicSymplecticPackageInitialized = PETSC_TRUE;
   PetscCall(TSBasicSymplecticRegisterAll());
   PetscCall(PetscRegisterFinalize(TSBasicSymplecticFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -135,7 +135,7 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
   PetscFunctionBegin;
   TSBasicSymplecticPackageInitialized = PETSC_FALSE;
   PetscCall(TSBasicSymplecticRegisterDestroy());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -178,7 +178,7 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscI
   PetscCall(PetscArraycpy(scheme->d, d, s));
   link->next                = BasicSymplecticSchemeList;
   BasicSymplecticSchemeList = link;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -231,12 +231,12 @@ static PetscErrorCode TSStep_BasicSymplectic(TS ts)
     PetscCall(TSAdaptCheckStage(ts->adapt, ts, ts->ptime, solution, &stageok));
     if (!stageok) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(TSFunctionDomainError(ts, ts->ptime + ts->time_step, update, &stageok));
     if (!stageok) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
 
@@ -245,31 +245,31 @@ static PetscErrorCode TSStep_BasicSymplectic(TS ts)
   PetscCall(VecRestoreSubVector(solution, is_p, &p));
   PetscCall(VecRestoreSubVector(update, is_q, &q_update));
   PetscCall(VecRestoreSubVector(update, is_p, &p_update));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsenHook_BasicSymplectic(DM fine, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRestrictHook_BasicSymplectic(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainHook_BasicSymplectic(DM dm, DM subdm, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainRestrictHook_BasicSymplectic(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_BasicSymplectic(TS ts)
@@ -294,7 +294,7 @@ static PetscErrorCode TSSetUp_BasicSymplectic(TS ts)
     PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_BasicSymplectic, DMRestrictHook_BasicSymplectic, ts));
     PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_BasicSymplectic, DMSubDomainRestrictHook_BasicSymplectic, ts));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_BasicSymplectic(TS ts)
@@ -303,7 +303,7 @@ static PetscErrorCode TSReset_BasicSymplectic(TS ts)
 
   PetscFunctionBegin;
   PetscCall(VecDestroy(&bsymp->update));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_BasicSymplectic(TS ts)
@@ -313,7 +313,7 @@ static PetscErrorCode TSDestroy_BasicSymplectic(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBasicSymplecticSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBasicSymplecticGetType_C", NULL));
   PetscCall(PetscFree(ts->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetFromOptions_BasicSymplectic(TS ts, PetscOptionItems *PetscOptionsObject)
@@ -337,13 +337,13 @@ static PetscErrorCode TSSetFromOptions_BasicSymplectic(TS ts, PetscOptionItems *
     PetscCall(PetscFree(namelist));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_BasicSymplectic(TS ts, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_BasicSymplectic(TS ts, PetscReal t, Vec X)
@@ -355,7 +355,7 @@ static PetscErrorCode TSInterpolate_BasicSymplectic(TS ts, PetscReal t, Vec X)
   PetscFunctionBegin;
   PetscCall(VecWAXPY(X, -ts->time_step, update, ts->vec_sol));
   PetscCall(VecAXPBY(X, 1.0 - alpha, alpha, ts->vec_sol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
@@ -363,7 +363,7 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
   PetscFunctionBegin;
   *yr = 1.0 + xr;
   *yi = xi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -391,7 +391,7 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSBasicSymplecticSetType_C", (TS, TSBasicSymplecticType), (ts, bsymptype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -412,7 +412,7 @@ PetscErrorCode TSBasicSymplecticGetType(TS ts, TSBasicSymplecticType *bsymptype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSBasicSymplecticGetType_C", (TS, TSBasicSymplecticType *), (ts, bsymptype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts, TSBasicSymplecticType bsymptype)
@@ -424,13 +424,13 @@ static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts, TSBasicSym
   PetscFunctionBegin;
   if (bsymp->scheme) {
     PetscCall(PetscStrcmp(bsymp->scheme->name, bsymptype, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (link = BasicSymplecticSchemeList; link; link = link->next) {
     PetscCall(PetscStrcmp(link->sch.name, bsymptype, &match));
     if (match) {
       bsymp->scheme = &link->sch;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", bsymptype);
@@ -442,7 +442,7 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
 
   PetscFunctionBegin;
   *bsymptype = bsymp->scheme->name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -506,5 +506,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBasicSymplecticGetType_C", TSBasicSymplecticGetType_BasicSymplectic));
 
   PetscCall(TSBasicSymplecticSetType(ts, TSBasicSymplecticDefault));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

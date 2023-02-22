@@ -80,6 +80,8 @@ typedef struct {
   PetscCount  *Cperm1;                     /* [sendlen] Permutation to fill MPI send buffer. 'C' for communication */
   PetscScalar *sendbuf, *recvbuf;          /* Buffers for remote values in MatSetValuesCOO() */
   PetscInt     sendlen, recvlen;           /* Lengths (in unit of PetscScalar) of send/recvbuf */
+
+  struct _MatOps cops;
 } Mat_MPIAIJ;
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);

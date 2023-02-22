@@ -35,7 +35,7 @@ PetscErrorCode monitor(Tao tao, AppCtx *ctx)
   fp = fopen("ex3opt_conv.out", "a");
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fp, "%" PetscInt_FMT " %g\n", iterate, (double)gnorm));
   fclose(fp);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetType(tao, TAOBLMVM));
-  if (printtofile) PetscCall(TaoSetMonitor(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, PETSC_NULL));
+  if (printtofile) PetscCall(TaoSetMonitor(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, NULL));
   /*
      Optimization starts
   */
@@ -247,6 +247,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *c
   Vec          q;
   Mat          qgrad;
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(P, (const PetscScalar **)&x_ptr));
   ctx->Pm = x_ptr[0];
   PetscCall(VecRestoreArrayRead(P, (const PetscScalar **)&x_ptr));
@@ -325,7 +326,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *c
   PetscCall(VecGetArray(q, &x_ptr));
   *f = -ctx->Pm + x_ptr[0];
   PetscCall(VecRestoreArray(q, &x_ptr));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -20,7 +20,7 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   PetscOptionsBegin(comm, nullptr, "PetscDevice host Options", "Sys");
   PetscCall(base_type::PetscOptionDeviceView(PetscOptionsObject, defaultView, nullptr));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Device::get_attribute_(PetscInt, PetscDeviceAttribute attr, void *value) noexcept
@@ -33,7 +33,7 @@ PetscErrorCode Device::get_attribute_(PetscInt, PetscDeviceAttribute attr, void 
   default:
     PetscUnreachable();
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace host

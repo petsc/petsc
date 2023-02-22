@@ -127,7 +127,7 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
     SETERRQ(comm, PETSC_ERR_PLIB, "Unknown test %d", testnum);
   }
   *A = G;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

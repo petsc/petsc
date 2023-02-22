@@ -18,7 +18,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
 
   PetscCall(VecRestoreArrayRead(X, &xx));
   PetscCall(VecRestoreArray(F, &ff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec X, PetscBool *accept)
@@ -28,7 +28,7 @@ PetscErrorCode TestCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec X, PetscBoo
   PetscFunctionBeginUser;
   PetscCall(TSGetStepNumber(ts, &step));
   *accept = (step >= 2) ? PETSC_FALSE : PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[])
@@ -96,7 +96,7 @@ static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[]
   PetscCall(TSGetConvergedReason(ts, &reason));
   PetscCheck(step == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad step number %" PetscInt_FMT ", %s '%s'", step, type, subtype);
   PetscCheck(reason == TS_DIVERGED_STEP_REJECTED, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad reason %s, %s '%s'", TSConvergedReasons[reason], type, subtype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestTSRK(TS ts, TSRKType type)
@@ -124,7 +124,7 @@ static PetscErrorCode TestTSRK(TS ts, TSRKType type)
 
   PetscCall(TSGetAdapt(ts, &adapt));
   PetscCall(TSAdaptSetType(adapt, savetype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

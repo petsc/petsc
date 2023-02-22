@@ -131,6 +131,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *dummy)
   PetscScalar       *ff, *FF, d, d2;
   PetscInt           i, n;
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(x, &xx));
   PetscCall(VecGetArray(f, &ff));
   PetscCall(VecGetArray((Vec)dummy, &FF));
@@ -147,7 +148,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *dummy)
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(f, &ff));
   PetscCall(VecRestoreArray((Vec)dummy, &FF));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat prejac, void *dummy)
@@ -156,6 +157,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat prejac, void *dummy)
   PetscScalar        A[3], d, d2;
   PetscInt           i, n, j[3];
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize(x, &n));
   PetscCall(VecGetArrayRead(x, &xx));
   d  = (PetscReal)(n - 1);
@@ -197,7 +199,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat prejac, void *dummy)
   PetscCall(MatAssemblyEnd(prejac, MAT_FINAL_ASSEMBLY));
 
   PetscCall(VecRestoreArrayRead(x, &xx));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

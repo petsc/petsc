@@ -24,7 +24,7 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x)
   eis = (PC_Eisenstat *)pc->data;
   PetscCall(MatSOR(eis->A, b, eis->omega, SOR_EISENSTAT, 0.0, 1, 1, x));
   PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm)
@@ -36,7 +36,7 @@ static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm)
   PetscCall(MatShellGetContext(mat, &pc));
   eis = (PC_Eisenstat *)pc->data;
   PetscCall(MatNorm(eis->A, type, nrm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y)
@@ -53,7 +53,7 @@ static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y)
       PetscCall(VecPointwiseMult(y, x, eis->diag));
     }
   } else PetscCall(VecCopy(x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y)
@@ -72,7 +72,7 @@ static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y)
       PetscCall(VecPointwiseMult(y, x, eis->diag));
     }
   } else PetscCall(VecCopy(x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
@@ -104,7 +104,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
   /* modify b by (L + D/omega)^{-1} */
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone - 1], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP), 0.0, 1, 1, b));
   PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
@@ -120,7 +120,7 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP), 0.0, 1, 1, x));
   PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   if (!pc->presolvedone) pc->mat = eis->A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_Eisenstat(PC pc)
@@ -132,7 +132,7 @@ static PetscErrorCode PCReset_Eisenstat(PC pc)
   PetscCall(VecDestroy(&eis->b[1]));
   PetscCall(MatDestroy(&eis->shell));
   PetscCall(VecDestroy(&eis->diag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_Eisenstat(PC pc)
@@ -145,7 +145,7 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCEisenstatGetNoDiagonalScaling_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPreSolveChangeRHS_C", NULL));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -159,7 +159,7 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscO
   PetscCall(PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling", "Do not use standard diagonal scaling", "PCEisenstatSetNoDiagonalScaling", eis->usediag ? PETSC_FALSE : PETSC_TRUE, &flg, &set));
   if (set) PetscCall(PCEisenstatSetNoDiagonalScaling(pc, flg));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer)
@@ -177,7 +177,7 @@ static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Not using diagonal scaling\n"));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_Eisenstat(PC pc)
@@ -200,10 +200,10 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     if (set && sym) PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT_TRANSPOSE, (void (*)(void))PCMult_Eisenstat));
     PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (void (*)(void))PCNorm_Eisenstat));
   }
-  if (!eis->usediag) PetscFunctionReturn(0);
+  if (!eis->usediag) PetscFunctionReturn(PETSC_SUCCESS);
   if (!pc->setupcalled) { PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL)); }
   PetscCall(MatGetDiagonal(pc->pmat, eis->diag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------*/
@@ -215,7 +215,7 @@ static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega)
   PetscFunctionBegin;
   PetscCheck(omega > 0.0 && omega < 2.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Relaxation out of range");
   eis->omega = omega;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool flg)
@@ -224,7 +224,7 @@ static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
 
   PetscFunctionBegin;
   eis->usediag = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega)
@@ -233,7 +233,7 @@ static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega)
 
   PetscFunctionBegin;
   *omega = eis->omega;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool *flg)
@@ -242,7 +242,7 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
 
   PetscFunctionBegin;
   *flg = eis->usediag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -278,7 +278,7 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveReal(pc, omega, 2);
   PetscTryMethod(pc, "PCEisenstatSetOmega_C", (PC, PetscReal), (pc, omega));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -308,7 +308,7 @@ PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCEisenstatSetNoDiagonalScaling_C", (PC, PetscBool), (pc, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -345,7 +345,7 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCEisenstatGetOmega_C", (PC, PetscReal *), (pc, omega));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -377,14 +377,14 @@ PetscErrorCode PCEisenstatGetNoDiagonalScaling(PC pc, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCEisenstatGetNoDiagonalScaling_C", (PC, PetscBool *), (pc, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change)
 {
   PetscFunctionBegin;
   *change = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -440,5 +440,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCEisenstatGetOmega_C", PCEisenstatGetOmega_Eisenstat));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCEisenstatGetNoDiagonalScaling_C", PCEisenstatGetNoDiagonalScaling_Eisenstat));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPreSolveChangeRHS_C", PCPreSolveChangeRHS_Eisenstat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

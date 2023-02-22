@@ -16,7 +16,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Simple(PetscDualSpace sp)
   PetscCall(PetscSectionSetDof(section, pStart, s->dim));
   PetscCall(PetscSectionSetUp(section));
   sp->pointSection = section;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
@@ -28,7 +28,7 @@ static PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
   PetscCall(PetscFree(s));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscDualSpaceSimpleSetDimension_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscDualSpaceSimpleSetFunctional_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace spNew)
@@ -44,13 +44,13 @@ static PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDua
     PetscCall(PetscDualSpaceGetFunctional(sp, d, &q));
     PetscCall(PetscDualSpaceSimpleSetFunctional(spNew, d, q));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscDualSpace sp, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const PetscInt dim)
@@ -69,7 +69,7 @@ static PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp,
   PetscCall(DMGetCoordinateDim(dm, &spatialDim));
   PetscCall(PetscCalloc1(spatialDim + 1, &s->numDof));
   s->numDof[spatialDim] = dim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, PetscInt f, PetscQuadrature q)
@@ -89,7 +89,7 @@ static PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp
     for (p = 0; p < Nq; ++p) vol += weights[p * Nc + c];
     for (p = 0; p < Nq; ++p) weights[p * Nc + c] /= (vol == 0.0 ? 1.0 : vol);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -112,7 +112,7 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
   PetscValidLogicalCollectiveInt(sp, dim, 2);
   PetscCheck(!sp->setupcalled, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change dimension after dual space is set up");
   PetscTryMethod(sp, "PetscDualSpaceSimpleSetDimension_C", (PetscDualSpace, PetscInt), (sp, dim));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -137,7 +137,7 @@ PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace sp, PetscInt fun
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscTryMethod(sp, "PetscDualSpaceSimpleSetFunctional_C", (PetscDualSpace, PetscInt, PetscQuadrature), (sp, func, q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
@@ -156,7 +156,7 @@ static PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
   sp->ops->applyint             = PetscDualSpaceApplyInteriorDefault;
   sp->ops->createalldata        = PetscDualSpaceCreateAllDataDefault;
   sp->ops->createintdata        = PetscDualSpaceCreateInteriorDataDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -182,5 +182,5 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace sp)
   PetscCall(PetscDualSpaceInitialize_Simple(sp));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscDualSpaceSimpleSetDimension_C", PetscDualSpaceSimpleSetDimension_Simple));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscDualSpaceSimpleSetFunctional_C", PetscDualSpaceSimpleSetFunctional_Simple));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -172,7 +172,7 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
 
   PetscCall(VecDestroy(&X));
   PetscCall(PetscFree2(localPoints, remotePoints));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef enum {
@@ -305,7 +305,7 @@ PetscErrorCode DMPatchSolve(DM dm)
     }
   }
   PetscCall(DMRestoreGlobalVector(dmc, &XC));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
@@ -323,7 +323,7 @@ PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Coarse DM\n"));
   PetscCall(DMView(mesh->dmCoarse, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer)
@@ -336,7 +336,7 @@ PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   if (iascii) PetscCall(DMPatchView_ASCII(dm, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDestroy_Patch(DM dm)
@@ -344,11 +344,11 @@ PetscErrorCode DMDestroy_Patch(DM dm)
   DM_Patch *mesh = (DM_Patch *)dm->data;
 
   PetscFunctionBegin;
-  if (--mesh->refct > 0) PetscFunctionReturn(0);
+  if (--mesh->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMDestroy(&mesh->dmCoarse));
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   PetscCall(PetscFree(mesh));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSetUp_Patch(DM dm)
@@ -358,7 +358,7 @@ PetscErrorCode DMSetUp_Patch(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMSetUp(mesh->dmCoarse));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g)
@@ -368,7 +368,7 @@ PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMCreateGlobalVector(mesh->dmCoarse, g));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
@@ -378,7 +378,7 @@ PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMCreateLocalVector(mesh->dmCoarse, l));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
@@ -393,7 +393,7 @@ PetscErrorCode DMPatchGetCoarse(DM dm, DM *dmCoarse)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *dmCoarse = mesh->dmCoarse;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
@@ -404,7 +404,7 @@ PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(patchSize, 2);
   *patchSize = mesh->patchSize;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPatchSetPatchSize(DM dm, MatStencil patchSize)
@@ -414,7 +414,7 @@ PetscErrorCode DMPatchSetPatchSize(DM dm, MatStencil patchSize)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->patchSize = patchSize;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
@@ -425,7 +425,7 @@ PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(commSize, 2);
   *commSize = mesh->commSize;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPatchSetCommSize(DM dm, MatStencil commSize)
@@ -435,5 +435,5 @@ PetscErrorCode DMPatchSetCommSize(DM dm, MatStencil commSize)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->commSize = commSize;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

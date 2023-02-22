@@ -10,7 +10,7 @@
    Not Collective
 
    Input Parameter:
-.  maxlen - maximum lengh allowed
+.  maxlen - maximum length allowed
 
    Output Parameter:
 .  dir - contains the home directory. Must be long enough to hold the name.
@@ -20,7 +20,7 @@
    Notes:
    If PETSc cannot determine the home directory it makes dir a null string
 
-   On Windows machines the enviornmental variable `HOME` specifies the home directory.
+   On Windows machines the environmental variable `HOME` specifies the home directory.
 
 .seealso: `PetscGetTmp()`, `PetscSharedTmp()`, `PetscGetWorkingDirectory()`
 @*/
@@ -33,7 +33,7 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
   if (d1) {
     PetscCall(PetscStrncpy(dir, d1, maxlen));
   } else if (maxlen > 0) dir[0] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -58,7 +58,7 @@ PetscErrorCode PetscFixFilename(const char filein[], char fileout[])
   size_t i, n;
 
   PetscFunctionBegin;
-  if (!filein || !fileout) PetscFunctionReturn(0);
+  if (!filein || !fileout) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscStrlen(filein, &n));
   for (i = 0; i < n; i++) {
@@ -66,5 +66,5 @@ PetscErrorCode PetscFixFilename(const char filein[], char fileout[])
     else fileout[i] = filein[i];
   }
   fileout[n] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

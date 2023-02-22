@@ -1,13 +1,13 @@
 !
+!  This example shows how to avoid Fortran line lengths larger than 132 characters.
+!  We recommend starting from src/snes/tutorials/ex5f90.F90 instead of this example
+!
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
 !  domain, using distributed arrays (DMDAs) to partition the parallel grid.
 !  The command line options include:
 !    -par <param>, where <param> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
-!
-!
-
 !
 !  --------------------------------------------------------------------------
 !
@@ -115,15 +115,11 @@
 
 !  Create distributed array (DMDA) to manage parallel grid and vectors
 
-!     This really needs only the star-type stencil, but we use the box stencil temporarily.
+!     This really needs only the star-type stencil, but we use the box stencil
 
-#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
-#else
       call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE, &
                         i1,i1, PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       CHKERRA(ierr)
-#endif
       call DMSetFromOptions(da,ierr)
       CHKERRA(ierr)
       call DMSetUp(da,ierr)
@@ -139,14 +135,10 @@
 
 !  Get local grid boundaries (for 2-dimensional DMDA)
 
-#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
-      PetscCallA(DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
-#else
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
                        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
                        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       CHKERRA(ierr)
-#endif
       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
       CHKERRA(ierr)
       call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr)
@@ -235,7 +227,7 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArray() and VecRestoreArray().
+!  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(X,ierr)
       use ex5fmodule
@@ -245,8 +237,7 @@
       Vec      X
       PetscErrorCode  ierr
 !  Declarations for use with local arrays:
-      PetscScalar lx_v(0:1)
-      PetscOffset lx_i
+      PetscScalar, pointer :: lx_v(:)
 
       ierr = 0
 
@@ -258,17 +249,17 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      call VecGetArrayF90(X,lx_v,ierr)
       CHKERRQ(ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
-      call InitialGuessLocal(lx_v(lx_i),ierr)
+      call InitialGuessLocal(lx_v,ierr)
       CHKERRQ(ierr)
 
 !  Restore vector
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      call VecRestoreArrayF90(X,lx_v,ierr)
       CHKERRQ(ierr)
 
       return

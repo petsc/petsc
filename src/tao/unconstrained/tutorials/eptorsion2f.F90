@@ -29,9 +29,9 @@
       use petsctao
       implicit none
 
-      Vec              localX
-      DM               dm
-      PetscReal      param
+      type(tVec)       localX
+      type(tDM)        dm
+      PetscReal        param
       PetscInt         mx, my
       end module
 
@@ -44,10 +44,10 @@
 !  See additional variable declarations in the file eptorsion2f.h
 !
       PetscErrorCode   ierr           ! used to check for functions returning nonzeros
-      Vec              x              ! solution vector
-      Mat              H              ! hessian matrix
+      type(tVec)       x              ! solution vector
+      type(tMat)       H              ! hessian matrix
       PetscInt         Nx, Ny         ! number of processes in x- and y- directions
-      Tao        tao            ! Tao solver context
+      type(tTao)       tao            ! Tao solver context
       PetscBool        flg
       PetscInt         i1
       PetscInt         dummy
@@ -207,32 +207,26 @@
       implicit none
 
 !  Input/output variables:
-      Tao        tao
-      Vec              X, G
-      PetscReal      f
+      type(tTao)       tao
+      type(tVec)       X, G
+      PetscReal        f
       PetscErrorCode   ierr
       PetscInt         dummy
 
 !  Declarations for use with local array:
 
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal      lx_v(0:1)
-      PetscOffset      lx_i
+      PetscReal, pointer :: lx_v(:)
 
 !  Local variables:
       PetscReal      zero, p5, area, cdiv3
       PetscReal      val, flin, fquad,floc
       PetscReal      v, vb, vl, vr, vt, dvdx
       PetscReal      dvdy, hx, hy
-      PetscInt         xe, ye, xsm, ysm
-      PetscInt         xep, yep, i, j, k, ind
-      PetscInt         xs, ys, xm, ym
-      PetscInt         gxs, gys, gxm, gym
-      PetscInt         i1
+      PetscInt       xe, ye, xsm, ysm
+      PetscInt       xep, yep, i, j, k, ind
+      PetscInt       xs, ys, xm, ym
+      PetscInt       gxs, gys, gxm, gym
+      PetscInt       i1
 
       i1 = 1
       ierr  = 0
@@ -256,7 +250,7 @@
       PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !  Get pointer to vector data.
-      PetscCall(VecGetArray(localX,lx_v,lx_i,ierr))
+      PetscCall(VecGetArrayReadF90(localX,lx_v,ierr))
 
 !  Set local loop dimensions
       xe = xs+xm
@@ -290,9 +284,9 @@
             v  = zero
             vr = zero
             vt = zero
-            if (i .ge. 0 .and. j .ge. 0)      v = lx_v(lx_i+k)
-            if (i .lt. mx-1 .and. j .gt. -1) vr = lx_v(lx_i+k+1)
-            if (i .gt. -1 .and. j .lt. my-1) vt = lx_v(lx_i+k+gxm)
+            if (i .ge. 0 .and. j .ge. 0)      v = lx_v(k+1)
+            if (i .lt. mx-1 .and. j .gt. -1) vr = lx_v(k+2)
+            if (i .gt. -1 .and. j .lt. my-1) vt = lx_v(k+1+gxm)
             dvdx = (vr-v)/hx
             dvdy = (vt-v)/hy
             if (i .ne. -1 .and. j .ne. -1) then
@@ -323,9 +317,9 @@
             vb = zero
             vl = zero
             v  = zero
-            if (i .lt. mx .and. j .gt. 0) vb = lx_v(lx_i+k-gxm)
-            if (i .gt. 0 .and. j .lt. my) vl = lx_v(lx_i+k-1)
-            if (i .lt. mx .and. j .lt. my) v = lx_v(lx_i+k)
+            if (i .lt. mx .and. j .gt. 0) vb = lx_v(k+1-gxm)
+            if (i .gt. 0 .and. j .lt. my) vl = lx_v(k)
+            if (i .lt. mx .and. j .lt. my) v = lx_v(1+k)
             dvdx = (v-vl)/hx
             dvdy = (v-vb)/hy
             if (i .ne. mx .and. j .ne. 0) then
@@ -349,7 +343,7 @@
       end do
 
 !  Restore vector
-      PetscCall(VecRestoreArray(localX,lx_v,lx_i,ierr))
+      PetscCall(VecRestoreArrayReadF90(localX,lx_v,ierr))
 
 !  Assemble gradient vector
       PetscCall(VecAssemblyBegin(G,ierr))
@@ -370,9 +364,9 @@
       use eptorsion2fmodule
       implicit none
 
-      Tao       tao
-      Vec             X
-      Mat             H,Hpre
+      type(tTao)      tao
+      type(tVec)      X
+      type(tMat)      H,Hpre
       PetscErrorCode  ierr
       PetscInt        dummy
 
@@ -446,12 +440,12 @@
       use eptorsion2fmodule
       implicit none
 
-      Tao tao
-      PetscInt dummy
-      PetscErrorCode ierr
+      type(tTao)        tao
+      PetscInt          dummy
+      PetscErrorCode    ierr
 
-      PetscInt its
-      PetscReal f,gnorm,cnorm,xdiff
+      PetscInt           its
+      PetscReal          f,gnorm,cnorm,xdiff
       TaoConvergedReason reason
 
       PetscCall(TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,reason,ierr))
@@ -468,12 +462,12 @@
       use eptorsion2fmodule
       implicit none
 
-      Tao tao
-      PetscInt dummy
-      PetscErrorCode ierr
+      type(tTao)          tao
+      PetscInt           dummy
+      PetscErrorCode     ierr
 
-      PetscInt its
-      PetscReal f,gnorm,cnorm,xdiff
+      PetscInt           its
+      PetscReal          f,gnorm,cnorm,xdiff
       TaoConvergedReason reason
 
       PetscCall(TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,reason,ierr))

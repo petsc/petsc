@@ -25,7 +25,7 @@ PetscErrorCode PCDestroy_TFS(PC pc)
   PetscCall(VecDestroy(&tfs->xd));
   PetscCall(VecDestroy(&tfs->xo));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_TFS_XXT(PC pc, Vec x, Vec y)
@@ -40,7 +40,7 @@ static PetscErrorCode PCApply_TFS_XXT(PC pc, Vec x, Vec y)
   PetscCall(XXT_solve(tfs->xxt, yy, (PetscScalar *)xx));
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(y, &yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_TFS_XYT(PC pc, Vec x, Vec y)
@@ -55,7 +55,7 @@ static PetscErrorCode PCApply_TFS_XYT(PC pc, Vec x, Vec y)
   PetscCall(XYT_solve(tfs->xyt, yy, (PetscScalar *)xx));
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(y, &yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCTFSLocalMult_TFS(PC pc, PetscScalar *xin, PetscScalar *xout)
@@ -73,7 +73,7 @@ static PetscErrorCode PCTFSLocalMult_TFS(PC pc, PetscScalar *xin, PetscScalar *x
   PetscCall(VecResetArray(tfs->b));
   PetscCall(VecResetArray(tfs->xd));
   PetscCall(VecResetArray(tfs->xo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_TFS(PC pc)
@@ -120,18 +120,18 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   }
 
   PetscCall(PetscFree(localtoglobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_TFS(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -179,5 +179,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   pc->ops->applysymmetricleft  = NULL;
   pc->ops->applysymmetricright = NULL;
   pc->data                     = (void *)tfs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

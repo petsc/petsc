@@ -125,7 +125,7 @@ static PetscErrorCode MonitorObjective(TS ts, PetscInt step, PetscReal t, Vec X,
   PetscCall(SNESGetIterationNumber(snes, &snesit));
   PetscCall(SNESGetLinearSolveIterations(snes, &linit));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, (ctx->monitor_short ? "%3" PetscInt_FMT " t=%10.1e  dt=%10.1e  f=%10.1e  df=%10.1e  it=(%2" PetscInt_FMT ",%3" PetscInt_FMT ")\n" : "%3" PetscInt_FMT " t=%10.4e  dt=%10.4e  f=%10.4e  df=%10.4e  it=(%2" PetscInt_FMT ",%3" PetscInt_FMT ")\n"), step, (double)t, (double)dt, (double)PetscRealPart(f), (double)gnorm, snesit, linit));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -174,7 +174,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(VecAXPY(F, 1.0, Xdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -240,7 +240,7 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscRe
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

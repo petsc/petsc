@@ -148,7 +148,7 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, P
     PetscCall(PetscSectionSetUp(adjSec));
   }
   *anchorSectionAdj = adjSec;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF sfDof, PetscBool useCone, PetscBool useClosure, PetscBool useAnchors, PetscSection *sA, PetscInt **colIdx)
@@ -558,7 +558,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
 
   *sA     = sectionAdj;
   *colIdx = cols;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[])
@@ -618,7 +618,7 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
       onzu[r] /= bs;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], Mat A)
@@ -659,7 +659,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
     }
   }
   PetscCall(PetscFree(values));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -791,7 +791,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
     PetscCall(PetscFree(cols[idx]));
   }
   PetscCall(PetscLogEventEnd(DMPLEX_Preallocate, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if 0
@@ -838,6 +838,6 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
 
   PetscCall(PetscSFReduceBegin(sf,MPIU_INT,ldnz,dnz,MPI_SUM));
   PetscCall(PetscSFReduceEnd  (sf,MPIU_INT,lonz,onz,MPI_SUM));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

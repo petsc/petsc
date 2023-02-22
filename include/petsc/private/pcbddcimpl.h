@@ -23,7 +23,7 @@ PETSC_EXTERN PetscLogEvent PC_BDDC_Solves[PETSC_PCBDDC_MAXLEVELS][3];
 
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
-  /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
+  /* First MUST come the following line, for the stuff that is common to FETI and Neumann-Neumann. */
   PC_IS pcis;
   /* Coarse stuffs needed by BDDC application in KSP */
   Vec        coarse_vec;

@@ -239,6 +239,7 @@ struct _p_DM {
   MatType                mattype;    /* type of matrix created with DMCreateMatrix() */
   PetscInt               bind_below; /* Local size threshold (in entries/rows) below which Vec/Mat objects are bound to CPU */
   PetscInt               bs;
+  DMBlockingType         blocking_type;
   ISLocalToGlobalMapping ltogmap;
   PetscBool              prealloc_skip;      // Flag indicating the DMCreateMatrix() should not preallocate (only set sizes and local-to-global)
   PetscBool              prealloc_only;      /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
@@ -250,7 +251,7 @@ struct _p_DM {
   /* Hierarchy / Submeshes */
   DM                      coarseMesh;
   DM                      fineMesh;
-  DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
+  DMCoarsenHookLink       coarsenhook; /* For transferring auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;
   DMGlobalToLocalHookLink gtolhook;
@@ -270,6 +271,12 @@ struct _p_DM {
   PetscSection localSection;  /* Layout for local vectors */
   PetscSection globalSection; /* Layout for global vectors */
   PetscLayout  map;
+  // Affine transform applied in DMGlobalToLocal
+  struct {
+    VecScatter affine_to_local;
+    Vec        affine;
+    PetscErrorCode (*setup)(DM);
+  } periodic;
   /* Constraints */
   struct {
     PetscSection section;
@@ -422,7 +429,7 @@ static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, Pet
     *end                 = *start + s->atlasDof[point - s->pStart];
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
@@ -444,7 +451,7 @@ static inline PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point
     *end                 = *start + s->atlasDof[point - s->pStart];
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
@@ -470,7 +477,7 @@ static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, Pe
     *end                    = *start + dof - cdof + (dof < 0 ? 1 : 0);
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
@@ -514,7 +521,7 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
     *end   = *start < 0 ? *start - (fdof - fcdof) : *start + fdof - fcdof;
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);

@@ -35,7 +35,7 @@ static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerStringSPrintf(viewer, " Redistribute preconditioner"));
     PetscCall(KSPView(red->ksp, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_Redistribute(PC pc)
@@ -238,7 +238,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscCall(VecRestoreArrayRead(diag, &d));
   PetscCall(VecDestroy(&diag));
   PetscCall(KSPSetUp(red->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
@@ -279,7 +279,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
   PetscCall(KSPCheckSolve(red->ksp, pc, red->x));
   PetscCall(VecScatterBegin(red->scatter, red->x, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(red->scatter, red->x, x, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_Redistribute(PC pc)
@@ -296,7 +296,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   PetscCall(PetscFree(red->drows));
   PetscCall(PetscFree(red->diag));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -305,7 +305,7 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions(red->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -331,27 +331,28 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(innerksp, 2);
   *innerksp = red->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
      PCREDISTRIBUTE - Redistributes a matrix for load balancing, removing the rows (and the corresponding columns) that only have a diagonal entry and then
      applies a `KSP` to that new smaller matrix
 
+     Level: intermediate
+
      Notes:
      Options for the redistribute `KSP` and `PC` with the options database prefix -redistribute_
 
-     Usually run this with -ksp_type preonly
+     Usually run this with `-ksp_type preonly`
 
-     If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly
-     -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc to take advantage of the symmetry.
+     If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, `-ksp_type preonly
+     -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc` to take advantage of the symmetry.
 
-     This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same.
+     This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same. Rows are moved
+     between MPI processes inside the preconditioner to balance the number of rows on each process.
 
      Developer Note:
      Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.
-
-   Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`
 M*/
@@ -378,5 +379,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(KSPSetOptionsPrefix(red->ksp, prefix));
   PetscCall(KSPAppendOptionsPrefix(red->ksp, "redistribute_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

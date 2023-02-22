@@ -9,7 +9,7 @@ static PetscErrorCode MatMult_S(Mat S, Vec x, Vec y)
   PetscFunctionBeginUser;
   PetscCall(MatShellGetContext(S, &A));
   PetscCall(MatMult(A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscBool test_cusparse_transgen = PETSC_FALSE;
@@ -25,7 +25,7 @@ static PetscErrorCode MatMultTranspose_S(Mat S, Vec x, Vec y)
   /* alternate transgen true and false to test code logic */
   PetscCall(MatSetOption(A, MAT_FORM_EXPLICIT_TRANSPOSE, test_cusparse_transgen));
   test_cusparse_transgen = (PetscBool)!test_cusparse_transgen;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -141,16 +141,16 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&S));
 
   /* finished using B */
-  PetscCall(MatDenseCUDAGetArray(B, &aa));
+  PetscCall(MatDenseGetArrayAndMemType(B, &aa, NULL));
   PetscCheck(vv == aa - l * nloc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong array");
-  PetscCall(MatDenseCUDARestoreArray(B, &aa));
+  PetscCall(MatDenseRestoreArrayAndMemType(B, &aa));
   if (reset) PetscCall(MatDenseCUDAResetArray(B));
   PetscCall(VecCUDARestoreArray(v, &vv));
 
   if (test == 1) {
-    PetscCall(MatDenseCUDAGetArray(B, &aa));
+    PetscCall(MatDenseGetArrayAndMemType(B, &aa, NULL));
     PetscCheck(!aa, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected a null pointer");
-    PetscCall(MatDenseCUDARestoreArray(B, &aa));
+    PetscCall(MatDenseRestoreArrayAndMemType(B, &aa));
   }
 
   /* free work space */

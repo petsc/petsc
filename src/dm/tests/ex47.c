@@ -43,7 +43,7 @@ PetscErrorCode test_3d(const char filename[])
   PetscCall(PetscViewerDestroy(&view));
   PetscCall(VecDestroy(&v));
   PetscCall(DMDestroy(&da));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -82,7 +82,7 @@ PetscErrorCode test_2d(const char filename[])
   PetscCall(PetscViewerDestroy(&view));
   PetscCall(VecDestroy(&v));
   PetscCall(DMDestroy(&da));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -120,7 +120,7 @@ PetscErrorCode test_2d_nocoord(const char filename[])
   PetscCall(PetscViewerDestroy(&view));
   PetscCall(VecDestroy(&v));
   PetscCall(DMDestroy(&da));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -162,7 +162,7 @@ PetscErrorCode test_3d_nocoord(const char filename[])
   PetscCall(PetscViewerDestroy(&view));
   PetscCall(VecDestroy(&v));
   PetscCall(DMDestroy(&da));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 int main(int argc, char *argv[])

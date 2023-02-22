@@ -9,8 +9,6 @@
 PetscFunctionList MatOrderingList              = NULL;
 PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat, MatOrderingType, IS *, IS *);
-
 PetscErrorCode MatGetOrdering_Flow(Mat mat, MatOrderingType type, IS *irow, IS *icol)
 {
   PetscFunctionBegin;
@@ -47,7 +45,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat, MatOrderingType type
   }
   PetscCall(ISSetIdentity(*irow));
   PetscCall(ISSetIdentity(*icol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -77,7 +75,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, permr, PETSC_COPY_VALUES, irow));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, permr, PETSC_COPY_VALUES, icol));
   PetscCall(PetscFree2(lens, permr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -108,7 +106,7 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatOrderingList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -176,7 +174,7 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
   if (flg) {
     *rperm = NULL;
     *cperm = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* This code is terrible. MatGetOrdering() multiple dispatch should use matrix and this code should move to impls/aij/mpi. */
@@ -207,7 +205,7 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
     PetscCall(ISDestroy(&lcolperm));
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), rend - rstart, idx, PETSC_OWN_POINTER, cperm));
     PetscCall(ISSetPermutation(*cperm));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (!mat->rmap->N) { /* matrix has zero rows */
@@ -215,7 +213,7 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, rperm));
     PetscCall(ISSetIdentity(*cperm));
     PetscCall(ISSetIdentity(*rperm));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(MatGetLocalSize(mat, &mmat, &nmat));
@@ -241,12 +239,12 @@ PetscErrorCode MatGetOrdering(Mat mat, MatOrderingType type, IS *rperm, IS *cper
     PetscCall(MatViewFromOptions(tmat, (PetscObject)mat, "-mat_view_ordering"));
     PetscCall(MatDestroy(&tmat));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetOrderingList(PetscFunctionList *list)
 {
   PetscFunctionBegin;
   *list = MatOrderingList;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

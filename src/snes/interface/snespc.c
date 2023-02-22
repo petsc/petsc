@@ -39,7 +39,7 @@ PetscErrorCode SNESApplyNPC(SNES snes, Vec x, Vec f, Vec y)
     PetscCall(PetscLogEventEnd(SNES_NPCSolve, snes->npc, x, y, 0));
     PetscCall(VecAYPX(y, -1.0, x));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
@@ -55,7 +55,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
   } else {
     PetscCall(SNESComputeFunction(snes, X, F));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -101,5 +101,5 @@ PetscErrorCode SNESGetNPCFunction(SNES snes, Vec F, PetscReal *fnorm)
     PetscCall(SNESComputeFunction(snes->npc, XPC, F));
     if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -10,7 +10,7 @@ static PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 6));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -82,7 +82,7 @@ static PetscErrorCode KSPSolve_GROPPCG(KSP ksp)
   PetscCall(KSPMonitor(ksp, 0, dp));
   ksp->rnorm = dp;
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   i = 0;
   do {
@@ -128,7 +128,7 @@ static PetscErrorCode KSPSolve_GROPPCG(KSP ksp)
     PetscCall(KSPLogResidualHistory(ksp, dp));
     PetscCall(KSPMonitor(ksp, i, dp));
     PetscCall((*ksp->converged)(ksp, i, dp, &ksp->reason, ksp->cnvP));
-    if (ksp->reason) PetscFunctionReturn(0);
+    if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
     beta  = gammaNew / gamma;
     gamma = gammaNew;
@@ -138,7 +138,7 @@ static PetscErrorCode KSPSolve_GROPPCG(KSP ksp)
   } while (i < ksp->max_it);
 
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
@@ -181,5 +181,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidual_CG;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

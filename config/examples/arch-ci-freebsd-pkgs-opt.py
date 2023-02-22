@@ -29,6 +29,7 @@ configure_options = [
   '--download-spai=1',
   '--download-concurrencykit=1',
   '--download-revolve=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

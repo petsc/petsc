@@ -38,6 +38,7 @@ configure_options = [
   '--download-thrust=1',
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

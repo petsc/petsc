@@ -196,7 +196,7 @@ and then add a ``PetscBag`` object to our application context. We then setup the
 
 .. literalinclude:: /../src/snes/tutorials/ex62.c
    :start-at: static PetscErrorCode SetupParameters
-   :end-at: PetscFunctionReturn(0);
+   :end-at: PetscFunctionReturn(PETSC_SUCCESS);
    :append: }
 
 which will allow us to set the value from the command line using ``-mu``. The ``PetscBag`` can also be persisted to disk with ``PetscBagLoad/View()``. We can make these values available as constant to our pointwise functions through the ``PetscDS`` object.

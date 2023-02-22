@@ -18,12 +18,12 @@ PetscFunctionList DMFieldList;
 PetscErrorCode DMFieldRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (DMFieldRegisterAllCalled) PetscFunctionReturn(0);
+  if (DMFieldRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   DMFieldRegisterAllCalled = PETSC_TRUE;
   PetscCall(DMFieldRegister(DMFIELDDA, DMFieldCreate_DA));
   PetscCall(DMFieldRegister(DMFIELDDS, DMFieldCreate_DS));
   PetscCall(DMFieldRegister(DMFIELDSHELL, DMFieldCreate_Shell));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -54,5 +54,5 @@ PetscErrorCode DMFieldRegister(const char sname[], PetscErrorCode (*function)(DM
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&DMFieldList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

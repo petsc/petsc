@@ -30,7 +30,7 @@
     This is much faster than `KSPGMRESModifiedGramSchmidtOrthogonalization()` but has the small possibility of stability issues
     that can usually be handled by using a a single step of iterative refinement with `KSPGMRESSetCGSRefinementType()`
 
-.seealso: [](chapter_ksp), `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
+.seealso: [](chapter_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
            `KSPGMRESGetCGSRefinementType()`, `KSPGMRESGetOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt it)
@@ -112,5 +112,5 @@ PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt i
   }
 done:
   PetscCall(PetscLogEventEnd(KSP_GMRESOrthogonalization, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -4,7 +4,7 @@
 static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
@@ -43,7 +43,7 @@ static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
     PetscCall(VecDestroy(&v));
     PetscCall(KSPMonitor(ksp, 1, norm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
@@ -67,7 +67,7 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
     ksp->its    = 1;
     ksp->reason = KSP_CONVERGED_ITS;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -115,5 +115,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

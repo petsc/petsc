@@ -48,7 +48,7 @@ static PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
     PetscCall(VecDot(lmvm->Y[i], F, &ytf));
     PetscCall(VecAXPBYPCZ(dX, PetscRealPart(ytf) / lbb->yty[i], -PetscRealPart(ytf) / lbb->yty[i], 1.0, lmvm->S[i], lbb->Q[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -100,7 +100,7 @@ static PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
     PetscCall(VecDot(lmvm->Y[i], X, &ytx));
     PetscCall(VecAXPBYPCZ(Z, PetscRealPart(ytx) / lbb->yts[i], -PetscRealPart(ytx) / lbb->yts[i], 1.0, lmvm->Y[i], lbb->P[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -113,7 +113,7 @@ static PetscErrorCode MatUpdate_LMVMBadBrdn(Mat B, Vec X, Vec F)
   PetscScalar yty, yts;
 
   PetscFunctionBegin;
-  if (!lmvm->m) PetscFunctionReturn(0);
+  if (!lmvm->m) PetscFunctionReturn(PETSC_SUCCESS);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     PetscCall(VecAYPX(lmvm->Xprev, -1.0, X));
@@ -141,7 +141,7 @@ static PetscErrorCode MatUpdate_LMVMBadBrdn(Mat B, Vec X, Vec F)
   PetscCall(VecCopy(X, lmvm->Xprev));
   PetscCall(VecCopy(F, lmvm->Fprev));
   lmvm->prev_set = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -163,7 +163,7 @@ static PetscErrorCode MatCopy_LMVMBadBrdn(Mat B, Mat M, MatStructure str)
     PetscCall(VecCopy(bctx->P[i], mctx->P[i]));
     PetscCall(VecCopy(bctx->Q[i], mctx->Q[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -182,7 +182,7 @@ static PetscErrorCode MatReset_LMVMBadBrdn(Mat B, PetscBool destructive)
     lbb->allocated = PETSC_FALSE;
   }
   PetscCall(MatReset_LMVM(B, destructive));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -202,7 +202,7 @@ static PetscErrorCode MatAllocate_LMVMBadBrdn(Mat B, Vec X, Vec F)
     }
     lbb->allocated = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -221,7 +221,7 @@ static PetscErrorCode MatDestroy_LMVMBadBrdn(Mat B)
   }
   PetscCall(PetscFree(lmvm->ctx));
   PetscCall(MatDestroy_LMVM(B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -241,7 +241,7 @@ static PetscErrorCode MatSetUp_LMVMBadBrdn(Mat B)
     }
     lbb->allocated = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -270,7 +270,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
   lmvm->ctx      = (void *)lbb;
   lbb->allocated = PETSC_FALSE;
   lbb->needP = lbb->needQ = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -280,10 +280,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
    approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be
    symmetric or positive-definite.
 
-   The provided local and global sizes must match the solution and function vectors
-   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-BadBrdn matrix will have
-   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
-   parallel. To use the L-BadBrdn matrix with other vector types, the matrix must be
+   To use the L-BadBrdn matrix with other vector types, the matrix must be
    created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
@@ -322,5 +319,5 @@ PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Ma
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMBADBROYDEN));
   PetscCall(MatSetUp(*B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -24,7 +24,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
   PetscCall(PetscObjectStateGet((PetscObject)l, &lstate));
   PetscCall(PetscObjectStateSet((PetscObject)g, PetscMax(gstate, lstate)));
   PetscCall(PetscObjectStateSet((PetscObject)l, PetscMax(gstate, lstate)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -87,7 +87,7 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
     PetscCall(VecGhostStateSync_Private(g, *l));
     PetscCall(PetscObjectReference((PetscObject)*l));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -124,7 +124,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
   } else if (isseq) {
     if (l == g) *flg = PETSC_TRUE;
   } else SETERRQ(PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Global vector is not ghosted");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -153,7 +153,7 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
     PetscCall(VecGhostStateSync_Private(g, *l));
     PetscCall(PetscObjectDereference((PetscObject)*l));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -207,7 +207,7 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
   if (ismpi) {
     v = (Vec_MPI *)g->data;
     PetscCheck(v->localrep, PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
-    if (!v->localupdate) PetscFunctionReturn(0);
+    if (!v->localupdate) PetscFunctionReturn(PETSC_SUCCESS);
     if (scattermode == SCATTER_REVERSE) {
       PetscCall(VecScatterBegin(v->localupdate, v->localrep, g, insertmode, scattermode));
     } else {
@@ -216,7 +216,7 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
   } else if (isseq) {
     /* Do nothing */
   } else SETERRQ(PetscObjectComm((PetscObject)g), PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -270,12 +270,12 @@ PetscErrorCode VecGhostUpdateEnd(Vec g, InsertMode insertmode, ScatterMode scatt
   if (ismpi) {
     v = (Vec_MPI *)g->data;
     PetscCheck(v->localrep, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vector is not ghosted");
-    if (!v->localupdate) PetscFunctionReturn(0);
+    if (!v->localupdate) PetscFunctionReturn(PETSC_SUCCESS);
     if (scattermode == SCATTER_REVERSE) {
       PetscCall(VecScatterEnd(v->localupdate, v->localrep, g, insertmode, scattermode));
     } else {
       PetscCall(VecScatterEnd(v->localupdate, g, v->localrep, insertmode, scattermode));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

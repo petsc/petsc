@@ -23,10 +23,8 @@
 ! -----------------------------------------------------------------
 !
 !  Demo1 -  This subroutine demonstrates the use of PETSc-allocated dense
-!  matrix storage.  Here MatDenseGetArray() is used for direct access to the
-!  array that stores the dense matrix.  The user declares an array (aa(1))
-!  and index variable (ia), which are then used together to manipulate
-!  the array contents.
+!  matrix storage.  Here MatDenseGetArrayF90() is used for direct access to the
+!  array that stores the dense matrix.
 !
 !  Note the use of PETSC_NULL_SCALAR in MatCreateSeqDense() to indicate that no
 !  storage is being provided by the user. (Do NOT pass a zero in that
@@ -40,8 +38,7 @@
       Mat         A
       PetscInt   n,m
       PetscErrorCode ierr
-      PetscScalar aa(1)
-      PetscOffset ia
+      PetscScalar,pointer :: aa(:,:)
 
       n = 4
       m = 5
@@ -54,12 +51,12 @@
       PetscCall(MatSetUp(A,ierr))
 
 !  Access array storage
-      PetscCall(MatDenseGetArray(A,aa,ia,ierr))
+      PetscCall(MatDenseGetArrayF90(A,aa,ierr))
 
 !  Set matrix values directly
-      PetscCall(FillUpMatrix(m,n,aa(ia+1))
+      PetscCall(FillUpMatrix(m,n,aa))
 
-      PetscCall(MatDenseRestoreArray(A,aa,ia,ierr))
+      PetscCall(MatDenseRestoreArrayF90(A,aa,ierr))
 
 !  Finalize matrix assembly
       PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
@@ -93,7 +90,7 @@
       PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,m,n,aa,A,ierr))
 
 !  Set matrix values directly
-      PetscCall(FillUpMatrix(m,n,aa)
+      PetscCall(FillUpMatrix(m,n,aa))
 
 !  Finalize matrix assembly
       PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))

@@ -124,7 +124,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation lo
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim %" PetscInt_FMT, dim);
   }
   for (i = 0; i < dim; ++i) PetscCall(PetscFree(l[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -172,7 +172,7 @@ static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm, DMStagStencilLocation locC
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location (perhaps not canonical) %s", DMStagStencilLocations[locCanonical]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -294,7 +294,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm, Vec vec, DMStagStencilLocation
     PetscCall(DMDAVecRestoreArrayDOF(dmTo, vecTo, &arrTo));
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
   PetscCall(DMRestoreLocalVector(dm, &vecLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Transfer coordinates from a DMStag to a DMDA, specifying which location */
@@ -404,37 +404,34 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLo
     } else SETERRQ(PetscObjectComm((PetscObject)dmstag), PETSC_ERR_SUP, "Stag to DA coordinate transfer only supported for DMStag coordinate DM of type DMstag or DMProduct");
     PetscCall(DMDAVecRestoreArrayDOF(dmdaCoord, daCoord, &cArrDa));
   } else SETERRQ(PetscObjectComm((PetscObject)dmstag), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  DMStagVecSplitToDMDA - create a DMDA and `Vec` from a DMStag and `Vec`
+  DMStagVecSplitToDMDA - create a `DMDA` and `Vec` from a subgrid of a `DMSTAG` and its `Vec`
 
-  Logically Collective
-
-  High-level helper function which accepts a DMStag, a global vector, and location/dof,
-  and generates a corresponding DMDA and Vec.
+  Collective
 
   Input Parameters:
-+ dm - the DMStag object
++ dm - the `DMSTAG` object
 . vec- Vec object associated with `dm`
 . loc - which subgrid to extract (see `DMStagStencilLocation`)
 - c - which component to extract (see note below)
 
   Output Parameters:
-+ pda - the new `DMDA`
++ pda - the `DMDA`
 - pdavec - the new `Vec`
+
+  Level: advanced
 
   Notes:
   If a `c` value of `-k` is provided, the first `k` DOF for that position are extracted,
-  padding with zero values if needbe. If a non-negative value is provided, a single
+  padding with zero values if needed. If a non-negative value is provided, a single
   DOF is extracted.
 
   The caller is responsible for destroying the created `DMDA` and `Vec`.
 
-  Level: advanced
-
-.seealso: `DMSTAG`, `DMDA`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
+.seealso: [](chapter_stag), `DMSTAG`, `DMDA`, `DMStagStencilLocation`, `DM`, `Vec`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
 @*/
 PetscErrorCode DMStagVecSplitToDMDA(DM dm, Vec vec, DMStagStencilLocation loc, PetscInt c, DM *pda, Vec *pdavec)
 {
@@ -460,5 +457,5 @@ PetscErrorCode DMStagVecSplitToDMDA(DM dm, Vec vec, DMStagStencilLocation loc, P
   PetscCall(DMCreateGlobalVector(da, pdavec));
   davec = *pdavec;
   PetscCall(DMStagMigrateVecDMDA(dm, vec, locCanonical, c, da, davec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

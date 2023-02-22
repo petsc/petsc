@@ -10,6 +10,7 @@ class Configure(config.package.GNUPackage):
     self.functions   = ['Zoltan_LB_Partition']
     self.includes    = ['zoltan.h']
     self.liblist     = [['libzoltan.a']]
+    self.buildLanguages = ['C','Cxx']
     self.license     = 'http://www.cs.sandia.gov/Zoltan/Zoltan.html'
 
   def setupDependencies(self, framework):
@@ -26,9 +27,6 @@ class Configure(config.package.GNUPackage):
     if self.getDefaultIndexSize() == 64:
       args.append('--with-id-type=ullong')
     args.append('--enable-mpi')
-    if not hasattr(self.compilers, 'CXX'):
-      raise RuntimeError('Error: Zoltan requires C++ compiler. None specified')
-
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
     if hasattr(self.compilers, 'FC'):

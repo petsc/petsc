@@ -79,5 +79,5 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFacto
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * bs * bs2 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -27,7 +27,7 @@ PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const Petsc
   PetscValidPointer(cellSpaces, 2);
   PetscCheck(!sp->setupcalled, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change cell spaces after setup is called");
   PetscTryMethod(sp, "PetscDualSpaceRefinedSetCellSpaces_C", (PetscDualSpace, const PetscDualSpace[]), (sp, cellSpaces));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace sp, const PetscDualSpace cellSpaces[])
@@ -47,7 +47,7 @@ static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace 
     PetscCall(PetscDualSpaceDestroy(&(sp->pointSpaces[c + cStart - pStart])));
     sp->pointSpaces[c + cStart - pStart] = cellSpaces[c];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceDestroy_Refined(PetscDualSpace sp)
@@ -57,7 +57,7 @@ static PetscErrorCode PetscDualSpaceDestroy_Refined(PetscDualSpace sp)
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscDualSpaceRefinedSetCellSpaces_C", NULL));
   PetscCall(PetscFree(ref));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
@@ -123,7 +123,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
   PetscCall(PetscDualSpaceGetDimension(sp, &spdim));
   PetscCall(PetscMalloc1(spdim, &(sp->functional)));
   PetscCall(PetscDualSpacePushForwardSubspaces_Internal(sp, pStart, pEnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscViewer viewer)
@@ -149,7 +149,7 @@ static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscVi
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   } else PetscCall(PetscViewerASCIIPrintf(viewer, "Refined dual space: (cell spaces not set yet)\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceView_Refined(PetscDualSpace sp, PetscViewer viewer)
@@ -161,7 +161,7 @@ static PetscErrorCode PetscDualSpaceView_Refined(PetscDualSpace sp, PetscViewer 
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscDualSpaceRefinedView_Ascii(sp, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceInitialize_Refined(PetscDualSpace sp)
@@ -180,7 +180,7 @@ static PetscErrorCode PetscDualSpaceInitialize_Refined(PetscDualSpace sp)
   sp->ops->applyint             = PetscDualSpaceApplyInteriorDefault;
   sp->ops->createalldata        = PetscDualSpaceCreateAllDataDefault;
   sp->ops->createintdata        = PetscDualSpaceCreateInteriorDataDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -201,5 +201,5 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace sp)
 
   PetscCall(PetscDualSpaceInitialize_Refined(sp));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscDualSpaceRefinedSetCellSpaces_C", PetscDualSpaceRefinedSetCellSpaces_Refined));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

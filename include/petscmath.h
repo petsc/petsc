@@ -178,10 +178,10 @@ static inline PetscReal PetscLog2Real(PetscReal a)
 }
 #endif
 
-#if defined(PETSC_HAVE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__float128);
 #endif
-#if defined(PETSC_HAVE_REAL___FP16)
+#if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16)
 PETSC_EXTERN MPI_Datatype MPIU___FP16 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__fp16);
 #endif
 
@@ -419,7 +419,7 @@ static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
   #define MPIU_C_COMPLEX        MPI_C_COMPLEX PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_C_COMPLEX macro is deprecated use MPI_C_COMPLEX (since version 3.15)\"")
   #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_C_DOUBLE_COMPLEX macro is deprecated use MPI_C_DOUBLE_COMPLEX (since version 3.15)\"")
 
-  #if defined(PETSC_HAVE_REAL___FLOAT128)
+  #if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
     // if complex is not used, then quadmath.h won't be included by petscsystypes.h
     #if defined(PETSC_USE_COMPLEX)
       #define MPIU___COMPLEX128_ATTR_TAG PETSC_ATTRIBUTE_MPI_TYPE_TAG(__complex128)
@@ -764,15 +764,6 @@ M*/
 #define PETSC_PI    PetscRealConstant(3.1415926535897932384626433832795029)
 #define PETSC_PHI   PetscRealConstant(1.6180339887498948482045868343656381)
 #define PETSC_SQRT2 PetscRealConstant(1.4142135623730950488016887242096981)
-
-#if !defined(PETSC_USE_64BIT_INDICES)
-  #define PETSC_MAX_INT 2147483647
-  #define PETSC_MIN_INT (-PETSC_MAX_INT - 1)
-#else
-  #define PETSC_MAX_INT 9223372036854775807L
-  #define PETSC_MIN_INT (-PETSC_MAX_INT - 1)
-#endif
-#define PETSC_MAX_UINT16 65535
 
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PETSC_MAX_REAL             3.40282346638528860e+38F

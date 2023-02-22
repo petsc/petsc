@@ -53,7 +53,7 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
       }
     } else PetscUseTypeMethod(draw, string, xl, yl, cl, "+");
   } else PetscUseTypeMethod(draw, point, xl, yl, cl);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -77,7 +77,7 @@ PetscErrorCode PetscDrawSetMarkerType(PetscDraw draw, PetscDrawMarkerType mtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   draw->markertype = mtype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -98,5 +98,5 @@ PetscErrorCode PetscDrawGetMarkerType(PetscDraw draw, PetscDrawMarkerType *mtype
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   *mtype = draw->markertype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

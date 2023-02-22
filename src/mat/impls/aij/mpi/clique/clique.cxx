@@ -11,10 +11,10 @@
   output:
 .   cliq - Clique context
 */
-PetscErrorCode MatConvertToSparseElemental(Mat A, MatReuse reuse, Mat_SparseElemental *cliq)
+PetscErrorCode MatConvertToSparseElemental(Mat, MatReuse, Mat_SparseElemental *)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_SparseElemental(Mat A, PetscViewer viewer)
@@ -38,32 +38,32 @@ PetscErrorCode MatView_SparseElemental(Mat A, PetscViewer viewer)
       PetscCall(MatDestroy(&Aaij));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SparseElemental(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSolve_SparseElemental(Mat A, Vec B, Vec X)
+PetscErrorCode MatSolve_SparseElemental(Mat, Vec, Vec)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCholeskyFactorNumeric_SparseElemental(Mat F, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SparseElemental(Mat, Mat, const MatFactorInfo *)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F, Mat A, IS r, const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat, Mat, IS, const MatFactorInfo *)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -87,22 +87,22 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F, Mat A, IS r, con
 .seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
-PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A, MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSPARSEELEMENTAL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat A, MatFactorType ftype, Mat *F)
+static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat, MatFactorType, Mat *)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERSPARSEELEMENTAL, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_aij_sparseelemental));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

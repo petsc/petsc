@@ -91,7 +91,7 @@ static PetscErrorCode TestFields(DM dmstag)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "2 Norm of test vector: %g\n", (double)norm2));
   PetscCall(VecDestroy(&vecLocal));
   PetscCall(VecDestroy(&vecGlobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

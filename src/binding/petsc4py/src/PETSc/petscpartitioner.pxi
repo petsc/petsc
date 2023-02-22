@@ -9,13 +9,13 @@ cdef extern from * nogil:
     PetscPartitionerType PETSCPARTITIONERGATHER
     PetscPartitionerType PETSCPARTITIONERMATPARTITIONING
 
-    int PetscPartitionerCreate(MPI_Comm,PetscPartitioner*)
-    int PetscPartitionerDestroy(PetscPartitioner*)
-    int PetscPartitionerView(PetscPartitioner,PetscViewer)
-    int PetscPartitionerSetType(PetscPartitioner,PetscPartitionerType)
-    int PetscPartitionerGetType(PetscPartitioner,PetscPartitionerType*)
-    int PetscPartitionerSetFromOptions(PetscPartitioner)
-    int PetscPartitionerSetUp(PetscPartitioner)
-    int PetscPartitionerReset(PetscPartitioner)
+    PetscErrorCode PetscPartitionerCreate(MPI_Comm,PetscPartitioner*)
+    PetscErrorCode PetscPartitionerDestroy(PetscPartitioner*)
+    PetscErrorCode PetscPartitionerView(PetscPartitioner,PetscViewer)
+    PetscErrorCode PetscPartitionerSetType(PetscPartitioner,PetscPartitionerType)
+    PetscErrorCode PetscPartitionerGetType(PetscPartitioner,PetscPartitionerType*)
+    PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner)
+    PetscErrorCode PetscPartitionerSetUp(PetscPartitioner)
+    PetscErrorCode PetscPartitionerReset(PetscPartitioner)
 
-    int PetscPartitionerShellSetPartition(PetscPartitioner,PetscInt,PetscInt*,PetscInt*)
+    PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner,PetscInt,PetscInt*,PetscInt*)

@@ -96,7 +96,7 @@ solver routine for setting a callback a similar routine exists at the
       PetscCall(KSPGetDM(ksp,&dm));
       PetscCall(DMKSPSetComputeOperators(dm,func,ctx));
       if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 The implementation of ``DMXXXSetY(DM,...)`` gets a “writable” version of
@@ -114,7 +114,7 @@ function callback and its context into the ``DMXXX`` object.
       PetscCall(DMGetDMKSPWrite(dm,&kdm));
       if (func) kdm->ops->computeoperators = func;
       if (ctx) kdm->operatorsctx = ctx;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 The routine for ``DMGetDMXXXWrite(DM,DMXXX*)`` entails a duplication of
@@ -142,7 +142,7 @@ seen in the following code.
         kdm->originaldm = dm;
       }
       *kspdm = kdm;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 The routine ``DMGetDMXXX(DM,DMXXX*)`` has the following form.
@@ -162,7 +162,7 @@ The routine ``DMGetDMXXX(DM,DMXXX*)`` has the following form.
         PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL));
         PetscCall(DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL));
       }
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 This routine uses ``DMCoarsenHookAdd()`` and ``DMRefineHookAdd()`` to
@@ -176,7 +176,7 @@ when the object is coarsened or refined. The hooks
     {
       PetscFunctionBegin;
       PetscCall(DMCopyDMKSP(dm,dmc));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 where
@@ -193,7 +193,7 @@ where
       PetscCall(PetscObjectReference(dmdest->dmksp));
       PetscCall(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL));
       PetscCall(DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 ensures that the new ``DM`` shares the same ``DMXXX`` as the parent

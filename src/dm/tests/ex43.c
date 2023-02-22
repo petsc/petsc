@@ -33,7 +33,7 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
   PetscCall(DMDAVecRestoreArray(da, v, &p));
   PetscCall(PetscSynchronizedPrintf(com, "end rank %d portion\n", rank));
   PetscCall(PetscSynchronizedFlush(com, PETSC_STDOUT));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* Set a Vec v to value, but do not touch ghosts. */
@@ -48,7 +48,7 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
     for (j = ys; j < ys + ym; j++) p[j][i] = value;
   }
   PetscCall(DMDAVecRestoreArray(da, v, &p));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 int main(int argc, char **argv)

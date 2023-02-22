@@ -163,7 +163,7 @@ PetscErrorCode MatConvertToCSC(Mat A, PetscBool valOnly, PetscInt *n, PetscInt *
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -195,7 +195,7 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscFree(A->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -247,7 +247,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
     PetscCall(VecScatterBegin(lu->scat_sol, x_seq, x, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(lu->scat_sol, x_seq, x, INSERT_VALUES, SCATTER_FORWARD));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -361,7 +361,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
   (F)->assembled    = PETSC_TRUE;
   lu->matstruc      = SAME_NONZERO_PATTERN;
   lu->CleanUpPastix = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Note the Petsc r and c permutations are ignored */
@@ -374,7 +374,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F, Mat A, IS r, IS c, const Mat
   lu->iparm[IPARM_SYM]           = API_SYM_YES;
   lu->matstruc                   = DIFFERENT_NONZERO_PATTERN;
   F->ops->lufactornumeric        = MatFactorNumeric_PaStiX;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F, Mat A, IS r, const MatFactorInfo *info)
@@ -386,7 +386,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F, Mat A, IS r, const M
   lu->iparm[IPARM_SYM]            = API_SYM_NO;
   lu->matstruc                    = DIFFERENT_NONZERO_PATTERN;
   (F)->ops->choleskyfactornumeric = MatFactorNumeric_PaStiX;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
@@ -408,7 +408,7 @@ PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error :                        %g \n", lu->dparm[DPARM_RELATIVE_ERROR]));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -447,14 +447,14 @@ PetscErrorCode MatGetInfo_PaStiX(Mat A, MatInfoType flag, MatInfo *info)
   info->fill_ratio_given  = 0;
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatFactorGetSolverType_pastix(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERPASTIX;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -496,7 +496,7 @@ static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A, MatFactorType ftype, Mat
   B->data               = (void *)pastix;
 
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A, MatFactorType ftype, Mat *F)
@@ -534,7 +534,7 @@ static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A, MatFactorType ftype, Mat
   B->data               = (void *)pastix;
 
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A, MatFactorType ftype, Mat *F)
@@ -571,7 +571,7 @@ static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A, MatFactorType ftype, M
   B->ops->destroy       = MatDestroy_Pastix;
   B->data               = (void *)pastix;
   *F                    = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A, MatFactorType ftype, Mat *F)
@@ -608,7 +608,7 @@ static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A, MatFactorType ftype, M
   B->data               = (void *)pastix;
 
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void)
@@ -618,5 +618,5 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERPASTIX, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_pastix));
   PetscCall(MatSolverTypeRegister(MATSOLVERPASTIX, MATMPISBAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_mpisbaij_pastix));
   PetscCall(MatSolverTypeRegister(MATSOLVERPASTIX, MATSEQSBAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_seqsbaij_pastix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -14,7 +14,7 @@ static PetscErrorCode IncrementSize(PetscRandom rand, PetscInt *value)
   PetscCall(PetscRandomGetValueReal(rand, &rval));
   *value += (PetscInt)rval;
   PetscCall(DebugPrintf(PetscObjectComm((PetscObject)rand), "n: %" PetscInt_FMT "\n", *value));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, PetscMemType mtype)
@@ -28,7 +28,7 @@ static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, Pe
 
     PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
     // host device context cannot handle this
-    if (dtype == PETSC_DEVICE_HOST) PetscFunctionReturn(0);
+    if (dtype == PETSC_DEVICE_HOST) PetscFunctionReturn(PETSC_SUCCESS);
   }
   // test basic allocation, deallocation
   PetscCall(IncrementSize(rand, &n));
@@ -93,7 +93,7 @@ static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, Pe
   for (PetscInt i = 0; i < n; ++i) PetscCheck(tmp_ptr[i] == (PetscScalar)0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceArrayZero() did not not clear memory, ptr[%" PetscInt_FMT "] %g != 0", i, (double)PetscAbsScalar(tmp_ptr[i]));
   PetscCall(PetscDeviceFree(dctx, tmp_ptr));
   PetscCall(PetscDeviceFree(dctx, ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom rand)
@@ -146,7 +146,7 @@ static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom ra
   }
 
   PetscCall(PetscDeviceContextJoin(dctx, nsub, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])
@@ -165,11 +165,12 @@ int main(int argc, char *argv[])
   // PetscContainers (and incrementing the global PetscObjectId counter) until it reaches some
   // arbitrarily high number to ensure that our first PetscDeviceContext has the same ID across
   // systems.
-  if (PETSC_DEVICE_DEFAULT() == PETSC_DEVICE_HOST) {
-    PetscObjectId id, prev_id = 0;
+  {
+    PetscObjectId prev_id = 0;
 
     do {
       PetscContainer c;
+      PetscObjectId  id;
 
       PetscCall(PetscContainerCreate(PETSC_COMM_WORLD, &c));
       PetscCall(PetscObjectGetId((PetscObject)c, &id));
@@ -177,7 +178,7 @@ int main(int argc, char *argv[])
       PetscCheck(id > prev_id, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscObjectIds are not increasing for successively created PetscContainers! current: %" PetscInt64_FMT ", previous: %" PetscInt64_FMT, id, prev_id);
       prev_id = id;
       PetscCall(PetscContainerDestroy(&c));
-    } while (id < 10);
+    } while (prev_id < 50);
   }
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
 

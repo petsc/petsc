@@ -34,7 +34,7 @@ PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit, MPI_Datatype *dtype)
   else if (ftype == MPI_COMPLEX16 || ftype == MPI_C_DOUBLE_COMPLEX) *dtype = MPI_C_DOUBLE_COMPLEX;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown Fortran MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*************************************************************************/
@@ -49,6 +49,9 @@ PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit, MPI_Datatype *dtype)
   #define f90array1dcreateint_          F90ARRAY1DCREATEINT
   #define f90array1daccessint_          F90ARRAY1DACCESSINT
   #define f90array1ddestroyint_         F90ARRAY1DDESTROYINT
+  #define f90array1dcreatempiint_       F90ARRAY1DCREATEMPIINT
+  #define f90array1daccessmpiint_       F90ARRAY1DACCESSMPIINT
+  #define f90array1ddestroympiint_      F90ARRAY1DDESTROYMPIINT
   #define f90array1dcreatefortranaddr_  F90ARRAY1DCREATEFORTRANADDR
   #define f90array1daccessfortranaddr_  F90ARRAY1DACCESSFORTRANADDR
   #define f90array1ddestroyfortranaddr_ F90ARRAY1DDESTROYFORTRANADDR
@@ -62,6 +65,9 @@ PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit, MPI_Datatype *dtype)
   #define f90array1dcreateint_          f90array1dcreateint
   #define f90array1daccessint_          f90array1daccessint
   #define f90array1ddestroyint_         f90array1ddestroyint
+  #define f90array1dcreatempiint_       f90array1dcreatempiint
+  #define f90array1daccessmpiint_       f90array1daccessmpiint
+  #define f90array1ddestroympiint_      f90array1ddestroympiint
   #define f90array1dcreatefortranaddr_  f90array1dcreatefortranaddr
   #define f90array1daccessfortranaddr_  f90array1daccessfortranaddr
   #define f90array1ddestroyfortranaddr_ f90array1ddestroyfortranaddr
@@ -76,6 +82,9 @@ PETSC_EXTERN void f90array1ddestroyreal_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NO
 PETSC_EXTERN void f90array1dcreateint_(void *, PetscInt *, PetscInt *, F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1daccessint_(F90Array1d *, void **PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1ddestroyint_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN void f90array1dcreatempiint_(void *, PetscInt *, PetscInt *, F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN void f90array1daccessmpiint_(F90Array1d *, void **PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN void f90array1ddestroympiint_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1dcreatefortranaddr_(void *, PetscInt *, PetscInt *, F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1daccessfortranaddr_(F90Array1d *, void **PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
@@ -92,10 +101,16 @@ PetscErrorCode F90Array1dCreate(void *array, MPI_Datatype type, PetscInt start, 
   } else if (type == MPIU_INT) {
     if (!len) array = PETSC_NULL_INTEGER_Fortran;
     f90array1dcreateint_(array, &start, &len, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  } else if (type == MPI_INT) {
+    /* PETSC_NULL_MPIINT_Fortran is not needed since there is no petsc APIs allowing NULL in place of 'PetscMPIInt *' arguments.
+       At this line, we only need to assign 'array' a valid address when len is 0, thus PETSC_NULL_INTEGER_Fortran is enough.
+    */
+    if (!len) array = PETSC_NULL_INTEGER_Fortran;
+    f90array1dcreatempiint_(array, &start, &len, ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == MPIU_FORTRANADDR) {
     f90array1dcreatefortranaddr_(array, &start, &len, ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array1dAccess(F90Array1d *ptr, MPI_Datatype type, void **array PETSC_F90_2PTR_PROTO(ptrd))
@@ -110,10 +125,13 @@ PetscErrorCode F90Array1dAccess(F90Array1d *ptr, MPI_Datatype type, void **array
   } else if (type == MPIU_INT) {
     f90array1daccessint_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
     if (*array == PETSC_NULL_INTEGER_Fortran) *array = 0;
+  } else if (type == MPI_INT) {
+    f90array1daccessmpiint_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
+    if (*array == PETSC_NULL_INTEGER_Fortran) *array = 0;
   } else if (type == MPIU_FORTRANADDR) {
     f90array1daccessfortranaddr_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array1dDestroy(F90Array1d *ptr, MPI_Datatype type PETSC_F90_2PTR_PROTO(ptrd))
@@ -125,10 +143,12 @@ PetscErrorCode F90Array1dDestroy(F90Array1d *ptr, MPI_Datatype type PETSC_F90_2P
     f90array1ddestroyreal_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == MPIU_INT) {
     f90array1ddestroyint_(ptr PETSC_F90_2PTR_PARAM(ptrd));
+  } else if (type == MPI_INT) {
+    f90array1ddestroympiint_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == MPIU_FORTRANADDR) {
     f90array1ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*************************************************************************/
@@ -186,7 +206,7 @@ PetscErrorCode F90Array2dCreate(void *array, MPI_Datatype type, PetscInt start1,
   } else if (type == MPIU_FORTRANADDR) {
     f90array2dcreatefortranaddr_(array, &start1, &len1, &start2, &len2, ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array2dAccess(F90Array2d *ptr, MPI_Datatype type, void **array PETSC_F90_2PTR_PROTO(ptrd))
@@ -201,7 +221,7 @@ PetscErrorCode F90Array2dAccess(F90Array2d *ptr, MPI_Datatype type, void **array
   } else if (type == MPIU_FORTRANADDR) {
     f90array2daccessfortranaddr_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array2dDestroy(F90Array2d *ptr, MPI_Datatype type PETSC_F90_2PTR_PROTO(ptrd))
@@ -216,7 +236,7 @@ PetscErrorCode F90Array2dDestroy(F90Array2d *ptr, MPI_Datatype type PETSC_F90_2P
   } else if (type == MPIU_FORTRANADDR) {
     f90array2ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*************************************************************************/
@@ -274,7 +294,7 @@ PetscErrorCode F90Array3dCreate(void *array, MPI_Datatype type, PetscInt start1,
   } else if (type == MPIU_FORTRANADDR) {
     f90array3dcreatefortranaddr_(array, &start1, &len1, &start2, &len2, &start3, &len3, ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array3dAccess(F90Array3d *ptr, MPI_Datatype type, void **array PETSC_F90_2PTR_PROTO(ptrd))
@@ -289,7 +309,7 @@ PetscErrorCode F90Array3dAccess(F90Array3d *ptr, MPI_Datatype type, void **array
   } else if (type == MPIU_FORTRANADDR) {
     f90array3daccessfortranaddr_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array3dDestroy(F90Array3d *ptr, MPI_Datatype type PETSC_F90_2PTR_PROTO(ptrd))
@@ -304,7 +324,7 @@ PetscErrorCode F90Array3dDestroy(F90Array3d *ptr, MPI_Datatype type PETSC_F90_2P
   } else if (type == MPIU_FORTRANADDR) {
     f90array3ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*************************************************************************/
@@ -355,7 +375,7 @@ PetscErrorCode F90Array4dCreate(void *array, MPI_Datatype type, PetscInt start1,
   if (type == MPIU_SCALAR) {
     f90array4dcreatescalar_(array, &start1, &len1, &start2, &len2, &start3, &len3, &start4, &len4, ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array4dAccess(F90Array4d *ptr, MPI_Datatype type, void **array PETSC_F90_2PTR_PROTO(ptrd))
@@ -370,7 +390,7 @@ PetscErrorCode F90Array4dAccess(F90Array4d *ptr, MPI_Datatype type, void **array
   } else if (type == MPIU_FORTRANADDR) {
     f90array4daccessfortranaddr_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode F90Array4dDestroy(F90Array4d *ptr, MPI_Datatype type PETSC_F90_2PTR_PROTO(ptrd))
@@ -379,7 +399,7 @@ PetscErrorCode F90Array4dDestroy(F90Array4d *ptr, MPI_Datatype type PETSC_F90_2P
   if (type == MPIU_SCALAR) {
     f90array4ddestroyscalar_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*************************************************************************/
@@ -387,11 +407,13 @@ PetscErrorCode F90Array4dDestroy(F90Array4d *ptr, MPI_Datatype type PETSC_F90_2P
   #define f90array1dgetaddrscalar_      F90ARRAY1DGETADDRSCALAR
   #define f90array1dgetaddrreal_        F90ARRAY1DGETADDRREAL
   #define f90array1dgetaddrint_         F90ARRAY1DGETADDRINT
+  #define f90array1dgetaddrmpiint_      F90ARRAY1DGETADDRMPIINT
   #define f90array1dgetaddrfortranaddr_ F90ARRAY1DGETADDRFORTRANADDR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define f90array1dgetaddrscalar_      f90array1dgetaddrscalar
   #define f90array1dgetaddrreal_        f90array1dgetaddrreal
   #define f90array1dgetaddrint_         f90array1dgetaddrint
+  #define f90array1dgetaddrmpiint_      f90array1dgetaddrmpiint
   #define f90array1dgetaddrfortranaddr_ f90array1dgetaddrfortranaddr
 #endif
 
@@ -404,6 +426,10 @@ PETSC_EXTERN void f90array1dgetaddrreal_(void *array, PetscFortranAddr *address)
   *address = (PetscFortranAddr)array;
 }
 PETSC_EXTERN void f90array1dgetaddrint_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+PETSC_EXTERN void f90array1dgetaddrmpiint_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }

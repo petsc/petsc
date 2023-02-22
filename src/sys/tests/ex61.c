@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     PetscBool   set, equal;
     size_t      name_len;
     char        env[PETSC_MAX_PATH_LEN];
-    char       *name, *value;
+    char       *name, *value = NULL;
 
     // given FOO=bar we want to extract
     // name = FOO
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
       env: BAR=0
       env: BAZ=
       env: BOP=${FOO}
-      suffix: all_seperate_lines
+      suffix: all_separate_lines
 
   test:
     args: -env_vars_def 'FOO=hello'

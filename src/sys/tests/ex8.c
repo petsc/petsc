@@ -36,7 +36,7 @@ static PetscErrorCode MakeDatatype(MPI_Datatype *dtype)
     PetscCallMPI(MPI_Type_get_extent(*dtype, &lb, &extent));
     PetscCheck(extent == sizeof(Unit), PETSC_COMM_WORLD, PETSC_ERR_LIB, "New type has extent %d != sizeof(Unit) %d", (int)extent, (int)sizeof(Unit));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 struct FCtx {
@@ -56,7 +56,7 @@ static PetscErrorCode FSend(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt 
   PetscCheck(fctx->rank == *(PetscMPIInt *)todata, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Todata %d does not match rank %d", *(PetscMPIInt *)todata, fctx->rank);
   PetscCallMPI(MPI_Isend(&fctx->todata[tonum].rank, 1, MPIU_INT, rank, tag[0], comm, &req[0]));
   PetscCallMPI(MPI_Isend(&fctx->todata[tonum].value, 1, MPIU_SCALAR, rank, tag[1], comm, &req[1]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FRecv(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *fromdata, MPI_Request req[], void *ctx)
@@ -72,7 +72,7 @@ static PetscErrorCode FRecv(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt 
   buf->ok[0] = 'o';
   buf->ok[1] = 'k';
   buf->ok[2] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

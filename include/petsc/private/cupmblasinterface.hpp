@@ -158,7 +158,7 @@ namespace impl
   // MACRO_SUFFIX - suffix to one of the above blas function builder macros, e.g. STANDARD or
   // IFPTYPE
   // our_suffix   - the suffix of the alias function
-  // their_suffix - the suffix of the funciton being aliased
+  // their_suffix - the suffix of the function being aliased
   //
   // notes:
   // requires PETSC_CUPMBLAS_PREFIX to be defined as the specific CUDA/HIP blas function
@@ -275,10 +275,10 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
 
-  PETSC_NODISCARD static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
-    if (handle) PetscFunctionReturn(0);
+    if (handle) PetscFunctionReturn(PETSC_SUCCESS);
     for (auto i = 0; i < 3; ++i) {
       const auto cerr = cusolverDnCreate(&handle);
       if (PetscLikely(cerr == CUSOLVER_STATUS_SUCCESS)) break;
@@ -289,27 +289,27 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
       }
       PetscCheck(cerr == CUSOLVER_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize cuSolverDn");
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode SetHandleStream(const cupmSolverHandle_t &handle, const cupmStream_t &stream) noexcept
+  static PetscErrorCode SetHandleStream(const cupmSolverHandle_t &handle, const cupmStream_t &stream) noexcept
   {
     cupmStream_t cupmStream;
 
     PetscFunctionBegin;
     PetscCallCUSOLVER(cusolverDnGetStream(handle, &cupmStream));
     if (cupmStream != stream) PetscCallCUSOLVER(cusolverDnSetStream(handle, stream));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
     if (handle) {
       PetscCallCUSOLVER(cusolverDnDestroy(handle));
       handle = nullptr;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
     #undef PETSC_CUPMBLAS_PREFIX
@@ -371,28 +371,28 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
 
-  PETSC_NODISCARD static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
     if (!handle) PetscCallHIPSOLVER(hipsolverCreate(&handle));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode SetHandleStream(cupmSolverHandle_t handle, cupmStream_t stream) noexcept
+  static PetscErrorCode SetHandleStream(cupmSolverHandle_t handle, cupmStream_t stream) noexcept
   {
     PetscFunctionBegin;
     PetscCallHIPSOLVER(hipsolverSetStream(handle, stream));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
+  static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
   {
     PetscFunctionBegin;
     if (handle) {
       PetscCallHIPSOLVER(hipsolverDestroy(handle));
       handle = nullptr;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
     #undef PETSC_CUPMBLAS_PREFIX
@@ -451,22 +451,22 @@ template <DeviceType T>
 struct BlasInterface : BlasInterfaceImpl<T> {
   PETSC_CUPMBLAS_IMPL_CLASS_HEADER(blasinterface_type, T);
 
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMBlasSetPointerModeFromPointer(cupmBlasHandle_t handle, const void *ptr) noexcept
+  static PetscErrorCode PetscCUPMBlasSetPointerModeFromPointer(cupmBlasHandle_t handle, const void *ptr) noexcept
   {
     auto mtype = PETSC_MEMTYPE_HOST;
 
     PetscFunctionBegin;
     PetscCall(PetscCUPMGetMemType(ptr, &mtype));
     PetscCallCUPMBLAS(cupmBlasSetPointerMode(handle, PetscMemTypeDevice(mtype) ? CUPMBLAS_POINTER_MODE_DEVICE : CUPMBLAS_POINTER_MODE_HOST));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode checkCupmBlasIntCast(PetscInt x) noexcept
+  static PetscErrorCode checkCupmBlasIntCast(PetscInt x) noexcept
   {
     PetscFunctionBegin;
     PetscCheck((std::is_same<PetscInt, cupmBlasInt_t>::value) || (x <= std::numeric_limits<cupmBlasInt_t>::max()), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for %s, which may be restricted to 32 bit integers", x, cupmBlasName());
     PetscCheck(x >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to %s routine: %" PetscInt_FMT, cupmBlasName(), x);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static cupmBlasInt_t cupmBlasIntCast(PetscInt x) noexcept

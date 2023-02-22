@@ -440,7 +440,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterPreprocessOutput(self,output, log = None):
     if log is None: log = self.log
-    log.write("Preprocess output before filtering:\n"+output+":\n")
+    log.write("Preprocess output before filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
     if output == '\n':
       output = ''
     # Another PGI license warning, multiline so have to discard all
@@ -470,7 +470,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if len(s)]
     if lines: output = '\n'.join(lines)
     else: output = ''
-    log.write("Preprocess output after filtering:\n"+output+":\n")
+    log.write("Preprocess output after filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
     return output
 
   def filterCompileOutput(self, output,flag = ''):
@@ -489,7 +489,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     elif output == '\n':
       output = ''
     elif output:
-      self.log.write("Compiler output before filtering:\n"+output+":\n")
+      self.log.write("Compiler output before filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         # EXCEPT warnings that those bastards say we want
@@ -527,7 +527,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if len(s)]
       if lines: output = '\n'.join(lines)
       else: output = ''
-      self.log.write("Compiler output after filtering:\n"+output+":\n")
+      self.log.write("Compiler output after filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
     return output
 
   def filterLinkOutput(self, output):
@@ -537,13 +537,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     elif output == '\n':
       output = ''
     elif output:
-      self.log.write("Linker output before filtering:\n"+output+":\n")
+      self.log.write("Linker output before filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         lines = [s for s in lines if not self.warningRE.search(s)]
       #Intel
       lines = [s for s in lines if s.find(": command line warning #10121: overriding") < 0]
       lines = [s for s in lines if s.find(': remark #10441:') < 0]
+      #Intel icpx
+      lines = [s for s in lines if s.find("warning: Note that use of '-g' without any optimization-level option will turn off most compiler optimizations similar to use") < 0] 
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
@@ -597,7 +599,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
       if lines: output = '\n'.join(lines)
       else: output = ''
-      self.log.write("Linker output after filtering:\n"+output+":\n")
+      self.log.write("Linker output after filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
     return output
 
   ###############################################
@@ -893,7 +895,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for child in self.childGraph.vertices:
       self.outputMakeMacros(f, child)
     # This options are used in all runs of the test harness
-    testoptions = ''
+    testoptions = '-checkfunctionlist'
     # Additional testoptions are provided in packages/
     for child in self.childGraph.vertices:
         if hasattr(child,'found') and child.found and hasattr(child,'testoptions') and child.testoptions:

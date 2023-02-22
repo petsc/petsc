@@ -455,7 +455,7 @@ PetscErrorCode RiemannListAdd(PetscFunctionList *flist, const char *name, Rieman
 {
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, rsolve));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RiemannListFind(PetscFunctionList flist, const char *name, RiemannFunction *rsolve)
@@ -463,14 +463,14 @@ PetscErrorCode RiemannListFind(PetscFunctionList flist, const char *name, Rieman
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, rsolve));
   PetscCheck(*rsolve, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Riemann solver \"%s\" could not be found", name);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ReconstructListAdd(PetscFunctionList *flist, const char *name, ReconstructFunction r)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ReconstructListFind(PetscFunctionList flist, const char *name, ReconstructFunction *r)
@@ -478,14 +478,14 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist, const char *name, Re
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, r));
   PetscCheck(*r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Reconstruction \"%s\" could not be found", name);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RiemannListAdd_2WaySplit(PetscFunctionList *flist, const char *name, RiemannFunction_2WaySplit rsolve)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, rsolve));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist, const char *name, RiemannFunction_2WaySplit *rsolve)
@@ -493,14 +493,14 @@ PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist, const char *na
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, rsolve));
   PetscCheck(*rsolve, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Riemann solver \"%s\" could not be found", name);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ReconstructListAdd_2WaySplit(PetscFunctionList *flist, const char *name, ReconstructFunction_2WaySplit r)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist, const char *name, ReconstructFunction_2WaySplit *r)
@@ -508,7 +508,7 @@ PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist, const char
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, r));
   PetscCheck(*r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Reconstruction \"%s\" could not be found", name);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------- Physics ------- */
@@ -516,7 +516,7 @@ PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscFree(vctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------- Finite Volume Solver --------------- */
@@ -615,7 +615,7 @@ PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
       } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Stability constraint exceeded, %g > %g", (double)dt, (double)(ctx->cfl / ctx->cfl_idt));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U)
@@ -642,7 +642,7 @@ PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U)
   }
   PetscCall(DMDAVecRestoreArray(da, U, &u));
   PetscCall(PetscFree(uj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
@@ -676,5 +676,5 @@ PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
     PetscCall(VecSum(X, &sum));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Solution range [%8.5f,%8.5f] with minimum at %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n", (double)xmin, (double)xmax, imin, (double)(sum / Mx), (double)(tvgsum / Mx)));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type not supported");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

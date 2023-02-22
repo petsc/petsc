@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-sigma", &sigma, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-mu", &mu, NULL));
 
-  /* calulate zeros and roots of Hermite Gauss quadrature */
+  /* calculate zeros and roots of Hermite Gauss quadrature */
   PetscCall(PetscMalloc1(n, &zeros));
   zeros[0] = 0;
   tick     = n % 2;

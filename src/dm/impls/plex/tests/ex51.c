@@ -17,7 +17,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsBegin(comm, "", "DMPlex View/Load Test Options", "DMPLEX");
   PetscCall(PetscOptionsString("-fname", "The output mesh file", "ex51.c", options->fname, options->fname, sizeof(options->fname), &flg));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

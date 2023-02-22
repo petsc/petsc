@@ -4,7 +4,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.versionname       = 'METIS_VER_MAJOR.METIS_VER_MINOR.METIS_VER_SUBMINOR'
-    self.gitcommit         = 'v5.1.0-p10'
+    self.gitcommit         = 'v5.1.0-p11'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-metis.git','https://bitbucket.org/petsc/pkg-metis/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-metis']
     self.functions         = ['METIS_PartGraphKway']
@@ -12,6 +12,7 @@ class Configure(config.package.CMakePackage):
     self.liblist           = [['libmetis.a'],['libmetis.a','libexecinfo.a']]
     self.hastests          = 1
     self.useddirectly      = 0
+    self.downloadonWindows = 1
     return
 
   def setupHelp(self, help):
@@ -32,12 +33,14 @@ class Configure(config.package.CMakePackage):
     args.append('-DGKLIB_PATH=../GKlib')
     # force metis/parmetis to use a portable random number generator that will produce the same partitioning results on all systems
     args.append('-DGKRAND=1')
-    if self.checkSharedLibrariesEnabled():
+    if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
     if self.compilerFlags.debugging:
       args.append('-DDEBUG=1')
     if self.getDefaultIndexSize() == 64:
       args.append('-DMETIS_USE_LONGINDEX=1')
+    if config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log):
+      args.append('-DMSVC=1')
     if self.framework.argDB['download-metis-use-doubleprecision']:
       args.append('-DMETIS_USE_DOUBLEPRECISION=1')
     args.append('-DMATH_LIB="'+self.libraries.toStringNoDupes(self.mathlib.lib)+'"')

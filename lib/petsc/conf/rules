@@ -240,12 +240,6 @@ getautoconfargs:
 #
 #
 
-.c.tex .F.tex:
-	${LGRIND} -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
-
-.make.tex:
-	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
-
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
 .fig.eps:
@@ -576,8 +570,7 @@ simplehtml: chk_c2html
               idir=`dirname $$i`;\
               if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               ${RM} $${loc}/$$i.html; \
-              sed -E -e "/PetscCallBack|PetscCallBLAS|PetscCallExternal|PetscCallP4est|PetscCallP4estReturn|PetscCallHDF5|PetscCallHDF5Return|PetscCallParmetis|PetscCallMKLSparse/!s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
-                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
+              sed -E "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' > $${loc}/$$i.html ; \
 	    fi; \
          done
@@ -604,15 +597,11 @@ html: chk_c2html
               fi;\
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"https://gitlab.com/petsc/petsc/-/blob/$$current_git_sha/$$rel_dir/$$i\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
-              sed -E -e "/PetscCallBack|PetscCallBLAS|PetscCallExternal|PetscCallP4est|PetscCallHDF5|PetscCallParmetis|PetscCallMKLSparse/!s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
-                     -e "s/\;ierr\;/;/g" \
-                     -e "/\s*PetscFunctionBegin\;/d" \
-                     -e "s/PetscFunctionReturn\(([-a-zA-Z_0-9]+)\)/return \1/g" \
-                     -e "s/PetscFunctionReturnVoid\(\)/return/g" \
-                     -e "s/ierr\s+=\s+//g" \
-                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
-              awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
-              grep -E -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
+              sed -E "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | \
+              ${C2HTML} -n | \
+              awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | \
+              ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
+              grep -E -v '(PetscValid|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
             fi; \
           done ;\
@@ -736,7 +725,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
 	-@echo "------Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'define\s+CHKERR\w*\(.*\)\s*do\s+{' -- ${GITSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 19` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 18` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
@@ -762,10 +751,10 @@ vermin:
 	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 
 lint:
-	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --verbose=${V} $(LINTER_OPTIONS)
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS)
 
 help-lint:
-	@${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --help
+	@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
 	-@echo "Basic usage:"
 	-@echo "   make lint      <options>"
 	-@echo "   make test-lint <options> <test only options>"
@@ -779,7 +768,7 @@ help-lint:
 	-@echo
 
 test-lint:
-	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --src-dir ${PETSC_DIR}/src/sys/tests/linter --test -j0 --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
 
 check_petsc4py_rst:
 	@${RM} -f petsc4py_rst.log

@@ -63,7 +63,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
 PetscErrorCode KSPRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (KSPRegisterAllCalled) PetscFunctionReturn(0);
+  if (KSPRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   KSPRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(KSPRegister(KSPCG, KSPCreate_CG));
@@ -117,7 +117,7 @@ PetscErrorCode KSPRegisterAll(void)
 #if defined(PETSC_HAVE_HPDDM)
   PetscCall(KSPRegister(KSPHPDDM, KSPCreate_HPDDM));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -132,7 +132,7 @@ PetscErrorCode KSPRegisterAll(void)
 PetscErrorCode KSPMonitorRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (KSPMonitorRegisterAllCalled) PetscFunctionReturn(0);
+  if (KSPMonitorRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   KSPMonitorRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(KSPMonitorRegister("preconditioned_residual", PETSCVIEWERASCII, PETSC_VIEWER_DEFAULT, KSPMonitorResidual, NULL, NULL));
@@ -153,5 +153,5 @@ PetscErrorCode KSPMonitorRegisterAll(void)
   PetscCall(KSPMonitorRegister("singular_value", PETSCVIEWERASCII, PETSC_VIEWER_DEFAULT, KSPMonitorSingularValue, KSPMonitorSingularValueCreate, NULL));
   PetscCall(KSPMonitorRegister("lsqr_residual", PETSCVIEWERASCII, PETSC_VIEWER_DEFAULT, KSPLSQRMonitorResidual, NULL, NULL));
   PetscCall(KSPMonitorRegister("lsqr_residual", PETSCVIEWERDRAW, PETSC_VIEWER_DRAW_LG, KSPLSQRMonitorResidualDrawLG, KSPLSQRMonitorResidualDrawLGCreate, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

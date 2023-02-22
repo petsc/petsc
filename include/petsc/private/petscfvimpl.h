@@ -95,7 +95,7 @@ static inline PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscSc
   PetscFunctionBeginHot;
   PetscCall(PetscFVGetNumComponents(fv, &Nc));
   PetscCall(PetscArraycpy(interpolant, x, Nc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

@@ -358,7 +358,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
   PetscCall(ISDestroy(&issurf));
   PetscCall(MatDestroy(&Xint));
   PetscCall(MatDestroy(&Xsurf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -646,7 +646,7 @@ PetscCall(ISDestroy(&isint));
 PetscCall(ISDestroy(&issurf));
 PetscCall(MatDestroy(&Xint));
 PetscCall(MatDestroy(&Xsurf));
-PetscFunctionReturn(0);
+PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -682,7 +682,7 @@ PetscErrorCode PCExoticSetType(PC pc, PCExoticType type)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
   PetscTryMethod(pc, "PCExoticSetType_C", (PC, PCExoticType), (pc, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCExoticSetType_Exotic(PC pc, PCExoticType type)
@@ -692,7 +692,7 @@ static PetscErrorCode PCExoticSetType_Exotic(PC pc, PCExoticType type)
 
   PetscFunctionBegin;
   ctx->type = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCSetUp_Exotic(PC pc)
@@ -715,7 +715,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   /* if PC has attached DM we must remove it or the PCMG will use it to compute incorrect sized vectors and interpolations */
   PetscCall(PCSetDM(pc, NULL));
   PetscCall(PCSetUp_MG(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDestroy_Exotic(PC pc)
@@ -729,7 +729,7 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PetscCall(PetscFree(ctx));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCExoticSetType_C", NULL));
   PetscCall(PCDestroy_MG(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
@@ -760,7 +760,7 @@ PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
     }
   }
   PetscCall(PCView_MG(pc, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -788,7 +788,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObje
     PetscCall(KSPSetFromOptions(ctx->ksp));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -864,5 +864,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
   pc->ops->setup          = PCSetUp_Exotic;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCExoticSetType_C", PCExoticSetType_Exotic));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

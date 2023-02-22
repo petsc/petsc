@@ -46,7 +46,6 @@
       PetscCallA(ISRestoreIndicesF90(sizes,idx,ierr))
       PetscCallA(ISDestroy(sizes,ierr))
       PetscCallA(PetscViewerDestroy(viewer,ierr))
-      PetscCallA(MatSetUp(A,ierr))
       write (name,'(a)')trim(dir)//'/A.dat'
       PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr))
       PetscCallA(MatLoad(A,viewer,ierr))

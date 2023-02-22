@@ -78,7 +78,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscCall(PetscOptionsReal("-max_vec_closure_time", "The maximum time per run for DMPlexVecGetClosure()", "ex9.c", options->maxVecClosureTime, &options->maxVecClosureTime, NULL));
   PetscCall(PetscOptionsBool("-print_times", "Print total times, do not check limits", "ex9.c", options->printTimes, &options->printTimes, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
@@ -100,7 +100,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
   for (p = 0; p < 4; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
@@ -122,7 +122,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
   for (p = 0; p < 5; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
@@ -144,7 +144,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
   for (p = 0; p < 6; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
@@ -166,7 +166,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
   PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
   for (p = 0; p < 12; ++p) PetscCall(DMSetLabelValue(dm, "marker", markerPoints[p * 2], markerPoints[p * 2 + 1]));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
@@ -213,7 +213,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     *newdm = idm;
   }
   PetscCall(DMSetFromOptions(*newdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestCone(DM dm, AppCtx *user)
@@ -256,7 +256,7 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
     PetscCheck(!user->errors, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", (double)(eventInfo.time / numRuns), (double)maxTimePerRun);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
@@ -301,7 +301,7 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
     PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
     PetscCheck(!user->errors, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", (double)(eventInfo.time / numRuns), (double)maxTimePerRun);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user)
@@ -382,7 +382,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
       PetscCheck(!user->errors, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", (double)(eventInfo.time / numRuns), (double)maxTimePerRun);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CleanupContext(AppCtx *user)
@@ -390,7 +390,7 @@ static PetscErrorCode CleanupContext(AppCtx *user)
   PetscFunctionBegin;
   PetscCall(PetscFree(user->numComponents));
   PetscCall(PetscFree(user->numDof));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -100,5 +100,5 @@ PetscErrorCode MINPACKdegr(PetscInt *n, const PetscInt *indrow, const PetscInt *
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

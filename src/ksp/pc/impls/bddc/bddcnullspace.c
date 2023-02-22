@@ -22,7 +22,7 @@ static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp, Vec y, Vec x, void *c
   PetscCall(KSPGetOperators(ksp, &K, NULL));
   PetscCall(MatMultAdd(K, corr_ctx->fw[0], y, y));
   PetscCall(PetscLogEventEnd(corr_ctx->evapply, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* E^t + small */
@@ -47,7 +47,7 @@ static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, void *
   /* Sum contributions from approximate solver and projected system */
   PetscCall(MatMultAdd(corr_ctx->basis_mat, corr_ctx->sw[1], corr_ctx->fw[0], x));
   PetscCall(PetscLogEventEnd(corr_ctx->evapply, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void *ctx)
@@ -60,7 +60,7 @@ static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void *ctx)
   PetscCall(MatDestroy(&corr_ctx->basis_mat));
   PetscCall(MatDestroy(&corr_ctx->inv_smat));
   PetscCall(PetscFree(corr_ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBool needscaling)
@@ -83,7 +83,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscCall(MatGetNearNullSpace(local_pmat, &NullSpace));
   if (!NullSpace) {
     if (pcbddc->dbg_flag) PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "Subdomain %04d doesn't have local (near) nullspace: no need for correction in %s solver \n", PetscGlobalRank, isdir ? "Dirichlet" : "Neumann"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscObjectQuery((PetscObject)NullSpace, "_PBDDC_Null_dmat", (PetscObject *)&dmat));
   PetscCheck(dmat, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing dense matrix");
@@ -254,5 +254,5 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscCall(VecDestroy(&work2));
     PetscCall(VecDestroy(&work3));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

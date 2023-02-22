@@ -24,7 +24,7 @@ PetscErrorCode ComputeSolution(PetscInt n, PetscReal *nodes, PetscReal *weights,
     xx[i] = (xd * xd - 1.0) * PetscCosReal(5. * PETSC_PI * xd);
   }
   PetscCall(VecRestoreArray(x, &xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -45,7 +45,7 @@ PetscErrorCode ComputeRhs(PetscInt n, PetscReal *nodes, PetscReal *weights, Vec 
     bb[i] = -weights[i] * (-20. * PETSC_PI * xd * PetscSinReal(5. * PETSC_PI * xd) + (2. - (5. * PETSC_PI) * (5. * PETSC_PI) * (xd * xd - 1.)) * PetscCosReal(5. * PETSC_PI * xd));
   }
   PetscCall(VecRestoreArray(b, &bb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

@@ -9,30 +9,30 @@ static char help[] = "Tests PetscStack.\n\n";
 PetscErrorCode correct()
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode correctu()
 {
   PetscFunctionBeginUser;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode foo()
 {
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode bar()
 {
   PetscFunctionBegin;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode baru()
 {
   PetscFunctionBeginUser;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 int main(int argc, char **argv)

@@ -21,7 +21,7 @@ PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
   PetscFunctionBegin;
   dm->sfMigration = migrationSF;
   PetscCall(PetscObjectReference((PetscObject)migrationSF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -43,7 +43,7 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 {
   PetscFunctionBegin;
   *migrationSF = dm->sfMigration;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -63,7 +63,7 @@ PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
   dm->sfNatural = naturalSF;
   PetscCall(PetscObjectReference((PetscObject)naturalSF));
   dm->useNatural = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -83,7 +83,7 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 {
   PetscFunctionBegin;
   *naturalSF = dm->sfNatural;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -118,7 +118,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   if (!sfMigration) {
     /* If sfMigration is missing, sfNatural cannot be computed and is set to NULL */
     *sfNatural = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (!section) {
     /* If the sequential section is not provided (NULL), it is reconstructed from the parallel section */
     PetscSF      sfMigrationInv;
@@ -201,7 +201,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscCall(PetscSectionDestroy(&sectionDist));
   PetscCall(PetscFree(remoteOffsets));
   if (destroyFlag) PetscCall(PetscSectionDestroy(&section));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -227,12 +227,27 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
+  MPI_Comm           comm;
   PetscMPIInt        size;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_GlobalToNaturalBegin, dm, 0, 0, 0));
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   if (dm->sfNatural) {
+    if (PetscDefined(USE_DEBUG)) {
+      PetscSection gs;
+      PetscInt     Nl, n;
+
+      PetscCall(PetscSFGetGraph(dm->sfNatural, NULL, &Nl, NULL, NULL));
+      PetscCall(VecGetLocalSize(nv, &n));
+      PetscCheck(n == Nl, comm, PETSC_ERR_ARG_INCOMP, "Natural vector local size %" PetscInt_FMT " != %" PetscInt_FMT " local size of natural section", n, Nl);
+
+      PetscCall(DMGetGlobalSection(dm, &gs));
+      PetscCall(PetscSectionGetConstrainedStorageSize(gs, &Nl));
+      PetscCall(VecGetLocalSize(gv, &n));
+      PetscCheck(n == Nl, comm, PETSC_ERR_ARG_INCOMP, "Global vector local size %" PetscInt_FMT " != %" PetscInt_FMT " local size of global section", n, Nl);
+    }
     PetscCall(VecGetArray(nv, &outarray));
     PetscCall(VecGetArrayRead(gv, &inarray));
     PetscCall(PetscSFBcastBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *)inarray, outarray, MPI_REPLACE));
@@ -245,7 +260,7 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
   }
   PetscCall(PetscLogEventEnd(DMPLEX_GlobalToNaturalBegin, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -288,7 +303,7 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
   }
   PetscCall(PetscLogEventEnd(DMPLEX_GlobalToNaturalEnd, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -336,7 +351,7 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
   }
   PetscCall(PetscLogEventEnd(DMPLEX_NaturalToGlobalBegin, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -379,7 +394,7 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
   }
   PetscCall(PetscLogEventEnd(DMPLEX_NaturalToGlobalEnd, dm, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -407,10 +422,18 @@ PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   if (dm->sfNatural) {
-    PetscInt nleaves, bs;
+    PetscInt nleaves, bs, maxbs;
     Vec      v;
+
+    /*
+      Setting the natural vector block size.
+      We can't get it from a global vector because of constraints, and the block size in the local vector
+      may be inconsistent across processes, typically when some local vectors have size 0, their block size is set to 1
+    */
     PetscCall(DMGetLocalVector(dm, &v));
     PetscCall(VecGetBlockSize(v, &bs));
+    PetscCallMPI(MPI_Allreduce(&bs, &maxbs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    if (bs == 1 && maxbs > 1) bs = maxbs;
     PetscCall(DMRestoreLocalVector(dm, &v));
 
     PetscCall(PetscSFGetGraph(dm->sfNatural, NULL, &nleaves, NULL, NULL));
@@ -425,5 +448,5 @@ PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv)
     PetscCheck(!dm->useNatural, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

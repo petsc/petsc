@@ -16,7 +16,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsBegin(comm, "", "Zero-sized DMPlexGetCellFields Test Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-test", "Test to run", FILENAME, options->test, &options->test, NULL, 0));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm)
@@ -26,7 +26,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* no discretization is given so DMGetNumFields yields 0 */
@@ -37,7 +37,7 @@ static PetscErrorCode test0(DM dm, AppCtx *options)
   PetscFunctionBegin;
   PetscCall(DMGetLocalVector(dm, &locX));
   PetscCall(DMRestoreLocalVector(dm, &locX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* no discretization is given so DMGetNumFields and PetscDSGetTotalDimension yield 0 */
@@ -58,7 +58,7 @@ static PetscErrorCode test1(DM dm, AppCtx *options)
   PetscCall(DMRestoreLocalVector(dm, &locX_t));
   PetscCall(DMRestoreLocalVector(dm, &locA));
   PetscCall(ISDestroy(&cells));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* no discretization is given so DMGetNumFields and PetscDSGetTotalDimension yield 0 */
@@ -81,7 +81,7 @@ static PetscErrorCode test2(DM dm, AppCtx *options)
   PetscCall(DMRestoreLocalVector(dm, &locX_t));
   PetscCall(DMRestoreLocalVector(dm, &locA));
   PetscCall(ISDestroy(&cells));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode test3(DM dm, AppCtx *options)
@@ -99,7 +99,7 @@ static PetscErrorCode test3(DM dm, AppCtx *options)
   PetscCall(PetscDSSetDiscretization(ds, 0, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(test1(dm, options));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode test4(DM dm, AppCtx *options)
@@ -116,7 +116,7 @@ static PetscErrorCode test4(DM dm, AppCtx *options)
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
   PetscCall(test2(dm, options));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode test5(DM dm, AppCtx *options)
@@ -134,7 +134,7 @@ static PetscErrorCode test5(DM dm, AppCtx *options)
   PetscCall(DMPlexRestoreCellFields(dm, cells, locX, locX_t, locA, &u, &u_t, &a));
   PetscCall(DMRestoreLocalVector(dm, &locX));
   PetscCall(ISDestroy(&cells));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode test6(DM dm, AppCtx *options)
@@ -154,7 +154,7 @@ static PetscErrorCode test6(DM dm, AppCtx *options)
   PetscCall(DMPlexRestoreCellFields(dm, cells, locX, locX_t, locA, &u, &u_t, &a));
   PetscCall(DMRestoreLocalVector(dm, &locX));
   PetscCall(ISDestroy(&cells));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode test7(DM dm, AppCtx *options)
@@ -171,7 +171,7 @@ static PetscErrorCode test7(DM dm, AppCtx *options)
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
   PetscCall(test5(dm, options));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode test8(DM dm, AppCtx *options)
@@ -188,7 +188,7 @@ static PetscErrorCode test8(DM dm, AppCtx *options)
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
   PetscCall(test6(dm, options));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

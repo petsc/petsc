@@ -190,7 +190,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   PetscCall(PetscMalloc1(lsize, &parms->lvec0));
   if (parms->lvec1) PetscCall(PetscFree(parms->lvec1));
   PetscCall(PetscMalloc1(lsize, &parms->lvec1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_PARMS(PC pc, PetscViewer viewer)
@@ -231,7 +231,7 @@ static PetscErrorCode PCView_PARMS(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  drop tolerance for schur complement at each level: %g\n", parms->droptol[4]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  drop tolerance for ILUT in last level schur complement: %g\n", parms->droptol[5]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_PARMS(PC pc)
@@ -253,7 +253,7 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPARMSSetSolveRestart_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPARMSSetNonsymPerm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPARMSSetFill_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_PARMS(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -295,7 +295,7 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc, PetscOptionItems *PetscOptio
   PetscCall(PetscOptionsReal("-pc_parms_droptol_last_schur", "drop tolerance for ILUT in last level schur complement", "None", parms->droptol[5], &parms->droptol[5], &flag));
   if (flag) parms->droptol[6] = parms->droptol[5];
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_PARMS(PC pc, Vec b, Vec x)
@@ -312,7 +312,7 @@ static PetscErrorCode PCApply_PARMS(PC pc, Vec b, Vec x)
   parms_VecInvPermAux(parms->lvec1, x1, parms->map);
   PetscCall(VecRestoreArrayRead(b, &b1));
   PetscCall(VecRestoreArray(x, &x1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type)
@@ -324,7 +324,7 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type)
     parms->global   = type;
     pc->setupcalled = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -357,7 +357,7 @@ PetscErrorCode PCPARMSSetGlobal(PC pc, PCPARMSGlobalType type)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
   PetscTryMethod(pc, "PCPARMSSetGlobal_C", (PC, PCPARMSGlobalType), (pc, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
@@ -369,7 +369,7 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
     parms->local    = type;
     pc->setupcalled = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -407,7 +407,7 @@ PetscErrorCode PCPARMSSetLocal(PC pc, PCPARMSLocalType type)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
   PetscTryMethod(pc, "PCPARMSSetLocal_C", (PC, PCPARMSLocalType), (pc, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, PetscInt maxits)
@@ -423,7 +423,7 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, Pets
     parms->maxits   = maxits;
     pc->setupcalled = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -453,7 +453,7 @@ PetscErrorCode PCPARMSSetSolveTolerances(PC pc, PetscReal tol, PetscInt maxits)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetSolveTolerances_C", (PC, PetscReal, PetscInt), (pc, tol, maxits));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart)
@@ -465,7 +465,7 @@ static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart)
     parms->maxdim   = restart;
     pc->setupcalled = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -493,7 +493,7 @@ PetscErrorCode PCPARMSSetSolveRestart(PC pc, PetscInt restart)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetSolveRestart_C", (PC, PetscInt), (pc, restart));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym)
@@ -505,7 +505,7 @@ static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym)
     parms->nonsymperm = nonsym;
     pc->setupcalled   = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -534,7 +534,7 @@ PetscErrorCode PCPARMSSetNonsymPerm(PC pc, PetscBool nonsym)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetNonsymPerm_C", (PC, PetscBool), (pc, nonsym));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lfil2)
@@ -554,7 +554,7 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1
     parms->lfil[5] = parms->lfil[6] = lfil2;
     pc->setupcalled                 = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -587,7 +587,7 @@ PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lf
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetFill_C", (PC, PetscInt, PetscInt, PetscInt), (pc, lfil0, lfil1, lfil2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -677,5 +677,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPARMSSetSolveRestart_C", PCPARMSSetSolveRestart_PARMS));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPARMSSetNonsymPerm_C", PCPARMSSetNonsymPerm_PARMS));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPARMSSetFill_C", PCPARMSSetFill_PARMS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

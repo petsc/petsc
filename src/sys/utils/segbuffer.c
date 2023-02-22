@@ -35,7 +35,7 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, size_t cou
   newlink->tail     = s;
   newlink->alloc    = alloc;
   seg->head         = newlink;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -66,7 +66,7 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegB
   head->alloc       = expected;
   (*seg)->unitbytes = unitbytes;
   (*seg)->head      = head;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -95,7 +95,7 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, size_t count, void *buf)
   s             = seg->head;
   *(char **)buf = &s->u.array[s->used * seg->unitbytes];
   s->used += count;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -115,14 +115,14 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
   struct _PetscSegBufferLink *s;
 
   PetscFunctionBegin;
-  if (!*seg) PetscFunctionReturn(0);
+  if (!*seg) PetscFunctionReturn(PETSC_SUCCESS);
   for (s = (*seg)->head; s;) {
     struct _PetscSegBufferLink *tail = s->tail;
     PetscCall(PetscFree(s));
     s = tail;
   }
   PetscCall(PetscFree(*seg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -160,7 +160,7 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig)
   s->used     = 0;
   s->tailused = 0;
   s->tail     = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -192,7 +192,7 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg, void *contiguous)
   PetscCall(PetscMalloc((s->used + s->tailused) * seg->unitbytes, &contig));
   PetscCall(PetscSegBufferExtractTo(seg, contig));
   *(void **)contiguous = contig;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -228,7 +228,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig)
   }
   if (contig) *(char **)contig = head->u.array;
   head->used = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -250,7 +250,7 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize)
 {
   PetscFunctionBegin;
   *usedsize = seg->head->tailused + seg->head->used;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -274,5 +274,5 @@ PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg, size_t unused)
   head = seg->head;
   PetscCheck(head->used >= unused, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Attempt to return more unused entries (%zu) than previously gotten (%zu)", unused, head->used);
   head->used -= unused;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

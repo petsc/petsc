@@ -10,7 +10,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestLocalDofOrder(DM dm)
@@ -36,7 +36,7 @@ static PetscErrorCode TestLocalDofOrder(DM dm)
 
   PetscCall(DMGetNumFields(dm, &Nf));
   for (f = 0; f < Nf; ++f) PetscCall(PetscFEDestroy(&fe[f]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

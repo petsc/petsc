@@ -12,7 +12,7 @@ PetscObject P4estLoggingObject; /* Just a vehicle for its classid */
 
 static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno, int package, int category, int priority, const char *msg)
 {
-  PetscInfo_Private(filename, P4estLoggingObject, ":%d{%s} %s", lineno, package == sc_package_id ? "sc" : package == p4est_package_id ? "p4est" : "", msg);
+  PetscCallVoid(PetscInfo_Private(filename, P4estLoggingObject, ":%d{%s} %s", lineno, package == sc_package_id ? "sc" : package == p4est_package_id ? "p4est" : "", msg));
 }
 
 /* p4est tries to abort: if possible, use setjmp to enable at least a little unwinding */
@@ -21,7 +21,8 @@ static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno
 PETSC_VISIBILITY_INTERNAL jmp_buf PetscScJumpBuf;
 PETSC_INTERN void                 PetscScAbort_longjmp(void)
 {
-  PetscError(PETSC_COMM_SELF, -1, "p4est function", "p4est file", PETSC_ERR_LIB, PETSC_ERROR_INITIAL, "Error in p4est stack call\n");
+  PetscErrorCode ierr = PetscError(PETSC_COMM_SELF, -1, "p4est function", "p4est file", PETSC_ERR_LIB, PETSC_ERROR_INITIAL, "Error in p4est stack call\n");
+  (void)ierr;
   longjmp(PetscScJumpBuf, 1);
   return;
 }
@@ -42,7 +43,7 @@ static PetscErrorCode PetscP4estFinalize(void)
     PetscCallP4est(sc_finalize, ());
   }
   PetscCall(PetscHeaderDestroy(&P4estLoggingObject));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscP4estInitialize(void)
@@ -55,7 +56,7 @@ PetscErrorCode PetscP4estInitialize(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscP4estInitialized) PetscFunctionReturn(0);
+  if (PetscP4estInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscP4estInitialized = PETSC_TRUE;
 
   /* Register Classes */
@@ -104,5 +105,5 @@ PetscErrorCode PetscP4estInitialize(void)
   PetscCall(DMForestRegisterType(DMP4EST));
   PetscCall(DMForestRegisterType(DMP8EST));
   PetscCall(PetscRegisterFinalize(PetscP4estFinalize));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

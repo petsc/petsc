@@ -223,7 +223,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   PetscCall(PetscFree(val_rescue));
 
   *n_row_alloc_ok = i_row;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -336,7 +336,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
       /* Delete the whole matrix at once. */
       PetscCall(spbas_delete(retval));
       *success = PETSC_FALSE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     /* If necessary, allocate arrays */
@@ -403,5 +403,5 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
   PetscCall(PetscFree(diag));
   *matrix_L = retval;
   *success  = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

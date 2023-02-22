@@ -4,7 +4,6 @@
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
 #include <petsc/private/petsclegacycupmblas.h>
-#include <petscaijdevice.h>
 
 #include <cusparse_v2.h>
 
@@ -320,7 +319,7 @@ struct Mat_SeqAIJCUSPARSE {
   PetscCount *jmap_d;           /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
   PetscCount *perm_d;
 
-  Mat_SeqAIJCUSPARSE() : use_extended_coo(PETSC_FALSE), perm_d(NULL), jmap_d(NULL) { }
+  Mat_SeqAIJCUSPARSE() : use_extended_coo(PETSC_FALSE), jmap_d(NULL), perm_d(NULL) { }
 };
 
 typedef struct Mat_SeqAIJCUSPARSETriFactors *Mat_SeqAIJCUSPARSETriFactors_p;

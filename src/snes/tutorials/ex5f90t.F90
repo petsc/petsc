@@ -87,12 +87,9 @@
       PetscCall(DMGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr))
 
 !  Get a pointer to vector data.
-!    - For default PETSc vectors, VecGetArray90() returns a pointer to
-!      the data array. Otherwise, the routine is implementation dependent.
+!    - VecGetArray90() returns a pointer to the data array.
 !    - You MUST call VecRestoreArrayF90() when you no longer need access to
 !      the array.
-!    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
-!      and is useable from Fortran-90 Only.
 
       PetscCall(VecGetArrayF90(localX,lx_v,ierr))
       PetscCall(VecGetArrayF90(F,lf_v,ierr))
@@ -352,12 +349,9 @@
       ierr = 0
       PetscCallA(SNESGetApplicationContext(mysnes,puser,ierr))
 !  Get a pointer to vector data.
-!    - For default PETSc vectors, VecGetArray90() returns a pointer to
-!      the data array. Otherwise, the routine is implementation dependent.
+!    - VecGetArray90() returns a pointer to the data array.
 !    - You MUST call VecRestoreArrayF90() when you no longer need access to
 !      the array.
-!    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
-!      and is useable from Fortran-90 Only.
 
       PetscCallA(VecGetArrayF90(X,lx_v,ierr))
 

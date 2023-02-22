@@ -118,7 +118,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
 
   for (i = 0; i < is_max; i++) PetscCall(ISDestroy(&is_new[i]));
   PetscCall(PetscFree(is_new));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef enum {
@@ -256,7 +256,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
     for (j = 0; j < n[i]; j++) {
       idx                = idx_i[j];
       *data1_start[rank] = idx;
-      data1_start[rank]++; /* for local proccessing */
+      data1_start[rank]++; /* for local processing */
       proc_end = ctable[idx];
       for (proc_id = 0; proc_id <= proc_end; proc_id++) {                        /* for others to process */
         if (proc_id == rank) continue;                                           /* done before this loop */
@@ -432,7 +432,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   }
   for (k = 0; k <= nodata2; k++) PetscCall(PetscFree(odata2_ptr[k]));
   PetscCall(PetscFree(odata2_ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -461,7 +461,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, P
   PetscInt      row, mbs, Mbs, *nidx_i, col, col_max, isz, isz0, *ai, *aj, *bi, *bj, *garray, rstart, l;
   PetscInt      a_start, a_end, b_start, b_end, i, j, k, is_max, *idx_i, n;
   PetscBT       table0;  /* mark the indices of input is[] for look up */
-  PetscBT       table_i; /* poits to i-th table. When whose=OTHER, a single table is used for all is[] */
+  PetscBT       table_i; /* points to i-th table. When whose=OTHER, a single table is used for all is[] */
 
   PetscFunctionBegin;
   Mbs    = c->Mbs;
@@ -530,7 +530,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, P
         k++;
         if (k >= isz0) break;               /* for (row=0; row<mbs; row++) */
       } else {                              /* row is not on input is[i]:
-                  do col serach: add row onto nidx_i if there is a col in nidx_i */
+                  do col search: add row onto nidx_i if there is a col in nidx_i */
         for (l = a_start; l < a_end; l++) { /* Amat */
           col = aj[l] + rstart;
           if (col > col_max) break;
@@ -557,5 +557,5 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, P
     nidx[1 + i] = isz; /* size of new is[i] */
   }                    /* for each is */
   PetscCall(PetscBTDestroy(&table0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

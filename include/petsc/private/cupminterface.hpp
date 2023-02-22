@@ -109,9 +109,9 @@ struct InterfaceBase {
 
   PETSC_NODISCARD static constexpr const char *cupmName() noexcept
   {
-    static_assert(util::integral_value(DeviceType::CUDA) == 0, "");
-    static_assert(util::integral_value(DeviceType::HIP) == 1, "");
-    return std::get<util::integral_value(T)>(DeviceTypes);
+    static_assert(util::to_underlying(DeviceType::CUDA) == 0, "");
+    static_assert(util::to_underlying(DeviceType::HIP) == 1, "");
+    return std::get<util::to_underlying(T)>(DeviceTypes);
   }
 
   PETSC_NODISCARD static constexpr PetscDeviceType PETSC_DEVICE_CUPM() noexcept { return T == DeviceType::CUDA ? PETSC_DEVICE_CUDA : PETSC_DEVICE_HIP; }
@@ -530,7 +530,7 @@ struct Interface : InterfaceImpl<T> {
     #define PETSC_PKG_CUDA_VERSION_GE(...) 0
     #define CUPM_DEFINED_PETSC_PKG_CUDA_VERSION_GE
   #endif
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMGetMemType(const void *data, PetscMemType *type, PetscBool *registered = nullptr, PetscBool *managed = nullptr) noexcept
+  static PetscErrorCode PetscCUPMGetMemType(const void *data, PetscMemType *type, PetscBool *registered = nullptr, PetscBool *managed = nullptr) noexcept
   {
     cupmPointerAttributes_t attr;
     cupmError_t             cerr;
@@ -560,7 +560,7 @@ struct Interface : InterfaceImpl<T> {
   #endif // CUDART_VERSION && CUDART_VERSION < 10000 || __HIP_PLATFORM_HCC__
     if (type) *type = ((cerr == cupmSuccess) && (mtype == cupmMemoryTypeDevice)) ? PETSC_MEMTYPE_CUPM() : PETSC_MEMTYPE_HOST;
     if (registered && (cerr == cupmSuccess) && (mtype == cupmMemoryTypeHost)) *registered = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   #if defined(CUPM_DEFINED_PETSC_PKG_CUDA_VERSION_GE)
     #undef PETSC_PKG_CUDA_VERSION_GE
@@ -586,7 +586,7 @@ struct Interface : InterfaceImpl<T> {
 
   // these change what the arguments mean, so need to namespace these
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMallocAsync(M **ptr, std::size_t n, cupmStream_t stream = nullptr) noexcept
+  static PetscErrorCode PetscCUPMMallocAsync(M **ptr, std::size_t n, cupmStream_t stream = nullptr) noexcept
   {
     static_assert(!std::is_void<M>::value, "");
 
@@ -606,49 +606,49 @@ struct Interface : InterfaceImpl<T> {
         PetscCallCUPM(cupmMalloc(reinterpret_cast<void **>(ptr), bytes));
       }
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMalloc(M **ptr, std::size_t n) noexcept
+  static PetscErrorCode PetscCUPMMalloc(M **ptr, std::size_t n) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMallocAsync(ptr, n));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMallocHost(M **ptr, std::size_t n, unsigned int flags = cupmHostAllocDefault) noexcept
+  static PetscErrorCode PetscCUPMMallocHost(M **ptr, std::size_t n, unsigned int flags = cupmHostAllocDefault) noexcept
   {
     static_assert(!std::is_void<M>::value, "");
 
     PetscFunctionBegin;
     PetscValidPointer(ptr, 1);
     *ptr = nullptr;
-    if (n) PetscCall(cupmMallocHost(reinterpret_cast<void **>(ptr), n * sizeof(M), flags));
-    PetscFunctionReturn(0);
+    if (n) PetscCallCUPM(cupmMallocHost(reinterpret_cast<void **>(ptr), n * sizeof(M), flags));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename D>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpyAsync(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind, cupmStream_t stream = nullptr, bool use_async = false) noexcept
+  static PetscErrorCode PetscCUPMMemcpyAsync(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind, cupmStream_t stream = nullptr, bool use_async = false) noexcept
   {
     static_assert(!std::is_void<D>::value, "");
     const auto size = n * sizeof(D);
 
     PetscFunctionBegin;
-    if (PetscUnlikely(!n)) PetscFunctionReturn(0);
+    if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
     // cannot dereference (i.e. cannot call PetscValidPointer() here)
     PetscCheck(dest, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy to a NULL pointer");
     PetscCheck(src, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy from a NULL pointer");
-    // do early return after nullptr check since we need to check that they arent both nullptrs
-    if (PetscUnlikely(dest == src)) PetscFunctionReturn(0);
+    // do early return after nullptr check since we need to check that they are not both nullptrs
+    if (PetscUnlikely(dest == src)) PetscFunctionReturn(PETSC_SUCCESS);
     if (kind == cupmMemcpyHostToHost) {
       // If we are HTOH it is cheaper to check if the stream is idle and do a basic mempcy()
       // than it is to just call the vendor functions. This assumes of course that the stream
       // accounts for both memory regions being "idle"
       if (cupmStreamQuery(stream) == cupmSuccess) {
         PetscCall(PetscMemcpy(dest, src, size));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       // need to clear the potential cupmErrorNotReady generated by query above...
       auto cerr = cupmGetLastError();
@@ -668,19 +668,19 @@ struct Interface : InterfaceImpl<T> {
     } else if (kind == cupmMemcpyHostToDevice) {
       PetscCall(PetscLogCpuToGpu(size));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename D>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpy(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind) noexcept
+  static PetscErrorCode PetscCUPMMemcpy(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMemcpyAsync(dest, src, n, kind));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemsetAsync(M *ptr, int value, std::size_t n, cupmStream_t stream = nullptr, bool use_async = false) noexcept
+  static PetscErrorCode PetscCUPMMemsetAsync(M *ptr, int value, std::size_t n, cupmStream_t stream = nullptr, bool use_async = false) noexcept
   {
     static_assert(!std::is_void<M>::value, "");
 
@@ -695,15 +695,15 @@ struct Interface : InterfaceImpl<T> {
         PetscCallCUPM(cupmMemset(ptr, value, bytes));
       }
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename M>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemset(M *ptr, int value, std::size_t n) noexcept
+  static PetscErrorCode PetscCUPMMemset(M *ptr, int value, std::size_t n) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMemsetAsync(ptr, value, n));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   // these we can transparently wrap, no need to namespace it to Petsc
@@ -764,7 +764,7 @@ struct Interface : InterfaceImpl<T> {
   }
 
   template <std::size_t block_size = 256, std::size_t warp_size = 32, typename F, typename... Args>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMLaunchKernel1D(std::size_t n, std::size_t sharedMem, cupmStream_t stream, F &&func, Args &&...kernelArgs) noexcept
+  static PetscErrorCode PetscCUPMLaunchKernel1D(std::size_t n, std::size_t sharedMem, cupmStream_t stream, F &&func, Args &&...kernelArgs) noexcept
   {
     static_assert(block_size > 0, "");
     static_assert(warp_size > 0, "");
@@ -778,7 +778,7 @@ struct Interface : InterfaceImpl<T> {
     // decipher cryptic 'cuda/hipErrorLaunchFailure' we explicitly check for zero here
     PetscAssert(nthread, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to launch kernel with grid/block size 0");
     PetscCallCUPM(cupmLaunchKernel(std::forward<F>(func), nblock, nthread, sharedMem, stream, std::forward<Args>(kernelArgs)...));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 private:

@@ -51,5 +51,5 @@ PetscErrorCode PetscGetDate(char date[], size_t len)
   /* now strip out the new-line chars at the end of the string */
   PetscCall(PetscStrstr(date, "\n", &str));
   if (str) str[0] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

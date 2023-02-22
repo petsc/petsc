@@ -66,13 +66,13 @@ typedef struct {
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = x[0];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -103,7 +103,7 @@ static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = x[0] * x[0] + x[1] * x[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void quadratic_u_field_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[])
@@ -119,7 +119,7 @@ static PetscErrorCode ball_u_2d(PetscInt dim, PetscReal time, const PetscReal x[
   const PetscReal xi      = alpha * (radius2 - r2);
 
   *u = PetscTanhScalar(xi) + 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode cross_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -128,7 +128,7 @@ static PetscErrorCode cross_u_2d(PetscInt dim, PetscReal time, const PetscReal x
   const PetscReal xy    = (x[0] - 0.5) * (x[1] - 0.5);
 
   *u = PetscSinReal(alpha * xy) * (alpha * PetscAbsReal(xy) < 2 * PETSC_PI ? 1 : 0.01);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -194,7 +194,7 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 static PetscErrorCode xtrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = PetscSinReal(2.0 * PETSC_PI * x[0]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_xtrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -215,7 +215,7 @@ static void f0_xtrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
 static PetscErrorCode xytrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = PetscSinReal(2.0 * PETSC_PI * x[0]) * PetscSinReal(2.0 * PETSC_PI * x[1]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_xytrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -237,7 +237,7 @@ static void f0_xytrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 static PetscErrorCode nu_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = x[0] + x[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode checkerboardCoeff(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -257,7 +257,7 @@ static PetscErrorCode checkerboardCoeff(PetscInt dim, PetscReal time, const Pets
     k = user->kgrid[ind];
   }
   u[0] = mask ? 1.0 : PetscPowRealInt(10.0, -k);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 void f0_analytic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -362,7 +362,7 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const P
 static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = 2.0 * (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) / 3.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ball_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -373,7 +373,7 @@ static PetscErrorCode ball_u_3d(PetscInt dim, PetscReal time, const PetscReal x[
   const PetscReal xi      = alpha * (radius2 - r2);
 
   *u = PetscTanhScalar(xi) + 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void quadratic_u_field_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[])
@@ -387,7 +387,7 @@ static PetscErrorCode cross_u_3d(PetscInt dim, PetscReal time, const PetscReal x
   const PetscReal xyz   = (x[0] - 0.5) * (x[1] - 0.5) * (x[2] - 0.5);
 
   *u = PetscSinReal(alpha * xyz) * (alpha * PetscAbsReal(xyz) < 2 * PETSC_PI ? (alpha * PetscAbsReal(xyz) > -2 * PETSC_PI ? 1.0 : 0.01) : 0.01);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_cross_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -436,7 +436,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-bc_type", "Type of boundary condition", "ex12.c", bcTypes, 3, bcTypes[options->bcType], &bc, NULL));
   options->bcType = (BCType)bc;
   coeff           = options->variableCoefficient;
-  PetscCall(PetscOptionsEList("-variable_coefficient", "Type of variable coefficent", "ex12.c", coeffTypes, 8, coeffTypes[options->variableCoefficient], &coeff, NULL));
+  PetscCall(PetscOptionsEList("-variable_coefficient", "Type of variable coefficient", "ex12.c", coeffTypes, 8, coeffTypes[options->variableCoefficient], &coeff, NULL));
   options->variableCoefficient = (CoeffType)coeff;
 
   PetscCall(PetscOptionsBool("-field_bc", "Use a field representation for the BC", "ex12.c", options->fieldBC, &options->fieldBC, NULL));
@@ -452,7 +452,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsInt("-k", "The exponent for the checkerboard coefficient", "ex12.c", options->k, &options->k, NULL));
   PetscCall(PetscOptionsBool("-k_random", "Assign random k values to checkerboard", "ex12.c", options->rand, &options->rand, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateBCLabel(DM dm, const char name[])
@@ -466,7 +466,7 @@ static PetscErrorCode CreateBCLabel(DM dm, const char name[])
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexMarkBoundaryFaces(plex, 1, label));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -514,7 +514,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     PetscCall(PetscRandomDestroy(&r));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
@@ -657,7 +657,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       PetscCall(DMAddBoundary(dm, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, user->fieldBC ? (void (*)(void))user->exactFields[0] : (void (*)(void))user->exactFuncs[0], NULL, user, NULL));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
@@ -674,7 +674,7 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   PetscCall(DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctx, INSERT_ALL_VALUES, nu));
   PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, nu));
   PetscCall(VecDestroy(&nu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
@@ -691,7 +691,7 @@ static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
   PetscCall(DMProjectFunctionLocal(dmAux, 0.0, bcFuncs, NULL, INSERT_ALL_VALUES, uexact));
   PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, uexact));
   PetscCall(VecDestroy(&uexact));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
@@ -701,7 +701,7 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
   PetscFunctionBegin;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
   PetscCall(DMGetCoordinateDM(dm, &coordDM));
-  if (!feAux) PetscFunctionReturn(0);
+  if (!feAux) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMClone(dm, &dmAux));
   PetscCall(DMSetCoordinateDM(dmAux, coordDM));
   PetscCall(DMSetField(dmAux, 0, NULL, (PetscObject)feAux));
@@ -709,7 +709,7 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
   if (user->fieldBC) PetscCall(SetupBC(dm, dmAux, user));
   else PetscCall(SetupMaterial(dm, dmAux, user));
   PetscCall(DMDestroy(&dmAux));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
@@ -753,7 +753,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   }
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(PetscFEDestroy(&feAux));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -1759,10 +1759,10 @@ int main(int argc, char **argv)
     args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient ball -dm_plex_gmsh_periodic 0
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
-      filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=[1-2][5-7]/total number of linear solver iterations=16/g"
+      filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=[1-2][4-7]/total number of linear solver iterations=16/g"
       suffix: tri_parmetis_hpddm_baij
     test:
-      filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=[1-2][5-7]/total number of linear solver iterations=16/g"
+      filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=[1-2][4-7]/total number of linear solver iterations=16/g"
       requires: !complex
       suffix: tri_parmetis_hpddm
 

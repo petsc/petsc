@@ -64,6 +64,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_MetricEnforceSPD;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
+PETSC_EXTERN PetscLogEvent DMPLEX_Generate;
 
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalBuildGraph;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
@@ -129,7 +130,7 @@ typedef struct {
 
   PetscSection coneSection;      /* Layout of cones (inedges for DAG) */
   PetscInt    *cones;            /* Cone for each point */
-  PetscInt    *coneOrientations; /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
+  PetscInt    *coneOrientations; /* Orientation of each cone point, means cone traversal should start on point 'o', and if negative start on -(o+1) and go in reverse */
   PetscSection supportSection;   /* Layout of cones (inedges for DAG) */
   PetscInt    *supports;         /* Cone for each point */
   PetscInt    *facesTmp;         /* Work space for faces operation */
@@ -201,6 +202,16 @@ typedef struct {
   PetscBool useAnchors;                                                          /* Replace constrained points with their anchors in adjacency lists */
   PetscErrorCode (*useradjacency)(DM, PetscInt, PetscInt *, PetscInt[], void *); /* User callback for adjacency */
   void *useradjacencyctx;                                                        /* User context for callback */
+
+  // Periodicity
+  struct {
+    // Specified by the user
+    PetscScalar transform[4][4]; // geometric transform
+    PetscSF     face_sf;         // root(donor faces) <-- leaf(local faces)
+    // Created eagerly (depends on points)
+    PetscSF composed_sf; // root(non-periodic global points) <-- leaf(local points)
+    IS      periodic_points;
+  } periodic;
 
   /* Projection */
   PetscInt maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
@@ -339,6 +350,9 @@ PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
 /* Applications may use this function */
 PETSC_EXTERN PetscErrorCode DMPlexCreateNumbering_Plex(DM, PetscInt, PetscInt, PetscInt, PetscInt *, PetscSF, IS *);
 
+PETSC_INTERN PetscErrorCode DMPlexInterpolateInPlace_Internal(DM);
+PETSC_INTERN PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM, DM, PetscSF);
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, Vec, DMLabel, DMLabel, DM *);
@@ -470,9 +484,9 @@ static inline void DMPlex_MultTranspose2D_Internal(const PetscScalar A[], PetscI
 static inline void DMPlex_MultTranspose3D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
 {
   const PetscScalar z[3] = {x[0 * ldx], x[1 * ldx], x[2 * ldx]};
-  y[0 * ldx]             = A[0] * z[0] + A[3] * z[1] + A[6] * z[2];
-  y[1 * ldx]             = A[1] * z[0] + A[4] * z[1] + A[7] * z[2];
-  y[2 * ldx]             = A[2] * z[0] + A[5] * z[1] + A[8] * z[2];
+  y[0 * ldx]             = PetscConj(A[0]) * z[0] + PetscConj(A[3]) * z[1] + PetscConj(A[6]) * z[2];
+  y[1 * ldx]             = PetscConj(A[1]) * z[0] + PetscConj(A[4]) * z[1] + PetscConj(A[7]) * z[2];
+  y[2 * ldx]             = PetscConj(A[2]) * z[0] + PetscConj(A[5]) * z[1] + PetscConj(A[8]) * z[2];
   (void)PetscLogFlops(15.0);
 }
 static inline void DMPlex_Mult2DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
@@ -505,6 +519,15 @@ static inline void DMPlex_MultAdd3DReal_Internal(const PetscReal A[], PetscInt l
   y[2 * ldx] += A[6] * z[0] + A[7] * z[1] + A[8] * z[2];
   (void)PetscLogFlops(15.0);
 }
+/*
+  A: packed, row-major m x n array
+  x: length m array
+  y: length n arra
+  ldx: the stride in x and y
+
+  A[i,j] = A[i * n + j]
+  A^T[j,i] = A[i,j]
+*/
 static inline void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscInt m, PetscInt n, PetscInt ldx, const PetscScalar x[], PetscScalar y[])
 {
   PetscScalar z[3];
@@ -513,7 +536,7 @@ static inline void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscI
   for (j = 0; j < n; ++j) {
     const PetscInt l = j * ldx;
     y[l]             = 0;
-    for (i = 0; i < m; ++i) y[l] += A[j * m + i] * z[i];
+    for (i = 0; i < m; ++i) y[l] += A[i * n + j] * z[i];
   }
   (void)PetscLogFlops(2 * m * n);
 }
@@ -774,6 +797,8 @@ PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
+
+PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 
 /* Functions in the vtable */
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);

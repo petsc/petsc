@@ -530,7 +530,7 @@ static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMTSGetIFunction(dm, &ifunction, NULL));
   PetscCheck(!ifunction, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode TSGetRHSMats_Private(TS, Mat *, Mat *);

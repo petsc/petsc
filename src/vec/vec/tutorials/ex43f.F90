@@ -22,7 +22,7 @@
         use ex43fmodule
        implicit none
 !
-!  This routine demonstates how to call a bind C function from Fortran
+!  This routine demonstrates how to call a bind C function from Fortran
        Vec            v
        PetscErrorCode ierr
        PetscInt five

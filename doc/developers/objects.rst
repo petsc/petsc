@@ -226,7 +226,7 @@ For example,
     {
       PetscFunctionBegin;
       PetscUseTypeMethod(x,op,y);
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 The ``Try`` variant skips the function call if the method has not been set while the ``Use`` version generates an error in that case.
@@ -342,14 +342,14 @@ The PETSc object ``compose()`` and ``query()`` functions are as follows
     {
       PetscFunctionBegin;
       PetscCall(PetscObjectListAdd(&obj->olist,name,ptr));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char *name,PetscObject *ptr)
     {
       PetscFunctionBegin;
       PetscCall(PetscObjectListFind(obj->olist,name,ptr));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 Compose and Query Functions
@@ -379,14 +379,14 @@ following.
     {
       PetscFunctionBegin;
       PetscCall(PetscFunctionListAdd(&obj->qlist,name,fname,ptr));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char *name,void (**ptr)(void))
     {
       PetscFunctionBegin;
       PetscCall(PetscFunctionListFind(obj->qlist,name,ptr));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 In addition to using the ``PetscFunctionList`` mechanism to compose
@@ -410,7 +410,7 @@ For example,
       PetscValidLogicalCollectiveInt(ksp,restart,2);
 
       PetscTryMethod(ksp,"KSPGMRESSetRestart_C",(KSP,PetscInt),(ksp,restart));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
 The ``Try`` variant skips the function call if the method has not been composed with

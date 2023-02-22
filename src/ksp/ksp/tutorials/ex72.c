@@ -323,7 +323,7 @@ int main(int argc, char **args)
       cknorm = PETSC_FALSE;
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-cknorm", &cknorm, NULL));
       while (num_rhs--) {
-        if (num_rhs == 1) VecSet(x, 0.0);
+        if (num_rhs == 1) PetscCall(VecSet(x, 0.0));
         PetscCall(KSPSolve(ksp, b, x));
       }
       PetscCall(KSPGetIterationNumber(ksp, &its));
@@ -367,7 +367,7 @@ int main(int argc, char **args)
       - KSPView() prints information about the linear solver.
     */
     if (table) {
-      char *matrixname, kspinfo[120];
+      char *matrixname = NULL, kspinfo[120];
 
       /*
        Open a string viewer; then write info to it.

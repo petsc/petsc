@@ -37,7 +37,7 @@ static PetscErrorCode PhysicsRiemann_Advect(void *vctx, PetscInt m, const PetscS
   speed     = ctx->a;
   flux[0]   = PetscMax(0, speed) * uL[0] + PetscMin(0, speed) * uR[0];
   *maxspeed = speed;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx, PetscInt m, const PetscScalar *u, PetscScalar *X, PetscScalar *Xi, PetscReal *speeds)
@@ -48,7 +48,7 @@ static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx, PetscInt m, const
   X[0]      = 1.;
   Xi[0]     = 1.;
   speeds[0] = ctx->a;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsSample_Advect(void *vctx, PetscInt initial, FVBCType bctype, PetscReal xmin, PetscReal xmax, PetscReal t, PetscReal x, PetscReal *u)
@@ -95,7 +95,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx, PetscInt initial, FVBCTyp
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown initial condition");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
@@ -117,7 +117,7 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
     PetscCall(PetscOptionsReal("-physics_advect_a", "Speed", "", user->a, &user->a, NULL));
   }
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FVSample_3WaySplit(FVCtx *ctx, DM da, PetscReal time, Vec U)
@@ -187,7 +187,7 @@ PetscErrorCode FVSample_3WaySplit(FVCtx *ctx, DM da, PetscReal time, Vec U)
   }
   PetscCall(DMDAVecRestoreArray(da, U, &u));
   PetscCall(PetscFree(uj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SolutionErrorNorms_3WaySplit(FVCtx *ctx, DM da, PetscReal t, Vec X, PetscReal *nrm1)
@@ -214,7 +214,7 @@ static PetscErrorCode SolutionErrorNorms_3WaySplit(FVCtx *ctx, DM da, PetscReal 
   PetscCall(VecRestoreArrayRead(X, &ptr_X));
   PetscCall(VecRestoreArrayRead(Y, &ptr_Y));
   PetscCall(VecDestroy(&Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FVRHSFunction_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
@@ -387,7 +387,7 @@ PetscErrorCode FVRHSFunction_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
     PetscCall(TSGetTime(ts, &tnow));
     if (dt > 0.5 / ctx->cfl_idt) PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(0.5 / ctx->cfl_idt)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------- Finite Volume Solver for slow components ----------------------------------- */
@@ -518,7 +518,7 @@ PetscErrorCode FVRHSFunctionslow_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
   PetscCallMPI(MPI_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FVRHSFunctionslowbuffer_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
@@ -666,7 +666,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_3WaySplit(TS ts, PetscReal time, Vec X, V
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------- Finite Volume Solver for medium components ----------------------------------- */
@@ -815,7 +815,7 @@ PetscErrorCode FVRHSFunctionmedium_3WaySplit(TS ts, PetscReal time, Vec X, Vec F
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FVRHSFunctionmediumbuffer_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
@@ -963,7 +963,7 @@ PetscErrorCode FVRHSFunctionmediumbuffer_3WaySplit(TS ts, PetscReal time, Vec X,
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------- Finite Volume Solver for fast  parts ----------------------------------- */
@@ -1075,7 +1075,7 @@ PetscErrorCode FVRHSFunctionfast_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

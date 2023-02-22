@@ -29,7 +29,7 @@ PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
   PetscCall(VecDestroy_MPI(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecNorm_MPIViennaCL(Vec xin, NormType type, PetscReal *z)
@@ -60,7 +60,7 @@ PetscErrorCode VecNorm_MPIViennaCL(Vec xin, NormType type, PetscReal *z)
     PetscCall(MPIU_Allreduce(temp, z, 2, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
     z[1] = PetscSqrtReal(z[1]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
@@ -71,7 +71,7 @@ PetscErrorCode VecDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
   PetscCall(VecDot_SeqViennaCL(xin, yin, &work));
   PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   *z = sum;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
@@ -82,7 +82,7 @@ PetscErrorCode VecTDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
   PetscCall(VecTDot_SeqViennaCL(xin, yin, &work));
   PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   *z = sum;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
@@ -94,7 +94,7 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], PetscSca
   PetscCall(VecMDot_SeqViennaCL(xin, nv, y, work));
   PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   if (nv > 128) PetscCall(PetscFree(work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -142,7 +142,7 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*v))->qlist));
   (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
@@ -154,7 +154,7 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScala
   PetscCall(MPIU_Allreduce((void *)&work, (void *)&sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
   *dp = sum[0];
   *nm = sum[1];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool bind)
@@ -227,7 +227,7 @@ PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool bind)
     vv->ops->getarray        = VecGetArray_SeqViennaCL;
     vv->ops->restorearray    = VecRestoreArray_SeqViennaCL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
@@ -240,7 +240,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
   PetscCall(VecSet(vv, 0.0));
   PetscCall(VecSet_Seq(vv, 0.0));
   vv->offloadmask = PETSC_OFFLOAD_BOTH;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
   } else {
     PetscCall(VecSetType(v, VECMPIVIENNACL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -298,7 +298,7 @@ PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscIn
   PetscCall(VecSetSizes(*vv, n, N));
   PetscCall(VecSetBlockSize(*vv, bs));
   PetscCall(VecCreate_MPIViennaCL_Private(*vv, PETSC_FALSE, 0, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -354,7 +354,7 @@ PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscI
   } else {
     (*vv)->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecCreate_MPIViennaCL_Private(Vec vv, PetscBool alloc, PetscInt nghost, const ViennaCLVector *array)
@@ -383,5 +383,5 @@ PetscErrorCode VecCreate_MPIViennaCL_Private(Vec vv, PetscBool alloc, PetscInt n
     vv->offloadmask                 = PETSC_OFFLOAD_UNALLOCATED;
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

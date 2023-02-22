@@ -13,7 +13,7 @@
       a[j * N + i] = t; \
     } \
   } \
-  return 0
+  return PETSC_SUCCESS
 
 static inline PetscErrorCode PetscKernel_A_gets_transpose_A_N(MatScalar *a, PetscInt N)
 {

@@ -18,5 +18,5 @@ PetscErrorCode FillMatrixKokkosCOO(FEStruct *fe, Mat A)
       }
     });
   PetscCall(MatSetValuesCOO(A, v.data(), INSERT_VALUES));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

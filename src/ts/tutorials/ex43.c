@@ -46,7 +46,7 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec X, void *ctx)
   PetscCall(VecGetArray(X, &x));
   x[0] = (PetscScalar)u;
   PetscCall(VecRestoreArray(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Residual1(TS ts, PetscReal t, Vec U, Vec A, Vec R, void *ctx)
@@ -68,7 +68,7 @@ PetscErrorCode Residual1(TS ts, PetscReal t, Vec U, Vec A, Vec R, void *ctx)
   PetscCall(VecRestoreArrayWrite(R, &r));
   PetscCall(VecAssemblyBegin(R));
   PetscCall(VecAssemblyEnd(R));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Tangent1(TS ts, PetscReal t, Vec U, Vec A, PetscReal shiftA, Mat J, Mat P, void *ctx)
@@ -88,7 +88,7 @@ PetscErrorCode Tangent1(TS ts, PetscReal t, Vec U, Vec A, PetscReal shiftA, Mat 
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Residual2(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, void *ctx)
@@ -112,7 +112,7 @@ PetscErrorCode Residual2(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec R, void *c
   PetscCall(VecRestoreArrayWrite(R, &r));
   PetscCall(VecAssemblyBegin(R));
   PetscCall(VecAssemblyEnd(R));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Tangent2(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P, void *ctx)
@@ -132,7 +132,7 @@ PetscErrorCode Tangent2(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shift
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -65,6 +65,8 @@ In addition to the changes above
 
   #. **Not Recommended** Compilers warnings can be permanently suppressed by defining ``PETSC_SKIP_ATTRIBUTE_FORMAT`` prior to all PETSc header-file inclusions
 
+- ``chkerrconvert.py`` (``${PETSC_DIR}/share/petsc/chkerrconvert.py``) now also handles possible spaces between the semi-colon and ``CHKERR`` construct when replacing.
+
 .. rubric:: Configure/Build:
 
 - Remove python2 support, python-3.4+ is now required
@@ -214,6 +216,8 @@ exec-name``.
 - Make public ``SNESVIComputeMeritFunction()`` and ``SNESVIComputeFunction()``
 
 .. rubric:: TAO:
+
+- Rename the command line option ``-tao_nm_lamda`` to ``-tao_nm_lambda``
 
 .. rubric:: DM/DA:
 

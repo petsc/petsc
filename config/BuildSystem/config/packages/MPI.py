@@ -573,6 +573,7 @@ Unable to run hostname to check the network')
     self.commf2c = 1
     self.commc2f = 1
     self.usingMPIUni = 1
+    self.found = 1
     self.version = 'PETSc MPIUNI uniprocessor MPI replacement'
     self.executeTest(self.PetscArchMPICheck)
     return

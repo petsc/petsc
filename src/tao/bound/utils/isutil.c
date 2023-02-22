@@ -83,7 +83,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -146,7 +146,7 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
     PetscCall(ISDestroy(&iscomp));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -229,7 +229,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscCall(VecGetLocalSize(X, &n));
   if (!XL && !XU) {
     PetscCall(ISCreateStride(comm, n, low, 1, inactive));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (n > 0) {
     PetscCall(VecGetArrayRead(X, &x));
@@ -312,7 +312,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   } else {
     PetscCall(PetscFree(isi));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -372,7 +372,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
     PetscCall(VecSet(step_fixed, 0.0));
     PetscCall(VecRestoreSubVector(S, active_fixed, &step_fixed));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -408,7 +408,7 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
   if (!XL && !XU) {
     PetscCall(VecCopy(X, Xout));
     *nDiff = 0.0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheckSameType(X, 1, XL, 2);
   PetscCheckSameType(X, 1, XU, 3);
@@ -444,5 +444,5 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
     PetscCall(VecRestoreArray(Xout, &xout));
   }
   PetscCall(MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

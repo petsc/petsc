@@ -40,7 +40,7 @@ static PetscErrorCode DMLabelEphemeralComputeStratumSize_Private(DMLabel label, 
   PetscCall(ISRestoreIndices(opointIS, &opoints));
   PetscCall(ISDestroy(&opointIS));
   label->stratumSizes[v] = Np;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelGetStratumIS_Ephemeral(DMLabel label, PetscInt v, IS *stratum)
@@ -83,7 +83,7 @@ static PetscErrorCode DMLabelGetStratumIS_Ephemeral(DMLabel label, PetscInt v, I
   PetscCall(ISRestoreIndices(opointIS, &opoints));
   PetscCall(ISDestroy(&opointIS));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Np, points, PETSC_OWN_POINTER, stratum));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelSetUp_Ephemeral(DMLabel label)
@@ -105,7 +105,7 @@ static PetscErrorCode DMLabelSetUp_Ephemeral(DMLabel label)
   PetscCall(ISRestoreIndices(valueIS, &values));
   PetscCall(ISDestroy(&valueIS));
   label->readonly = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelView_Ephemeral_Ascii(DMLabel label, PetscViewer viewer)
@@ -146,7 +146,7 @@ static PetscErrorCode DMLabelView_Ephemeral_Ascii(DMLabel label, PetscViewer vie
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelView_Ephemeral(DMLabel label, PetscViewer viewer)
@@ -156,7 +156,7 @@ static PetscErrorCode DMLabelView_Ephemeral(DMLabel label, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(DMLabelView_Ephemeral_Ascii(label, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelDuplicate_Ephemeral(DMLabel label, DMLabel *labelnew)
@@ -166,7 +166,7 @@ static PetscErrorCode DMLabelDuplicate_Ephemeral(DMLabel label, DMLabel *labelne
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)label, "__original_label__", &olabel));
   PetscCall(PetscObjectCompose((PetscObject)*labelnew, "__original_label__", olabel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelInitialize_Ephemeral(DMLabel label)
@@ -176,7 +176,7 @@ static PetscErrorCode DMLabelInitialize_Ephemeral(DMLabel label)
   label->ops->setup        = DMLabelSetUp_Ephemeral;
   label->ops->duplicate    = DMLabelDuplicate_Ephemeral;
   label->ops->getstratumis = DMLabelGetStratumIS_Ephemeral;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -197,7 +197,7 @@ PETSC_EXTERN PetscErrorCode DMLabelCreate_Ephemeral(DMLabel label)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscCall(DMLabelInitialize_Ephemeral(label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -222,7 +222,7 @@ PetscErrorCode DMLabelEphemeralGetLabel(DMLabel label, DMLabel *olabel)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)label, "__original_label__", (PetscObject *)olabel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -245,5 +245,5 @@ PetscErrorCode DMLabelEphemeralSetLabel(DMLabel label, DMLabel olabel)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)label, "__original_label__", (PetscObject)olabel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

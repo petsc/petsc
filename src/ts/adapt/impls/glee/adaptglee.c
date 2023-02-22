@@ -51,7 +51,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt, TS ts, PetscReal h, Pets
     *wlte   = -1; /* Weighted error was not evaluated */
     *wltea  = -1; /* Weighted absolute error was not evaluated */
     *wlter  = -1; /* Weighted relative error was not evaluated */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (enorm > 1. || enorma > 1. || enormr > 1.) {
@@ -109,7 +109,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt, TS ts, PetscReal h, Pets
   *wlte  = enorm;
   *wltea = enorma;
   *wlter = enormr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptReset_GLEE(TSAdapt adapt)
@@ -118,7 +118,7 @@ static PetscErrorCode TSAdaptReset_GLEE(TSAdapt adapt)
 
   PetscFunctionBegin;
   PetscCall(VecDestroy(&glee->Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
@@ -126,7 +126,7 @@ static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
   PetscFunctionBegin;
   PetscCall(TSAdaptReset_GLEE(adapt));
   PetscCall(PetscFree(adapt->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -146,5 +146,5 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt)
   adapt->ops->choose  = TSAdaptChoose_GLEE;
   adapt->ops->reset   = TSAdaptReset_GLEE;
   adapt->ops->destroy = TSAdaptDestroy_GLEE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

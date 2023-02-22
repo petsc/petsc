@@ -5,6 +5,7 @@
 */
 
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petscblaslapack.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 
@@ -27,16 +28,16 @@ PetscErrorCode MatSeqDenseSymmetrize_Private(Mat A, PetscBool hermitian)
     }
   }
   PetscCall(MatDenseRestoreArray(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
+PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
   PetscBLASInt  info, n;
 
   PetscFunctionBegin;
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscBLASIntCast(A->cmap->n, &n));
   if (A->factortype == MAT_FACTOR_LU) {
     PetscCheck(mat->pivots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Pivots not present");
@@ -83,7 +84,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
   A->ops->solvetransposeadd = NULL;
   A->factortype             = MAT_FACTOR_NONE;
   PetscCall(PetscFree(A->solvertype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -101,7 +102,7 @@ PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A, PetscInt N, const PetscInt row
       PetscCheck(rows[i] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Col %" PetscInt_FMT " requested to be zeroed greater than or equal number of cols %" PetscInt_FMT, rows[i], A->cmap->n);
     }
   }
-  if (!N) PetscFunctionReturn(0);
+  if (!N) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* fix right hand side if needed */
   if (x && b) {
@@ -140,7 +141,7 @@ PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A, PetscInt N, const PetscInt row
     }
   }
   PetscCall(MatDenseRestoreArray(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPNumeric_SeqDense_SeqDense(Mat A, Mat P, Mat C)
@@ -152,7 +153,7 @@ PetscErrorCode MatPtAPNumeric_SeqDense_SeqDense(Mat A, Mat P, Mat C)
     PetscCall((*C->ops->matmultnumeric)(A, P, c->ptapwork));
     PetscCall((*C->ops->transposematmultnumeric)(P, c->ptapwork, C));
   } else SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "Must call MatPtAPSymbolic_SeqDense_SeqDense() first");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPtAPSymbolic_SeqDense_SeqDense(Mat A, Mat P, PetscReal fill, Mat C)
@@ -180,7 +181,7 @@ PetscErrorCode MatPtAPSymbolic_SeqDense_SeqDense(Mat A, Mat P, PetscReal fill, M
   PetscCall(MatSetSizes(c->ptapwork, A->rmap->n, P->cmap->n, A->rmap->N, P->cmap->N));
   PetscCall(MatSetType(c->ptapwork, ((PetscObject)C)->type_name));
   PetscCall(MatSetUp(c->ptapwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
@@ -228,7 +229,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A, MatType newtype, M
     PetscCall(MatAssemblyBegin(*newmat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(*newmat, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
@@ -270,7 +271,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype, M
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(A, &B));
   } else if (reuse != MAT_REUSE_MATRIX) *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_SeqDense(Mat Y, PetscScalar alpha, Mat X, MatStructure str)
@@ -297,7 +298,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y, PetscScalar alpha, Mat X, MatStructure st
   PetscCall(MatDenseRestoreArrayRead(X, &xv));
   PetscCall(MatDenseRestoreArray(Y, &yv));
   PetscCall(PetscLogFlops(PetscMax(2.0 * N - 1, 0)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetInfo_SeqDense(Mat A, MatInfoType flag, MatInfo *info)
@@ -315,7 +316,7 @@ static PetscErrorCode MatGetInfo_SeqDense(Mat A, MatInfoType flag, MatInfo *info
   info->fill_ratio_given  = 0;
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatScale_SeqDense(Mat A, PetscScalar alpha)
@@ -336,7 +337,7 @@ PetscErrorCode MatScale_SeqDense(Mat A, PetscScalar alpha)
   }
   PetscCall(PetscLogFlops(A->rmap->n * A->cmap->n));
   PetscCall(MatDenseRestoreArray(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatShift_SeqDense(Mat A, PetscScalar alpha)
@@ -351,7 +352,7 @@ PetscErrorCode MatShift_SeqDense(Mat A, PetscScalar alpha)
   for (j = 0; j < k; j++) v[j + j * a->lda] += alpha;
   PetscCall(PetscLogFlops(k));
   PetscCall(MatDenseRestoreArray(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatIsHermitian_SeqDense(Mat A, PetscReal rtol, PetscBool *fl)
@@ -362,7 +363,7 @@ static PetscErrorCode MatIsHermitian_SeqDense(Mat A, PetscReal rtol, PetscBool *
 
   PetscFunctionBegin;
   *fl = PETSC_FALSE;
-  if (A->rmap->n != A->cmap->n) PetscFunctionReturn(0);
+  if (A->rmap->n != A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDenseGetArrayRead(A, &v));
   for (i = 0; i < m; i++) {
     for (j = i; j < m; j++) {
@@ -372,7 +373,7 @@ static PetscErrorCode MatIsHermitian_SeqDense(Mat A, PetscReal rtol, PetscBool *
   *fl = PETSC_TRUE;
 restore:
   PetscCall(MatDenseRestoreArrayRead(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatIsSymmetric_SeqDense(Mat A, PetscReal rtol, PetscBool *fl)
@@ -383,7 +384,7 @@ static PetscErrorCode MatIsSymmetric_SeqDense(Mat A, PetscReal rtol, PetscBool *
 
   PetscFunctionBegin;
   *fl = PETSC_FALSE;
-  if (A->rmap->n != A->cmap->n) PetscFunctionReturn(0);
+  if (A->rmap->n != A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDenseGetArrayRead(A, &v));
   for (i = 0; i < m; i++) {
     for (j = i; j < m; j++) {
@@ -393,7 +394,7 @@ static PetscErrorCode MatIsSymmetric_SeqDense(Mat A, PetscReal rtol, PetscBool *
   *fl = PETSC_TRUE;
 restore:
   PetscCall(MatDenseRestoreArrayRead(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi, Mat A, MatDuplicateOption cpvalues)
@@ -426,7 +427,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi, Mat A, MatDuplicateOption
     PetscCall(MatDenseRestoreArrayWrite(newi, &v));
     PetscCall(MatDenseRestoreArrayRead(A, &av));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_SeqDense(Mat A, MatDuplicateOption cpvalues, Mat *newmat)
@@ -436,7 +437,7 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A, MatDuplicateOption cpvalues, Mat *ne
   PetscCall(MatSetSizes(*newmat, A->rmap->n, A->cmap->n, A->rmap->n, A->cmap->n));
   PetscCall(MatSetType(*newmat, ((PetscObject)A)->type_name));
   PetscCall(MatDuplicateNoCreate_SeqDense(*newmat, A, cpvalues));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k, PetscBool T)
@@ -450,7 +451,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, Petsc
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "GETRS - Bad solve %d", (int)info);
   PetscCall(PetscLogFlops(nrhs * (2.0 * m * m - m)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatConjugate_SeqDense(Mat);
@@ -484,7 +485,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x,
     PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "SYTRS Bad solve %d", (int)info);
   }
   PetscCall(PetscLogFlops(nrhs * (2.0 * m * m - m)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k)
@@ -523,7 +524,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, Petsc
     for (PetscInt i = mat->rank; i < k; i++) x[j * ldx + i] = 0.;
   }
   PetscCall(PetscLogFlops(nrhs * (4.0 * m * mat->rank - PetscSqr(mat->rank))));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k)
@@ -557,7 +558,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar 
     if (PetscDefined(USE_COMPLEX)) PetscCall(MatConjugate_SeqDense(A));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "QR factored matrix cannot be used for transpose solve");
   PetscCall(PetscLogFlops(nrhs * (4.0 * m * mat->rank - PetscSqr(mat->rank))));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDense_SetUp(Mat A, Vec xx, Vec yy, PetscScalar **_y, PetscBLASInt *_m, PetscBLASInt *_k)
@@ -579,7 +580,7 @@ static PetscErrorCode MatSolve_SeqDense_SetUp(Mat A, Vec xx, Vec yy, PetscScalar
   *_y = y;
   *_k = k;
   *_m = m;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDense_TearDown(Mat A, Vec xx, Vec yy, PetscScalar **_y, PetscBLASInt *_m, PetscBLASInt *_k)
@@ -602,7 +603,7 @@ static PetscErrorCode MatSolve_SeqDense_TearDown(Mat A, Vec xx, Vec yy, PetscSca
   } else {
     PetscCall(VecRestoreArray(yy, &y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDense_LU(Mat A, Vec xx, Vec yy)
@@ -614,7 +615,7 @@ static PetscErrorCode MatSolve_SeqDense_LU(Mat A, Vec xx, Vec yy)
   PetscCall(MatSolve_SeqDense_SetUp(A, xx, yy, &y, &m, &k));
   PetscCall(MatSolve_SeqDense_Internal_LU(A, y, m, m, 1, k, PETSC_FALSE));
   PetscCall(MatSolve_SeqDense_TearDown(A, xx, yy, &y, &m, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SeqDense_LU(Mat A, Vec xx, Vec yy)
@@ -626,7 +627,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_LU(Mat A, Vec xx, Vec yy)
   PetscCall(MatSolve_SeqDense_SetUp(A, xx, yy, &y, &m, &k));
   PetscCall(MatSolve_SeqDense_Internal_LU(A, y, m, m, 1, k, PETSC_TRUE));
   PetscCall(MatSolve_SeqDense_TearDown(A, xx, yy, &y, &m, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
@@ -638,7 +639,7 @@ static PetscErrorCode MatSolve_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
   PetscCall(MatSolve_SeqDense_SetUp(A, xx, yy, &y, &m, &k));
   PetscCall(MatSolve_SeqDense_Internal_Cholesky(A, y, m, m, 1, k, PETSC_FALSE));
   PetscCall(MatSolve_SeqDense_TearDown(A, xx, yy, &y, &m, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
@@ -650,7 +651,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Cholesky(Mat A, Vec xx, Vec yy)
   PetscCall(MatSolve_SeqDense_SetUp(A, xx, yy, &y, &m, &k));
   PetscCall(MatSolve_SeqDense_Internal_Cholesky(A, y, m, m, 1, k, PETSC_TRUE));
   PetscCall(MatSolve_SeqDense_TearDown(A, xx, yy, &y, &m, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SeqDense_QR(Mat A, Vec xx, Vec yy)
@@ -662,7 +663,7 @@ static PetscErrorCode MatSolve_SeqDense_QR(Mat A, Vec xx, Vec yy)
   PetscCall(MatSolve_SeqDense_SetUp(A, xx, yy, &y, &m, &k));
   PetscCall(MatSolve_SeqDense_Internal_QR(A, y, PetscMax(m, k), m, 1, k));
   PetscCall(MatSolve_SeqDense_TearDown(A, xx, yy, &y, &m, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_SeqDense_QR(Mat A, Vec xx, Vec yy)
@@ -674,7 +675,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_QR(Mat A, Vec xx, Vec yy)
   PetscCall(MatSolve_SeqDense_SetUp(A, xx, yy, &y, &m, &k));
   PetscCall(MatSolveTranspose_SeqDense_Internal_QR(A, y, PetscMax(m, k), m, 1, k));
   PetscCall(MatSolve_SeqDense_TearDown(A, xx, yy, &y, &m, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScalar **_y, PetscBLASInt *_ldy, PetscBLASInt *_m, PetscBLASInt *_nrhs, PetscBLASInt *_k)
@@ -725,7 +726,7 @@ static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScala
   *_k    = k;
   *_m    = m;
   *_nrhs = nrhs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDense_TearDown(Mat A, Mat B, Mat X, PetscScalar **_y, PetscBLASInt *_ldy, PetscBLASInt *_m, PetscBLASInt *_nrhs, PetscBLASInt *_k)
@@ -751,7 +752,7 @@ static PetscErrorCode MatMatSolve_SeqDense_TearDown(Mat A, Mat B, Mat X, PetscSc
   } else {
     PetscCall(MatDenseRestoreArray(X, &y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDense_LU(Mat A, Mat B, Mat X)
@@ -763,7 +764,7 @@ static PetscErrorCode MatMatSolve_SeqDense_LU(Mat A, Mat B, Mat X)
   PetscCall(MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k));
   PetscCall(MatSolve_SeqDense_Internal_LU(A, y, ldy, m, nrhs, k, PETSC_FALSE));
   PetscCall(MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDense_LU(Mat A, Mat B, Mat X)
@@ -775,7 +776,7 @@ static PetscErrorCode MatMatSolveTranspose_SeqDense_LU(Mat A, Mat B, Mat X)
   PetscCall(MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k));
   PetscCall(MatSolve_SeqDense_Internal_LU(A, y, ldy, m, nrhs, k, PETSC_TRUE));
   PetscCall(MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDense_Cholesky(Mat A, Mat B, Mat X)
@@ -787,7 +788,7 @@ static PetscErrorCode MatMatSolve_SeqDense_Cholesky(Mat A, Mat B, Mat X)
   PetscCall(MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k));
   PetscCall(MatSolve_SeqDense_Internal_Cholesky(A, y, ldy, m, nrhs, k, PETSC_FALSE));
   PetscCall(MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDense_Cholesky(Mat A, Mat B, Mat X)
@@ -799,7 +800,7 @@ static PetscErrorCode MatMatSolveTranspose_SeqDense_Cholesky(Mat A, Mat B, Mat X
   PetscCall(MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k));
   PetscCall(MatSolve_SeqDense_Internal_Cholesky(A, y, ldy, m, nrhs, k, PETSC_TRUE));
   PetscCall(MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SeqDense_QR(Mat A, Mat B, Mat X)
@@ -811,7 +812,7 @@ static PetscErrorCode MatMatSolve_SeqDense_QR(Mat A, Mat B, Mat X)
   PetscCall(MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k));
   PetscCall(MatSolve_SeqDense_Internal_QR(A, y, ldy, m, nrhs, k));
   PetscCall(MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDense_QR(Mat A, Mat B, Mat X)
@@ -823,7 +824,7 @@ static PetscErrorCode MatMatSolveTranspose_SeqDense_QR(Mat A, Mat B, Mat X)
   PetscCall(MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k));
   PetscCall(MatSolveTranspose_SeqDense_Internal_QR(A, y, ldy, m, nrhs, k));
   PetscCall(MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------*/
@@ -838,7 +839,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A, IS row, IS col, const MatFactorInfo *
   PetscCall(PetscBLASIntCast(A->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->rmap->n, &m));
   if (!mat->pivots) { PetscCall(PetscMalloc1(A->rmap->n, &mat->pivots)); }
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&m, &n, mat->v, &mat->lda, mat->pivots, &info));
   PetscCall(PetscFPTrapPop());
@@ -856,7 +857,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A, IS row, IS col, const MatFactorInfo *
   PetscCall(PetscStrallocpy(MATSOLVERPETSC, &A->solvertype));
 
   PetscCall(PetscLogFlops((2.0 * A->cmap->n * A->cmap->n * A->cmap->n) / 3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info_dummy)
@@ -866,7 +867,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact, Mat A, const MatFact
   PetscFunctionBegin;
   PetscCall(MatDuplicateNoCreate_SeqDense(fact, A, MAT_COPY_VALUES));
   PetscUseTypeMethod(fact, lufactor, NULL, NULL, &info);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, IS col, const MatFactorInfo *info)
@@ -875,7 +876,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, IS col, con
   fact->preallocated         = PETSC_TRUE;
   fact->assembled            = PETSC_TRUE;
   fact->ops->lufactornumeric = MatLUFactorNumeric_SeqDense;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Cholesky as L*L^T or L*D*L^T and the symmetric/hermitian complex variants */
@@ -886,7 +887,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(A->cmap->n, &n));
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   if (A->spd == PETSC_BOOL3_TRUE) {
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKpotrf", LAPACKpotrf_("L", &n, mat->v, &mat->lda, &info));
@@ -936,7 +937,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
   PetscCall(PetscStrallocpy(MATSOLVERPETSC, &A->solvertype));
 
   PetscCall(PetscLogFlops((1.0 * A->cmap->n * A->cmap->n * A->cmap->n) / 3.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info_dummy)
@@ -948,7 +949,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact, Mat A, const M
 
   PetscCall(MatDuplicateNoCreate_SeqDense(fact, A, MAT_COPY_VALUES));
   PetscUseTypeMethod(fact, choleskyfactor, NULL, &info);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, const MatFactorInfo *info)
@@ -957,7 +958,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, const
   fact->assembled                  = PETSC_TRUE;
   fact->preallocated               = PETSC_TRUE;
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
@@ -973,7 +974,7 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
   if (!mat->tau) { PetscCall(PetscMalloc1(min, &mat->tau)); }
   if (!mat->pivots) { PetscCall(PetscMalloc1(n, &mat->pivots)); }
   if (!mat->qrrhs) PetscCall(MatCreateVecs(A, NULL, &(mat->qrrhs)));
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   if (!mat->fwork) {
     PetscScalar dummy;
 
@@ -1003,7 +1004,7 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
   PetscCall(PetscStrallocpy(MATSOLVERPETSC, &A->solvertype));
 
   PetscCall(PetscLogFlops(2.0 * min * min * (max - min / 3.0)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatQRFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info_dummy)
@@ -1015,7 +1016,7 @@ static PetscErrorCode MatQRFactorNumeric_SeqDense(Mat fact, Mat A, const MatFact
 
   PetscCall(MatDuplicateNoCreate_SeqDense(fact, A, MAT_COPY_VALUES));
   PetscUseMethod(fact, "MatQRFactor_C", (Mat, IS, const MatFactorInfo *), (fact, NULL, &info));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatQRFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, const MatFactorInfo *info)
@@ -1024,7 +1025,7 @@ PetscErrorCode MatQRFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, const MatFa
   fact->assembled    = PETSC_TRUE;
   fact->preallocated = PETSC_TRUE;
   PetscCall(PetscObjectComposeFunction((PetscObject)fact, "MatQRFactorNumeric_C", MatQRFactorNumeric_SeqDense));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* uses LAPACK */
@@ -1051,7 +1052,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A, MatFactorType fty
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&(*fact)->preferredordering[MAT_FACTOR_ILU]));
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&(*fact)->preferredordering[MAT_FACTOR_CHOLESKY]));
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&(*fact)->preferredordering[MAT_FACTOR_ICC]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------*/
@@ -1093,7 +1094,7 @@ static PetscErrorCode MatSOR_SeqDense(Mat A, Vec bb, PetscReal omega, MatSORType
   }
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -----------------------------------------------------------------*/
@@ -1119,7 +1120,7 @@ PetscErrorCode MatMultTranspose_SeqDense(Mat A, Vec xx, Vec yy)
   }
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArrayWrite(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqDense(Mat A, Vec xx, Vec yy)
@@ -1143,7 +1144,7 @@ PetscErrorCode MatMult_SeqDense(Mat A, Vec xx, Vec yy)
   }
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArrayWrite(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqDense(Mat A, Vec xx, Vec zz, Vec yy)
@@ -1157,14 +1158,14 @@ PetscErrorCode MatMultAdd_SeqDense(Mat A, Vec xx, Vec zz, Vec yy)
   PetscCall(PetscBLASIntCast(A->rmap->n, &m));
   PetscCall(PetscBLASIntCast(A->cmap->n, &n));
   PetscCall(VecCopy(zz, yy));
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(yy, &y));
   PetscCallBLAS("BLASgemv", BLASgemv_("N", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DOne, y, &_One));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
   PetscCall(PetscLogFlops(2.0 * A->rmap->n * A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A, Vec xx, Vec zz, Vec yy)
@@ -1179,14 +1180,14 @@ PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A, Vec xx, Vec zz, Vec yy)
   PetscCall(PetscBLASIntCast(A->rmap->n, &m));
   PetscCall(PetscBLASIntCast(A->cmap->n, &n));
   PetscCall(VecCopy(zz, yy));
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(yy, &y));
   PetscCallBLAS("BLASgemv", BLASgemv_("T", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DOne, y, &_One));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
   PetscCall(PetscLogFlops(2.0 * A->rmap->n * A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -----------------------------------------------------------------*/
@@ -1213,7 +1214,7 @@ static PetscErrorCode MatGetRow_SeqDense(Mat A, PetscInt row, PetscInt *ncols, P
     }
     PetscCall(MatDenseRestoreArrayRead(A, &v));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatRestoreRow_SeqDense(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **vals)
@@ -1222,7 +1223,7 @@ static PetscErrorCode MatRestoreRow_SeqDense(Mat A, PetscInt row, PetscInt *ncol
   if (ncols) *ncols = 0;
   if (cols) PetscCall(PetscFree(*cols));
   if (vals) PetscCall(PetscFree(*vals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ----------------------------------------------------------------*/
 static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt indexm[], PetscInt n, const PetscInt indexn[], const PetscScalar v[], InsertMode addv)
@@ -1314,7 +1315,7 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = (oldf == PETSC_OFFLOAD_UNALLOCATED ? PETSC_OFFLOAD_UNALLOCATED : PETSC_OFFLOAD_CPU);
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetValues_SeqDense(Mat A, PetscInt m, const PetscInt indexm[], PetscInt n, const PetscInt indexn[], PetscScalar v[])
@@ -1342,7 +1343,7 @@ static PetscErrorCode MatGetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
     }
   }
   PetscCall(MatDenseRestoreArrayRead(A, &vv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -----------------------------------------------------------------*/
@@ -1392,7 +1393,7 @@ PetscErrorCode MatView_Dense_Binary(Mat mat, PetscViewer viewer)
   PetscCall(MatDenseRestoreArrayRead(mat, &v));
   PetscCall(PetscViewerBinaryWriteAll(viewer, vwork, m * N, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_SCALAR));
   PetscCall(PetscFree(vwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLoad_Dense_Binary(Mat mat, PetscViewer viewer)
@@ -1461,7 +1462,7 @@ PetscErrorCode MatLoad_Dense_Binary(Mat mat, PetscViewer viewer)
   PetscCall(MatDenseRestoreArray(mat, &v));
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLoad_SeqDense(Mat newMat, PetscViewer viewer)
@@ -1486,7 +1487,7 @@ PetscErrorCode MatLoad_SeqDense(Mat newMat, PetscViewer viewer)
   } else {
     SETERRQ(PetscObjectComm((PetscObject)newMat), PETSC_ERR_SUP, "Viewer type %s not yet supported for reading %s matrices", ((PetscObject)viewer)->type_name, ((PetscObject)newMat)->type_name);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_SeqDense_ASCII(Mat A, PetscViewer viewer)
@@ -1504,7 +1505,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A, PetscViewer viewer)
   PetscCall(MatDenseGetArrayRead(A, (const PetscScalar **)&av));
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    PetscFunctionReturn(0); /* do nothing for now */
+    PetscFunctionReturn(PETSC_SUCCESS); /* do nothing for now */
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     for (i = 0; i < A->rmap->n; i++) {
@@ -1567,7 +1568,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A, PetscViewer viewer)
   }
   PetscCall(MatDenseRestoreArrayRead(A, (const PetscScalar **)&av));
   PetscCall(PetscViewerFlush(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -1631,7 +1632,7 @@ static PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw, void *Aa)
     PetscDrawCollectiveEnd(draw);
   }
   PetscCall(MatDenseRestoreArrayRead(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_SeqDense_Draw(Mat A, PetscViewer viewer)
@@ -1643,7 +1644,7 @@ static PetscErrorCode MatView_SeqDense_Draw(Mat A, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
   PetscCall(PetscDrawIsNull(draw, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
   xr = A->cmap->n;
   yr = A->rmap->n;
@@ -1658,7 +1659,7 @@ static PetscErrorCode MatView_SeqDense_Draw(Mat A, PetscViewer viewer)
   PetscCall(PetscDrawZoom(draw, MatView_SeqDense_Draw_Zoom, A));
   PetscCall(PetscObjectCompose((PetscObject)A, "Zoomviewer", NULL));
   PetscCall(PetscDrawSave(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_SeqDense(Mat A, PetscViewer viewer)
@@ -1672,7 +1673,7 @@ PetscErrorCode MatView_SeqDense(Mat A, PetscViewer viewer)
   if (iascii) PetscCall(MatView_SeqDense_ASCII(A, viewer));
   else if (isbinary) PetscCall(MatView_Dense_Binary(A, viewer));
   else if (isdraw) PetscCall(MatView_SeqDense_Draw(A, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDensePlaceArray_SeqDense(Mat A, const PetscScalar *array)
@@ -1690,7 +1691,7 @@ static PetscErrorCode MatDensePlaceArray_SeqDense(Mat A, const PetscScalar *arra
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseResetArray_SeqDense(Mat A)
@@ -1706,7 +1707,7 @@ static PetscErrorCode MatDenseResetArray_SeqDense(Mat A)
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseReplaceArray_SeqDense(Mat A, const PetscScalar *array)
@@ -1722,7 +1723,7 @@ static PetscErrorCode MatDenseReplaceArray_SeqDense(Mat A, const PetscScalar *ar
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqDense(Mat mat)
@@ -1731,7 +1732,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat, "Rows %" PetscInt_FMT " Cols %" PetscInt_FMT, mat->rmap->n, mat->cmap->n);
+  PetscCall(PetscLogObjectState((PetscObject)mat, "Rows %" PetscInt_FMT " Cols %" PetscInt_FMT, mat->rmap->n, mat->cmap->n));
 #endif
   PetscCall(VecDestroy(&(l->qrrhs)));
   PetscCall(PetscFree(l->tau));
@@ -1796,7 +1797,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVecWrite_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetSubMatrix_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreSubMatrix_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatTranspose_SeqDense(Mat A, MatReuse reuse, Mat *matout)
@@ -1868,7 +1869,7 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A, MatReuse reuse, Mat *matout)
     PetscCall(MatAssemblyEnd(tmat, MAT_FINAL_ASSEMBLY));
     *matout = tmat;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatEqual_SeqDense(Mat A1, Mat A2, PetscBool *flg)
@@ -1881,24 +1882,24 @@ static PetscErrorCode MatEqual_SeqDense(Mat A1, Mat A2, PetscBool *flg)
   PetscFunctionBegin;
   if (A1->rmap->n != A2->rmap->n) {
     *flg = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (A1->cmap->n != A2->cmap->n) {
     *flg = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatDenseGetArrayRead(A1, &v1));
   PetscCall(MatDenseGetArrayRead(A2, &v2));
   for (i = 0; i < A1->cmap->n; i++) {
     PetscCall(PetscArraycmp(v1, v2, A1->rmap->n, flg));
-    if (*flg == PETSC_FALSE) PetscFunctionReturn(0);
+    if (*flg == PETSC_FALSE) PetscFunctionReturn(PETSC_SUCCESS);
     v1 += mat1->lda;
     v2 += mat2->lda;
   }
   PetscCall(MatDenseRestoreArrayRead(A1, &v1));
   PetscCall(MatDenseRestoreArrayRead(A2, &v2));
   *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonal_SeqDense(Mat A, Vec v)
@@ -1917,7 +1918,7 @@ static PetscErrorCode MatGetDiagonal_SeqDense(Mat A, Vec v)
   for (i = 0; i < len; i++) x[i] = vv[i * mat->lda + i];
   PetscCall(MatDenseRestoreArrayRead(A, &vv));
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDiagonalScale_SeqDense(Mat A, Vec ll, Vec rr)
@@ -1957,7 +1958,7 @@ static PetscErrorCode MatDiagonalScale_SeqDense(Mat A, Vec ll, Vec rr)
     PetscCall(PetscLogFlops(1.0 * n * m));
   }
   PetscCall(MatDenseRestoreArray(A, &vv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatNorm_SeqDense(Mat A, NormType type, PetscReal *nrm)
@@ -2020,7 +2021,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A, NormType type, PetscReal *nrm)
     PetscCall(PetscLogFlops(1.0 * A->cmap->n * A->rmap->n));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No two norm");
   PetscCall(MatDenseRestoreArrayRead(A, (const PetscScalar **)&vv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetOption_SeqDense(Mat A, MatOption op, PetscBool flg)
@@ -2055,7 +2056,7 @@ static PetscErrorCode MatSetOption_SeqDense(Mat A, MatOption op, PetscBool flg)
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %s", MatOptions[op]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatZeroEntries_SeqDense(Mat A)
@@ -2072,7 +2073,7 @@ PetscErrorCode MatZeroEntries_SeqDense(Mat A)
     PetscCall(PetscArrayzero(v, PetscInt64Mult(m, n)));
   }
   PetscCall(MatDenseRestoreArrayWrite(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroRows_SeqDense(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -2089,7 +2090,7 @@ static PetscErrorCode MatZeroRows_SeqDense(Mat A, PetscInt N, const PetscInt row
       PetscCheck(rows[i] < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " requested to be zeroed greater than or equal number of rows %" PetscInt_FMT, rows[i], A->rmap->n);
     }
   }
-  if (!N) PetscFunctionReturn(0);
+  if (!N) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* fix right hand side if needed */
   if (x && b) {
@@ -2116,7 +2117,7 @@ static PetscErrorCode MatZeroRows_SeqDense(Mat A, PetscInt N, const PetscInt row
     }
   }
   PetscCall(MatDenseRestoreArray(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseGetLDA_SeqDense(Mat A, PetscInt *lda)
@@ -2125,7 +2126,7 @@ static PetscErrorCode MatDenseGetLDA_SeqDense(Mat A, PetscInt *lda)
 
   PetscFunctionBegin;
   *lda = mat->lda;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseGetArray_SeqDense(Mat A, PetscScalar **array)
@@ -2135,14 +2136,14 @@ PetscErrorCode MatDenseGetArray_SeqDense(Mat A, PetscScalar **array)
   PetscFunctionBegin;
   PetscCheck(!mat->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   *array = mat->v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   if (array) *array = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2167,7 +2168,7 @@ PetscErrorCode MatDenseGetLDA(Mat A, PetscInt *lda)
   PetscValidIntPointer(lda, 2);
   MatCheckPreallocated(A, 1);
   PetscUseMethod(A, "MatDenseGetLDA_C", (Mat, PetscInt *), (A, lda));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2188,7 +2189,7 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscTryMethod(A, "MatDenseSetLDA_C", (Mat, PetscInt), (A, lda));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2204,6 +2205,9 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
 
    Level: intermediate
 
+   Fortran Note:
+   `MatDenseGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseGetArrayF90()`
+
 .seealso: `MATDENSE`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
@@ -2212,7 +2216,7 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(array, 2);
   PetscUseMethod(A, "MatDenseGetArray_C", (Mat, PetscScalar **), (A, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2226,6 +2230,9 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
 
    Level: intermediate
 
+   Fortran Note:
+   `MatDenseRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseRestoreArrayF90()`
+
 .seealso: `MATDENSE`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
@@ -2238,13 +2245,13 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
   MatDenseGetArrayRead - gives read-only access to the array where the data for a `MATDENSE`  matrix is stored
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a dense matrix
@@ -2262,13 +2269,13 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(array, 2);
   PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, const PetscScalar **), (A, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
    MatDenseRestoreArrayRead - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayRead()`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  mat - a dense matrix
@@ -2284,13 +2291,13 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(array, 2);
   PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, const PetscScalar **), (A, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
    MatDenseGetArrayWrite - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a dense matrix
@@ -2308,13 +2315,13 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(array, 2);
   PetscUseMethod(A, "MatDenseGetArrayWrite_C", (Mat, PetscScalar **), (A, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
    MatDenseRestoreArrayWrite - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayWrite()`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  mat - a dense matrix
@@ -2334,7 +2341,259 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   MatDenseGetArrayAndMemType - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
+
+   Logically Collective
+
+   Input Parameter:
+.  mat - a dense matrix
+
+   Output Parameters:
++  array - pointer to the data
+-  mtype - memory type of the returned pointer
+
+   Notes:
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
+   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseRestoreArrayAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArrayRead()`,
+   `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
+@*/
+PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    /* Dispatch here so that the code can be reused for all subclasses of MATDENSE */
+    PetscCall(MatDenseGetArrayAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **, PetscMemType *);
+
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatDenseGetArrayAndMemType_C", &fptr));
+    if (fptr) {
+      PetscCall((*fptr)(A, array, mtype));
+    } else {
+      PetscUseMethod(A, "MatDenseGetArray_C", (Mat, PetscScalar **), (A, array));
+      if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   MatDenseRestoreArrayAndMemType - returns access to the array that is obtained by `MatDenseGetArrayAndMemType()`
+
+   Logically Collective
+
+   Input Parameters:
++  mat - a dense matrix
+-  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseGetArrayAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+@*/
+PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseRestoreArrayAndMemType(((Mat_MPIDense *)A->data)->A, array));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **);
+
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatDenseRestoreArrayAndMemType_C", &fptr));
+    if (fptr) {
+      PetscCall((*fptr)(A, array));
+    } else {
+      PetscUseMethod(A, "MatDenseRestoreArray_C", (Mat, PetscScalar **), (A, array));
+    }
+    *array = NULL;
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   MatDenseGetArrayReadAndMemType - gives read-only access to the array where the data for a `MATDENSE` matrix is stored
+
+   Logically Collective
+
+   Input Parameter:
+.  mat - a dense matrix
+
+   Output Parameters:
++  array - pointer to the data
+-  mtype - memory type of the returned pointer
+
+   Notes:
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
+   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseRestoreArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`,
+   `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
+@*/
+PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, PetscMemType *mtype)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) { /* Dispatch here so that the code can be reused for all subclasses of MATDENSE */
+    PetscCall(MatDenseGetArrayReadAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
+  } else {
+    PetscErrorCode (*fptr)(Mat, const PetscScalar **, PetscMemType *);
+
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatDenseGetArrayReadAndMemType_C", &fptr));
+    if (fptr) {
+      PetscCall((*fptr)(A, array, mtype));
+    } else {
+      PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, const PetscScalar **), (A, array));
+      if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   MatDenseRestoreArrayReadAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
+
+   Logically Collective
+
+   Input Parameters:
++  mat - a dense matrix
+-  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+@*/
+PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **array)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseRestoreArrayReadAndMemType(((Mat_MPIDense *)A->data)->A, array));
+  } else {
+    PetscErrorCode (*fptr)(Mat, const PetscScalar **);
+
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatDenseRestoreArrayReadAndMemType_C", &fptr));
+    if (fptr) {
+      PetscCall((*fptr)(A, array));
+    } else {
+      PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, const PetscScalar **), (A, array));
+    }
+    *array = NULL;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   MatDenseGetArrayWriteAndMemType - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
+
+   Logically Collective
+
+   Input Parameter:
+.  mat - a dense matrix
+
+   Output Parameters:
++  array - pointer to the data
+-  mtype - memory type of the returned pointer
+
+   Notes:
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
+   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseRestoreArrayWriteAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayRead()`,
+  `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`,  `MatSeqAIJGetCSRAndMemType()`
+@*/
+PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseGetArrayWriteAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **, PetscMemType *);
+
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatDenseGetArrayWriteAndMemType_C", &fptr));
+    if (fptr) {
+      PetscCall((*fptr)(A, array, mtype));
+    } else {
+      PetscUseMethod(A, "MatDenseGetArrayWrite_C", (Mat, PetscScalar **), (A, array));
+      if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   MatDenseRestoreArrayWriteAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
+
+   Logically Collective
+
+   Input Parameters:
++  mat - a dense matrix
+-  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+@*/
+PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar **array)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseRestoreArrayWriteAndMemType(((Mat_MPIDense *)A->data)->A, array));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **);
+
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatDenseRestoreArrayWriteAndMemType_C", &fptr));
+    if (fptr) {
+      PetscCall((*fptr)(A, array));
+    } else {
+      PetscUseMethod(A, "MatDenseRestoreArrayWrite_C", (Mat, PetscScalar **), (A, array));
+    }
+    *array = NULL;
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCreateSubMatrix_SeqDense(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
@@ -2386,7 +2645,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqDense(Mat A, IS isrow, IS iscol, Mat
   PetscCall(ISRestoreIndices(isrow, &irow));
   PetscCall(ISRestoreIndices(iscol, &icol));
   *B = newmat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCreateSubMatrices_SeqDense(Mat A, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *B[])
@@ -2397,19 +2656,19 @@ static PetscErrorCode MatCreateSubMatrices_SeqDense(Mat A, PetscInt n, const IS 
   if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n, B));
 
   for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqDense(A, irow[i], icol[i], scall, &(*B)[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyBegin_SeqDense(Mat mat, MatAssemblyType mode)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyEnd_SeqDense(Mat mat, MatAssemblyType mode)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCopy_SeqDense(Mat A, Mat B, MatStructure str)
@@ -2423,7 +2682,7 @@ PetscErrorCode MatCopy_SeqDense(Mat A, Mat B, MatStructure str)
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
   if (A->ops->copy != B->ops->copy) {
     PetscCall(MatCopy_Basic(A, B, str));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(m == B->rmap->n && n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "size(B) != size(A)");
   PetscCall(MatDenseGetArrayRead(A, &va));
@@ -2437,7 +2696,7 @@ PetscErrorCode MatCopy_SeqDense(Mat A, Mat B, MatStructure str)
   PetscCall(MatDenseRestoreArrayRead(A, &va));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetUp_SeqDense(Mat A)
@@ -2446,7 +2705,7 @@ PetscErrorCode MatSetUp_SeqDense(Mat A)
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   if (!A->preallocated) PetscCall(MatSeqDenseSetPreallocation(A, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatConjugate_SeqDense(Mat A)
@@ -2464,7 +2723,7 @@ static PetscErrorCode MatConjugate_SeqDense(Mat A)
   PetscCall(MatDenseRestoreArray(A, &aa));
   if (mat->tau)
     for (i = 0; i < min; i++) mat->tau[i] = PetscConj(mat->tau[i]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatRealPart_SeqDense(Mat A)
@@ -2479,7 +2738,7 @@ static PetscErrorCode MatRealPart_SeqDense(Mat A)
     for (i = 0; i < A->rmap->n; i++) aa[i + j * mat->lda] = PetscRealPart(aa[i + j * mat->lda]);
   }
   PetscCall(MatDenseRestoreArray(A, &aa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatImaginaryPart_SeqDense(Mat A)
@@ -2494,7 +2753,7 @@ static PetscErrorCode MatImaginaryPart_SeqDense(Mat A)
     for (i = 0; i < A->rmap->n; i++) aa[i + j * mat->lda] = PetscImaginaryPart(aa[i + j * mat->lda]);
   }
   PetscCall(MatDenseRestoreArray(A, &aa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------*/
@@ -2518,7 +2777,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill
     PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
   }
   PetscCall(MatSetUp(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
@@ -2533,7 +2792,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(PetscBLASIntCast(C->rmap->n, &m));
   PetscCall(PetscBLASIntCast(C->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->cmap->n, &k));
-  if (!m || !n || !k) PetscFunctionReturn(0);
+  if (!m || !n || !k) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDenseGetArrayRead(A, &av));
   PetscCall(MatDenseGetArrayRead(B, &bv));
   PetscCall(MatDenseGetArrayWrite(C, &cv));
@@ -2542,7 +2801,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(MatDenseRestoreArrayRead(A, &av));
   PetscCall(MatDenseRestoreArrayRead(B, &bv));
   PetscCall(MatDenseRestoreArrayWrite(C, &cv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
@@ -2565,7 +2824,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, Petsc
     PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
   }
   PetscCall(MatSetUp(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
@@ -2582,7 +2841,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(PetscBLASIntCast(C->rmap->n, &m));
   PetscCall(PetscBLASIntCast(C->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->cmap->n, &k));
-  if (!m || !n || !k) PetscFunctionReturn(0);
+  if (!m || !n || !k) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDenseGetArrayRead(A, &av));
   PetscCall(MatDenseGetArrayRead(B, &bv));
   PetscCall(MatDenseGetArrayWrite(C, &cv));
@@ -2591,7 +2850,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(MatDenseRestoreArrayRead(B, &bv));
   PetscCall(MatDenseRestoreArrayWrite(C, &cv));
   PetscCall(PetscLogFlops(1.0 * m * n * k + 1.0 * m * n * (k - 1)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
@@ -2614,7 +2873,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, Petsc
     PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
   }
   PetscCall(MatSetUp(C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
@@ -2631,7 +2890,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(PetscBLASIntCast(C->rmap->n, &m));
   PetscCall(PetscBLASIntCast(C->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->rmap->n, &k));
-  if (!m || !n || !k) PetscFunctionReturn(0);
+  if (!m || !n || !k) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDenseGetArrayRead(A, &av));
   PetscCall(MatDenseGetArrayRead(B, &bv));
   PetscCall(MatDenseGetArrayWrite(C, &cv));
@@ -2640,7 +2899,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(MatDenseRestoreArrayRead(B, &bv));
   PetscCall(MatDenseRestoreArrayWrite(C, &cv));
   PetscCall(PetscLogFlops(1.0 * m * n * k + 1.0 * m * n * (k - 1)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------- */
@@ -2649,7 +2908,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqDense_AB(Mat C)
   PetscFunctionBegin;
   C->ops->matmultsymbolic = MatMatMultSymbolic_SeqDense_SeqDense;
   C->ops->productsymbolic = MatProductSymbolic_AB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_SeqDense_AtB(Mat C)
@@ -2657,7 +2916,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqDense_AtB(Mat C)
   PetscFunctionBegin;
   C->ops->transposematmultsymbolic = MatTransposeMatMultSymbolic_SeqDense_SeqDense;
   C->ops->productsymbolic          = MatProductSymbolic_AtB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_SeqDense_ABt(Mat C)
@@ -2665,7 +2924,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqDense_ABt(Mat C)
   PetscFunctionBegin;
   C->ops->mattransposemultsymbolic = MatMatTransposeMultSymbolic_SeqDense_SeqDense;
   C->ops->productsymbolic          = MatProductSymbolic_ABt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense(Mat C)
@@ -2686,7 +2945,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense(Mat C)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ----------------------------------------------- */
 
@@ -2715,7 +2974,7 @@ static PetscErrorCode MatGetRowMax_SeqDense(Mat A, Vec v, PetscInt idx[])
   }
   PetscCall(MatDenseRestoreArrayRead(A, &aa));
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetRowMaxAbs_SeqDense(Mat A, Vec v, PetscInt idx[])
@@ -2744,7 +3003,7 @@ static PetscErrorCode MatGetRowMaxAbs_SeqDense(Mat A, Vec v, PetscInt idx[])
   }
   PetscCall(MatDenseRestoreArrayRead(A, &aa));
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetRowMin_SeqDense(Mat A, Vec v, PetscInt idx[])
@@ -2772,7 +3031,7 @@ static PetscErrorCode MatGetRowMin_SeqDense(Mat A, Vec v, PetscInt idx[])
   }
   PetscCall(VecRestoreArray(v, &x));
   PetscCall(MatDenseRestoreArrayRead(A, &aa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetColumnVector_SeqDense(Mat A, Vec v, PetscInt col)
@@ -2788,7 +3047,7 @@ PetscErrorCode MatGetColumnVector_SeqDense(Mat A, Vec v, PetscInt col)
   PetscCall(PetscArraycpy(x, aa + col * a->lda, A->rmap->n));
   PetscCall(VecRestoreArray(v, &x));
   PetscCall(MatDenseRestoreArrayRead(A, &aa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A, PetscInt type, PetscReal *reductions)
@@ -2832,7 +3091,7 @@ PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A, PetscInt type
   } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
     for (i = 0; i < n; i++) reductions[i] /= m;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetRandom_SeqDense(Mat x, PetscRandom rctx)
@@ -2848,14 +3107,14 @@ PetscErrorCode MatSetRandom_SeqDense(Mat x, PetscRandom rctx)
     for (i = 0; i < m; i++) PetscCall(PetscRandomGetValue(rctx, a + j * lda + i));
   }
   PetscCall(MatDenseRestoreArrayWrite(x, &a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMissingDiagonal_SeqDense(Mat A, PetscBool *missing, PetscInt *d)
 {
   PetscFunctionBegin;
   *missing = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* vals is not const */
@@ -2869,14 +3128,14 @@ static PetscErrorCode MatDenseGetColumn_SeqDense(Mat A, PetscInt col, PetscScala
   PetscCall(MatDenseGetArray(A, &v));
   *vals = v + col * a->lda;
   PetscCall(MatDenseRestoreArray(A, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDenseRestoreColumn_SeqDense(Mat A, PetscScalar **vals)
 {
   PetscFunctionBegin;
   if (vals) *vals = NULL; /* user cannot accidentally use the array later */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------*/
@@ -3066,7 +3325,7 @@ PetscErrorCode MatCreateSeqDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscSca
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQDENSE));
   PetscCall(MatSeqDenseSetPreallocation(*A, data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3092,7 +3351,7 @@ PetscErrorCode MatSeqDenseSetPreallocation(Mat B, PetscScalar data[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscTryMethod(B, "MatSeqDenseSetPreallocation_C", (Mat, PetscScalar[]), (B, data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqDenseSetPreallocation_SeqDense(Mat B, PetscScalar *data)
@@ -3119,7 +3378,7 @@ PetscErrorCode MatSeqDenseSetPreallocation_SeqDense(Mat B, PetscScalar *data)
     b->user_alloc = PETSC_TRUE;
   }
   B->assembled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_ELEMENTAL)
@@ -3158,7 +3417,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype
   } else {
     *newmat = mat_elemental;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -3172,14 +3431,14 @@ PetscErrorCode MatDenseSetLDA_SeqDense(Mat B, PetscInt lda)
   PetscCheck(b->user_alloc || !data || b->lda == lda, PETSC_COMM_SELF, PETSC_ERR_ORDER, "LDA cannot be changed after allocation of internal storage");
   PetscCheck(lda >= B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "LDA %" PetscInt_FMT " must be at least matrix dimension %" PetscInt_FMT, lda, B->rmap->n);
   b->lda = lda;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm comm, Mat inmat, PetscInt n, MatReuse scall, Mat *outmat)
 {
   PetscFunctionBegin;
   PetscCall(MatCreateMPIMatConcatenateSeqMat_MPIDense(comm, inmat, n, scall, outmat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseGetColumnVec_SeqDense(Mat A, PetscInt col, Vec *v)
@@ -3194,7 +3453,7 @@ PetscErrorCode MatDenseGetColumnVec_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscCall(MatDenseGetArray(A, (PetscScalar **)&a->ptrinuse));
   PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
   *v = a->cvec;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseRestoreColumnVec_SeqDense(Mat A, PetscInt col, Vec *v)
@@ -3208,7 +3467,7 @@ PetscErrorCode MatDenseRestoreColumnVec_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscCall(MatDenseRestoreArray(A, (PetscScalar **)&a->ptrinuse));
   PetscCall(VecResetArray(a->cvec));
   if (v) *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseGetColumnVecRead_SeqDense(Mat A, PetscInt col, Vec *v)
@@ -3224,7 +3483,7 @@ PetscErrorCode MatDenseGetColumnVecRead_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
   PetscCall(VecLockReadPush(a->cvec));
   *v = a->cvec;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseRestoreColumnVecRead_SeqDense(Mat A, PetscInt col, Vec *v)
@@ -3239,7 +3498,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead_SeqDense(Mat A, PetscInt col, Vec *v
   PetscCall(VecLockReadPop(a->cvec));
   PetscCall(VecResetArray(a->cvec));
   if (v) *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *v)
@@ -3254,7 +3513,7 @@ PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscCall(MatDenseGetArrayWrite(A, (PetscScalar **)&a->ptrinuse));
   PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
   *v = a->cvec;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *v)
@@ -3268,7 +3527,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *
   PetscCall(MatDenseRestoreArrayWrite(A, (PetscScalar **)&a->ptrinuse));
   PetscCall(VecResetArray(a->cvec));
   if (v) *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A, PetscInt rbegin, PetscInt rend, PetscInt cbegin, PetscInt cend, Mat *v)
@@ -3290,7 +3549,7 @@ PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A, PetscInt rbegin, PetscInt re
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A, Mat *v)
@@ -3307,7 +3566,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A, Mat *v)
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -3383,7 +3642,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseGetSubMatrix_C", MatDenseGetSubMatrix_SeqDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseRestoreSubMatrix_C", MatDenseRestoreSubMatrix_SeqDense));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQDENSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3412,7 +3671,7 @@ PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar **vals)
   PetscValidLogicalCollectiveInt(A, col, 2);
   PetscValidPointer(vals, 3);
   PetscUseMethod(A, "MatDenseGetColumn_C", (Mat, PetscInt, PetscScalar **), (A, col, vals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3434,7 +3693,7 @@ PetscErrorCode MatDenseRestoreColumn(Mat A, PetscScalar **vals)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(vals, 2);
   PetscUseMethod(A, "MatDenseRestoreColumn_C", (Mat, PetscScalar **), (A, vals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3468,7 +3727,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A, PetscInt col, Vec *v)
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseGetColumnVec_C", (Mat, PetscInt, Vec *), (A, col, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3494,7 +3753,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVec_C", (Mat, PetscInt, Vec *), (A, col, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3530,7 +3789,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A, PetscInt col, Vec *v)
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseGetColumnVecRead_C", (Mat, PetscInt, Vec *), (A, col, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3556,7 +3815,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A, PetscInt col, Vec *v)
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVecRead_C", (Mat, PetscInt, Vec *), (A, col, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3590,7 +3849,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A, PetscInt col, Vec *v)
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseGetColumnVecWrite_C", (Mat, PetscInt, Vec *), (A, col, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3616,7 +3875,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
   PetscCheck(A->preallocated, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Matrix not preallocated");
   PetscCheck(col >= 0 && col < A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")", col, A->cmap->N);
   PetscUseMethod(A, "MatDenseRestoreColumnVecWrite_C", (Mat, PetscInt, Vec *), (A, col, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3663,7 +3922,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A, PetscInt rbegin, PetscInt rend, Petsc
   PetscCheck(cbegin >= 0 && cbegin <= A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid cbegin %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT "]", cbegin, A->cmap->N);
   PetscCheck(cend >= cbegin && cend <= A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Invalid cend %" PetscInt_FMT ", should be in [%" PetscInt_FMT ",%" PetscInt_FMT "]", cend, cbegin, A->cmap->N);
   PetscUseMethod(A, "MatDenseGetSubMatrix_C", (Mat, PetscInt, PetscInt, PetscInt, PetscInt, Mat *), (A, rbegin, rend, cbegin, cend, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3686,7 +3945,7 @@ PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
   PetscValidType(A, 1);
   PetscValidPointer(v, 2);
   PetscUseMethod(A, "MatDenseRestoreSubMatrix_C", (Mat, Mat *), (A, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscblaslapack.h>
@@ -3744,5 +4003,5 @@ PetscErrorCode MatSeqDenseInvert(Mat A)
     PetscCall(PetscFree3(v_work, v_pivots, IJ));
   }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

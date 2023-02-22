@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   PetscInt      time; /* amount of loops */
   struct in     put;
   PetscScalar   rh;                 /* relative humidity */
-  PetscScalar   x;                  /* memory varialbe for relative humidity calculation */
+  PetscScalar   x;                  /* memory variable for relative humidity calculation */
   PetscScalar   deep_grnd_temp;     /* temperature of ground under top soil surface layer */
   PetscScalar   emma;               /* absorption-emission constant for air */
   PetscScalar   pressure1 = 101300; /* surface pressure */
@@ -349,7 +349,7 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 {
   PetscFunctionBeginUser;
   *flux = SIG * ((EMMSFC * emma * PetscPowScalarInt(airtemp, 4)) + (EMMSFC * fract * (1 - emma) * PetscPowScalarInt(cloudTemp, 4)) - (EMMSFC * PetscPowScalarInt(sfctemp, 4))); /* calculates flux using Stefan-Boltzmann relation */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar *flux) /* this function is not currently called upon */
@@ -358,7 +358,7 @@ PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 
   PetscFunctionBeginUser;
   *flux = SIG * (-emm * (PetscPowScalarInt(airtemp, 4))); /* calculates flux usinge Stefan-Boltzmann relation */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar *sheat)
 {
@@ -369,7 +369,7 @@ PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScala
   PetscFunctionBeginUser;
   wndmix = 0.0025 + 0.0042 * wind;                      /* regression equation valid for neutral and stable BL */
   *sheat = density * Cp * wndmix * (airtemp - sfctemp); /* calculates sensible heat flux */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar *latentheat)
@@ -394,7 +394,7 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
   q      = calc_q(mr);                      /* calculates specific humidty */
 
   *latentheat = density * wndmix * beta * lhcnst * (q - qs); /* calculates latent heat flux */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp)
@@ -413,14 +413,14 @@ PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, Pe
 
   pavg     = ((0.7 * pressure1) + pressure2) / 2;               /* calculates simple average press */
   *pottemp = temp * (PetscPowScalar((pressure1 / pavg), kdry)); /* calculates potential temperature */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
 {
   PetscScalar e;        /* vapor pressure */
   PetscScalar mixratio; /* mixing ratio */
 
-  dtemp    = dtemp - 273;                                                    /* converts from Kelvin to Celsuis */
+  dtemp    = dtemp - 273;                                                    /* converts from Kelvin to Celsius */
   e        = 6.11 * (PetscPowScalar(10, ((7.5 * dtemp) / (237.7 + dtemp)))); /* converts from dew point temp to vapor pressure */
   e        = e * 100;                                                        /* converts from hPa to Pa */
   mixratio = (0.622 * e) / (pressure1 - e);                                  /* computes mixing ratio */
@@ -445,7 +445,7 @@ PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, Petsc
   PetscFunctionBeginUser;
   k      = ((0.135 * (1 - n) * unit_soil_weight) + 64.7) / (unit_soil_weight - (0.947 * (1 - n) * unit_soil_weight)); /* dry soil conductivity */
   *Gflux = (k * (deep_grnd_temp - sfctemp) / dz);                                                                     /* calculates flux from deep ground layer */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 extern PetscScalar emission(PetscScalar pwat)
 {
@@ -539,7 +539,7 @@ PetscErrorCode readinput(struct in *put)
   for (i = 0; i < 63; i++) PetscCheck(fscanf(ifp, "%c", &x) == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read file");
   PetscCheck(fscanf(ifp, "%lf", &tmp) == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read file");
   put->init = tmp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -586,7 +586,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec Xglobal, void *ctx)
 
   /* Restore vectors */
   PetscCall(DMDAVecRestoreArray(da, Xglobal, &X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -721,7 +721,7 @@ PetscErrorCode RhsFunc(TS ts, PetscReal t, Vec Xglobal, Vec F, void *ctx)
   PetscCall(DMDAVecRestoreArrayRead(da, localT, &X));
   PetscCall(DMDAVecRestoreArray(da, F, &Frhs));
   PetscCall(DMRestoreLocalVector(da, &localT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx)
@@ -741,7 +741,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx)
   }
 
   if (user->drawcontours) PetscCall(VecView(T, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -8,7 +8,7 @@ typedef struct {
   PetscReal mu_r;
   PetscReal mu_e;
 
-  PetscReal lamda; /*  starting point delta for finding starting simplex */
+  PetscReal lambda; /*  starting point delta for finding starting simplex */
 
   PetscInt  N;
   PetscReal oneOverN;

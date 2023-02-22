@@ -116,7 +116,7 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   radau5_(&ND, FVPOL, &X, Y, &XEND, &H, &RTOL, &ATOL, &ITOL, JVPOL, &IJAC, &MLJAC, &MUJAC, FVPOL, &IMAS, &MLMAS, &MUMAS, SOLOUT, &IOUT, WORK, &LWORK, IWORK, &LIWORK, &RPAR, (void *)ts, &IDID);
 
   PetscCall(PetscFree2(WORK, IWORK));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSDestroy_Radau5(TS ts)
@@ -127,7 +127,7 @@ PetscErrorCode TSDestroy_Radau5(TS ts)
   PetscCall(VecDestroy(&cvode->work));
   PetscCall(VecDestroy(&cvode->workf));
   PetscCall(PetscFree(ts->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -157,5 +157,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts)
 
   PetscCall(PetscNew(&cvode));
   ts->data = (void *)cvode;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

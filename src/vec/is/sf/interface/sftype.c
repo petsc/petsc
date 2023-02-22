@@ -20,7 +20,7 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
   if (combiner != MPI_COMBINER_NAMED) PetscCallMPI(MPI_Type_free(a));
 
   *a = MPI_DATATYPE_NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -42,7 +42,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBo
   PetscFunctionBegin;
   *flg   = PETSC_FALSE;
   *atype = a;
-  if (a == MPIU_INT || a == MPIU_REAL || a == MPIU_SCALAR) PetscFunctionReturn(0);
+  if (a == MPIU_INT || a == MPIU_REAL || a == MPIU_SCALAR) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Type_get_envelope(a, &nints, &naddrs, &ntypes, &combiner));
   if (combiner == MPI_COMBINER_DUP) {
     PetscCheck(nints == 0 && naddrs == 0 && ntypes == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unexpected returns from MPI_Type_get_envelope()");
@@ -68,7 +68,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBo
       PetscCall(MPIPetsc_Type_free(&(types[0])));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *match)
@@ -81,7 +81,7 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
   PetscFunctionBegin;
   if (a == b) { /* this is common when using MPI builtin datatypes */
     *match = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MPIPetsc_Type_unwrap(a, &atype, &freeatype));
   PetscCall(MPIPetsc_Type_unwrap(b, &btype, &freebtype));
@@ -127,7 +127,7 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
 free_types:
   if (freeatype) PetscCall(MPIPetsc_Type_free(&atype));
   if (freebtype) PetscCall(MPIPetsc_Type_free(&btype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Check whether a was created via MPI_Type_contiguous from b
@@ -142,7 +142,7 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, Pets
   PetscFunctionBegin;
   if (a == b) {
     *n = 1;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   *n = 0;
   PetscCall(MPIPetsc_Type_unwrap(a, &atype, &freeatype));
@@ -170,5 +170,5 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, Pets
 
   if (freeatype) PetscCall(MPIPetsc_Type_free(&atype));
   if (freebtype) PetscCall(MPIPetsc_Type_free(&btype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -108,24 +108,24 @@ PetscErrorCode MINPACKdsm(PetscInt *m, PetscInt *n, PetscInt *npairs, PetscInt *
   /*     Determine the degree sequence for the intersection */
   /*     graph of the columns of A. */
 
-  MINPACKdegr(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[*n * 5 + 1], &iwa[*n + 1]);
+  PetscCall(MINPACKdegr(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[*n * 5 + 1], &iwa[*n + 1]));
 
   /*     Color the intersection graph of the columns of A */
   /*     with the smallest-last (SL) ordering. */
 
-  MINPACKslo(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[*n * 5 + 1], &iwa[(*n << 2) + 1], &maxclq, &iwa[1], &iwa[*n + 1], &iwa[(*n << 1) + 1], &iwa[*n * 3 + 1]);
-  MINPACKseq(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[(*n << 2) + 1], &ngrp[1], maxgrp, &iwa[*n + 1]);
+  PetscCall(MINPACKslo(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[*n * 5 + 1], &iwa[(*n << 2) + 1], &maxclq, &iwa[1], &iwa[*n + 1], &iwa[(*n << 1) + 1], &iwa[*n * 3 + 1]));
+  PetscCall(MINPACKseq(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[(*n << 2) + 1], &ngrp[1], maxgrp, &iwa[*n + 1]));
   *mingrp = PetscMax(*mingrp, maxclq);
 
   /*     Exit if the smallest-last ordering is optimal. */
 
-  if (*maxgrp == *mingrp) PetscFunctionReturn(0);
+  if (*maxgrp == *mingrp) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*     Color the intersection graph of the columns of A */
   /*     with the incidence-degree (ID) ordering. */
 
-  MINPACKido(m, n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[*n * 5 + 1], &iwa[(*n << 2) + 1], &maxclq, &iwa[1], &iwa[*n + 1], &iwa[(*n << 1) + 1], &iwa[*n * 3 + 1]);
-  MINPACKseq(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[(*n << 2) + 1], &iwa[1], &numgrp, &iwa[*n + 1]);
+  PetscCall(MINPACKido(m, n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[*n * 5 + 1], &iwa[(*n << 2) + 1], &maxclq, &iwa[1], &iwa[*n + 1], &iwa[(*n << 1) + 1], &iwa[*n * 3 + 1]));
+  PetscCall(MINPACKseq(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[(*n << 2) + 1], &iwa[1], &numgrp, &iwa[*n + 1]));
   *mingrp = PetscMax(*mingrp, maxclq);
 
   /*     Retain the better of the two orderings so far. */
@@ -137,15 +137,15 @@ PetscErrorCode MINPACKdsm(PetscInt *m, PetscInt *n, PetscInt *npairs, PetscInt *
 
     /*        Exit if the incidence-degree ordering is optimal. */
 
-    if (*maxgrp == *mingrp) PetscFunctionReturn(0);
+    if (*maxgrp == *mingrp) PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /*     Color the intersection graph of the columns of A */
   /*     with the largest-first (LF) ordering. */
 
   i__1 = *n - 1;
-  MINPACKnumsrt(n, &i__1, &iwa[*n * 5 + 1], &c_n1, &iwa[(*n << 2) + 1], &iwa[(*n << 1) + 1], &iwa[*n + 1]);
-  MINPACKseq(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[(*n << 2) + 1], &iwa[1], &numgrp, &iwa[*n + 1]);
+  PetscCall(MINPACKnumsrt(n, &i__1, &iwa[*n * 5 + 1], &c_n1, &iwa[(*n << 2) + 1], &iwa[(*n << 1) + 1], &iwa[*n + 1]));
+  PetscCall(MINPACKseq(n, &indrow[1], &jpntr[1], &indcol[1], &ipntr[1], &iwa[(*n << 2) + 1], &iwa[1], &numgrp, &iwa[*n + 1]));
 
   /*     Retain the best of the three orderings and exit. */
 
@@ -154,5 +154,5 @@ PetscErrorCode MINPACKdsm(PetscInt *m, PetscInt *n, PetscInt *npairs, PetscInt *
     i__1    = *n;
     for (j = 1; j <= i__1; ++j) ngrp[j] = iwa[j];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

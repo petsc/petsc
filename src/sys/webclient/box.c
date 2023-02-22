@@ -62,7 +62,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   ctx                     = mg_start(&callbacks, NULL, options);
   PetscCheck(ctx, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to start up webserver");
   while (!result) { };
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #if defined(PETSC_HAVE_UNISTD_H)
@@ -149,7 +149,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refres
     PetscCall(PetscPrintf(comm, "programs with the option -box_refresh_token %s\n", refresh_token));
     PetscCall(PetscPrintf(comm, "to access Box Drive automatically\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -193,7 +193,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
       if (!set) {
         PetscCall(PetscBoxAuthorize(comm, access_token, new_refresh_token, 512 * sizeof(char)));
         PetscCall(PetscFree(refreshtoken));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
 #else
       PetscCheck(set, PETSC_COMM_SELF, PETSC_ERR_LIB, "Must provide refresh token with -box_refresh_token XXX");
@@ -223,7 +223,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
     PetscCall(PetscPrintf(comm, "programs with the option -box_refresh_token %s\n", new_refresh_token));
     PetscCall(PetscPrintf(comm, "to access Box Drive automatically\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <sys/stat.h>
@@ -320,5 +320,5 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm, const char access_token[], const ch
     PetscCall(PetscStrstr(buff, "\"title\"", &title));
     PetscCheck(title, PETSC_COMM_SELF, PETSC_ERR_LIB, "Upload of file %s failed", filename);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -242,10 +242,11 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
 {
   SampleShellPC *newctx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscNew(&newctx));
   newctx->diag = 0;
   *shell       = newctx;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -271,13 +272,14 @@ PetscErrorCode SampleShellPCSetUp(PC pc, Mat pmat, Vec x)
   SampleShellPC *shell;
   Vec            diag;
 
+  PetscFunctionBeginUser;
   PetscCall(PCShellGetContext(pc, &shell));
   PetscCall(VecDuplicate(x, &diag));
   PetscCall(MatGetDiagonal(pmat, diag));
   PetscCall(VecReciprocal(diag));
 
   shell->diag = diag;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -300,10 +302,10 @@ PetscErrorCode SampleShellPCApply(PC pc, Vec x, Vec y)
 {
   SampleShellPC *shell;
 
+  PetscFunctionBeginUser;
   PetscCall(PCShellGetContext(pc, &shell));
   PetscCall(VecPointwiseMult(y, x, shell->diag));
-
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -317,11 +319,11 @@ PetscErrorCode SampleShellPCDestroy(PC pc)
 {
   SampleShellPC *shell;
 
+  PetscFunctionBeginUser;
   PetscCall(PCShellGetContext(pc, &shell));
   PetscCall(VecDestroy(&shell->diag));
   PetscCall(PetscFree(shell));
-
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

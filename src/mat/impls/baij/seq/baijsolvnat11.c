@@ -109,5 +109,5 @@ PetscErrorCode MatSolve_SeqBAIJ_11_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * bs2 * (a->nz) - bs * A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

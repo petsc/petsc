@@ -8,8 +8,8 @@
    s in R^nb is slack vector CI(x) / x-XL / -x+XU
    bin in R^mi (tao->constraints_inequality)
    beq in R^me (tao->constraints_equality)
-   lamdai in R^nb (ipmP->lamdai)
-   lamdae in R^me (ipmP->lamdae)
+   lambdai in R^nb (ipmP->lambdai)
+   lambdae in R^me (ipmP->lambdae)
    Jeq in R^(me x n) (tao->jacobian_equality)
    Jin in R^(mi x n) (tao->jacobian_inequality)
    Ai in  R^(nb x n) (ipmP->Ai)
@@ -64,26 +64,26 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     */
 
     PetscCall(VecCopy(ipmP->rd, ipmP->rhs_x));
-    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->rpe, ipmP->rhs_lamdae));
+    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->rpe, ipmP->rhs_lambdae));
     if (ipmP->nb > 0) {
-      PetscCall(VecCopy(ipmP->rpi, ipmP->rhs_lamdai));
+      PetscCall(VecCopy(ipmP->rpi, ipmP->rhs_lambdai));
       PetscCall(VecCopy(ipmP->complementarity, ipmP->rhs_s));
     }
-    PetscCall(IPMGatherRHS(tao, ipmP->bigrhs, ipmP->rhs_x, ipmP->rhs_lamdae, ipmP->rhs_lamdai, ipmP->rhs_s));
+    PetscCall(IPMGatherRHS(tao, ipmP->bigrhs, ipmP->rhs_x, ipmP->rhs_lambdae, ipmP->rhs_lambdai, ipmP->rhs_s));
     PetscCall(VecScale(ipmP->bigrhs, -1.0));
 
     /* solve K * step = rhs */
     PetscCall(KSPSetOperators(tao->ksp, ipmP->K, ipmP->K));
     PetscCall(KSPSolve(tao->ksp, ipmP->bigrhs, ipmP->bigstep));
 
-    PetscCall(IPMScatterStep(tao, ipmP->bigstep, tao->stepdirection, ipmP->ds, ipmP->dlamdae, ipmP->dlamdai));
+    PetscCall(IPMScatterStep(tao, ipmP->bigstep, tao->stepdirection, ipmP->ds, ipmP->dlambdae, ipmP->dlambdai));
     PetscCall(KSPGetIterationNumber(tao->ksp, &its));
     tao->ksp_its += its;
     tao->ksp_tot_its += its;
     /* Find distance along step direction to closest bound */
     if (ipmP->nb > 0) {
       PetscCall(VecStepBoundInfo(ipmP->s, ipmP->ds, ipmP->Zero_nb, ipmP->Inf_nb, &step_s, NULL, NULL));
-      PetscCall(VecStepBoundInfo(ipmP->lamdai, ipmP->dlamdai, ipmP->Zero_nb, ipmP->Inf_nb, &step_l, NULL, NULL));
+      PetscCall(VecStepBoundInfo(ipmP->lambdai, ipmP->dlambdai, ipmP->Zero_nb, ipmP->Inf_nb, &step_l, NULL, NULL));
       alpha        = PetscMin(step_s, step_l);
       alpha        = PetscMin(alpha, 1.0);
       ipmP->alpha1 = alpha;
@@ -93,16 +93,16 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
 
     /* x_aff = x + alpha*d */
     PetscCall(VecCopy(tao->solution, ipmP->save_x));
-    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->lamdae, ipmP->save_lamdae));
+    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->lambdae, ipmP->save_lambdae));
     if (ipmP->nb > 0) {
-      PetscCall(VecCopy(ipmP->lamdai, ipmP->save_lamdai));
+      PetscCall(VecCopy(ipmP->lambdai, ipmP->save_lambdai));
       PetscCall(VecCopy(ipmP->s, ipmP->save_s));
     }
 
     PetscCall(VecAXPY(tao->solution, alpha, tao->stepdirection));
-    if (ipmP->me > 0) PetscCall(VecAXPY(ipmP->lamdae, alpha, ipmP->dlamdae));
+    if (ipmP->me > 0) PetscCall(VecAXPY(ipmP->lambdae, alpha, ipmP->dlambdae));
     if (ipmP->nb > 0) {
-      PetscCall(VecAXPY(ipmP->lamdai, alpha, ipmP->dlamdai));
+      PetscCall(VecAXPY(ipmP->lambdai, alpha, ipmP->dlambdai));
       PetscCall(VecAXPY(ipmP->s, alpha, ipmP->ds));
     }
 
@@ -118,9 +118,9 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
 
     /* revert kkt info */
     PetscCall(VecCopy(ipmP->save_x, tao->solution));
-    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->save_lamdae, ipmP->lamdae));
+    if (ipmP->me > 0) PetscCall(VecCopy(ipmP->save_lambdae, ipmP->lambdae));
     if (ipmP->nb > 0) {
-      PetscCall(VecCopy(ipmP->save_lamdai, ipmP->lamdai));
+      PetscCall(VecCopy(ipmP->save_lambdai, ipmP->lambdai));
       PetscCall(VecCopy(ipmP->save_s, ipmP->s));
     }
     PetscCall(IPMComputeKKT(tao));
@@ -137,7 +137,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     PetscCall(KSPSetOperators(tao->ksp, ipmP->K, ipmP->K));
     PetscCall(KSPSolve(tao->ksp, ipmP->bigrhs, ipmP->bigstep));
 
-    PetscCall(IPMScatterStep(tao, ipmP->bigstep, tao->stepdirection, ipmP->ds, ipmP->dlamdae, ipmP->dlamdai));
+    PetscCall(IPMScatterStep(tao, ipmP->bigstep, tao->stepdirection, ipmP->ds, ipmP->dlambdae, ipmP->dlambdai));
     PetscCall(KSPGetIterationNumber(tao->ksp, &its));
     tao->ksp_its += its;
     tao->ksp_tot_its += its;
@@ -147,13 +147,13 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
       tau = PetscMin(tau, 1.0);
       if (tau != 1.0) {
         PetscCall(VecScale(ipmP->s, tau));
-        PetscCall(VecScale(ipmP->lamdai, tau));
+        PetscCall(VecScale(ipmP->lambdai, tau));
       }
       PetscCall(VecStepBoundInfo(ipmP->s, ipmP->ds, ipmP->Zero_nb, ipmP->Inf_nb, &step_s, NULL, NULL));
-      PetscCall(VecStepBoundInfo(ipmP->lamdai, ipmP->dlamdai, ipmP->Zero_nb, ipmP->Inf_nb, &step_l, NULL, NULL));
+      PetscCall(VecStepBoundInfo(ipmP->lambdai, ipmP->dlambdai, ipmP->Zero_nb, ipmP->Inf_nb, &step_l, NULL, NULL));
       if (tau != 1.0) {
         PetscCall(VecCopy(ipmP->save_s, ipmP->s));
-        PetscCall(VecCopy(ipmP->save_lamdai, ipmP->lamdai));
+        PetscCall(VecCopy(ipmP->save_lambdai, ipmP->lambdai));
       }
       alpha = PetscMin(step_s, step_l);
       alpha = PetscMin(alpha, 1.0);
@@ -167,12 +167,12 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
       PetscCall(VecAXPY(tao->solution, alpha, tao->stepdirection));
       if (ipmP->nb > 0) {
         PetscCall(VecAXPY(ipmP->s, alpha, ipmP->ds));
-        PetscCall(VecAXPY(ipmP->lamdai, alpha, ipmP->dlamdai));
+        PetscCall(VecAXPY(ipmP->lambdai, alpha, ipmP->dlambdai));
       }
-      if (ipmP->me > 0) PetscCall(VecAXPY(ipmP->lamdae, alpha, ipmP->dlamdae));
+      if (ipmP->me > 0) PetscCall(VecAXPY(ipmP->lambdae, alpha, ipmP->dlambdae));
 
       /* update dual variables */
-      if (ipmP->me > 0) PetscCall(VecCopy(ipmP->lamdae, tao->DE));
+      if (ipmP->me > 0) PetscCall(VecCopy(ipmP->lambdae, tao->DE));
 
       PetscCall(IPMEvaluate(tao));
       PetscCall(IPMComputeKKT(tao));
@@ -185,7 +185,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
     tao->niter++;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetup_IPM(Tao tao)
@@ -206,15 +206,15 @@ static PetscErrorCode TaoSetup_IPM(Tao tao)
   }
   if (tao->constraints_equality) {
     PetscCall(VecGetSize(tao->constraints_equality, &ipmP->me));
-    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->lamdae));
-    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->dlamdae));
-    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->rhs_lamdae));
-    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->save_lamdae));
+    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->lambdae));
+    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->dlambdae));
+    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->rhs_lambdae));
+    PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->save_lambdae));
     PetscCall(VecDuplicate(tao->constraints_equality, &ipmP->rpe));
     PetscCall(VecDuplicate(tao->constraints_equality, &tao->DE));
   }
   if (tao->constraints_inequality) PetscCall(VecDuplicate(tao->constraints_inequality, &tao->DI));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode IPMInitializeBounds(Tao tao)
@@ -283,10 +283,10 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
     PetscCall(VecDuplicate(ipmP->s, &ipmP->complementarity));
     PetscCall(VecDuplicate(ipmP->s, &ipmP->ci));
 
-    PetscCall(VecDuplicate(ipmP->s, &ipmP->lamdai));
-    PetscCall(VecDuplicate(ipmP->s, &ipmP->dlamdai));
-    PetscCall(VecDuplicate(ipmP->s, &ipmP->rhs_lamdai));
-    PetscCall(VecDuplicate(ipmP->s, &ipmP->save_lamdai));
+    PetscCall(VecDuplicate(ipmP->s, &ipmP->lambdai));
+    PetscCall(VecDuplicate(ipmP->s, &ipmP->dlambdai));
+    PetscCall(VecDuplicate(ipmP->s, &ipmP->rhs_lambdai));
+    PetscCall(VecDuplicate(ipmP->s, &ipmP->save_lambdai));
 
     PetscCall(VecDuplicate(ipmP->s, &ipmP->save_s));
     PetscCall(VecDuplicate(ipmP->s, &ipmP->rpi));
@@ -445,7 +445,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   PetscCall(PetscFree(ucind));
   PetscCall(PetscFree(uceind));
   PetscCall(PetscFree(xind));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_IPM(Tao tao)
@@ -457,20 +457,20 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
   PetscCall(VecDestroy(&ipmP->rpe));
   PetscCall(VecDestroy(&ipmP->rpi));
   PetscCall(VecDestroy(&ipmP->work));
-  PetscCall(VecDestroy(&ipmP->lamdae));
-  PetscCall(VecDestroy(&ipmP->lamdai));
+  PetscCall(VecDestroy(&ipmP->lambdae));
+  PetscCall(VecDestroy(&ipmP->lambdai));
   PetscCall(VecDestroy(&ipmP->s));
   PetscCall(VecDestroy(&ipmP->ds));
   PetscCall(VecDestroy(&ipmP->ci));
 
   PetscCall(VecDestroy(&ipmP->rhs_x));
-  PetscCall(VecDestroy(&ipmP->rhs_lamdae));
-  PetscCall(VecDestroy(&ipmP->rhs_lamdai));
+  PetscCall(VecDestroy(&ipmP->rhs_lambdae));
+  PetscCall(VecDestroy(&ipmP->rhs_lambdai));
   PetscCall(VecDestroy(&ipmP->rhs_s));
 
   PetscCall(VecDestroy(&ipmP->save_x));
-  PetscCall(VecDestroy(&ipmP->save_lamdae));
-  PetscCall(VecDestroy(&ipmP->save_lamdai));
+  PetscCall(VecDestroy(&ipmP->save_lambdae));
+  PetscCall(VecDestroy(&ipmP->save_lambdai));
   PetscCall(VecDestroy(&ipmP->save_s));
 
   PetscCall(VecScatterDestroy(&ipmP->step1));
@@ -487,8 +487,8 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
   PetscCall(VecScatterDestroy(&ipmP->xl_scat));
   PetscCall(VecScatterDestroy(&ipmP->xu_scat));
 
-  PetscCall(VecDestroy(&ipmP->dlamdai));
-  PetscCall(VecDestroy(&ipmP->dlamdae));
+  PetscCall(VecDestroy(&ipmP->dlambdai));
+  PetscCall(VecDestroy(&ipmP->dlambdae));
   PetscCall(VecDestroy(&ipmP->Zero_nb));
   PetscCall(VecDestroy(&ipmP->One_nb));
   PetscCall(VecDestroy(&ipmP->Inf_nb));
@@ -502,7 +502,7 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
   PetscCall(ISDestroy(&ipmP->isxl));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_IPM(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -516,12 +516,12 @@ static PetscErrorCode TaoSetFromOptions_IPM(Tao tao, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsReal("-tao_ipm_pushnu", "parameter to push initial (inequality) dual variables away from bounds", NULL, ipmP->pushnu, &ipmP->pushnu, NULL));
   PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_IPM(Tao tao, PetscViewer viewer)
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* IPMObjectiveAndGradient()
@@ -542,7 +542,7 @@ static PetscErrorCode IPMObjective(TaoLineSearch ls, Vec X, PetscReal *f, void *
   PetscFunctionBegin;
   PetscCall(IPMComputeKKT(tao));
   *f = ipmP->phi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 */
 
@@ -569,16 +569,16 @@ static PetscErrorCode IPMComputeKKT(Tao tao)
   PetscCall(VecCopy(tao->gradient, ipmP->rd));
 
   if (ipmP->me > 0) {
-    /* rd = gradient + Ae'*lamdae */
-    PetscCall(MatMultTranspose(tao->jacobian_equality, ipmP->lamdae, ipmP->work));
+    /* rd = gradient + Ae'*lambdae */
+    PetscCall(MatMultTranspose(tao->jacobian_equality, ipmP->lambdae, ipmP->work));
     PetscCall(VecAXPY(ipmP->rd, 1.0, ipmP->work));
 
     /* rpe = ce(x) */
     PetscCall(VecCopy(tao->constraints_equality, ipmP->rpe));
   }
   if (ipmP->nb > 0) {
-    /* rd = rd - Ai'*lamdai */
-    PetscCall(MatMultTranspose(ipmP->Ai, ipmP->lamdai, ipmP->work));
+    /* rd = rd - Ai'*lambdai */
+    PetscCall(MatMultTranspose(ipmP->Ai, ipmP->lambdai, ipmP->work));
     PetscCall(VecAXPY(ipmP->rd, -1.0, ipmP->work));
 
     /* rpi = cin - s */
@@ -586,7 +586,7 @@ static PetscErrorCode IPMComputeKKT(Tao tao)
     PetscCall(VecAXPY(ipmP->rpi, -1.0, ipmP->s));
 
     /* com = s .* lami */
-    PetscCall(VecPointwiseMult(ipmP->complementarity, ipmP->s, ipmP->lamdai));
+    PetscCall(VecPointwiseMult(ipmP->complementarity, ipmP->s, ipmP->lambdai));
   }
   /* phi = ||rd; rpe; rpi; com|| */
   PetscCall(VecDot(ipmP->rd, ipmP->rd, &norm));
@@ -601,14 +601,14 @@ static PetscErrorCode IPMComputeKKT(Tao tao)
     PetscCall(VecDot(ipmP->complementarity, ipmP->complementarity, &norm));
     ipmP->phi += norm;
     /* mu = s'*lami/nb */
-    PetscCall(VecDot(ipmP->s, ipmP->lamdai, &ipmP->mu));
+    PetscCall(VecDot(ipmP->s, ipmP->lambdai, &ipmP->mu));
     ipmP->mu /= ipmP->nb;
   } else {
     ipmP->mu = 1.0;
   }
 
   ipmP->phi = PetscSqrtScalar(ipmP->phi);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* evaluate user info at current point */
@@ -631,7 +631,7 @@ PetscErrorCode IPMEvaluate(Tao tao)
     /* Ai' =   jac_ineq | I (w/lb) | -I (w/ub)  */
     PetscCall(IPMUpdateAi(tao));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Push initial point away from bounds */
@@ -644,14 +644,14 @@ PetscErrorCode IPMPushInitialPoint(Tao tao)
   PetscCall(VecMedian(tao->XL, tao->solution, tao->XU, tao->solution));
   if (ipmP->nb > 0) {
     PetscCall(VecSet(ipmP->s, ipmP->pushs));
-    PetscCall(VecSet(ipmP->lamdai, ipmP->pushnu));
+    PetscCall(VecSet(ipmP->lambdai, ipmP->pushnu));
     if (ipmP->mi > 0) PetscCall(VecSet(tao->DI, ipmP->pushnu));
   }
   if (ipmP->me > 0) {
     PetscCall(VecSet(tao->DE, 1.0));
-    PetscCall(VecSet(ipmP->lamdae, 1.0));
+    PetscCall(VecSet(ipmP->lambdae, 1.0));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IPMUpdateAi(Tao tao)
@@ -683,7 +683,7 @@ PetscErrorCode IPMUpdateAi(Tao tao)
   r3 = r2 + ipmP->nxlb;
   r4 = r3 + ipmP->nxub;
 
-  if (!ipmP->nb) PetscFunctionReturn(0);
+  if (!ipmP->nb) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Create Ai matrix if it doesn't exist yet */
   if (!ipmP->Ai) {
@@ -759,7 +759,7 @@ PetscErrorCode IPMUpdateAi(Tao tao)
     PetscCall(VecScatterBegin(ipmP->ci_scat, tao->constraints_inequality, ipmP->ci, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(ipmP->ci_scat, tao->constraints_inequality, ipmP->ci, INSERT_VALUES, SCATTER_FORWARD));
   }
-  if (!ipmP->work) VecDuplicate(tao->solution, &ipmP->work);
+  if (!ipmP->work) PetscCall(VecDuplicate(tao->solution, &ipmP->work));
   PetscCall(VecCopy(tao->solution, ipmP->work));
   if (tao->XL) {
     PetscCall(VecAXPY(ipmP->work, -1.0, tao->XL));
@@ -780,7 +780,7 @@ PetscErrorCode IPMUpdateAi(Tao tao)
       PetscCall(VecScatterEnd(ipmP->xu_scat, ipmP->work, ipmP->ci, INSERT_VALUES, SCATTER_FORWARD));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* create K = [ Hlag , 0 , Ae', -Ai'];
@@ -944,7 +944,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
 
     /* Copy L,Y */
     PetscCall(VecGetOwnershipRange(ipmP->s, &sstart, &send));
-    PetscCall(VecGetArrayRead(ipmP->lamdai, &l));
+    PetscCall(VecGetArrayRead(ipmP->lambdai, &l));
     PetscCall(VecGetArrayRead(ipmP->s, &y));
 
     for (i = sstart; i < send; i++) {
@@ -956,7 +956,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
       PetscCall(MatSetValues(ipmP->K, 1, &newrow, 2, newcols, newvals, INSERT_VALUES));
     }
 
-    PetscCall(VecRestoreArrayRead(ipmP->lamdai, &l));
+    PetscCall(VecRestoreArrayRead(ipmP->lambdai, &l));
     PetscCall(VecRestoreArrayRead(ipmP->s, &y));
   }
 
@@ -964,7 +964,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
   PetscCall(PetscFree(newvals));
   PetscCall(MatAssemblyBegin(ipmP->K, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(ipmP->K, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IPMGatherRHS(Tao tao, Vec RHS, Vec X1, Vec X2, Vec X3, Vec X4)
@@ -994,7 +994,7 @@ PetscErrorCode IPMGatherRHS(Tao tao, Vec RHS, Vec X1, Vec X2, Vec X3, Vec X4)
       PetscCall(VecScatterEnd(ipmP->rhs4, X4, RHS, INSERT_VALUES, SCATTER_FORWARD));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
@@ -1024,7 +1024,7 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
     PetscCall(VecScatterEnd(ipmP->step4, STEP, X4, INSERT_VALUES, SCATTER_FORWARD));
   }
   CHKMEMQ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1059,7 +1059,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
   if (!tao->max_it_changed) tao->max_it = 200;
   if (!tao->max_funcs_changed) tao->max_funcs = 500;
 
-  ipmP->dec        = 10000; /* line search critera */
+  ipmP->dec        = 10000; /* line search criteria */
   ipmP->taumin     = 0.995;
   ipmP->monitorkkt = PETSC_FALSE;
   ipmP->pushs      = 100;
@@ -1067,5 +1067,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
   PetscCall(KSPCreate(((PetscObject)tao)->comm, &tao->ksp));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
   PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

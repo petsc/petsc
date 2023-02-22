@@ -64,7 +64,7 @@ PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
   PetscFunctionBegin;
   PetscValidIntPointer(n, 2);
   *n = tsh->n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
@@ -91,13 +91,13 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
   tsh->hist[tsh->n]    = time;
   tsh->hist_id[tsh->n] = id;
   tsh->n += 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *t)
 {
   PetscFunctionBegin;
-  if (!t) PetscFunctionReturn(0);
+  if (!t) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidRealPointer(t, 4);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
@@ -106,13 +106,13 @@ PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step
   PetscCheck(step >= 0 && step < (PetscInt)tsh->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Given time step %" PetscInt_FMT " does not match any in history [0,%" PetscInt_FMT "]", step, (PetscInt)tsh->n);
   if (!backward) *t = tsh->hist[step];
   else *t = tsh->hist[tsh->n - step - 1];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt step, PetscReal *dt)
 {
   PetscFunctionBegin;
-  if (!dt) PetscFunctionReturn(0);
+  if (!dt) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidRealPointer(dt, 4);
   if (!tsh->sorted) {
     PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
@@ -121,7 +121,7 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
   PetscCheck(step >= 0 && step <= (PetscInt)tsh->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Given time step %" PetscInt_FMT " does not match any in history [0,%" PetscInt_FMT "]", step, (PetscInt)tsh->n);
   if (!backward) *dt = tsh->hist[PetscMin(step + 1, (PetscInt)tsh->n - 1)] - tsh->hist[PetscMin(step, (PetscInt)tsh->n - 1)];
   else *dt = tsh->hist[PetscMax((PetscInt)tsh->n - step - 1, 0)] - tsh->hist[PetscMax((PetscInt)tsh->n - step - 2, 0)];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistoryGetLocFromTime(TSHistory tsh, PetscReal time, PetscInt *loc)
@@ -133,7 +133,7 @@ PetscErrorCode TSHistoryGetLocFromTime(TSHistory tsh, PetscReal time, PetscInt *
     tsh->sorted = PETSC_TRUE;
   }
   PetscCall(PetscFindReal(time, tsh->n, tsh->hist, PETSC_SMALL, loc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], PetscInt hist_id[], PetscBool sorted)
@@ -154,7 +154,7 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
   }
   if (!sorted) PetscCall(PetscSortRealWithArrayInt(tsh->n, tsh->hist, tsh->hist_id));
   tsh->sorted = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistoryGetHistory(TSHistory tsh, PetscInt *n, const PetscReal *hist[], const PetscInt *hist_id[], PetscBool *sorted)
@@ -164,19 +164,19 @@ PetscErrorCode TSHistoryGetHistory(TSHistory tsh, PetscInt *n, const PetscReal *
   if (hist) *hist = tsh->hist;
   if (hist_id) *hist_id = tsh->hist_id;
   if (sorted) *sorted = tsh->sorted;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistoryDestroy(TSHistory *tsh)
 {
   PetscFunctionBegin;
-  if (!*tsh) PetscFunctionReturn(0);
+  if (!*tsh) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*tsh)->hist));
   PetscCall(PetscFree((*tsh)->hist_id));
   PetscCall(PetscCommDestroy(&((*tsh)->comm)));
   PetscCall(PetscFree((*tsh)));
   *tsh = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSHistoryCreate(MPI_Comm comm, TSHistory *hst)
@@ -196,5 +196,5 @@ PetscErrorCode TSHistoryCreate(MPI_Comm comm, TSHistory *hst)
   PetscCall(PetscMalloc1(tsh->c, &tsh->hist));
   PetscCall(PetscMalloc1(tsh->c, &tsh->hist_id));
   *hst = tsh;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

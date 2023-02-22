@@ -92,7 +92,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, const M
     (fact)->info.fill_ratio_needed = 0.0;
   }
   /*  (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_inplace; */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactorInfo *info)
@@ -125,10 +125,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactor
 
   if (info->usedt) droptol = info->dt;
 
-  for (PetscErrorCode ierr = NEGATIVE_DIAGONAL; ierr == NEGATIVE_DIAGONAL;) {
+  for (int ierr = NEGATIVE_DIAGONAL; ierr == NEGATIVE_DIAGONAL;) {
     PetscBool success;
 
-    ierr = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz, &matrix_LT, &success);
+    ierr = (int)spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz, &matrix_LT, &success);
     if (!success) {
       shiftnz *= 1.5;
       if (shiftnz < 1e-5) shiftnz = 1e-5;
@@ -169,14 +169,14 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const MatFactor
   C->preallocated = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(C->rmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFactorGetSolverType_seqaij_bas(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERBAS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A, MatFactorType ftype, Mat *B)
@@ -202,5 +202,5 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A, MatFactorType ftype, 
   PetscCall(PetscStrallocpy(MATSOLVERBAS, &(*B)->solvertype));
   (*B)->canuseordering = PETSC_TRUE;
   PetscCall(PetscStrallocpy(MATORDERINGNATURAL, (char **)&(*B)->preferredordering[MAT_FACTOR_ICC]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

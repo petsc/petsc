@@ -47,6 +47,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-coverage=<bool>',                       nargs.ArgFuzzyBool(None, value=0, help='Enable or disable code-coverage collection'))
     help.addArgument('PETSc', '-with-coverage-exec=<executable>',            nargs.ArgExecutable(None, value='default-auto', mustExist=0, help='Name of executable to use for post-processing coverage data, e.g. \'gcov\' or \'llvm-cov\'. Pass \'auto\' to let configure infer from compiler'))
     help.addArgument('PETSc', '-with-tau-perfstubs=<bool>',                  nargs.ArgBool(None, 1,'Enable TAU profiler stubs'))
+    help.addArgument('PETSc', '-with-strict-petscerrorcode=<bool>',          nargs.ArgFuzzyBool(None, value=0, help='Enable strict PetscErrorCode mode, which enables additional compile-time checking for misuse of PetscErrorCode and error handling'))
     return
 
   def registerPythonFile(self,filename,directory):
@@ -135,17 +136,17 @@ class Configure(config.base.Configure):
 
     # test for a variety of basic headers and functions
     headersC = map(lambda name: name+'.h',['setjmp','dos','fcntl','float','io','malloc','pwd','strings',
-                                            'unistd','sys/sysinfo','machine/endian','sys/param','sys/procfs','sys/resource',
+                                            'unistd','machine/endian','sys/param','sys/procfs','sys/resource',
                                             'sys/systeminfo','sys/times','sys/utsname',
                                             'sys/socket','sys/wait','netinet/in','netdb','direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX','float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
+                                            'WindowsX','float','ieeefp','stdint','inttypes','immintrin'])
     functions = ['access','_access','clock','drand48','getcwd','_getcwd','getdomainname','gethostname',
                  'getwd','posix_memalign','popen','PXFGETARG','rand','getpagesize',
                  'readlink','realpath','usleep','sleep','_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
-                 '_set_output_format','_mkdir','socket','gethostbyname','_pipe','fpresetsticky',
-                 'fpsetsticky','__gcov_dump','fstatat']
+                 '_set_output_format','_mkdir','socket','gethostbyname','fpresetsticky',
+                 'fpsetsticky','__gcov_dump']
     libraries = [(['fpe'],'handle_sigfpes')]
     librariessock = [(['socket','nsl'],'socket')]
     self.headers.headers.extend(headersC)
@@ -334,9 +335,6 @@ prepend-path PATH "%s"
       self.setCompilers.pushLanguage('FC')
       self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
-      # apple requires this shared library linker flag on SOME versions of the os
-      if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
-        self.addMakeMacro('DARWIN_COMMONS_USE_DYLIBS',' -Wl,-commons,use_dylibs ')
       self.setCompilers.popLanguage()
 
       # F90 Modules
@@ -721,26 +719,50 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
 
   def configureIntptrt(self):
-    '''Determine what to use for uintptr_t'''
+    '''Determine what to use for uintptr_t and intptr_t'''
     def staticAssertSizeMatchesVoidStar(inc,typename):
       # The declaration is an error if either array size is negative.
       # It should be okay to use an int that is too large, but it would be very unlikely for this to be the case
       return self.checkCompile(inc, ('#define STATIC_ASSERT(cond) char negative_length_if_false[2*(!!(cond))-1]\n'
                                      + 'STATIC_ASSERT(sizeof(void*) == sizeof(%s));'%typename))
-    self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile('#include <stdint.h>', 'int x; uintptr_t i = (uintptr_t)&x; (void)i'):
-      self.addDefine('UINTPTR_T', 'uintptr_t')
-    elif staticAssertSizeMatchesVoidStar('','unsigned long long'):
-      self.addDefine('UINTPTR_T', 'unsigned long long')
-    elif staticAssertSizeMatchesVoidStar('#include <stdlib.h>','size_t') or staticAssertSizeMatchesVoidStar('#include <string.h>', 'size_t'):
-      self.addDefine('UINTPTR_T', 'size_t')
-    elif staticAssertSizeMatchesVoidStar('','unsigned long'):
-      self.addDefine('UINTPTR_T', 'unsigned long')
-    elif staticAssertSizeMatchesVoidStar('','unsigned'):
-      self.addDefine('UINTPTR_T', 'unsigned')
-    else:
-      raise RuntimeError('Could not find any unsigned integer type matching void*')
-    self.popLanguage()
+
+    def generate_uintptr_guesses():
+      for suff in ('max', '64', '32', '16'):
+        yield '#include <stdint.h>', 'uint{}_t'.format(suff), 'PRIx{}'.format(suff.upper())
+      yield '#include <stdlib.h>\n#include <string.h>', 'size_t', 'zx'
+      yield '', 'unsigned long long', 'llx'
+      yield '', 'unsigned long', 'lx'
+      yield '', 'unsigned', 'x'
+
+    def generate_intptr_guesses():
+      for suff in ('max', '64', '32', '16'):
+        yield '#include <stdint.h>', 'int{}_t'.format(suff), 'PRIx{}'.format(suff.upper())
+      yield '', 'long long', 'llx'
+      yield '', 'long', 'lx'
+      yield '', 'int', 'x'
+
+    def check(default_typename, generator):
+      macro_name = default_typename.upper()
+      with self.Language(self.languages.clanguage):
+        if self.checkCompile(
+            '#include <stdint.h>',
+            'int x; {type_name} i = ({type_name})&x; (void)i'.format(type_name=default_typename)
+        ):
+          typename     = default_typename
+          print_format = 'PRIxPTR'
+        else:
+          for include, typename, print_format in generator():
+            if staticAssertSizeMatchesVoidStar(include, typename):
+              break
+          else:
+            raise RuntimeError('Could not find any {} type matching void*'.format(macro_name))
+      self.addDefine(macro_name         , typename)
+      self.addDefine(macro_name + '_FMT', '\"#\" ' + print_format)
+      return
+
+    check('uintptr_t', generate_uintptr_guesses)
+    check('intptr_t', generate_intptr_guesses)
+    return
 
   def configureRTLDDefault(self):
     '''Check for dynamic library feature'''
@@ -1022,6 +1044,24 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addMakeMacro(make_macro_name, found_exec + ' gcov')
     return
 
+  def configureStrictPetscErrorCode(self):
+    """
+    Enables or disables strict PetscErrorCode checking.
+
+    If --with-strict-petscerrorcode = 1:
+    - defines PETSC_USE_STRICT_PETSCERRORCODE to 1
+
+    Else:
+    - deletes any prior PETSC_USE_STRICT_PETSCERRORCODE definitions (if they exist)
+    """
+    define_name = 'USE_STRICT_PETSCERRORCODE'
+    if self.argDB['with-strict-petscerrorcode']:
+      self.addDefine(define_name, 1)
+    else:
+      # in case it was somehow added previously
+      self.delDefine(define_name)
+    return
+
 #-----------------------------------------------------------------------------------------------------
   def configureCygwinBrokenPipe(self):
     '''Cygwin version <= 1.7.18 had issues with pipes and long commands invoked from gnu-make
@@ -1205,6 +1245,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           kwargs['extra_debug_flags'] = ['-Xcompiler -Og']
         self.executeTest(self.configureCoverage, args=[LANG], kargs=kwargs)
     self.executeTest(self.configureCoverageExecutable)
+    self.executeTest(self.configureStrictPetscErrorCode)
 
     self.Dump()
     self.dumpConfigInfo()

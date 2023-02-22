@@ -13,7 +13,8 @@ configure_options = [
   '--download-f2cblaslapack=1',
   '--with-f2cblaslapack-float128-bindings=1',
   '--download-hpddm=1',
-  '--with-shared-libraries=1'
+  '--with-shared-libraries=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

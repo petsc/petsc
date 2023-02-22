@@ -17,7 +17,7 @@ static PetscErrorCode SNESReset_FAS(SNES snes)
   PetscCall(VecDestroy(&fas->Xg));
   PetscCall(VecDestroy(&fas->Fg));
   if (fas->next) PetscCall(SNESReset(fas->next));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESDestroy_FAS(SNES snes)
@@ -29,7 +29,7 @@ static PetscErrorCode SNESDestroy_FAS(SNES snes)
   PetscCall(SNESReset_FAS(snes));
   PetscCall(SNESDestroy(&fas->next));
   PetscCall(PetscFree(fas));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESFASSetUpLineSearch_Private(SNES snes, SNES smooth)
@@ -41,7 +41,7 @@ static PetscErrorCode SNESFASSetUpLineSearch_Private(SNES snes, SNES smooth)
   PetscErrorCode (*postcheck)(SNESLineSearch, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
 
   PetscFunctionBegin;
-  if (!snes->linesearch) PetscFunctionReturn(0);
+  if (!snes->linesearch) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(SNESGetLineSearch(snes, &linesearch));
   PetscCall(SNESGetLineSearch(smooth, &slinesearch));
   PetscCall(SNESLineSearchGetPreCheck(linesearch, &precheck, &lsprectx));
@@ -49,7 +49,7 @@ static PetscErrorCode SNESFASSetUpLineSearch_Private(SNES snes, SNES smooth)
   PetscCall(SNESLineSearchSetPreCheck(slinesearch, precheck, lsprectx));
   PetscCall(SNESLineSearchSetPostCheck(slinesearch, postcheck, lspostctx));
   PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESFASCycleSetUpSmoother_Private(SNES snes, SNES smooth)
@@ -71,7 +71,7 @@ static PetscErrorCode SNESFASCycleSetUpSmoother_Private(SNES snes, SNES smooth)
   if (fas->eventsmoothsetup) PetscCall(PetscLogEventBegin(fas->eventsmoothsetup, smooth, 0, 0, 0));
   PetscCall(SNESSetUp(smooth));
   if (fas->eventsmoothsetup) PetscCall(PetscLogEventEnd(fas->eventsmoothsetup, smooth, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSetUp_FAS(SNES snes)
@@ -174,7 +174,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
     PetscCall(VecDuplicate(snes->vec_sol, &fas->Xg));
     PetscCall(VecDuplicate(snes->vec_sol, &fas->Fg));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems *PetscOptionsObject)
@@ -260,7 +260,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems *PetscO
   /* recursive option setting for the smoothers */
   PetscCall(SNESFASCycleGetCorrection(snes, &next));
   if (next) PetscCall(SNESSetFromOptions(next));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -341,7 +341,7 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -365,7 +365,7 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
   PetscCall(SNESGetConvergedReason(smoothd, &reason));
   if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN || reason == SNES_DIVERGED_LINE_SEARCH)) {
     snes->reason = SNES_DIVERGED_INNER;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(SNESGetFunction(smoothd, &FPC, NULL, NULL));
@@ -373,7 +373,7 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
   if (!flg) PetscCall(SNESComputeFunction(smoothd, X, FPC));
   PetscCall(VecCopy(FPC, F));
   if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -396,14 +396,14 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
   PetscCall(SNESGetConvergedReason(smoothu, &reason));
   if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN || reason == SNES_DIVERGED_LINE_SEARCH)) {
     snes->reason = SNES_DIVERGED_INNER;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(SNESGetFunction(smoothu, &FPC, NULL, NULL));
   PetscCall(SNESGetAlwaysComputesFinalResidual(smoothu, &flg));
   if (!flg) PetscCall(SNESComputeFunction(smoothu, X, FPC));
   PetscCall(VecCopy(FPC, F));
   if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -434,7 +434,7 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse)
   } else if (fas->inject) {
     PetscCall(MatCreateVecs(fas->inject, Xcoarse, NULL));
   } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must set restriction or injection");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -468,7 +468,7 @@ PetscErrorCode SNESFASRestrict(SNES fine, Vec Xfine, Vec Xcoarse)
     PetscCall(MatRestrict(fas->restrct, Xfine, Xcoarse));
     PetscCall(VecPointwiseMult(Xcoarse, fas->rscale, Xcoarse));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -514,7 +514,7 @@ static PetscErrorCode SNESFASInterpolatedCoarseSolution(SNES snes, Vec X, Vec X_
     PetscCall(SNESGetConvergedReason(next, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     /* x^f <- Ix^c*/
     DM dmc, dmf;
@@ -529,7 +529,7 @@ static PetscErrorCode SNESFASInterpolatedCoarseSolution(SNES snes, Vec X, Vec X_
     PetscCall(PetscObjectSetName((PetscObject)X_new, "Updated Fine solution"));
     PetscCall(VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -587,7 +587,7 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
     PetscCall(SNESGetConvergedReason(next, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     /* correct as x <- x + I(x^c - Rx)*/
     PetscCall(VecAXPY(X_c, -1.0, Xo_c));
@@ -600,7 +600,7 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
     PetscCall(PetscObjectSetName((PetscObject)X_new, "Updated Fine solution"));
     PetscCall(VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -671,7 +671,7 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
     PetscCall(SNESGetConvergedReason(next, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     /* correct as x <- x + I(x^c - Rx)*/
@@ -685,13 +685,13 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
     if (lsresult) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
   } else {
     PetscCall(SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -723,7 +723,7 @@ static PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
     PetscCall(SNESFASCoarseCorrection(snes, X, F, X));
     PetscCall(SNESFASUpSmooth_Private(snes, B, X, F, &snes->norm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
@@ -738,7 +738,7 @@ static PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
   PetscCall(SNESFASCycleGetCorrection(snes, &next));
   fas->full_stage = 0;
   if (next) PetscCall(SNESFASCycleSetupPhase_Full(next));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
@@ -786,7 +786,7 @@ static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
       PetscCall(SNESFASUpSmooth_Private(snes, B, X, F, &snes->norm));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
@@ -804,7 +804,7 @@ static PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
   } else {
     PetscCall(SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscBool  SNEScite       = PETSC_FALSE;
@@ -855,7 +855,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
 
   /* test convergence */
   PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (isFine) {
     /* propagate scale-dependent data up the hierarchy */
@@ -883,7 +883,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Unsupported FAS type");
 
     /* check for FAS cycle divergence */
-    if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(0);
+    if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
     /* Monitor convergence */
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
@@ -901,7 +901,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", i));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -989,5 +989,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->eventsmoothsolve    = 0;
   fas->eventresidual       = 0;
   fas->eventinterprestrict = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -8,19 +8,16 @@ cdef extern from * nogil:
         PETSC_DATATYPE_UNKNOWN
 
     const char PETSC_AUTHOR_INFO[]
-    int PetscGetVersion(char[],size_t)
-    int PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*)
+    PetscErrorCode PetscGetVersion(char[],size_t)
+    PetscErrorCode PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*)
 
-    int PetscInitialize(int*,char***,char[],char[])
-    int PetscInitializeNoArguments()
-    int PetscFinalize()
+    PetscErrorCode PetscInitialize(int*,char***,char[],char[])
+    PetscErrorCode PetscInitializeNoArguments()
+    PetscErrorCode PetscFinalize()
     PetscBool PetscInitializeCalled
     PetscBool PetscFinalizeCalled
 
-    ctypedef enum PetscErrorType:
-        PETSC_ERROR_INITIAL
-        PETSC_ERROR_REPEAT
-    ctypedef int (*PetscErrorHandlerFunction)(MPI_Comm,int,char*,char*,
+    ctypedef PetscErrorCode (*PetscErrorHandlerFunction)(MPI_Comm,int,char*,char*,
                                               int,PetscErrorType,char*,void*)
     PetscErrorHandlerFunction PetscAttachDebuggerErrorHandler
     PetscErrorHandlerFunction PetscEmacsClientErrorHandler
@@ -28,43 +25,43 @@ cdef extern from * nogil:
     PetscErrorHandlerFunction PetscMPIAbortErrorHandler
     PetscErrorHandlerFunction PetscAbortErrorHandler
     PetscErrorHandlerFunction PetscIgnoreErrorHandler
-    int PetscPushErrorHandler(PetscErrorHandlerFunction,void*)
-    int PetscPopErrorHandler()
-    int PetscPopSignalHandler()
-    int PetscInfoAllow(PetscBool)
-    int PetscInfoSetFile(char*,char*)
+    PetscErrorCode PetscPushErrorHandler(PetscErrorHandlerFunction,void*)
+    PetscErrorCode PetscPopErrorHandler()
+    PetscErrorCode PetscPopSignalHandler()
+    PetscErrorCode PetscInfoAllow(PetscBool)
+    PetscErrorCode PetscInfoSetFile(char*,char*)
 
-    int PetscErrorMessage(int,char*[],char**)
+    PetscErrorCode PetscErrorMessage(int,char*[],char**)
 
-    int PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
-    int PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*)
+    PetscErrorCode PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
+    PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*)
 
     FILE *PETSC_STDOUT
     FILE *PETSC_STDERR
 
-    int PetscPrintf(MPI_Comm,char[],...)
-    int PetscVSNPrintf(char*,size_t,const char[],size_t *,va_list)
-    int PetscVFPrintfDefault(FILE*,const char[],va_list)
-    int PetscSynchronizedPrintf(MPI_Comm,char[],...)
-    int PetscSynchronizedFlush(MPI_Comm,FILE*)
+    PetscErrorCode PetscPrintf(MPI_Comm,char[],...)
+    PetscErrorCode PetscVSNPrintf(char*,size_t,const char[],size_t *,va_list)
+    PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list)
+    PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,char[],...)
+    PetscErrorCode PetscSynchronizedFlush(MPI_Comm,FILE*)
 
-    int PetscSequentialPhaseBegin(MPI_Comm,int)
-    int PetscSequentialPhaseEnd(MPI_Comm,int)
-    int PetscSleep(int)
+    PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,int)
+    PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,int)
+    PetscErrorCode PetscSleep(int)
 
-    int PetscCitationsRegister(const char[],PetscBool*)
+    PetscErrorCode PetscCitationsRegister(const char[],PetscBool*)
 
-    int PetscHasExternalPackage(const char[],PetscBool*)
+    PetscErrorCode PetscHasExternalPackage(const char[],PetscBool*)
 
 cdef extern from *:
-    int (*PetscVFPrintf)(FILE*,const char[],va_list)
+    PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)
 
-cdef inline int Sys_Sizes(
+cdef inline PetscErrorCode Sys_Sizes(
     object size, object bsize,
     PetscInt *_b,
     PetscInt *_n,
     PetscInt *_N,
-    ) except -1:
+    ) except PETSC_ERR_PYTHON:
     # get block size
     cdef PetscInt bs=PETSC_DECIDE, b=PETSC_DECIDE
     if bsize is not None: bs = b = asInt(bsize)
@@ -93,14 +90,14 @@ cdef inline int Sys_Sizes(
     if _b != NULL: _b[0] = b
     if _n != NULL: _n[0] = n
     if _N != NULL: _N[0] = N
-    return 0
+    return PETSC_SUCCESS
 
-cdef inline int Sys_Layout(
+cdef inline PetscErrorCode Sys_Layout(
     MPI_Comm comm,
     PetscInt bs,
     PetscInt *_n,
     PetscInt *_N,
-    ) except -1:
+    ) except PETSC_ERR_PYTHON:
     cdef PetscInt n = _n[0]
     cdef PetscInt N = _N[0]
     if bs < 0: bs = 1
@@ -109,4 +106,4 @@ cdef inline int Sys_Layout(
     CHKERR( PetscSplitOwnership(comm, &n, &N) )
     _n[0] = n * bs
     _N[0] = N * bs
-    return 0
+    return PETSC_SUCCESS

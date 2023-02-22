@@ -19,7 +19,7 @@ PetscErrorCode PFView_Matlab(void *value, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Matlab Matlab = %s\n", matlab->string));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PFDestroy_Matlab(void *value)
@@ -30,7 +30,7 @@ PetscErrorCode PFDestroy_Matlab(void *value)
   PetscCall(PetscFree(matlab->string));
   PetscCall(PetscMatlabEngineDestroy(&matlab->mengine));
   PetscCall(PetscFree(matlab));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PFApply_Matlab(void *value, PetscInt n, const PetscScalar *in, PetscScalar *out)
@@ -42,7 +42,7 @@ PetscErrorCode PFApply_Matlab(void *value, PetscInt n, const PetscScalar *in, Pe
   PetscCall(PetscMatlabEnginePutArray(matlab->mengine, matlab->dimin, n, in, "x"));
   PetscCall(PetscMatlabEngineEvaluate(matlab->mengine, matlab->string));
   PetscCall(PetscMatlabEngineGetArray(matlab->mengine, matlab->dimout, n, out, "f"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PFSetFromOptions_Matlab(PF pf, PetscOptionItems *PetscOptionsObject)
@@ -56,7 +56,7 @@ PetscErrorCode PFSetFromOptions_Matlab(PF pf, PetscOptionItems *PetscOptionsObje
   PetscCall(PetscOptionsString("-pf_matlab", "Matlab function", "None", "", value, sizeof(value), &flag));
   if (flag) PetscCall(PetscStrallocpy((char *)value, &matlab->string));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF pf, void *value)
@@ -74,5 +74,5 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF pf, void *value)
   PetscCall(PFSet(pf, PFApply_Matlab, NULL, PFView_Matlab, PFDestroy_Matlab, matlab));
 
   pf->ops->setfromoptions = PFSetFromOptions_Matlab;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

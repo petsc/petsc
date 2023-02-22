@@ -530,7 +530,7 @@ static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPr
   PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyEnd(rhs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Create a pressure-only DMStag and use it to generate a nullspace vector
@@ -560,7 +560,7 @@ static PetscErrorCode AttachNullspace(DM dmSol, Mat A)
   PetscCall(VecDestroy(&constantPressure));
   PetscCall(MatSetNullSpace(A, matNullSpace));
   PetscCall(MatNullSpaceDestroy(&matNullSpace));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Create a reference solution.
@@ -601,7 +601,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef)
   PetscCall(DMStagRestoreProductCoordinateArraysRead(dmSol, &cArrX, &cArrY, NULL));
   PetscCall(DMLocalToGlobal(dmSol, solRefLocal, INSERT_VALUES, *pSolRef));
   PetscCall(DMRestoreLocalVector(dmSol, &solRefLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
@@ -618,7 +618,7 @@ static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
   errRel = errAbs / normsolRef;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error (abs): %g\nError (rel): %g\n", (double)errAbs, (double)errRel));
   PetscCall(VecDestroy(&diff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

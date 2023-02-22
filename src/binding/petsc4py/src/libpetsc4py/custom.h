@@ -13,7 +13,7 @@ PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject o, PetscInt id, Petsc
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposedDataGetInt(o,id,*v,*exist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -21,7 +21,7 @@ PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject o, PetscInt id, Petsc
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposedDataSetInt(o,id,v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -29,7 +29,7 @@ PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt *id)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposedDataRegister(id));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -38,7 +38,7 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscCall(KSPLogResidualHistory(ksp,rnorm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -47,7 +47,7 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscCall(SNESLogConvergenceHistory(snes,rnorm,lits));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -71,7 +71,7 @@ PetscErrorCode KSPConverged(KSP ksp,
   }
   ksp->rnorm = rnorm;
   if (reason) *reason = ksp->reason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -93,7 +93,7 @@ PetscErrorCode SNESConverged(SNES snes,
   }
   snes->norm = fnorm;
   if (reason) *reason = snes->reason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -103,7 +103,7 @@ PetscErrorCode TaoRegisterCustom(const char sname[], PetscErrorCode (*function)(
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(TaoRegister(sname, function));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -113,7 +113,7 @@ PetscErrorCode TaoConverged(Tao tao)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (tao->ops->convergencetest) PetscUseTypeMethod(tao,convergencetest,tao->cnvP);
   else PetscCall(TaoDefaultConvergenceTest(tao,tao->cnvP));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -122,7 +122,7 @@ PetscErrorCode TaoCheckReals(Tao tao, PetscReal f, PetscReal g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(g),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User provided compute function generated Inf or NaN");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -133,7 +133,7 @@ PetscErrorCode TaoCreateDefaultKSP(Tao tao)
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(KSPCreate(((PetscObject)tao)->comm,&tao->ksp));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -147,7 +147,7 @@ PetscErrorCode TaoCreateDefaultLineSearch(Tao tao)
   PetscCall(TaoLineSearchSetType(tao->linesearch,TAOLINESEARCHMT));
   PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch,tao));
   PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -157,7 +157,7 @@ PetscErrorCode TaoHasGradientRoutine(Tao tao, PetscBool* flg)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidBoolPointer(flg,2);
   *flg = (PetscBool)(tao->ops->computegradient || tao->ops->computeobjectiveandgradient);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if 0
@@ -168,7 +168,7 @@ PetscErrorCode TaoHasHessianRoutine(Tao tao, PetscBool* flg)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidBoolPointer(flg,2);
   *flg = tao->ops->computehessian;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -178,7 +178,7 @@ PetscErrorCode TaoComputeUpdate(Tao tao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscTryTypeMethod(tao,update,tao->niter,tao->user_update);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -197,7 +197,7 @@ PetscErrorCode TaoGetVecs(Tao tao, Vec *X, Vec *G, Vec *S)
     if (has_g && !tao->stepdirection) PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
     *S = has_g ? tao->stepdirection : NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -209,7 +209,7 @@ PetscErrorCode TaoApplyLineSearch(Tao tao, PetscReal* f, PetscReal *s, TaoLineSe
   PetscValidRealPointer(s,3);
   PetscCall(TaoLineSearchApply(tao->linesearch,tao->solution,f,tao->gradient,tao->stepdirection,s,lsr));
   PetscCall(TaoAddLineSearchCounts(tao));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #ifndef PETSC_ERR_PYTHON

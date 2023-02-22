@@ -20,7 +20,7 @@ PetscErrorCode TaoSetSolution(Tao tao, Vec x0)
   PetscCall(PetscObjectReference((PetscObject)x0));
   PetscCall(VecDestroy(&tao->solution));
   tao->solution = x0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
@@ -42,7 +42,7 @@ PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
   PetscOptionsEnd();
   if (!test) {
     if (complete_print) PetscCall(PetscViewerDestroy(&mviewer));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscObjectGetComm((PetscObject)tao, &comm));
@@ -96,7 +96,7 @@ PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
     PetscCall(PetscViewerDestroy(&mviewer));
   }
   PetscCall(PetscViewerASCIISetTab(viewer, tabs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -148,7 +148,7 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscCall(VecLockReadPop(X));
 
   PetscCall(TaoTestGradient(tao, X, G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -196,7 +196,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TaoSetObjective() has not been called");
   PetscCall(PetscInfo(tao, "TAO Function evaluation: %20.19e\n", (double)(*f)));
   PetscCall(VecLockReadPop(X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -251,7 +251,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   PetscCall(VecLockReadPop(X));
 
   PetscCall(TaoTestGradient(tao, X, G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -282,7 +282,7 @@ PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscRe
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (ctx) tao->user_objP = ctx;
   if (func) tao->ops->computeobjective = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -314,7 +314,7 @@ PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao, Vec, PetscR
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (func) *func = tao->ops->computeobjective;
   if (ctx) *ctx = tao->user_objP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -350,7 +350,7 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   tao->user_lsresP          = ctx;
   tao->ops->computeresidual = func;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -401,7 +401,7 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
     tao->res_weights_rows = NULL;
     tao->res_weights_cols = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -439,7 +439,7 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
     tao->nfuncs++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TaoSetResidualRoutine() has not been called");
   PetscCall(PetscInfo(tao, "TAO least-squares residual evaluation.\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -478,7 +478,7 @@ PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, V
   }
   if (func) tao->ops->computegradient = func;
   if (ctx) tao->user_gradP = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -512,7 +512,7 @@ PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec,
   if (g) *g = tao->gradient;
   if (func) *func = tao->ops->computegradient;
   if (ctx) *ctx = tao->user_gradP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -555,7 +555,7 @@ PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)
   }
   if (ctx) tao->user_objgradP = ctx;
   if (func) tao->ops->computeobjectiveandgradient = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -590,7 +590,7 @@ PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**fun
   if (g) *g = tao->gradient;
   if (func) *func = tao->ops->computeobjectiveandgradient;
   if (ctx) *ctx = tao->user_objgradP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -617,7 +617,7 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (tao->ops->computeobjective == NULL) *flg = PETSC_FALSE;
   else *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -644,7 +644,7 @@ PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (tao->ops->computegradient == NULL) *flg = PETSC_FALSE;
   else *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -671,5 +671,5 @@ PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao tao, PetscBool *flg)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (tao->ops->computeobjectiveandgradient == NULL) *flg = PETSC_FALSE;
   else *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

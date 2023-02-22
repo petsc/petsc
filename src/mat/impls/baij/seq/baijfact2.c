@@ -110,7 +110,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B, Mat A, const
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * bs * bs2 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B, Mat A, const MatFactorInfo *info)
@@ -242,7 +242,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B, Mat A, const MatFactorInfo *i
   C->assembled = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * bs * bs2 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -306,7 +306,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isrow, IS i
     bj++;
     bdiag[i] = bi_temp - 1;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
@@ -367,7 +367,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
     b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
 
     PetscCall(PetscMalloc1((n + 1) * bs, &b->solve_work));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(ISGetIndices(isrow, &r));
@@ -510,15 +510,17 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   fact->info.fill_ratio_needed = ((PetscReal)(bdiag[0] + 1)) / ((PetscReal)ai[n]);
 
   PetscCall(MatSeqBAIJSetNumericFactorization(fact, both_identity));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if 0
+// unused
 /*
      This code is virtually identical to MatILUFactorSymbolic_SeqAIJ
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
-PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+static PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b;
   IS              isicol;
@@ -557,7 +559,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
     b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
 
     PetscCall(PetscMalloc1((n + 1) * bs, &b->solve_work));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* general case perform the symbolic factorization */
@@ -682,7 +684,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
   PetscCall(PetscFree(fill));
   PetscCall(PetscFree(im));
 
-#if defined(PETSC_USE_INFO)
+  #if defined(PETSC_USE_INFO)
   {
     PetscReal af = ((PetscReal)ainew[n]) / ((PetscReal)ai[n]);
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocate, (double)f, (double)af));
@@ -691,7 +693,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
     PetscCall(PetscInfo(A, "for best performance.\n"));
     if (diagonal_fill) PetscCall(PetscInfo(A, "Detected and replaced %" PetscInt_FMT " missing diagonals\n", dcount));
   }
-#endif
+  #endif
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(fact, bs, MAT_SKIP_ALLOCATION, NULL));
@@ -727,8 +729,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS isrow, I
   fact->info.fill_ratio_needed = ((PetscReal)ainew[n]) / ((PetscReal)ai[prow]);
 
   PetscCall(MatSeqBAIJSetNumericFactorization_inplace(fact, both_identity));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif
 
 PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
@@ -742,7 +745,7 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
   /*    } */
   /* This should really invoke a push/pop logic, but we don't have that yet. */
   A->ops->setunfactored = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
@@ -755,5 +758,5 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
   /* Is this really necessary? */
   while (nz--) { AJ[nz] = (int)((unsigned int)aj[nz]); /* First extend, then convert to signed. */ }
   A->ops->setunfactored = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

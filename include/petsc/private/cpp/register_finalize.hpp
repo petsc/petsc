@@ -10,13 +10,13 @@ namespace
 {
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
+inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
 {
   PetscContainer contain   = nullptr;
   const auto     finalizer = [](void *ptr) {
     PetscFunctionBegin;
     PetscCall(static_cast<T *>(ptr)->finalize());
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   };
 
   PetscFunctionBegin;
@@ -25,7 +25,7 @@ PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI
   PetscCall(PetscContainerSetPointer(contain, obj));
   PetscCall(PetscContainerSetUserDestroy(contain, std::move(finalizer)));
   PetscCall(PetscObjectRegisterDestroy(reinterpret_cast<PetscObject>(contain)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // anonymous namespace
@@ -45,15 +45,15 @@ namespace Petsc
 // 3. registered() - Query whether you are registered.
 // ==========================================================================================
 template <typename Derived>
-class RegisterFinalizeable : public util::crtp<Derived, RegisterFinalizeable> {
+class RegisterFinalizeable : public util::crtp<RegisterFinalizeable, Derived> {
 public:
   using derived_type = Derived;
 
   PETSC_NODISCARD bool registered() const noexcept;
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode finalize(Args &&...) noexcept;
+  PetscErrorCode finalize(Args &&...) noexcept;
   template <typename... Args>
-  PETSC_NODISCARD PetscErrorCode register_finalize(Args &&...) noexcept;
+  PetscErrorCode register_finalize(Args &&...) noexcept;
 
 private:
   RegisterFinalizeable() = default;
@@ -61,9 +61,9 @@ private:
 
   // default implementations if the derived class does not want to implement them
   template <typename... Args>
-  PETSC_NODISCARD static PetscErrorCode finalize_(Args &&...) noexcept;
+  static PetscErrorCode finalize_(Args &&...) noexcept;
   template <typename... Args>
-  PETSC_NODISCARD static PetscErrorCode register_finalize_(Args &&...) noexcept;
+  static PetscErrorCode register_finalize_(Args &&...) noexcept;
 
   bool registered_ = false;
 };
@@ -72,14 +72,14 @@ template <typename D>
 template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::finalize_(Args &&...) noexcept
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 template <typename D>
 template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::register_finalize_(Args &&...) noexcept
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -122,7 +122,7 @@ inline PetscErrorCode RegisterFinalizeable<D>::finalize(Args &&...args) noexcept
     registered_ = false;
     PetscCall(this->underlying().finalize_(std::forward<Args>(args)...));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -149,13 +149,13 @@ template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(Args &&...args) noexcept
 {
   PetscFunctionBegin;
-  if (PetscLikely(this->underlying().registered())) PetscFunctionReturn(0);
+  if (PetscLikely(this->underlying().registered())) PetscFunctionReturn(PETSC_SUCCESS);
   registered_ = true;
   PetscCall(this->underlying().register_finalize_(std::forward<Args>(args)...));
   // Check if registered before we commit to actually register-finalizing. register_finalize_()
   // is allowed to run its finalizer immediately
   if (this->underlying().registered()) PetscCall(PetscCxxObjectRegisterFinalize(this));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace Petsc

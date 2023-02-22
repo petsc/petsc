@@ -19,7 +19,7 @@ typedef struct _n_PetscSFLink *PetscSFLink;
   PetscSFPackOpt rootpackopt[2];   /* Pack optimization plans based on patterns in irootloc[]. NULL for no optimizations */ \
   PetscSFPackOpt rootpackopt_d[2]; /* Copy of rootpackopt[] on device if needed */ \
   PetscBool      rootdups[2];      /* Indices of roots in irootloc[local/remote] have dups. Used for data-race test */ \
-  PetscInt       nrootreqs;        /* Number of MPI reqests */ \
+  PetscInt       nrootreqs;        /* Number of MPI requests */ \
   PetscSFLink    avail;            /* One or more entries per MPI Datatype, lazily constructed */ \
   PetscSFLink    inuse             /* Buffers being used for transactions that have not yet completed */
 
@@ -50,7 +50,7 @@ static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscInt *nroo
   if (rootranks) *rootranks = bas->iranks;
   if (rootoffset) *rootoffset = bas->ioffset;
   if (rootloc) *rootloc = bas->irootloc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscInt *nleafranks, PetscInt *ndleafranks, const PetscMPIInt **leafranks, const PetscInt **leafoffset, const PetscInt **leafloc, const PetscInt **leafrremote)
@@ -62,7 +62,7 @@ static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscInt *nlea
   if (leafoffset) *leafoffset = sf->roffset;
   if (leafloc) *leafloc = sf->rmine;
   if (leafrremote) *leafrremote = sf->rremote;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF);

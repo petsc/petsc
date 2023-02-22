@@ -20,8 +20,8 @@ typedef struct _Action {
   int            action;        /* The type of execution */
   PetscLogEvent  event;         /* The event number */
   PetscClassId   classid;       /* The event class id */
-  PetscLogDouble time;          /* The time of occurence */
-  PetscLogDouble flops;         /* The cumlative flops */
+  PetscLogDouble time;          /* The time of occurrence */
+  PetscLogDouble flops;         /* The cumulative flops */
   PetscLogDouble mem;           /* The current memory usage */
   PetscLogDouble maxmem;        /* The maximum memory usage */
   int            id1, id2, id3; /* The ids of associated objects */
@@ -175,9 +175,9 @@ PETSC_INTERN PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent);
 PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
   #endif
 #else /* PETSC_USE_LOG */
-  #define PetscLogGetCurrentEvent_Internal(event) ((*(event) = PETSC_DECIDE), 0)
-  #define PetscLogEventPause_Internal(event)      0
-  #define PetscLogEventResume_Internal(event)     0
+  #define PetscLogGetCurrentEvent_Internal(event) ((*(event) = PETSC_DECIDE), PETSC_SUCCESS)
+  #define PetscLogEventPause_Internal(event)      PETSC_SUCCESS
+  #define PetscLogEventResume_Internal(event)     PETSC_SUCCESS
 #endif /* PETSC_USE_LOG */
 static inline PetscErrorCode PetscLogPauseCurrentEvent_Internal(PetscLogEvent *event)
 {
@@ -185,6 +185,6 @@ static inline PetscErrorCode PetscLogPauseCurrentEvent_Internal(PetscLogEvent *e
   PetscValidIntPointer(event, 1);
   PetscCall(PetscLogGetCurrentEvent_Internal(event));
   PetscCall(PetscLogEventPause_Internal(*event));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSC_LOGIMPL_H */

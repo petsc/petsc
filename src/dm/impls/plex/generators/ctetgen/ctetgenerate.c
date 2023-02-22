@@ -20,7 +20,7 @@ static PetscErrorCode DMPlexInvertCells_CTetgen(PetscInt numCells, PetscInt numC
   } while (0)
   for (coff = 0; coff < bound; coff += numCorners) SWAP(cells[coff], cells[coff + 1]);
 #undef SWAP
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
@@ -232,7 +232,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
           PetscReal centroid[3] = {0., 0., 0.};
           PetscInt  b;
 
-          /* Deterimine what body the cell's centroid is located in */
+          /* Determine what body the cell's centroid is located in */
           if (!interpolate) {
             PetscSection coordSection;
             Vec          coordinates;
@@ -279,7 +279,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
   PetscCall(DMUniversalLabelDestroy(&universal));
   PetscCall(PLCDestroy(&in));
   PetscCall(PLCDestroy(&out));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
@@ -507,7 +507,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
           PetscReal centroid[3] = {0., 0., 0.};
           PetscInt  b;
 
-          /* Deterimine what body the cell's centroid is located in */
+          /* Determine what body the cell's centroid is located in */
           if (!interpolate) {
             PetscSection coordSection;
             Vec          coordinates;
@@ -553,5 +553,5 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
   PetscCall(DMUniversalLabelDestroy(&universal));
   PetscCall(PLCDestroy(&in));
   PetscCall(PLCDestroy(&out));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

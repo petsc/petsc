@@ -1,5 +1,15 @@
 static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist, mumps and mkl_pardiso).\n\
-Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
+Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 -mat_solver_type <>\n\n";
+
+/*
+-mat_solver_type:
+  superlu
+  superlu_dist
+  mumps
+  mkl_pardiso
+  cusparse
+  petsc
+*/
 
 #include <petscmat.h>
 
@@ -8,18 +18,19 @@ int main(int argc, char **args)
   Mat           A, RHS = NULL, RHS1 = NULL, C, F, X;
   Vec           u, x, b;
   PetscMPIInt   size;
-  PetscInt      m, n, nfact, nsolve, nrhs, ipack = 0;
+  PetscInt      m, n, nfact, nsolve, nrhs, ipack = 5;
   PetscReal     norm, tol = 1.e-10;
   IS            perm, iperm;
   MatFactorInfo info;
   PetscRandom   rand;
-  PetscBool     flg, testMatSolve = PETSC_TRUE, testMatMatSolve = PETSC_TRUE, testMatMatSolveTranspose = PETSC_TRUE;
+  PetscBool     flg, symm, testMatSolve = PETSC_TRUE, testMatMatSolve = PETSC_TRUE, testMatMatSolveTranspose = PETSC_TRUE, testMatSolveTranspose = PETSC_TRUE, match = PETSC_FALSE;
   PetscBool     chol = PETSC_FALSE, view = PETSC_FALSE, matsolvexx = PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
   PetscBool test_mumps_opts = PETSC_FALSE;
 #endif
   PetscViewer fd;                       /* viewer */
   char        file[PETSC_MAX_PATH_LEN]; /* input file name */
+  char        pack[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -49,7 +60,8 @@ int main(int argc, char **args)
   PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
-  PetscCall(MatIsSymmetric(A, 0.0, &flg));
+  PetscCall(MatIsSymmetric(A, 0.0, &symm));
+  PetscCall(MatSetOption(A, MAT_SYMMETRIC, symm));
 
   PetscCall(MatViewFromOptions(A, NULL, "-A_view"));
 
@@ -66,6 +78,8 @@ int main(int argc, char **args)
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_factor", &view, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatsolve", &testMatMatSolve, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatsolvetranspose", &testMatMatSolveTranspose, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matsolvetranspose", &testMatSolveTranspose, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-cholesky", &chol, NULL));
 #if defined(PETSC_HAVE_MUMPS)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mumps_opts", &test_mumps_opts, NULL));
@@ -83,26 +97,39 @@ int main(int argc, char **args)
   /* Test Factorization */
   PetscCall(MatGetOrdering(A, MATORDERINGND, &perm, &iperm));
 
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_solver_type", &ipack, NULL));
-  switch (ipack) {
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_solver_type", pack, sizeof(pack), NULL));
 #if defined(PETSC_HAVE_SUPERLU)
-  case 0:
+  PetscCall(PetscStrcmp(MATSOLVERSUPERLU, pack, &match));
+  if (match) {
     PetscCheck(!chol, PETSC_COMM_WORLD, PETSC_ERR_SUP, "SuperLU does not provide Cholesky!");
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " SUPERLU LU:\n"));
     PetscCall(MatGetFactor(A, MATSOLVERSUPERLU, MAT_FACTOR_LU, &F));
-    matsolvexx = PETSC_TRUE;
-    break;
+    matsolvexx = PETSC_FALSE; /* Test MatMatSolve(F,RHS,RHS), RHS is a dense matrix, need further work */
+    ipack      = 0;
+    goto skipoptions;
+  }
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  case 1:
+  PetscCall(PetscStrcmp(MATSOLVERSUPERLU_DIST, pack, &match));
+  if (match) {
     PetscCheck(!chol, PETSC_COMM_WORLD, PETSC_ERR_SUP, "SuperLU does not provide Cholesky!");
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " SUPERLU_DIST LU:\n"));
     PetscCall(MatGetFactor(A, MATSOLVERSUPERLU_DIST, MAT_FACTOR_LU, &F));
     matsolvexx = PETSC_TRUE;
-    break;
+    if (symm) { /* A is symmetric */
+      testMatMatSolveTranspose = PETSC_TRUE;
+      testMatSolveTranspose    = PETSC_TRUE;
+    } else { /* superlu_dist does not support solving A^t x = rhs yet */
+      testMatMatSolveTranspose = PETSC_FALSE;
+      testMatSolveTranspose    = PETSC_FALSE;
+    }
+    ipack = 1;
+    goto skipoptions;
+  }
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  case 2:
+  PetscCall(PetscStrcmp(MATSOLVERMUMPS, pack, &match));
+  if (match) {
     if (chol) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MUMPS CHOLESKY:\n"));
       PetscCall(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_CHOLESKY, &F));
@@ -123,10 +150,13 @@ int main(int argc, char **args)
       PetscCall(MatMumpsSetIcntl(F, 24, 1));
       PetscCall(MatMumpsSetCntl(F, 3, cntl));
     }
-    break;
+    ipack = 2;
+    goto skipoptions;
+  }
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
-  case 3:
+  PetscCall(PetscStrcmp(MATSOLVERMKL_PARDISO, pack, &match));
+  if (match) {
     if (chol) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MKL_PARDISO CHOLESKY:\n"));
       PetscCall(MatGetFactor(A, MATSOLVERMKL_PARDISO, MAT_FACTOR_CHOLESKY, &F));
@@ -134,10 +164,13 @@ int main(int argc, char **args)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MKL_PARDISO LU:\n"));
       PetscCall(MatGetFactor(A, MATSOLVERMKL_PARDISO, MAT_FACTOR_LU, &F));
     }
-    break;
+    ipack = 3;
+    goto skipoptions;
+  }
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  case 4:
+  PetscCall(PetscStrcmp(MATSOLVERCUSPARSE, pack, &match));
+  if (match) {
     if (chol) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, " CUSPARSE CHOLESKY:\n"));
       PetscCall(MatGetFactor(A, MATSOLVERCUSPARSE, MAT_FACTOR_CHOLESKY, &F));
@@ -145,9 +178,15 @@ int main(int argc, char **args)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, " CUSPARSE LU:\n"));
       PetscCall(MatGetFactor(A, MATSOLVERCUSPARSE, MAT_FACTOR_LU, &F));
     }
-    break;
+    testMatSolveTranspose    = PETSC_FALSE;
+    testMatMatSolveTranspose = PETSC_FALSE;
+    ipack                    = 4;
+    goto skipoptions;
+  }
 #endif
-  default:
+  /* PETSc */
+  match = PETSC_TRUE;
+  if (match) {
     if (chol) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, " PETSC CHOLESKY:\n"));
       PetscCall(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_CHOLESKY, &F));
@@ -156,8 +195,11 @@ int main(int argc, char **args)
       PetscCall(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU, &F));
     }
     matsolvexx = PETSC_TRUE;
+    ipack      = 5;
+    goto skipoptions;
   }
 
+skipoptions:
   PetscCall(MatFactorInfoInitialize(&info));
   info.fill      = 5.0;
   info.shifttype = (PetscReal)MAT_SHIFT_NONE;
@@ -198,8 +240,10 @@ int main(int argc, char **args)
 
   #if !defined(PETSC_USE_COMPLEX)
       /* Test MatGetInertia() */
-      PetscCall(MatGetInertia(F, &nneg, &nzero, &npos));
-      PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, " MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n", nneg, nzero, npos));
+      if (symm) { /* A is symmetric */
+        PetscCall(MatGetInertia(F, &nneg, &nzero, &npos));
+        PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, " MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n", nneg, nzero, npos));
+      }
   #endif
     }
 #endif
@@ -274,6 +318,7 @@ int main(int argc, char **args)
       }
 
       for (nsolve = 0; nsolve < 2; nsolve++) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %" PetscInt_FMT "-the MatMatSolveTranspose\n", nsolve));
         PetscCall(MatMatSolveTranspose(F, RHS1, X));
 
         /* Check the error */
@@ -324,6 +369,28 @@ int main(int argc, char **args)
         }
       }
     }
+
+    /* Test MatSolveTranspose() */
+    if (testMatSolveTranspose) {
+      for (nsolve = 0; nsolve < 2; nsolve++) {
+        PetscCall(VecSetRandom(x, rand));
+        PetscCall(VecCopy(x, u));
+        PetscCall(MatMultTranspose(A, x, b));
+
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "   %" PetscInt_FMT "-the MatSolveTranspose\n", nsolve));
+        PetscCall(MatSolveTranspose(F, b, x));
+
+        /* Check the error */
+        PetscCall(VecAXPY(u, -1.0, x)); /* u <- (-1.0)x + u */
+        PetscCall(VecNorm(u, NORM_2, &norm));
+        if (norm > tol) {
+          PetscReal resi;
+          PetscCall(VecAXPY(u, -1.0, b)); /* u <- (-1.0)b + u */
+          PetscCall(VecNorm(u, NORM_2, &resi));
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveTranspose: Norm of error %g, resi %g, numfact %" PetscInt_FMT "\n", (double)norm, (double)resi, nfact));
+        }
+      }
+    }
   }
 
   /* Free data structures */
@@ -348,95 +415,110 @@ int main(int argc, char **args)
 
    test:
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 10
+      args: -f ${DATAFILESPATH}/matrices/medium -mat_solver_type petsc
       output_file: output/ex125.out
 
    test:
       suffix: 2
-      args: -mat_solver_type 10
+      args: -mat_solver_type petsc
       output_file: output/ex125.out
 
    test:
       suffix: mkl_pardiso
       requires: mkl_pardiso datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 3
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type mkl_pardiso
 
    test:
       suffix: mkl_pardiso_2
       requires: mkl_pardiso
-      args: -mat_solver_type 3
+      args: -mat_solver_type mkl_pardiso
       output_file: output/ex125_mkl_pardiso.out
 
    test:
       suffix: mumps
       requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type mumps
       output_file: output/ex125_mumps_seq.out
 
    test:
       suffix: mumps_2
       nsize: 3
       requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type mumps
       output_file: output/ex125_mumps_par.out
 
    test:
       suffix: mumps_3
       requires: mumps
-      args: -mat_solver_type 2
+      args: -mat_solver_type mumps
       output_file: output/ex125_mumps_seq.out
 
    test:
       suffix: mumps_4
       nsize: 3
       requires: mumps
-      args: -mat_solver_type 2
+      args: -mat_solver_type mumps
       output_file: output/ex125_mumps_par.out
 
    test:
       suffix: mumps_5
       nsize: 3
       requires: mumps
-      args: -mat_solver_type 2 -cholesky
+      args: -mat_solver_type mumps -cholesky
       output_file: output/ex125_mumps_par_cholesky.out
+
+   test:
+      suffix: superlu
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) superlu
+      args: -f ${DATAFILESPATH}/matrices/medium -mat_solver_type superlu
+      output_file: output/ex125_superlu.out
 
    test:
       suffix: superlu_dist
       nsize: {{1 3}}
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) superlu_dist
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NOROWPERM
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type superlu_dist -mat_superlu_dist_rowperm NOROWPERM
+      output_file: output/ex125_superlu_dist.out
 
    test:
       suffix: superlu_dist_2
       nsize: {{1 3}}
       requires: superlu_dist !complex
-      args: -n 36 -mat_solver_type 1 -mat_superlu_dist_rowperm NOROWPERM
+      args: -n 36 -mat_solver_type superlu_dist -mat_superlu_dist_rowperm NOROWPERM
       output_file: output/ex125_superlu_dist.out
+
+   test:
+      suffix: superlu_dist_3
+      nsize: {{1 3}}
+      requires: superlu_dist !complex
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) superlu_dist
+      args: -f ${DATAFILESPATH}/matrices/medium -mat_solver_type superlu_dist -mat_superlu_dist_rowperm NOROWPERM
+      output_file: output/ex125_superlu_dist_nonsymmetric.out
 
    test:
       suffix: superlu_dist_complex
       nsize: 3
       requires: datafilespath double superlu_dist complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type 1
+      args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type superlu_dist
       output_file: output/ex125_superlu_dist_complex.out
 
    test:
       suffix: superlu_dist_complex_2
       nsize: 3
       requires: superlu_dist complex
-      args: -mat_solver_type 1
-      output_file: output/ex125_superlu_dist_complex.out
+      args: -mat_solver_type superlu_dist
+      output_file: output/ex125_superlu_dist_complex_2.out
 
    test:
       suffix: cusparse
       requires: cuda datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       #todo: fix the bug with cholesky
-      #args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type 4 -cholesky {{0 1}separate output}
-      args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type 4 -cholesky {{0}separate output}
+      #args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type cusparse -cholesky {{0 1}separate output}
+      args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type cusparse -cholesky {{0}separate output}
 
    test:
       suffix: cusparse_2
       requires: cuda
-      args: -mat_type aijcusparse -mat_solver_type 4 -cholesky {{0 1}separate output}
+      args: -mat_type aijcusparse -mat_solver_type cusparse -cholesky {{0 1}separate output}
 
 TEST*/

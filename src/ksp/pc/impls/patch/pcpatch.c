@@ -14,7 +14,7 @@ static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, Pet
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscObjectView(obj, viewer));
   PetscCall(PetscViewerPopFormat(viewer));
-  return (0);
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode PCPatchConstruct_Star(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
@@ -30,7 +30,7 @@ static PetscErrorCode PCPatchConstruct_Star(void *vpatch, DM dm, PetscInt point,
   PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star));
   for (si = 0; si < starSize * 2; si += 2) PetscCall(PetscHSetIAdd(ht, star[si]));
   PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
@@ -71,7 +71,7 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
     PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
   }
   PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
@@ -147,7 +147,7 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
     PetscCall(PetscFree(htpoints));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* The user's already set the patches in patch->userIS. Build the hash tables */
@@ -171,7 +171,7 @@ static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point,
     PetscCall(PetscHSetIAdd(ht, ownedpoint));
   }
   PetscCall(ISRestoreIndices(patchis, &patchdata));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const PetscSF *sf, const PetscInt *bs)
@@ -291,7 +291,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)pc), &patch->sectionSF));
     PetscCall(PetscSFSetGraph(patch->sectionSF, allRoots, allLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCPatchSetDenseInverse(PC pc, PetscBool flg)
@@ -299,7 +299,7 @@ PetscErrorCode PCPatchSetDenseInverse(PC pc, PetscBool flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   patch->denseinverse = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCPatchGetDenseInverse(PC pc, PetscBool *flg)
@@ -307,7 +307,7 @@ PetscErrorCode PCPatchGetDenseInverse(PC pc, PetscBool *flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *flg = patch->denseinverse;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -316,7 +316,7 @@ PetscErrorCode PCPatchSetIgnoreDim(PC pc, PetscInt dim)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   patch->ignoredim = dim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -325,7 +325,7 @@ PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *dim = patch->ignoredim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -334,7 +334,7 @@ PetscErrorCode PCPatchSetSaveOperators(PC pc, PetscBool flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   patch->save_operators = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -343,7 +343,7 @@ PetscErrorCode PCPatchGetSaveOperators(PC pc, PetscBool *flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *flg = patch->save_operators;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -352,7 +352,7 @@ PetscErrorCode PCPatchSetPrecomputeElementTensors(PC pc, PetscBool flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   patch->precomputeElementTensors = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -361,7 +361,7 @@ PetscErrorCode PCPatchGetPrecomputeElementTensors(PC pc, PetscBool *flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *flg = patch->precomputeElementTensors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -370,7 +370,7 @@ PetscErrorCode PCPatchSetPartitionOfUnity(PC pc, PetscBool flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   patch->partition_of_unity = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -379,7 +379,7 @@ PetscErrorCode PCPatchGetPartitionOfUnity(PC pc, PetscBool *flg)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *flg = patch->partition_of_unity;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -389,7 +389,7 @@ PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
   PetscFunctionBegin;
   PetscCheck(type == PC_COMPOSITE_ADDITIVE || type == PC_COMPOSITE_MULTIPLICATIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Only supports additive or multiplicative as the local type");
   patch->local_composition_type = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -398,7 +398,7 @@ PetscErrorCode PCPatchGetLocalComposition(PC pc, PCCompositeType *type)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *type = patch->local_composition_type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -409,7 +409,7 @@ PetscErrorCode PCPatchSetSubMatType(PC pc, MatType sub_mat_type)
   PetscFunctionBegin;
   if (patch->sub_mat_type) PetscCall(PetscFree(patch->sub_mat_type));
   PetscCall(PetscStrallocpy(sub_mat_type, (char **)&patch->sub_mat_type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -418,7 +418,7 @@ PetscErrorCode PCPatchGetSubMatType(PC pc, MatType *sub_mat_type)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *sub_mat_type = patch->sub_mat_type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -429,7 +429,7 @@ PetscErrorCode PCPatchSetCellNumbering(PC pc, PetscSection cellNumbering)
   PetscFunctionBegin;
   patch->cellNumbering = cellNumbering;
   PetscCall(PetscObjectReference((PetscObject)cellNumbering));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -438,7 +438,7 @@ PetscErrorCode PCPatchGetCellNumbering(PC pc, PetscSection *cellNumbering)
   PC_PATCH *patch = (PC_PATCH *)pc->data;
   PetscFunctionBegin;
   *cellNumbering = patch->cellNumbering;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -473,7 +473,7 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
   default:
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "Unknown patch construction type %" PetscInt_FMT, (PetscInt)patch->ctype);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -496,7 +496,7 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
   default:
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "Unknown patch construction type %" PetscInt_FMT, (PetscInt)patch->ctype);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -539,7 +539,7 @@ PetscErrorCode PCPatchSetDiscretisationInfo(PC pc, PetscInt nsubspaces, DM *dms,
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numGhostBcs, ghostBcNodes, PETSC_COPY_VALUES, &patch->ghostBcNodes));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numGlobalBcs, globalBcNodes, PETSC_COPY_VALUES, &patch->globalBcNodes));
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: Docs */
@@ -572,7 +572,7 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
   PetscCall(PetscObjectReference((PetscObject)patch->sectionSF));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numGhostBcs, ghostBcNodes, PETSC_COPY_VALUES, &patch->ghostBcNodes));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numGlobalBcs, globalBcNodes, PETSC_COPY_VALUES, &patch->globalBcNodes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -613,7 +613,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
   PetscFunctionBegin;
   patch->usercomputef    = func;
   patch->usercomputefctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -654,7 +654,7 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
   PetscFunctionBegin;
   patch->usercomputefintfacet    = func;
   patch->usercomputefintfacetctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -695,7 +695,7 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
   PetscFunctionBegin;
   patch->usercomputeop    = func;
   patch->usercomputeopctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -736,7 +736,7 @@ PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*f
   PetscFunctionBegin;
   patch->usercomputeopintfacet    = func;
   patch->usercomputeopintfacetctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* On entry, ht contains the topological entities whose dofs we are responsible for solving for;
@@ -799,7 +799,7 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI 
     PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, NULL, &star));
   }
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchGetGlobalDofs(PC pc, PetscSection dofSection[], PetscInt f, PetscBool combined, PetscInt p, PetscInt *dof, PetscInt *off)
@@ -837,7 +837,7 @@ static PetscErrorCode PCPatchGetGlobalDofs(PC pc, PetscSection dofSection[], Pet
       if (off) PetscCall(PetscSectionGetOffset(dofSection[f], p, off));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Given a hash table with a set of topological entities (pts), compute the degrees of
@@ -890,7 +890,7 @@ static PetscErrorCode PCPatchGetPointDofs(PC pc, PetscHSetI pts, PetscHSetI dofs
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Given two hash tables A and B, compute the keys in B that are not in A, and put them in C */
@@ -909,7 +909,7 @@ static PetscErrorCode PCPatchComputeSetDifference_Private(PetscHSetI A, PetscHSe
     PetscCall(PetscHSetIHas(A, key, &flg));
     if (!flg) PetscCall(PetscHSetIAdd(C, key));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1175,7 +1175,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
     PetscCall(ObjectView((PetscObject)patch->points, patch->viewerPoints, patch->formatPoints));
   }
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1701,7 +1701,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numDofs, asmArrayWithAll, PETSC_OWN_POINTER, &patch->dofsWithAll));
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numPoints * Nf, offsArrayWithAll, PETSC_OWN_POINTER, &patch->offsWithAll));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *mat, PetscBool withArtificial)
@@ -1896,7 +1896,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
     }
   }
   PetscCall(MatSetUp(*mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchComputeFunction_DMPlex_Private(PC pc, PetscInt patchNum, Vec x, Vec F, IS cellIS, PetscInt n, const PetscInt *l2p, const PetscInt *l2pWithAll, void *ctx)
@@ -1934,7 +1934,7 @@ static PetscErrorCode PCPatchComputeFunction_DMPlex_Private(PC pc, PetscInt patc
   if (patch->viewSection) PetscCall(ObjectView((PetscObject)patch->patchSection, patch->viewerSection, patch->formatSection));
   PetscCall(DMPlexComputeResidual_Patch_Internal(dm, patch->patchSection, cellIS, 0.0, x, NULL, F, ctx));
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt point)
@@ -1960,7 +1960,7 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
   PetscCall(PetscSectionGetOffset(patch->cellCounts, point, &offset));
   if (ncell <= 0) {
     PetscCall(PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecSet(F, 0.0));
   /* Cannot reuse the same IS because the geometry info is being cached in it */
@@ -1978,7 +1978,7 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
     PetscCall(ObjectView((PetscObject)F, patch->viewerMatrix, patch->formatMatrix));
   }
   PetscCall(PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Vec x, Mat J, IS cellIS, PetscInt n, const PetscInt *l2p, const PetscInt *l2pWithAll, void *ctx)
@@ -2016,7 +2016,7 @@ static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patc
   /* TODO Shut off MatViewFromOptions() in MatAssemblyEnd() here */
   PetscCall(DMPlexComputeJacobian_Patch_Internal(dm, patch->patchSection, patch->patchSection, cellIS, 0.0, 0.0, x, NULL, J, J, ctx));
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This function zeros mat on entry */
@@ -2049,7 +2049,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   PetscCall(PetscSectionGetOffset(patch->cellCounts, point, &offset));
   if (ncell <= 0) {
     PetscCall(PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatZeroEntries(mat));
   if (patch->precomputeElementTensors) {
@@ -2181,7 +2181,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     PetscCall(ObjectView((PetscObject)mat, patch->viewerMatrix, patch->formatMatrix));
   }
   PetscCall(PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValues_PCPatch_Private(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], const PetscScalar *v, InsertMode addv)
@@ -2209,7 +2209,7 @@ static PetscErrorCode MatSetValues_PCPatch_Private(Mat mat, PetscInt m, const Pe
     }
   }
   PetscCall(VecRestoreArray(data, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
@@ -2228,7 +2228,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
 
   PetscCall(ISGetSize(patch->cells, &ncell));
   if (!ncell) { /* No cells to assemble over -> skip */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0));
@@ -2346,7 +2346,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCPatch_ScatterLocal_Private(PC pc, PetscInt p, Vec x, Vec y, InsertMode mode, ScatterMode scat, PatchScatterType scattertype)
@@ -2390,7 +2390,7 @@ PetscErrorCode PCPatch_ScatterLocal_Private(PC pc, PetscInt p, Vec x, Vec y, Ins
   }
   PetscCall(VecRestoreArrayRead(x, &xArray));
   PetscCall(VecRestoreArray(y, &yArray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
@@ -2463,7 +2463,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
       PetscCall(MatDestroy(&matSquare));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_PATCH(PC pc)
@@ -2674,8 +2674,8 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         PetscCall(VecSet(patch->dof_weights, 1.0));
       }
 
-      VecDuplicate(patch->dof_weights, &global);
-      VecSet(global, 0.);
+      PetscCall(VecDuplicate(patch->dof_weights, &global));
+      PetscCall(VecSet(global, 0.));
 
       PetscCall(VecGetArray(patch->dof_weights, &input));
       PetscCall(VecGetArray(global, &output));
@@ -2697,7 +2697,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE && patch->save_operators && !patch->isNonlinear) PetscCall(PetscMalloc1(patch->npatch, &patch->matWithArtificial));
   }
   PetscCall((*patch->setupsolver)(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
@@ -2710,7 +2710,7 @@ static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
   PetscFunctionBegin;
   if (patch->denseinverse) {
     PetscCall((*patch->densesolve)(patch->mat[i], x, y));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   ksp = (KSP)patch->solver[i];
   if (!patch->save_operators) {
@@ -2742,7 +2742,7 @@ static PetscErrorCode PCApply_PATCH_Linear(PC pc, PetscInt i, Vec x, Vec y)
     /* Destroy PC context too, otherwise the factored matrix hangs around. */
     PetscCall(PCReset(pc));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, PetscInt pStart)
@@ -2778,7 +2778,7 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
   PetscCall(VecScale(patch->patchRHSWithArtificial, -1.0));
   PetscCall(PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchRHSWithArtificial, patch->localRHS, ADD_VALUES, SCATTER_REVERSE, SCATTER_WITHARTIFICIAL));
   if (!patch->save_operators) PetscCall(MatDestroy(&multMat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
@@ -2862,7 +2862,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
 
   PetscCall(PetscOptionsPopGetViewerOff());
   PetscCall(PetscLogEventEnd(PC_Patch_Apply, pc, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_PATCH_Linear(PC pc)
@@ -2874,7 +2874,7 @@ static PetscErrorCode PCReset_PATCH_Linear(PC pc)
   if (patch->solver) {
     for (i = 0; i < patch->npatch; ++i) PetscCall(KSPReset((KSP)patch->solver[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_PATCH(PC pc)
@@ -2968,7 +2968,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   PetscCall(ISDestroy(&patch->iterationSet));
 
   PetscCall(PetscViewerDestroy(&patch->viewerSection));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_PATCH_Linear(PC pc)
@@ -2981,7 +2981,7 @@ static PetscErrorCode PCDestroy_PATCH_Linear(PC pc)
     for (i = 0; i < patch->npatch; ++i) PetscCall(KSPDestroy((KSP *)&patch->solver[i]));
     PetscCall(PetscFree(patch->solver));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_PATCH(PC pc)
@@ -2992,7 +2992,7 @@ static PetscErrorCode PCDestroy_PATCH(PC pc)
   PetscCall(PCReset_PATCH(pc));
   PetscCall((*patch->destroysolver)(pc));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_PATCH(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -3084,7 +3084,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PC pc, PetscOptionItems *PetscOptio
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerMatrix, &patch->formatMatrix, &patch->viewMatrix));
   PetscOptionsHeadEnd();
   patch->optionsSet = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
@@ -3096,11 +3096,11 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
   PetscFunctionBegin;
   if (!patch->save_operators) {
     /* Can't do this here because the sub KSPs don't have an operator attached yet. */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (patch->denseinverse) {
     /* No solvers */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (i = 0; i < patch->npatch; ++i) {
     if (!((KSP)patch->solver[i])->setfromoptionscalled) PetscCall(KSPSetFromOptions((KSP)patch->solver[i]));
@@ -3108,7 +3108,7 @@ static PetscErrorCode PCSetUpOnBlocks_PATCH(PC pc)
     PetscCall(KSPGetConvergedReason((KSP)patch->solver[i], &reason));
     if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
@@ -3121,7 +3121,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   PetscFunctionBegin;
   /* TODO Redo tabbing with set tbas in new style */
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (!isascii) PetscFunctionReturn(0);
+  if (!isascii) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Subspace Correction preconditioner with %" PetscInt_FMT " patches\n", patch->npatch));
@@ -3166,7 +3166,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
     }
   }
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -3242,5 +3242,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   pc->ops->view            = PCView_PATCH;
   pc->ops->applyrichardson = NULL;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

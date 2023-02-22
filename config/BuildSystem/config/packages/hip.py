@@ -8,7 +8,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
 
-    self.minversion       = '3.8'
+    self.minversion       = '4.1'
     self.versionname      = 'HIP_VERSION_MAJOR.HIP_VERSION_MINOR'
     self.versioninclude   = 'hip/hip_version.h'
     self.requiresversion  = 1
@@ -145,7 +145,7 @@ class Configure(config.package.Package):
         self.hipArch.lower() # to have a uniform format even if user set hip arch in weird cases
         if not self.hipArch.startswith('gfx'):
           raise RuntimeError('HIP arch name ' + self.hipArch + ' is not in the supported gfxnnn format')
-        self.setCompilers.HIPFLAGS += ' --amdgpu-target=' + self.hipArch +' '
+        self.setCompilers.HIPFLAGS += ' --offload-arch=' + self.hipArch +' '
       else:
         raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 
@@ -154,12 +154,12 @@ class Configure(config.package.Package):
       # should be better written as --with-hipcc=/opt/rocm-4.5.2/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 or simply
       # --with-hip-dir=/opt/rocm-4.5.2)
       if self.directory:
-        self.rocBlasDir   = self.directory
-        self.rocSparseDir = self.directory
+        self.hipDir = self.directory
       else: # directory is '', indicating we are using the compiler's default, so the last resort is to guess the dir from hipcc
-        hipDir            = os.path.dirname(os.path.dirname(self.fullPathHIPC)) # Ex. peel /opt/rocm-4.5.2/bin/hipcc twice
-        self.rocBlasDir   = hipDir
-        self.rocSparseDir = hipDir
+        self.hipDir = os.path.dirname(os.path.dirname(self.fullPathHIPC)) # Ex. peel /opt/rocm-4.5.2/bin/hipcc twice
+
+      self.rocBlasDir   = self.hipDir
+      self.rocSparseDir = self.hipDir
     #self.checkHIPDoubleAlign()
     self.configureTypes()
     self.libraries.popLanguage()

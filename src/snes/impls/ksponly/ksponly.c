@@ -62,21 +62,21 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
     PetscCall(VecNorm(F, NORM_2, &fnorm));
     PetscCall(SNESMonitor(snes, 1, fnorm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESSetUpMatrices(snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(snes->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 
   PetscCall(PetscNew(&ksponly));
   snes->data = (void *)ksponly;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -128,5 +128,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes)
   PetscCall(PetscObjectChangeTypeName((PetscObject)snes, SNESKSPTRANSPOSEONLY));
   kspo                  = (SNES_KSPONLY *)snes->data;
   kspo->transpose_solve = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

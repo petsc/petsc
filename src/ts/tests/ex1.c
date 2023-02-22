@@ -137,7 +137,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec x, Vec f, void *ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(VecSet(f, (PetscReal)1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
@@ -145,7 +145,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(MatZeroEntries(B));
   if (B != A) PetscCall(MatZeroEntries(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PreStep(TS ts)
@@ -162,7 +162,7 @@ PetscErrorCode PreStep(TS ts)
   PetscCall(VecGetArrayRead(x, &a));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g\n", PETSC_FUNCTION_NAME, n, (double)t, (double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x, &a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PostStep(TS ts)
@@ -179,7 +179,7 @@ PetscErrorCode PostStep(TS ts)
   PetscCall(VecGetArrayRead(x, &a));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g\n", PETSC_FUNCTION_NAME, n, (double)t, (double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x, &a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, void *ctx)
@@ -190,7 +190,7 @@ PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, void *ctx)
   PetscCall(VecGetArrayRead(x, &a));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g\n", PETSC_FUNCTION_NAME, n, (double)t, (double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x, &a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscScalar *fvalue, void *ctx)
@@ -199,7 +199,7 @@ PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscScalar *fvalue, void *ctx)
   fvalue[0] = t - 5;
   fvalue[1] = 7 - t;
   fvalue[2] = t - 9;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec x, PetscBool forwardsolve, void *ctx)
@@ -212,7 +212,7 @@ PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscRe
   PetscCall(VecGetArrayRead(x, &a));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g\n", PETSC_FUNCTION_NAME, i, (double)t, (double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x, &a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

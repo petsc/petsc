@@ -124,7 +124,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7_inplace(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * 49 * (a->nz) - 7.0 * A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A, Vec bb, Vec xx)
 {
@@ -248,5 +248,5 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * bs2 * (a->nz) - bs * A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

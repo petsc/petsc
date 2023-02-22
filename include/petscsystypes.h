@@ -8,18 +8,146 @@
 #include <petscconf.h>
 #include <petscconf_poison.h>
 #include <petscfix.h>
+#include <petscmacros.h> // PETSC_NODISCARD, PETSC_CPP_VERSION
 #include <stddef.h>
 
 /* SUBMANSEC = Sys */
 
-/*MC
-    PetscErrorCode - datatype used for return error code from almost all PETSc functions
+#include <limits.h> // INT_MIN, INT_MAX
 
-    Level: beginner
+#if defined(__clang__) || (PETSC_CPP_VERSION >= 17)
+  // clang allows both [[nodiscard]] and __attribute__((warn_unused_result)) on type
+  // definitions. GCC, however, does not, so check that we are using C++17 [[nodiscard]]
+  // instead of __attribute__((warn_unused_result))
+  #define PETSC_ERROR_CODE_NODISCARD PETSC_NODISCARD
+#else
+  #define PETSC_ERROR_CODE_NODISCARD
+#endif
 
-.seealso: `PetscCall()`, `SETERRQ()`
-M*/
+#ifdef PETSC_CLANG_STATIC_ANALYZER
+  #undef PETSC_USE_STRICT_PETSCERRORCODE
+#endif
+
+#ifdef PETSC_USE_STRICT_PETSCERRORCODE
+  #define PETSC_ERROR_CODE_TYPEDEF   typedef
+  #define PETSC_ERROR_CODE_ENUM_NAME PetscErrorCode
+#else
+  #define PETSC_ERROR_CODE_TYPEDEF
+  #define PETSC_ERROR_CODE_ENUM_NAME
+#endif
+
+/*E
+  PetscErrorCode - Datatype used to return PETSc error codes.
+
+  Level: beginner
+
+  Notes:
+  Virtually all PETSc functions return an error code. It is the callers responsibility to check
+  the value of the returned error code after each PETSc call to determine if any errors
+  occurred. A set of convenience macros (e.g. `PetscCall()`, `PetscCallVoid()`) are provided
+  for this purpose. Failing to properly check for errors is not supported, as errors may leave
+  PETSc in an undetermined state.
+
+  One can retrieve the error string corresponding to a particular error code using
+  `PetscErrorMessage()`.
+
+  The user can also configure PETSc with the `--with-strict-petscerrorcode` option to enable
+  compiler warnings when the returned error codes are not captured and checked. Users are
+  *heavily* encouraged to opt-in to this option, as it will become enabled by default in a
+  future release.
+
+  Developer Notes:
+
+  These are the generic error codes. These error codes are used in many different places in the
+  PETSc source code. The C-string versions are at defined in `PetscErrorStrings[]` in
+  `src/sys/error/err.c`, while the fortran versions are defined in
+  `src/sys/f90-mod/petscerror.h`. Any changes here must also be made in both locations.
+
+.seealso: `PetscErrorMessage()`, `PetscCall()`, `SETERRQ()`
+E*/
+PETSC_ERROR_CODE_TYPEDEF enum PETSC_ERROR_CODE_NODISCARD {
+  PETSC_SUCCESS                   = 0,
+  PETSC_ERR_BOOLEAN_MACRO_FAILURE = 1, /* do not use */
+
+  PETSC_ERR_MIN_VALUE = 54, /* should always be one less then the smallest value */
+
+  PETSC_ERR_MEM            = 55, /* unable to allocate requested memory */
+  PETSC_ERR_SUP            = 56, /* no support for requested operation */
+  PETSC_ERR_SUP_SYS        = 57, /* no support for requested operation on this computer system */
+  PETSC_ERR_ORDER          = 58, /* operation done in wrong order */
+  PETSC_ERR_SIG            = 59, /* signal received */
+  PETSC_ERR_FP             = 72, /* floating point exception */
+  PETSC_ERR_COR            = 74, /* corrupted PETSc object */
+  PETSC_ERR_LIB            = 76, /* error in library called by PETSc */
+  PETSC_ERR_PLIB           = 77, /* PETSc library generated inconsistent data */
+  PETSC_ERR_MEMC           = 78, /* memory corruption */
+  PETSC_ERR_CONV_FAILED    = 82, /* iterative method (KSP or SNES) failed */
+  PETSC_ERR_USER           = 83, /* user has not provided needed function */
+  PETSC_ERR_SYS            = 88, /* error in system call */
+  PETSC_ERR_POINTER        = 70, /* pointer does not point to valid address */
+  PETSC_ERR_MPI_LIB_INCOMP = 87, /* MPI library at runtime is not compatible with MPI user compiled with */
+
+  PETSC_ERR_ARG_SIZ          = 60, /* nonconforming object sizes used in operation */
+  PETSC_ERR_ARG_IDN          = 61, /* two arguments not allowed to be the same */
+  PETSC_ERR_ARG_WRONG        = 62, /* wrong argument (but object probably ok) */
+  PETSC_ERR_ARG_CORRUPT      = 64, /* null or corrupted PETSc object as argument */
+  PETSC_ERR_ARG_OUTOFRANGE   = 63, /* input argument, out of range */
+  PETSC_ERR_ARG_BADPTR       = 68, /* invalid pointer argument */
+  PETSC_ERR_ARG_NOTSAMETYPE  = 69, /* two args must be same object type */
+  PETSC_ERR_ARG_NOTSAMECOMM  = 80, /* two args must be same communicators */
+  PETSC_ERR_ARG_WRONGSTATE   = 73, /* object in argument is in wrong state, e.g. unassembled mat */
+  PETSC_ERR_ARG_TYPENOTSET   = 89, /* the type of the object has not yet been set */
+  PETSC_ERR_ARG_INCOMP       = 75, /* two arguments are incompatible */
+  PETSC_ERR_ARG_NULL         = 85, /* argument is null that should not be */
+  PETSC_ERR_ARG_UNKNOWN_TYPE = 86, /* type name doesn't match any registered type */
+
+  PETSC_ERR_FILE_OPEN       = 65, /* unable to open file */
+  PETSC_ERR_FILE_READ       = 66, /* unable to read from file */
+  PETSC_ERR_FILE_WRITE      = 67, /* unable to write to file */
+  PETSC_ERR_FILE_UNEXPECTED = 79, /* unexpected data in file */
+
+  PETSC_ERR_MAT_LU_ZRPVT = 71, /* detected a zero pivot during LU factorization */
+  PETSC_ERR_MAT_CH_ZRPVT = 81, /* detected a zero pivot during Cholesky factorization */
+
+  PETSC_ERR_INT_OVERFLOW   = 84,
+  PETSC_ERR_FLOP_COUNT     = 90,
+  PETSC_ERR_NOT_CONVERGED  = 91,  /* solver did not converge */
+  PETSC_ERR_MISSING_FACTOR = 92,  /* MatGetFactor() failed */
+  PETSC_ERR_OPT_OVERWRITE  = 93,  /* attempted to over write options which should not be changed */
+  PETSC_ERR_WRONG_MPI_SIZE = 94,  /* example/application run with number of MPI ranks it does not support */
+  PETSC_ERR_USER_INPUT     = 95,  /* missing or incorrect user input */
+  PETSC_ERR_GPU_RESOURCE   = 96,  /* unable to load a GPU resource, for example cuBLAS */
+  PETSC_ERR_GPU            = 97,  /* An error from a GPU call, this may be due to lack of resources on the GPU or a true error in the call */
+  PETSC_ERR_MPI            = 98,  /* general MPI error */
+  PETSC_ERR_RETURN         = 99,  /* PetscError() incorrectly returned an error code of 0 */
+  PETSC_ERR_MAX_VALUE      = 100, /* this is always the one more than the largest error code */
+
+  /*
+    do not use, exist purely to make the enum bounds equal that of a regular int (so conversion
+    to int in main() is not undefined behavior)
+  */
+  PETSC_ERR_MIN_SIGNED_BOUND_DO_NOT_USE = INT_MIN,
+  PETSC_ERR_MAX_SIGNED_BOUND_DO_NOT_USE = INT_MAX
+} PETSC_ERROR_CODE_ENUM_NAME;
+
+#ifndef PETSC_USE_STRICT_PETSCERRORCODE
 typedef int PetscErrorCode;
+
+  /*
+  Needed so that C++ lambdas can deduce the return type as PetscErrorCode from
+  PetscFunctionReturn(PETSC_SUCCESS). Otherwise we get
+
+  error: return type '(unnamed enum at include/petscsystypes.h:50:1)' must match previous
+  return type 'int' when lambda expression has unspecified explicit return type
+  PetscFunctionReturn(PETSC_SUCCESS);
+  ^
+*/
+  #define PETSC_SUCCESS ((PetscErrorCode)0)
+#endif
+
+#undef PETSC_ERROR_CODE_NODISCARD
+#undef PETSC_ERROR_CODE_TYPEDEF
+#undef PETSC_ERROR_CODE_ENUM_NAME
 
 /*MC
 
@@ -55,6 +183,12 @@ typedef int PetscClassId;
 
 M*/
 typedef int PetscMPIInt;
+
+/* Limit MPI to 32-bits */
+enum {
+  PETSC_MPI_INT_MIN = INT_MIN,
+  PETSC_MPI_INT_MAX = INT_MAX
+};
 
 /*MC
     PetscSizeT - datatype used to represent sizes in memory (like size_t)
@@ -127,19 +261,46 @@ M*/
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
+
+  #define PETSC_INT64_MIN INT64_MIN
+  #define PETSC_INT64_MAX INT64_MAX
+
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long PetscInt64;
+
+  #define PETSC_INT64_MIN LLONG_MIN
+  #define PETSC_INT64_MAX LLONG_MAX
+
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 PetscInt64;
+
+  #define PETSC_INT64_MIN INT64_MIN
+  #define PETSC_INT64_MAX INT64_MAX
+
 #else
   #error "cannot determine PetscInt64 type"
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef PetscInt64 PetscInt;
+
+  #define PETSC_INT_MIN PETSC_INT64_MIN
+  #define PETSC_INT_MAX PETSC_INT64_MAX
+  #define PetscInt_FMT  PetscInt64_FMT
 #else
 typedef int       PetscInt;
+
+enum {
+  PETSC_INT_MIN = INT_MIN,
+  PETSC_INT_MAX = INT_MAX
+};
+
+  #define PetscInt_FMT "d"
 #endif
+
+#define PETSC_MIN_INT    PETSC_INT_MIN
+#define PETSC_MAX_INT    PETSC_INT_MAX
+#define PETSC_MAX_UINT16 65535
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
   #define MPIU_INT64     MPI_INT64_T
@@ -187,11 +348,20 @@ typedef int       PetscInt;
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-  #define PetscBLASInt_FMT PetscInt64_FMT
 typedef PetscInt64 PetscBLASInt;
+
+  #define PETSC_BLAS_INT_MIN PETSC_INT64_MIN
+  #define PETSC_BLAS_INT_MAX PETSC_INT64_MAX
+  #define PetscBLASInt_FMT   PetscInt64_FMT
 #else
+typedef int PetscBLASInt;
+
+enum {
+  PETSC_BLAS_INT_MIN = INT_MIN,
+  PETSC_BLAS_INT_MAX = INT_MAX
+};
+
   #define PetscBLASInt_FMT "d"
-typedef int       PetscBLASInt;
 #endif
 
 /*MC
@@ -210,6 +380,11 @@ typedef int       PetscBLASInt;
 M*/
 typedef int PetscCuBLASInt;
 
+enum {
+  PETSC_CUBLAS_INT_MIN = INT_MIN,
+  PETSC_CUBLAS_INT_MAX = INT_MAX
+};
+
 /*MC
    PetscHipBLASInt - datatype used to represent 'int' parameters to hipBLAS/hipSOLVER functions.
 
@@ -226,6 +401,11 @@ typedef int PetscCuBLASInt;
 M*/
 typedef int PetscHipBLASInt;
 
+enum {
+  PETSC_HIPBLAS_INT_MIN = INT_MIN,
+  PETSC_HIPBLAS_INT_MAX = INT_MAX
+};
+
 /*E
     PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
 
@@ -241,6 +421,7 @@ typedef enum {
   PETSC_FALSE,
   PETSC_TRUE
 } PetscBool;
+PETSC_EXTERN const char *const PetscBools[];
 
 /*E
     PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
@@ -250,7 +431,7 @@ typedef enum {
    Note:
    Should not be used with the if (flg) or if (!flg) syntax.
 
-.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UKNOWN`
+.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UNKNOWN`
 E*/
 typedef enum {
   PETSC_BOOL3_FALSE,
@@ -424,6 +605,7 @@ typedef enum {
   PETSC_OWN_POINTER,
   PETSC_USE_POINTER
 } PetscCopyMode;
+PETSC_EXTERN const char *const PetscCopyModes[];
 
 /*MC
     PETSC_FALSE - False value of `PetscBool`
@@ -502,6 +684,7 @@ typedef enum {
   PETSC_INT64            = 17,
   PETSC_COUNT            = 18
 } PetscDataType;
+PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PETSC_REAL PETSC_FLOAT
@@ -604,6 +787,7 @@ typedef enum {
   FILE_MODE_UPDATE,
   FILE_MODE_APPEND_UPDATE
 } PetscFileMode;
+PETSC_EXTERN const char *const PetscFileModes[];
 
 typedef void *PetscDLHandle;
 typedef enum {
@@ -702,6 +886,7 @@ typedef enum {
   PETSC_BUILDTWOSIDED_REDSCATTER = 2
   /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
+PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 
 /* NOTE: If you change this, you must also change the values in src/vec/f90-mod/petscvec.h */
 /*E
@@ -807,6 +992,7 @@ typedef enum {
   PETSC_SUBCOMM_CONTIGUOUS = 1,
   PETSC_SUBCOMM_INTERLACED = 2
 } PetscSubcommType;
+PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 /*S
      PetscHeap - A simple class for managing heaps

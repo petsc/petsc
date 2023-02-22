@@ -248,7 +248,7 @@ static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, Pet
       PetscInt s = tid * MBS;
       for (int i = 0; i < MBS; i++) buf[s + i] = data[t + i];
     });
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -268,7 +268,7 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt sta
       PetscInt s = tid * MBS;
       for (int i = 0; i < MBS; i++) op(data[t + i], buf[s + i]);
     });
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -287,7 +287,7 @@ static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt star
       PetscInt l = tid * MBS;
       for (int i = 0; i < MBS; i++) leafbuf[l + i] = op(rootdata[r + i], leafbuf[l + i]);
     });
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -351,7 +351,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt sr
       t *= MBS;
       for (i = 0; i < MBS; i++) op(dst[t + i], src[s + i]);
     });
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Specialization for Insert since we may use memcpy */
@@ -363,7 +363,7 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscIn
   DeviceExecutionSpace exec;
 
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   /*src and dst are contiguous */
   if ((!srcOpt && !srcIdx) && (!dstOpt && !dstIdx) && src != dst) {
     size_t              sz = count * link->unitbytes;
@@ -373,7 +373,7 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscIn
   } else {
     PetscCall(ScatterAndOp<Type, Insert<Type>, BS, EQ>(link, count, srcStart, srcOpt, srcIdx, src, dstStart, dstOpt, dstIdx, dst));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -394,7 +394,7 @@ static PetscErrorCode FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt
       PetscInt l = (lopt ? MapTidToIndex(lopt, tid) : (leafidx ? leafidx[tid] : leafstart + tid)) * MBS;
       for (int i = 0; i < MBS; i++) leafupdate[l + i] = op(rootdata[r + i], leafdata[l + i]);
     });
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*====================================================================================*/
@@ -552,7 +552,7 @@ static void PackInit_DumbType(PetscSFLink link)
 static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSFLink link)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 */
 
@@ -561,7 +561,7 @@ static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink PETSC_UNUSED link
 {
   PetscFunctionBegin;
   Kokkos::fence();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink PETSC_UNUSED link)
@@ -569,7 +569,7 @@ static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink PETSC_UNUSED link
   DeviceExecutionSpace exec;
   PetscFunctionBegin;
   exec.fence();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n)
@@ -577,7 +577,7 @@ static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link, Pe
   DeviceExecutionSpace exec;
 
   PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) {
     PetscCall(PetscMemcpy(dst, src, n));
   } else {
@@ -597,7 +597,7 @@ static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link, Pe
       Kokkos::deep_copy(exec, dbuf, sbuf);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype, size_t size, void **ptr)
@@ -608,7 +608,7 @@ PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype, size_t size, void **ptr)
     if (!PetscKokkosInitialized) PetscCall(PetscKokkosInitializeCheck());
     *ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype, void *ptr)
@@ -618,7 +618,7 @@ PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype, void *ptr)
   else if (PetscMemTypeDevice(mtype)) {
     Kokkos::kokkos_free<DeviceMemorySpace>(ptr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Destructor when the link uses MPI for communication */
@@ -629,7 +629,7 @@ static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSF sf, PetscSFLink link)
     PetscCall(PetscSFFree(sf, PETSC_MEMTYPE_DEVICE, link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
     PetscCall(PetscSFFree(sf, PETSC_MEMTYPE_DEVICE, link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
@@ -642,7 +642,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
 #endif
 
   PetscFunctionBegin;
-  if (link->deviceinited) PetscFunctionReturn(0);
+  if (link->deviceinited) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_SIGNED_CHAR, &nSignedChar));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_UNSIGNED_CHAR, &nUnsignedChar));
@@ -769,5 +769,5 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf, PetscSFLink link
   link->Memcpy       = PetscSFLinkMemcpy_Kokkos;
   link->Destroy      = PetscSFLinkDestroy_Kokkos;
   link->deviceinited = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

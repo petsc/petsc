@@ -68,5 +68,5 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm, const char number[], const char mess
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

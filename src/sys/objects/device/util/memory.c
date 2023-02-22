@@ -27,7 +27,7 @@ PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
   PetscFunctionBegin;
   PetscValidPointer(type, 2);
   *type = PETSC_MEMTYPE_HOST;
-  if (!ptr) PetscFunctionReturn(0);
+  if (!ptr) PetscFunctionReturn(PETSC_SUCCESS);
 #if PetscDefined(HAVE_CUDA)
   if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) {
     cudaError_t                  cerr;
@@ -41,7 +41,7 @@ PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
     mtype = attr.type;
   #endif
     if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
 
@@ -56,5 +56,5 @@ PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
     if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

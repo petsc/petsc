@@ -59,7 +59,7 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscCall(VecRestoreArray(v, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -102,7 +102,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
       PetscCall(PetscSectionVecView_ASCII(s, v, viewer));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -133,7 +133,7 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscCall(VecGetArray(v, &baseArray));
   *values = &baseArray[s->atlasOff[p]];
   PetscCall(VecRestoreArray(v, &baseArray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -247,7 +247,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
     }
   }
   PetscCall(VecRestoreArray(v, &baseArray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
@@ -285,7 +285,7 @@ PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection 
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)v), subSize, subIndices, PETSC_OWN_POINTER, is));
   PetscCall(VecGetSubVector(v, *is, subv));
   PetscCall(VecSetBlockSize(*subv, Nc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
@@ -293,7 +293,7 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
   PetscFunctionBegin;
   PetscCall(VecRestoreSubVector(v, *is, subv));
   PetscCall(ISDestroy(is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -334,5 +334,5 @@ PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormT
       PetscCall(PetscSectionRestoreField_Internal(s, gs, x, f, pStart, pEnd, &is, &subv));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

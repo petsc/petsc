@@ -25,7 +25,7 @@ static PetscErrorCode PCKSPCreateKSP_KSP(PC pc)
     PetscCall(KSPSetDM(jac->ksp, dm));
     PetscCall(KSPSetDMActive(jac->ksp, PETSC_FALSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_KSP(PC pc, Vec x, Vec y)
@@ -43,7 +43,7 @@ static PetscErrorCode PCApply_KSP(PC pc, Vec x, Vec y)
   PetscCall(KSPCheckSolve(jac->ksp, pc, y));
   PetscCall(KSPGetIterationNumber(jac->ksp, &its));
   jac->its += its;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_KSP(PC pc, Mat X, Mat Y)
@@ -61,7 +61,7 @@ static PetscErrorCode PCMatApply_KSP(PC pc, Mat X, Mat Y)
   PetscCall(KSPCheckSolve(jac->ksp, pc, NULL));
   PetscCall(KSPGetIterationNumber(jac->ksp, &its));
   jac->its += its;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_KSP(PC pc, Vec x, Vec y)
@@ -79,7 +79,7 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc, Vec x, Vec y)
   PetscCall(KSPCheckSolve(jac->ksp, pc, y));
   PetscCall(KSPGetIterationNumber(jac->ksp, &its));
   jac->its += its;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_KSP(PC pc)
@@ -96,7 +96,7 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   else mat = pc->pmat;
   PetscCall(KSPSetOperators(jac->ksp, mat, pc->pmat));
   PetscCall(KSPSetUp(jac->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Default destroy, if it has never been setup */
@@ -106,7 +106,7 @@ static PetscErrorCode PCReset_KSP(PC pc)
 
   PetscFunctionBegin;
   PetscCall(KSPDestroy(&jac->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_KSP(PC pc)
@@ -118,7 +118,7 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCKSPGetKSP_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCKSPSetKSP_C", NULL));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_KSP(PC pc, PetscViewer viewer)
@@ -138,7 +138,7 @@ static PetscErrorCode PCView_KSP(PC pc, PetscViewer viewer)
   PetscCall(KSPView(jac->ksp, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp)
@@ -149,7 +149,7 @@ static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp)
   PetscCall(PetscObjectReference((PetscObject)ksp));
   PetscCall(KSPDestroy(&jac->ksp));
   jac->ksp = ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -177,7 +177,7 @@ PetscErrorCode PCKSPSetKSP(PC pc, KSP ksp)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 2);
   PetscCheckSameComm(pc, 1, ksp, 2);
   PetscTryMethod(pc, "PCKSPSetKSP_C", (PC, KSP), (pc, ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp)
@@ -187,7 +187,7 @@ static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp)
   PetscFunctionBegin;
   if (!jac->ksp) PetscCall(PCKSPCreateKSP_KSP(pc));
   *ksp = jac->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -214,7 +214,7 @@ PetscErrorCode PCKSPGetKSP(PC pc, KSP *ksp)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(ksp, 2);
   PetscUseMethod(pc, "PCKSPGetKSP_C", (PC, KSP *), (pc, ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -225,7 +225,7 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
   PetscOptionsHeadBegin(PetscOptionsObject, "PC KSP options");
   if (jac->ksp) PetscCall(KSPSetFromOptions(jac->ksp));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -247,7 +247,7 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
    Developer Note:
     If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
     and pass that as the right hand side into this `KSP` (and hence this `KSP` will always have a zero initial guess). For all outer Krylov methods
-    except Richardson this is neccessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
+    except Richardson this is necessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
     input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For
     `KSPRICHARDSON` it is possible to provide a `PCApplyRichardson_PCKSP()` that short circuits returning to the `KSP` object at each iteration to compute the
     residual, see for example `PCApplyRichardson_SOR()`. We do not implement a `PCApplyRichardson_PCKSP()`  because (1) using a `KSP` directly inside a Richardson
@@ -278,5 +278,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCKSPGetKSP_C", PCKSPGetKSP_KSP));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCKSPSetKSP_C", PCKSPSetKSP_KSP));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

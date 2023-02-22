@@ -96,9 +96,11 @@ class BaseTestVec(object):
         start, end = self.vec.getOwnershipRange()
         self.vec[start] = -7
         self.vec[end-1]   = -7
+        self.vec.assemble()
         self.assertEqual(self.vec[start], -7)
         self.assertEqual(self.vec[end-1], -7)
         for i in range(start, end): self.vec[i] = i
+        self.vec.assemble()
         values = [self.vec[i] for i in range(start, end)]
         self.assertEqual(values, list(range(start, end)))
         sz = self.vec.getSize()
@@ -198,6 +200,7 @@ class BaseTestVec(object):
         s, e = v.getOwnershipRange()
         v.setRandom()
         w[s:e] = v.getArray().copy()
+        w.assemble()
         self.assertTrue(w.equal(v))
         w1, v1 = w[s],   v[s]
         w2, v2 = w[e-1], v[e-1]

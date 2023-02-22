@@ -9,7 +9,7 @@ static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscViewer v, PetscOption
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "ADIOS PetscViewer Options");
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
@@ -19,16 +19,16 @@ static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
   PetscFunctionBegin;
   switch (adios->btype) {
   case FILE_MODE_READ:
-    PetscCall(adios_read_close(adios->adios_fp));
+    PetscCallExternal(adios_read_close, adios->adios_fp);
     break;
   case FILE_MODE_WRITE:
-    PetscCall(adios_close(adios->adios_handle));
+    PetscCallExternal(adios_close, adios->adios_handle);
     break;
   default:
     break;
   }
   PetscCall(PetscFree(adios->filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
@@ -41,7 +41,7 @@ PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetMode_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileSetMode_ADIOS(PetscViewer viewer, PetscFileMode type)
@@ -50,7 +50,7 @@ PetscErrorCode PetscViewerFileSetMode_ADIOS(PetscViewer viewer, PetscFileMode ty
 
   PetscFunctionBegin;
   adios->btype = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name[])
@@ -73,7 +73,7 @@ PetscErrorCode PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name[
   default:
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[adios->btype]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFileGetName_ADIOS(PetscViewer viewer, const char **name)
@@ -82,7 +82,7 @@ static PetscErrorCode PetscViewerFileGetName_ADIOS(PetscViewer viewer, const cha
 
   PetscFunctionBegin;
   *name = vadios->filename;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -114,7 +114,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileSetName_C", PetscViewerFileSetName_ADIOS));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileGetName_C", PetscViewerFileGetName_ADIOS));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileSetMode_C", PetscViewerFileSetMode_ADIOS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -149,7 +149,7 @@ PetscErrorCode PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileM
   PetscCall(PetscViewerSetType(*adiosv, PETSCVIEWERADIOS));
   PetscCall(PetscViewerFileSetMode(*adiosv, type));
   PetscCall(PetscViewerFileSetName(*adiosv, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -184,7 +184,7 @@ PetscErrorCode PetscDataTypeToADIOSDataType(PetscDataType ptype, enum ADIOS_DATA
   else if (ptype == PETSC_CHAR) *htype = adios_string_array;
   else if (ptype == PETSC_STRING) *htype = adios_string;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PETSc datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -218,5 +218,5 @@ PetscErrorCode PetscADIOSDataTypeToPetscDataType(enum ADIOS_DATATYPES htype, Pet
   else if (htype == adios_string_array) *ptype = PETSC_CHAR;
   else if (htype == adios_string) *ptype = PETSC_STRING;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported ADIOS datatype");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

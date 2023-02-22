@@ -19,7 +19,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill, PetscInt 
   PetscInt i, j, nz, *fill;
 
   PetscFunctionBegin;
-  if (!dfill) PetscFunctionReturn(0);
+  if (!dfill) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* count number nonzeros */
   nz = 0;
@@ -45,7 +45,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill, PetscInt 
   fill[w] = nz;
 
   *rfill = fill;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillsparse, PetscInt w, PetscInt **rfill)
@@ -53,7 +53,7 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
   PetscInt nz;
 
   PetscFunctionBegin;
-  if (!dfillsparse) PetscFunctionReturn(0);
+  if (!dfillsparse) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Determine number of non-zeros */
   nz = (dfillsparse[w] - w - 1);
@@ -61,7 +61,7 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
   /* Allocate space for our copy of the given sparse matrix representation. */
   PetscCall(PetscMalloc1(nz + w + 1, rfill));
   PetscCall(PetscArraycpy(*rfill, dfillsparse, nz + w + 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
@@ -79,7 +79,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   for (i = 0; i < dd->w; i++) {
     if (dd->ofillcols[i]) dd->ofillcols[i] = cnt++;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -128,7 +128,7 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
 
   /* count nonzeros in ofill columns */
   PetscCall(DMDASetBlockFills_Private2(dd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -181,7 +181,7 @@ PetscErrorCode DMDASetBlockFillsSparse(DM da, const PetscInt *dfillsparse, const
 
   /* count nonzeros in ofill columns */
   PetscCall(DMDASetBlockFills_Private2(dd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *coloring)
@@ -223,10 +223,8 @@ PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *colo
   if (ctype == IS_COLORING_LOCAL) {
     if (size == 1) {
       ctype = IS_COLORING_GLOBAL;
-    } else if (dim > 1) {
-      if ((m == 1 && bx == DM_BOUNDARY_PERIODIC) || (n == 1 && by == DM_BOUNDARY_PERIODIC) || (p == 1 && bz == DM_BOUNDARY_PERIODIC)) {
-        SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "IS_COLORING_LOCAL cannot be used for periodic boundary condition having both ends of the domain  on the same process");
-      }
+    } else {
+      PetscCheck((dim == 1) || !((m == 1 && bx == DM_BOUNDARY_PERIODIC) || (n == 1 && by == DM_BOUNDARY_PERIODIC) || (p == 1 && bz == DM_BOUNDARY_PERIODIC)), PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "IS_COLORING_LOCAL cannot be used for periodic boundary condition having both ends of the domain on the same process");
     }
   }
 
@@ -259,7 +257,7 @@ PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *colo
     dd->Xs = dd->Xs * nc;
     dd->Xe = dd->Xe * nc;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -325,7 +323,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da, ISColoringType ctype, ISColo
     } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   }
   PetscCall(ISColoringReference(*coloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -344,10 +342,16 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
+  PetscCheck(bx != DM_BOUNDARY_PERIODIC || (m % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in X is divisible\n\
+                 by 2*stencil_width + 1\n");
+  PetscCheck(by != DM_BOUNDARY_PERIODIC || (n % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Y is divisible\n\
+                 by 2*stencil_width + 1\n");
+  PetscCheck(bz != DM_BOUNDARY_PERIODIC || (p % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Z is divisible\n\
+                 by 2*stencil_width + 1\n");
+
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &nx, &ny, &nz));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gnx, &gny, &gnz));
   PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
@@ -389,7 +393,7 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
     *coloring = dd->ghostedcoloring;
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   PetscCall(ISColoringReference(*coloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -407,7 +411,6 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, &M, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
   col = 2 * s + 1;
@@ -460,7 +463,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColo
     *coloring = dd->ghostedcoloring;
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   PetscCall(ISColoringReference(*coloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, ISColoring *coloring)
@@ -476,7 +479,6 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, NULL, NULL, NULL, &nc, &s, &bx, &by, NULL, NULL));
   PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &nx, &ny, NULL));
@@ -511,7 +513,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
     }
     *coloring = dd->ghostedcoloring;
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* =========================================================================== */
@@ -549,7 +551,7 @@ PetscErrorCode MatSetupDM(Mat mat, DM da)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidHeaderSpecificType(da, DM_CLASSID, 2, DMDA);
   PetscTryMethod(mat, "MatSetupDM_C", (Mat, DM), (mat, da));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
@@ -566,7 +568,7 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscFunctionBegin;
   /* Check whether we are just printing info, in which case MatView() already viewed everything we wanted to view */
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCall(MatGetDM(A, &da));
@@ -589,7 +591,7 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(MatView(Anatural, viewer));
   ((PetscObject)Anatural)->donotPetscObjectPrintClassNamePrefixType = PETSC_FALSE;
   PetscCall(MatDestroy(&Anatural));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
@@ -627,19 +629,19 @@ PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(MatHeaderReplace(A, &Aapp));
   PetscCall(ISDestroy(&is));
   PetscCall(MatDestroy(&Anatural));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 {
-  PetscInt dim, dof, nx, ny, nz, dims[3], starts[3], M, N, P;
-  Mat      A;
-  MPI_Comm comm;
-  MatType  Atype;
-  void (*aij)(void) = NULL, (*baij)(void) = NULL, (*sbaij)(void) = NULL, (*sell)(void) = NULL, (*is)(void) = NULL;
+  PetscInt    dim, dof, nx, ny, nz, dims[3], starts[3], M, N, P;
+  Mat         A;
+  MPI_Comm    comm;
+  MatType     Atype;
   MatType     mtype;
   PetscMPIInt size;
-  DM_DA      *dd = (DM_DA *)da->data;
+  DM_DA      *dd    = (DM_DA *)da->data;
+  void (*aij)(void) = NULL, (*baij)(void) = NULL, (*sbaij)(void) = NULL, (*sell)(void) = NULL, (*is)(void) = NULL;
 
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
@@ -665,7 +667,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   M   = dd->M;
   N   = dd->N;
@@ -777,7 +778,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     PetscCall(MatSetOperation(A, MATOP_LOAD, (void (*)(void))MatLoad_MPI_DA));
   }
   *J = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -843,7 +844,7 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm, Mat J)
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
@@ -860,7 +861,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, NULL, NULL, NULL, &nc, &s, &bx, &by, NULL, &st));
   col = 2 * s + 1;
@@ -945,7 +945,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
@@ -963,7 +963,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
@@ -1057,7 +1056,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
@@ -1074,7 +1073,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, &M, &N, NULL, &nc, &s, &bx, &by, NULL, &st));
   if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
@@ -1169,7 +1167,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
     if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
@@ -1189,7 +1187,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, NULL, &M, &N, NULL, &nc, &s, &bx, &by, NULL, &st));
   col = 2 * s + 1;
@@ -1294,7 +1291,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1314,7 +1311,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
@@ -1422,7 +1418,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1443,7 +1439,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
 
   /*
          nc - number of components per grid point
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, NULL, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
   PetscCheck(s <= 1, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Matrix creation for 1d not implemented correctly for stencil width larger than 1");
@@ -1585,7 +1580,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1602,7 +1597,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, NULL, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
   if (bx == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_TRUE));
@@ -1652,7 +1646,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
     PetscCall(PetscFree2(rows, cols));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1717,7 +1711,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J)
     PetscCall(PetscFree2(rows, cols));
   }
   PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da, Mat J)
@@ -1809,7 +1803,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da, Mat J)
@@ -1827,7 +1821,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, NULL, NULL, NULL, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
@@ -1917,7 +1910,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1935,7 +1928,7 @@ static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog, Pets
     if (col[i] >= *row) col[n++] = col[i];
   }
   *cnt = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J)
@@ -2027,7 +2020,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J)
@@ -2133,7 +2126,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -2156,16 +2149,9 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da, Mat J)
   /*
          nc - number of components per grid point
          col - number of colors needed in one direction for single component problem
-
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
-  PetscCheck(bx != DM_BOUNDARY_PERIODIC || (m % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  PetscCheck(by != DM_BOUNDARY_PERIODIC || (n % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  PetscCheck(bz != DM_BOUNDARY_PERIODIC || (p % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Z is divisible\n\
-                 by 2*stencil_width + 1\n");
 
   /*
        With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
@@ -2283,5 +2269,5 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

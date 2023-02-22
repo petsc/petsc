@@ -686,6 +686,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[], PetscErrorCode 
 
 /* Routines for VI solver */
 PETSC_EXTERN PetscErrorCode SNESVISetVariableBounds(SNES, Vec, Vec);
+PETSC_EXTERN PetscErrorCode SNESVIGetVariableBounds(SNES, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode SNESVISetComputeVariableBounds(SNES, PetscErrorCode (*)(SNES, Vec, Vec));
 PETSC_EXTERN PetscErrorCode SNESVIGetInactiveSet(SNES, IS *);
 PETSC_EXTERN PetscErrorCode SNESVIGetActiveSetIS(SNES, Vec, Vec, IS *);

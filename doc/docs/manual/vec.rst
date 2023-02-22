@@ -384,7 +384,7 @@ should be used instead.
    .. literalinclude:: /../src/snes/tutorials/ex1.c
       :name: snesex1
       :start-at: PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
-      :end-at: return 0;
+      :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 
 Minor differences exist in the Fortran interface for ``VecGetArray()``
 and ``VecRestoreArray()``, as discussed in
@@ -510,7 +510,7 @@ for a scalar problem in two dimensions one could use
    .. literalinclude:: /../src/snes/tutorials/ex3.c
       :name: snesex3
       :start-at: PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
-      :end-at: PetscFunctionReturn(0);
+      :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 
 The recommended approach for multi-component PDEs is to declare a
 ``struct`` representing the fields defined at each node of the grid,
@@ -549,7 +549,7 @@ that act on the local portion of ``DMDA`` vectors.
 
    .. literalinclude:: /../src/snes/tutorials/ex3k.kokkos.cxx
       :start-at: PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx)
-      :end-at: PetscFunctionReturn(0);
+      :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 
 The global indices of the lower left corner of the local portion of vectors obtained from ``DMDA``
 as well as the local array size can be obtained with the commands
@@ -1130,7 +1130,7 @@ The example
 `SNES Tutorial ex5 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5.c.html>`__
 illustrates the use of a distributed array in the solution of a
 nonlinear problem. The analogous Fortran program is
-`SNES Tutorial ex5f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f.F90.html>`__;
+`SNES Tutorial ex5f90 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f90.F90.html>`__;
 see :any:`chapter_snes` for a discussion of the
 nonlinear solvers.
 

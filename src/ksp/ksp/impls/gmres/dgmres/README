@@ -24,4 +24,4 @@ Use this KSP just as the basic  GMRES KSP with the common options plus the follo
 1. The current version shows many fluctuations in the residual history with the left preconditioning, so you should
 consider using a right preconditioning with the option -ksp_right_pc
 2. This version does not support complex arithmetics
-3. It is not compliant when a scaling is done during the appication of the preconditioner
+3. It is not compliant when a scaling is done during the application of the preconditioner

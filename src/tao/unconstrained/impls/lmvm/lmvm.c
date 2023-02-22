@@ -26,7 +26,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*  Set counter for gradient/reset steps */
   if (!lmP->recycle) {
@@ -133,7 +133,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetUp_LMVM(Tao tao)
@@ -160,7 +160,7 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (lmP->H0) PetscCall(MatLMVMSetJ0(lmP->M, lmP->H0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -177,7 +177,7 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
   PetscCall(MatDestroy(&lmP->M));
   if (lmP->H0) PetscCall(PetscObjectDereference((PetscObject)lmP->H0));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -191,7 +191,7 @@ static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems *PetscOpt
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(MatSetFromOptions(lm->M));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -211,7 +211,7 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Total recycled iterations: %" PetscInt_FMT "\n", recycled_its));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -269,5 +269,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)lmP->M, (PetscObject)tao, 1));
   PetscCall(MatSetType(lmP->M, MATLMVMBFGS));
   PetscCall(MatSetOptionsPrefix(lmP->M, "tao_lmvm_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

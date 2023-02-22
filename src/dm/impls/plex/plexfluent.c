@@ -31,7 +31,7 @@ PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], 
   PetscCall(PetscViewerFileSetName(viewer, filename));
   PetscCall(DMPlexCreateFluent(comm, viewer, interpolate, dm));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, char delim)
@@ -43,7 +43,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *bu
   while (ret > 0 && buffer[i - 1] != '\0' && buffer[i - 1] != delim);
   if (!ret) buffer[i - 1] = '\0';
   else buffer[i] = '\0';
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary)
@@ -91,7 +91,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
   } else {
     PetscCall(PetscViewerASCIIRead(viewer, data, count, NULL, dtype));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection *s)
@@ -107,7 +107,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
   /* If we can't match an index return -1 to signal end-of-file */
   if (snum < 1) {
     s->index = -1;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (s->index == 0) { /* Comment */
@@ -216,7 +216,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
     } while (depth > 0);
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, '\n'));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -456,5 +456,5 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     PetscCall(PetscFree(faceZoneIDs));
     PetscCall(PetscFree(coordsIn));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

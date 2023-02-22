@@ -29,7 +29,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *s)
 
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -46,7 +46,7 @@ static PetscErrorCode ExactSolution(PetscReal t, Vec U)
   u[1] = 2 * PetscAtanReal(PetscExpReal(t) * PetscTanReal(0.5));
 
   PetscCall(VecRestoreArray(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -158,7 +158,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", "ex7.c", options->simplex, &options->simplex, NULL));
   PetscCall(PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex7.c", options->useGenerator, &options->useGenerator, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
@@ -190,7 +190,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
     PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL));
     PetscCall(DMCreateLabel(dm, "marker"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
@@ -222,7 +222,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
     PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL));
     PetscCall(DMCreateLabel(dm, "marker"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
@@ -265,7 +265,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
     PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL));
     PetscCall(DMCreateLabel(dm, "marker"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
@@ -297,7 +297,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
     PetscCall(DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL));
     PetscCall(DMCreateLabel(dm, "marker"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
@@ -334,7 +334,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(PetscObjectSetName((PetscObject)*dm, "Interpolated Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

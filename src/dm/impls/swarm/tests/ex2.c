@@ -26,7 +26,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
 
   u[0] = 0.0;
   for (d = 0; d < dim; ++d) u[0] += x[d] / (ctx->L[d]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
@@ -36,7 +36,7 @@ static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], P
 
   u[0] = 1;
   for (d = 0; d < dim; ++d) u[0] *= PetscSqr(x[d]) * PetscSqr(ctx->L[d]) - PetscPowRealInt(x[d], 4);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
@@ -44,7 +44,7 @@ static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   AppCtx *ctx = (AppCtx *)a_ctx;
 
   u[0] = PetscSinScalar(2 * PETSC_PI * ctx->k * x[0] / (ctx->L[0]));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -83,7 +83,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-block_diag_prec", "Use the block diagonal of the normal equations to precondition the particle projection", "ex2.c", options->useBlockDiagPrec, &options->useBlockDiagPrec, NULL));
   PetscOptionsEnd();
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
@@ -120,7 +120,7 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(PetscRandomDestroy(&rnd));
   PetscCall(PetscFree(hh));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
@@ -138,7 +138,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMGetBoundingBox(*dm, low, high));
   for (d = 0; d < cdim; ++d) user->L[d] = high[d] - low[d];
   PetscCall(PerturbVertices(*dm, user));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
@@ -167,7 +167,7 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
   /* Setup to form mass matrix */
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSSetJacobian(ds, 0, 0, identity, NULL, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
@@ -242,7 +242,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
         PetscCall(PetscRandomGetValue(rndp, &value));
         coords[n * dim + d] += PetscRealPart(value);
       }
-      user->func(dim, 0.0, &coords[n * dim], 1, &vals[c], user);
+      PetscCall(user->func(dim, 0.0, &coords[n * dim], 1, &vals[c], user));
     }
   }
   PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
@@ -252,7 +252,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(PetscRandomDestroy(&rndp));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx *user)
@@ -289,7 +289,7 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
   PetscCall(DMSwarmSortRestoreAccess(sw));
   PetscCallMPI(MPI_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void f0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -326,7 +326,7 @@ static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppC
   PetscCall(PetscDSSetObjective(prob, 0, &f0_r2));
   PetscCall(DMPlexComputeIntegralFEM(dm, u, &mom, user));
   moments[2] = PetscRealPart(mom);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *user)
@@ -382,7 +382,7 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *use
   PetscCall(DMRestoreGlobalVector(dm, &fhat));
   PetscCall(DMRestoreGlobalVector(dm, &rhs));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *user)
@@ -445,7 +445,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   PetscCall(MatDestroy(&PM_p));
   PetscCall(DMRestoreGlobalVector(dm, &fhat));
   PetscCall(DMRestoreGlobalVector(dm, &rhs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Interpolate the gradient of an FEM (FVM) field. Code repurposed from DMPlexComputeGradientClementInterpolant */
@@ -555,7 +555,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
     PetscCall(DMPlexVecSetClosure(dmC, NULL, locC, v, gradsum, INSERT_VALUES));
   }
   PetscCall(PetscFree6(gradsum, interpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
@@ -616,7 +616,7 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscCall(DMRestoreGlobalVector(dm, &rhs));
   PetscCall(DMRestoreGlobalVector(dm, &grad));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

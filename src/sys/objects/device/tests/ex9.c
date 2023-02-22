@@ -12,7 +12,7 @@ static PetscErrorCode CheckIdle(PetscDeviceContext dctx, const char operation[])
     PetscCall(PetscDeviceContextView(dctx, NULL));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext was not idle after %s!", operation);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestQueryIdle(PetscDeviceContext dctx)
@@ -48,7 +48,7 @@ static PetscErrorCode TestQueryIdle(PetscDeviceContext dctx)
   PetscCall(CheckIdle(other, "waiting on other context, and synchronizing the NULL context"));
 
   PetscCall(PetscDeviceContextDestroy(&other));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -77,7 +77,7 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
   }
   PetscCall(VecRestoreArrayRead(xin, &x));
   PetscCall(PetscLogFlops(PetscMax(nv * (2.0 * n - 1), 0.0)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #else
@@ -291,7 +291,7 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
   }
   PetscCall(VecRestoreArrayRead(xin, &xbase));
   PetscCall(PetscLogFlops(PetscMax(nv * (2.0 * n - 1), 0.0)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -507,7 +507,7 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
   }
   PetscCall(VecRestoreArrayRead(xin, &xbase));
   PetscCall(PetscLogFlops(PetscMax(nv * (2.0 * n - 1), 0.0)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecMinMax_Seq(Vec xin, PetscInt *idx, PetscReal *z, PetscReal minmax, int (*const cmp)(PetscReal, PetscReal))
@@ -533,7 +533,7 @@ static PetscErrorCode VecMinMax_Seq(Vec xin, PetscInt *idx, PetscReal *z, PetscR
   }
   *z = minmax;
   if (idx) *idx = j;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static int VecMax_Seq_GT(PetscReal l, PetscReal r)
@@ -545,7 +545,7 @@ PetscErrorCode VecMax_Seq(Vec xin, PetscInt *idx, PetscReal *z)
 {
   PetscFunctionBegin;
   PetscCall(VecMinMax_Seq(xin, idx, z, PETSC_MIN_REAL, VecMax_Seq_GT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static int VecMin_Seq_LT(PetscReal l, PetscReal r)
@@ -557,7 +557,7 @@ PetscErrorCode VecMin_Seq(Vec xin, PetscInt *idx, PetscReal *z)
 {
   PetscFunctionBegin;
   PetscCall(VecMinMax_Seq(xin, idx, z, PETSC_MAX_REAL, VecMin_Seq_LT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecSet_Seq(Vec xin, PetscScalar alpha)
@@ -573,7 +573,7 @@ PetscErrorCode VecSet_Seq(Vec xin, PetscScalar alpha)
     for (PetscInt i = 0; i < n; i++) xx[i] = alpha;
   }
   PetscCall(VecRestoreArrayWrite(xin, &xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec *y)
@@ -610,7 +610,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec 
     for (PetscInt i = 0; i < inc; ++i) PetscCall(VecRestoreArrayRead(y[i], yptr + i));
   }
   PetscCall(VecRestoreArray(xin, &xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/vec/vec/impls/seq/ftn-kernels/faypx.h>
@@ -643,7 +643,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin, PetscScalar alpha, Vec xin)
     PetscCall(VecRestoreArrayRead(xin, &xx));
     PetscCall(VecRestoreArray(yin, &yy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/vec/vec/impls/seq/ftn-kernels/fwaxpy.h>
@@ -683,7 +683,7 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha, Vec xin, Vec yin)
   PetscCall(VecRestoreArrayRead(xin, &xx));
   PetscCall(VecRestoreArrayRead(yin, &yy));
   PetscCall(VecRestoreArray(win, &ww));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin, Vec yin, PetscReal *max)
@@ -705,7 +705,7 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin, Vec yin, PetscReal *max)
   PetscCall(VecRestoreArrayRead(yin, &yy));
   PetscCall(PetscLogFlops(n));
   *max = m;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecPlaceArray_Seq(Vec vin, const PetscScalar *a)
@@ -716,7 +716,7 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin, const PetscScalar *a)
   PetscCheck(!v->unplacedarray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array; /* save previous array so reset can bring it back */
   v->array         = (PetscScalar *)a;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecReplaceArray_Seq(Vec vin, const PetscScalar *a)
@@ -726,5 +726,5 @@ PetscErrorCode VecReplaceArray_Seq(Vec vin, const PetscScalar *a)
   PetscFunctionBegin;
   PetscCall(PetscFree(v->array_allocated));
   v->array_allocated = v->array = (PetscScalar *)a;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

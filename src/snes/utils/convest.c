@@ -8,7 +8,7 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -26,16 +26,16 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 {
   PetscFunctionBegin;
-  if (!*ce) PetscFunctionReturn(0);
+  if (!*ce) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*ce), PETSC_OBJECT_CLASSID, 1);
   if (--((PetscObject)(*ce))->refct > 0) {
     *ce = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscFree3((*ce)->initGuess, (*ce)->exactSol, (*ce)->ctxs));
   PetscCall(PetscFree2((*ce)->dofs, (*ce)->errors));
   PetscCall(PetscHeaderDestroy(ce));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -59,7 +59,7 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
   PetscCall(PetscOptionsBool("-convest_monitor", "Monitor the error for each convergence check", "PetscConvEst", ce->monitor, &ce->monitor, NULL));
   PetscCall(PetscOptionsBool("-convest_no_refine", "Debugging flag to run on the same mesh each time", "PetscConvEst", ce->noRefine, &ce->noRefine, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -80,7 +80,7 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ce, viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "ConvEst with %" PetscInt_FMT " levels\n", ce->Nr + 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -104,7 +104,7 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   PetscValidPointer(solver, 2);
   *solver = ce->solver;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -129,7 +129,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
   PetscValidHeader(solver, 2);
   ce->solver = solver;
   PetscUseTypeMethod(ce, setsolver, solver);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -172,7 +172,7 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
     if (fieldIS) PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
   for (f = 0; f < Nf; ++f) PetscCheck(ce->exactSol[f], PetscObjectComm((PetscObject)ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %" PetscInt_FMT, f);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM dm, Vec u)
@@ -182,7 +182,7 @@ PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM d
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   PetscUseTypeMethod(ce, initguess, r, dm, u);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
@@ -193,7 +193,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   PetscValidRealPointer(errors, 5);
   PetscUseTypeMethod(ce, computeerror, r, dm, u, errors);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -241,7 +241,7 @@ PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r)
     if (ce->Nf > 1) PetscCall(PetscPrintf(comm, "]"));
     PetscCall(PetscPrintf(comm, "\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstSetSNES_Private(PetscConvEst ce, PetscObject solver)
@@ -252,21 +252,21 @@ static PetscErrorCode PetscConvEstSetSNES_Private(PetscConvEst ce, PetscObject s
   PetscCall(PetscObjectGetClassId(ce->solver, &id));
   PetscCheck(id == SNES_CLASSID, PetscObjectComm((PetscObject)ce), PETSC_ERR_ARG_WRONG, "Solver was not a SNES");
   PetscCall(SNESGetDM((SNES)ce->solver, &ce->idm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstInitGuessSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u)
 {
   PetscFunctionBegin;
   PetscCall(DMProjectFunction(dm, 0.0, ce->initGuess, ce->ctxs, INSERT_VALUES, u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
 {
   PetscFunctionBegin;
   PetscCall(DMComputeL2FieldDiff(dm, 0.0, ce->exactSol, ce->ctxs, u, errors));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstSetJacobianNullSpace_Private(PetscConvEst ce, SNES snes)
@@ -292,7 +292,7 @@ static PetscErrorCode PetscConvEstSetJacobianNullSpace_Private(PetscConvEst ce, 
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, PetscReal alpha[])
@@ -426,7 +426,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   PetscCall(DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(PetscConvEstSetJacobianNullSpace_Private(ce, snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -465,7 +465,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   if (ce->event < 0) PetscCall(PetscLogEventRegister("ConvEst Error", PETSC_OBJECT_CLASSID, &ce->event));
   for (f = 0; f < ce->Nf; ++f) alpha[f] = 0.0;
   PetscUseTypeMethod(ce, getconvrate, alpha);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -505,7 +505,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ce)->tablevel));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -537,5 +537,5 @@ PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
   (*ce)->ops->initguess    = PetscConvEstInitGuessSNES_Private;
   (*ce)->ops->computeerror = PetscConvEstComputeErrorSNES_Private;
   (*ce)->ops->getconvrate  = PetscConvEstGetConvRateSNES_Private;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

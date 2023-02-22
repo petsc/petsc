@@ -76,7 +76,7 @@ class Package(config.base.Configure):
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
     self.buildLanguages         = ['C']  # Languages the package is written in, hence also the compilers needed to build it. Normally only contains one
-                                         # language, but can have multiple, such as ['FC', 'Cxx']. In petsc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
+                                         # language, but can have multiple, such as ['FC', 'Cxx']. In PETSc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
                                          # We use the first language in the list to check include headers, library functions and versions.
     self.noMPIUni               = 0    # 1 means requires a real MPI
     self.libdir                 = 'lib'     # location of libraries in the package directory tree
@@ -96,6 +96,7 @@ class Package(config.base.Configure):
     self.requires32bitint       = 0  # 1 means that the package will not work with 64 bit integers
     self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
+    self.skippackagelibincludedirs = 0 # packages like make do not support --with-package-lib and --with-package-include so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
     self.usesopenmp             = 'no'  # yes, no, unknown package is built to use OpenMP
     self.usespthreads           = 'no'  # yes, no, unknown package is built to use Pthreads
@@ -160,7 +161,7 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package in ['make','cuda','hip','sycl','thrust','hwloc','x','bison']:
+    if not self.isMPI and not self.package in ['make','cuda','hip','sycl','thrust','hwloc','x','bison','python']:
       # force MPI to be the first package (except for those listed above) configured since all other packages
       # may depend on its compilers defined here
       self.mpi         = framework.require('config.packages.MPI',self)
@@ -173,8 +174,9 @@ class Package(config.base.Configure):
       help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation',mustExist = 1))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-pkg-config=<dir>', nargs.ArgDir(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in',mustExist = 1))
-      help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
-      help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
+      if not self.skippackagelibincludedirs:
+        help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
+        help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename,url>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
       help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build of '+self.name))
@@ -283,17 +285,20 @@ class Package(config.base.Configure):
     self.logPrint('Removing paired configure arguments '+str(rejects))
     rejects = set(rejects)
     nargs   = []
-    skip    = 0
+    skip    = -1
     for flag, next_flag in sliding_window(args):
-      if skip:
+      if skip == 1:
         skip = 0
         continue
+      skip = 0
 
       flag_to_check = flag if remove_ahead else next_flag
       if flag_to_check in rejects:
         skip = 1
       else:
         nargs.append(flag)
+    if remove_ahead is False and skip == 0: # append last flag
+      nargs.append(next_flag)
     return nargs
 
   def rmArgsStartsWith(self,args,rejectstarts):
@@ -394,6 +399,7 @@ class Package(config.base.Configure):
 
   def updatePackageCUDAFlags(self, flags):
     outflags = self.removeCoverageFlag(flags, is_pair=True, remove_ahead=False)
+    #outflags = self.removeCoverageFlag(flags)
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
@@ -534,46 +540,6 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       return [inc for inc in iDirs if os.path.exists(inc)]
     return os.path.join(prefix, includeDir)
 
-  def checkPackageInDefaultLocations(self,mess):
-    '''This does not work for the reasons below so is turned off; perhaps the simpler model of just use ls'''
-    '''to look for the offending library files and includes files would work'''
-    '''Errors if the package is found by the compiler in a default location, such as /usr/local'''
-    '''This will miss some cases with libraries, for example if --download-hdf5 --download-pnetcdf is used because'''
-    '''it has to remove the current install directory from the search path where hdf5 is stored, hence even if pnetcdf is in /usr/lib'''
-    '''the test will fail since its required dependency hdf5 cannot be found. If the include file is found it will still detect the problem'''
-    self.logPrint(self.PACKAGE+': Checking if package is already installed in default locations, will error if this is the case')
-
-    # need to remove the PETSc prefix library and include locations from the search otherwise it will find the packages
-    # own previous install and think it is in the default location. Note: The configure model for handling libs and include
-    # directories by simply shoving them into global variables is terrible, but we are stuck with it.
-    self.pushLanguage('Cxx')
-    flagsArg = self.getPreprocessorFlagsArg()
-    oldLibs = self.setCompilers.LIBS
-    oldincludes = getattr(self.compilers, flagsArg)
-    loc = self.defaultInstallDir
-    newLibs = ' '.join([x for x in oldLibs.split(' ') if not x == '-L'+loc])
-    newincludes = ' '.join([x for x in oldincludes.split(' ') if not x == '-I'+loc])
-    self.setCompilers.LIBS = newLibs
-    setattr(self.compilers, flagsArg, newincludes)
-
-    for lib in self.generateLibList(''):
-      if not lib: continue
-      self.logWrite('Checking for '+str(lib)+' in "default locations" '+newLibs+'\n')
-      self.logWrite('Checking for '+str(self.includes)+' in "default locations" '+newincludes+'\n')
-      self.libraries.saveLog()
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}) or (self.includes and self.checkInclude([], self.includes)):
-        self.logWrite(self.libraries.restoreLog())
-        raise RuntimeError('You requested that PETSc '+mess+' but configure has detected the package already installed in a compiler default location\n\
-(for example /usr/ or /usr/local) you must remove this installation to use the install you desire')
-      else:
-        self.logWrite(self.libraries.restoreLog())
-
-    self.logPrint(self.PACKAGE+': Not already installed in default locations')
-    # put back the old list of libs and includes
-    setattr(self.compilers, flagsArg, oldincludes)
-    self.setCompilers.LIBS = oldLibs
-    self.popLanguage()
-
   def addToArgs(self,args,key,value):
     found = 0
     for i in range(0,len(args)):
@@ -583,11 +549,6 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     if not found: args.append(key+'="'+value+'"')
 
   def generateGuesses(self):
-    #if 'download-'+self.package in self.argDB and self.argDB['download-'+self.package]:
-      #self.checkPackageInDefaultLocations('install '+self.package)
-    #if not self.package == 'mpi' and 'with-'+self.package+'-dir' in self.argDB and not self.argDB['with-'+self.package+'-dir'] == os.path.join('/usr','local'):
-      #self.checkPackageInDefaultLocations('use '+self.package+' installed at '+self.argDB['with-'+self.package+'-dir'])
-
     d = self.checkDownload()
     if d:
       if not self.liblist or not self.liblist[0] or self.builtafterpetsc :
@@ -895,6 +856,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     import retrieval
     self.retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     self.retriever.setup()
+    self.retriever.ver = self.petscdir.version
     self.retriever.setupURLs(self.package,self.download,self.gitsubmodules,self.gitPreReqCheck())
 
   def downLoad(self):
@@ -940,6 +902,10 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     oldLibs  = self.compilers.LIBS
     setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    if 'FC' in self.buildLanguages:
+      self.compilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+self.setCompilers.LIBS
+    if 'Cxx' in self.buildLanguages:
+      self.compilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.cxxlibs])+' '+self.setCompilers.LIBS
     result = self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared)
     setattr(self.compilers, flagsArg,oldFlags)
     self.compilers.LIBS = oldLibs
@@ -1032,6 +998,11 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
+      otherlibs = self.dlib
+      if 'FC' in self.buildLanguages:
+        otherlibs.extend(self.compilers.flibs)
+      if 'Cxx' in self.buildLanguages:
+        otherlibs.extend(self.compilers.cxxlibs)
       self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages}):
         self.lib = lib
@@ -1247,7 +1218,18 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       return
 
     suggest = ''
-    if self.download: suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
+    if self.download:
+      suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
+      if self.argDB['download-'+self.package]:
+        rmdir = None
+        try:
+          rmdir = self.getDir()
+        except:
+          pass
+        if rmdir:
+          # this means that --download-package was requested, the package was not rebuilt, but there are newer releases of the package so it should be rebuilt
+          suggest += ' after running "rm -rf ' + self.getDir() +'"\n'
+          suggest += 'DO NOT DO THIS if you rely on the exact version of the currently installed ' + self.name
     if self.minversion:
       if self.versionToTuple(self.minversion) > self.version_tuple:
         raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at least '+self.minversion+suggest+'\n')
@@ -1881,13 +1863,13 @@ class CMakePackage(Package):
       args.append('-DCMAKE_BUILD_TYPE=Debug')
     else:
       args.append('-DCMAKE_BUILD_TYPE=Release')
+    args.append('-DCMAKE_AR="'+self.setCompilers.AR+'"')
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
     # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
     # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
     self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_C',setMakeMacro=0)
     args.append('-DMPI_C_COMPILER="'+self.mpi_C+'"')
-    args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
@@ -1903,6 +1885,12 @@ class CMakePackage(Package):
       self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_CC',setMakeMacro=0)
       args.append('-DMPI_CXX_COMPILER="'+self.mpi_CC+'"')
       cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
+
+      cxxFlags = cxxFlags.split(' ')
+      # next line is needed because CMAKE passes CXX flags even when linking an object file!
+      cxxFlags = self.rmArgs(cxxFlags,['-TP'])
+      cxxFlags = ' '.join(cxxFlags)
+
       args.append('-DCMAKE_CXX_FLAGS:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
@@ -1929,7 +1917,7 @@ class CMakePackage(Package):
       ldflags = self.setCompilers.LDFLAGS.replace('"','\\"') # escape double quotes (") in LDFLAGS
       args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+ldflags+'"')
 
-    if self.checkSharedLibrariesEnabled():
+    if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
@@ -1989,4 +1977,13 @@ class CMakePackage(Package):
         self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
         raise RuntimeError('Error running make on  '+self.PACKAGE)
       self.postInstall(output1+err1+output2+err2+output3+err3,conffile)
+      # CMake has no option to set the library name to .lib instead of .a so rename libraries
+      if config.setCompilers.Configure.isWindows(self.setCompilers.AR, self.log):
+        import pathlib
+        path = pathlib.Path(os.path.join(self.installDir,'lib'))
+        self.logPrint('Changing .a files to .lib files in'+str(path))
+        for f in path.iterdir():
+          if f.is_file() and f.suffix in ['.a']:
+            self.logPrint('Changing '+str(f)+' to '+str(f.with_suffix('.lib')))
+            f.rename(f.with_suffix('.lib'))
     return self.installDir

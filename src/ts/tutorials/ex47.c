@@ -61,14 +61,14 @@ static PetscErrorCode analytic_phi(PetscInt dim, PetscReal time, const PetscReal
 
   *u = -dim * time;
   for (d = 0; d < dim; ++d) *u += x[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode velocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* <psi, phi_t> + <psi, u . grad phi> */
@@ -125,7 +125,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-form_type", "The weak form type", "ex47.c", formTypes, 2, formTypes[options->formType], &form, NULL));
   options->formType = (WeakFormType)form;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
@@ -135,7 +135,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
@@ -159,7 +159,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   PetscCall(PetscDSSetExactSolution(ds, 0, analytic_phi, ctx));
   PetscCall(DMGetLabel(dm, "marker", &label));
   PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))analytic_phi, NULL, ctx, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
@@ -172,7 +172,7 @@ static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
   PetscCall(DMProjectFunctionLocal(dmAux, 0.0, funcs, NULL, INSERT_ALL_VALUES, v));
   PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, v));
   PetscCall(VecDestroy(&v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
@@ -182,14 +182,14 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
   PetscFunctionBeginUser;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
   PetscCall(DMGetCoordinateDM(dm, &coordDM));
-  if (!feAux) PetscFunctionReturn(0);
+  if (!feAux) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMClone(dm, &dmAux));
   PetscCall(DMSetCoordinateDM(dmAux, coordDM));
   PetscCall(DMSetField(dmAux, 0, NULL, (PetscObject)feAux));
   PetscCall(DMCreateDS(dmAux));
   PetscCall(SetupVelocity(dm, dmAux, user));
   PetscCall(DMDestroy(&dmAux));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
@@ -218,7 +218,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   }
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(PetscFEDestroy(&feAux));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
@@ -250,7 +250,7 @@ static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *
   PetscCall(PetscObjectSetName((PetscObject)error, "error"));
   PetscCall(VecViewFromOptions(error, NULL, "-err_vec_view"));
   PetscCall(DMRestoreGlobalVector(dm, &error));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
@@ -267,7 +267,7 @@ static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, V
   PetscCall(PetscDSGetExactSolution(ds, 0, &func[0], &ctxs[0]));
   PetscCall(DMComputeL2Diff(dm, crtime, func, ctxs, u, &error));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: %2.5g\n", (int)step, (double)crtime, (double)error));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

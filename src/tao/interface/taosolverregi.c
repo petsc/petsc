@@ -74,7 +74,7 @@ PetscErrorCode TaoRegisterAll(void)
 #endif
 
   PetscFunctionBegin;
-  if (TaoRegisterAllCalled) PetscFunctionReturn(0);
+  if (TaoRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TaoRegisterAllCalled = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(TaoRegister(TAOLMVM, TaoCreate_LMVM));
@@ -110,5 +110,5 @@ PetscErrorCode TaoRegisterAll(void)
   PetscCall(TaoRegister(TAOADMM, TaoCreate_ADMM));
   PetscCall(TaoRegister(TAOALMM, TaoCreate_ALMM));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

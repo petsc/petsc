@@ -14,7 +14,7 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
     garbage->map = garbage_map;
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Garbage_HMap_keyval, garbage->ptr));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -73,7 +73,7 @@ PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
     }
   }
   *obj = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Performs the intersection of 2 sorted arrays seta and setb of lengths
@@ -103,7 +103,7 @@ static PetscErrorCode GarbageKeySortedIntersect_Private(PetscInt64 seta[], Petsc
   }
 
   *lena = counter;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Wrapper to create MPI reduce operator for set intersection */
@@ -114,7 +114,7 @@ void PetscGarbageKeySortedIntersect(void *inset, void *inoutset, PetscMPIInt *le
   seta = (PetscInt64 *)inoutset;
   setb = (PetscInt64 *)inset;
 
-  GarbageKeySortedIntersect_Private(&seta[1], (PetscInt *)&seta[0], &setb[1], (PetscInt)setb[0]);
+  PetscCallAbort(PETSC_COMM_SELF, GarbageKeySortedIntersect_Private(&seta[1], (PetscInt *)&seta[0], &setb[1], (PetscInt)setb[0]));
 }
 
 /* Performs a collective allreduce intersection of one array per rank */
@@ -150,7 +150,7 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
 
   PetscCall(PetscFree(sendset));
   PetscCall(PetscFree(recvset));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -225,7 +225,7 @@ PetscErrorCode PetscGarbageCleanup(MPI_Comm comm)
   /* Put garbage back */
   PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Garbage_HMap_keyval, garbage.ptr));
   PetscCall(PetscCommDestroy(&comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Utility function for printing the contents of the garbage on a given comm */
@@ -274,5 +274,5 @@ PetscErrorCode PetscGarbageView(MPI_Comm comm, PetscViewer viewer)
 
   PetscCall(PetscFree(keys));
   PetscCall(PetscCommDestroy(&comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

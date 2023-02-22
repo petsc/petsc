@@ -11,11 +11,10 @@
 #endif
 
 typedef PetscErrorCode (*MVVVV)(Mat,Vec,Vec,Vec);
-static PetscErrorCode ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
+static PetscErrorCode ourresidualfunction(Mat mat, Vec b, Vec x, Vec R)
 {
-  PetscErrorCode ierr = 0;
-  (*(void (*)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat, &b, &x, &R, &ierr));
+  return PETSC_SUCCESS;
 }
 
 PETSC_EXTERN void pcmgresidualdefault_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)

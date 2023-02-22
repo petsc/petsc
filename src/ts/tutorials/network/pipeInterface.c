@@ -16,7 +16,7 @@ PetscErrorCode PipeCreate(MPI_Comm comm, Pipe *pipe)
 {
   PetscFunctionBegin;
   PetscCall(PetscNew(pipe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -28,12 +28,12 @@ PetscErrorCode PipeCreate(MPI_Comm comm, Pipe *pipe)
 PetscErrorCode PipeDestroy(Pipe *pipe)
 {
   PetscFunctionBegin;
-  if (!*pipe) PetscFunctionReturn(0);
+  if (!*pipe) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PipeDestroyJacobian(*pipe));
   PetscCall(VecDestroy(&(*pipe)->x));
   PetscCall(DMDestroy(&(*pipe)->da));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -54,7 +54,7 @@ PetscErrorCode PipeSetParameters(Pipe pipe, PetscReal length, PetscReal D, Petsc
   pipe->D      = D;
   pipe->a      = a;
   pipe->fric   = fric;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -78,7 +78,7 @@ PetscErrorCode PipeSetUp(Pipe pipe)
   pipe->rad = pipe->D / 2;
   pipe->A   = PETSC_PI * pipe->rad * pipe->rad;
   pipe->R   = pipe->fric / (2 * pipe->D * pipe->A);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -106,7 +106,7 @@ PetscErrorCode PipeCreateJacobian(Pipe pipe, Mat *Jin, Mat *J[])
     *J             = Jin;
     pipe->jacobian = Jin;
     PetscCall(PetscObjectReference((PetscObject)(Jin[0])));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscMalloc1(3, &Jpipe));
 
@@ -154,7 +154,7 @@ PetscErrorCode PipeCreateJacobian(Pipe pipe, Mat *Jin, Mat *J[])
 
   *J             = Jpipe;
   pipe->jacobian = Jpipe;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PipeDestroyJacobian(Pipe pipe)
@@ -167,7 +167,7 @@ PetscErrorCode PipeDestroyJacobian(Pipe pipe)
     for (i = 0; i < 3; i++) PetscCall(MatDestroy(&Jpipe[i]));
   }
   PetscCall(PetscFree(Jpipe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -256,7 +256,7 @@ PetscErrorCode JunctionCreateJacobian(DM dm, PetscInt v, Mat *Jin, Mat *J[])
   PetscCall(PetscFree3(rows, cols, zeros));
 
   *J = Jv;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode JunctionDestroyJacobian(DM dm, PetscInt v, Junction junc)
@@ -266,7 +266,7 @@ PetscErrorCode JunctionDestroyJacobian(DM dm, PetscInt v, Junction junc)
   PetscInt        nedges, e;
 
   PetscFunctionBegin;
-  if (!Jv) PetscFunctionReturn(0);
+  if (!Jv) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(DMNetworkGetSupportingEdges(dm, v, &nedges, &edges));
   for (e = 0; e < nedges; e++) {
@@ -274,5 +274,5 @@ PetscErrorCode JunctionDestroyJacobian(DM dm, PetscInt v, Junction junc)
     PetscCall(MatDestroy(&Jv[2 * e + 2]));
   }
   PetscCall(PetscFree(Jv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

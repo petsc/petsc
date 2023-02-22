@@ -1,9 +1,9 @@
-
-#ifndef __AIJ_H
-#define __AIJ_H
+#ifndef PETSC_MATAIJ_IMPL_H
+#define PETSC_MATAIJ_IMPL_H
 
 #include <petsc/private/matimpl.h>
 #include <petsc/private/hashmapi.h>
+#include <petsc/private/hashmapijv.h>
 
 /*
  Used by MatCreateSubMatrices_MPIXAIJ_Local()
@@ -142,7 +142,6 @@ PETSC_INTERN PetscErrorCode MatCreate_SeqAIJ_Inode(Mat);
 PETSC_INTERN PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat, MatOption, PetscBool);
 PETSC_INTERN PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat, MatDuplicateOption, Mat *);
 PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat, Mat, MatDuplicateOption, PetscBool);
-PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat, PetscScalar **);
 PETSC_INTERN PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat, PetscScalar **);
@@ -164,6 +163,11 @@ typedef struct {
   PetscCount  Atot;  /* Total number of valid (i.e., w/ non-negative indices) entries in the COO array */
   PetscCount *jmap;  /* perm[jmap[i]..jmap[i+1]) give indices of entries in v[] associated with i-th nonzero of the matrix */
   PetscCount *perm;  /* The permutation array in sorting (i,j) by row and then by col */
+
+  /* MatSetValues() via hash related fields */
+  PetscHMapIJV   ht;
+  PetscInt      *dnz;
+  struct _MatOps cops;
 } Mat_SeqAIJ;
 
 /*
@@ -172,6 +176,8 @@ typedef struct {
 static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt **j, PetscInt **i)
 {
   Mat_SeqAIJ *A = (Mat_SeqAIJ *)AA->data;
+
+  PetscFunctionBegin;
   if (A->singlemalloc) {
     PetscCall(PetscFree3(*a, *j, *i));
   } else {
@@ -179,7 +185,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
     if (A->free_ij) PetscCall(PetscFree(*j));
     if (A->free_ij) PetscCall(PetscFree(*i));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
     Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
@@ -256,13 +262,10 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat, PetscInt, cons
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat, PetscCount, PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat);
 
-PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat, Mat, IS, IS, const MatFactorInfo *);
 
-PETSC_INTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat, Mat, IS, const MatFactorInfo *);
-PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat, Mat, const MatFactorInfo *);
@@ -290,7 +293,6 @@ PETSC_INTERN PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ(Mat, MatReuse, Mat *);
 
 PETSC_INTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt, PetscInt *, PetscInt *, PetscBool, PetscInt, PetscInt, PetscInt **, PetscInt **);
-PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat, Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat, Mat, const MatFactorInfo *);
@@ -298,18 +300,13 @@ PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat, Mat, 
 PETSC_INTERN PetscErrorCode MatLUFactor_SeqAIJ(Mat, IS, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_Inode(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolveAdd_SeqAIJ_inplace(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveAdd_SeqAIJ(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTranspose_SeqAIJ_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ_inplace(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat, Vec, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatEqual_SeqAIJ(Mat, Mat, PetscBool *);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat, ISColoring, MatFDColoring);
@@ -387,7 +384,6 @@ PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat, PetscInt, PetscBool, 
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscInt *[], PetscBool *);
 PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Color(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscInt *[], PetscBool *);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
-PETSC_INTERN PetscErrorCode MatSetUp_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatView_SeqAIJ(Mat, PetscViewer);
 
 PETSC_INTERN PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat);
@@ -580,7 +576,6 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
 {
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx;
-  __mmask8 mask;
   PetscInt j;
 
   vec_y = _mm512_setzero_pd();
@@ -592,23 +587,21 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
     aj += 8;
     aa += 8;
   }
-  /* masked load does not work on KNL, it requires avx512vl */
-  if ((n & 0x07) > 2) {
+  #if defined(__AVX512VL__)
+  /* masked load requires avx512vl, which is not supported by KNL */
+  if (n & 0x07) {
+    __mmask8 mask;
     mask     = (__mmask8)(0xff >> (8 - (n & 0x07)));
-    vec_idx  = _mm256_loadu_si256((__m256i const *)aj);
-    vec_vals = _mm512_loadu_pd(aa);
+    vec_idx  = _mm256_mask_loadu_epi32(vec_idx, mask, aj);
+    vec_vals = _mm512_mask_loadu_pd(vec_vals, mask, aa);
     vec_x    = _mm512_mask_i32gather_pd(vec_x, mask, vec_idx, x, _MM_SCALE_8);
     vec_y    = _mm512_mask3_fmadd_pd(vec_x, vec_vals, vec_y, mask);
-  } else if ((n & 0x07) == 2) {
-    *sum += aa[0] * x[aj[0]];
-    *sum += aa[1] * x[aj[1]];
-  } else if ((n & 0x07) == 1) {
-    *sum += aa[0] * x[aj[0]];
   }
-  if (n > 2) *sum += _mm512_reduce_add_pd(vec_y);
-  /*
-  for (j=0;j<(n&0x07);j++) *sum += aa[j]*x[aj[j]];
-*/
+  *sum += _mm512_reduce_add_pd(vec_y);
+  #else
+  *sum += _mm512_reduce_add_pd(vec_y);
+  for (j = 0; j < (n & 0x07); j++) *sum += aa[j] * x[aj[j]];
+  #endif
 }
 #endif
 

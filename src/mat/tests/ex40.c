@@ -30,7 +30,7 @@ PetscErrorCode ISAllGatherDisjoint(IS iis, IS **ois)
   PetscCall(ISDestroy(&is));
   PetscCall(PetscFree(sizes));
   *ois = is2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

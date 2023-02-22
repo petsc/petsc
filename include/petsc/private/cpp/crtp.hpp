@@ -10,17 +10,17 @@ namespace util
 {
 
 // A useful crtp helper class to abstract away all the static_cast<Derived *>(this) nonsense
-template <typename T, template <typename> class CRTPType>
+template <template <typename, typename...> class CRTPType, typename Derived, typename... T>
 class crtp {
 protected:
-  T       &underlying() noexcept { return static_cast<T &>(*this); }
-  const T &underlying() const noexcept { return static_cast<const T &>(*this); }
+  Derived       &underlying() noexcept { return static_cast<Derived &>(*this); }
+  const Derived &underlying() const noexcept { return static_cast<const Derived &>(*this); }
 
 private:
   // private constructor + friend decl preempts any diamond dependency problems
   // https://www.fluentcpp.com/2017/05/19/crtp-helper/
   constexpr crtp() noexcept = default;
-  friend CRTPType<T>;
+  friend CRTPType<Derived, T...>;
 };
 
 } // namespace util

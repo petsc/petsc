@@ -69,7 +69,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void *ptr)
   }
   PetscCall(VecRestoreArray(DXDT, &dxdt));
   PetscCall(VecRestoreArrayRead(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
@@ -134,7 +134,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
@@ -157,7 +157,7 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
     }
   }
   PetscCall(VecRestoreArrayRead(Y, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormInitialState(Vec X, AppCtx *user)
@@ -174,7 +174,7 @@ PetscErrorCode FormInitialState(Vec X, AppCtx *user)
    */
   PetscCall(VecSetRandom(X, R));
   PetscCall(PetscRandomDestroy(&R));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PrintSolution(Vec X, AppCtx *user)
@@ -188,7 +188,7 @@ PetscErrorCode PrintSolution(Vec X, AppCtx *user)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Activator,Inhibitor\n"));
   for (i = 0; i < nb_cells; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2 * i], (double)x[2 * i + 1]));
   PetscCall(VecRestoreArrayRead(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

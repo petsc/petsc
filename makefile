@@ -400,6 +400,7 @@ allmanpages: chk_loc deletemanualpages
 	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
 	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
 	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
 	-sed -e 's?<T>?IV?g' -e 's?<t>?iv?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
 	-sed -e 's?<T>?Obj?g' -e 's?<t>?obj?g' -e 's?<KeyType>?PetscInt64?g'  -e 's?<ValType>?PetscObject?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
 	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
@@ -459,7 +460,7 @@ gcov:
 	-output_file_base_name=${PETSC_ARCH}-gcovr-report.json; \
 	petsc_arch_dir=${PETSC_DIR}/${PETSC_ARCH}; \
 	pushd $${petsc_arch_dir}/obj && \
-	gcovr --json --output $${petsc_arch_dir}/$${output_file_base_name} --exclude-throw-branches --exclude-unreachable-branches -j 4 --gcov-executable ${PETSC_COVERAGE_EXEC} --root ${PETSC_DIR} . ${PETSC_GCOV_OPTIONS} && \
+	gcovr --json --output $${petsc_arch_dir}/$${output_file_base_name} --exclude '.*/ftn-auto/.*' --exclude-lines-by-pattern '^\s*SETERR.*' --exclude-throw-branches --exclude-unreachable-branches -j 4 --gcov-executable ${PETSC_COVERAGE_EXEC} --root ${PETSC_DIR} . ${PETSC_GCOV_OPTIONS} && \
 	${RM} -f $${petsc_arch_dir}/$${output_file_base_name}.tar.gz && \
 	tar -czf $${petsc_arch_dir}/$${output_file_base_name}.tar.gz -C $${petsc_arch_dir} ./$${output_file_base_name} && \
 	${RM} $${petsc_arch_dir}/$${output_file_base_name}; \

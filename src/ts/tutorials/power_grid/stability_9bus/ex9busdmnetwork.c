@@ -351,7 +351,7 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen, Exc **pexc, Load **pload, Bus 
   /* Destroy unnecessary stuff */
   PetscCall(MatDestroy(&Ybus));
   PetscCall(VecDestroy(&V0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
@@ -460,7 +460,7 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
   PetscCall(DMLocalToGlobalBegin(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMLocalToGlobalEnd(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMRestoreLocalVector(networkdm, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
@@ -469,7 +469,7 @@ PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscSca
   PetscFunctionBegin;
   *Fr = Fd * PetscSinScalar(delta) + Fq * PetscCosScalar(delta);
   *Fi = -Fd * PetscCosScalar(delta) + Fq * PetscSinScalar(delta);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
@@ -478,7 +478,7 @@ PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscSca
   PetscFunctionBegin;
   *Fd = Fr * PetscSinScalar(delta) - Fi * PetscCosScalar(delta);
   *Fq = Fr * PetscCosScalar(delta) + Fi * PetscSinScalar(delta);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Computes F(t,U,U_t) where F() = 0 is the DAE to be solved. */
@@ -736,7 +736,7 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx
   PetscCall(DMLocalToGlobalBegin(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(networkdm, &localF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This function is used for solving the algebraic system only during fault on and
@@ -944,7 +944,7 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
   PetscCall(DMLocalToGlobalBegin(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(networkdm, &localF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

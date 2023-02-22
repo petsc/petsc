@@ -747,7 +747,7 @@ cdef class Mat(Object):
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
         cdef int size = -1
-        CHKERR( MPI_Comm_size(comm, &size) )
+        CHKERR( <PetscErrorCode>MPI_Comm_size(comm, &size) )
         return array_i(size+1, rowrng)
 
     def getOwnershipRangeColumn(self):
@@ -761,7 +761,7 @@ cdef class Mat(Object):
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
         cdef int size = -1
-        CHKERR( MPI_Comm_size(comm, &size) )
+        CHKERR( <PetscErrorCode>MPI_Comm_size(comm, &size) )
         return array_i(size+1, colrng)
 
     def getOwnershipIS(self):

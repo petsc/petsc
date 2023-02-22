@@ -3,14 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '7.0.1'
+    self.version          = '7.0.3'
     self.versionname      = 'SCOTCH_VERSION.SCOTCH_RELEASE.SCOTCH_PATCHLEVEL'
     self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://gitlab.inria.fr/scotch/scotch.git',
                              'https://gitlab.inria.fr/scotch/scotch/-/archive/'+self.gitcommit+'/scotch-'+self.gitcommit+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-'+self.gitcommit+'.tar.gz']
-    self.download_mingw   = ['https://gitlab.inria.fr/scotch/scotch/-/archive/v6.1.2/scotch-v6.1.2.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-v6.1.2.tar.gz']
     self.downloaddirnames = ['scotch','petsc-pkg-scotch']
     self.liblist          = [['libptesmumps.a','libptscotchparmetisv3.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],
                              ['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
@@ -35,7 +33,8 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    self.programs.getExecutable('flex', getFullPath = 1)
+    if not hasattr(self.programs, 'flex'):
+      self.programs.getExecutable('flex', getFullPath = 1)
     if not hasattr(self.programs, 'flex'): raise RuntimeError('PTScotch needs flex installed')
     if not self.bison.found or not self.bison.haveBison3plus: raise RuntimeError('PTScotch needs Bison version 3.0 or above, use --download-bison')
 
@@ -60,7 +59,7 @@ class Configure(config.package.Package):
     # Building cflags/ldflags
     self.cflags = self.updatePackageCFlags(self.getCompilerFlags())+' '+self.headers.toString(self.dinclude)
     functions = self.framework.require('config.functions', self)
-    if not functions.haveFunction('FORK') and not functions.haveFunction('_PIPE'):
+    if not functions.haveFunction('FORK') and not functions.check('_pipe'):
       raise RuntimeError('Error building PTScotch: no pipe function')
     ldflags = self.libraries.toString(self.dlib)
     if self.zlib.found:
@@ -68,8 +67,8 @@ class Configure(config.package.Package):
     # OSX does not have pthread_barrier_destroy
     if self.pthread.found and self.pthread.pthread_barrier:
       self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
-    if functions.haveFunction('_PIPE'):
-      self.cflags = self.cflags + ' -D\'pipe(pfds)=_pipe(pfds,1024,0x8000)\''
+    if self.setCompilers.isMINGW(self.framework.getCompiler(), self.log):
+      self.cflags = self.cflags + ' -DCOMMON_OS_WINDOWS'
     if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
     self.cflags = self.cflags + ' -DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.
@@ -94,12 +93,8 @@ class Configure(config.package.Package):
     g.write('MKDIR    = '+self.programs.mkdir+'\n')
     g.write('MV       = '+self.programs.mv+'\n')
     g.write('RANLIB   = '+self.setCompilers.RANLIB+'\n')
-    if self.setCompilers.isMINGW(self.framework.getCompiler(), self.log):
-      g.write('LEX      = '+self.programs.flex+'\n')
-      g.write('YACC     = '+getattr(self.bison,self.bison.executablename)+' -y\n')
-    else:
-      g.write('FLEX     = '+self.programs.flex+'\n')
-      g.write('BISON    = '+getattr(self.bison,self.bison.executablename)+' -y\n')
+    g.write('FLEX     = '+self.programs.flex+'\n')
+    g.write('BISON    = '+getattr(self.bison,self.bison.executablename)+' -y\n')
     g.close()
 
     self.popLanguage()

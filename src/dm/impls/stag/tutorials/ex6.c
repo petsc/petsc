@@ -319,7 +319,7 @@ static PetscErrorCode CreateLame(Ctx *ctx)
   } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity), PETSC_ERR_SUP, "Unsupported dim %" PetscInt_FMT, ctx->dim);
   PetscCall(VecAssemblyBegin(ctx->lame));
   PetscCall(VecAssemblyEnd(ctx->lame));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ForceStress(const Ctx *ctx, Vec stress, PetscReal t)
@@ -363,7 +363,7 @@ static PetscErrorCode ForceStress(const Ctx *ctx, Vec stress, PetscReal t)
 
   PetscCall(VecAssemblyBegin(stress));
   PetscCall(VecAssemblyEnd(stress));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy)
@@ -442,7 +442,7 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx, Vec velocity, Vec stress
   PetscCall(DMLocalToGlobal(ctx->dm_velocity, velocity_local, INSERT_VALUES, velocity));
   PetscCall(DMRestoreLocalVector(ctx->dm_velocity, &velocity_local));
   PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity, (void *)&arr_coord_x, (void *)&arr_coord_y, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy)
@@ -547,7 +547,7 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx, Vec velocity, Vec stress
   PetscCall(DMLocalToGlobal(ctx->dm_velocity, velocity_local, INSERT_VALUES, velocity));
   PetscCall(DMRestoreLocalVector(ctx->dm_velocity, &velocity_local));
   PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity, (void *)&arr_coord_x, (void *)&arr_coord_y, (void *)&arr_coord_z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode UpdateVelocity(const Ctx *ctx, Vec velocity, Vec stress, Vec buoyancy)
@@ -558,7 +558,7 @@ static PetscErrorCode UpdateVelocity(const Ctx *ctx, Vec velocity, Vec stress, V
   } else if (ctx->dim == 3) {
     PetscCall(UpdateVelocity_3d(ctx, velocity, stress, buoyancy));
   } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity), PETSC_ERR_SUP, "Unsupported dim %" PetscInt_FMT, ctx->dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode UpdateStress_2d(const Ctx *ctx, Vec velocity, Vec stress, Vec lame)
@@ -642,7 +642,7 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx, Vec velocity, Vec stress, 
   PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame, lame_local, (void *)&arr_lame));
   PetscCall(DMRestoreLocalVector(ctx->dm_lame, &lame_local));
   PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity, (void *)&arr_coord_x, (void *)&arr_coord_y, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode UpdateStress_3d(const Ctx *ctx, Vec velocity, Vec stress, Vec lame)
@@ -761,7 +761,7 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx, Vec velocity, Vec stress, 
   PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame, lame_local, (void *)&arr_lame));
   PetscCall(DMRestoreLocalVector(ctx->dm_lame, &lame_local));
   PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity, (void *)&arr_coord_x, (void *)&arr_coord_y, (void *)&arr_coord_z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode UpdateStress(const Ctx *ctx, Vec velocity, Vec stress, Vec lame)
@@ -772,7 +772,7 @@ static PetscErrorCode UpdateStress(const Ctx *ctx, Vec velocity, Vec stress, Vec
   } else if (ctx->dim == 3) {
     PetscCall(UpdateStress_3d(ctx, velocity, stress, lame));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DumpStress(const Ctx *ctx, Vec stress, PetscInt timestep)
@@ -819,7 +819,7 @@ static PetscErrorCode DumpStress(const Ctx *ctx, Vec stress, PetscInt timestep)
   PetscCall(DMDestroy(&da_shear));
   PetscCall(VecDestroy(&vec_normal));
   PetscCall(VecDestroy(&vec_shear));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DumpVelocity(const Ctx *ctx, Vec velocity, PetscInt timestep)
@@ -965,7 +965,7 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx, Vec velocity, PetscInt timest
   PetscCall(DMDestroy(&daVelAvg));
   PetscCall(VecDestroy(&velAvg));
   PetscCall(DMDestroy(&dmVelAvg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

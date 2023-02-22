@@ -10,7 +10,10 @@ LINKCHECKDIR  = _build/linkcheck
 
 # First so that "make" without arguments is like "make help".
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
+	-@echo "   make sphinxhtml - build the HTML website inside a created Python virtual environment (venv)"
+
+# The following does not work because it triggers the loading of docutils that many people may not have in Python
+#	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
 .PHONY: help makefile checklinks
 
@@ -33,6 +36,7 @@ images:
 website-deploy: images
 	$(SPHINXBUILD) -b dirhtml "$(SOURCEDIR)" "$(BUILDDIR)"  -T -E -j auto $(SPHINXOPTS)
 
+# use this rule to build the documentation on your machine when working on PETSc documentation
 sphinxhtml:
 	cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; ${RM} -rf _build* docs/manualpages/singlindex.md  docs/manualpages/*/*.md; make  SPHINXOPTS="-T -E -W --keep-going -j 4" html; deactivate
 

@@ -35,7 +35,7 @@ static PetscErrorCode PoissonTailProbability(PetscReal lambda, PetscInt Y, Petsc
     p -= PetscExpReal(exponent);
   }
   *prob = p;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD));
   PetscCall(PoissonTailProbability(N * lambda, Y, &p));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " total collisions counted: that many or more should occur with probabilty %g.\n", Y, (double)p));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT " total collisions counted: that many or more should occur with probability %g.\n", Y, (double)p));
 
   PetscCall(PetscFree(X));
   PetscCall(PetscRandomDestroy(&random));

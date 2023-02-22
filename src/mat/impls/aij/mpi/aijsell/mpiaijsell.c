@@ -91,7 +91,7 @@ PetscErrorCode MatCreateMPIAIJSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscI
     PetscCall(MatSetType(*A, MATSEQAIJSELL));
     PetscCall(MatSeqAIJSetPreallocation(*A, d_nz, d_nnz));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat, MatType, MatReuse, Mat *);
@@ -104,7 +104,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJSELL(Mat B, PetscInt d_nz, const 
   PetscCall(MatMPIAIJSetPreallocation_MPIAIJ(B, d_nz, d_nnz, o_nz, o_nnz));
   PetscCall(MatConvert_SeqAIJ_SeqAIJSELL(b->A, MATSEQAIJSELL, MAT_INPLACE_MATRIX, &b->A));
   PetscCall(MatConvert_SeqAIJ_SeqAIJSELL(b->B, MATSEQAIJSELL, MAT_INPLACE_MATRIX, &b->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSELL(Mat A, MatType type, MatReuse reuse, Mat *newmat)
@@ -117,7 +117,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSELL(Mat A, MatType type, Ma
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIAIJSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJSetPreallocation_C", MatMPIAIJSetPreallocation_MPIAIJSELL));
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJSELL(Mat A)
@@ -125,7 +125,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJSELL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATMPIAIJ));
   PetscCall(MatConvert_MPIAIJ_MPIAIJSELL(A, MATMPIAIJSELL, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC

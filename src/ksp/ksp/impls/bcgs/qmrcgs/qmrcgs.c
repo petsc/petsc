@@ -11,7 +11,7 @@ static PetscErrorCode KSPSetUp_QMRCGS(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 14));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Only need a few hacks from KSPSolve_BCGS */
@@ -74,7 +74,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Make the initial Rp == R */
   PetscCall(VecCopy(R, RP));
@@ -206,7 +206,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 
   /* mark lack of convergence */
   if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -224,7 +224,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 + * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994)
 - * - Ghai, Lu, and Jiao (NLAA 2019)
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPFBCGSL`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPBCGSL`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 {
@@ -266,5 +266,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

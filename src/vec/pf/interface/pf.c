@@ -33,7 +33,7 @@ PetscErrorCode PFSet(PF pf, PetscErrorCode (*apply)(void *, PetscInt, const Pets
   pf->ops->apply    = apply;
   pf->ops->applyvec = applyvec;
   pf->ops->view     = view;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -51,9 +51,9 @@ PetscErrorCode PFSet(PF pf, PetscErrorCode (*apply)(void *, PetscInt, const Pets
 PetscErrorCode PFDestroy(PF *pf)
 {
   PetscFunctionBegin;
-  if (!*pf) PetscFunctionReturn(0);
+  if (!*pf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*pf), PF_CLASSID, 1);
-  if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PFViewFromOptions(*pf, NULL, "-pf_view"));
   /* if memory was published with SAWs then destroy it */
@@ -61,7 +61,7 @@ PetscErrorCode PFDestroy(PF *pf)
 
   if ((*pf)->ops->destroy) PetscCall((*(*pf)->ops->destroy)((*pf)->data));
   PetscCall(PetscHeaderDestroy(pf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -100,7 +100,7 @@ PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
   newpf->dimout        = dimout;
 
   *pf = newpf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------------------*/
@@ -165,7 +165,7 @@ PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y)
     PetscCall(VecRestoreArray(y, &yy));
   }
   if (nox) PetscCall(VecDestroy(&x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -198,7 +198,7 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
   PetscCheck(x != y, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "x and y must be different arrays");
 
   PetscCall((*pf->ops->apply)(pf->data, n, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -219,7 +219,7 @@ PetscErrorCode PFViewFromOptions(PF A, PetscObject obj, const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PF_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -267,7 +267,7 @@ PetscErrorCode PFView(PF pf, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -301,7 +301,7 @@ PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, voi
   PetscFunctionBegin;
   PetscCall(PFInitializePackage());
   PetscCall(PetscFunctionListAdd(&PFList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -327,7 +327,7 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)pf)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -362,7 +362,7 @@ PetscErrorCode PFSetType(PF pf, PFType type, void *ctx)
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)pf, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscTryTypeMethod(pf, destroy);
   pf->data = NULL;
@@ -379,7 +379,7 @@ PetscErrorCode PFSetType(PF pf, PFType type, void *ctx)
   PetscCall((*r)(pf, ctx));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)pf, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -416,7 +416,7 @@ PetscErrorCode PFSetFromOptions(PF pf)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)pf, PetscOptionsObject));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscBool PFPackageInitialized = PETSC_FALSE;
@@ -434,7 +434,7 @@ PetscErrorCode PFFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&PFList));
   PFPackageInitialized = PETSC_FALSE;
   PFRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -452,7 +452,7 @@ PetscErrorCode PFInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PFPackageInitialized) PetscFunctionReturn(0);
+  if (PFPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PFPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("PointFunction", &PF_CLASSID));
@@ -473,5 +473,5 @@ PetscErrorCode PFInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PFFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

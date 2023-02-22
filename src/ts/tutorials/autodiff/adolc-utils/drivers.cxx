@@ -50,7 +50,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobian(PetscInt tag, Mat A, const PetscScal
   PetscCall(AdolcFree2(J));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -88,7 +88,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobianLocal(PetscInt tag, Mat A, const Pets
   PetscCall(AdolcFree2(J));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -148,7 +148,7 @@ PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1, PetscInt tag2, Mat A, c
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(AdolcFree2(J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -193,7 +193,7 @@ PetscErrorCode PetscAdolcComputeIJacobianIDMass(PetscInt tag, Mat A, PetscScalar
 
   /* a * dF/d(xdot) part */
   PetscCall(MatShift(A, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -252,7 +252,7 @@ PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1, PetscInt tag2, Mat
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(AdolcFree2(J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -296,7 +296,7 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag, Mat A, const 
 
   /* a * dF/d(xdot) part */
   PetscCall(MatShift(A, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------------------
@@ -345,7 +345,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag, Mat A, const PetscSca
   PetscCall(AdolcFree2(J));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -390,7 +390,7 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag, Mat A, const Pet
   PetscCall(AdolcFree2(J));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------------------
@@ -448,5 +448,5 @@ PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1, PetscIn
   PetscCall(VecAssemblyBegin(diag));
   PetscCall(VecAssemblyEnd(diag));
   PetscCall(AdolcFree2(J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

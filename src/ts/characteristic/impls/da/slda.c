@@ -16,7 +16,7 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, "dummy %" PetscInt_FMT, da->dummy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
@@ -25,7 +25,7 @@ PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(da));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
@@ -64,7 +64,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscCall(PetscMalloc1(c->numNeighbors, &c->remoteOffsets));
   PetscCall(PetscMalloc1(c->numNeighbors - 1, &c->request));
   PetscCall(PetscMalloc1(c->numNeighbors - 1, &c->status));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
@@ -81,7 +81,7 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   c->ops->view    = CharacteristicView_DA;
 
   da->dummy = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -----------------------------------------------------------------------------
@@ -104,5 +104,5 @@ PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar 
     while (*y >= (PetscScalar)gy) *y -= (PetscScalar)gy;
     while (*y < 0.0) *y += (PetscScalar)gy;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

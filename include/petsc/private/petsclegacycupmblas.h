@@ -18,6 +18,8 @@
       #define cublasXgemv(a, b, c, d, e, f, g, h, i, j, k, l)       cublasCgemv((a), (b), (c), (d), (cuComplex *)(e), (cuComplex *)(f), (g), (cuComplex *)(h), (i), (cuComplex *)(j), (cuComplex *)(k), (l))
       #define cublasXgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n) cublasCgemm((a), (b), (c), (d), (e), (f), (cuComplex *)(g), (cuComplex *)(h), (i), (cuComplex *)(j), (k), (cuComplex *)(l), (cuComplex *)(m), (n))
       #define cublasXgeam(a, b, c, d, e, f, g, h, i, j, k, l, m)    cublasCgeam((a), (b), (c), (d), (e), (cuComplex *)(f), (cuComplex *)(g), (h), (cuComplex *)(i), (cuComplex *)(j), (k), (cuComplex *)(l), (m))
+      #define cublasXgemvStridedBatched(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
+        cublasCgemvStridedBatched((a), (b), (c), (d), (const cuComplex *)(e), (const cuComplex *)(f), (g), (h), (const cuComplex *)(i), (j), (k), (const cuComplex *)(l), (cuComplex *)(m), (n), (o), (p))
     #else /* complex double */
       #define cublasXaxpy(a, b, c, d, e, f, g)                      cublasZaxpy((a), (b), (cuDoubleComplex *)(c), (cuDoubleComplex *)(d), (e), (cuDoubleComplex *)(f), (g))
       #define cublasXscal(a, b, c, d, e)                            cublasZscal((a), (b), (cuDoubleComplex *)(c), (cuDoubleComplex *)(d), (e))
@@ -30,32 +32,37 @@
       #define cublasXgemv(a, b, c, d, e, f, g, h, i, j, k, l)       cublasZgemv((a), (b), (c), (d), (cuDoubleComplex *)(e), (cuDoubleComplex *)(f), (g), (cuDoubleComplex *)(h), (i), (cuDoubleComplex *)(j), (cuDoubleComplex *)(k), (l))
       #define cublasXgemm(a, b, c, d, e, f, g, h, i, j, k, l, m, n) cublasZgemm((a), (b), (c), (d), (e), (f), (cuDoubleComplex *)(g), (cuDoubleComplex *)(h), (i), (cuDoubleComplex *)(j), (k), (cuDoubleComplex *)(l), (cuDoubleComplex *)(m), (n))
       #define cublasXgeam(a, b, c, d, e, f, g, h, i, j, k, l, m)    cublasZgeam((a), (b), (c), (d), (e), (cuDoubleComplex *)(f), (cuDoubleComplex *)(g), (h), (cuDoubleComplex *)(i), (cuDoubleComplex *)(j), (k), (cuDoubleComplex *)(l), (m))
+      #define cublasXgemvStridedBatched(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
+        cublasZgemvStridedBatched((a), (b), (c), (d), (const cuDoubleComplex *)(e), (const cuDoubleComplex *)(f), (g), (h), (const cuDoubleComplex *)(i), (j), (k), (const cuDoubleComplex *)(l), (cuDoubleComplex *)(m), (n), (o), (p))
+
     #endif
   #else /* real single */
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cublasXaxpy  cublasSaxpy
-      #define cublasXscal  cublasSscal
-      #define cublasXdotu  cublasSdot
-      #define cublasXdot   cublasSdot
-      #define cublasXswap  cublasSswap
-      #define cublasXnrm2  cublasSnrm2
-      #define cublasIXamax cublasIsamax
-      #define cublasXasum  cublasSasum
-      #define cublasXgemv  cublasSgemv
-      #define cublasXgemm  cublasSgemm
-      #define cublasXgeam  cublasSgeam
+      #define cublasXaxpy               cublasSaxpy
+      #define cublasXscal               cublasSscal
+      #define cublasXdotu               cublasSdot
+      #define cublasXdot                cublasSdot
+      #define cublasXswap               cublasSswap
+      #define cublasXnrm2               cublasSnrm2
+      #define cublasIXamax              cublasIsamax
+      #define cublasXasum               cublasSasum
+      #define cublasXgemv               cublasSgemv
+      #define cublasXgemm               cublasSgemm
+      #define cublasXgeam               cublasSgeam
+      #define cublasXgemvStridedBatched cublasSgemvStridedBatched
     #else /* real double */
-      #define cublasXaxpy  cublasDaxpy
-      #define cublasXscal  cublasDscal
-      #define cublasXdotu  cublasDdot
-      #define cublasXdot   cublasDdot
-      #define cublasXswap  cublasDswap
-      #define cublasXnrm2  cublasDnrm2
-      #define cublasIXamax cublasIdamax
-      #define cublasXasum  cublasDasum
-      #define cublasXgemv  cublasDgemv
-      #define cublasXgemm  cublasDgemm
-      #define cublasXgeam  cublasDgeam
+      #define cublasXaxpy               cublasDaxpy
+      #define cublasXscal               cublasDscal
+      #define cublasXdotu               cublasDdot
+      #define cublasXdot                cublasDdot
+      #define cublasXswap               cublasDswap
+      #define cublasXnrm2               cublasDnrm2
+      #define cublasIXamax              cublasIdamax
+      #define cublasXasum               cublasDasum
+      #define cublasXgemv               cublasDgemv
+      #define cublasXgemm               cublasDgemm
+      #define cublasXgeam               cublasDgeam
+      #define cublasXgemvStridedBatched cublasDgemvStridedBatched
     #endif
   #endif
 

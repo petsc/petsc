@@ -16,11 +16,11 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
 PetscErrorCode ISRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (ISRegisterAllCalled) PetscFunctionReturn(0);
+  if (ISRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   ISRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(ISRegister(ISGENERAL, ISCreate_General));
   PetscCall(ISRegister(ISSTRIDE, ISCreate_Stride));
   PetscCall(ISRegister(ISBLOCK, ISCreate_Block));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

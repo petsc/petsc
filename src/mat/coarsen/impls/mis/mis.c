@@ -93,7 +93,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
   /* MIS */
   nremoved = nDone = 0;
   PetscCall(ISGetIndices(perm, &perm_ix));
-  while (nDone < nloc || PETSC_TRUE) { /* asyncronous not implemented */
+  while (nDone < nloc || PETSC_TRUE) { /* asynchronous not implemented */
     /* check all vertices */
     for (kk = 0; kk < nloc; kk++) {
       lid   = perm_ix[kk];
@@ -213,7 +213,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {
-    /* need to copy this to free buffer -- should do this globaly */
+    /* need to copy this to free buffer -- should do this globally */
     PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_sel_gid));
     PetscCall(PetscMalloc1(num_fine_ghosts, &icpcol_gid));
     for (cpid = 0; cpid < num_fine_ghosts; cpid++) icpcol_gid[cpid] = cpcol_gid[cpid];
@@ -242,7 +242,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
   PetscCall(PetscFree(lid_removed));
   if (strict_aggs) PetscCall(PetscFree(lid_parent_gid));
   PetscCall(PetscFree(lid_state));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -266,7 +266,7 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
   } else {
     PetscCall(MatCoarsenApply_MIS_private(coarse->perm, mat, coarse->strict_aggs, &coarse->agg_lists));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
@@ -297,7 +297,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -318,5 +318,5 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
   PetscFunctionBegin;
   coarse->ops->apply = MatCoarsenApply_MIS;
   coarse->ops->view  = MatCoarsenView_MIS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

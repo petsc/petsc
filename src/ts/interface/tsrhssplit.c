@@ -12,7 +12,7 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RH
     if (found) break;
     *isplit = (*isplit)->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -58,7 +58,7 @@ PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
     next->next = newsplit;
   }
   ts->num_rhs_splits++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -87,7 +87,7 @@ PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
   /* look up the split */
   PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));
   if (isplit) *is = isplit->is;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -148,7 +148,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
 
   PetscCall(TSSetRHSFunction(isplit->ts, r, rhsfunc, ctx));
   PetscCall(VecDestroy(&ralloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -178,7 +178,7 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
   /* look up the split */
   PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));
   if (isplit) *subts = isplit->ts;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -216,5 +216,5 @@ PetscErrorCode TSRHSSplitGetSubTSs(TS ts, PetscInt *n, TS *subts[])
     }
   }
   if (n) *n = ts->num_rhs_splits;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

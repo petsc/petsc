@@ -44,7 +44,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-distribute_after_topo_load", "Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true", EX, options->distribute_after_topo_load, &options->distribute_after_topo_load, NULL));
   PetscCall(PetscOptionsInt("-verbose", "Verbosity level", EX, options->verbose, &options->verbose, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 };
 
 static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm)
@@ -58,7 +58,7 @@ static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm)
   PetscCall(PetscObjectGetName((PetscObject)dm, &options->meshname));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SaveMesh(AppCtx *options, DM dm)
@@ -75,7 +75,7 @@ static PetscErrorCode SaveMesh(AppCtx *options, DM dm)
     PetscCall(DMView(dm, v));
   }
   PetscCall(PetscViewerDestroy(&v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef enum {
@@ -121,7 +121,7 @@ static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool
   }
   PetscCall(PetscSFDestroy(&sfXC));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew)
@@ -154,7 +154,7 @@ static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew)
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   *dmnew = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1)
@@ -171,7 +171,7 @@ static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1)
     PetscCall(DMCompareLabels(dm0, dm1, NULL, NULL));
     PetscCall(PetscPrintf(options->comm, "DMLabels equal\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, PetscBool verticesOnly, DMLabel *label)
@@ -203,7 +203,7 @@ static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, Pet
   }
   if (label) *label = l;
   else PetscCall(DMLabelDestroy(&l));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
@@ -237,7 +237,7 @@ static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
   PetscCall(VecScatterDestroy(&sc));
   PetscCall(VecDestroy(&coords));
   *allCoords = allCoords_;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelGetCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec *allCoords)
@@ -248,7 +248,7 @@ static PetscErrorCode DMLabelGetCoordinateRepresentation(DM dm, DMLabel label, P
   PetscCall(DMLabelGetStratumIS(label, value, &vertices));
   PetscCall(VertexCoordinatesToAll(dm, vertices, allCoords));
   PetscCall(ISDestroy(&vertices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec allCoords, PetscInt verbose)
@@ -302,7 +302,7 @@ static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel 
   PetscCall(ISDestroy(&pointsIS));
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCheck(!fail, comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly%s", labelName, verbose ? " - see details above" : "");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
@@ -313,7 +313,7 @@ static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
   PetscMPIInt rank;
 
   PetscFunctionBeginUser;
-  if (ctx->num_labels < 0) PetscFunctionReturn(0);
+  if (ctx->num_labels < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMGetNumLabels(dm, &actualNum));
@@ -336,14 +336,14 @@ static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
   }
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCheck(!fail, comm, PETSC_ERR_PLIB, "Wrong number of labels%s", ctx->verbose ? " - see details above" : "");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode IncrementNumLabels(AppCtx *ctx)
 {
   PetscFunctionBeginUser;
   if (ctx->num_labels >= 0) ctx->num_labels++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -203,7 +203,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X)
      Restore vector
   */
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr)
@@ -341,7 +341,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
      Flop count (multiply-adds are counted as 2 operations)
   */
   PetscCall(PetscLogFlops(84.0 * info->ym * info->xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_MyShell(Mat A, Vec x, Vec y)
@@ -357,7 +357,7 @@ PetscErrorCode MatMult_MyShell(Mat A, Vec x, Vec y)
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
     if (rank == 0) PetscCall(VecSetInf(y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_MyShell(Mat A, MatAssemblyType tp)
@@ -367,7 +367,7 @@ PetscErrorCode MatAssemblyEnd_MyShell(Mat A, MatAssemblyType tp)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &matshellctx));
   PetscCall(MatAssemblyEnd(matshellctx->Jmf, tp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCApply_MyShell(PC pc, Vec x, Vec y)
@@ -381,7 +381,7 @@ PetscErrorCode PCApply_MyShell(PC pc, Vec x, Vec y)
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
     if (rank == 0) PetscCall(VecSetInf(y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *);
@@ -393,7 +393,7 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes, Vec X, Mat A, Mat B, void 
   PetscFunctionBegin;
   PetscCall(SNESComputeJacobian_DMDA(snes, X, A, B, ctx));
   if (fail++ > 0) PetscCall(MatZeroEntries(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

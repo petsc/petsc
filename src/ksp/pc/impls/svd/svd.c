@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   PetscCall(MatGetSize(jac->A, &n, NULL));
   if (!n) {
     PetscCall(PetscInfo(pc, "Matrix has zero rows, skipping svd\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscBLASIntCast(n, &nb));
   lwork = 5 * nb;
@@ -131,7 +131,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   PetscCall(PetscInfo(pc, "Number of zero or nearly singular values %" PetscInt_FMT "\n", jac->nzero));
   PetscCall(VecRestoreArray(jac->diag, &d));
   PetscCall(PetscFree(work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSVDGetVec(PC pc, PCSide side, AccessMode amode, Vec x, Vec *xred)
@@ -168,7 +168,7 @@ static PetscErrorCode PCSVDGetVec(PC pc, PCSide side, AccessMode amode, Vec x, V
   default:
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Side must be LEFT or RIGHT");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSVDRestoreVec(PC pc, PCSide side, AccessMode amode, Vec x, Vec *xred)
@@ -195,7 +195,7 @@ static PetscErrorCode PCSVDRestoreVec(PC pc, PCSide side, AccessMode amode, Vec 
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Side must be LEFT or RIGHT");
   }
   *xred = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -231,7 +231,7 @@ static PetscErrorCode PCApply_SVD(PC pc, Vec x, Vec y)
 #endif
   PetscCall(PCSVDRestoreVec(pc, PC_RIGHT, READ, x, &xred));
   PetscCall(PCSVDRestoreVec(pc, PC_LEFT, WRITE, y, &yred));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y)
@@ -244,7 +244,7 @@ static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y)
   PetscCall(MatDiagonalScale(W, jac->diag, NULL));
   PetscCall(MatTransposeMatMult(jac->Vt, W, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
   PetscCall(MatDestroy(&W));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_SVD(PC pc, Vec x, Vec y)
@@ -260,7 +260,7 @@ static PetscErrorCode PCApplyTranspose_SVD(PC pc, Vec x, Vec y)
   PetscCall(MatMult(jac->U, work, yred));
   PetscCall(PCSVDRestoreVec(pc, PC_LEFT, READ, x, &xred));
   PetscCall(PCSVDRestoreVec(pc, PC_RIGHT, WRITE, y, &yred));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_SVD(PC pc)
@@ -277,7 +277,7 @@ static PetscErrorCode PCReset_SVD(PC pc)
   PetscCall(VecScatterDestroy(&jac->left2red));
   PetscCall(VecDestroy(&jac->rightred));
   PetscCall(VecDestroy(&jac->leftred));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -297,7 +297,7 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
   PetscCall(PCReset_SVD(pc));
   PetscCall(PetscViewerDestroy(&jac->monitor));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -311,7 +311,7 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems *PetscOptions
   PetscCall(PetscOptionsInt("-pc_svd_ess_rank", "Essential rank of operator (0 to use entire operator)", "None", jac->essrank, &jac->essrank, NULL));
   PetscCall(PetscOptionsViewer("-pc_svd_monitor", "Monitor the conditioning, and extremal singular values", "None", &jac->monitor, &jac->monitorformat, &flg));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer)
@@ -325,7 +325,7 @@ static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  All singular values smaller than %g treated as zero\n", (double)svd->zerosing));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Provided essential rank of the matrix %" PetscInt_FMT " (all other eigenvalues are zeroed)\n", svd->essrank));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -390,5 +390,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_SVD;
   pc->ops->view            = PCView_SVD;
   pc->ops->applyrichardson = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

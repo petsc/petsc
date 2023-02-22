@@ -46,7 +46,7 @@ static PetscErrorCode Update1(DM da, const PetscScalar ***__restrict__ x1, Petsc
   }
   PetscCall(PetscTime(&tend));
   *avgTime = (tend - tstart) / nloop;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* C multi-dimensional array access */
@@ -73,7 +73,7 @@ static PetscErrorCode Update2(DM da, const PetscScalar *__restrict__ x2, PetscSc
   *avgTime = (tend - tstart) / nloop;
 #undef X2
 #undef Y2
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

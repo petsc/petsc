@@ -25,7 +25,7 @@ M*/
 +  viewer - `PETSCVIEWERVTK`
 .  dm - `DM` on which `Vec` lives
 .  PetscViewerVTKWriteFunction - function to write this `Vec`
-.  fieldnum - which field of the DM to write (`PETSC_DEFAULT` if the whle vector should be written)
+.  fieldnum - which field of the DM to write (`PETSC_DEFAULT` if the while vector should be written)
 .  fieldtype - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
 .  checkdm - whether to check for identical dm arguments as fields are added
 -  vec - `Vec` from which to write
@@ -44,7 +44,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscE
   PetscValidHeader(dm, 2);
   PetscValidHeader(vec, 7);
   PetscUseMethod(viewer, "PetscViewerVTKAddField_C", (PetscViewer, PetscObject, PetscErrorCode(*)(PetscObject, PetscViewer), PetscInt, PetscViewerVTKFieldType, PetscBool, PetscObject), (viewer, dm, PetscViewerVTKWriteFunction, fieldnum, fieldtype, checkdm, vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -65,7 +65,7 @@ PetscErrorCode PetscViewerVTKGetDM(PetscViewer viewer, PetscObject *dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscUseMethod(viewer, "PetscViewerVTKGetDM_C", (PetscViewer, PetscObject *), (viewer, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
@@ -81,7 +81,7 @@ static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerVTKAddField_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerVTKGetDM_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
@@ -100,7 +100,7 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
   PetscCall(PetscObjectDestroy(&vtk->dm));
   vtk->write = NULL;
   vtk->link  = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileSetName_VTK(PetscViewer viewer, const char name[])
@@ -135,7 +135,7 @@ PetscErrorCode PetscViewerFileSetName_VTK(PetscViewer viewer, const char name[])
     PetscCheck(viewer->format == PETSC_VIEWER_VTK_VTR, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use file '%s' with format %s, should have '.vtr' extension", name, PetscViewerFormats[viewer->format]);
   } else SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_UNKNOWN_TYPE, "File '%s' has unrecognized extension", name);
   PetscCall(PetscStrallocpy(len ? name : "stdout", &vtk->filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileGetName_VTK(PetscViewer viewer, const char **name)
@@ -143,7 +143,7 @@ PetscErrorCode PetscViewerFileGetName_VTK(PetscViewer viewer, const char **name)
   PetscViewer_VTK *vtk = (PetscViewer_VTK *)viewer->data;
   PetscFunctionBegin;
   *name = vtk->filename;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileSetMode_VTK(PetscViewer viewer, PetscFileMode type)
@@ -152,7 +152,7 @@ PetscErrorCode PetscViewerFileSetMode_VTK(PetscViewer viewer, PetscFileMode type
 
   PetscFunctionBegin;
   vtk->btype = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerFileGetMode_VTK(PetscViewer viewer, PetscFileMode *type)
@@ -161,7 +161,7 @@ PetscErrorCode PetscViewerFileGetMode_VTK(PetscViewer viewer, PetscFileMode *typ
 
   PetscFunctionBegin;
   *type = vtk->btype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject dm, PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject, PetscViewer), PetscInt fieldnum, PetscViewerVTKFieldType fieldtype, PetscBool checkdm, PetscObject vec)
@@ -187,7 +187,7 @@ PetscErrorCode PetscViewerVTKAddField_VTK(PetscViewer viewer, PetscObject dm, Pe
     while (tail->next) tail = tail->next;
     tail->next = link;
   } else vtk->link = link;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerVTKGetDM_VTK(PetscViewer viewer, PetscObject *dm)
@@ -196,7 +196,7 @@ PetscErrorCode PetscViewerVTKGetDM_VTK(PetscViewer viewer, PetscObject *dm)
 
   PetscFunctionBegin;
   *dm = vtk->dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -229,7 +229,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileGetMode_C", PetscViewerFileGetMode_VTK));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerVTKAddField_C", PetscViewerVTKAddField_VTK));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerVTKGetDM_C", PetscViewerVTKGetDM_VTK));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -261,7 +261,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
   PetscCall(PetscViewerSetType(*vtk, PETSCVIEWERVTK));
   PetscCall(PetscViewerFileSetMode(*vtk, type));
   PetscCall(PetscViewerFileSetName(*vtk, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -295,12 +295,12 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *da
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_OUTOFRANGE, "Trying to write a negative amount of data %" PetscInt_FMT, n);
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
   if (rank == 0) {
     size_t      count;
     PetscMPIInt dsize;
-    PetscVTKInt bytes;
+    PetscInt64  bytes;
 
 #if defined(PETSC_USE_REAL___FLOAT128)
     if (dtype == MPIU___FLOAT128) {
@@ -311,9 +311,9 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *da
     }
 #endif
     PetscCallMPI(MPI_Type_size(vdtype, &dsize));
-    bytes = PetscVTKIntCast(dsize * n);
+    bytes = (PetscInt64)dsize * n;
 
-    count = fwrite(&bytes, sizeof(int), 1, fp);
+    count = fwrite(&bytes, sizeof(bytes), 1, fp);
     PetscCheck(count == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error writing byte count");
     count = fwrite(data, dsize, (size_t)n, fp);
     PetscCheck((PetscInt)count == n, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %d", (PetscInt)count, n, dsize);
@@ -321,5 +321,5 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *da
     if (dtype == MPIU___FLOAT128) PetscCall(PetscFree(tmp));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -17,6 +17,7 @@ configure_options = [
   '--with-precision=__float128',
   '--download-mpich',
   '--download-f2cblaslapack',
+  '--with-strict-petscerrorcode',
 ]
 
 if __name__ == '__main__':

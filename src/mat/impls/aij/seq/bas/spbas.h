@@ -19,7 +19,7 @@
    Information about each row
       row_nnz     : number of nonzeros for each row
       icol0       : column index offset (when needed, otherwise NULL)
-      icols       : array of diagonal offsets for each row, as descibed
+      icols       : array of diagonal offsets for each row, as described
                     for col_idx_type, above
       values      : array of matrix entries for each row
                     when values == NULL, this matrix is really

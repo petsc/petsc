@@ -16,7 +16,7 @@ PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], 
   } else {
     PetscCall(PetscViewerASCIIPrintf(viewer, "* Setting option: %s = %s\n", name, value));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

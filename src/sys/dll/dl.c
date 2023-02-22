@@ -19,10 +19,10 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 {
   PetscFunctionBegin;
   while (libs) {
-    PetscErrorPrintf("  %s\n", libs->libname);
+    PetscCall(PetscErrorPrintf("  %s\n", libs->libname));
     libs = libs->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -50,7 +50,7 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 @*/
 PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char *lname, size_t llen, PetscBool *found)
 {
-  char  *buf, *par2, suffix[16], *gz, *so;
+  char  *buf, *par2, suffix[16], *gz = NULL, *so = NULL;
   size_t len;
 
   PetscFunctionBegin;
@@ -92,7 +92,7 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char 
   }
 
   PetscCall(PetscFree(buf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -184,7 +184,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   (*entry)->next   = NULL;
   (*entry)->handle = handle;
   PetscCall(PetscStrcpy((*entry)->libname, libname));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -212,8 +212,9 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
 @*/
 PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[], const char insymbol[], void **value)
 {
-  char           libname[PETSC_MAX_PATH_LEN], suffix[16], *symbol, *s;
-  PetscDLLibrary nlist, prev, list = NULL;
+  char           libname[PETSC_MAX_PATH_LEN], suffix[16];
+  char          *symbol = NULL, *s;
+  PetscDLLibrary list   = NULL, nlist, prev;
 
   PetscFunctionBegin;
   if (outlist) PetscValidPointer(outlist, 2);
@@ -286,11 +287,11 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
   }
 
   if (symbol != insymbol) PetscCall(PetscFree(symbol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-     PetscDLLibraryAppend - Appends another dynamic link library to the seach list, to the end
+     PetscDLLibraryAppend - Appends another dynamic link library to the search list, to the end
                 of the search path.
 
      Collective
@@ -318,7 +319,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
   size_t         len;
   PetscBool      match, dir;
   char           program[PETSC_MAX_PATH_LEN], found[8 * PETSC_MAX_PATH_LEN];
-  char          *libname, suffix[16], *s;
+  char          *libname, suffix[16], *s = NULL;
   PetscToken     token;
 
   PetscFunctionBegin;
@@ -338,7 +339,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
     PetscCall(PetscStrlcat(program, PETSC_SLSUFFIX, sizeof(program)));
 
     PetscCall(PetscLs(comm, program, found, 8 * PETSC_MAX_PATH_LEN, &dir));
-    if (!dir) PetscFunctionReturn(0);
+    if (!dir) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscStrncpy(found, path, PETSC_MAX_PATH_LEN));
   }
@@ -372,7 +373,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
     PetscCall(PetscTokenFind(token, &libname));
   }
   PetscCall(PetscTokenDestroy(&token));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -400,7 +401,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
   size_t         len;
   PetscBool      match, dir;
   char           program[PETSC_MAX_PATH_LEN], found[8 * PETSC_MAX_PATH_LEN];
-  char          *libname, suffix[16], *s;
+  char          *libname, suffix[16], *s = NULL;
   PetscToken     token;
 
   PetscFunctionBegin;
@@ -420,7 +421,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
     PetscCall(PetscStrlcat(program, PETSC_SLSUFFIX, sizeof(program)));
 
     PetscCall(PetscLs(comm, program, found, 8 * PETSC_MAX_PATH_LEN, &dir));
-    if (!dir) PetscFunctionReturn(0);
+    if (!dir) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscStrncpy(found, path, PETSC_MAX_PATH_LEN));
   }
@@ -462,7 +463,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
     PetscCall(PetscTokenFind(token, &libname));
   }
   PetscCall(PetscTokenDestroy(&token));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -482,7 +483,7 @@ PetscErrorCode PetscDLLibraryClose(PetscDLLibrary list)
   PetscDLLibrary prev, tail;
 
   PetscFunctionBegin;
-  if (!list) PetscFunctionReturn(0);
+  if (!list) PetscFunctionReturn(PETSC_SUCCESS);
   /* traverse the list in reverse order */
   while (!done) {
     if (!list->next) done = PETSC_TRUE;
@@ -497,5 +498,5 @@ PetscErrorCode PetscDLLibraryClose(PetscDLLibrary list)
     PetscCall(PetscDLClose(&tail->handle));
     PetscCall(PetscFree(tail));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

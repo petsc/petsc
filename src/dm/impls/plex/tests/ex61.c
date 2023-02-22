@@ -6,14 +6,14 @@ static PetscErrorCode set_one(PetscInt dim, PetscReal time, const PetscReal x[],
 {
   PetscFunctionBegin;
   bcval[0] = 1.;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode set_two(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[], void *ctx)
 {
   PetscFunctionBegin;
   bcval[0] = 2.;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

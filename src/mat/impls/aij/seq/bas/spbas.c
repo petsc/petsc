@@ -80,7 +80,7 @@ PetscErrorCode spbas_allocate_pattern(spbas_matrix *result, PetscBool do_values)
   } else {
     result->values = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -131,7 +131,7 @@ PetscErrorCode spbas_allocate_data(spbas_matrix *result)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -238,7 +238,7 @@ PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt *irow_in, PetscInt
     for (i = 0; i < nrows; i++) isort[i] = ihlp2[i];
   }
   PetscCall(PetscFree(ialloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -335,7 +335,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
 
   mem_compressed = spbas_memory_requirement(*B);
   *mem_reduction = 100.0 * (PetscReal)(mem_orig - mem_compressed) / (PetscReal)mem_orig;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -367,7 +367,7 @@ PetscErrorCode spbas_delete(spbas_matrix matrix)
   PetscCall(PetscFree(matrix.icols));
   if (matrix.col_idx_type == SPBAS_OFFSET_ARRAY) PetscCall(PetscFree(matrix.icol0));
   PetscCall(PetscFree(matrix.values));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -423,7 +423,7 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A, MatScalar **val_out, P
       for (j = 0; j < r_nnz; j++) icol[i0 + j] += i0;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -508,7 +508,7 @@ PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix *result)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -620,7 +620,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
 
   PetscCall(PetscFree(ialloc));
   if (val) PetscCall(PetscFree(valloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -658,7 +658,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   if (do_values) matrix_A->values = vals;
   matrix_A->icols   = icols;
   matrix_A->row_nnz = row_nnz;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -685,7 +685,7 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A, const PetscIn
     for (j = 0; j < row_nnz; j++) icols[j] = permutation[i + icols[j]] - i;
     PetscCall(spbas_mergesort(row_nnz, icols, vals));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -697,7 +697,7 @@ PetscErrorCode spbas_apply_reordering(spbas_matrix *matrix_A, const PetscInt *pe
   PetscFunctionBegin;
   PetscCall(spbas_apply_reordering_rows(matrix_A, inv_perm));
   PetscCall(spbas_apply_reordering_cols(matrix_A, permutation));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode spbas_pattern_only(PetscInt nrows, PetscInt ncols, PetscInt *ai, PetscInt *aj, spbas_matrix *result)
@@ -726,7 +726,7 @@ PetscErrorCode spbas_pattern_only(PetscInt nrows, PetscInt ncols, PetscInt *ai, 
     for (j = 0; j < r_nnz; j++) retval.icols[i][j] = aj[i0 + j] - i;
   }
   *result = retval;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -762,7 +762,7 @@ PetscErrorCode spbas_mark_row_power(PetscInt     *iwork,     /* marker-vector */
       if (minmrk <= j && j < maxmrk) iwork[j] |= 1;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -835,7 +835,7 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix, PetscInt power, spbas_matrix 
   };
   PetscCall(PetscFree(iwork));
   *result = retval;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -866,5 +866,5 @@ PetscErrorCode spbas_keep_upper(spbas_matrix *inout_matrix)
       inout_matrix->nnz -= jstart;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

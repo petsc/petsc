@@ -451,7 +451,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_inplace(Mat C, Mat A, const MatFacto
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 7 * 7 * 7 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat B, Mat A, const MatFactorInfo *info)
@@ -556,7 +556,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat B, Mat A, const MatFactorInfo *i
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 7 * 7 * 7 * n)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
@@ -998,7 +998,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace(Mat C, Mat A
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 7 * 7 * 7 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info)
@@ -1096,5 +1096,5 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat B, Mat A, const 
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 7 * 7 * 7 * n)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -51,7 +51,7 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
   PetscCall(VecDestroy(&global));
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -97,5 +97,5 @@ PetscErrorCode DMDANaturalAllToGlobalCreate(DM da, VecScatter *scatter)
   PetscCall(VecDestroy(&global));
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

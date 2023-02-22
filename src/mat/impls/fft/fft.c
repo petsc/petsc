@@ -13,7 +13,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
   PetscCall(PetscFree(fft->dim));
   PetscCall(PetscFree(A->data));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -78,5 +78,5 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], 
   PetscOptionsEnd();
 
   *A = FFT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

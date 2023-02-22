@@ -40,7 +40,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject, M
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1) {
     if (!PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n%s:\n", title));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -61,13 +61,13 @@ PetscErrorCode PetscObjectOptionsBegin_Private(PetscObject obj, PetscOptionItems
   if (flg) PetscCall(PetscSNPrintf(title, sizeof(title), "%s options", obj->class_name));
   else PetscCall(PetscSNPrintf(title, sizeof(title), "%s (%s) options", obj->description, obj->class_name));
   PetscCall(PetscOptionsBegin_Private(PetscOptionsObject, obj->comm, obj->prefix, title, obj->mansec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
      Handles adding another option to the list of options within this particular PetscOptionsBegin() PetscOptionsEnd()
 */
-static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject, const char opt[], const char text[], const char man[], PetscOptionType t, PetscOptionItem *amsopt)
+static PetscErrorCode PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject, const char opt[], const char text[], const char man[], PetscOptionType t, PetscOptionItem *amsopt)
 {
   PetscOptionItem next;
   PetscBool       valid;
@@ -92,7 +92,7 @@ static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject, c
     while (next->next) next = next->next;
     next->next = *amsopt;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -127,7 +127,7 @@ static PetscErrorCode PetscScanString(MPI_Comm comm, size_t n, char str[])
   }
   PetscCall(PetscMPIIntCast(n, &nm));
   PetscCallMPI(MPI_Bcast(str, nm, MPI_CHAR, 0, comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -147,7 +147,7 @@ static PetscErrorCode PetscStrdup(const char s[], char *t[])
     PetscCall(PetscStrcpy(tmp, s));
   }
   *t = tmp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -340,7 +340,7 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
     }
     next = next->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_SAWS)
@@ -351,7 +351,7 @@ static int count = 0;
 PetscErrorCode PetscOptionsSAWsDestroy(void)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static const char *OptionsHeader = "<head>\n"
@@ -488,7 +488,7 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
   }
 
   PetscCallSAWs(SAWs_Delete, ("/PETSc/Options"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -608,7 +608,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
   }
   PetscCall(PetscFree(PetscOptionsObject->prefix));
   PetscOptionsObject->next = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -670,7 +670,7 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
   /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
   if (tflg) *value = (PetscEnum)tval;
   if (set) *set = tflg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -739,7 +739,7 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObjec
     for (i = 0; i < nlist; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, " %s", list[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, " (%s)\n", ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -894,7 +894,7 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <now %" PetscInt_FMT " : formerly %" PetscInt_FMT ">: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, wasset && value ? *value : currentvalue, currentvalue, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -954,7 +954,7 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <now %s : formerly %s>: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, lset && value ? value : currentvalue, currentvalue, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1016,7 +1016,7 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <%g : %g>: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, lset && value ? (double)*value : (double)currentvalue, (double)currentvalue, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1069,7 +1069,7 @@ PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject, 
 #else
   PetscCall(PetscOptionsGetScalar(PetscOptionsObject->options, PetscOptionsObject->prefix, opt, value, set));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1119,7 +1119,7 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1188,7 +1188,7 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall(PetscFunctionListPrintTypes(PetscOptionsObject->comm, stdout, PetscOptionsObject->prefix, opt, ltext, man, list, currentvalue, lset && value ? value : currentvalue));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1253,7 +1253,7 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
     for (i = 0; i < ntext; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, " %s", list[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, " (%s)\n", ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1306,7 +1306,7 @@ PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOptions
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  Pick at most one of -------------\n"));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "    -%s%s: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1358,7 +1358,7 @@ PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObjec
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "    -%s%s: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1410,7 +1410,7 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "    -%s%s: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1473,7 +1473,7 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
     const char *v = PetscBools[currentvalue], *vn = PetscBools[iset && flg ? *flg : currentvalue];
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <%s : %s> %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, v, vn, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1531,7 +1531,7 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
     for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%g", (double)value[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1589,7 +1589,7 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
     for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%g+%gi", (double)PetscRealPart(value[i]), (double)PetscImaginaryPart(value[i])));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1655,7 +1655,7 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
     for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%" PetscInt_FMT, value[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1714,7 +1714,7 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsObj
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <string1,string2,...>: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1775,7 +1775,7 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
     for (i = 1; i < *n; i++) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ",%d", value[i]));
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, ">: %s (%s)\n", text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1827,5 +1827,5 @@ PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject, 
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s <%s>: %s (%s)\n", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", opt + 1, "", text, ManSection(man)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

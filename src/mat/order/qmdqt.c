@@ -86,5 +86,5 @@ L400:
     }
   L600:;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

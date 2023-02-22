@@ -41,6 +41,8 @@ implicit none
      myValue = real(i)
      PetscCallA(VecSetValues(v,one,i,myValue,INSERT_VALUES,ierr))
   end do
+  PetscCallA(VecAssemblyBegin(v,ierr));
+  PetscCallA(VecAssemblyEnd(v,ierr));
 
   ! Get the components from the multi-component vector to the other vectors
 

@@ -57,7 +57,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
   /* MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE); */
 
   *J = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt *innz, PetscInt *nnz, PetscInt *ionz, PetscInt *onz, PetscBool isbaij)
@@ -170,7 +170,7 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
       if ((ionz && onz) && (onz[i] > *ionz)) *ionz = onz[i];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fill, PetscInt **rfill)
@@ -178,14 +178,14 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
   PetscInt i, j, *ifill;
 
   PetscFunctionBegin;
-  if (!fill) PetscFunctionReturn(0);
+  if (!fill) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscMalloc1(w * w, &ifill));
   for (i = 0; i < w; i++) {
     for (j = 0; j < w; j++) ifill[i * w + j] = fill[i * w + j];
   }
 
   *rfill = ifill;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -230,5 +230,5 @@ PetscErrorCode DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMMoabSetBlockFills_Private(dmmoab->numFields, dfill, &dmmoab->dfill));
   PetscCall(DMMoabSetBlockFills_Private(dmmoab->numFields, ofill, &dmmoab->ofill));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

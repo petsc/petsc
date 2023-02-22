@@ -23,7 +23,7 @@ PetscErrorCode PetscDrawTriangle(PetscDraw draw, PetscReal x1, PetscReal y_1, Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscUseTypeMethod(draw, triangle, x1, y_1, x2, y2, x3, y3, c1, c2, c3);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -52,10 +52,10 @@ PetscErrorCode PetscDrawScalePopup(PetscDraw popup, PetscReal min, PetscReal max
   char        string[32];
 
   PetscFunctionBegin;
-  if (!popup) PetscFunctionReturn(0);
+  if (!popup) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(popup, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscDrawIsNull(popup, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)popup), &rank));
 
   PetscCall(PetscDrawCheckResizedWindow(popup));
@@ -80,7 +80,7 @@ PetscErrorCode PetscDrawScalePopup(PetscDraw popup, PetscReal min, PetscReal max
   PetscDrawCollectiveEnd(popup);
   PetscCall(PetscDrawFlush(popup));
   PetscCall(PetscDrawSave(popup));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -100,7 +100,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx)
     for (i = 0; i < ctx->m; i++) PetscCall(PetscDrawLine(win, ctx->x[i], ctx->y[0], ctx->x[i], ctx->y[ctx->n - 1], PETSC_DRAW_BLACK));
     for (i = 0; i < ctx->n; i++) PetscCall(PetscDrawLine(win, ctx->x[0], ctx->y[i], ctx->x[ctx->m - 1], ctx->y[i], PETSC_DRAW_BLACK));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -136,7 +136,7 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscDrawIsNull(draw, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw), &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "May only be used with single processor PetscDraw");
   PetscCheck(N > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n %d and m %d must be positive", m, n);
@@ -182,7 +182,7 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
 
   if (!xin) PetscCall(PetscFree(ctx.x));
   if (!yin) PetscCall(PetscFree(ctx.y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -236,5 +236,5 @@ PetscErrorCode PetscDrawTensorContourPatch(PetscDraw draw, int m, int n, PetscRe
       PetscCall(PetscDrawTriangle(draw, x1, y_1, x3, y3, x4, y4, c1, c3, c4));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

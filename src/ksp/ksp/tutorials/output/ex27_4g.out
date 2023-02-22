@@ -1,0 +1,29 @@
+Failed to load initial guess, so use a vector of all zeros.
+  0 KSP Residual norm 0.00471115 
+  1 KSP Residual norm 0.000799064 
+  2 KSP Residual norm 0.000208157 
+  3 KSP Residual norm 9.54028e-05 
+  4 KSP Residual norm 6.07307e-05 
+  5 KSP Residual norm 3.84074e-05 
+  6 KSP Residual norm 3.03141e-05 
+  7 KSP Residual norm 2.43799e-05 
+  8 KSP Residual norm 1.93842e-05 
+  9 KSP Residual norm 1.6804e-05 
+ 10 KSP Residual norm 1.63722e-05 
+ 11 KSP Residual norm 1.63195e-05 
+ 12 KSP Residual norm 1.63104e-05 
+ 13 KSP Residual norm 1.63062e-05 
+ 14 KSP Residual norm 1.63047e-05 
+ 15 KSP Residual norm 1.63039e-05 
+ 16 KSP Residual norm 1.63037e-05 
+ 17 KSP Residual norm 1.63036e-05 
+ 18 KSP Residual norm 1.63035e-05 
+ 19 KSP Residual norm 1.63035e-05 
+ 20 KSP Residual norm 1.63035e-05 
+ 21 KSP Residual norm 1.63035e-05 
+ 22 KSP Residual norm 1.63035e-05 
+ 23 KSP Residual norm 1.63035e-05 
+Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 23
+KSP type: lsqr
+Number of iterations =  23
+Residual norm 1.63035e-05

@@ -25,7 +25,7 @@ PetscErrorCode DMFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&DMList));
   DMPackageInitialized = PETSC_FALSE;
   DMRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_HYPRE)
@@ -48,7 +48,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (DMPackageInitialized) PetscFunctionReturn(0);
+  if (DMPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   DMPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
@@ -132,6 +132,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexMetricNormalize", DM_CLASSID, &DMPLEX_MetricNormalize));
   PetscCall(PetscLogEventRegister("DMPlexMetricAverage", DM_CLASSID, &DMPLEX_MetricAverage));
   PetscCall(PetscLogEventRegister("DMPlexMetricIntersect", DM_CLASSID, &DMPLEX_MetricIntersection));
+  PetscCall(PetscLogEventRegister("DMPlexGenerate", DM_CLASSID, &DMPLEX_Generate));
 
   PetscCall(PetscLogEventRegister("RebalBuildGraph", DM_CLASSID, &DMPLEX_RebalBuildGraph));
   PetscCall(PetscLogEventRegister("RebalGatherGraph", DM_CLASSID, &DMPLEX_RebalGatherGraph));
@@ -175,7 +176,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(DMLabelRegisterAll());
   PetscCall(PetscRegisterFinalize(DMLabelRegisterDestroy));
   PetscCall(PetscRegisterFinalize(DMFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #include <petscfe.h>
 
@@ -198,7 +199,7 @@ PetscErrorCode PetscFEFinalizePackage(void)
   PetscSpaceRegisterAllCalled     = PETSC_FALSE;
   PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
   PetscFERegisterAllCalled        = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -216,7 +217,7 @@ PetscErrorCode PetscFEInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscFEPackageInitialized) PetscFunctionReturn(0);
+  if (PetscFEPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscFEPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
@@ -249,7 +250,7 @@ PetscErrorCode PetscFEInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PetscFEFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #include <petscfv.h>
 
@@ -270,7 +271,7 @@ PetscErrorCode PetscFVFinalizePackage(void)
   PetscFVPackageInitialized     = PETSC_FALSE;
   PetscFVRegisterAllCalled      = PETSC_FALSE;
   PetscLimiterRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -288,7 +289,7 @@ PetscErrorCode PetscFVInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscFVPackageInitialized) PetscFunctionReturn(0);
+  if (PetscFVPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscFVPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
@@ -316,7 +317,7 @@ PetscErrorCode PetscFVInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PetscFVFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #include <petscds.h>
 
@@ -335,7 +336,7 @@ PetscErrorCode PetscDSFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&PetscDSList));
   PetscDSPackageInitialized = PETSC_FALSE;
   PetscDSRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -353,7 +354,7 @@ PetscErrorCode PetscDSInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscDSPackageInitialized) PetscFunctionReturn(0);
+  if (PetscDSPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscDSPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
@@ -377,7 +378,7 @@ PetscErrorCode PetscDSInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(PetscDSFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -397,7 +398,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   PetscCall(PetscFEInitializePackage());
   PetscCall(PetscFVInitializePackage());
   PetscCall(DMFieldInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

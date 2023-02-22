@@ -142,7 +142,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
     help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
-    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the CUDA preprocessor options'))
+    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the CUDA preprocessor options'))
     help.addArgument('Compilers', '-with-cudac=<prog>',    nargs.Arg(None, None, 'Specify the CUDA compiler'))
     help.addArgument('Compilers', '-CUDAC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
     help.addArgument('Compilers', '-CUDAFLAGS=<string>',   nargs.Arg(None, None, 'Specify the CUDA compiler options'))
@@ -206,12 +206,12 @@ class Configure(config.base.Configure):
 
   @staticmethod
   def isMINGW(compiler, log):
-    '''Returns true if the compiler is a MINGW GCC compiler'''
+    '''Returns true if the compiler is a MINGW compiler'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v',checkCommand = noCheck, log = log)
       output = output + error
       if output.find('w64-mingw32') >= 0:
-        if log: log.write('Detected MINGW GCC compiler\n')
+        if log: log.write('Detected MINGW compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -552,26 +552,13 @@ class Configure(config.base.Configure):
   @staticmethod
   def isWindows(compiler, log, disambiguate_win32fe = False):
     '''Returns true if the compiler is a Windows compiler'''
-    if disambiguate_win32fe:
-      compiler_or_path = str(compiler).split()
-      if len(compiler_or_path) == 1:
-        # compiler was just the bare unqualified name, i.e. 'cl' or 'ifort'
-        compiler = compiler_or_path[0]
-      else:
-        # compiler may be /path/to/petsc/win32fe cl, we need to extract only 'cl' from it
-        last = ''
-        for sub_elem in compiler_or_path:
-          # last entry is the win32fe path, so current must be compiler name
-          if last.casefold().endswith('win32fe'):
-            compiler = sub_elem
-            break
-          last = sub_elem
-    if compiler in {'icl', 'cl', 'bcc32', 'ifl', 'df', 'lib', 'tlib'}:
-      if log: log.write('Detected Windows compiler\n')
-      return 1
-    if compiler in {'ifort','f90'} and Configure.isCygwin(log):
-      if log: log.write('Detected Windows compiler\n')
-      return 1
+    if Configure.isCygwin(log):
+      compiler = os.path.basename(compiler)
+      if compiler.startswith('win_'):
+        if log: log.write('Detected Windows compiler\n')
+        return 1
+    if log: log.write('Detected Non-Windows compiler\n')
+    return 0
 
   @classmethod
   def isMSVC(cls, compiler, log):
@@ -809,6 +796,7 @@ class Configure(config.base.Configure):
         #include <random>
         #include <complex>
         #include <iostream>
+        #include <algorithm>
 
         template<class T> void ignore(const T&) { } // silence unused variable warnings
         class valClass
@@ -859,6 +847,8 @@ class Configure(config.base.Configure):
         std::normal_distribution<double> dist(0,1);
         const double x = dist(mt);
         std::cout << x << ret << std::endl;
+        std::vector<std::unique_ptr<double>> vector;
+        std::sort(vector.begin(), vector.end(), [](std::unique_ptr<double> &a, std::unique_ptr<double> &b) { return *a < *b; });
         """
       )
 
@@ -1267,16 +1257,10 @@ class Configure(config.base.Configure):
       else: mesg = ''
       raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-cc' in self.argDB:
-      if self.isWindows(self.argDB['with-cc'], self.log):
-        yield 'win32fe '+self.argDB['with-cc']
-      else:
-        yield self.argDB['with-cc']
+      yield self.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.argDB['with-cc']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'CC' in self.argDB:
-      if self.isWindows(self.argDB['CC'], self.log):
-        yield 'win32fe '+self.argDB['CC']
-      else:
-        yield self.argDB['CC']
+      yield self.argDB['CC']
       raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
@@ -1323,10 +1307,10 @@ class Configure(config.base.Configure):
       yield 'icc'
       yield 'cc'
       yield 'xlc'
-      yield 'win32fe icl'
-      yield 'win32fe cl'
+      path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
+      yield os.path.join(path,'win_icl')
+      yield os.path.join(path,'win_cl')
       yield 'pgcc'
-      yield 'win32fe bcc32'
     return
 
   def showMPIWrapper(self,compiler):
@@ -1415,6 +1399,7 @@ class Configure(config.base.Configure):
       yield 'nvcc'
       yield os.path.join('/Developer','NVIDIA','CUDA-6.5','bin','nvcc')
       yield os.path.join('/usr','local','cuda','bin','nvcc')
+      yield 'clang'
     return
 
   def checkCUDACompiler(self):
@@ -1425,15 +1410,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'CUDAC'):
           self.checkCompiler('CUDA')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.CUDAC+' --version', log = self.log)
-          compilerVersion = compilerVersion[0]
-          compilerVersion = compilerVersion.split()
-          i = 0
-          for word in compilerVersion:
-            i = i+1
-            if word == 'release':
-              break
-          self.compilerVersionCUDA = compilerVersion[i].strip(',')
+          self.executeShellCommand(self.CUDAC+' --version', log = self.log)
           break
       except RuntimeError as e:
         self.mesg = str(e)
@@ -1495,22 +1472,11 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'HIPC'):
           self.checkCompiler('HIP')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.HIPC+' --version', log = self.log)
-          if 'nvcc' in compilerVersion and 'NVIDIA' in compilerVersion:
-            hipLine = compilerVersion.split('\n')[0]
-            self.compilerVersionHIP = hipLine.split(':')[1]
-            nvccReleaseLine = compilerVersion.split('\n')[-1]
-            import re
-            if 'release' in nvccReleaseLine:
-              self.compilerVersionCUDA = re.split('release',nvccReleaseLine)[1]
-            else:
-              raise RuntimeError('Error: Could not determine CUDA version from HIPC')
-          else:
-            self.compilerVersionHIP = compilerVersion[0]
+          self.executeShellCommand(self.HIPC+' --version', log = self.log)
           break
       except RuntimeError as e:
         self.mesg = str(e)
-        self.logPrint('HERE Error testing HIP compiler: '+str(e))
+        self.logPrint('Error testing HIP compiler: '+str(e))
         self.delMakeMacro('HIPC')
         del self.HIPC
     return
@@ -1565,9 +1531,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'SYCLC'):
           self.checkCompiler('SYCL')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.SYCLC+' --version', log = self.log)
-          compilerVersion = compilerVersion[0]
-          compilerVersoin = compilerVersion.partition('Compiler')[-1].strip()
+          self.executeShellCommand(self.SYCLC+' --version', log = self.log)
           break
       except RuntimeError as e:
         self.mesg = str(e)
@@ -1616,16 +1580,10 @@ class Configure(config.base.Configure):
 
     if 'with-cxx' in self.argDB:
       if self.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
-      if self.isWindows(self.argDB['with-cxx'], self.log):
-        yield 'win32fe '+self.argDB['with-cxx']
-      else:
-        yield self.argDB['with-cxx']
+      yield self.argDB['with-cxx']
       raise RuntimeError('C++ compiler you provided with -with-cxx='+self.argDB['with-cxx']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'CXX' in self.argDB:
-      if self.isWindows(self.argDB['CXX'], self.log):
-        yield 'win32fe '+self.argDB['CXX']
-      else:
-        yield self.argDB['CXX']
+      yield self.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpinc++')
@@ -1633,7 +1591,8 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcp')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpic++')
-      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
+      if not Configure.isDarwin(self.log):
+        yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
       raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work. See https://petsc.org/release/faq/#invalid-mpi-compilers')
     else:
@@ -1651,16 +1610,17 @@ class Configure(config.base.Configure):
         yield 'mpicxx'
         yield 'mpiicpc'
         yield 'mpCC_r'
-        yield 'mpiCC'
+        if not Configure.isDarwin(self.log):
+          yield 'mpiCC'
         yield 'mpic++'
         yield 'mpCC'
         yield 'mpxlC'
       else:
         #attempt to match c++ compiler with c compiler
-        if self.CC.find('win32fe cl') >= 0:
-          yield 'win32fe cl'
-        elif self.CC.find('win32fe icl') >= 0:
-          yield 'win32fe icl'
+        if self.CC.find('win_cl') >= 0:
+          yield self.CC
+        elif self.CC.find('win_icl') >= 0:
+          yield self.CC
         elif self.CC == 'gcc':
           yield 'g++'
         elif self.CC == 'clang':
@@ -1680,11 +1640,11 @@ class Configure(config.base.Configure):
         yield 'cc++'
         yield 'xlC'
         yield 'ccpc'
-        yield 'win32fe icl'
-        yield 'win32fe cl'
+        path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
+        yield os.path.join(path,'win_icl')
+        yield os.path.join(path,'win_cl')
         yield 'pgCC'
         yield 'CC'
-        yield 'win32fe bcc32'
     return
 
   def checkCxxCompiler(self):
@@ -1753,16 +1713,10 @@ class Configure(config.base.Configure):
       else: mesg = ''
       raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-fc' in self.argDB:
-      if self.isWindows(self.argDB['with-fc'], self.log):
-        yield 'win32fe '+self.argDB['with-fc']
-      else:
-        yield self.argDB['with-fc']
+      yield self.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.argDB['with-fc']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'FC' in self.argDB:
-      if self.isWindows(self.argDB['FC'], self.log):
-        yield 'win32fe '+self.argDB['FC']
-      else:
-        yield self.argDB['FC']
+      yield self.argDB['FC']
       yield self.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
@@ -1793,6 +1747,7 @@ class Configure(config.base.Configure):
         yield 'mpxlf'
         yield 'mpf90'
       else:
+        path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
         #attempt to match fortran compiler with c compiler
         if self.CC == 'gcc':
           yield 'gfortran'
@@ -1805,19 +1760,15 @@ class Configure(config.base.Configure):
           yield 'xlf'
         elif self.CC == 'ncc':
           yield 'nfort'
-        elif self.CC.find('win32fe cl') >= 0:
-          yield 'win32fe f90'
-          yield 'win32fe ifc'
-        elif self.CC.find('win32fe icl') >= 0:
-          yield 'win32fe ifc'
+        elif self.CC.find('win_icl') >= 0:
+          yield os.path.join(path,'win_ifort')
         yield 'gfortran'
         yield 'g95'
         yield 'xlf90'
         yield 'xlf'
         yield 'f90'
         yield 'lf95'
-        yield 'win32fe ifort'
-        yield 'win32fe ifl'
+        yield os.path.join(path,'win_ifort')
         yield 'ifort'
         yield 'ifc'
         yield 'pgf90'
@@ -1978,6 +1929,7 @@ class Configure(config.base.Configure):
   def generatePICGuesses(self):
     if self.language[-1] == 'CUDA':
       yield '-Xcompiler -fPIC'
+      yield '-fPIC'
       return
     if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
       PICFlags = ['-fPIC']
@@ -2013,7 +1965,7 @@ class Configure(config.base.Configure):
       # this is a flaw in configure; it is a legitimate use case where PETSc is built with PIC flags but not shared libraries
       # to fix it the capability to build shared libraries must be enabled in configure if --with-pic=true even if shared libraries are off and this
       # test must use that capability instead of using the default shared library build in that case which is static libraries
-      raise RuntimeError("Cannot determine compiler PIC flags if shared libraries is turned off\nEither run using --with-shared-libraries or --with-pic=0 and supply the compiler PIC flag via CFLAGS, CXXXFLAGS, and FCFLAGS\n")
+      raise RuntimeError("Cannot determine compiler PIC flags if shared libraries is turned off\nEither run using --with-shared-libraries or --with-pic=0 and supply the compiler PIC flag via CFLAGS, CXXFLAGS, and FCFLAGS\n")
     if self.sharedLibraries and self.mainLanguage == 'C': languages = []
     else: languages = ['C']
     langMap = {'FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLC'}
@@ -2077,12 +2029,8 @@ class Configure(config.base.Configure):
       flag = self.argDB['AR_FLAGS']
     elif prog.endswith('ar'):
       flag = 'cr'
-    elif prog == 'win32fe':
-      args = os.path.basename(archiver).split(' ')
-      if 'lib' in args:
-        flag = '-a'
-      elif 'tlib' in args:
-        flag = '-a -P512'
+    elif os.path.basename(archiver).endswith('_lib'):
+      flag = '-a'
     if prog.endswith('ar') and not (self.isSolarisAR(prog, self.log) or self.isAIXAR(prog, self.log)):
       self.FAST_AR_FLAGS = 'Scq'
     else:
@@ -2093,16 +2041,10 @@ class Configure(config.base.Configure):
   def generateArchiverGuesses(self):
     defaultAr = None
     if 'with-ar' in self.argDB:
-      if self.isWindows(self.argDB['with-ar'], self.log):
-        defaultAr = 'win32fe '+self.argDB['with-ar']
-      else:
-        defaultAr = self.argDB['with-ar']
+      defaultAr = self.argDB['with-ar']
     envAr = None
     if 'AR' in self.argDB:
-      if self.isWindows(self.argDB['AR'], self.log):
-        envAr = 'win32fe '+self.argDB['AR']
-      else:
-        envAr = self.argDB['AR']
+      envAr = self.argDB['AR']
     defaultRanlib = None
     if 'with-ranlib' in self.argDB:
       defaultRanlib = self.argDB['with-ranlib']
@@ -2131,14 +2073,20 @@ class Configure(config.base.Configure):
       raise RuntimeError('You set a value for -AR="'+envAr+'" (perhaps in your environment), but '+envAr+' cannot be used\n')
     if defaultRanlib:
       yield ('ar',self.getArchiverFlags('ar'),defaultRanlib)
-      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),defaultRanlib)
-      yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),defaultRanlib)
+      path = os.path.join(os.getcwd(),'lib','petsc','bin')
+      war  = os.path.join(path,'win_lib')
+      yield (war,self.getArchiverFlags(war),defaultRanlib)
       raise RuntimeError('You set --with-ranlib="'+defaultRanlib+'", but '+defaultRanlib+' cannot be used\n')
     if envRanlib:
       yield ('ar',self.getArchiverFlags('ar'),envRanlib)
-      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),envRanlib)
-      yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),envRanlib)
+      path = os.path.join(os.getcwd(),'lib','petsc','bin')
+      war  = os.path.join(path,'win_lib')
+      yield (war,self.getArchiverFlags('war'),envRanlib)
       raise RuntimeError('You set -RANLIB="'+envRanlib+'" (perhaps in your environment), but '+defaultRanlib+' cannot be used\n')
+    if config.setCompilers.Configure.isWindows(self.getCompiler(), self.log):
+      path = os.path.join(os.getcwd(),'lib','petsc','bin')
+      war  = os.path.join(path,'win_lib')
+      yield (war,self.getArchiverFlags(war),'true')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
     yield ('ar',self.getArchiverFlags('ar'),'true')
@@ -2146,8 +2094,6 @@ class Configure(config.base.Configure):
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'true')
-    yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),'true')
-    yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),'true')
     return
 
   def checkArchiver(self):

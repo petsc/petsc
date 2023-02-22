@@ -11,8 +11,8 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
   PetscFunctionBegin;
   if (tao->setupcalled) {
     PetscCall(MatDestroy(&lclP->R));
-    PetscCall(VecDestroy(&lclP->lamda));
-    PetscCall(VecDestroy(&lclP->lamda0));
+    PetscCall(VecDestroy(&lclP->lambda));
+    PetscCall(VecDestroy(&lclP->lambda0));
     PetscCall(VecDestroy(&lclP->WL));
     PetscCall(VecDestroy(&lclP->W));
     PetscCall(VecDestroy(&lclP->X0));
@@ -57,7 +57,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
   PetscCall(MatDestroy(&lclP->R));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_LCL(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -82,12 +82,12 @@ static PetscErrorCode TaoSetFromOptions_LCL(Tao tao, PetscOptionItems *PetscOpti
   PetscOptionsHeadEnd();
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(MatSetFromOptions(lclP->R));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_LCL(Tao tao, PetscViewer viewer)
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode TaoSetup_LCL(Tao tao)
@@ -106,12 +106,12 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   PetscCall(VecDuplicate(tao->solution, &lclP->GL));
   PetscCall(VecDuplicate(tao->solution, &lclP->GAugL));
 
-  PetscCall(VecDuplicate(tao->constraints, &lclP->lamda));
+  PetscCall(VecDuplicate(tao->constraints, &lclP->lambda));
   PetscCall(VecDuplicate(tao->constraints, &lclP->WL));
-  PetscCall(VecDuplicate(tao->constraints, &lclP->lamda0));
+  PetscCall(VecDuplicate(tao->constraints, &lclP->lambda0));
   PetscCall(VecDuplicate(tao->constraints, &lclP->con1));
 
-  PetscCall(VecSet(lclP->lamda, 0.0));
+  PetscCall(VecSet(lclP->lambda, 0.0));
 
   PetscCall(VecGetSize(tao->solution, &lclP->n));
   PetscCall(VecGetSize(tao->constraints, &lclP->m));
@@ -166,7 +166,7 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   PetscCall(VecScatterCreate(tao->solution, tao->design_is, lclP->V, is_design, &lclP->design_scatter));
   PetscCall(ISDestroy(&is_state));
   PetscCall(ISDestroy(&is_design));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_LCL(Tao tao)
@@ -201,7 +201,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
   /* Evaluate Lagrangian function and gradient */
   /* p0 */
-  PetscCall(VecSet(lclP->lamda, 0.0)); /*  Initial guess in CG */
+  PetscCall(VecSet(lclP->lambda, 0.0)); /*  Initial guess in CG */
   PetscCall(MatIsSymmetricKnown(tao->jacobian_state, &set, &flag));
   if (tao->jacobian_state_pre) {
     PetscCall(MatIsSymmetricKnown(tao->jacobian_state_pre, &pset, &pflag));
@@ -214,22 +214,22 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   lclP->solve_type = LCL_ADJOINT2;
   if (tao->jacobian_state_inv) {
     if (symmetric) {
-      PetscCall(MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda));
+      PetscCall(MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lambda));
     } else {
-      PetscCall(MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda));
+      PetscCall(MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lambda));
     }
   } else {
     PetscCall(KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre));
     if (symmetric) {
-      PetscCall(KSPSolve(tao->ksp, lclP->GU, lclP->lamda));
+      PetscCall(KSPSolve(tao->ksp, lclP->GU, lclP->lambda));
     } else {
-      PetscCall(KSPSolveTranspose(tao->ksp, lclP->GU, lclP->lamda));
+      PetscCall(KSPSolveTranspose(tao->ksp, lclP->GU, lclP->lambda));
     }
     PetscCall(KSPGetIterationNumber(tao->ksp, &its));
     tao->ksp_its += its;
     tao->ksp_tot_its += its;
   }
-  PetscCall(VecCopy(lclP->lamda, lclP->lamda0));
+  PetscCall(VecCopy(lclP->lambda, lclP->lambda0));
   PetscCall(LCLComputeAugmentedLagrangianAndGradient(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao));
 
   PetscCall(LCLScatter(lclP, lclP->GL, lclP->GL_U, lclP->GL_V));
@@ -400,7 +400,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       /* Compute multipliers */
       /* p1 */
-      PetscCall(VecSet(lclP->lamda, 0.0)); /*  Initial guess in CG */
+      PetscCall(VecSet(lclP->lambda, 0.0)); /*  Initial guess in CG */
       lclP->solve_type = LCL_ADJOINT1;
       PetscCall(MatIsSymmetricKnown(tao->jacobian_state, &set, &flag));
       if (tao->jacobian_state_pre) {
@@ -413,21 +413,21 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       if (tao->jacobian_state_inv) {
         if (symmetric) {
-          PetscCall(MatMult(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda));
+          PetscCall(MatMult(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lambda));
         } else {
-          PetscCall(MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda));
+          PetscCall(MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lambda));
         }
       } else {
         if (symmetric) {
-          PetscCall(KSPSolve(tao->ksp, lclP->GAugL_U, lclP->lamda));
+          PetscCall(KSPSolve(tao->ksp, lclP->GAugL_U, lclP->lambda));
         } else {
-          PetscCall(KSPSolveTranspose(tao->ksp, lclP->GAugL_U, lclP->lamda));
+          PetscCall(KSPSolveTranspose(tao->ksp, lclP->GAugL_U, lclP->lambda));
         }
         PetscCall(KSPGetIterationNumber(tao->ksp, &its));
         tao->ksp_its += its;
         tao->ksp_tot_its += its;
       }
-      PetscCall(MatMultTranspose(tao->jacobian_design, lclP->lamda, lclP->g1));
+      PetscCall(MatMultTranspose(tao->jacobian_design, lclP->lambda, lclP->g1));
       PetscCall(VecAXPY(lclP->g1, -1.0, lclP->GAugL_V));
 
       /* Compute the limited-memory quasi-newton direction */
@@ -480,11 +480,11 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       PetscCall(TaoComputeJacobianDesign(tao, lclP->X0, tao->jacobian_design));
 
       /* p2 */
-      /* Compute multipliers, using lamda-rho*con as an initial guess in PCG */
+      /* Compute multipliers, using lambda-rho*con as an initial guess in PCG */
       if (phase2_iter == 0) {
-        PetscCall(VecWAXPY(lclP->lamda, -lclP->rho, lclP->con1, lclP->lamda0));
+        PetscCall(VecWAXPY(lclP->lambda, -lclP->rho, lclP->con1, lclP->lambda0));
       } else {
-        PetscCall(VecAXPY(lclP->lamda, -lclP->rho, tao->constraints));
+        PetscCall(VecAXPY(lclP->lambda, -lclP->rho, tao->constraints));
       }
 
       PetscCall(MatIsSymmetricKnown(tao->jacobian_state, &set, &flag));
@@ -499,22 +499,22 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       lclP->solve_type = LCL_ADJOINT2;
       if (tao->jacobian_state_inv) {
         if (symmetric) {
-          PetscCall(MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda));
+          PetscCall(MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lambda));
         } else {
-          PetscCall(MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda));
+          PetscCall(MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lambda));
         }
       } else {
         if (symmetric) {
-          PetscCall(KSPSolve(tao->ksp, lclP->GU, lclP->lamda));
+          PetscCall(KSPSolve(tao->ksp, lclP->GU, lclP->lambda));
         } else {
-          PetscCall(KSPSolveTranspose(tao->ksp, lclP->GU, lclP->lamda));
+          PetscCall(KSPSolveTranspose(tao->ksp, lclP->GU, lclP->lambda));
         }
         PetscCall(KSPGetIterationNumber(tao->ksp, &its));
         tao->ksp_its += its;
         tao->ksp_tot_its += its;
       }
 
-      PetscCall(MatMultTranspose(tao->jacobian_design, lclP->lamda, lclP->g2));
+      PetscCall(MatMultTranspose(tao->jacobian_design, lclP->lambda, lclP->g2));
       PetscCall(VecAXPY(lclP->g2, -1.0, lclP->GV));
 
       PetscCall(VecScale(lclP->g2, -1.0));
@@ -524,7 +524,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with MATLAB code */
     }
 
-    PetscCall(VecCopy(lclP->lamda, lclP->lamda0));
+    PetscCall(VecCopy(lclP->lambda, lclP->lambda0));
 
     /* Evaluate Function, Gradient, Constraints, and Jacobian */
     PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
@@ -548,7 +548,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, f, mnorm, cnorm, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -606,7 +606,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
 
   PetscCall(MatCreate(((PetscObject)tao)->comm, &lclP->R));
   PetscCall(MatSetType(lclP->R, MATLMVMBFGS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
@@ -633,18 +633,18 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   if (set && pset && flag && pflag) symmetric = PETSC_TRUE;
   else symmetric = PETSC_FALSE;
 
-  PetscCall(VecDot(lclP->lamda0, tao->constraints, &cdotl));
+  PetscCall(VecDot(lclP->lambda0, tao->constraints, &cdotl));
   lclP->lgn = *f - cdotl;
 
-  /* Gradient of Lagrangian GL = G - J' * lamda */
+  /* Gradient of Lagrangian GL = G - J' * lambda */
   /*      WU = A' * WL
           WV = B' * WL */
   if (symmetric) {
-    PetscCall(MatMult(tao->jacobian_state, lclP->lamda0, lclP->GL_U));
+    PetscCall(MatMult(tao->jacobian_state, lclP->lambda0, lclP->GL_U));
   } else {
-    PetscCall(MatMultTranspose(tao->jacobian_state, lclP->lamda0, lclP->GL_U));
+    PetscCall(MatMultTranspose(tao->jacobian_state, lclP->lambda0, lclP->GL_U));
   }
-  PetscCall(MatMultTranspose(tao->jacobian_design, lclP->lamda0, lclP->GL_V));
+  PetscCall(MatMultTranspose(tao->jacobian_design, lclP->lambda0, lclP->GL_V));
   PetscCall(VecScale(lclP->GL_U, -1.0));
   PetscCall(VecScale(lclP->GL_V, -1.0));
   PetscCall(VecAXPY(lclP->GL_U, 1.0, lclP->GU));
@@ -653,7 +653,7 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
 
   f[0] = lclP->lgn;
   PetscCall(VecCopy(lclP->GL, G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
@@ -694,7 +694,7 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
 
   f[0] = lclP->aug;
   PetscCall(VecCopy(lclP->GAugL, G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
@@ -704,7 +704,7 @@ PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
   PetscCall(VecScatterEnd(lclP->state_scatter, u, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterBegin(lclP->design_scatter, v, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(lclP->design_scatter, v, x, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode LCLScatter(TAO_LCL *lclP, Vec x, Vec u, Vec v)
 {
@@ -713,5 +713,5 @@ PetscErrorCode LCLScatter(TAO_LCL *lclP, Vec x, Vec u, Vec v)
   PetscCall(VecScatterEnd(lclP->state_scatter, x, u, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterBegin(lclP->design_scatter, x, v, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(lclP->design_scatter, x, v, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

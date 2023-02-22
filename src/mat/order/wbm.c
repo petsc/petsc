@@ -10,7 +10,7 @@
    corresponds to the PETSc BLAS/LAPACK mangling flag (we pass this flag to configure SuperLU_dist)
 */
 
-  /* Why not include superlu_dist inludes? */
+  /* Why not include superlu_dist includes? */
   #if defined(PETSC_BLASLAPACK_CAPS)
     #define mc64id_dist MC64ID_DIST
     #define mc64ad_dist MC64AD_DIST
@@ -83,7 +83,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
   PetscCall(ISCreateStride(PETSC_COMM_SELF, nrow, 0, 1, row));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nrow, perm, PETSC_COPY_VALUES, col));
   PetscCall(PetscFree3(iw, dw, perm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "WBM using MC64 does not support complex numbers");
 #endif

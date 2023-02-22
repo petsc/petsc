@@ -26,7 +26,7 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
 #else
   PetscCall(PetscSNPrintf(version, len, "Petsc Development GIT revision: %s  GIT Date: %s", PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -56,5 +56,5 @@ PetscErrorCode PetscGetVersionNumber(PetscInt *major, PetscInt *minor, PetscInt 
   if (minor) *minor = PETSC_VERSION_MINOR;
   if (subminor) *subminor = PETSC_VERSION_SUBMINOR;
   if (release) *release = PETSC_VERSION_RELEASE;
-  return 0;
+  return PETSC_SUCCESS;
 }

@@ -68,7 +68,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, void *ctx)
   PetscCall(VecCopy(xdot, f));
   PetscCall(VecScale(f, 2.0));
   PetscCall(VecShift(f, -1.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, Mat A, Mat B, void *ctx)
@@ -80,7 +80,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, M
   PetscCall(MatSetValue(B, 0, 0, j, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -23,7 +23,7 @@ static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, Petsc
     PetscCall(cdf(&x, NULL, &integral2));
     PetscCheck(PetscAbsReal(integral - integral2) < PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Integral of PDF %s %g != %g CDF at x = %g", name, (double)integral, (double)integral2, (double)x);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestDistributions()
@@ -35,7 +35,7 @@ static PetscErrorCode TestDistributions()
 
   PetscFunctionBeginUser;
   for (PetscInt i = 0; i < (PetscInt)(sizeof(pdf) / sizeof(PetscProbFunc)); ++i) PetscCall(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestSampling()
@@ -71,7 +71,7 @@ static PetscErrorCode TestSampling()
     PetscCall(VecDestroy(&v));
   }
   PetscCall(PetscRandomDestroy(&rnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -8,7 +8,7 @@ static PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA, PetscScalar alpha)
 {
   PetscFunctionBegin;
   PetscCall(MatScale(inA, alpha));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode MatScaleUserImpl(Mat, PetscScalar);
@@ -21,7 +21,7 @@ static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A, PetscScalar aa)
   PetscCall(MatMPIAIJGetSeqAIJ(A, &AA, &AB, NULL));
   PetscCall(MatScaleUserImpl(AA, aa));
   PetscCall(MatScaleUserImpl(AB, aa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This routine registers MatScaleUserImpl_SeqAIJ() and
@@ -42,7 +42,7 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
     PetscCall(PetscObjectComposeFunction((PetscObject)AA, "MatScaleUserImpl_C", MatScaleUserImpl_SeqAIJ));
     PetscCall(PetscObjectComposeFunction((PetscObject)AB, "MatScaleUserImpl_C", MatScaleUserImpl_SeqAIJ));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This routine deregisters MatScaleUserImpl_SeqAIJ() and
@@ -63,7 +63,7 @@ PetscErrorCode DeRegisterMatScaleUserImpl(Mat mat)
     PetscCall(PetscObjectComposeFunction((PetscObject)AA, "MatScaleUserImpl_C", NULL));
     PetscCall(PetscObjectComposeFunction((PetscObject)AB, "MatScaleUserImpl_C", NULL));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* this routines queries the already registered MatScaleUserImp_XXX
@@ -78,7 +78,7 @@ PetscErrorCode MatScaleUserImpl(Mat mat, PetscScalar a)
   PetscFunctionBegin;
   PetscCall(PetscObjectQueryFunction((PetscObject)mat, "MatScaleUserImpl_C", &f));
   if (f) PetscCall((*f)(mat, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Main user code that uses MatScaleUserImpl() */

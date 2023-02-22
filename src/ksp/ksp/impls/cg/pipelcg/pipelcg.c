@@ -55,7 +55,7 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
   PetscCall(PetscCalloc1(2, &plcg->alpha));
   PetscCall(PetscCalloc1(l, &plcg->sigma));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
@@ -70,7 +70,7 @@ static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
   PetscCall(VecDestroyVecs(3, &plcg->U));
   PetscCall(VecDestroyVecs(3, &plcg->V));
   PetscCall(VecDestroyVecs(3 * (l - 1) + 1, &plcg->Q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
@@ -78,7 +78,7 @@ static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPReset_PIPELCG(ksp));
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -97,7 +97,7 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *Petsc
   PetscCall(PetscOptionsBool("-ksp_pipelcg_monitor", "Output information on restarts when they occur? (default: 0)", "", plcg->show_rstrt, &plcg->show_rstrt, &flag));
   if (!flag) plcg->show_rstrt = PETSC_FALSE;
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
@@ -109,7 +109,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPI
   PetscCall(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
   *request = MPI_REQUEST_NULL;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer)
@@ -129,7 +129,7 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer)
     PetscCall(PetscViewerStringSPrintf(viewer, "  Minimal eigenvalue estimate %g\n", (double)plcg->lmin));
     PetscCall(PetscViewerStringSPrintf(viewer, "  Maximal eigenvalue estimate %g\n", (double)plcg->lmax));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
@@ -346,7 +346,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       }
     }
   } /* End inner for loop */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
@@ -364,7 +364,7 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
     delta(j) = 0.0;
     for (i = 0; i < (2 * l + 1); ++i) G_noshift(i, j) = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -434,7 +434,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   PetscCall(PetscFree(plcg->gamma));
   PetscCall(PetscFree(plcg->delta));
   PetscCall(PetscFree(plcg->req));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -499,5 +499,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_PIPELCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

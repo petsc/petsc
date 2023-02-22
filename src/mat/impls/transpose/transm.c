@@ -11,7 +11,7 @@ PetscErrorCode MatMult_Transpose(Mat N, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatMultTranspose(Na->A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
@@ -20,7 +20,7 @@ PetscErrorCode MatMultAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
 
   PetscFunctionBegin;
   PetscCall(MatMultTransposeAdd(Na->A, v1, v2, v3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_Transpose(Mat N, Vec x, Vec y)
@@ -29,7 +29,7 @@ PetscErrorCode MatMultTranspose_Transpose(Mat N, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatMult(Na->A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTransposeAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
@@ -38,7 +38,7 @@ PetscErrorCode MatMultTransposeAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
 
   PetscFunctionBegin;
   PetscCall(MatMultAdd(Na->A, v1, v2, v3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_Transpose(Mat N)
@@ -50,7 +50,7 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatTransposeGetMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", NULL));
   PetscCall(PetscFree(N->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *m)
@@ -64,7 +64,7 @@ PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *m)
     PetscCall(MatDuplicate(Na->A, MAT_DO_NOT_COPY_VALUES, m));
     PetscCall(MatTranspose(*m, MAT_INPLACE_MATRIX, m));
   } else SETERRQ(PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreateVecs_Transpose(Mat A, Vec *r, Vec *l)
@@ -73,7 +73,7 @@ PetscErrorCode MatCreateVecs_Transpose(Mat A, Vec *r, Vec *l)
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(Aa->A, l, r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_Transpose(Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -85,7 +85,7 @@ PetscErrorCode MatAXPY_Transpose(Mat Y, PetscScalar a, Mat X, MatStructure str)
 
   PetscFunctionBegin;
   PetscCall(MatAXPY(M, a, N, str));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscBool *has)
@@ -103,7 +103,7 @@ PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscBool *ha
   } else if (op == MATOP_MULT_TRANSPOSE_ADD) {
     PetscCall(MatHasOperation(X->A, MATOP_MULT_ADD, has));
   } else if (((void **)mat->ops)[op]) *has = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
@@ -205,7 +205,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
   PetscCall(MatProductReplaceMats(Ain, Bin, Cin, D));
   PetscCall(MatProductSetType(D, ptype));
   PetscCall(MatProductSetFromOptions(D));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetDiagonal_Transpose(Mat A, Vec v)
@@ -214,7 +214,7 @@ PetscErrorCode MatGetDiagonal_Transpose(Mat A, Vec v)
 
   PetscFunctionBegin;
   PetscCall(MatGetDiagonal(Aa->A, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConvert_Transpose(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
@@ -238,7 +238,7 @@ PetscErrorCode MatConvert_Transpose(Mat A, MatType newtype, MatReuse reuse, Mat 
   } else { /* use basic converter as fallback */
     PetscCall(MatConvert_Basic(A, newtype, reuse, newmat));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
@@ -247,7 +247,7 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
 
   PetscFunctionBegin;
   *M = Aa->A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -272,7 +272,7 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M)
   PetscValidType(A, 1);
   PetscValidPointer(M, 2);
   PetscUseMethod(A, "MatTransposeGetMat_C", (Mat, Mat *), (A, M));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -345,5 +345,5 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
   PetscCall(MatSetUp(*N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

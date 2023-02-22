@@ -9,18 +9,19 @@
 #include <string> // std::to_string among other things
 
 /* Define the allocator */
-class PetscDeviceContextAllocator : public Petsc::AllocatorBase<PetscDeviceContext> {
+class PetscDeviceContextConstructor : public Petsc::ConstructorInterface<_p_PetscDeviceContext, PetscDeviceContextConstructor> {
 public:
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode create(PetscDeviceContext *dctx))
+  PetscErrorCode construct_(PetscDeviceContext dctx) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(PetscHeaderCreate(*dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, PetscDeviceContextDestroy, PetscDeviceContextView));
-    PetscCallCXX(PetscObjectCast(*dctx)->cpp = new CxxData());
-    PetscCall(reset(*dctx, false));
-    PetscFunctionReturn(0);
+    PetscCall(PetscArrayzero(dctx, 1));
+    PetscCall(PetscHeaderInitialize_Private(dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, PetscDeviceContextDestroy, PetscDeviceContextView));
+    PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData());
+    PetscCall(underlying().reset(dctx, false));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode destroy(PetscDeviceContext dctx))
+  static PetscErrorCode destroy_(PetscDeviceContext dctx) noexcept
   {
     PetscFunctionBegin;
     PetscAssert(!dctx->numChildren, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Device context still has %" PetscInt_FMT " un-joined children, must call PetscDeviceContextJoin() with all children before destroying", dctx->numChildren);
@@ -28,17 +29,16 @@ public:
     PetscCall(PetscDeviceDestroy(&dctx->device));
     PetscCall(PetscFree(dctx->childIDs));
     delete CxxDataCast(dctx);
-    PetscCall(PetscHeaderDestroy(&dctx));
-    PetscFunctionReturn(0);
+    PetscCall(PetscHeaderDestroy_Private(PetscObjectCast(dctx), PETSC_FALSE));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode reset(PetscDeviceContext dctx, bool zero = true))
+  static PetscErrorCode reset_(PetscDeviceContext dctx, bool zero = true) noexcept
   {
     PetscFunctionBegin;
     if (zero) {
       // reset the device if the user set it
-      if (auto &userset = dctx->usersetdevice) {
-        userset = PETSC_FALSE;
+      if (Petsc::util::exchange(dctx->usersetdevice, PETSC_FALSE)) {
         PetscTryTypeMethod(dctx, destroy);
         PetscCall(PetscDeviceDestroy(&dctx->device));
         PetscCall(PetscArrayzero(dctx->ops, 1));
@@ -52,11 +52,13 @@ public:
       PetscCall(CxxDataCast(dctx)->clear());
     }
     dctx->streamType = PETSC_STREAM_DEFAULT_BLOCKING;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
+
+  static PetscErrorCode invalidate_(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
 };
 
-static Petsc::ObjectPool<PetscDeviceContext, PetscDeviceContextAllocator> contextPool;
+static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> contextPool;
 
 /*@C
   PetscDeviceContextCreate - Creates a `PetscDeviceContext`
@@ -95,7 +97,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
   PetscCall(PetscLogEventBegin(DCONTEXT_Create, nullptr, nullptr, nullptr, nullptr));
   PetscCall(contextPool.allocate(dctx));
   PetscCall(PetscLogEventEnd(DCONTEXT_Create, nullptr, nullptr, nullptr, nullptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -112,7 +114,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
   `dctx`'s stream the user is responsible for calling `PetscDeviceContextSynchronize()` before
   calling this routine.
 
-  DAG represetation:
+  DAG representation:
 .vb
   time ->
 
@@ -135,18 +137,15 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 {
   PetscFunctionBegin;
   PetscValidPointer(dctx, 1);
-  if (!*dctx) PetscFunctionReturn(0);
+  if (!*dctx) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(DCONTEXT_Destroy, nullptr, nullptr, nullptr, nullptr));
   if (--(PetscObjectCast(*dctx)->refct) <= 0) {
     PetscCall(PetscDeviceContextCheckNotOrphaned_Internal(*dctx));
-    // std::move of the expression of the trivially-copyable type 'PetscDeviceContext' (aka
-    // '_n_PetscDeviceContext *') has no effect; remove std::move() [performance-move-const-arg]
-    // can't remove std::move, since reclaim only takes r-value reference
-    PetscCall(contextPool.deallocate(std::move(*dctx))); // NOLINT (performance-move-const-arg)
+    PetscCall(contextPool.deallocate(dctx));
   }
   PetscCall(PetscLogEventEnd(DCONTEXT_Destroy, nullptr, nullptr, nullptr, nullptr));
   *dctx = nullptr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -184,7 +183,7 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
     PetscCall(PetscLogEventEnd(DCONTEXT_ChangeStream, dctx, nullptr, nullptr, nullptr));
   }
   dctx->streamType = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -214,7 +213,7 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscValidIntPointer(type, 2);
   *type = dctx->streamType;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -223,7 +222,7 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
   1. Repeatedly destroying and recreating internal data structures (like streams and events)
      for recycled PetscDeviceContexts is not free. If done often, it does add up.
   2. The vast majority of PetscDeviceContexts are created by PETSc either as children or
-     default contexts. The default contexts *never* change type, and the chilren are extremely
+     default contexts. The default contexts *never* change type, and the children are extremely
      unlikely to (chances are if you fork once, you will fork again very soon).
   3. The only time this calculus changes is if the user themselves sets the device type. In
      this case we do not know what the user has changed, so must always wipe the slate clean.
@@ -236,7 +235,7 @@ static PetscErrorCode PetscDeviceContextSetDevice_Private(PetscDeviceContext dct
   // do not use getoptionalnullcontext here since we do not want the user to change its device
   PetscValidDeviceContext(dctx, 1);
   PetscValidDevice(device, 2);
-  if (dctx->device && (dctx->device->id == device->id)) PetscFunctionReturn(0);
+  if (dctx->device && (dctx->device->id == device->id)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(DCONTEXT_SetDevice, dctx, nullptr, nullptr, nullptr));
   PetscTryTypeMethod(dctx, destroy);
   PetscCall(PetscDeviceDestroy(&dctx->device));
@@ -248,7 +247,7 @@ static PetscErrorCode PetscDeviceContextSetDevice_Private(PetscDeviceContext dct
   PetscCall(PetscLogEventEnd(DCONTEXT_SetDevice, dctx, nullptr, nullptr, nullptr));
   dctx->setup         = PETSC_FALSE;
   dctx->usersetdevice = user_set;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceContext dctx, PetscDeviceType type)
@@ -258,7 +257,7 @@ PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceCon
   PetscFunctionBegin;
   PetscCall(PetscDeviceGetDefaultForType_Internal(type, &device));
   PetscCall(PetscDeviceContextSetDevice_Private(dctx, device, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -272,7 +271,7 @@ PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceCon
 
   Notes:
   This routine is effectively `PetscDeviceContext`'s "set-type" (so every `PetscDeviceContext` must
-  also have an attached `PetscDevice`). Unlike the usual set-type semantics, it is not stricly
+  also have an attached `PetscDevice`). Unlike the usual set-type semantics, it is not strictly
   necessary to set a contexts device to enable usage, any created `PetscDeviceContext`s will
   always come equipped with the "default" device.
 
@@ -290,7 +289,7 @@ PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice 
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextSetDevice_Private(dctx, device, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -318,7 +317,7 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
   PetscValidPointer(device, 2);
   PetscAssert(dctx->device, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscDeviceContext %" PetscInt64_FMT " has no attached PetscDevice to get", PetscObjectCast(dctx)->id);
   *device = dctx->device;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -349,7 +348,7 @@ PetscErrorCode PetscDeviceContextGetDeviceType(PetscDeviceContext dctx, PetscDev
   PetscValidPointer(type, 2);
   PetscCall(PetscDeviceContextGetDevice(dctx, &device));
   PetscCall(PetscDeviceGetType(device, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -373,7 +372,7 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
-  if (dctx->setup) PetscFunctionReturn(0);
+  if (dctx->setup) PetscFunctionReturn(PETSC_SUCCESS);
   if (!dctx->device) {
     const auto default_dtype = PETSC_DEVICE_DEFAULT();
 
@@ -384,7 +383,7 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
   PetscUseTypeMethod(dctx, setup);
   PetscCall(PetscLogEventEnd(DCONTEXT_SetUp, dctx, nullptr, nullptr, nullptr));
   dctx->setup = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dctx, PetscStreamType stype, PetscDeviceContext *dctxdup)
@@ -396,7 +395,7 @@ static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dct
   if (const auto device = dctx->device) PetscCall(PetscDeviceContextSetDevice_Private(*dctxdup, device, dctx->usersetdevice));
   PetscCall(PetscDeviceContextSetUp(*dctxdup));
   PetscCall(PetscLogEventEnd(DCONTEXT_Duplicate, dctx, nullptr, nullptr, nullptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -439,7 +438,7 @@ PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceC
   PetscValidPointer(dctxdup, 2);
   PetscCall(PetscDeviceContextGetStreamType(dctx, &stype));
   PetscCall(PetscDeviceContextDuplicate_Private(dctx, stype, dctxdup));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -471,7 +470,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
   PetscUseTypeMethod(dctx, query, idle);
   PetscCall(PetscLogEventEnd(DCONTEXT_QueryIdle, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscInfo(dctx, "PetscDeviceContext ('%s', id %" PetscInt64_FMT ") %s idle\n", PetscObjectCast(dctx)->name ? PetscObjectCast(dctx)->name : "unnamed", PetscObjectCast(dctx)->id, *idle ? "was" : "was not"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -514,7 +513,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctxa));
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctxb));
   PetscCheckCompatibleDeviceContexts(dctxa, 1, dctxb, 2);
-  if (dctxa == dctxb) PetscFunctionReturn(0);
+  if (dctxa == dctxb) PetscFunctionReturn(PETSC_SUCCESS);
   aobj = PetscObjectCast(dctxa);
   PetscCall(PetscLogEventBegin(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscUseTypeMethod(dctxa, waitforcontext, dctxb);
@@ -522,7 +521,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   PetscCall(PetscLogEventEnd(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscCall(PetscInfo(dctxa, "dctx %" PetscInt64_FMT " waiting on dctx %" PetscInt64_FMT "\n", aobj->id, PetscObjectCast(dctxb)->id));
   PetscCall(PetscObjectStateIncrease(aobj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -630,7 +629,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
   }
   PetscCall(PetscLogEventEnd(DCONTEXT_Fork, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscDebugInfo(dctx, "Forked %" PetscInt_FMT " children from parent %" PetscInt64_FMT " with IDs: %s\n", n, PetscObjectCast(dctx)->id, idList.c_str()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -671,7 +670,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscCall(PetscDeviceContextGetStreamType(dctx, &stype));
   PetscCall(PetscDeviceContextForkWithStreamType(dctx, stype, n, dsub));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -688,7 +687,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   Notes:
   If `PetscDeviceContextFork()` creates `n` edges from a source node which all depend on the source
   node, then this routine is the exact mirror. That is, it creates a node (represented in `dctx`)
-  which recieves `n` edges (and optionally destroys them) which is dependent on the completion
+  which receives `n` edges (and optionally destroys them) which is dependent on the completion
   of all incoming edges.
 
   If `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_DESTROY`. All contexts in `dsub` will be
@@ -796,7 +795,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
   PetscCall(PetscLogEventEnd(DCONTEXT_Join, dctx, nullptr, nullptr, nullptr));
 
   PetscCall(PetscDebugInfo(dctx, "Joined %" PetscInt_FMT " ctxs to ctx %" PetscInt64_FMT ", mode %s with IDs: %s\n", n, PetscObjectCast(dctx)->id, PetscDeviceContextJoinModes[joinMode], idList.c_str()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -837,7 +836,7 @@ PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext dctx)
     PetscCall(PetscDeviceContextSyncClearMap_Internal(dctx));
   }
   PetscCall(PetscLogEventEnd(DCONTEXT_Sync, dctx, nullptr, nullptr, nullptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* every device type has a vector of null PetscDeviceContexts -- one for each device */
@@ -860,7 +859,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
         PetscCallCXX(dvec.clear());
       }
       nullContextsFinalizer = false;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
 
     nullContextsFinalizer = true;
@@ -895,7 +894,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
       PetscCallCXX(ctxlist.insert(std::next(ctxlist.begin(), devid), *dctx));
     } else *dctx = ctxlist[devid];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -912,7 +911,7 @@ PetscErrorCode PetscDeviceContextGetNullContext_Internal(PetscDeviceContext *dct
   PetscCall(PetscDeviceContextGetCurrentContext(&gctx));
   PetscCall(PetscDeviceContextGetDevice(gctx, &gdev));
   PetscCall(PetscDeviceContextGetNullContextForDevice_Private(gctx->usersetdevice, gdev, dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -971,7 +970,7 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, PetscDeviceContex
   if (dtype.second) PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(dctx, dtype.first));
   if (stype.second) PetscCall(PetscDeviceContextSetStreamType(dctx, stype.first));
   PetscCall(PetscDeviceContextSetUp(dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1027,7 +1026,7 @@ PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewe
   }
   if (const auto device = dctx->device) PetscCall(PetscDeviceView(device, viewer));
   if (iascii) PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1049,5 +1048,5 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
   if (obj) PetscValidHeader(obj, 2);
   PetscValidCharPointer(name, 3);
   PetscCall(PetscObjectViewFromOptions(PetscObjectCast(dctx), obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

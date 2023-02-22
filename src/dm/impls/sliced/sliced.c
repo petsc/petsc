@@ -62,7 +62,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
   PetscCall(MatSetLocalToGlobalMapping(*J, lmap, lmap));
   PetscCall(ISLocalToGlobalMappingDestroy(&lmap));
   PetscCall(MatSetDM(*J, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -95,7 +95,7 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
   slice->bs      = bs;
   slice->n       = nlocal;
   slice->Nghosts = Nghosts;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -136,7 +136,7 @@ PetscErrorCode DMSlicedSetPreallocation(DM dm, PetscInt d_nz, const PetscInt d_n
   slice->d_nnz = (PetscInt *)d_nnz;
   slice->o_nz  = o_nz;
   slice->o_nnz = (PetscInt *)o_nnz;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt *fill, DMSlicedBlockFills **inf)
@@ -147,7 +147,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
   PetscFunctionBegin;
   PetscValidPointer(inf, 3);
   if (*inf) PetscCall(PetscFree3(*inf, (*inf)->i, (*inf)->j));
-  if (!fill) PetscFunctionReturn(0);
+  if (!fill) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 0, nz = 0; i < bs * bs; i++)
     if (fill[i]) nz++;
   PetscCall(PetscMalloc3(1, &f, bs + 1, &fi, nz, &fj));
@@ -162,7 +162,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
   }
   fi[i] = nz;
   *inf  = f;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -192,7 +192,7 @@ PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt *dfill, const PetscIn
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMSlicedSetBlockFills_Private(slice->bs, dfill, &slice->dfill));
   PetscCall(DMSlicedSetBlockFills_Private(slice->bs, ofill, &slice->ofill));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDestroy_Sliced(DM dm)
@@ -205,7 +205,7 @@ static PetscErrorCode DMDestroy_Sliced(DM dm)
   if (slice->ofill) PetscCall(PetscFree3(slice->ofill, slice->ofill->i, slice->ofill->j));
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   PetscCall(PetscFree(slice));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCreateGlobalVector_Sliced(DM dm, Vec *gvec)
@@ -218,7 +218,7 @@ static PetscErrorCode DMCreateGlobalVector_Sliced(DM dm, Vec *gvec)
   *gvec = NULL;
   PetscCall(VecCreateGhostBlock(PetscObjectComm((PetscObject)dm), slice->bs, slice->n * slice->bs, PETSC_DETERMINE, slice->Nghosts, slice->ghosts, gvec));
   PetscCall(VecSetDM(*gvec, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGlobalToLocalBegin_Sliced(DM da, Vec g, InsertMode mode, Vec l)
@@ -230,7 +230,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Sliced(DM da, Vec g, InsertMode mode,
   PetscCheck(flg, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Local vector is not local form of global vector");
   PetscCall(VecGhostUpdateEnd(g, mode, SCATTER_FORWARD));
   PetscCall(VecGhostUpdateBegin(g, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGlobalToLocalEnd_Sliced(DM da, Vec g, InsertMode mode, Vec l)
@@ -241,7 +241,7 @@ static PetscErrorCode DMGlobalToLocalEnd_Sliced(DM da, Vec g, InsertMode mode, V
   PetscCall(VecGhostIsLocalForm(g, l, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Local vector is not local form of global vector");
   PetscCall(VecGhostUpdateEnd(g, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -267,7 +267,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
   p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Sliced;
   p->ops->globaltolocalend   = DMGlobalToLocalEnd_Sliced;
   p->ops->destroy            = DMDestroy_Sliced;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -308,5 +308,5 @@ PetscErrorCode DMSlicedCreate(MPI_Comm comm, PetscInt bs, PetscInt nlocal, Petsc
   PetscCall(DMSetType(*dm, DMSLICED));
   PetscCall(DMSlicedSetGhosts(*dm, bs, nlocal, Nghosts, ghosts));
   if (d_nnz) PetscCall(DMSlicedSetPreallocation(*dm, 0, d_nnz, 0, o_nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

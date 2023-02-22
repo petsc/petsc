@@ -167,7 +167,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(DMDAVecRestoreArrayRead(da, X, (void *)&x));
   PetscCall(DMDAVecRestoreArrayRead(da, Xdot, (void *)&xdot));
   PetscCall(DMDAVecRestoreArray(da, F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
@@ -219,7 +219,7 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   PetscCall(DMDAVecRestoreArrayRead(da, Xloc, (void *)&x));
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------- */
@@ -264,7 +264,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
@@ -291,7 +291,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
     x[i][1] = user->k[0] * ik * x[i][0] + user->s[1] * ik;
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

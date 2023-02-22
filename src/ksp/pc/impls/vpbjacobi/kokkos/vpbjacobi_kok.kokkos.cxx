@@ -44,7 +44,7 @@ struct PC_VPBJacobi_Kokkos {
     PetscCallCXX(matIdx_dual.sync_device());
     PetscCallCXX(diag_dual.sync_device());
     PetscCall(PetscLogCpuToGpu(sizeof(PetscInt) * (2 * nblocks + 2 + n) + sizeof(MatScalar) * nsize));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 private:
@@ -61,11 +61,12 @@ private:
       bs2_h[i + 1] = bs2_h[i] + bsizes[i] * bsizes[i];
       for (PetscInt j = 0; j < bsizes[i]; j++) matIdx_h[bs_h[i] + j] = i;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 
-static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
+template <PetscBool transpose>
+static PetscErrorCode PCApplyOrTranspose_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
 {
   PC_VPBJacobi              *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_Kokkos       *pckok = static_cast<PC_VPBJacobi_Kokkos *>(jac->spptr);
@@ -75,6 +76,7 @@ static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
   PetscIntKokkosView         bs     = pckok->bs_dual.view_device();
   PetscIntKokkosView         bs2    = pckok->bs2_dual.view_device();
   PetscIntKokkosView         matIdx = pckok->matIdx_dual.view_device();
+  const char                *label  = transpose ? "PCApplyTranspose_VPBJacobi_Kokkos" : "PCApply_VPBJacobi_Kokkos";
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
@@ -83,29 +85,29 @@ static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
   PetscCall(VecGetKokkosView(x, &xv));
   PetscCall(VecGetKokkosViewWrite(y, &yv));
   PetscCallCXX(Kokkos::parallel_for(
-    "PCApply_VPBJacobi_Kokkos", pckok->n, KOKKOS_LAMBDA(PetscInt row) {
+    label, pckok->n, KOKKOS_LAMBDA(PetscInt row) {
       const PetscScalar *Ap, *xp;
       PetscScalar       *yp;
       PetscInt           i, j, k, m;
 
-      k  = matIdx(row);       /* k-th block/matrix */
-      m  = bs(k + 1) - bs(k); /* block size of the k-th block */
-      i  = row - bs(k);       /* i-th row of the block */
-      Ap = &diag(bs2(k) + i); /* Ap points to the first entry of i-th row */
+      k  = matIdx(row);                             /* k-th block/matrix */
+      m  = bs(k + 1) - bs(k);                       /* block size of the k-th block */
+      i  = row - bs(k);                             /* i-th row of the block */
+      Ap = &diag(bs2(k) + i * (transpose ? m : 1)); /* Ap points to the first entry of i-th row/column */
       xp = &xv(bs(k));
       yp = &yv(bs(k));
 
       yp[i] = 0.0;
       for (j = 0; j < m; j++) {
         yp[i] += Ap[0] * xp[j];
-        Ap += m;
+        Ap += transpose ? 1 : m;
       }
     }));
   PetscCall(VecRestoreKokkosView(x, &xv));
   PetscCall(VecRestoreKokkosViewWrite(y, &yv));
   PetscCall(PetscLogGpuFlops(pckok->nsize * 2)); /* FMA on entries in all blocks */
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc)
@@ -115,7 +117,7 @@ static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc)
   PetscFunctionBegin;
   PetscCallCXX(delete static_cast<PC_VPBJacobi_Kokkos *>(jac->spptr));
   PetscCall(PCDestroy_VPBJacobi(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
@@ -137,13 +139,14 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
     pckok = nullptr;
   }
 
-  if (!pckok) { /* allocate the struct along with the helper arrays from the scatch */
+  if (!pckok) { /* allocate the struct along with the helper arrays from the scratch */
     PetscCallCXX(jac->spptr = new PC_VPBJacobi_Kokkos(n, nblocks, nsize, bsizes, jac->diag));
   } else { /* update the value only */
     PetscCall(pckok->UpdateOffsetsOnDevice(bsizes, jac->diag));
   }
 
-  pc->ops->apply   = PCApply_VPBJacobi_Kokkos;
-  pc->ops->destroy = PCDestroy_VPBJacobi_Kokkos;
-  PetscFunctionReturn(0);
+  pc->ops->apply          = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_FALSE>;
+  pc->ops->applytranspose = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_TRUE>;
+  pc->ops->destroy        = PCDestroy_VPBJacobi_Kokkos;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

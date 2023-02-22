@@ -15,7 +15,7 @@ static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP, Pe
   } else {
     PetscCall(PetscStrncpy(name, "other", n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

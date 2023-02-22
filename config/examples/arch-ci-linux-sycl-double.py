@@ -17,7 +17,7 @@ if __name__ == '__main__':
     '--CXXOPTFLAGS=-g -O2',
     '--CXXPPFLAGS=-std=c++17',
     '--SYCLOPTFLAGS=-g -O2',
-    # To supress warnings in checking Kokkos-Kernels headers like:
+    # To suppress warnings in checking Kokkos-Kernels headers like:
     # Kokkos_MathematicalFunctions.hpp:299:34: warning: comparison with infinity always evaluates
     # to false in fast floating point modes [-Wtautological-constant-compare]
     # KOKKOS_IMPL_MATH_UNARY_PREDICATE(isinf)
@@ -28,6 +28,7 @@ if __name__ == '__main__':
     '--with-sycl=1',
     '--with-syclc=dpcpp',
     '--with-sycl-dialect=c++17',
+    '--with-strict-petscerrorcode',
   ]
 
   configure.petsc_configure(configure_options)

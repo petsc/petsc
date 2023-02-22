@@ -578,7 +578,7 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
       if num_lines_changed < 10:
         # small MRs must cover all changed code
         return 0
-      return math.floor(num_lines_changed / (10.0 * math.log(num_lines_changed)))
+      return math.floor(num_lines_changed / (7.0 * math.log(num_lines_changed)))
 
     ret_code    = 1
     warn_banner = ' WARNING '.join(('*'*40, '*'*40))

@@ -104,7 +104,7 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
   PetscCall(MatDestroy(&lu->A));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscFree(A->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_UMFPACK_Private(Mat A, Vec b, Vec x, int uflag)
@@ -117,7 +117,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A, Vec b, Vec x, int uflag)
   static PetscBool   cite = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (!A->rmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscCitationsRegister("@article{davis2004algorithm,\n  title={Algorithm 832: {UMFPACK} V4.3---An Unsymmetric-Pattern Multifrontal Method},\n  author={Davis, Timothy A},\n  journal={ACM Transactions on Mathematical Software (TOMS)},\n  "
                                    "volume={30},\n  number={2},\n  pages={196--199},\n  year={2004},\n  publisher={ACM}\n}\n",
                                    &cite));
@@ -144,7 +144,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A, Vec b, Vec x, int uflag)
 
   PetscCall(VecRestoreArrayRead(b, &ba));
   PetscCall(VecRestoreArray(x, &xa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_UMFPACK(Mat A, Vec b, Vec x)
@@ -152,7 +152,7 @@ static PetscErrorCode MatSolve_UMFPACK(Mat A, Vec b, Vec x)
   PetscFunctionBegin;
   /* We gave UMFPACK the algebraic transpose (because it assumes column alignment) */
   PetscCall(MatSolve_UMFPACK_Private(A, b, x, UMFPACK_Aat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A, Vec b, Vec x)
@@ -160,7 +160,7 @@ static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A, Vec b, Vec x)
   PetscFunctionBegin;
   /* We gave UMFPACK the algebraic transpose (because it assumes column alignment) */
   PetscCall(MatSolve_UMFPACK_Private(A, b, x, UMFPACK_A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorInfo *info)
@@ -171,7 +171,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorIn
   PetscScalar *av = a->a;
 
   PetscFunctionBegin;
-  if (!A->rmap->n) PetscFunctionReturn(0);
+  if (!A->rmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   /* numeric factorization of A' */
   /* ----------------------------*/
 
@@ -196,7 +196,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorIn
   lu->CleanUpUMFPACK     = PETSC_TRUE;
   F->ops->solve          = MatSolve_UMFPACK;
   F->ops->solvetranspose = MatSolveTranspose_UMFPACK;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
@@ -214,7 +214,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
 
   PetscFunctionBegin;
   (F)->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Set options to F */
   PetscOptionsBegin(PetscObjectComm((PetscObject)F), ((PetscObject)F)->prefix, "UMFPACK Options", "Mat");
@@ -306,7 +306,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
 
   lu->flg            = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpUMFPACK = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_Info_UMFPACK(Mat A, PetscViewer viewer)
@@ -315,7 +315,7 @@ static PetscErrorCode MatView_Info_UMFPACK(Mat A, PetscViewer viewer)
 
   PetscFunctionBegin;
   /* check if matrix is UMFPACK type */
-  if (A->ops->solve != MatSolve_UMFPACK) PetscFunctionReturn(0);
+  if (A->ops->solve != MatSolve_UMFPACK) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscViewerASCIIPrintf(viewer, "UMFPACK run parameters:\n"));
   /* Control parameters used by reporting routiones */
@@ -342,7 +342,7 @@ static PetscErrorCode MatView_Info_UMFPACK(Mat A, PetscViewer viewer)
 
   /* mat ordering */
   if (!lu->perm_c) PetscCall(PetscViewerASCIIPrintf(viewer, "  Control[UMFPACK_ORDERING]: %s (not using the PETSc ordering)\n", UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_UMFPACK(Mat A, PetscViewer viewer)
@@ -356,14 +356,14 @@ static PetscErrorCode MatView_UMFPACK(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_UMFPACK(A, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERUMFPACK;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -443,7 +443,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType fty
   lu->Control[UMFPACK_IRSTEP] = 0;    /* max num of iterative refinement steps to attempt */
 
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat, MatFactorType, Mat *);
@@ -461,5 +461,5 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERSPQR, MATSEQAIJ, MAT_FACTOR_QR, MatGetFactor_seqaij_spqr));
   if (!PetscDefined(USE_COMPLEX)) PetscCall(MatSolverTypeRegister(MATSOLVERSPQR, MATNORMAL, MAT_FACTOR_QR, MatGetFactor_seqaij_spqr));
   PetscCall(MatSolverTypeRegister(MATSOLVERSPQR, MATNORMALHERMITIAN, MAT_FACTOR_QR, MatGetFactor_seqaij_spqr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

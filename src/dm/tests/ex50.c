@@ -18,7 +18,7 @@ static PetscErrorCode MapPoint(PetscScalar xyz[], PetscScalar mxyz[])
   mxyz[0] = x * PetscSqrtScalar(1.0 - y2 / 2.0 - z2 / 2.0 + y2 * z2 / 3.0);
   mxyz[1] = y * PetscSqrtScalar(1.0 - z2 / 2.0 - x2 / 2.0 + z2 * x2 / 3.0);
   mxyz[2] = z * PetscSqrtScalar(1.0 - x2 / 2.0 - y2 / 2.0 + x2 * y2 / 3.0);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
@@ -140,7 +140,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
     PetscCall(DMViewFromOptions(dm, NULL, "-view"));
   }
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -338,7 +338,7 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
 
   PetscCall(VecDestroy(&vecLocal));
   PetscCall(VecDestroy(&vecGlobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

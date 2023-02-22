@@ -114,6 +114,33 @@ search structures and indices for the different types of points using
 
 .. _sec_petscsection:
 
+Dealing with Periodicity
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Plex allows you to represent periodic domains is two ways. Using the default scheme, periodic topology can be represented directly. This ensures that all topological queries can be satisified, but then care must be taken in representing functions over the mesh, such as the coordinates. The second method is to use a non-periodic topology, but connect certain mesh points using the local-to-global map for that DM. This allows a more general set of mappings to be implemented, such as partial twists, but topological queries on the periodic boundary cease to function.
+
+For the default scheme, a call to `DMLocalizeCoordinates()` (which usually happens automatically on mesh creation) creates a second, discontinuous coordinate field. These values can be accessed using `DMGetCellCoordinates()` and `DMGetCellCoordinatesLocal()`. Plex provides a convenience method, `DMPlexGetCellCoordinates()`, that extracts cell coordinates correctly, depending on the periodicity of the mesh. An example of its use is shown below:
+
+.. code-block::
+
+  const PetscScalar *array;
+  PetscScalar       *coords = NULL;
+  PetscInt           numCoords;
+  PetscBool          isDG;
+
+  PetscCall(DMPlexGetCellCoordinates(dm, cell, &isDG, &numCoords, &array, &coords));
+  for (PetscInt cc = 0; cc < numCoords/dim; ++cc) {
+    if (cc > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, " -- "));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "("));
+    for (PetscInt d = 0; d < dim; ++d) {
+      if (d > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)PetscRealPart(coords[cc * dim + d])));
+    }
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, ")"));
+  }
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+  PetscCall(DMPlexRestoreCellCoordinates(dm, cell, &isDG, &numCoords, &array, &coords));
+
 Data on Unstructured Grids (PetscSection)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -796,4 +823,3 @@ preserved under adaptation, respectively.
 
 .. bibliography:: /petsc.bib
     :filter: docname in docnames
-

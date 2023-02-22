@@ -16,7 +16,7 @@ PetscErrorCode MatFDColoringSetF(MatFDColoring fd, Vec F)
   } else {
     fd->fset = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -38,7 +38,7 @@ static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw, void *Aa)
       PetscCall(PetscDrawRectangle(draw, x, y, x + 1, y + 1, i + 1, i + 1, i + 1, i + 1));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewer)
@@ -50,7 +50,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
   PetscFunctionBegin;
   PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
   PetscCall(PetscDrawIsNull(draw, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
   xr = fd->N;
   yr = fd->M;
@@ -65,7 +65,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
   PetscCall(PetscDrawZoom(draw, MatFDColoringView_Draw_Zoom, fd));
   PetscCall(PetscObjectCompose((PetscObject)fd, "Zoomviewer", NULL));
   PetscCall(PetscDrawSave(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -92,7 +92,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
    involves more than 33 then some seemingly identical colors are displayed making it look
    like an illegal coloring. This is just a graphical artifact.
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`
 @*/
 PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 {
@@ -136,7 +136,7 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
     }
     PetscCall(PetscViewerFlush(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -158,13 +158,13 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 .ve
 
    Input Parameters:
-+  coloring - the coloring context
-.  error_rel - relative error
++  matfd - the coloring context
+.  error - relative error
 -  umin - minimum allowable u-value magnitude
 
    Level: advanced
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFromOptions()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFromOptions()`
 @*/
 PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd, PetscReal error, PetscReal umin)
 {
@@ -174,7 +174,7 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd, PetscReal error, 
   PetscValidLogicalCollectiveReal(matfd, umin, 3);
   if (error != PETSC_DEFAULT) matfd->error_rel = error;
   if (umin != PETSC_DEFAULT) matfd->umin = umin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -189,7 +189,7 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd, PetscReal error, 
 
    Level: intermediate
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFromOptions()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFromOptions()`
 @*/
 PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd, PetscInt brows, PetscInt bcols)
 {
@@ -199,7 +199,7 @@ PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd, PetscInt brows, Pe
   PetscValidLogicalCollectiveInt(matfd, bcols, 3);
   if (brows != PETSC_DEFAULT) matfd->brows = brows;
   if (bcols != PETSC_DEFAULT) matfd->bcols = bcols;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -217,7 +217,7 @@ PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd, PetscInt brows, Pe
    Notes:
    When the coloring type is `IS_COLORING_LOCAL` the coloring is in the local ordering of the unknowns.
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`
 @*/
 PetscErrorCode MatFDColoringSetUp(Mat mat, ISColoring iscoloring, MatFDColoring color)
 {
@@ -226,7 +226,7 @@ PetscErrorCode MatFDColoringSetUp(Mat mat, ISColoring iscoloring, MatFDColoring 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(color, MAT_FDCOLORING_CLASSID, 3);
-  if (color->setupcalled) PetscFunctionReturn(0);
+  if (color->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectCompareId((PetscObject)mat, color->matid, &eq));
   PetscCheck(eq, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Matrix used with MatFDColoringSetUp() must be that used with MatFDColoringCreate()");
 
@@ -235,7 +235,7 @@ PetscErrorCode MatFDColoringSetUp(Mat mat, ISColoring iscoloring, MatFDColoring 
 
   color->setupcalled = PETSC_TRUE;
   PetscCall(PetscLogEventEnd(MAT_FDColoringSetUp, mat, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -252,7 +252,7 @@ PetscErrorCode MatFDColoringSetUp(Mat mat, ISColoring iscoloring, MatFDColoring 
 
    Level: intermediate
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`, `MatFDColoringSetFromOptions()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`, `MatFDColoringSetFromOptions()`
 @*/
 PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f)(void), void **fctx)
 {
@@ -260,7 +260,7 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);
   if (f) *f = matfd->f;
   if (fctx) *fctx = matfd->fctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -288,7 +288,7 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
     In Fortran you must call `MatFDColoringSetFunction()` for a coloring object to
   be used without `SNES` or within the `SNES` solvers.
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringGetFunction()`, `MatFDColoringSetFromOptions()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringGetFunction()`, `MatFDColoringSetFromOptions()`
 @*/
 PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, PetscErrorCode (*f)(void), void *fctx)
 {
@@ -296,7 +296,7 @@ PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, PetscErrorCode (*f)
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);
   matfd->f    = f;
   matfd->fctx = fctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -326,7 +326,7 @@ PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, PetscErrorCode (*f)
 
     Level: intermediate
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringView()`, `MatFDColoringSetParameters()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringView()`, `MatFDColoringSetParameters()`
 @*/
 PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
@@ -355,7 +355,7 @@ PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)matfd, PetscOptionsObject));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -370,14 +370,14 @@ PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
    Options Database Keys:
 .  -mat_fd_type - "wp" or "ds"
 
+   Level: intermediate
+
    Note:
    It is goofy that the argument type is `MatMFFDType` since the `MatFDColoring` actually computes the matrix entries
          but the process of computing the entries is the same as as with the `MATMFFD` operation so we should reuse the names instead of
          introducing another one.
 
-   Level: intermediate
-
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringView()`, `MatFDColoringSetParameters()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringView()`, `MatFDColoringSetParameters()`
 @*/
 PetscErrorCode MatFDColoringSetType(MatFDColoring matfd, MatMFFDType type)
 {
@@ -385,12 +385,12 @@ PetscErrorCode MatFDColoringSetType(MatFDColoring matfd, MatMFFDType type)
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);
   /*
      It is goofy to handle the strings this way but currently there is no code to free a dynamically created matfd->htype
-     and this function is being provided as patch for a release so it shouldn't change the implementaton
+     and this function is being provided as patch for a release so it shouldn't change the implementation
   */
   if (type[0] == 'w' && type[1] == 'p') matfd->htype = "wp";
   else if (type[0] == 'd' && type[1] == 's') matfd->htype = "ds";
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown finite differencing type %s", type);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char prefix[], const char optionname[])
@@ -411,7 +411,7 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char prefix[
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -429,7 +429,7 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char prefix[
 
     Level: intermediate
 
-.seealso: `MatFDColoring`, `MatFDColoringDestroy()`, `SNESComputeJacobianDefaultColor()`, `ISColoringCreate()`,
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringDestroy()`, `SNESComputeJacobianDefaultColor()`, `ISColoringCreate()`,
           `MatFDColoringSetFunction()`, `MatFDColoringSetFromOptions()`, `MatFDColoringApply()`,
           `MatFDColoringView()`, `MatFDColoringSetParameters()`, `MatColoringCreate()`, `DMCreateColoring()`, `MatFDColoringSetValues()`
 @*/
@@ -470,7 +470,7 @@ PetscErrorCode MatFDColoringCreate(Mat mat, ISColoring iscoloring, MatFDColoring
   *color = c;
   PetscCall(PetscObjectCompose((PetscObject)mat, "SNESMatFDColoring", (PetscObject)c));
   PetscCall(PetscLogEventEnd(MAT_FDColoringCreate, mat, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -484,7 +484,7 @@ PetscErrorCode MatFDColoringCreate(Mat mat, ISColoring iscoloring, MatFDColoring
 
     Level: intermediate
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`
 @*/
 PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
 {
@@ -492,10 +492,10 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
   MatFDColoring color = *c;
 
   PetscFunctionBegin;
-  if (!*c) PetscFunctionReturn(0);
+  if (!*c) PetscFunctionReturn(PETSC_SUCCESS);
   if (--((PetscObject)color)->refct > 0) {
     *c = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* we do not free the column arrays since their entries are owned by the ISs in color->isa */
@@ -514,7 +514,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
   PetscCall(VecDestroy(&color->w2));
   PetscCall(VecDestroy(&color->w3));
   PetscCall(PetscHeaderDestroy(c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -537,16 +537,18 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
 
    Fortran Note:
    This routine has a different interface for Fortran
-$     #include <petsc/finclude/petscmat.h>
-$          use petscmat
-$          PetscInt, pointer :: array(:)
-$          PetscErrorCode  ierr
-$          MatFDColoring   i
-$          call MatFDColoringGetPerturbedColumnsF90(i,array,ierr)
-$      use the entries of array ...
-$          call MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
+.vb
+     #include <petsc/finclude/petscmat.h>
+          use petscmat
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          MatFDColoring   i
+          call MatFDColoringGetPerturbedColumnsF90(i,array,ierr)
+      use the entries of array ...
+          call MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
+.ve
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`, `MatFDColoringView()`, `MatFDColoringApply()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`, `MatFDColoringView()`, `MatFDColoringApply()`
 @*/
 PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring, PetscInt *n, const PetscInt *cols[])
 {
@@ -557,7 +559,7 @@ PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring, PetscInt
   } else {
     *n = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -580,7 +582,7 @@ PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring, PetscInt
 
     Level: intermediate
 
-.seealso: `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`, `MatFDColoringView()`, `MatFDColoringSetFunction()`, `MatFDColoringSetValues()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`, `MatFDColoringView()`, `MatFDColoringSetFunction()`, `MatFDColoringSetValues()`
 @*/
 PetscErrorCode MatFDColoringApply(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {
@@ -603,5 +605,5 @@ PetscErrorCode MatFDColoringApply(Mat J, MatFDColoring coloring, Vec x1, void *s
     PetscCall(MatFDColoringViewFromOptions(coloring, NULL, "-mat_fd_coloring_view"));
     coloring->viewed = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -78,7 +78,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
     if (!((PetscObject)indraw)->amsmem && rank == 0) PetscCall(PetscObjectViewSAWs((PetscObject)indraw, viewer));
 #endif
   } else PetscTryTypeMethod(indraw, view, viewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -99,7 +99,7 @@ PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -178,7 +178,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
   draw->boundbox_yr = .9;
 
   *indraw = draw;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -214,7 +214,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)draw, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*  User requests no graphics */
   PetscCall(PetscOptionsHasName(((PetscObject)draw)->options, NULL, "-nox", &flg));
@@ -231,7 +231,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
       PetscBool dontwarn = PETSC_TRUE;
       flg                = PETSC_TRUE;
       PetscCall(PetscOptionsHasName(NULL, NULL, "-nox_warning", &dontwarn));
-      if (!dontwarn) (*PetscErrorPrintf)("PETSc installed without X Windows on this machine\nproceeding without graphics\n");
+      if (!dontwarn) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows on this machine\nproceeding without graphics\n"));
     }
   }
 #endif
@@ -255,7 +255,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
   PetscCall(PetscMemzero(draw->ops, sizeof(struct _PetscDrawOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)draw, type));
   PetscCall((*r)(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -279,7 +279,7 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)draw)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -313,7 +313,7 @@ PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(P
   PetscFunctionBegin;
   PetscCall(PetscDrawInitializePackage());
   PetscCall(PetscFunctionListAdd(&PetscDrawList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -335,7 +335,7 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)draw, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -390,7 +390,7 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
     if (!nox) def = PETSC_DRAW_X;
 #else
     PetscCall(PetscOptionsHasName(NULL, NULL, "-nox_warning", &warn));
-    if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X Windows or Microsoft Graphics on this machine\nproceeding without graphics\n");
+    if (!nox && !warn) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows or Microsoft Graphics on this machine\nproceeding without graphics\n"));
 #endif
   }
   PetscObjectOptionsBegin((PetscObject)draw);
@@ -426,5 +426,5 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
 
   PetscCall(PetscDrawViewFromOptions(draw, NULL, "-draw_view"));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

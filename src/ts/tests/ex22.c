@@ -62,7 +62,7 @@ PetscErrorCode InitialConditions(Vec U, DM da, AppCtx *app)
   }
   PetscCall(DMDAVecRestoreArray(da, U, &u));
   PetscCall(DMDAVecRestoreArrayRead(da, xcoord, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx)
@@ -76,7 +76,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, voi
   PetscCall(VecGetArrayRead(U, &u));
   for (i = 0; i < lsize; i++) fvalue[i] = u[i] - app->uc;
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
@@ -89,7 +89,7 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_z
     idx          = events_zero[i];
     app->sw[idx] = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -136,7 +136,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &Ulocal));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -182,7 +182,7 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

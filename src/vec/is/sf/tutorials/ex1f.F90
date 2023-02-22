@@ -23,6 +23,10 @@
       PetscInt, pointer ::          gmine(:)
       PetscInt                      gnroots,gnleaves;
 
+      PetscInt                      niranks,nranks
+      PetscMPIInt, pointer ::       iranks(:), ranks(:)
+      PetscInt, pointer ::          ioffset(:),irootloc(:),roffset(:),rmine(:),rremote(:)
+
       PetscCallA(PetscInitialize(ierr))
       stride = 2
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
@@ -91,6 +95,14 @@
       PetscCallA(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n",ierr))
       PetscCallA(PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
+!     Reduce entries from leafdata to rootdata. Computation or other communication can be performed between the begin and end calls.
+      PetscCallA(PetscSFReduceBegin(sf,MPIU_INTEGER,leafdata,rootdata,MPI_SUM,ierr))
+      PetscCallA(PetscSFReduceEnd(sf,MPIU_INTEGER,leafdata,rootdata,MPI_SUM,ierr))
+      PetscCallA(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata\n",ierr))
+      PetscCallA(PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata\n",ierr))
+      PetscCallA(PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD,ierr))
+
       PetscCallA(PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr))
       if (gnleaves .ne. nleaves) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'nleaves returned from PetscSFGetGraph() does not match that set with PetscSFSetGraph()'); endif
          do i=1,nleaves
@@ -101,10 +113,15 @@
       enddo
 
       deallocate(gremote)
+
+! Test PetscSFGet{Leaf,Root}Ranks
+      PetscCallA(PetscSFGetLeafRanks(sf,niranks,iranks,ioffset,irootloc,ierr))
+      PetscCallA(PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote,ierr))
+
 !    Clean storage for star forest.
       PetscCallA(PetscSFDestroy(sf,ierr))
 
-!  Create a star forest with continous leaves and hence no buffer
+!  Create a star forest with continuous leaves and hence no buffer
       PetscCallA(PetscSFCreate(PETSC_COMM_WORLD,sf,ierr))
       PetscCallA(PetscSFSetFromOptions(sf,ierr))
       PetscCallA(PetscSFSetGraph(sf,nrootsalloc,nleaves,PETSC_NULL_INTEGER,PETSC_COPY_VALUES,remote,PETSC_COPY_VALUES,ierr))

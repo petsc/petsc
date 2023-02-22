@@ -34,5 +34,5 @@ PetscErrorCode PetscGetArchType(char str[], size_t slen)
 #else
   #error "$PETSC_ARCH/include/petscconf.h is missing PETSC_ARCH"
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

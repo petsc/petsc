@@ -33,14 +33,14 @@ PetscErrorCode VecCreate_HIP(Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecMPI_HIP.Create_CUPM(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecCreate_MPIHIP(Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecMPI_HIP.create(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecHIPGetArrays_Private(Vec v, const PetscScalar **host_array, const PetscScalar **device_array, PetscOffloadMask *mask)
@@ -51,7 +51,7 @@ PetscErrorCode VecHIPGetArrays_Private(Vec v, const PetscScalar **host_array, co
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_HIP));
   PetscCall(VecMPI_HIP.GetArrays_CUPMBase(v, host_array, device_array, mask, dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -84,7 +84,7 @@ PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
   PetscFunctionBegin;
   PetscValidPointer(v, 4);
   PetscCall(VecMPI_HIP.creatempicupm(comm, 0, n, N, v, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -120,7 +120,7 @@ PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
   if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
   PetscValidPointer(v, 7);
   PetscCall(VecMPI_HIP.creatempicupmwitharrays(comm, bs, n, N, cpuarray, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -152,5 +152,5 @@ PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 {
   PetscFunctionBegin;
   PetscCall(VecCreateMPIHIPWithArrays(comm, bs, n, N, nullptr, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

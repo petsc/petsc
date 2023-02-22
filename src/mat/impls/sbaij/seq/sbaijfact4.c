@@ -159,5 +159,5 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C, Mat A,
   C->preallocated = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.3333 * 27 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

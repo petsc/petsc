@@ -93,7 +93,7 @@ int main(int argc, char **argv)
   PetscInt  max_functions  = 50;     /* maximum number of function evaluations */
   PetscInt  lin_its;                 /* number of linear solver iterations for each step */
   PetscInt  i;                       /* nonlinear solve iteration number */
-  PetscBool no_output = PETSC_FALSE; /* flag indicating whether to supress output */
+  PetscBool no_output = PETSC_FALSE; /* flag indicating whether to suppress output */
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -330,7 +330,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
      Restore vector
   */
   PetscCall(VecRestoreArray(X, &x));
-  return 0;
+  return PETSC_SUCCESS;
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -404,7 +404,7 @@ PetscErrorCode ComputeFunction(AppCtx *user, Vec X, Vec F)
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(PetscLogFlops(11.0 * ym * xm));
-  return 0;
+  return PETSC_SUCCESS;
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -517,7 +517,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user, Vec X, Mat jac)
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*TEST

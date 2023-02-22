@@ -604,6 +604,12 @@ PETSC_EXTERN PetscErrorCode    MatDenseGetArrayRead(Mat, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode    MatDenseRestoreArrayRead(Mat, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode    MatDenseGetArrayWrite(Mat, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode    MatDenseRestoreArrayWrite(Mat, PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode    MatDenseGetArrayAndMemType(Mat, PetscScalar *[], PetscMemType *);
+PETSC_EXTERN PetscErrorCode    MatDenseRestoreArrayAndMemType(Mat, PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode    MatDenseGetArrayReadAndMemType(Mat, const PetscScalar *[], PetscMemType *);
+PETSC_EXTERN PetscErrorCode    MatDenseRestoreArrayReadAndMemType(Mat, const PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode    MatDenseGetArrayWriteAndMemType(Mat, PetscScalar *[], PetscMemType *);
+PETSC_EXTERN PetscErrorCode    MatDenseRestoreArrayWriteAndMemType(Mat, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode    MatGetBlockSize(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode    MatSetBlockSize(Mat, PetscInt);
 PETSC_EXTERN PetscErrorCode    MatGetBlockSizes(Mat, PetscInt *, PetscInt *);
@@ -979,7 +985,8 @@ static inline PetscErrorCode MatSetValueLocal(Mat v, PetscInt i, PetscInt j, Pet
 M*/
 #define MatPreallocateBegin(comm, nrows, ncols, dnz, onz) \
   do { \
-    PetscInt __nrows = (nrows), __ncols = (ncols), __rstart, __start, __end = 0; \
+    PetscInt              __nrows = (nrows), __ncols = (ncols), __rstart, __end = 0; \
+    PetscInt PETSC_UNUSED __start; \
     PetscCall(PetscCalloc2(__nrows, &(dnz), __nrows, &(onz))); \
     PetscCallMPI(MPI_Scan(&__ncols, &__end, 1, MPIU_INT, MPI_SUM, comm)); \
     __start = __end - __ncols; \

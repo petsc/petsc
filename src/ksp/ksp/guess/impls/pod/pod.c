@@ -60,7 +60,7 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
     PetscCall(VecDestroyVecs(pod->maxn, &pod->bsnap));
     PetscCall(VecDestroyVecs(1, &pod->work));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
@@ -111,7 +111,7 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
     PetscCall(VecDestroy(&vseq));
   }
   if (!pod->work) PetscCall(KSPCreateVecs(guess->ksp, 1, &pod->work, 0, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
@@ -131,7 +131,7 @@ static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
   PetscCall(VecDestroyVecs(pod->maxn, &pod->xsnap));
   PetscCall(VecDestroyVecs(1, &pod->work));
   PetscCall(PetscFree(pod));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessUpdate_POD(KSPGuess, Vec, Vec);
@@ -148,7 +148,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
   if (pod->ndots_iallreduce) { /* complete communication and project the linear system */
     PetscCall(KSPGuessUpdate_POD(guess, NULL, NULL));
   }
-  if (!pod->nen) PetscFunctionReturn(0);
+  if (!pod->nen) PetscFunctionReturn(PETSC_SUCCESS);
   /* b_low = S * V^T * X^T * b */
   PetscCall(VecGetLocalVectorRead(b, pod->bsnap[pod->curr]));
   PetscCall(VecMDot(pod->bsnap[pod->curr], pod->n, pod->xsnap, pod->swork));
@@ -209,7 +209,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
   PetscCall(VecSet(pod->bsnap[pod->curr], 0));
   PetscCall(VecMAXPY(pod->bsnap[pod->curr], pod->n, pod->swork + pod->n, pod->xsnap));
   PetscCall(VecRestoreLocalVector(x, pod->bsnap[pod->curr]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
@@ -267,7 +267,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
 #endif
     }
   }
-  if (pod->ndots_iallreduce) PetscFunctionReturn(0);
+  if (pod->ndots_iallreduce) PetscFunctionReturn(PETSC_SUCCESS);
 
 complete_request:
   if (pod->ndots_iallreduce) {
@@ -391,7 +391,7 @@ complete_request:
   }
   /* new tip */
   pod->curr = (pod->curr + 1) % pod->maxn;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess)
@@ -405,7 +405,7 @@ static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess)
   PetscCall(PetscOptionsReal("-ksp_guess_pod_tol", "Tolerance to retain eigenvectors", "KSPGuessSetTolerance", pod->tol, &pod->tol, NULL));
   PetscCall(PetscOptionsBool("-ksp_guess_pod_Ainner", "Use the operator as inner product (must be SPD)", NULL, pod->Aspd, &pod->Aspd, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessSetTolerance_POD(KSPGuess guess, PetscReal tol)
@@ -414,7 +414,7 @@ static PetscErrorCode KSPGuessSetTolerance_POD(KSPGuess guess, PetscReal tol)
 
   PetscFunctionBegin;
   pod->tol = tol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessView_POD(KSPGuess guess, PetscViewer viewer)
@@ -425,7 +425,7 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Max size %" PetscInt_FMT ", tolerance %g, Ainner %d\n", pod->maxn, (double)pod->tol, pod->Aspd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -459,5 +459,5 @@ PetscErrorCode KSPGuessCreate_POD(KSPGuess guess)
   guess->ops->reset          = KSPGuessReset_POD;
   guess->ops->update         = KSPGuessUpdate_POD;
   guess->ops->formguess      = KSPGuessFormGuess_POD;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

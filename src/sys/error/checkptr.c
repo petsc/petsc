@@ -24,7 +24,7 @@ PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
   PetscFunctionBegin;
   PetscCheck((intensity >= 0) && (intensity <= 2), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Intensity %" PetscInt_FMT " not in [0,2]", intensity);
   petsc_checkpointer_intensity = intensity;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------------*/

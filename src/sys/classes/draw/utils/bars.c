@@ -57,7 +57,7 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
   h->axis->xticks = NULL;
 
   *bar = h;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -93,7 +93,7 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
   PetscCall(PetscArraycpy(bar->values, data, bins));
   bar->numBins = bins;
   if (labels) PetscCall(PetscStrArrayallocpy(labels, &bar->labels));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -111,16 +111,16 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
 PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar)
 {
   PetscFunctionBegin;
-  if (!*bar) PetscFunctionReturn(0);
+  if (!*bar) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*bar, PETSC_DRAWBAR_CLASSID, 1);
-  if (--((PetscObject)(*bar))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*bar))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFree((*bar)->values));
   PetscCall(PetscStrArrayDestroy(&(*bar)->labels));
   PetscCall(PetscDrawAxisDestroy(&(*bar)->axis));
   PetscCall(PetscDrawDestroy(&(*bar)->win));
   PetscCall(PetscHeaderDestroy(bar));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -147,10 +147,10 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   PetscCall(PetscDrawIsNull(bar->win, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)bar), &rank));
 
-  if (bar->numBins < 1) PetscFunctionReturn(0);
+  if (bar->numBins < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   color = bar->color;
   if (color == PETSC_DRAW_ROTATE) bcolor = PETSC_DRAW_BLACK + 1;
@@ -220,7 +220,7 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
 
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawPause(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -240,7 +240,7 @@ PetscErrorCode PetscDrawBarSave(PetscDrawBar bar)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   PetscCall(PetscDrawSave(bar->win));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -262,7 +262,7 @@ PetscErrorCode PetscDrawBarSetColor(PetscDrawBar bar, int color)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   bar->color = color;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -285,7 +285,7 @@ PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tole
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   bar->sort          = sort;
   bar->sorttolerance = tolerance;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -309,7 +309,7 @@ PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRea
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   bar->ymin = y_min;
   bar->ymax = y_max;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -336,7 +336,7 @@ PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis)
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   PetscValidPointer(axis, 2);
   *axis = bar->axis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -360,7 +360,7 @@ PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw)
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   PetscValidPointer(draw, 2);
   *draw = bar->win;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -391,5 +391,5 @@ PetscErrorCode PetscDrawBarSetFromOptions(PetscDrawBar bar)
     PetscCall(PetscOptionsGetReal(((PetscObject)bar)->options, ((PetscObject)bar)->prefix, "-bar_sort", &tol, NULL));
     PetscCall(PetscDrawBarSort(bar, PETSC_TRUE, tol));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

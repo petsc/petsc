@@ -14,11 +14,11 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
     PetscCall(MatSolve_LMVMBFGS(B, F, dX));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (lsb->phi == 1.0) {
     PetscCall(MatSolve_LMVMDFP(B, F, dX));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   VecCheckSameSize(F, 2, dX, 3);
@@ -65,7 +65,7 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
     PetscCall(VecAXPY(dX, lsb->phi * lsb->ytq[i] * PetscRealPart(wtf), lsb->work));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -82,11 +82,11 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
     PetscCall(MatMult_LMVMBFGS(B, X, Z));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (lsb->phi == 1.0) {
     PetscCall(MatMult_LMVMDFP(B, X, Z));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   VecCheckSameSize(X, 2, Z, 3);
@@ -164,7 +164,7 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
     PetscCall(VecDot(lsb->work, X, &wtx));
     PetscCall(VecAXPY(Z, lsb->psi[i] * lsb->stp[i] * PetscRealPart(wtx), lsb->work));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -183,7 +183,7 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *
     dctx          = (Mat_DiagBrdn *)dbase->ctx;
     dctx->forward = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -200,7 +200,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 
   lmvm            = (Mat_LMVM *)B->data;
   lmvm->ops->mult = MatMult_LMVMSymBadBrdn;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -208,15 +208,12 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 /*@
    MatCreateLMVMSymBadBroyden - Creates a limited-memory Symmetric "Bad" Broyden-type matrix used
    for approximating Jacobians. L-SymBadBrdn is a convex combination of L-DFP and
-   L-BFGS such that `^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
+   L-BFGS such that SymBadBrdn^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
    phi is restricted to the range [0, 1], where the L-SymBadBrdn matrix is guaranteed
    to be symmetric positive-definite. Note that this combination is on the inverses and not
    on the forwards. For forward convex combinations, use the L-SymBrdn matrix.
 
-   The provided local and global sizes must match the solution and function vectors
-   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-SymBrdn matrix will have
-   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
-   parallel. To use the L-SymBrdn matrix with other vector types, the matrix must be
+   To use the L-SymBrdn matrix with other vector types, the matrix must be
    created using MatCreate() and MatSetType(), followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
@@ -256,5 +253,5 @@ PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N,
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMSYMBADBROYDEN));
   PetscCall(MatSetUp(*B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

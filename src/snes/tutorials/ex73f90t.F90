@@ -242,7 +242,7 @@
       PetscCallA(MatAssemblyEnd(Cmat,MAT_FINAL_ASSEMBLY,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Set D (indentity)
+!  Set D (identity)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       do 30 j=lamlow,lamhigh-1
          row(1) = j

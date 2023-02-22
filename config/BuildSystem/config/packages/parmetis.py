@@ -5,14 +5,14 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.version          = '4.0.3'
     self.versionname      = 'PARMETIS_MAJOR_VERSION.PARMETIS_MINOR_VERSION.PARMETIS_SUBMINOR_VERSION'
-    self.gitcommit         = 'v'+self.version+'-p8'
+    self.gitcommit         = 'v'+self.version+'-p9'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-parmetis.git','https://bitbucket.org/petsc/pkg-parmetis/get/'+self.gitcommit+'.tar.gz']
     self.functions         = ['ParMETIS_V3_PartKway']
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
     self.hastests          = 1
     self.downloaddirnames  = ['petsc-pkg-parmetis']
-
+    self.downloadonWindows = 1
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
@@ -29,11 +29,13 @@ class Configure(config.package.CMakePackage):
     args.append('-DMETIS_PATH='+self.metis.directory)
     if self.mpi.include:
       args.append('-DMPI_INCLUDE_PATH="'+self.mpi.include[0]+'"')
-    if self.checkSharedLibrariesEnabled():
+    if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.compilerFlags.debugging:
       args.append('-DDEBUG=1')
+    if config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log):
+      args.append('-DMSVC=1')
     if self.getDefaultIndexSize() == 64:
       args.append('-DMETIS_USE_LONGINDEX=1')
     return args

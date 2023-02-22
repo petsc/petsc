@@ -53,6 +53,8 @@ int main(int argc, char **argv)
     value = i;
     PetscCall(VecSetValues(v, 1, &i, &value, INSERT_VALUES));
   }
+  PetscCall(VecAssemblyBegin(v));
+  PetscCall(VecAssemblyEnd(v));
 
   /*
      Get the components from the large multi-component vector to the small multi-component vector,

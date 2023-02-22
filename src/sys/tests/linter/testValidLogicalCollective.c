@@ -1,6 +1,6 @@
-#include <petscsys.h>
+#include <petsc/private/viewerimpl.h>
 
-void testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt64 c, PetscBool d, PetscScalar e, PetscReal f)
+PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
 {
   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
 
@@ -19,5 +19,5 @@ void testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt64 c, PetscBo
   PetscValidLogicalCollectiveBool(v, d, 4);
   PetscValidLogicalCollectiveScalar(v, e, 5);
   PetscValidLogicalCollectiveReal(v, f, 6);
-  return;
+  return 0;
 }

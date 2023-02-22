@@ -107,7 +107,7 @@ PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 #else
   *mem = 0.0;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscBool      PetscMemoryCollectMaximumUsage;
@@ -147,7 +147,7 @@ PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
   PetscFunctionBegin;
   PetscCheck(PetscMemoryCollectMaximumUsage, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "To use this function you must first call PetscMemorySetGetMaximumUsage()");
   *mem = PetscMemoryMaximumUsage;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -170,5 +170,5 @@ PetscErrorCode PetscMemorySetGetMaximumUsage(void)
 {
   PetscFunctionBegin;
   PetscMemoryCollectMaximumUsage = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

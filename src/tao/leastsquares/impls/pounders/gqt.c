@@ -78,7 +78,7 @@ static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *s
     *svmin = ynorm * znorm;
     PetscCallBLAS("BLASscal", BLASscal_(&blasn, &znorm, z, &blas1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -429,5 +429,5 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
   *retinfo = info;
   *retits  = iter;
   CHKMEMQ;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

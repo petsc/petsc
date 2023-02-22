@@ -60,7 +60,7 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DENABLE_OPENMP:BOOL=OFF')
 
-    if self.mpi.found:
+    if self.mpi.found and not self.mpi.usingMPIUni:
       args.append('-DENABLE_MPI=ON')
 
     # Raja documents these flags though they may not exist

@@ -263,6 +263,7 @@ PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx)
   PetscInt  ms   = user->ms;
   PetscReal sval = 0.0, *xl_array, ub = PETSC_INFINITY;
 
+  PetscFunctionBeginUser;
   /* Set the variable bounds */
   PetscCall(VecSet(xu, ub));
   PetscCall(DMDAGetCorners(user->dm, &xs, NULL, NULL, &xm, NULL, NULL));
@@ -285,7 +286,7 @@ PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx)
     PetscCall(VecRestoreArray(xu, &xl_array));
   }
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* -------------------------------------------------------------------- */
 
@@ -312,6 +313,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
   Vec        localX, localF;
   PetscReal  zero = 0.0;
 
+  PetscFunctionBeginUser;
   PetscCall(DMGetLocalVector(user->dm, &localX));
   PetscCall(DMGetLocalVector(user->dm, &localF));
   PetscCall(DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX));
@@ -359,7 +361,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
   /*
   info=VecView(F,PETSC_VIEWER_STDOUT_WORLD);
   */
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -387,6 +389,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   PetscInt   gxs, gxm;
   PetscBool  assembled;
 
+  PetscFunctionBeginUser;
   /* Set various matrix options */
   PetscCall(MatSetOption(J, MAT_IGNORE_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssembled(J, &assembled));
@@ -420,7 +423,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogFlops(18.0 * (gxm) + 5));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

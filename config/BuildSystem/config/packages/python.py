@@ -12,7 +12,7 @@ class Configure(config.package.Package):
 
   def setupHelp(self,help):
     import nargs
-    help.addArgument('PETSc', '-with-python-exec=<executable>', nargs.Arg(None, None, 'Alternate Python executable to use for mpi4py/petsc4py'))
+    help.addArgument('PETSc', '-with-python-exec=<executable>', nargs.Arg(None, None, 'Python executable to use for mpi4py/petsc4py'))
     help.addArgument('PETSc', '-have-numpy=<bool>', nargs.ArgBool(None, None, 'Whether numpy python module is installed (default: autodetect)'))
     return
 

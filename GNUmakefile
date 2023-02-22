@@ -1,10 +1,10 @@
 #
-#   This file allows the high level PETSc make commands to be run if gnuumake is the default make without setting the PETSC_DIR.
-#   This will prevent errors for the subset of users who run make all without first setting PETSC_DIR which results in wasteful email to the PETSc Team
+#   This file allows the PETSc make commands in makefile to be run if gnumake is the default make without setting the PETSC_DIR.
+#   gnumake defaults to using GNUmakefile before makefile
 
 include petscdir.mk
 
-# Default target
+# Target to build (update) the PETSc libraries
 all :
 	+@$(MAKE) -f makefile --no-print-directory $@
 
