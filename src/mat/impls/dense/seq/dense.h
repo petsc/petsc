@@ -25,7 +25,6 @@ typedef struct {
   PetscBLASInt  rank;          /* numerical rank (of a QR factorized matrix) */
   PetscBool     user_alloc;    /* true if the user provided the dense data */
   PetscBool     unplaced_user_alloc;
-  Mat           ptapwork; /* workspace (SeqDense matrix) for PtAP */
 
   /* Support for MatDenseGetColumnVec and MatDenseGetSubMatrix */
   Mat                cmat;     /* matrix representation of a given subset of columns */
