@@ -93,7 +93,7 @@ PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
 + comm     - the communicator, must be `PETSC_COMM_SELF`
 . bs       - the block size
 . n        - the vector length
-- gpuarray - GPU memory where the vector elements are to be stored (or NULL)
+- gpuarray - GPU memory where the vector elements are to be stored (or `NULL`)
 
   Output Parameter:
 . v - the vector
@@ -127,7 +127,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 /*@C
   VecHIPGetArray - Provides access to the device buffer inside a vector
 
-  Asynchronous; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -142,7 +142,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
   consistent view of the vector data. This may involve copying data from the host to the device
   if the data on the device is out of date. It is also assumed that the returned buffer is
   immediately modified, marking the host data out of date. This is similar to intent(inout) in
-  fortran.
+  Fortran.
 
   If the user does require strong memory guarantees, they are encouraged to use
   `VecHIPGetArrayRead()` and/or `VecHIPGetArrayWrite()` instead.
@@ -166,7 +166,7 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 /*@C
   VecHIPRestoreArray - Restore a device buffer previously acquired with `VecHIPGetArray()`.
 
-  Asynchronous; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -192,7 +192,7 @@ PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 /*@C
   VecHIPGetArrayRead - Provides read access to the HIP buffer inside a vector.
 
-  Asynchronous; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -227,7 +227,7 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
   VecHIPRestoreArrayRead - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayRead()`.
 
-  No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -252,7 +252,7 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 /*@C
   VecHIPGetArrayWrite - Provides write access to the HIP buffer inside a vector.
 
-  No Fortran Support
+   Not Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -286,7 +286,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
   VecHIPRestoreArrayWrite - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayWrite()`.
 
-  No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -312,7 +312,7 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
   VecHIPPlaceArray - Allows one to replace the GPU array in a vector with a GPU array provided
   by the user.
 
-  Not Collective; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + vec - the vector
@@ -374,7 +374,7 @@ PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
 /*@C
   VecHIPResetArray - Resets a vector to use its default memory.
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 . vec - the vector
