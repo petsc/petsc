@@ -255,7 +255,7 @@ static PetscErrorCode MatShellGetContext_Shell(Mat mat, void *ctx)
     Level: advanced
 
    Fortran Note:
-    To use this from Fortran you must write a Fortran interface definition for this
+    You must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: `MATSHELL`, `MatCreateShell()`, `MatShellSetOperation()`, `MatShellSetContext()`
@@ -844,7 +844,7 @@ set:
 /*@C
     MatShellSetMatProductOperation - Allows user to set a matrix matrix operation for a `MATSHELL` shell matrix.
 
-   Logically Collective on A; No Fortran Support
+   Logically Collective; No Fortran Support
 
     Input Parameters:
 +   A - the `MATSHELL` shell matrix
@@ -881,7 +881,7 @@ set:
     Any additional data needed by the matrix product needs to be returned during the symbolic phase and destroyed with the destroy callback.
     PETSc will take care of calling the user-defined callbacks.
     It is allowed to specify the same callbacks for different Btype matrix types.
-    The couple (Btype,ptype) uniquely identifies the operation: the last specified callbacks takes precedence.
+    The couple (Btype,ptype) uniquely identifies the operation, the last specified callbacks takes precedence.
 
 .seealso: `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellSetContext()`, `MatSetOperation()`, `MatProductType`, `MatType`, `MatSetUp()`
 @*/
@@ -1667,11 +1667,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
    Level: advanced
 
   Usage:
-$    extern PetscErrorCode mult(Mat,Vec,Vec);
-$    MatCreateShell(comm,m,n,M,N,ctx,&mat);
-$    MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
-$    [ Use matrix for operations that have been set ]
-$    MatDestroy(mat);
+.vb
+    extern PetscErrorCode mult(Mat,Vec,Vec);
+    MatCreateShell(comm,m,n,M,N,ctx,&mat);
+    MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
+    [ Use matrix for operations that have been set ]
+    MatDestroy(mat);
+.ve
 
    Notes:
    The shell matrix type is intended to provide a simple class to use
@@ -1688,29 +1690,29 @@ $    MatDestroy(mat);
    the shell matrix may not actually be physically partitioned.
    For example,
 
-$
-$     Vec x, y
-$     extern PetscErrorCode mult(Mat,Vec,Vec);
-$     Mat A
-$
-$     VecCreateMPI(comm,PETSC_DECIDE,M,&y);
-$     VecCreateMPI(comm,PETSC_DECIDE,N,&x);
-$     VecGetLocalSize(y,&m);
-$     VecGetLocalSize(x,&n);
-$     MatCreateShell(comm,m,n,M,N,ctx,&A);
-$     MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
-$     MatMult(A,x,y);
-$     MatDestroy(&A);
-$     VecDestroy(&y);
-$     VecDestroy(&x);
-$
+.vb
+     Vec x, y
+     extern PetscErrorCode mult(Mat,Vec,Vec);
+     Mat A
+
+     VecCreateMPI(comm,PETSC_DECIDE,M,&y);
+     VecCreateMPI(comm,PETSC_DECIDE,N,&x);
+     VecGetLocalSize(y,&m);
+     VecGetLocalSize(x,&n);
+     MatCreateShell(comm,m,n,M,N,ctx,&A);
+     MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
+     MatMult(A,x,y);
+     MatDestroy(&A);
+     VecDestroy(&y);
+     VecDestroy(&x);
+.ve
 
    `MATSHELL` handles `MatShift()`, `MatDiagonalSet()`, `MatDiagonalScale()`, `MatAXPY()`, `MatScale()`, `MatZeroRows()` and `MatZeroRowsColumns()` internally, so these
    operations cannot be overwritten unless `MatShellSetManageScalingShifts()` is called.
 
     For rectangular matrices do all the scalings and shifts make sense?
 
-    Developers Notes:
+    Developer Notes:
     Regarding shifting and scaling. The general form is
 
           diag(left)(vscale*A + diag(dshift) + vshift I)diag(right)
@@ -1721,7 +1723,7 @@ $
 
           A is the user provided function.
 
-   `KSP`/`PC` uses changes in the `Mat`'s "state" to decide if preconditioners need to be rebuilt: `PCSetUp()` only calls the setup() for
+   `KSP`/`PC` uses changes in the `Mat`'s "state" to decide if preconditioners need to be rebuilt `PCSetUp()` only calls the setup() for
    for the `PC` implementation if the `Mat` state has increased from the previous call. Thus to get changes in a `MATSHELL` to trigger
    an update in the preconditioner you must call `MatAssemblyBegin()` and `MatAssemblyEnd()` or `PetscObjectStateIncrease`((`PetscObject`)mat);
    each time the `MATSHELL` matrix has changed.
@@ -1761,7 +1763,7 @@ PetscErrorCode MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M,
    Level: advanced
 
    Fortran Note:
-    To use this from Fortran you must write a Fortran interface definition for this
+    You must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`
@@ -1783,13 +1785,13 @@ PetscErrorCode MatShellSetContext(Mat mat, void *ctx)
 +   mat - the shell matrix
 -   f - the context destroy function
 
+   Level: advanced
+
     Note:
     If the `MatShell` is never duplicated, the behavior of this function is equivalent
     to `MatShellSetOperation`(`Mat`,`MATOP_DESTROY`,f). However, `MatShellSetContextDestroy()`
     ensures proper reference counting for the user provided context data in the case that
     the `MATSHELL` is duplicated.
-
-   Level: advanced
 
 .seealso: `MATSHELL`, `MatCreateShell()`, `MatShellSetContext()`
 @*/
@@ -1825,7 +1827,7 @@ PetscErrorCode MatShellSetVecType(Mat mat, VecType vtype)
     MatShellSetManageScalingShifts - Allows the user to control the scaling and shift operations of the `MATSHELL`. Must be called immediately
           after `MatCreateShell()`
 
-   Logically Collective on A
+   Logically Collective
 
     Input Parameter:
 .   mat - the `MATSHELL` shell matrix
@@ -2041,7 +2043,7 @@ PetscErrorCode MatShellSetOperation(Mat mat, MatOperation op, void (*g)(void))
 
     Level: advanced
 
-    Note:
+    Notes:
     See the file include/petscmat.h for a complete list of matrix
     operations, which all have the form MATOP_<OPERATION>, where
     <OPERATION> is the name (in all capital letters) of the

@@ -9,7 +9,7 @@
 . tol - The zero tolerance
 - weighted - Flag for using edge weights
 
-  Output Parameters:
+  Output Parameter:
 . L - The graph Laplacian matrix
 
   Level: intermediate

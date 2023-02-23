@@ -1286,7 +1286,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-   This can be represented as a collection of submatrices as:
+   This can be represented as a collection of submatrices as
 
 .vb
       A B C
@@ -1305,7 +1305,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
    submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
    corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
    Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as SeqSELL matrices. for eg: proc1 will store [E] as a SeqSELL
+   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
    matrix, ans [DF] as another SeqSELL matrix.
 
    When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
@@ -1313,11 +1313,11 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
    storage locations are allocated for every row of the OFF-DIAGONAL submat.
    One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
    rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_nz,o_nz are:
+   In this case, the values of d_nz,o_nz are
 .vb
-     proc0 : dnz = 2, o_nz = 2
-     proc1 : dnz = 3, o_nz = 2
-     proc2 : dnz = 1, o_nz = 4
+     proc0  dnz = 2, o_nz = 2
+     proc1  dnz = 3, o_nz = 2
+     proc2  dnz = 1, o_nz = 4
 .ve
    We are allocating m*(d_nz+o_nz) storage locations for every proc. This
    translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
@@ -1326,11 +1326,11 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 
    When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
    for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are:
+   In the above case the values for d_nnz,o_nnz are
 .vb
-     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
-     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
-     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
+     proc0 d_nnz = [2,2,2] and o_nnz = [2,2,2]
+     proc1 d_nnz = [3,3,2] and o_nnz = [2,1,1]
+     proc2 d_nnz = [1,1]   and o_nnz = [4,4]
 .ve
    Here the space allocated is according to nz (or maximum values in the nnz
    if nnz is provided) for DIAGONAL and OFF-DIAGONAL submatrices, i.e (2+2+3+2)*3+(1+4)*2=37
@@ -1379,7 +1379,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
    MATMPISELL - MATMPISELL = "mpisell" - A matrix type to be used for MPI sparse matrices,
    based on the sliced Ellpack format
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type sell - sets the matrix type to "seqsell" during a call to MatSetFromOptions()
 
    Level: beginner
@@ -1419,11 +1419,86 @@ M*/
    Output Parameter:
 .  A - the matrix
 
+   Options Database Key:
+-  -mat_sell_oneindex - Internally use indexing starting at 1
+        rather than 0.  When calling `MatSetValues()`,
+        the user still MUST index entries starting at 0!
+
+   Example:
+   Consider the following 8x8 matrix with 34 non-zero values, that is
+   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
+   as follows
+
+.vb
+            1  2  0  |  0  3  0  |  0  4
+    Proc0   0  5  6  |  7  0  0  |  8  0
+            9  0 10  | 11  0  0  | 12  0
+    -------------------------------------
+           13  0 14  | 15 16 17  |  0  0
+    Proc1   0 18  0  | 19 20 21  |  0  0
+            0  0  0  | 22 23  0  | 24  0
+    -------------------------------------
+    Proc2  25 26 27  |  0  0 28  | 29  0
+           30  0  0  | 31 32 33  |  0 34
+.ve
+
+   This can be represented as a collection of submatrices as:
+
+.vb
+      A B C
+      D E F
+      G H I
+.ve
+
+   Where the submatrices A,B,C are owned by proc0, D,E,F are
+   owned by proc1, G,H,I are owned by proc2.
+
+   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'M','N' parameters are 8,8, and have the same values on all procs.
+
+   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
+   matrix, ans [DF] as another `MATSEQSELL` matrix.
+
+   When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
+   allocated for every row of the local diagonal submatrix, and o_rlenmax
+   storage locations are allocated for every row of the OFF-DIAGONAL submat.
+   One way to choose d_rlenmax and o_rlenmax is to use the max nonzerors per local
+   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+   In this case, the values of d_rlenmax,o_rlenmax are:
+.vb
+     proc0 : d_rlenmax = 2, o_rlenmax = 2
+     proc1 : d_rlenmax = 3, o_rlenmax = 2
+     proc2 : d_rlenmax = 1, o_rlenmax = 4
+.ve
+   We are allocating m*(d_rlenmax+o_rlenmax) storage locations for every proc. This
+   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+   for proc3. i.e we are using 12+15+10=37 storage locations to store
+   34 values.
+
+   When d_rlen, o_rlen parameters are specified, the storage is specified
+   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   In the above case the values for d_nnz,o_nnz are:
+.vb
+     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
+     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
+     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
+.ve
+   Here the space allocated is still 37 though there are 34 nonzeros because
+   the allocation is always done according to rlenmax.
+
+   Level: intermediate
+
+   Notes:
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
 
-   Notes:
    If the *_rlen parameter is given then the *_rlenmax parameter is ignored
 
    m,n,M,N parameters specify the size of the matrix, and its partitioning across
@@ -1464,84 +1539,13 @@ M*/
 
    When calling this routine with a single process communicator, a matrix of
    type `MATSEQSELL` is returned.  If a matrix of type `MATMPISELL` is desired for this
-   type of communicator, use the construction mechanism:
-     `MatCreate`(...,&A); `MatSetType`(A,`MATMPISELL`); `MatSetSizes`(A, m,n,M,N); `MatMPISELLSetPreallocation`(A,...);
-
-   Options Database Keys:
--  -mat_sell_oneindex - Internally use indexing starting at 1
-        rather than 0.  Note that when calling MatSetValues(),
-        the user still MUST index entries starting at 0!
-
-   Example usage:
-
-   Consider the following 8x8 matrix with 34 non-zero values, that is
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
-   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows
-
+   type of communicator, use the construction mechanism
 .vb
-            1  2  0  |  0  3  0  |  0  4
-    Proc0   0  5  6  |  7  0  0  |  8  0
-            9  0 10  | 11  0  0  | 12  0
-    -------------------------------------
-           13  0 14  | 15 16 17  |  0  0
-    Proc1   0 18  0  | 19 20 21  |  0  0
-            0  0  0  | 22 23  0  | 24  0
-    -------------------------------------
-    Proc2  25 26 27  |  0  0 28  | 29  0
-           30  0  0  | 31 32 33  |  0 34
+   MatCreate(...,&A);
+   MatSetType(A,MATMPISELL);
+   MatSetSizes(A, m,n,M,N);
+   MatMPISELLSetPreallocation(A,...);
 .ve
-
-   This can be represented as a collection of submatrices as:
-
-.vb
-      A B C
-      D E F
-      G H I
-.ve
-
-   Where the submatrices A,B,C are owned by proc0, D,E,F are
-   owned by proc1, G,H,I are owned by proc2.
-
-   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'M','N' parameters are 8,8, and have the same values on all procs.
-
-   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
-   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
-   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
-   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as `MATSSESELL` matrices. for eg: proc1 will store [E] as a `MATSEQSELL`
-   matrix, ans [DF] as another `MATSEQSELL` matrix.
-
-   When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
-   allocated for every row of the local diagonal submatrix, and o_rlenmax
-   storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_rlenmax and o_rlenmax is to use the max nonzerors per local
-   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_rlenmax,o_rlenmax are:
-.vb
-     proc0 : d_rlenmax = 2, o_rlenmax = 2
-     proc1 : d_rlenmax = 3, o_rlenmax = 2
-     proc2 : d_rlenmax = 1, o_rlenmax = 4
-.ve
-   We are allocating m*(d_rlenmax+o_rlenmax) storage locations for every proc. This
-   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
-   for proc3. i.e we are using 12+15+10=37 storage locations to store
-   34 values.
-
-   When d_rlen, o_rlen parameters are specified, the storage is specified
-   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are:
-.vb
-     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
-     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
-     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
-.ve
-   Here the space allocated is still 37 though there are 34 nonzeros because
-   the allocation is always done according to rlenmax.
-
-   Level: intermediate
 
 .seealso: `Mat`, `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
           `MATMPISELL`, `MatCreateMPISELLWithArrays()`

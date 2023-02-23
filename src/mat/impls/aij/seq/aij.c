@@ -3748,34 +3748,37 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
 
    Logically Collect
 
-  Input Parameters:
+  Input Parameter:
 .  mat - the matrix (currently only `MATAIJ` matrices support this option)
 
   Level: advanced
 
-  Common Usage, with `SNESSolve()`:
-$    Create Jacobian matrix
-$    Set linear terms into matrix
-$    Apply boundary conditions to matrix, at this time matrix must have
-$      final nonzero structure (i.e. setting the nonlinear terms and applying
-$      boundary conditions again will not change the nonzero structure
-$    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
-$    ierr = MatStoreValues(mat);
-$    Call SNESSetJacobian() with matrix
-$    In your Jacobian routine
-$      ierr = MatRetrieveValues(mat);
-$      Set nonlinear terms in matrix
+  Usage:
+.vb
+    Using `SNES`
+    Create Jacobian matrix
+    Set linear terms into matrix
+    Apply boundary conditions to matrix, at this time matrix must have
+      final nonzero structure (i.e. setting the nonlinear terms and applying
+      boundary conditions again will not change the nonzero structure
+    MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
+    MatStoreValues(mat);
+    Call SNESSetJacobian() with matrix
+    In your Jacobian routine
+      MatRetrieveValues(mat);
+      Set nonlinear terms in matrix
 
-  Common Usage without SNESSolve(), i.e. when you handle nonlinear solve yourself:
-$    // build linear portion of Jacobian
-$    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
-$    ierr = MatStoreValues(mat);
-$    loop over nonlinear iterations
-$       ierr = MatRetrieveValues(mat);
-$       // call MatSetValues(mat,...) to set nonliner portion of Jacobian
-$       // call MatAssemblyBegin/End() on matrix
-$       Solve linear system with Jacobian
-$    endloop
+    Without `SNESSolve()`, i.e. when you handle nonlinear solve yourself:
+    // build linear portion of Jacobian
+    MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
+    MatStoreValues(mat);
+    loop over nonlinear iterations
+       MatRetrieveValues(mat);
+       // call MatSetValues(mat,...) to set nonliner portion of Jacobian
+       // call MatAssemblyBegin/End() on matrix
+       Solve linear system with Jacobian
+    endloop
+.ve
 
   Notes:
     Matrix must already be assembled before calling this routine
@@ -3785,7 +3788,7 @@ $    endloop
     When this is called multiple times it overwrites the previous set of stored values
     and does not allocated additional space.
 
-.seealso: `MatRetrieveValues()`
+.seealso: `Mat`, `MatRetrieveValues()`
 @*/
 PetscErrorCode MatStoreValues(Mat mat)
 {

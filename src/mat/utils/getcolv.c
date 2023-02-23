@@ -14,14 +14,14 @@
    Level: advanced
 
    Notes:
-   If a Mat type does not implement the operation, each processor for which this is called
+   If a `MatType` does not implement the operation, each processor for which this is called
    gets the values for its rows using `MatGetRow()`.
 
    The vector must have the same parallel row layout as the matrix.
 
    Contributed by: Denis Vanderstraeten
 
-.seealso: `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
+.seealso: `Mat`, `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
 @*/
 PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
 {
@@ -82,7 +82,7 @@ PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
     Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `NormType`, `MatNorm()`
+.seealso: `Mat`, `NormType`, `MatNorm()`
 @*/
 PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
 {

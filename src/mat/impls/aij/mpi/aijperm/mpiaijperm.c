@@ -38,6 +38,12 @@
    Output Parameter:
 .  A - the matrix
 
+   Options Database Keys:
++  -mat_no_inode  - Do not use inodes
+-  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
+
+   Level: intermediate
+
    Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
@@ -67,18 +73,16 @@
 
    When calling this routine with a single process communicator, a matrix of
    type `MATSEQAIJPERM` is returned.  If a matrix of type `MATMPIAIJPERM` is desired
-   for this type of communicator, use the construction mechanism:
-    `MatCreate`(...,&A); `MatSetType`(A,MPIAIJ); `MatMPIAIJSetPreallocation`(A,...);
+   for this type of communicator, use the construction mechanism
+.vb
+   MatCreate(...,&A);
+   MatSetType(A,MPIAIJ);
+   MatMPIAIJSetPreallocation(A,...);
+.ve
 
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
-
-   Options Database Keys:
-+  -mat_no_inode  - Do not use inodes
--  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
-
-   Level: intermediate
 
 .seealso: [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJPERM`, `MatCreate()`, `MatCreateSeqAIJPERM()`, `MatSetValues()`
 @*/
@@ -141,7 +145,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat A)
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type aijperm - sets the matrix type to `MATAIJPERM` during a call to `MatSetFromOptions()`
 
   Level: beginner

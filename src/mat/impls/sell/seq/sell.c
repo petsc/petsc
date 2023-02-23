@@ -71,7 +71,7 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
  You can also run with the option `-info` and look for messages with the string
  malloc in them to see if additional memory allocation was needed.
 
- Developers Note:
+ Developer Note:
  Use `rlenmax` of `MAT_SKIP_ALLOCATION` to not allocate any space for the matrix
  entries or columns indices.
 

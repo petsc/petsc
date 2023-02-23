@@ -60,7 +60,7 @@ const char *const MatFactorTypes[] = {"NONE", "LU", "CHOLESKY", "ILU", "ICC", "I
    Output Parameter:
 .  x  - the matrix
 
-   Example of Usage:
+   Example:
 .vb
      PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
      MatSetRandom(x,rctx);
@@ -114,7 +114,7 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
 
    Output Parameters:
 +  pivot - the pivot value computed
--  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
+-  row - the row that the zero pivot occurred. This row value must be interpreted carefully due to row reorderings and which processes
          the share the matrix
 
    Level: advanced
@@ -417,7 +417,7 @@ PetscErrorCode MatRealPart(Mat mat)
 .  mat - the matrix
 
    Output Parameters:
-+   nghosts - number of ghosts (note for `MATBAIJ` and `MATSBAIJ` matrices there is one ghost for each block)
++   nghosts - number of ghosts (for `MATBAIJ` and `MATSBAIJ` matrices there is one ghost for each block)
 -   ghosts - the global indices of the ghost points
 
    Level: advanced
@@ -859,7 +859,7 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A, const char prefix[])
    Level: advanced
 
    Fortran Note:
-    On the fortran side, the user should pass in a string `prefix` of
+   The user should pass in a string `prefix` of
    sufficient length to hold the prefix.
 
 .seealso: `Mat`, `MatAppendOptionsPrefix()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`, `MatSetOptionsPrefixFactor()`
@@ -1227,7 +1227,7 @@ $ -viewer_type {binary,hdf5}
    See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
    and src/mat/tutorials/ex10.c with the second approach.
 
-   Notes about the PETSc binary format:
+   Notes:
    In case of `PETSCVIEWERBINARY`, a native PETSc binary format is used. Each of the blocks
    is read onto rank 0 and then shipped to its destination rank, one after another.
    Multiple objects, both matrices and vectors, can be stored within the same file.
@@ -1252,7 +1252,7 @@ Linux, Microsoft Windows and the Intel Paragon; thus if you write your own binar
 read/write routines you have to swap the bytes; see `PetscBinaryRead()`
 and `PetscBinaryWrite()` to see how this may be done.
 
-   Notes about the HDF5 (MATLAB MAT-File Version 7.3) format:
+   Notes:
    In case of `PETSCVIEWERHDF5`, a parallel HDF5 reader is used.
    Each processor's chunk is loaded independently by its owning rank.
    Multiple objects, both matrices and vectors, can be stored within the same file.
@@ -1263,7 +1263,8 @@ and `PetscBinaryWrite()` to see how this may be done.
    within the HDF5 file. This means that a MAT file saved with -v7.3 flag, e.g.
 $    save example.mat A b -v7.3
    can be directly read by this routine (see Reference 1 for details).
-   Note that depending on your MATLAB version, this format might be a default,
+
+   Depending on your MATLAB version, this format might be a default,
    otherwise you can set it as default in Preferences.
 
    Unless -nocompression flag is used to save the file in MATLAB,
@@ -1271,8 +1272,7 @@ $    save example.mat A b -v7.3
 
    See also examples src/mat/tutorials/ex10.c and src/ksp/ksp/tutorials/ex27.c
 
-   Current HDF5 (MAT-File) limitations:
-   This reader currently supports only real `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQDENSE` and `MATMPIDENSE` matrices.
+   This reader currently supports only real `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQDENSE` and `MATMPIDENSE` matrices for `PETSCVIEWERHDF5`
 
    Corresponding `MatView()` is not yet implemented.
 
@@ -1681,7 +1681,7 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
    for users of block sparse formats (`MATSEQBAIJ` and `MATMPIBAIJ`).
 
    Fortran Note:
-   In Fortran idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m),idxn(4,n)
    and the values inserted using
 .vb
@@ -1791,7 +1791,7 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
    (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
    Fortran Note:
-   In Fortran idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m),idxn(4,n)
    and the values inserted using
 .vb
@@ -1921,7 +1921,7 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
    The values in idxm would be 1 2; that is the first index for each block divided by
    the block size.
 
-   Note that you must call `MatSetBlockSize()` when constructing this matrix (before
+   You must call `MatSetBlockSize()` when constructing this matrix (before
    preallocating it).
 
    By default the values, `v`, are row-oriented, so the layout of
@@ -2938,7 +2938,7 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
    when using the runtime options
 $       -info -mat_view ::ascii_info
 
-   Example for C/C++ Users:
+   Example:
    See the file ${PETSC_DIR}/include/petscmat.h for a complete list of
    data within the MatInfo context.  For example,
 .vb
@@ -2951,7 +2951,6 @@ $       -info -mat_view ::ascii_info
       nz_a = info.nz_allocated;
 .ve
 
-   Example for Fortran Users:
    Fortran users should declare info as a double precision
    array of dimension `MAT_INFO_SIZE`, and then extract the parameters
    of interest.  See the file ${PETSC_DIR}/include/petsc/finclude/petscmat.h
@@ -2970,8 +2969,8 @@ $       -info -mat_view ::ascii_info
     Level: intermediate
 
     Developer Note:
-    Fortran interface is not autogenerated as the
-    interface definition cannot be generated correctly [due to MatInfo]
+    The Fortran interface is not autogenerated as the
+    interface definition cannot be generated correctly [due to `MatInfo` argument]
 
 .seealso: `Mat`, `MatInfo`, `MatStashGetInfo()`
 @*/
@@ -4135,7 +4134,6 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
 
    Vectors `x` and `b` CANNOT be the same
 
-   Notes for Advanced Users:
    The flags are implemented as bitwise inclusive or operations.
    For example, use (`SOR_ZERO_INITIAL_GUESS` | `SOR_SYMMETRIC_SWEEP`)
    to specify a zero initial guess for SSOR.
@@ -5791,7 +5789,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
    Insert a logically dense subblock, which can be
 .    `MAT_ROW_ORIENTED` - row-oriented (default)
 
-   Note these options reflect the data you pass in with `MatSetValues()`; it has
+   These options reflect the data you pass in with `MatSetValues()`; it has
    nothing to do with how the data is stored internally in the matrix
    data structure.
 
@@ -6293,7 +6291,7 @@ PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
    a single value per point) you can skip filling those indices.
 
    Fortran Note:
-   idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m)
    and the values inserted using
 .vb
@@ -6374,7 +6372,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
    a single value per point) you can skip filling those indices.
 
    Fortran Note:
-   In Fortran idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m)
    and the values inserted using
 .vb
@@ -7008,7 +7006,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorI
 
    Fortran Note:
    The Fortran interface is slightly different from that given below; it
-   requires one to pass in  as submat a `Mat` (integer) array of size at least n+1.
+   requires one to pass in as `submat` a `Mat` (integer) array of size at least n+1.
 
 .seealso: `Mat`, `MatDestroySubMatrices()`, `MatCreateSubMatrix()`, `MatGetRow()`, `MatGetDiagonal()`, `MatReuse`
 @*/
@@ -7112,7 +7110,7 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
 
    Input Parameters:
 +  n - the number of local matrices
--  mat - the matrices (note that this is a pointer to the array of matrices)
+-  mat - the matrices (this is a pointer to the array of matrices)
 
    Level: advanced
 
@@ -7120,7 +7118,7 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
     Frees not only the matrices, but also the array that contains the matrices
 
     Fortran Note:
-    Will not free the array.
+    This does not free the array.
 
 .seealso: `Mat`, `MatCreateSubMatrices()` `MatDestroySubMatrices()`
 @*/
@@ -7147,8 +7145,8 @@ PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[])
 
    Input Parameters:
 +  n - the number of local matrices
--  mat - the matrices (note that this is a pointer to the array of matrices, just to match the calling
-                       sequence of MatCreateSubMatrices())
+-  mat - the matrices (this is a pointer to the array of matrices, just to match the calling
+                       sequence of `MatCreateSubMatrices()`)
 
    Level: advanced
 
@@ -7156,7 +7154,7 @@ PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[])
     Frees not only the matrices, but also the array that contains the matrices
 
     Fortran Note:
-    Will not free the array.
+    This does not free the array.
 
 .seealso: `Mat`, `MatCreateSubMatrices()`, `MatDestroyMatrices()`
 @*/
@@ -7216,7 +7214,7 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat, Mat *matstruct)
    Collective
 
    Input Parameters:
-.  mat - the matrix (note that this is a pointer to the array of matrices, just to match the calling
+.  mat - the matrix (this is a pointer to the array of matrices, just to match the calling
                        sequence of `MatGetSequentialNonzeroStructure()`)
 
    Level: advanced
@@ -7915,7 +7913,7 @@ M*/
     Use `MatRestoreRowIJ()` when you are finished accessing the ia[] and ja[] values.
 
     Fortran Notes:
-    In Fortran use
+    Use
 .vb
     PetscInt, pointer :: ia(:),ja(:)
     call MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
@@ -8134,7 +8132,7 @@ PetscErrorCode MatColoringPatch(Mat mat, PetscInt ncolors, PetscInt n, ISColorin
    systems with a matrix-free Newton-Krylov method and a matrix-based, in-place
    ILU(0) preconditioner.
 
-   Note that one can specify in-place ILU(0) factorization by calling
+   One can specify in-place ILU(0) factorization by calling
 .vb
      PCType(pc,PCILU);
      PCFactorSeUseInPlace(pc);

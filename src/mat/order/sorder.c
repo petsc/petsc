@@ -145,11 +145,11 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
    that define a reordering. This is usually not used directly, rather use the
    options `PCFactorSetMatOrderingType()`
 
-   The user can define additional orderings; see MatOrderingRegister().
+   The user can define additional orderings; see `MatOrderingRegister()`.
 
    These are generally only implemented for sequential sparse matrices.
 
-   Some external packages that PETSc can use for direct factorization such as SuperLU do not accept orderings provided by
+   Some external packages that PETSc can use for direct factorization such as SuperLU_DIST do not accept orderings provided by
    this call.
 
    If `MATORDERINGEXTERNAL` is used then PETSc does not compute an ordering and utilizes one built into the factorization package
