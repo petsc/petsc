@@ -447,8 +447,7 @@ deleteshared:
 #  If this produces an error such as Could not open output file /Users/barrysmith/Src/petsc/manualpages/MissingSUBMANSEC/*
 #  this indicates the makefile is missing a MANSEC definition or the include file is missing a SUBMANSEC definition
 manualpages:
-	-@base=`basename ${LOCDIR}`; \
-        doctext_common_def="${PETSC_DIR}/doc/classic/doctext/doctextcommon.txt"; \
+	-@doctext_common_def="${PETSC_DIR}/doc/classic/doctext/doctextcommon.txt"; \
         if [ "${MANSEC}" = "" ] ; then \
           for f in ${SOURCED}; do \
             LMANSEC=`grep SUBMANSEC $${f} | sed s'?[ ]*/\*[ ]*SUBMANSEC[ ]*=[ ]*\([a-zA-Z]*\)[ ]*\*/?\1?'g`; \
@@ -483,7 +482,7 @@ manualpages:
 #
 # Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
 manexamples:
-	-@base=`basename ${LOCDIR}`; \
+	-@base=$$(basename $$(pwd)); \
         if [ "$${base}" = "tutorials" ] ; then \
           echo "Generating manual example links" ; \
           for i in ${EXAMPLESALL} foo ; do \
