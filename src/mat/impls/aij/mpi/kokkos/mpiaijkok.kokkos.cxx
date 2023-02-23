@@ -1576,7 +1576,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A)
    Notes:
    If nnz is given then nz is ignored
 
-   The AIJ format, also called compressed row storage), is fully compatible with standard Fortran 77
+   The AIJ format, also called compressed row storage), is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 

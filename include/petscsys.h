@@ -127,10 +127,10 @@ PETSC_EXTERN MPI_Datatype MPIU_BOOL PETSC_ATTRIBUTE_MPI_TYPE_TAG(PetscBool);
 /*MC
    MPIU_INT - Portable MPI datatype corresponding to `PetscInt` independent of the precision of `PetscInt`
 
+   Level: beginner
+
    Notes:
    In MPI calls that require an MPI datatype that matches a `PetscInt` or array of `PetscInt` values, pass this value.
-
-   Level: beginner
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
 M*/
@@ -199,18 +199,17 @@ PETSC_EXTERN PetscBool PETSC_RUNNING_ON_VALGRIND;
 #include <petscmath.h>
 
 /*MC
-    PETSC_IGNORE - same as NULL, means PETSc will ignore this argument
+    PETSC_IGNORE - same as `NULL`, means PETSc will ignore this argument
 
    Level: beginner
 
    Note:
-   Accepted by many PETSc functions to not set a parameter and instead use some default
+   Accepted by many PETSc functions to not set a parameter and instead use a default value
 
    Fortran Note:
-   This macro does not exist in Fortran; you must use `PETSC_NULL_INTEGER`, `PETSC_NULL_DOUBLE_PRECISION` etc
+   Use `PETSC_NULL_INTEGER`, `PETSC_NULL_DOUBLE_PRECISION` etc
 
 .seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_DETERMINE`
-
 M*/
 #define PETSC_IGNORE PETSC_NULLPTR
 #define PETSC_NULL   PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_NULL is deprecated, use PETSC_NULLPTR instead (since version 3.19)\"") PETSC_NULLPTR
@@ -222,7 +221,6 @@ M*/
    Level: beginner
 
 .seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`
-
 M*/
 
 /*MC
@@ -236,7 +234,6 @@ M*/
      some reason this is not allowed by the standard even though `PETSC_DECIDE` is a constant value.
 
 .seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_IGNORE`, `VecSetSizes()`
-
 M*/
 
 /*MC
@@ -249,7 +246,6 @@ M*/
    You need to use `PETSC_DEFAULT_INTEGER` or `PETSC_DEFAULT_REAL`.
 
 .seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`
-
 M*/
 enum {
   PETSC_DECIDE    = -1,
@@ -273,7 +269,6 @@ enum {
           is called because it may not have a valid value yet.
 
 .seealso: `PETSC_COMM_SELF`
-
 M*/
 PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
 
@@ -286,7 +281,6 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
    Do not USE/access or set this variable before PetscInitialize() has been called.
 
 .seealso: `PETSC_COMM_WORLD`
-
 M*/
 #define PETSC_COMM_SELF MPI_COMM_SELF
 
@@ -300,7 +294,6 @@ M*/
    By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED`.
 
 .seealso: `PetscInitialize()`
-
 M*/
 PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
 
@@ -355,7 +348,6 @@ PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
    It is safe to allocate size 0 and pass the resulting pointer (which may or may not be NULL) to `PetscFree()`.
 
 .seealso: `PetscFree()`, `PetscNew()`
-
 M*/
 #define PetscMalloc(a, b) ((*PetscTrMalloc)((a), PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, (void **)(b)))
 
@@ -381,7 +373,6 @@ M*/
    Memory is always allocated at least double aligned
 
 .seealso: `PetscMalloc()`, `PetscFree()`, `PetscNew()`
-
 M*/
 #define PetscRealloc(a, b) ((*PetscTrRealloc)((a), __LINE__, PETSC_FUNCTION_NAME, __FILE__, (void **)(b)))
 
@@ -400,7 +391,6 @@ M*/
    Level: developer
 
 .seealso: `PetscMallocAlign()`
-
 M*/
 #define PetscAddrAlign(a) ((void *)((((PETSC_UINTPTR_T)(a)) + (PETSC_MEMALIGN - 1)) & ~(PETSC_MEMALIGN - 1)))
 
@@ -427,7 +417,6 @@ M*/
    It is safe to allocate size 0 and pass the resulting pointer (which may or may not be NULL) to PetscFree().
 
 .seealso: `PetscFree()`, `PetscNew()`
-
 M*/
 #define PetscCalloc(m, result) PetscMallocA(1, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)m), (result))
 
@@ -460,7 +449,6 @@ $  PetscMalloc1(10*sizeof(PetscInt),&id);
    Level: beginner
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc2()`
-
 M*/
 #define PetscMalloc1(m1, r1) PetscMallocA(1, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1))
 
@@ -485,7 +473,6 @@ M*/
    Level: beginner
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc2()`
-
 M*/
 #define PetscCalloc1(m1, r1) PetscMallocA(1, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1))
 
@@ -509,7 +496,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc2()`
-
 M*/
 #define PetscMalloc2(m1, r1, m2, r2) PetscMallocA(2, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2))
 
@@ -533,7 +519,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc2()`
-
 M*/
 #define PetscCalloc2(m1, r1, m2, r2) PetscMallocA(2, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2))
 
@@ -559,7 +544,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc3()`, `PetscFree3()`
-
 M*/
 #define PetscMalloc3(m1, r1, m2, r2, m3, r3) \
   PetscMallocA(3, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3))
@@ -586,7 +570,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc2()`, `PetscMalloc3()`, `PetscFree3()`
-
 M*/
 #define PetscCalloc3(m1, r1, m2, r2, m3, r3) \
   PetscMallocA(3, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3))
@@ -615,7 +598,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc4()`, `PetscFree4()`
-
 M*/
 #define PetscMalloc4(m1, r1, m2, r2, m3, r3, m4, r4) \
   PetscMallocA(4, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4))
@@ -644,7 +626,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc4()`, `PetscFree4()`
-
 M*/
 #define PetscCalloc4(m1, r1, m2, r2, m3, r3, m4, r4) \
   PetscMallocA(4, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4))
@@ -675,7 +656,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc5()`, `PetscFree5()`
-
 M*/
 #define PetscMalloc5(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5) \
   PetscMallocA(5, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5))
@@ -706,7 +686,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc5()`, `PetscFree5()`
-
 M*/
 #define PetscCalloc5(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5) \
   PetscMallocA(5, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5))
@@ -739,7 +718,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc6()`, `PetscFree3()`, `PetscFree4()`, `PetscFree5()`, `PetscFree6()`
-
 M*/
 #define PetscMalloc6(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6) \
   PetscMallocA(6, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6))
@@ -772,7 +750,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscMalloc6()`, `PetscFree6()`
-
 M*/
 #define PetscCalloc6(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6) \
   PetscMallocA(6, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6))
@@ -807,7 +784,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc7()`, `PetscFree7()`
-
 M*/
 #define PetscMalloc7(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6, m7, r7) \
   PetscMallocA(7, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6), ((size_t)((size_t)m7) * sizeof(**(r7))), (r7))
@@ -842,7 +818,6 @@ M*/
    Level: developer
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscMalloc7()`, `PetscFree7()`
-
 M*/
 #define PetscCalloc7(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6, m7, r7) \
   PetscMallocA(7, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6), ((size_t)((size_t)m7) * sizeof(**(r7))), (r7))
@@ -862,7 +837,6 @@ M*/
    Level: beginner
 
 .seealso: `PetscFree()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc1()`
-
 M*/
 #define PetscNew(b) PetscCalloc1(1, (b))
 
@@ -888,7 +862,6 @@ M*/
    It is safe to call `PetscFree()` on a NULL pointer.
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc1()`
-
 M*/
 #define PetscFree(a) ((PetscErrorCode)((*PetscTrFree)((void *)(a), __LINE__, PETSC_FUNCTION_NAME, __FILE__) || ((a) = PETSC_NULLPTR, PETSC_SUCCESS)))
 
@@ -911,7 +884,6 @@ M*/
     Memory must have been obtained with `PetscMalloc2()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`
-
 M*/
 #define PetscFree2(m1, m2) PetscFreeA(2, __LINE__, PETSC_FUNCTION_NAME, __FILE__, &(m1), &(m2))
 
@@ -935,7 +907,6 @@ M*/
     Memory must have been obtained with `PetscMalloc3()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`
-
 M*/
 #define PetscFree3(m1, m2, m3) PetscFreeA(3, __LINE__, PETSC_FUNCTION_NAME, __FILE__, &(m1), &(m2), &(m3))
 
@@ -960,7 +931,6 @@ M*/
     Memory must have been obtained with `PetscMalloc4()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`
-
 M*/
 #define PetscFree4(m1, m2, m3, m4) PetscFreeA(4, __LINE__, PETSC_FUNCTION_NAME, __FILE__, &(m1), &(m2), &(m3), &(m4))
 
@@ -986,7 +956,6 @@ M*/
     Memory must have been obtained with `PetscMalloc5()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`
-
 M*/
 #define PetscFree5(m1, m2, m3, m4, m5) PetscFreeA(5, __LINE__, PETSC_FUNCTION_NAME, __FILE__, &(m1), &(m2), &(m3), &(m4), &(m5))
 
@@ -1013,7 +982,6 @@ M*/
     Memory must have been obtained with `PetscMalloc6()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`, `PetscMalloc6()`
-
 M*/
 #define PetscFree6(m1, m2, m3, m4, m5, m6) PetscFreeA(6, __LINE__, PETSC_FUNCTION_NAME, __FILE__, &(m1), &(m2), &(m3), &(m4), &(m5), &(m6))
 
@@ -1042,7 +1010,6 @@ M*/
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`, `PetscMalloc6()`,
           `PetscMalloc7()`
-
 M*/
 #define PetscFree7(m1, m2, m3, m4, m5, m6, m7) PetscFreeA(7, __LINE__, PETSC_FUNCTION_NAME, __FILE__, &(m1), &(m2), &(m3), &(m4), &(m5), &(m6), &(m7))
 
@@ -1629,7 +1596,7 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
     PetscCountCast - casts a `PetscCount` to a `PetscInt` (which may be 32 bits in size), generates an
          error if the `PetscInt` is not large enough to hold the number.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .     a - the `PetscCount` value
@@ -1639,12 +1606,10 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
 
    Level: advanced
 
-   Notes:
-     If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make PetscInt use 64 bit ints
+   Note:
+     If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make `PetscInt` use 64 bit ints
 
-   Not available from Fortran
-
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`, `PetscIntCast()`
+.seealso: `PetscCount`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`, `PetscIntCast()`
 @*/
 static inline PetscErrorCode PetscCountCast(PetscCount a, PetscInt *b)
 {
@@ -1659,7 +1624,7 @@ static inline PetscErrorCode PetscCountCast(PetscCount a, PetscInt *b)
     PetscBLASIntCast - casts a `PetscInt` (which may be 64 bits in size) to a `PetscBLASInt` (which may be 32 bits in size), generates an
          error if the `PetscBLASInt` is not large enough to hold the number.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .     a - the `PetscInt` value
@@ -1669,9 +1634,7 @@ static inline PetscErrorCode PetscCountCast(PetscCount a, PetscInt *b)
 
    Level: advanced
 
-   Notes:
-   Not available from Fortran
-
+   Note:
    Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscIntCast()`, `PetscCountCast()`
@@ -1691,7 +1654,7 @@ static inline PetscErrorCode PetscBLASIntCast(PetscInt a, PetscBLASInt *b)
 /*@C
     PetscCuBLASIntCast - like `PetscBLASIntCast()`, but for `PetscCuBLASInt`.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .     a - the `PetscInt` value
@@ -1701,7 +1664,7 @@ static inline PetscErrorCode PetscBLASIntCast(PetscInt a, PetscBLASInt *b)
 
    Level: advanced
 
-   Notes:
+   Note:
       Errors if the integer is negative since PETSc calls to cuBLAS and friends never need to cast negative integer inputs
 
 .seealso: `PetscCuBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
@@ -1719,7 +1682,7 @@ static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
 /*@C
     PetscHipBLASIntCast - like `PetscBLASIntCast()`, but for `PetscHipBLASInt`.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .     a - the `PetscInt` value
@@ -1729,7 +1692,7 @@ static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
 
    Level: advanced
 
-   Notes:
+   Note:
       Errors if the integer is negative since PETSc calls to hipBLAS and friends never need to cast negative integer inputs
 
 .seealso: `PetscHipBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
@@ -1745,10 +1708,10 @@ static inline PetscErrorCode PetscHipBLASIntCast(PetscInt a, PetscHipBLASInt *b)
 }
 
 /*@C
-    PetscMPIIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscMPIInt (which may be 32 bits in size), generates an
-         error if the PetscMPIInt is not large enough to hold the number.
+    PetscMPIIntCast - casts a `PetscInt` (which may be 64 bits in size) to a PetscMPIInt (which may be 32 bits in size), generates an
+         error if the `PetscMPIInt` is not large enough to hold the number.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .     a - the `PetscInt` value
@@ -1757,8 +1720,6 @@ static inline PetscErrorCode PetscHipBLASIntCast(PetscInt a, PetscHipBLASInt *b)
 .     b - the resulting `PetscMPIInt` value
 
    Level: advanced
-
-   Not available from Fortran
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscIntCast()`
 @*/
@@ -1783,23 +1744,25 @@ static inline PetscErrorCode PetscMPIIntCast(PetscInt a, PetscMPIInt *b)
 + a - The `PetscReal` value
 - b - The `PetscInt` value
 
+  Level: advanced
+
   Notes:
   Returns the result as a `PetscInt` value.
 
   Use `PetscInt64Mult()` to compute the product of two `PetscInt` as a `PetscInt64`.
+
   Use `PetscIntMultTruncate()` to compute the product of two positive `PetscInt` and truncate
   to fit a `PetscInt`.
+
   Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an
   error if the result will not fit in a `PetscInt`.
 
-  Developers Note:
+  Developers Notes:
   We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but
   requires many more checks.
 
   This is used where we compute approximate sizes for workspace and need to insure the
   workspace is index-able.
-
-  Level: advanced
 
 .seealso: `PetscReal`, `PetscInt`, `PetscInt64Mult()`, `PetscIntMultError()`, `PetscIntSumError()`
 @*/
@@ -1814,7 +1777,7 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 
    PetscIntMultTruncate - Computes the product of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +     a - the PetscInt value
@@ -1823,20 +1786,22 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
    Returns:
       the result as a `PetscInt` value
 
+   Level: advanced
+
+   Notes:
    Use `PetscInt64Mult()` to compute the product of two `PetscInt` as a `PetscInt64`
+
    Use `PetscRealIntMultTruncate()` to compute the product of a `PetscReal` and a `PetscInt` and truncate to fit a `PetscInt`
+
    Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Not available from Fortran
-
-   Developers Note:
+   Developers Notes:
    We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but requires many more checks.
 
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
-   Level: advanced
-
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`, `PetscIntSumError()`
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`, `PetscIntSumError()`,
+          `PetscIntSumTruncate()`
 @*/
 static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 {
@@ -1849,7 +1814,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 
    PetscIntSumTruncate - Computes the sum of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +     a - the `PetscInt` value
@@ -1858,15 +1823,17 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
    Returns:
      the result as a `PetscInt` value
 
+   Level: advanced
+
+   Notes:
    Use `PetscInt64Mult()` to compute the product of two `PetscInt` as a `PetscInt64`
+
    Use `PetscRealIntMultTruncate()` to compute the product of a `PetscReal` and a `PetscInt` and truncate to fit a `PetscInt`
+
    Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
+   Developers Notes:
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
-
-   Not available from Fortran
-
-   Level: advanced
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`
 @*/
@@ -1881,7 +1848,7 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 
    PetscIntMultError - Computes the product of two positive `PetscInt` and generates an error with overflow.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +     a - the `PetscInt` value
@@ -1890,15 +1857,15 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
    Output Parameter:
 .     result - the result as a `PetscInt` value, or NULL if you do not want the result, you just want to check if it overflows
 
-   Use `PetscInt64Mult()` to compute the product of two `PetscInt` and store in a `PetscInt64`
-   Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
+   Level: advanced
 
-   Not available from Fortran
+   Notes:
+   Use `PetscInt64Mult()` to compute the product of two `PetscInt` and store in a `PetscInt64`
+
+   Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
    Developers Note:
    We currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
-
-   Level: advanced
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscIntMult64()`, `PetscIntSumError()`
 @*/
@@ -1918,7 +1885,7 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
 
    PetscIntSumError - Computes the sum of two positive `PetscInt` and generates an error with overflow.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +     a - the `PetscInt` value
@@ -1927,12 +1894,12 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
    Output Parameter:
 .     c - the result as a `PetscInt` value,  or NULL if you do not want the result, you just want to check if it overflows
 
-   Use `PetscInt64Mult()` to compute the product of two 32 bit PetscInt and store in a `PetscInt64`
-   Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
-
-   Not available from Fortran
-
    Level: advanced
+
+   Notes:
+   Use `PetscInt64Mult()` to compute the product of two 32 bit PetscInt and store in a `PetscInt64`
+
+   Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`
 @*/
@@ -1994,7 +1961,6 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
     `PETSC_VERSION_()` is deprecated and will eventually be removed.
 
     Level: intermediate
-
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscGetArchType(char[], size_t);
@@ -2062,7 +2028,7 @@ PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[], size_t);
 
    Level: beginner
 
-   Notes:
+   Note:
    To use `PETSCSPRNG` or `PETSCRANDOM123` you must have ./configure PETSc
    with the option --download-sprng or --download-random123
 
@@ -2252,20 +2218,16 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 /*@C
       PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
 
-     Not Collective - only what is registered on rank 0 of `PETSC_COMM_WORLD` will be printed
+     Not Collective; No Fortran Support
 
      Input Parameters:
 +      cite - the bibtex item, formatted to displayed on multiple lines nicely
 -      set - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
 
-     Options Database: Key
+     Options Database Key:
 .     -citations [filename]   - print out the bibtex entries for the given computation
 
      Level: intermediate
-
-     Fortran Note:
-     Not available from Fortran
-
 @*/
 static inline PetscErrorCode PetscCitationsRegister(const char cit[], PetscBool *set)
 {
@@ -2327,14 +2289,14 @@ static inline unsigned int PetscStrHash(const char *str)
    Output Parameter:
 .  b - the reduced values
 
+   Level: developer
+
    Notes:
      In optimized mode this directly calls `MPI_Allreduce()`
 
      This is defined as a macro that can return error codes internally so it cannot be used in a subroutine that returns void.
 
      The error code this returns should be checked with `PetscCall()` even though it looks like an MPI function because it always returns PETSc error codes
-
-   Level: developer
 
 .seealso: `MPI_Allreduce()`
 M*/

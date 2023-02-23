@@ -235,13 +235,14 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
    Output Parameters:
 +  nfrom - number of ranks receiving messages from
-.  fromranks - ranks receiving messages from (length nfrom; caller should `PetscFree()`)
+.  fromranks - ranks receiving messages from (length `nfrom`, caller should `PetscFree()`)
 -  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
 
-   Level: developer
-
    Options Database Key:
-.  -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks, otherwise ibarrier.
+.  -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks,
+                   otherwise ibarrier.
+
+  Level: developer
 
    Notes:
    This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and

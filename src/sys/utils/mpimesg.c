@@ -9,10 +9,10 @@
 
   Input Parameters:
 + comm     - Communicator
-. iflags   - an array of integers of length sizeof(comm). A '1' in ilengths[i] represent a
-             message from current node to ith node. Optionally NULL
-- ilengths - Non zero ilengths[i] represent a message to i of length ilengths[i].
-             Optionally NULL.
+. iflags   - an array of integers of length sizeof(comm). A '1' in `ilengths`[i] represent a
+             message from current node to ith node. Optionally `NULL`
+- ilengths - Non zero ilengths[i] represent a message to i of length `ilengths`[i].
+             Optionally `NULL`.
 
   Output Parameters:
 . nrecvs    - number of messages received
@@ -23,9 +23,9 @@
   With this info, the correct message lengths can be determined using
   `PetscGatherMessageLengths()`
 
-  Either iflags or ilengths should be provided.  If iflags is not
-  provided (NULL) it can be computed from ilengths. If iflags is
-  provided, ilengths is not required.
+  Either `iflags` or `ilengths` should be provided.  If `iflags` is not
+  provided (`NULL`) it can be computed from `ilengths`. If `iflags` is
+  provided, `ilengths` is not required.
 
 .seealso: `PetscGatherMessageLengths()`, `PetscGatherMessageLengths2()`, `PetscCommBuildTwoSided()`
 @*/
@@ -68,10 +68,10 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
 . nsends    - number of messages that are to be sent.
 . nrecvs    - number of messages being received
 - ilengths  - an array of integers of length sizeof(comm)
-              a non zero ilengths[i] represent a message to i of length ilengths[i]
+              a non zero `ilengths`[i] represent a message to i of length `ilengths`[i]
 
   Output Parameters:
-+ onodes    - list of node-ids from which messages are expected
++ onodes    - list of ranks from which messages are expected
 - olengths  - corresponding message lengths
 
   Level: developer
@@ -82,7 +82,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
 
   The calling function deallocates the memory in onodes and olengths
 
-  To determine nrecvs, one can use `PetscGatherNumberOfMessages()`
+  To determine `nrecvs`, one can use `PetscGatherNumberOfMessages()`
 
 .seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths2()`, `PetscCommBuildTwoSided()`
 @*/
@@ -219,7 +219,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 - ilengths2 - second array of integers of length sizeof(comm)
 
   Output Parameters:
-+ onodes    - list of node-ids from which messages are expected
++ onodes    - list of ranks from which messages are expected
 . olengths1 - first corresponding message lengths
 - olengths2 - second  message lengths
 
@@ -229,9 +229,9 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
   With this info, the correct `MPI_Irecv()` can be posted with the correct
   from-id, with a buffer with the right amount of memory required.
 
-  The calling function deallocates the memory in onodes and olengths
+  The calling function should `PetscFree()` the memory in `onodes` and `olengths`
 
-  To determine nrecvs, one can use PetscGatherNumberOfMessages()
+  To determine `nrecvs`, one can use `PetscGatherNumberOfMessages()`
 
 .seealso: `PetscGatherMessageLengths()`, `PetscGatherNumberOfMessages()`, `PetscCommBuildTwoSided()`
 @*/
