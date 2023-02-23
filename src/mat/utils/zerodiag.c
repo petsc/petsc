@@ -28,6 +28,9 @@
 
     Level: intermediate
 
+    Options Database Key:
+.      -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
+
     Notes:
     This is not intended as a replacement for pivoting for matrices that
     have ``bad'' structure. It is only a stop-gap measure. Should be called
@@ -36,10 +39,7 @@
 
     Only works for `MATSEQAIJ` matrices
 
-    Options Database Keys (When using `KSP`):
-.      -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
-
-    Algorithm Notes:
+    Developer Notes:
     Column pivoting is used.
 
     1) Choice of column is made by looking at the
@@ -52,6 +52,7 @@
        swapped with; to make sure the previous nonzero diagonal remains
        nonzero
 
+.seealso: `Mat`
 @*/
 PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat, PetscReal abstol, IS ris, IS cis)
 {

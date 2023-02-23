@@ -123,7 +123,7 @@ PetscErrorCode MatRestoreRowIJ_MPIAIJ(Mat A, PetscInt oshift, PetscBool symmetri
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type aij - sets the matrix type to `MATAIJ` during a call to `MatSetFromOptions()`
 
   Developer Note:
@@ -144,7 +144,7 @@ M*/
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type aijcrl - sets the matrix type to `MATMPIAIJCRL` during a call to `MatSetFromOptions()`
 
   Level: beginner
@@ -2655,6 +2655,7 @@ PetscErrorCode MatMPIAIJGetNumberNonzeros(Mat A, PetscCount *nz)
 
  Level: advanced
 
+.seealso: `Mat`, `MATMPIAIJ`
 @*/
 PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A, PetscBool sc)
 {
@@ -2727,7 +2728,6 @@ PetscErrorCode MatEliminateZeros_MPIAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetRow_MPIAIJ,
                                        MatRestoreRow_MPIAIJ,
@@ -2880,8 +2880,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        NULL,
                                        /*150*/ NULL,
                                        MatEliminateZeros_MPIAIJ};
-
-/* ----------------------------------------------------------------------------------------*/
 
 PetscErrorCode MatStoreValues_MPIAIJ(Mat mat)
 {
@@ -3145,15 +3143,17 @@ PetscErrorCode ISGetSeqIS_Private(Mat mat, IS iscol, IS *isseq)
  (see MatCreateSubMatrix_MPIAIJ_nonscalable)
 
  Input Parameters:
-   mat - matrix
-   isrow - parallel row index set; its local indices are a subset of local columns of mat,
++   mat - matrix
+.   isrow - parallel row index set; its local indices are a subset of local columns of `mat`,
            i.e., mat->rstart <= isrow[i] < mat->rend
-   iscol - parallel column index set; its local indices are a subset of local columns of mat,
+-   iscol - parallel column index set; its local indices are a subset of local columns of `mat`,
            i.e., mat->cstart <= iscol[i] < mat->cend
- Output Parameter:
-   isrow_d,iscol_d - sequential row and column index sets for retrieving mat->A
-   iscol_o - sequential column index set for retrieving mat->B
-   garray - column map; garray[i] indicates global location of iscol_o[i] in iscol
+
+ Output Parameters:
++   isrow_d - sequential row index set for retrieving mat->A
+.   iscol_d - sequential  column index set for retrieving mat->A
+.   iscol_o - sequential column index set for retrieving mat->B
+-   garray - column map; garray[i] indicates global location of iscol_o[i] in `iscol`
  */
 PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol, IS *isrow_d, IS *iscol_d, IS *iscol_o, const PetscInt *garray[])
 {
@@ -3459,7 +3459,8 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
 
    Output Parameter:
 .   mat - the matrix, with input A as its local diagonal matrix
-   Level: advanced
+
+  Level: advanced
 
    Notes:
    See `MatCreateAIJ()` for the definition of "diagonal" and "off-diagonal" portion of the matrix.
@@ -3980,20 +3981,22 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt Ii[], c
     row-major ordering.. i.e for the following matrix, the input data expected is
     as shown
 
-$        1 0 0
-$        2 0 3     P0
-$       -------
-$        4 5 6     P1
-$
-$     Process0 [P0]: rows_owned=[0,1]
-$        i =  {0,1,3}  [size = nrow+1  = 2+1]
-$        j =  {0,0,2}  [size = 3]
-$        v =  {1,2,3}  [size = 3]
-$
-$     Process1 [P1]: rows_owned=[2]
-$        i =  {0,3}    [size = nrow+1  = 1+1]
-$        j =  {0,1,2}  [size = 3]
-$        v =  {4,5,6}  [size = 3]
+.vb
+        1 0 0
+        2 0 3     P0
+       -------
+        4 5 6     P1
+
+     Process0 [P0] rows_owned=[0,1]
+        i =  {0,1,3}  [size = nrow+1  = 2+1]
+        j =  {0,0,2}  [size = 3]
+        v =  {1,2,3}  [size = 3]
+
+     Process1 [P1] rows_owned=[2]
+        i =  {0,3}    [size = nrow+1  = 1+1]
+        j =  {0,1,2}  [size = 3]
+        v =  {4,5,6}  [size = 3]
+.ve
 
 .seealso: `MATMPIAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`,
           `MatCreateSeqAIJWithArrays()`, `MatCreateMPIAIJWithSplitArrays()`
@@ -4032,9 +4035,79 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 
+   Usage:
+   Consider the following 8x8 matrix with 34 non-zero values, that is
+   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
+   as follows
+
+.vb
+            1  2  0  |  0  3  0  |  0  4
+    Proc0   0  5  6  |  7  0  0  |  8  0
+            9  0 10  | 11  0  0  | 12  0
+    -------------------------------------
+           13  0 14  | 15 16 17  |  0  0
+    Proc1   0 18  0  | 19 20 21  |  0  0
+            0  0  0  | 22 23  0  | 24  0
+    -------------------------------------
+    Proc2  25 26 27  |  0  0 28  | 29  0
+           30  0  0  | 31 32 33  |  0 34
+.ve
+
+   This can be represented as a collection of submatrices as
+.vb
+      A B C
+      D E F
+      G H I
+.ve
+
+   Where the submatrices A,B,C are owned by proc0, D,E,F are
+   owned by proc1, G,H,I are owned by proc2.
+
+   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'M','N' parameters are 8,8, and have the same values on all procs.
+
+   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+   part as `MATSEQAIJ` matrices. For example, proc1 will store [E] as a `MATSEQAIJ`
+   matrix, ans [DF] as another `MATSEQAIJ` matrix.
+
+   When d_nz, o_nz parameters are specified, d_nz storage elements are
+   allocated for every row of the local diagonal submatrix, and o_nz
+   storage locations are allocated for every row of the OFF-DIAGONAL submat.
+   One way to choose d_nz and o_nz is to use the max nonzerors per local
+   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+   In this case, the values of d_nz,o_nz are
+.vb
+     proc0  dnz = 2, o_nz = 2
+     proc1  dnz = 3, o_nz = 2
+     proc2  dnz = 1, o_nz = 4
+.ve
+   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
+   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+   for proc3. i.e we are using 12+15+10=37 storage locations to store
+   34 values.
+
+   When d_nnz, o_nnz parameters are specified, the storage is specified
+   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   In the above case the values for d_nnz,o_nnz are
+.vb
+     proc0 d_nnz = [2,2,2] and o_nnz = [2,2,2]
+     proc1 d_nnz = [3,3,2] and o_nnz = [2,1,1]
+     proc2 d_nnz = [1,1]   and o_nnz = [4,4]
+.ve
+   Here the space allocated is sum of all the above values i.e 34, and
+   hence pre-allocation is perfect.
+
+   Level: intermediate
+
+   Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
-   The `MATAIJ` format, also called compressed row storage (CSR)), is fully compatible with standard Fortran 77
+   The `MATAIJ` format, also called compressed row storage (CSR), is compatible with standard Fortran
    storage.  The stored row and column indices begin with zero.
    See [Sparse Matrices](sec_matsparse) for details.
 
@@ -4054,81 +4127,10 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
 
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
-   You can call MatGetInfo() to get information on how effective the preallocation was;
+   You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
-   You can also run with the option -info and look for messages with the string
+   You can also run with the option `-info` and look for messages with the string
    malloc in them to see if additional memory allocation was needed.
-
-   Example usage:
-
-   Consider the following 8x8 matrix with 34 non-zero values, that is
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
-   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
-
-.vb
-            1  2  0  |  0  3  0  |  0  4
-    Proc0   0  5  6  |  7  0  0  |  8  0
-            9  0 10  | 11  0  0  | 12  0
-    -------------------------------------
-           13  0 14  | 15 16 17  |  0  0
-    Proc1   0 18  0  | 19 20 21  |  0  0
-            0  0  0  | 22 23  0  | 24  0
-    -------------------------------------
-    Proc2  25 26 27  |  0  0 28  | 29  0
-           30  0  0  | 31 32 33  |  0 34
-.ve
-
-   This can be represented as a collection of submatrices as:
-
-.vb
-      A B C
-      D E F
-      G H I
-.ve
-
-   Where the submatrices A,B,C are owned by proc0, D,E,F are
-   owned by proc1, G,H,I are owned by proc2.
-
-   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'M','N' parameters are 8,8, and have the same values on all procs.
-
-   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
-   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
-   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
-   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as `MATSEQAIJ` matrices. for eg: proc1 will store [E] as a SeqAIJ
-   matrix, ans [DF] as another `MATSEQAIJ` matrix.
-
-   When d_nz, o_nz parameters are specified, d_nz storage elements are
-   allocated for every row of the local diagonal submatrix, and o_nz
-   storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_nz and o_nz is to use the max nonzerors per local
-   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_nz,o_nz are:
-.vb
-     proc0 : dnz = 2, o_nz = 2
-     proc1 : dnz = 3, o_nz = 2
-     proc2 : dnz = 1, o_nz = 4
-.ve
-   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
-   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
-   for proc3. i.e we are using 12+15+10=37 storage locations to store
-   34 values.
-
-   When d_nnz, o_nnz parameters are specified, the storage is specified
-   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are:
-.vb
-     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
-     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
-     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
-.ve
-   Here the space allocated is sum of all the above values i.e 34, and
-   hence pre-allocation is perfect.
-
-   Level: intermediate
 
 .seealso: [Sparse Matrices](sec_matsparse), `MATMPIAIJ`, `MATAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateAIJ()`, `MatMPIAIJSetPreallocationCSR()`,
           `MATMPIAIJ`, `MatGetInfo()`, `PetscSplitOwnership()`
@@ -4183,12 +4185,12 @@ $        2 0 3     P0
 $       -------
 $        4 5 6     P1
 $
-$     Process0 [P0]: rows_owned=[0,1]
+$     Process0 [P0] rows_owned=[0,1]
 $        i =  {0,1,3}  [size = nrow+1  = 2+1]
 $        j =  {0,0,2}  [size = 3]
 $        v =  {1,2,3}  [size = 3]
 $
-$     Process1 [P1]: rows_owned=[2]
+$     Process1 [P1] rows_owned=[2]
 $        i =  {0,3}    [size = nrow+1  = 1+1]
 $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
@@ -4373,11 +4375,18 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
    Output Parameter:
 .  A - the matrix
 
+   Options Database Keys:
++  -mat_no_inode  - Do not use inodes
+.  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
+-  -matmult_vecscatter_view <viewer> - View the vecscatter (i.e., communication pattern) used in `MatMult()` of sparse parallel matrices.
+        See viewer types in manual of `MatView()`. Of them, ascii_matlab, draw or binary cause the vecscatter be viewed as a matrix.
+        Entry (i,j) is the size of message (in bytes) rank i sends to rank j in one `MatMult()` call.
+
+   Notes:
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
    m,n,M,N parameters specify the size of the matrix, and its partitioning across
@@ -4432,15 +4441,7 @@ $     MatMPIAIJSetPreallocation(A,...);
    We search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
-   Options Database Keys:
-+  -mat_no_inode  - Do not use inodes
-.  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
--  -matmult_vecscatter_view <viewer> - View the vecscatter (i.e., communication pattern) used in `MatMult()` of sparse parallel matrices.
-        See viewer types in manual of `MatView()`. Of them, ascii_matlab, draw or binary cause the vecscatter be viewed as a matrix.
-        Entry (i,j) is the size of message (in bytes) rank i sends to rank j in one `MatMult()` call.
-
-   Example usage:
-
+   Usage:
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Lets assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
@@ -4478,7 +4479,7 @@ $     MatMPIAIJSetPreallocation(A,...);
    submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
    corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
    Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as SeqAIJ matrices. for eg: proc1 will store [E] as a SeqAIJ
+   part as `MATSEQAIJ` matrices. For example, proc1 will store [E] as a `MATSEQAIJ`
    matrix, ans [DF] as another SeqAIJ matrix.
 
    When d_nz, o_nz parameters are specified, d_nz storage elements are
@@ -4488,9 +4489,9 @@ $     MatMPIAIJSetPreallocation(A,...);
    rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
    In this case, the values of d_nz,o_nz are
 .vb
-     proc0 : dnz = 2, o_nz = 2
-     proc1 : dnz = 3, o_nz = 2
-     proc2 : dnz = 1, o_nz = 4
+     proc0  dnz = 2, o_nz = 2
+     proc1  dnz = 3, o_nz = 2
+     proc2  dnz = 1, o_nz = 4
 .ve
    We are allocating m*(d_nz+o_nz) storage locations for every proc. This
    translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
@@ -4501,9 +4502,9 @@ $     MatMPIAIJSetPreallocation(A,...);
    for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
    In the above case the values for d_nnz,o_nnz are
 .vb
-     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
-     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
-     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
+     proc0 d_nnz = [2,2,2] and o_nnz = [2,2,2]
+     proc1 d_nnz = [3,3,2] and o_nnz = [2,1,1]
+     proc2 d_nnz = [1,1]   and o_nnz = [4,4]
 .ve
    Here the space allocated is sum of all the above values i.e 34, and
    hence pre-allocation is perfect.
@@ -4775,7 +4776,6 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat, Mat mpimat)
   len_s  = merge->len_s;
 
   /* send and recv matrix values */
-  /*-----------------------------*/
   PetscCall(PetscObjectGetNewTag((PetscObject)mpimat, &taga));
   PetscCall(PetscPostIrecvScalar(comm, taga, merge->nrecv, merge->id_r, merge->len_r, &abuf_r, &r_waits));
 
@@ -4795,7 +4795,6 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat, Mat mpimat)
   PetscCall(PetscFree(r_waits));
 
   /* insert mat values of mpimat */
-  /*----------------------------*/
   PetscCall(PetscMalloc1(N, &ba_i));
   PetscCall(PetscMalloc3(merge->nrecv, &buf_ri_k, merge->nrecv, &nextrow, merge->nrecv, &nextai));
 
@@ -4885,7 +4884,6 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   PetscCall(PetscMalloc1(size, &status));
 
   /* determine row ownership */
-  /*---------------------------------------------------------*/
   PetscCall(PetscLayoutCreate(comm, &merge->rowmap));
   PetscCall(PetscLayoutSetLocalSize(merge->rowmap, m));
   PetscCall(PetscLayoutSetSize(merge->rowmap, M));
@@ -4898,7 +4896,6 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
-  /*---------------------------------------------------------*/
   len_s = merge->len_s;
 
   len          = 0; /* length of buf_si[] */
@@ -4923,17 +4920,14 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   }
 
   /* determine the number and length of messages to receive for ij-structure */
-  /*-------------------------------------------------------------------------*/
   PetscCall(PetscGatherNumberOfMessages(comm, NULL, len_s, &merge->nrecv));
   PetscCall(PetscGatherMessageLengths2(comm, merge->nsend, merge->nrecv, len_s, len_si, &merge->id_r, &merge->len_r, &len_ri));
 
   /* post the Irecv of j-structure */
-  /*-------------------------------*/
   PetscCall(PetscCommGetNewTag(comm, &tagj));
   PetscCall(PetscPostIrecvInt(comm, tagj, merge->nrecv, merge->id_r, merge->len_r, &buf_rj, &rj_waits));
 
   /* post the Isend of j-structure */
-  /*--------------------------------*/
   PetscCall(PetscMalloc2(merge->nsend, &si_waits, merge->nsend, &sj_waits));
 
   for (proc = 0, k = 0; proc < size; proc++) {
@@ -4944,12 +4938,10 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   }
 
   /* receives and sends of j-structure are complete */
-  /*------------------------------------------------*/
   if (merge->nrecv) PetscCallMPI(MPI_Waitall(merge->nrecv, rj_waits, status));
   if (merge->nsend) PetscCallMPI(MPI_Waitall(merge->nsend, sj_waits, status));
 
   /* send and recv i-structure */
-  /*---------------------------*/
   PetscCall(PetscCommGetNewTag(comm, &tagi));
   PetscCall(PetscPostIrecvInt(comm, tagi, merge->nrecv, merge->id_r, len_ri, &buf_ri, &ri_waits));
 
@@ -4962,7 +4954,6 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
                [1:nrows]:           row index (global)
                [nrows+1:2*nrows+1]: i-structure index
     */
-    /*-------------------------------------------*/
     nrows       = len_si[proc] / 2 - 1;
     buf_si_i    = buf_si + nrows + 1;
     buf_si[0]   = nrows;
@@ -4996,7 +4987,6 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   PetscCall(PetscFree(status));
 
   /* compute a local seq matrix in each processor */
-  /*----------------------------------------------*/
   /* allocate bi array and free space for accumulating nonzero column info */
   PetscCall(PetscMalloc1(m + 1, &bi));
   bi[0] = 0;
@@ -5064,7 +5054,6 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   PetscCall(PetscLLDestroy(lnk, lnkbt));
 
   /* create symbolic parallel matrix B_mpi */
-  /*---------------------------------------*/
   PetscCall(MatGetBlockSizes(seqmat, &bs, &cbs));
   PetscCall(MatCreate(comm, &B_mpi));
   if (n == PETSC_DECIDE) {
@@ -5767,8 +5756,8 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
 - scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
   Output Parameters:
-+ rowb - On input index sets of rows of B to extract (or NULL), modified on output
-. colb - On input index sets of columns of B to extract (or NULL), modified on output
++ rowb - On input index sets of rows of B to extract (or `NULL`), modified on output
+. colb - On input index sets of columns of B to extract (or `NULL`), modified on output
 - B_seq - the sequential matrix generated
 
   Level: developer
@@ -5828,14 +5817,14 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A, Mat B, MatReuse scall, IS *rowb, IS *co
 }
 
 /*
-    MatGetBrowsOfAoCols_MPIAIJ - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
+    MatGetBrowsOfAoCols_MPIAIJ - Creates a `MATSEQAIJ` matrix by taking rows of B that equal to nonzero columns
     of the OFF-DIAGONAL portion of local A
 
     Collective
 
    Input Parameters:
-+    A,B - the matrices in mpiaij format
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
++    A,B - the matrices in `MATMPIAIJ` format
+-    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
 +    startsj_s - starting point in B's sending j-arrays, saved for MAT_REUSE (or NULL)
@@ -5895,7 +5884,6 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
   if (!startsj_s || !bufa_ptr) scall = MAT_INITIAL_MATRIX;
   if (scall == MAT_INITIAL_MATRIX) {
     /* i-array */
-    /*---------*/
     /*  post receives */
     if (nrecvs) PetscCall(PetscMalloc1(rbs * (rstarts[nrecvs] - rstarts[0]), &rvalues)); /* rstarts can be NULL when nrecvs=0 */
     for (i = 0; i < nrecvs; i++) {
@@ -5964,7 +5952,6 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
     PetscCall(PetscMalloc1(b_othi[aBn] + 1, &b_otha));
 
     /* j-array */
-    /*---------*/
     /*  post receives of j-array */
     for (i = 0; i < nrecvs; i++) {
       nrows = rstartsj[i + 1] - rstartsj[i]; /* length of the msg received */
@@ -5998,7 +5985,6 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not possess an object container");
 
   /* a-array */
-  /*---------*/
   /*  post receives of a-array */
   for (i = 0; i < nrecvs; i++) {
     nrows = rstartsj[i + 1] - rstartsj[i]; /* length of the msg received */
@@ -6125,7 +6111,6 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A, Mat B, PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------*/
 static PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ_AB(Mat C)
 {
   Mat_Product *product = C->product;
@@ -6149,7 +6134,8 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Merge two sets of sorted nonzeros and return a CSR for the merged (sequential) matrix
+/*
+   Merge two sets of sorted nonzeros and return a CSR for the merged (sequential) matrix
 
   Input Parameters:
 
@@ -6232,7 +6218,8 @@ static PetscErrorCode MatMergeEntries_Internal(Mat mat, const PetscInt j1[], con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Split nonzeros in a block of local rows into two subsets: those in the diagonal block and those in the off-diagonal block
+/*
+  Split nonzeros in a block of local rows into two subsets: those in the diagonal block and those in the off-diagonal block
 
   Input Parameters:
     mat: an MPI matrix that provides row and column layout information for splitting. Let's say its number of local rows is m.
@@ -6372,7 +6359,8 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Expand the jmap[] array to make a new one in view of nonzeros in the merged matrix
+/*
+  Expand the jmap[] array to make a new one in view of nonzeros in the merged matrix
 
   Input Parameters:
     nnz1: number of unique nonzeros in a set that was used to produce imap[], jmap[]
@@ -6436,10 +6424,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(MatGetLocalSize(mat, &m, &n));
   PetscCall(MatGetSize(mat, &M, &N));
 
-  /* ---------------------------------------------------------------------------*/
   /* Sort (i,j) by row along with a permutation array, so that the to-be-ignored */
   /* entries come first, then local rows, then remote rows.                     */
-  /* ---------------------------------------------------------------------------*/
   PetscCount n1 = coo_n, *perm1;
   PetscInt  *i1 = coo_i, *j1 = coo_j;
 
@@ -6467,9 +6453,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscSortedIntUpperBound(i1, k, n1, rend - 1 - PETSC_MAX_INT, &rem)); /* rem is upper bound of the last local row */
   for (; k < rem; k++) i1[k] += PETSC_MAX_INT;                                    /* Revert row indices of local rows*/
 
-  /* ---------------------------------------------------------------------------*/
   /*           Split local rows into diag/offdiag portions                      */
-  /* ---------------------------------------------------------------------------*/
   PetscCount *rowBegin1, *rowMid1, *rowEnd1;
   PetscCount *Ajmap1, *Aperm1, *Bjmap1, *Bperm1, *Cperm1;
   PetscCount  Annz1, Bnnz1, Atot1, Btot1;
@@ -6478,9 +6462,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscMalloc1(n1 - rem, &Cperm1));
   PetscCall(MatSplitEntries_Internal(mat, rem, i1, j1, perm1, rowBegin1, rowMid1, rowEnd1, &Atot1, &Aperm1, &Annz1, &Ajmap1, &Btot1, &Bperm1, &Bnnz1, &Bjmap1));
 
-  /* ---------------------------------------------------------------------------*/
   /*           Send remote rows to their owner                                  */
-  /* ---------------------------------------------------------------------------*/
   /* Find which rows should be sent to which remote ranks*/
   PetscInt        nsend = 0; /* Number of MPI ranks to send data to */
   PetscMPIInt    *sendto;    /* [nsend], storing remote ranks */
@@ -6577,15 +6559,11 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscFree(offsets));
   PetscCall(PetscFree2(sendto, nentries));
 
-  /* ---------------------------------------------------------------*/
   /* Sort received COOs by row along with the permutation array     */
-  /* ---------------------------------------------------------------*/
   for (k = 0; k < n2; k++) perm2[k] = k;
   PetscCall(PetscSortIntWithIntCountArrayPair(n2, i2, j2, perm2));
 
-  /* ---------------------------------------------------------------*/
   /* Split received COOs into diag/offdiag portions                 */
-  /* ---------------------------------------------------------------*/
   PetscCount *rowBegin2, *rowMid2, *rowEnd2;
   PetscCount *Ajmap2, *Aperm2, *Bjmap2, *Bperm2;
   PetscCount  Annz2, Bnnz2, Atot2, Btot2;
@@ -6593,9 +6571,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscCalloc3(m, &rowBegin2, m, &rowMid2, m, &rowEnd2));
   PetscCall(MatSplitEntries_Internal(mat, n2, i2, j2, perm2, rowBegin2, rowMid2, rowEnd2, &Atot2, &Aperm2, &Annz2, &Ajmap2, &Btot2, &Bperm2, &Bnnz2, &Bjmap2));
 
-  /* --------------------------------------------------------------------------*/
   /* Merge local COOs with received COOs: diag with diag, offdiag with offdiag */
-  /* --------------------------------------------------------------------------*/
   PetscInt *Ai, *Bi;
   PetscInt *Aj, *Bj;
 
@@ -6613,10 +6589,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(MatMergeEntries_Internal(mat, j1, j2, rowBegin1, rowMid1, rowBegin2, rowMid2, Ajmap1, Ajmap2, Aimap1, Aimap2, Ai, Aj));
   PetscCall(MatMergeEntries_Internal(mat, j1, j2, rowMid1, rowEnd1, rowMid2, rowEnd2, Bjmap1, Bjmap2, Bimap1, Bimap2, Bi, Bj));
 
-  /* --------------------------------------------------------------------------*/
   /* Expand Ajmap1/Bjmap1 to make them based off nonzeros in A/B, since we     */
   /* expect nonzeros in A/B most likely have local contributing entries        */
-  /* --------------------------------------------------------------------------*/
   PetscInt    Annz = Ai[m];
   PetscInt    Bnnz = Bi[m];
   PetscCount *Ajmap1_new, *Bjmap1_new;
@@ -6656,9 +6630,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
     Bj = Bj_new;
   }
 
-  /* --------------------------------------------------------------------------------*/
   /* Create new submatrices for on-process and off-process coupling                  */
-  /* --------------------------------------------------------------------------------*/
   PetscScalar *Aa, *Ba;
   MatType      rtype;
   Mat_SeqAIJ  *a, *b;

@@ -37,20 +37,17 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
-   Logically  Collective
+   Logically Collective
 
    Input Parameters:
 +  a - the scalar multiplier
 .  X - the first matrix
 .  Y - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, UNKNOWN_NONZERO_PATTERN, or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
-
-   Note:
-   No operation is performed when a is zero.
+-  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
 
    Level: intermediate
 
-.seealso: `MatAYPX()`
+.seealso: `Mat`, `MatAYPX()`
  @*/
 PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
@@ -266,24 +263,24 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
 }
 
 /*@
-   MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
+   MatShift - Computes Y =  Y + a I, where a is a `PetscScalar` and I is the identity matrix.
 
    Neighbor-wise Collective
 
    Input Parameters:
-+  Y - the matrices
--  a - the PetscScalar
++  Y - the matrix
+-  a - the `PetscScalar`
 
    Level: intermediate
 
    Notes:
-    If Y is a rectangular matrix, the shift is done on the main diagonal Y_{ii} of the matrix (https://en.wikipedia.org/wiki/Main_diagonal)
+    If `Y` is a rectangular matrix, the shift is done on the main diagonal of the matrix (https://en.wikipedia.org/wiki/Main_diagonal)
 
     If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry). No operation is performed when a is zero.
 
-   To form Y = Y + diag(V) use MatDiagonalSet()
+   To form Y = Y + diag(V) use `MatDiagonalSet()`
 
 .seealso: `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
  @*/

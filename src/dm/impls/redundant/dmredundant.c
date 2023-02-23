@@ -253,16 +253,16 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc, DM dmf, Mat *P, Ve
 /*@
     DMRedundantSetSize - Sets the size of a densely coupled redundant object
 
-    Collective on dm
+    Collective
 
     Input Parameters:
-+   dm - redundant DM
-.   rank - rank of process to own redundant degrees of freedom
++   dm - `DM` object of type `DMREDUNDANT`
+.   rank - rank of process to own the redundant degrees of freedom
 -   N - total number of redundant degrees of freedom
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantGetSize()`
+.seealso `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantGetSize()`
 @*/
 PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N)
 {
@@ -281,15 +281,15 @@ PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N)
     Not Collective
 
     Input Parameter:
-.   dm - redundant DM
+.   dm - `DM` object of type `DMREDUNDANT`
 
     Output Parameters:
-+   rank - rank of process to own redundant degrees of freedom (or NULL)
--   N - total number of redundant degrees of freedom (or NULL)
++   rank - rank of process to own the redundant degrees of freedom (or `NULL`)
+-   N - total number of redundant degrees of freedom (or `NULL`)
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantSetSize()`
+.seealso `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantSetSize()`
 @*/
 PetscErrorCode DMRedundantGetSize(DM dm, PetscMPIInt *rank, PetscInt *N)
 {
@@ -379,21 +379,21 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 }
 
 /*@C
-    DMRedundantCreate - Creates a DM object, used to manage data for dense globally coupled variables
+    DMRedundantCreate - Creates a `DM` object, used to manage data for dense globally coupled variables
 
     Collective
 
     Input Parameters:
 +   comm - the processors that will share the global vector
-.   rank - rank to own the redundant values
+.   rank - the MPI rank to own the redundant values
 -   N - total number of degrees of freedom
 
     Output Parameters:
-.   dm - the redundant DM
+.   dm - the `DM` object of type `DMREDUNDANT`
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateMatrix()`, `DMCompositeAddDM()`, `DMREDUNDANT`, `DMSetType()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
+.seealso `DM`, `DMREDUNDANT`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateMatrix()`, `DMCompositeAddDM()`, `DMREDUNDANT`, `DMSetType()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
 
 @*/
 PetscErrorCode DMRedundantCreate(MPI_Comm comm, PetscMPIInt rank, PetscInt N, DM *dm)

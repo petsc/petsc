@@ -345,7 +345,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
 
    Note:
    The user provides the input data and is responsible for destroying
-   this data after matrix J has been destroyed.
+   this data after matrix `J` has been destroyed.
 
 .seealso: `Mat`, `MatCreate()`
 @*/

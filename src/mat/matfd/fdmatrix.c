@@ -73,7 +73,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
 
    Collective on c
 
-   Input  Parameters:
+   Input Parameters:
 +  c - the coloring context
 -  viewer - visualization context
 
@@ -274,8 +274,8 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
 -  fctx - the optional user-defined function context
 
    Calling sequence of (*f) function:
-    For `SNES`:    PetscErrorCode (*f)(SNES,Vec,Vec,void*)
-    If not using `SNES`: PetscErrorCode (*f)(void *dummy,Vec,Vec,void*) and dummy is ignored
+    For `SNES` use   PetscErrorCode (*f)(SNES,Vec,Vec,void*)
+    If not using `SNES` use PetscErrorCode (*f)(void *dummy,Vec,Vec,void*) and dummy is ignored
 
    Level: advanced
 
