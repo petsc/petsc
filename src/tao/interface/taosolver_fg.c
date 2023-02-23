@@ -6,11 +6,12 @@
   Logically collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 - x0  - the initial guess
 
   Level: beginner
-.seealso: `Tao`, `TaoCreate()`, `TaoSolve()`, `TaoGetSolution()`
+
+.seealso: [](chapter_tao), `Tao`, `TaoCreate()`, `TaoSolve()`, `TaoGetSolution()`
 @*/
 PetscErrorCode TaoSetSolution(Tao tao, Vec x0)
 {
@@ -105,7 +106,7 @@ PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
   Collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 - X - input vector
 
   Output Parameter:
@@ -115,13 +116,13 @@ PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
 +    -tao_test_gradient - compare the user provided gradient with one compute via finite differences to check for errors
 -    -tao_test_gradient_view - display the user provided gradient, the finite difference gradient and the difference between them to help users detect the location of errors in the user provided gradient
 
+  Level: developer
+
   Note:
     `TaoComputeGradient()` is typically used within the implementation of the optimization method,
   so most users would not generally call this routine themselves.
 
-  Level: developer
-
-.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetGradient()`
+.seealso: [](chapter_tao), `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
 {
@@ -157,19 +158,19 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   Collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 - X - input vector
 
   Output Parameter:
 . f - Objective value at X
 
+  Level: developer
+
   Note:
     `TaoComputeObjective()` is typically used within the implementation of the optimization algorithm
   so most users would not generally call this routine themselves.
 
-  Level: developer
-
-.seealso: `Tao`, `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
 {
@@ -205,20 +206,20 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   Collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 - X - input vector
 
   Output Parameters:
 + f - Objective value at X
 - g - Gradient vector at X
 
+  Level: developer
+
   Note:
     `TaoComputeObjectiveAndGradient()` is typically used within the implementation of the optimization algorithm,
   so most users would not generally call this routine themselves.
 
-  Level: developer
-
-.seealso: `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
+.seealso: [](chapter_tao), `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec G)
 {
@@ -260,10 +261,10 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   Logically collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 . func - the objective function
 - ctx - [optional] user-defined context for private data for the function evaluation
-        routine (may be NULL)
+        routine (may be `NULL`)
 
   Calling sequence of func:
 $      func (Tao tao, Vec x, PetscReal *f, void *ctx);
@@ -274,7 +275,7 @@ $      func (Tao tao, Vec x, PetscReal *f, void *ctx);
 
   Level: beginner
 
-.seealso: `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetObjective()`
+.seealso: [](chapter_tao), `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetObjective()`
 @*/
 PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, void *), void *ctx)
 {
@@ -291,7 +292,7 @@ PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscRe
   Not collective
 
   Input Parameter:
-. tao - the Tao context
+. tao - the `Tao` context
 
   Output Parameters
 + func - the objective function
@@ -306,7 +307,7 @@ $      func (Tao tao, Vec x, PetscReal *f, void *ctx);
 
   Level: beginner
 
-.seealso: `Tao`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjective()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao, Vec, PetscReal *, void *), void **ctx)
 {
@@ -323,10 +324,10 @@ PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao, Vec, PetscR
   Logically collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 . func - the residual evaluation routine
 - ctx - [optional] user-defined context for private data for the function evaluation
-        routine (may be NULL)
+        routine (may be `NULL`)
 
   Calling sequence of func:
 $      func (Tao tao, Vec x, Vec f, void *ctx);
@@ -337,7 +338,7 @@ $      func (Tao tao, Vec x, Vec f, void *ctx);
 
   Level: beginner
 
-.seealso: `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
 @*/
 PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
 {
@@ -355,23 +356,24 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
 
 /*@
   TaoSetResidualWeights - Give weights for the residual values. A vector can be used if only diagonal terms are used, otherwise a matrix can be give.
-   If this function is not provided, or if sigma_v and sigma_w are both NULL, then the identity matrix will be used for weights.
+   If this function is not provided, or if `sigma_v` and `vals` are both `NULL`, then the identity matrix will be used for weights.
 
   Collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 . sigma_v - vector of weights (diagonal terms only)
 . n       - the number of weights (if using off-diagonal)
-. rows    - index list of rows for sigma_w
-. cols    - index list of columns for sigma_w
+. rows    - index list of rows for `sigma_v`
+. cols    - index list of columns for `sigma_v`
 - vals - array of weights
-
-  Note: Either sigma_v or sigma_w (or both) should be NULL
 
   Level: intermediate
 
-.seealso: `Tao`, `TaoSetResidualRoutine()`
+  Note:
+  Either `sigma_v` or `vals` should be `NULL`
+
+.seealso: [](chapter_tao), `Tao`, `TaoSetResidualRoutine()`
 @*/
 PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
 {
@@ -410,19 +412,19 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
   Collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 - X - input vector
 
   Output Parameter:
 . f - Objective vector at X
 
+  Level: advanced
+
   Notes:
     `TaoComputeResidual()` is typically used within the implementation of the optimization algorithm,
   so most users would not generally call this routine themselves.
 
-  Level: advanced
-
-.seealso: `Tao`, `TaoSetResidualRoutine()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetResidualRoutine()`
 @*/
 PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
 {
@@ -448,11 +450,11 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
   Logically collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 . g - [optional] the vector to internally hold the gradient computation
 . func - the gradient function
 - ctx - [optional] user-defined context for private data for the gradient evaluation
-        routine (may be NULL)
+        routine (may be `NULL`)
 
   Calling sequence of func:
 $      func (Tao tao, Vec x, Vec g, void *ctx);
@@ -463,7 +465,7 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetGradient()`
+.seealso: [](chapter_tao), `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetGradient()`
 @*/
 PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
 {
@@ -487,7 +489,7 @@ PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, V
   Not collective
 
   Input Parameter:
-. tao - the Tao context
+. tao - the `Tao` context
 
   Output Parameters:
 + g - the vector to internally hold the gradient computation
@@ -503,7 +505,7 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetGradient()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, Vec, void *), void **ctx)
 {
@@ -521,11 +523,11 @@ PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec,
   Logically collective
 
   Input Parameters:
-+ tao - the Tao context
++ tao - the `Tao` context
 . g - [optional] the vector to internally hold the gradient computation
 . func - the gradient function
 - ctx - [optional] user-defined context for private data for the gradient evaluation
-        routine (may be NULL)
+        routine (may be `NULL`)
 
   Calling sequence of func:
 $      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
@@ -540,7 +542,7 @@ $      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
   Note:
   For some optimization methods using a combined function can be more eifficient.
 
-.seealso: `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetGradient()`, `TaoGetObjectiveAndGradient()`
+.seealso: [](chapter_tao), `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetGradient()`, `TaoGetObjectiveAndGradient()`
 @*/
 PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx)
 {
@@ -564,7 +566,7 @@ PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)
   Not collective
 
   Input Parameter:
-. tao - the Tao context
+. tao - the `Tao` context
 
   Output Parameters:
 + g - the vector to internally hold the gradient computation
@@ -581,7 +583,7 @@ $      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`
+.seealso: [](chapter_tao), `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`
 @*/
 PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, PetscReal *, Vec, void *), void **ctx)
 {
@@ -602,14 +604,14 @@ PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**fun
   Not collective
 
   Input Parameter:
-. tao - the Tao context
+. tao - the `Tao` context
 
   Output Parameter:
 . flg - `PETSC_TRUE` if function routine is set by user, `PETSC_FALSE` otherwise
 
   Level: developer
 
-.seealso: `Tao`, `TaoSetObjective()`, `TaoIsGradientDefined()`, `TaoIsObjectiveAndGradientDefined()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetObjective()`, `TaoIsGradientDefined()`, `TaoIsObjectiveAndGradientDefined()`
 @*/
 PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
 {
@@ -629,14 +631,14 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
   Not Collective
 
   Input Parameter:
-. tao - the Tao context
+. tao - the `Tao` context
 
   Output Parameter:
 . flg - `PETSC_TRUE` if function routine is set by user, `PETSC_FALSE` otherwise
 
   Level: developer
 
-.seealso: `TaoSetGradient()`, `TaoIsObjectiveDefined()`, `TaoIsObjectiveAndGradientDefined()`
+.seealso: [](chapter_tao), `TaoSetGradient()`, `TaoIsObjectiveDefined()`, `TaoIsObjectiveAndGradientDefined()`
 @*/
 PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
 {
@@ -656,14 +658,14 @@ PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
   Not Collective
 
   Input Parameter:
-. tao - the Tao context
+. tao - the `Tao` context
 
   Output Parameter:
 . flg - `PETSC_TRUE` if function routine is set by user, `PETSC_FALSE` otherwise
 
   Level: developer
 
-.seealso: `TaoSetObjectiveAndGradient()`, `TaoIsObjectiveDefined()`, `TaoIsGradientDefined()`
+.seealso: [](chapter_tao), `TaoSetObjectiveAndGradient()`, `TaoIsObjectiveDefined()`, `TaoIsGradientDefined()`
 @*/
 PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao tao, PetscBool *flg)
 {

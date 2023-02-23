@@ -14,15 +14,17 @@ PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 /*E
   TaoSubsetType - Type representing the way Tao handles active sets
 
+  Values:
 + `TAO_SUBSET_SUBVEC` - Tao uses `MatCreateSubMatrix()` and `VecGetSubVector()`
 . `TAO_SUBSET_MASK` - Matrices are zeroed out corresponding to active set entries
 - `TAO_SUBSET_MATRIXFREE` - Same as `TAO_SUBSET_MASK` but it can be applied to matrix-free operators
 
-  Options database keys:
-. -different_hessian - Tao will use a copy of the hessian operator for masking.  By default
-                       Tao will directly alter the hessian operator.
+  Options database Key:
+. -different_hessian - Tao will use a copy of the Hessian operator for masking.  By default Tao will directly alter the Hessian operator.
+
   Level: intermediate
 
+.seealso: [](chapter_tao), `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 E*/
 typedef enum {
   TAO_SUBSET_SUBVEC,
@@ -36,7 +38,7 @@ PETSC_EXTERN const char *const TaoSubsetTypes[];
 
    Level: advanced
 
-.seealso: `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
+.seealso: [](chapter_tao), `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
 typedef struct _p_Tao *Tao;
 
@@ -45,7 +47,7 @@ typedef struct _p_Tao *Tao;
 
   Level: advanced
 
-.seealso: `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`
+.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`
 E*/
 typedef enum {
   TAO_ADMM_UPDATE_BASIC,
@@ -60,9 +62,9 @@ PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
   Level: advanced
 
   Note:
-  Most basic implementation. Generally slower than adaptive or adaptive relaxed version.
+  Most basic implementatio of `TAOADMM`. Generally slower than adaptive or adaptive relaxed version.
 
-.seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_ADAPTIVE`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
+.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_ADAPTIVE`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
 
 /*MC
@@ -71,9 +73,9 @@ M*/
   Level: advanced
 
   Note:
-  Adaptively updates spectral penalty by using both steepest descent and minimum gradient.
+  Adaptively updates spectral penalty of `TAOADMM` by using both steepest descent and minimum gradient.
 
-.seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
+.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
 
 /*MC
@@ -84,15 +86,15 @@ M*/
   Note:
   With adaptive spectral penalty update, it also relaxes x vector update by a factor.
 
-.seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE`
+.seealso: [](chapter_tao), `Tao`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE`
 M*/
 
 /*E
-     TaoADMMRegularizerType - Determine regularizer routine - either user provided or soft threshold
+     TaoADMMRegularizerType - Determine regularizer routine - either user provided or soft threshold for `TAOADMM`
 
   Level: advanced
 
-.seealso: `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`
+.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`
 E*/
 typedef enum {
   TAO_ADMM_REGULARIZER_USER,
@@ -108,7 +110,7 @@ PETSC_EXTERN const char *const TaoADMMRegularizerTypes[];
   Note:
   User needs to provided appropriate routines and type for regularizer solver
 
-.seealso: `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_SOFT_THRESH`
+.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_SOFT_THRESH`
 M*/
 
 /*MC
@@ -119,7 +121,7 @@ M*/
   Note:
   Utilizes built-in SoftThreshold routines
 
-.seealso: `TaoSoftThreshold()`, `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`,
+.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoSoftThreshold()`, `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`,
           `TaoADMMSetRegularizerHessianRoutine()`, `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_USER`
 M*/
 
@@ -132,7 +134,7 @@ M*/
 
   Level: advanced
 
-.seealso: `Tao`, `TAOALMM`, `TaoALMMSetType()`, `TaoALMMGetType()`
+.seealso: [](chapter_tao), `Tao`, `TAOALMM`, `TaoALMMSetType()`, `TaoALMMGetType()`
 E*/
 typedef enum {
   TAO_ALMM_CLASSIC,
@@ -143,9 +145,22 @@ PETSC_EXTERN const char *const TaoALMMTypes[];
 /*J
         TaoType - String with the name of a `Tao` method
 
+  Values:
++    `TAONLS` - nls Newton's method with line search for unconstrained minimization
+.    `TAONTR` - ntr Newton's method with trust region for unconstrained minimization
+.    `TAONTL` - ntl Newton's method with trust region, line search for unconstrained minimization
+.    `TAOLMVM` - lmvm Limited memory variable metric method for unconstrained minimization
+.    `TAOCG` - cg Nonlinear conjugate gradient method for unconstrained minimization
+.    `TAONM` - nm Nelder-Mead algorithm for derivate-free unconstrained minimization
+.    `TAOTRON` - tron Newton Trust Region method for bound constrained minimization
+.    `TAOGPCG` - gpcg Newton Trust Region method for quadratic bound constrained minimization
+.    `TAOBLMVM` - blmvm Limited memory variable metric method for bound constrained minimization
+.    `TAOLCL` - lcl Linearly constrained Lagrangian method for pde-constrained minimization
+-    `TAOPOUNDERS` - pounders Model-based algorithm for nonlinear least squares
+
        Level: beginner
 
-.seealso: `Tao`, `TaoCreate()`, `TaoSetType()`
+.seealso: [](chapter_tao), `Tao`, `TaoCreate()`, `TaoSetType()`
 J*/
 typedef const char *TaoType;
 #define TAOLMVM     "lmvm"
@@ -188,20 +203,42 @@ PETSC_EXTERN PetscFunctionList TaoList;
 /*E
     TaoConvergedReason - reason a Tao method was said to have converged or diverged
 
+   Values:
++  `TAO_CONVERGED_GATOL` - ||g(X)|| < gatol
+.  `TAO_CONVERGED_GRTOL` - ||g(X)|| / f(X)  < grtol
+.  `TAO_CONVERGED_GTTOL` - ||g(X)|| / ||g(X0)|| < gttol
+.  `TAO_CONVERGED_STEPTOL` - step size smaller than tolerance
+.  `TAO_CONVERGED_MINF` - F < F_min
+.  `TAO_CONVERGED_USER` - the user indicates the optimization has succeeded
+.  `TAO_DIVERGED_MAXITS` - the maximum number of iterations allowed has been achieved
+.  `TAO_DIVERGED_NAN` - not a number appeared in the computations
+.  `TAO_DIVERGED_MAXFCN` - the maximum number of function evaluations has been computed
+.  `TAO_DIVERGED_LS_FAILURE` - a linesearch failed
+.  `TAO_DIVERGED_TR_REDUCTION` - trust region failure
+.  `TAO_DIVERGED_USER` - the user has indicated the optimization has failed
+-  `TAO_CONTINUE_ITERATING` - the optimization is still running, `TaoSolve()`
+
+   where
++  X - current solution
+.  X0 - initial guess
+.  f(X) - current function value
+.  f(X*) - true solution (estimated)
+.  g(X) - current gradient
+.  its - current iterate number
+.  maxits - maximum number of iterates
+.  fevals - number of function evaluations
+-  max_funcsals - maximum number of function evaluations
+
    Level: beginner
 
-   The two most common reasons for divergence are
-$   1) an incorrectly coded or computed gradient or Hessian
-$   2) failure or lack of convergence in the linear system (in this case we recommend
-$      testing with -pc_type lu to eliminate the linear solver as the cause of the problem).
+   Note:
+   The two most common reasons for divergence are  an incorrectly coded or computed gradient or Hessian failure or lack of convergence
+   in the linear system solve (in this case we recommend testing with `-pc_type lu` to eliminate the linear solver as the cause of the problem).
 
-   Developer Notes:
-    This must match petsc/finclude/petsctao.h
+   Developer Note:
+   The names in `KSPConvergedReason`, `SNESConvergedReason`, and `TaoConvergedReason` should be uniformized
 
-       The string versions of these are in `TAOConvergedReasons`, if you change any value here you must
-     also adjust that array.
-
-.seealso: `Tao`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`, `TSConvergedReason`
+.seealso: [](chapter_tao), `Tao`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`
 E*/
 typedef enum {               /* converged */
   TAO_CONVERGED_GATOL   = 3, /* ||g(X)|| < gatol */

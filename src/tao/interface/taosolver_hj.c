@@ -6,12 +6,12 @@
    Logically collective
 
    Input Parameters:
-+  tao  - the Tao context
++  tao  - the `Tao` context
 .  H    - Matrix used for the hessian
-.  Hpre - Matrix that will be used operated on by preconditioner, can be same as H
+.  Hpre - Matrix that will be used to construct the preconditioner, can be same as `H`
 .  func - Hessian evaluation routine
 -  ctx  - [optional] user-defined context for private data for the
-         Hessian evaluation routine (may be NULL)
+         Hessian evaluation routine (may be `NULL`)
 
    Calling sequence of func:
 $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
@@ -19,12 +19,12 @@ $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 +  tao  - the Tao  context
 .  x    - input vector
 .  H    - Hessian matrix
-.  Hpre - preconditioner matrix, usually the same as H
+.  Hpre - matrix used to construct the preconditioner, usually the same as `H`
 -  ctx  - [optional] user-defined Hessian context
 
    Level: beginner
 
-.seealso: `Tao`, `TaoTypes`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
+.seealso: [](chapter_tao), `Tao`, `TaoTypes`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
 @*/
 PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -59,11 +59,11 @@ PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Ta
    Not collective
 
    Input Parameter:
-.  tao  - the Tao context
+.  tao  - the `Tao` context
 
    OutputParameters:
 +  H    - Matrix used for the hessian
-.  Hpre - Matrix that will be used operated on by preconditioner, can be the same as H
+.  Hpre - Matrix that will be used to construct the preconditioner, can be the same as `H`
 .  func - Hessian evaluation routine
 -  ctx  - user-defined context for private data for the Hessian evaluation routine
 
@@ -73,12 +73,12 @@ $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 +  tao  - the Tao  context
 .  x    - input vector
 .  H    - Hessian matrix
-.  Hpre - preconditioner matrix, usually the same as H
+.  Hpre - matrix used to construct the preconditioner, usually the same as `H`
 -  ctx  - [optional] user-defined Hessian context
 
    Level: beginner
 
-.seealso: `Tao`, TaoType`, `TaoGetObjective()`, `TaoGetGradient()`, `TaoGetObjectiveAndGradient()`, `TaoSetHessian()`
+.seealso: [](chapter_tao), `Tao`, TaoType`, `TaoGetObjective()`, `TaoGetGradient()`, `TaoGetObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoGetHessian(Tao tao, Mat *H, Mat *Hpre, PetscErrorCode (**func)(Tao, Vec, Mat, Mat, void *), void **ctx)
 {
@@ -236,6 +236,8 @@ PetscErrorCode TaoTestHessian(Tao tao)
 .     -tao_test_hessian <numerical value>  - display entries in the difference between the user provided Hessian and finite difference Hessian that are greater than a certain value to help users detect errors
 -     -tao_test_hessian_view - display the user provided Hessian, the finite difference Hessian and the difference between them to help users detect the location of errors in the user provided Hessian
 
+   Level: developer
+
    Notes:
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers.
@@ -247,9 +249,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
    Developer Note:
    The Hessian test mechanism follows `SNESTestJacobian()`.
 
-   Level: developer
-
-.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetHessian()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 {
@@ -284,6 +284,8 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 +  J    - Jacobian matrix
 -  Jpre - Preconditioning matrix
 
+   Level: developer
+
    Notes:
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers.
@@ -292,9 +294,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
    implementations, so most users would not generally call this routine
    themselves.
 
-   Level: developer
-
-.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianRoutine()`
+.seealso: [](chapter_tao), `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianRoutine()`
 @*/
 PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -325,6 +325,8 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 +  J    - Jacobian matrix
 -  Jpre - Preconditioning matrix
 
+   Level: developer
+
    Notes:
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers.
@@ -333,9 +335,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    implementations, so most users would not generally call this routine
    themselves.
 
-   Level: developer
-
-.seealso: `Tao`, `TaoComputeResidual()`, `TaoSetJacobianResidual()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeResidual()`, `TaoSetJacobianResidual()`
 @*/
 PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -359,21 +359,21 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    Collective
 
    Input Parameters:
-+  tao - the Tao solver context
++  tao - the `Tao` solver context
 -  X   - input vector
 
    Output Parameters:
 +  J    - Jacobian matrix
-.  Jpre - Preconditioning matrix
+.  Jpre - matrix used to construct the preconditioner, often the same as `J`
 -  Jinv - unknown
-
-   Notes:
-   Most users should not need to explicitly call this routine, as it
-   is used internally within the optimization algorithms.
 
    Level: developer
 
-.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the optimization algorithms.
+
+.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv)
 {
@@ -403,13 +403,13 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
    Output Parameters:
 .  J - Jacobian matrix
 
-   Notes:
+   Level: developer
+
+   Note:
    Most users should not need to explicitly call this routine, as it
    is used internally within the optimization algorithms.
 
-   Level: developer
-
-.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 {
@@ -432,25 +432,25 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
    Logically collective
 
    Input Parameters:
-+  tao  - the Tao context
-.  J    - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by preconditioner, can be same as J
++  tao  - the `Tao` context
+.  J    - Matrix used for the Jacobian
+.  Jpre - Matrix that will be used to construct the preconditioner, can be same as `J`
 .  func - Jacobian evaluation routine
 -  ctx  - [optional] user-defined context for private data for the
-          Jacobian evaluation routine (may be NULL)
+          Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of func:
 $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
-+  tao  - the Tao  context
++  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix
-.  Jpre - preconditioning matrix, usually the same as J
+.  Jpre - matrix used to construct the preconditioner, usually the same as `J`
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
 
-.seealso: `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -486,25 +486,25 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
    Logically collective
 
    Input Parameters:
-+  tao  - the Tao context
++  tao  - the `Tao` context
 .  J    - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by preconditioner, can be same as J
+.  Jpre - Matrix that will be used to construct the preconditioner, can be same as `J`
 .  func - Jacobian evaluation routine
 -  ctx  - [optional] user-defined context for private data for the
-          Jacobian evaluation routine (may be NULL)
+          Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of func:
 $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
-+  tao  - the Tao  context
++  tao  - the `Tao`  context
 .  x    - input vector
 .  J    - Jacobian matrix
-.  Jpre - preconditioning matrix, usually the same as J
+.  Jpre - matrix used to construct the preconditioner, usually the same as `J`
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
 
-.seealso: `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -541,27 +541,27 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
    Logically collective
 
    Input Parameters:
-+  tao  - the Tao context
-.  J    - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  Only used if Jinv is NULL
-.  Jinv - [optional] Matrix used to apply the inverse of the state jacobian. Use NULL to default to PETSc KSP solvers to apply the inverse.
++  tao  - the `Tao` context
+.  J    - Matrix used for the Jacobian
+.  Jpre - Matrix that will be used to construct the preconditioner, can be same as `J`.  Only used if `Jinv` is `NULL`
+.  Jinv - [optional] Matrix used to apply the inverse of the state Jacobian. Use `NULL` to default to PETSc `KSP` solvers to apply the inverse.
 .  func - Jacobian evaluation routine
 -  ctx  - [optional] user-defined context for private data for the
-          Jacobian evaluation routine (may be NULL)
+          Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of func:
 $    func(Tao tao,Vec x,Mat J,Mat Jpre,Mat Jinv,void *ctx);
 
-+  tao  - the Tao  context
++  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix
-.  Jpre - preconditioner matrix, usually the same as J
+.  Jpre - matrix used to construct the preconditioner, usually the same as `J`
 .  Jinv - inverse of J
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
 
-.seealso: `Tao`, `TaoComputeJacobianState()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianState()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, Mat, void *), void *ctx)
 {
@@ -607,23 +607,23 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
    Logically collective
 
    Input Parameters:
-+  tao  - the Tao context
-.  J    - Matrix used for the jacobian
++  tao  - the `Tao` context
+.  J    - Matrix used for the Jacobian
 .  func - Jacobian evaluation routine
 -  ctx  - [optional] user-defined context for private data for the
-          Jacobian evaluation routine (may be NULL)
+          Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of func:
 $    func(Tao tao,Vec x,Mat J,void *ctx);
 
-+  tao - the Tao  context
++  tao - the `Tao` context
 .  x   - input vector
 .  J   - Jacobian matrix
 -  ctx - [optional] user-defined Jacobian context
 
    Level: intermediate
 
-.seealso: `Tao`, `TaoComputeJacobianDesign()`, `TaoSetJacobianStateRoutine()`, `TaoSetStateDesignIS()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianDesign()`, `TaoSetJacobianStateRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func)(Tao, Vec, Mat, void *), void *ctx)
 {
@@ -644,20 +644,20 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
 }
 
 /*@
-   TaoSetStateDesignIS - Indicate to the Tao which variables in the
+   TaoSetStateDesignIS - Indicate to the `Tao` object which variables in the
    solution vector are state variables and which are design.  Only applies to
    PDE-constrained optimization.
 
    Logically Collective
 
    Input Parameters:
-+  tao  - The Tao context
++  tao  - The `Tao` context
 .  s_is - the index set corresponding to the state variables
 -  d_is - the index set corresponding to the design variables
 
    Level: intermediate
 
-.seealso: `Tao`, `TaoSetJacobianStateRoutine()`, `TaoSetJacobianDesignRoutine()`
+.seealso: [](chapter_tao), `Tao`, `TaoSetJacobianStateRoutine()`, `TaoSetJacobianDesignRoutine()`
 @*/
 PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 {
@@ -678,20 +678,20 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
    Collective
 
    Input Parameters:
-+  tao - the Tao solver context
++  tao - the `Tao` solver context
 -  X   - input vector
 
    Output Parameters:
 +  J    - Jacobian matrix
--  Jpre - Preconditioning matrix
+-  Jpre - matrix used to construct the preconditioner, often the same as `J`
+
+   Level: developer
 
    Notes:
    Most users should not need to explicitly call this routine, as it
    is used internally within the optimization algorithms.
 
-   Level: developer
-
-.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: [](chapter_tao), `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -715,20 +715,20 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
    Collective
 
    Input Parameters:
-+  tao - the Tao solver context
++  tao - the `Tao` solver context
 -  X   - input vector
 
    Output Parameters:
 +  J    - Jacobian matrix
--  Jpre - Preconditioning matrix
-
-   Notes:
-   Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers.
+-  Jpre - matrix used to construct the preconditioner
 
    Level: developer
 
-.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the minimization solvers.
+
+.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -753,25 +753,25 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
    Logically collective
 
    Input Parameters:
-+  tao  - the Tao context
-.  J    - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.
++  tao  - the `Tao` context
+.  J    - Matrix used for the Jacobian
+.  Jpre - Matrix that will be used to construct the preconditioner, can be same as `J`.
 .  func - Jacobian evaluation routine
 -  ctx  - [optional] user-defined context for private data for the
-          Jacobian evaluation routine (may be NULL)
+          Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of func:
 $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
-+  tao  - the Tao  context
++  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix
-.  Jpre - preconditioner matrix, usually the same as J
+.  Jpre - matrix used to construct the preconditioner, usually the same as `J`
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
 
-.seealso: `Tao`, `TaoComputeJacobianEquality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetEqualityDesignIS()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianEquality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetEqualityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -808,25 +808,25 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
    Logically collective
 
    Input Parameters:
-+  tao  - the Tao context
-.  J    - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.
++  tao  - the `Tao` context
+.  J    - Matrix used for the Jacobian
+.  Jpre - Matrix that will be used to construct the preconditioner, can be same as `J`.
 .  func - Jacobian evaluation routine
 -  ctx  - [optional] user-defined context for private data for the
-          Jacobian evaluation routine (may be NULL)
+          Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of func:
 $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
-+  tao  - the Tao  context
++  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix
-.  Jpre - preconditioner matrix, usually the same as J
+.  Jpre - matrix used to construct the preconditioner, usually the same as `J`
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
 
-.seealso: `Tao`, `TaoComputeJacobianInequality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetInequalityDesignIS()`
+.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianInequality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetInequalityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
