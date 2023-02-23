@@ -2,7 +2,7 @@
 # Newton method
 -coupled_snes_type newtonls
 #-coupled_snes_monitor
--coupled_snes_max_it 10
+-coupled_snes_max_it 1
 
 # Absolute and relative tolerances
 -coupled_snes_atol 1e-8
