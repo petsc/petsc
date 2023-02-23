@@ -448,6 +448,7 @@ deleteshared:
 #  this indicates the makefile is missing a MANSEC definition or the include file is missing a SUBMANSEC definition
 manualpages:
 	-@doctext_common_def="${PETSC_DIR}/doc/classic/doctext/doctextcommon.txt"; \
+        petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
         if [ "${MANSEC}" = "" ] ; then \
           for f in ${SOURCED}; do \
             LMANSEC=`grep SUBMANSEC $${f} | sed s'?[ ]*/\*[ ]*SUBMANSEC[ ]*=[ ]*\([a-zA-Z]*\)[ ]*\*/?\1?'g`; \
@@ -463,7 +464,7 @@ manualpages:
             fi; \
             DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext \
             ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
-                -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir ${LOCDIR} -Wargdesc $${doctext_common_def} $${f} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
+                -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir $${LOCDIR} -Wargdesc $${doctext_common_def} $${f} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
             if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
           done; \
         else \
@@ -473,7 +474,7 @@ manualpages:
           fi; \
           DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext  \
           ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
-              -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir ${LOCDIR} -Wargdesc $${doctext_common_def} ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
+              -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir $${LOCDIR} -Wargdesc $${doctext_common_def} ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
           if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
         fi;
 #
@@ -485,6 +486,7 @@ manexamples:
 	-@base=$$(basename $$(pwd)); \
         if [ "$${base}" = "tutorials" ] ; then \
           echo "Generating manual example links" ; \
+          petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
           for i in ${EXAMPLESALL} foo ; do \
             if [ "$$i" != "foo" ] ; then \
               a=`cat $$i | ${MAPNAMES} -map ${LOC}/manualpages/manualpages.cit \
@@ -496,7 +498,7 @@ manexamples:
                   if [ $$l -eq 0 ] ; then \
                     printf "\n## Examples\n" >> $$b; \
                   fi; \
-                  echo  "<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/BB\">BB</A><BR>" | sed s?BB?${LOCDIR}$$i.html?g >> $$b; \
+                  echo  "<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/BB\">BB</A><BR>" | sed s?BB?$${LOCDIR}$$i.html?g >> $$b; \
                 fi; \
               done; \
             fi; \
@@ -559,9 +561,10 @@ checkmakefilelist:
 
 html: chk_c2html
 	-@export htmlmap_tmp=$$(mktemp) ;\
+          petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
           sed -e s?man+manualpages/?man+ROOT/manualpages/? ${LOC}/manualpages/htmlmap_modified > $$htmlmap_tmp ;\
           cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
-          ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+          ROOT=`echo $${LOCDIR} | sed -e s?/[-a-z_0-9]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
           current_git_sha=$$(git rev-parse HEAD) ;\
@@ -587,7 +590,6 @@ html: chk_c2html
               ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
             fi; \
           done ;\
-          ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
           cat ${PETSC_DIR}/doc/classic/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
           echo "<p>" >> $${loc}/index.html ;\
