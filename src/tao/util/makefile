@@ -7,7 +7,6 @@ LIBBASE  = libpetsctao
 MANSEC   = Tao
 DIRS     =
 EDIRS    =
-LOCDIR   = src/tao/util/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

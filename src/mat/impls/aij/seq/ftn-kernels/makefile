@@ -11,7 +11,6 @@ SOURCEF90= fmult.F90 fmultadd.F90 fsolve.F90 frelax.F90
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
-LOCDIR   = src/mat/impls/aij/seq/ftn-kernels/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -8,7 +8,6 @@ SOURCEH   = cupmcontext.hpp cupmthrustutility.hpp cupmdevice.hpp cupmallocator.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = cuda hip
-LOCDIR	  = src/sys/objects/device/impls/cupm/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

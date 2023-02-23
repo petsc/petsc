@@ -2,7 +2,6 @@
 #requiresscalar    real
 
 DIRS     = unit morethuente  gpcglinesearch armijo owarmijo
-LOCDIR   = src/tao/linesearch/impls/
 LIBBASE  = libpetsctao
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

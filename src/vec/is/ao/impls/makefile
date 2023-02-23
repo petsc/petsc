@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 DIRS      = basic mapping memscalable
-LOCDIR    = src/vec/is/ao/impls/
 MANSEC    = Vec
 SUBMANSEC = AO
 

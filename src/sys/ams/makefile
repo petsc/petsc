@@ -4,7 +4,6 @@
 SOURCEH   =
 SOURCEC   = pams.c
 DIRS      = 
-LOCDIR    = src/sys/ams/
 MANSEC    = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

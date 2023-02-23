@@ -7,7 +7,6 @@ DIRS     = tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMSwarm
-LOCDIR   = src/dm/impls/swarm/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

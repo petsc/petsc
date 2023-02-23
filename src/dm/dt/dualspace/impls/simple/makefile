@@ -4,7 +4,6 @@ SOURCEC   = dspacesimple.c
 SOURCEF   =
 LIBBASE   = libpetscdm
 DIRS      =
-LOCDIR    = src/dm/dt/dualspace/impls/simple/
 MANSEC    = DM
 SUBMANSEC = DUALSPACE
 

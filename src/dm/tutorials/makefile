@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR          = src/dm/tutorials/
 MANSEC          = DM
 CLEANFILES      = output_file output_file.info swarm_ex[1-3]
 

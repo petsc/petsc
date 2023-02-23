@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/vec/is/tests/
 DIRS            =
 MANSEC          = Vec
 

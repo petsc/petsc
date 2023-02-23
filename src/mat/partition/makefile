@@ -3,7 +3,6 @@
 SOURCEC   = partition.c spartition.c
 SOURCEH   =
 LIBBASE   = libpetscmat
-LOCDIR    = src/mat/partition/
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
 DIRS      = impls

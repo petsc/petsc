@@ -2,7 +2,6 @@
 
 SOURCEC  = trajmemory.c
 DIRS     =
-LOCDIR   = src/ts/trajectory/impls/memory/
 MANSEC   = TS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -6,7 +6,6 @@ SOURCEF  =
 LIBBASE  = libpetscksp
 DIRS     = lgmres fgmres dgmres pgmres pipefgmres agmres
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/gmres/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

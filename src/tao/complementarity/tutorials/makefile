@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR		 = src/tao/complementarity/tutorials/
 MANSEC		 = Tao
 DOCS		 =
 DIRS		 =

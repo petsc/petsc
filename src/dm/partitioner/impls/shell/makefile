@@ -3,7 +3,6 @@
 SOURCEC   = partshell.c
 SOURCEH   =
 LIBBASE   = libpetscdm
-LOCDIR    = src/dm/partitioner/impls/shell/
 MANSEC    = DM
 SUBMANSEC =
 

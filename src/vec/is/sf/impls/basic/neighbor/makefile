@@ -5,7 +5,6 @@ SOURCEH   =
 SOURCEC   = sfneighbor.c
 LIBBASE   = libpetscvec
 DIRS      =
-LOCDIR    = src/vec/is/sf/impls/basic/neighbor
 MANSEC    = Vec
 SUBMANSEC = PetscSF
 

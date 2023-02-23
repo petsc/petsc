@@ -6,7 +6,6 @@ SOURCEF =
 SOURCEH =
 DIR     =
 LIBBASE = libpetsctao
-LOCDIR  = src/tao/leastsquares/impls/brgn/ftn-custom
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

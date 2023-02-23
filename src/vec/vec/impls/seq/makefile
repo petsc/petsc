@@ -6,7 +6,6 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/seq/
 DIRS     = ftn-kernels seqviennacl seqviennaclcuda kokkos cupm
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

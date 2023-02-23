@@ -5,7 +5,6 @@ SOURCEF   =
 SOURCEH   = ../../../../include/petsc/private/drawimpl.h ../../../../include/petscdraw.h ../../../../include/petscdrawtypes.h
 LIBBASE   = libpetscsys
 DIRS      = interface impls tests utils
-LOCDIR    = src/sys/classes/draw/
 MANSEC    = Sys
 SUBMANSEC = Draw
 

@@ -8,7 +8,6 @@ SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-LOCDIR   = src/snes/interface/noise/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

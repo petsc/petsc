@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 MANSEC   = TS
-LOCDIR   = src/ts/impls/symplectic/
 DIRS     = basicsymplectic
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

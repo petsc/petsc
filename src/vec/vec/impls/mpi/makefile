@@ -6,7 +6,6 @@ SOURCEH  = pvecimpl.h
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 DIRS     = mpiviennacl mpiviennaclcuda kokkos cupm
-LOCDIR   = src/vec/vec/impls/mpi/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

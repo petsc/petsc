@@ -6,7 +6,6 @@ SOURCEF90  = petsctsmod.F90
 SOURCEH	   = petscts.h petscts.h90
 LIBBASE	   = libpetscts
 MANSEC	   = TS
-LOCDIR	   = src/ts/f90-mod/
 CLEANFILES = *.mod
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

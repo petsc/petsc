@@ -11,7 +11,6 @@ SOURCEF90= sgemv.F90
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
-LOCDIR   = src/mat/ftn-kernels/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

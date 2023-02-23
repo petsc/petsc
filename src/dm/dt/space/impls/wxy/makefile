@@ -4,7 +4,6 @@ SOURCEC   = spacewxy.c
 SOURCEF   =
 LIBBASE   = libpetscdm
 DIRS      =
-LOCDIR    = src/dm/dt/space/impls/wxy/
 MANSEC    = DM
 SUBMANSEC = SPACE
 

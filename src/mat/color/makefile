@@ -4,7 +4,6 @@ SOURCEC   =
 SOURCEH   =
 DIRS      = interface impls utils
 LIBBASE   = libpetscmat
-LOCDIR    = src/mat/color/
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
 

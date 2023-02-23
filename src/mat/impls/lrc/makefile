@@ -5,7 +5,6 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
 DIRS     =
-LOCDIR   = src/mat/impls/lrc/
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

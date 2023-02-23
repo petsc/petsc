@@ -3,7 +3,6 @@
 SOURCEC  = minres.c
 SOURCEF  =
 LIBBASE  = libpetscksp
-LOCDIR   = src/ksp/ksp/impls/minres/
 MANSEC   = KSP
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

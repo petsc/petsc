@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CXXFLAGS         = ${AMREX_INCLUDE}
-LOCDIR		 = src/ksp/ksp/tutorials/amrex/
 MANSEC           = KSP
 OBJECTS          = main.o MyTest.o initEB.o
 

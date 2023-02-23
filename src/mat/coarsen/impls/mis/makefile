@@ -3,7 +3,6 @@
 SOURCEC   = mis.c
 SOURCEH   =
 LIBBASE   = libpetscmat
-LOCDIR    = src/mat/coarsen/impls/mis/
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
 

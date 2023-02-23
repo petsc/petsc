@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
 
-LOCDIR           = src/snes/tutorials/network/
 DIRS		 = power water
 MANSEC           = SNES
 

@@ -4,7 +4,6 @@ SOURCEH   =
 SOURCEC   = sfallgatherv.c
 LIBBASE   = libpetscvec
 DIRS      =
-LOCDIR    = src/vec/is/sf/impls/basic/allgatherv
 MANSEC    = Vec
 SUBMANSEC = PetscSF
 

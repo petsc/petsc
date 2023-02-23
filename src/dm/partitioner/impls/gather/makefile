@@ -3,7 +3,6 @@
 SOURCEC   = partgather.c
 SOURCEH   =
 LIBBASE   = libpetscdm
-LOCDIR    = src/dm/partitioner/impls/gather/
 MANSEC    = DM
 SUBMANSEC =
 

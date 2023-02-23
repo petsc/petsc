@@ -6,7 +6,6 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscvec
-LOCDIR   = src/vec/vec/interface/ftn-custom/
 MANSEC   = Vec
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

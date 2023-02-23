@@ -4,7 +4,6 @@ SOURCEC   = spaceptrimmed.c
 SOURCEF   =
 LIBBASE   = libpetscdm
 DIRS      = tests
-LOCDIR    = src/dm/dt/space/impls/ptrimmed/
 MANSEC    = DM
 SUBMANSEC = SPACE
 

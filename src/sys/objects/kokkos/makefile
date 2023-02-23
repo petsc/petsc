@@ -8,7 +8,6 @@ SOURCEF  =
 SOURCEH  =
 MANSEC   = Sys
 LIBBASE  = libpetscsys
-LOCDIR   = src/sys/objects/kokkos/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

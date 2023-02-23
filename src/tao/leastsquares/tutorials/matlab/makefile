@@ -2,7 +2,6 @@
 # This directory contains access to matlab test problems for the derivative free
 # least squares solvers.
 
-LOCDIR           = src/tao/leastsquares/tutorials/matlab/
 MANSEC           = Tao
 EXAMPLESMATLAB   = TestingInitialize.m TestingFinalize.m ProblemInitialize.m ProblemFinalize.m
 DIRS             =

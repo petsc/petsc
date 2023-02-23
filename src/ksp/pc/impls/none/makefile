@@ -5,7 +5,6 @@ SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscksp
 DIRS      =
-LOCDIR    = src/ksp/pc/impls/none/
 MANSEC    = KSP
 SUBMANSEC = PC
 

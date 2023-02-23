@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 DIRS     = parmetis ptscotch chaco simple shell gather matpart
-LOCDIR   = src/dm/partitioner/impls/
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

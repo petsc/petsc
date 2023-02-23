@@ -6,7 +6,6 @@ SOURCEH   = color.h
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
-LOCDIR    = src/mat/color/impls/minpack/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

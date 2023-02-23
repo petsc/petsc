@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR           = src/ksp/ksp/tutorials/
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk bench_kspsolve
 NP               = 1

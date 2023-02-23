@@ -4,7 +4,6 @@ SOURCEC   = dspacelagrange.c
 SOURCEF   =
 LIBBASE   = libpetscdm
 DIRS      = tests tutorials
-LOCDIR    = src/dm/dt/dualspace/impls/lagrange/
 MANSEC    = DM
 SUBMANSEC = DUALSPACE
 

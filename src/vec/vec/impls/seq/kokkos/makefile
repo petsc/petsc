@@ -8,7 +8,6 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/seq/kokkos/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

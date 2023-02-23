@@ -3,7 +3,6 @@
 SOURCEC   = partsimple.c
 SOURCEH   =
 LIBBASE   = libpetscdm
-LOCDIR    = src/dm/partitioner/impls/simple/
 MANSEC    = DM
 SUBMANSEC =
 

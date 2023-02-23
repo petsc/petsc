@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR       = src/mat/tests/
 CLEANFILES   = bench_spmv
 
 ex72: ex72.o mmloader.o mmio.o

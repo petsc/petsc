@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR        = src/benchmarks/streams/
 MANSEC        = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

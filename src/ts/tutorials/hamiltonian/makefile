@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/ts/tutorials/hamiltonian
 MANSEC          = TS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

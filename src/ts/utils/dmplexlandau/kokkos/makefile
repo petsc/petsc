@@ -9,7 +9,6 @@ DIRS     =
 LIBBASE  = libpetscts
 MANSEC   = TS
 SUBMANSEC= LANDAU
-LOCDIR   = src/ts/utils/dmplexlandau/kokkos
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

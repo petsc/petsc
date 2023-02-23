@@ -2,7 +2,6 @@
 
 ALL:
 
-LOCDIR    = src/benchmarks/
 MANSEC    = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -4,7 +4,6 @@ SOURCEC   = spacepoint.c
 SOURCEF   =
 LIBBASE   = libpetscdm
 DIRS      =
-LOCDIR    = src/dm/dt/space/impls/point/
 MANSEC    = DM
 SUBMANSEC = SPACE
 

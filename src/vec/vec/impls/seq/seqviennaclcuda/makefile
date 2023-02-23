@@ -7,7 +7,6 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/seq/seqviennaclcuda/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
