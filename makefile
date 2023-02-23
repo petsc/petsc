@@ -440,10 +440,6 @@ deletemanualpages: chk_loc
 allcleanhtml:
 	-${OMAKE_SELF} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
-# Builds simple html versions of the source without links into the $PETSC_ARCH/obj directory, used by make mergegcov
-srchtml:
-	-${OMAKE_SELF} ACTION=simplehtml PETSC_DIR=${PETSC_DIR} alltree_src
-
 ###########################################################
 # targets to build distribution and update docs
 ###########################################################

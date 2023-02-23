@@ -558,23 +558,6 @@ checkmakefilelist:
 	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
 	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
 
-
-# Like the "html" target below, except that it does not do any source transformations that
-# might delete any lines. Used by gcov to map untested lines back to src so the line
-# numbers must not be altered!
-simplehtml: chk_c2html
-	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
-          loc=`pwd | sed -e s?\$${PETSC_DIR}/src?$${PETSC_DIR}/$${PETSC_ARCH}/obj?g -e s?/disks??g`;  \
-          for i in ${SOURCE} foo ; do\
-	    if [ -f $$i ]; then \
-              idir=`dirname $$i`;\
-              if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
-              ${RM} $${loc}/$$i.html; \
-              sed -E "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
-              awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' > $${loc}/$$i.html ; \
-	    fi; \
-         done
-
 html: chk_c2html
 	-@export htmlmap_tmp=$$(mktemp) ;\
           sed -e s?man+manualpages/?man+ROOT/manualpages/? ${LOC}/manualpages/htmlmap_modified > $$htmlmap_tmp ;\
