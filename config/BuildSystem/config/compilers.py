@@ -448,6 +448,7 @@ class Configure(config.base.Configure):
     skipcxxlibraries = 1
     self.setCompilers.saveLog()
     body   = '''#include <iostream>\n#include <vector>\nvoid asub(void)\n{std::vector<int> v;\ntry  { throw 20;  }  catch (int e)  { std::cout << "An exception occurred";  }}'''
+    oldLibs = ''
     try:
       if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
         self.logWrite(self.setCompilers.restoreLog())
