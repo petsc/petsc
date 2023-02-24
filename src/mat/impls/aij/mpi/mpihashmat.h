@@ -45,7 +45,7 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatAssemblyBegin_MPI_Hash(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyBegin_MPI_Hash(Mat A, PETSC_UNUSED MatAssemblyType type)
 {
   PetscInt nstash, reallocs;
 
@@ -110,13 +110,13 @@ static PetscErrorCode MatDestroy_MPI_Hash(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatZeroEntries_MPI_Hash(Mat A)
+static PetscErrorCode MatZeroEntries_MPI_Hash(PETSC_UNUSED Mat A)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetRandom_MPI_Hash(Mat A, PetscRandom r)
+static PetscErrorCode MatSetRandom_MPI_Hash(Mat A, PETSC_UNUSED PetscRandom r)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must set preallocation first");
