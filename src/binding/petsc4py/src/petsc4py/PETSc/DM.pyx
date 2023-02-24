@@ -528,6 +528,15 @@ cdef class DM(Object):
         PetscINCREF(sec.obj)
         return sec
 
+    def setLocalSection(self, Section sec):
+        CHKERR( DMSetLocalSection(self.dm, sec.sec) )
+
+    def getLocalSection(self):
+        cdef Section sec = Section()
+        CHKERR( DMGetLocalSection(self.dm, &sec.sec) )
+        PetscINCREF(sec.obj)
+        return sec
+
     def setGlobalSection(self, Section sec):
         CHKERR( DMSetGlobalSection(self.dm, sec.sec) )
 
@@ -539,6 +548,8 @@ cdef class DM(Object):
 
     setDefaultSection = setSection
     getDefaultSection = getSection
+    setDefaultLocalSection = setLocalSection
+    getDefaultLocalSection = getLocalSection
     setDefaultGlobalSection = setGlobalSection
     getDefaultGlobalSection = getGlobalSection
 

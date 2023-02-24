@@ -64,6 +64,8 @@ cdef extern from * nogil:
     #int DMPlexGetDepthLabel(PetscDM,PetscDMLabel*)
     PetscErrorCode DMPlexGetDepthStratum(PetscDM,PetscInt,PetscInt*,PetscInt*)
     PetscErrorCode DMPlexGetHeightStratum(PetscDM,PetscInt,PetscInt*,PetscInt*)
+    PetscErrorCode DMPlexGetPointDepth(PetscDM,PetscInt,PetscInt*)
+    PetscErrorCode DMPlexGetPointHeight(PetscDM,PetscInt,PetscInt*)
 
     PetscErrorCode DMPlexGetMeet(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
     #int DMPlexGetFullMeet(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
