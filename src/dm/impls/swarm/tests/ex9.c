@@ -968,7 +968,7 @@ static PetscErrorCode InitializeParticles_PerturbedWeights(DM sw, AppCtx *user)
     PetscCall(PetscFree(pidx));
   }
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "particle weight sum = %1.10f cell weight sum = %1.10f\n", (double)totalcellweight, (double)weightsum));
-  if (user->fake_1D) PetscFree(xq_x_extended);
+  if (user->fake_1D) PetscCall(PetscFree(xq_x_extended));
   PetscCall(PetscFree2(weight_x, weight_v));
   PetscCall(PetscQuadratureDestroy(&quad_x));
   PetscCall(DMSwarmSortRestoreAccess(sw));

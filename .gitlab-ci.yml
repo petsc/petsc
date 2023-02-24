@@ -615,7 +615,7 @@ linux-without-fc:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
@@ -685,10 +685,9 @@ linux-pkgs-dbg-ftn-interfaces:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
-    LOAD_MODULES: cmake/3.20.5-yjp2hz6
     OMP_PROC_BIND: "false"
     OMP_NUM_THREADS: 4
 
@@ -719,10 +718,11 @@ linux-pkgs-opt:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-u22-stage3, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-opt
-    LOAD_MODULES: gcc/10.1.0-5hiqhdh
+    LOAD_MODULES: gcc/12.1.0
+    MAKE_CXXFLAGS: -Wno-deprecated-declarations -Werror
 
 linux-pkgs-gcov:
   extends:
@@ -785,10 +785,10 @@ linux-xsdk-dbg:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-xsdk-dbg
-    LOAD_MODULES: gcc/8.3.0-fjpc5ys
+    LOAD_MODULES: gcc/12.1.0
 
 linux-analyzer:
   extends:
@@ -833,27 +833,27 @@ linux-opt-misc:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-u22-stage3, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
-    LOAD_MODULES: gcc/6.5.0-57usejd
+    LOAD_MODULES: gcc/8.5.0
 
 linux-pkgs-64idx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-mcpu
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
-    LOAD_MODULES: cmake/3.20.5-yjp2hz6 intel-mkl/19.5
+    LOAD_MODULES: intel-oneapi-mkl/2022.0.2
 
 linux-64idx-i8:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8
 
@@ -872,7 +872,7 @@ linux-opt-cxx-quad:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-opt-cxx-quad
 
@@ -881,17 +881,18 @@ linux-ILP64:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
-    LOAD_MODULES: mpich/2-1.5-gcc750
+    LOAD_MODULES: gcc/8.5.0 mpich/2-1.5-gcc-8.5.0
+    MAKE_CFLAGS: -Wno-discarded-qualifiers -Werror
 
 linux-64idx-i8-uni:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8-uni
 
