@@ -96,10 +96,8 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
 .  monitor - monitoring routine
-.  mctx - [optional] user-defined context for private data for the
-             monitor routine (use NULL if no context is desired)
--  monitordestroy - [optional] routine that frees monitor context
-          (may be NULL)
+.  mctx - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
+-  monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
 
    Calling sequence of monitor:
 $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
@@ -113,11 +111,10 @@ $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx
    Level: intermediate
 
    Note:
-   This routine adds an additional monitor to the list of monitors that
-   already has been loaded.
+   This routine adds an additional monitor to the list of monitors that already has been loaded.
 
    Fortran Note:
-    Only a single monitor function can be set for each `TS` object
+   Only a single monitor function can be set for each `TS` object
 
 .seealso: [](chapter_ts), `TSMonitorDefault()`, `TSMonitorCancel()`, `TSDMSwarmMonitorMoments()`, `TSMonitorExtreme()`, `TSMonitorDrawSolution()`,
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
@@ -170,7 +167,7 @@ PetscErrorCode TSMonitorCancel(TS ts)
 }
 
 /*@C
-   TSMonitorDefault - The Default monitor, prints the timestep and time for each step
+   TSMonitorDefault - The default monitor, prints the timestep and time for each step
 
    Options Database Key:
 .  -ts_monitor - monitors the time integration
@@ -226,9 +223,9 @@ PetscErrorCode TSMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
 
    Level: intermediate
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the TS integration.
+   to be used during the `TS` integration.
 
 .seealso: [](chapter_ts), `TS`, `TSMonitorSet()`
 @*/
@@ -260,7 +257,7 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
    Collective
 
    Input Parameters:
-+  host - the X display to open, or null for the local machine
++  host - the X display to open, or `NULL` for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of the window
 .  m, n - the screen width and height in pixels
@@ -337,8 +334,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v,
 }
 
 /*@C
-   TSMonitorLGCtxDestroy - Destroys a line graph context that was created
-   with `TSMonitorLGCtxCreate()`.
+   TSMonitorLGCtxDestroy - Destroys a line graph context that was created with `TSMonitorLGCtxCreate()`.
 
    Collective
 
@@ -405,7 +401,7 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Options Database Keys:
 +   -ts_monitor_draw_solution - draw the solution at each time-step
@@ -414,7 +410,7 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
    Level: intermediate
 
    Notes:
-   The initial solution and current solution are not displayed with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
+   The initial solution and current solution are not displayed with a common axis scaling so generally the option `-ts_monitor_draw_solution_initial`
    will look bad
 
    This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, as well as the context created with
@@ -468,7 +464,7 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Level: intermediate
 
@@ -563,7 +559,7 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
    Level: intermediate
 
    Note:
-   The context created by this function,  `PetscMonitorDrawSolution()`, and `TSMonitorDrawCtxDestroy()` should be passed together to `TSMonitorSet()`.
+   The context created by this function, `PetscMonitorDrawSolution()`, and `TSMonitorDrawCtxDestroy()` should be passed together to `TSMonitorSet()`.
 
 .seealso: [](chapter_ts), `TS`, `TSMonitorDrawCtxDestroy()`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorDrawCtx`, `PetscMonitorDrawSolution()`
 @*/
@@ -593,7 +589,7 @@ PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const ch
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Options Database Key:
 .  -ts_monitor_draw_solution_function - Monitor error graphically, requires user to have provided `TSSetSolutionFunction()`
@@ -631,7 +627,7 @@ PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal pti
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Options Database Key:
 .  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided `TSSetSolutionFunction()`
@@ -661,7 +657,7 @@ PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, 
 }
 
 /*@C
-   TSMonitorSolution - Monitors progress of the TS solvers by `VecView()` for the solution at each timestep. Normally the viewer is a binary file or a `PetscDraw` object
+   TSMonitorSolution - Monitors progress of the `TS` solvers by `VecView()` for the solution at each timestep. Normally the viewer is a binary file or a `PetscDraw` object
 
    Collective
 
@@ -868,7 +864,7 @@ PetscErrorCode TSMonitorLGSolution(TS ts, PetscInt step, PetscReal ptime, Vec u,
 
    Input Parameters:
 +  ts - the `TS` context
--  names - the names of the components, final string must be NULL
+-  names - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -898,7 +894,7 @@ PetscErrorCode TSMonitorLGSetVariableNames(TS ts, const char *const *names)
 
    Input Parameters:
 +  ts - the `TS` context
--  names - the names of the components, final string must be NULL
+-  names - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -921,7 +917,7 @@ PetscErrorCode TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx, const char *co
 .  ts - the `TS` context
 
    Output Parameter:
-.  names - the names of the components, final string must be NULL
+.  names - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -953,7 +949,7 @@ PetscErrorCode TSMonitorLGGetVariableNames(TS ts, const char *const **names)
 
    Input Parameters:
 +  ctx - the `TSMonitorLG` context
--  displaynames - the names of the components, final string must be NULL
+-  displaynames - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -995,7 +991,7 @@ PetscErrorCode TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx, const char 
 
    Input Parameters:
 +  ts - the `TS` context
--  displaynames - the names of the components, final string must be NULL
+-  displaynames - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -1385,7 +1381,7 @@ PetscErrorCode TSMonitorEnvelopeCtxCreate(TS ts, TSMonitorEnvelopeCtx *ctx)
    Collective
 
    Input Parameters:
-+  ts - the TS context
++  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
 .  u  - current solution
@@ -1433,10 +1429,10 @@ PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, v
 +  max - the maximum values
 -  min - the minimum values
 
+   Level: intermediate
+
    Notes:
     If the `TS` does not have a `TSMonitorEnvelopeCtx` associated with it then this function is ignored
-
-   Level: intermediate
 
 .seealso: [](chapter_ts), `TSMonitorEnvelopeCtx`, `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetDisplayVariables()`
 @*/
