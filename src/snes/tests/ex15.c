@@ -428,7 +428,7 @@ static PetscErrorCode InitializeConstants(DM sw, AppCtx *user)
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
   PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   PetscCall(DMSwarmGetField(sw, "w_q", NULL, NULL, (void **)&weight));
-  for (p = 0; p < Np; ++p) { totalWeight += weight[p]; }
+  for (p = 0; p < Np; ++p) totalWeight += weight[p];
   totalCharge = -1.0 * totalWeight;
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
   {

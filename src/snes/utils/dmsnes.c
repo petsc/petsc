@@ -489,7 +489,7 @@ PetscErrorCode DMSNESGetObjective(DM dm, PetscErrorCode (**obj)(SNES, Vec, Petsc
    not.
 
    Dveloper Note:
-   If `DM `took a more central role at some later date, this could become the primary method of supplying the smoother
+   If `DM` took a more central role at some later date, this could become the primary method of supplying the smoother
 
 .seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESGSFunction`
 @*/

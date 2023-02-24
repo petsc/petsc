@@ -2641,7 +2641,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (!w) { PetscCall(VecDuplicate(ksp->vec_rhs, &w)); }
+  if (!w) PetscCall(VecDuplicate(ksp->vec_rhs, &w));
   if (!tt) {
     PetscCall(VecDuplicate(ksp->vec_sol, &tt));
     flag = PETSC_TRUE;

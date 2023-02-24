@@ -101,7 +101,7 @@ PetscErrorCode StarGraphSetCoordinates(DM dm)
   PetscCall(DMSetCoordinateDim(dm, 2));
   PetscCall(DMNetworkGetVertexRange(cdm, &vStart, &vEnd));
   PetscCall(DMNetworkRegisterComponent(cdm, "coordinates", 0, &compkey));
-  for (v = vStart; v < vEnd; v++) { PetscCall(DMNetworkAddComponent(cdm, v, compkey, NULL, 2)); }
+  for (v = vStart; v < vEnd; v++) PetscCall(DMNetworkAddComponent(cdm, v, compkey, NULL, 2));
   PetscCall(DMNetworkFinalizeComponents(cdm));
 
   PetscCall(DMCreateLocalVector(cdm, &Coord));

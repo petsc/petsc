@@ -559,7 +559,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   }
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
-    for (i = 0; i < osm->n; i++) { PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix)); }
+    for (i = 0; i < osm->n; i++) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply

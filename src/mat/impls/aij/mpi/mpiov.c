@@ -2950,7 +2950,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
 #endif
       ngcol = 0;
       if (aij->lvec) PetscCall(VecGetSize(aij->lvec, &ngcol));
-      if (aij->garray) { PetscCall(PetscFree(aij->garray)); }
+      if (aij->garray) PetscCall(PetscFree(aij->garray));
       PetscCall(VecDestroy(&aij->lvec));
       PetscCall(VecScatterDestroy(&aij->Mvctx));
     }

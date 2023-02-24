@@ -451,7 +451,7 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
   Developer Note:
   Why does this option require access to the `TS`
 
-.seealso: [](chapter_ts),  `TSTrajectory`, `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetType()`
+.seealso: [](chapter_ts), `TSTrajectory`, `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetType()`
 @*/
 PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type)
 {

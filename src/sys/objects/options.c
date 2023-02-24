@@ -227,7 +227,7 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
 }
 
 /*@
-      PetscOptionsPop - Pop the most recent `PetscOptionsPush() `to return to the previous default options
+      PetscOptionsPop - Pop the most recent `PetscOptionsPush()` to return to the previous default options
 
       Logically collective on whatever communicator was associated with the call to `PetscOptionsCreate()`
 

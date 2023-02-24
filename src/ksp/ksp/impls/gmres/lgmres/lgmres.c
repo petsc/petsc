@@ -600,7 +600,7 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result)
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!lgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &lgmres->sol_temp)); }
+    if (!lgmres->sol_temp) PetscCall(VecDuplicate(ksp->vec_sol, &lgmres->sol_temp));
     ptr = lgmres->sol_temp;
   }
   if (!lgmres->nrs) {

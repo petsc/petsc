@@ -1898,7 +1898,7 @@ PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
   PetscCheck(a->nonew, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
-  if (!a->saved_values) { PetscCall(PetscMalloc1(a->sliidx[a->totalslices] + 1, &a->saved_values)); }
+  if (!a->saved_values) PetscCall(PetscMalloc1(a->sliidx[a->totalslices] + 1, &a->saved_values));
 
   /* copy values over */
   PetscCall(PetscArraycpy(a->saved_values, a->val, a->sliidx[a->totalslices]));

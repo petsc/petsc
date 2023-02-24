@@ -1441,7 +1441,7 @@ static PetscErrorCode MatDenseGetColumnVecWrite_MPIDenseHIP(Mat A, PetscInt col,
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) { PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec)); }
+  if (!a->cvec) PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetLDA(a->A, &lda));
   PetscCall(MatDenseHIPGetArrayWrite(a->A, (PetscScalar **)&a->ptrinuse));

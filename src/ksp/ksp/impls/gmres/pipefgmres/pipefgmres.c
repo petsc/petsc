@@ -541,7 +541,7 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!pipefgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &pipefgmres->sol_temp)); }
+    if (!pipefgmres->sol_temp) PetscCall(VecDuplicate(ksp->vec_sol, &pipefgmres->sol_temp));
     ptr = pipefgmres->sol_temp;
   }
   if (!pipefgmres->nrs) {

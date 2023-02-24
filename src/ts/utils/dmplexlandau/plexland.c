@@ -2267,7 +2267,7 @@ PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec
         const PetscInt    *offsets;
         PetscCall(VecGetArrayRead(vec, &values));
         PetscCall(ISGetIndices(vis, &offsets));
-        for (int i = 0; i < n; i++) { PetscCall(VecSetValue(X, moffset + offsets[i], values[i], ADD_VALUES)); }
+        for (int i = 0; i < n; i++) PetscCall(VecSetValue(X, moffset + offsets[i], values[i], ADD_VALUES));
         PetscCall(VecRestoreArrayRead(vec, &values));
         PetscCall(ISRestoreIndices(vis, &offsets));
       } // batch

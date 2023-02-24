@@ -3069,7 +3069,7 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
 
    Level: developer
 
-.seealso: [PetscSection](sec_petscsection),  `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSymDestroy()`
+.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSymDestroy()`
 @*/
 PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 {
@@ -3132,7 +3132,7 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym, PetscViewer viewer)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection),  `PetscSectionSym`, `PetscSectionGetSym()`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionGetSym()`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 {

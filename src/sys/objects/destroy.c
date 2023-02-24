@@ -140,7 +140,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
    Not Collective
 
    Input Parameters:
-+  obj - any PETSc object, for example a `Vec`, `Mat or `KSP`.
++  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
          This must be cast with a (`PetscObject`), for example,
          `PetscObjectTypeCompare`((`PetscObject`)mat);
 -  type_name - string containing a type name

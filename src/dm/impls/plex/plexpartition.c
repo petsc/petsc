@@ -1217,7 +1217,7 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
 - processSF - A star forest mapping into the local index on each remote rank
 
   Output Parameter:
-. leafLabel - `DMLabel `assigning ranks to remote roots
+. leafLabel - `DMLabel` assigning ranks to remote roots
 
   Level: developer
 

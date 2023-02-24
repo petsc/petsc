@@ -614,7 +614,7 @@ static PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,
 
     Input Parameters:
 +   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
--   skip - `PETSC_TRUE `means do not write header
+-   skip - `PETSC_TRUE` means do not write header
 
     Options Database Key:
 .   -viewer_binary_skip_header <true or false> - true means do not write header

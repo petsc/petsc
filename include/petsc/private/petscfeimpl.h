@@ -298,7 +298,7 @@ static inline PetscErrorCode PetscFEInterpolateAtPoints_Static(PetscFE fe, Petsc
     const PetscInt   Nc    = T->Nc;
     for (fc = 0; fc < Nc; ++fc) {
       interpolant[fc] = 0.0;
-      for (f = 0; f < Nb; ++f) { interpolant[fc] += x[f] * basis[(q * Nb + f) * Nc + fc]; }
+      for (f = 0; f < Nb; ++f) interpolant[fc] += x[f] * basis[(q * Nb + f) * Nc + fc];
     }
   }
   PetscCall(PetscFEPushforward(fe, fegeom, 1, interpolant));

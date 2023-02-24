@@ -1796,7 +1796,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
-      for (p = 0; p < *chartSize; ++p) { PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making pointSF", buffer0[p].rank, p, rank); }
+      for (p = 0; p < *chartSize; ++p) PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making pointSF", buffer0[p].rank, p, rank);
     }
     PetscCall(PetscMalloc1(nleaves, &ilocal));
     PetscCall(PetscMalloc1(nleaves, &iremote));

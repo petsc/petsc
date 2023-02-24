@@ -8245,7 +8245,7 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`,  `DMPlexSetVTKCellHeight()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetVTKCellHeight()`
 @*/
 PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
 {

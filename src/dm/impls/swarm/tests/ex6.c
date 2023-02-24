@@ -585,7 +585,7 @@ static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   PetscCall(VecGetArrayRead(V, &v));
   PetscCall(VecGetArray(Xres, &xres));
   for (p = 0; p < Np; ++p) {
-    for (d = 0; d < dim; ++d) { xres[p * dim + d] = v[p * dim + d]; }
+    for (d = 0; d < dim; ++d) xres[p * dim + d] = v[p * dim + d];
   }
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(VecRestoreArray(Xres, &xres));

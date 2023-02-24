@@ -309,7 +309,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Ve
 }
 
 /*@C
-   DMKSPGetComputeRHS - get `KSP `right hand side evaluation function
+   DMKSPGetComputeRHS - get `KSP` right hand side evaluation function
 
    Not Collective
 

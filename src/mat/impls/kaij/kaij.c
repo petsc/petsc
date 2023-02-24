@@ -756,7 +756,7 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **
     if (values) *values = b->ibdiag;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (!b->ibdiag) { PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag)); }
+  if (!b->ibdiag) PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag));
   if (values) *values = b->ibdiag;
   diag = b->ibdiag;
 

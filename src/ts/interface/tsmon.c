@@ -595,7 +595,7 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
    Level: intermediate
 
    Note:
-   The context created by this function,  `PetscMonitorDrawSolution()`, and `TSMonitorDrawCtxDestroy()` should be passed together to `TSMonitorSet()`.
+   The context created by this function, `PetscMonitorDrawSolution()`, and `TSMonitorDrawCtxDestroy()` should be passed together to `TSMonitorSet()`.
 
 .seealso: [](chapter_ts), `TS`, `TSMonitorDrawCtxDestroy()`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorDrawCtx`, `PetscMonitorDrawSolution()`
 @*/

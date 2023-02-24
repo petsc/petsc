@@ -1033,7 +1033,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA, IS row, const MatFactorInfo *info)
   /* Create the invert permutation so that it can be used in MatCholeskyFactorNumeric() */
   if (a->icol) PetscCall(ISInvertPermutation(row, PETSC_DECIDE, &a->icol));
 
-  if (!a->solve_work) { PetscCall(PetscMalloc1(inA->rmap->N + inA->rmap->bs, &a->solve_work)); }
+  if (!a->solve_work) PetscCall(PetscMalloc1(inA->rmap->N + inA->rmap->bs, &a->solve_work));
 
   PetscCall(MatCholeskyFactorNumeric(outA, inA, info));
   PetscFunctionReturn(PETSC_SUCCESS);
