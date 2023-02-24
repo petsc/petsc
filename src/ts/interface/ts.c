@@ -26,7 +26,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 }
 
 /*@
-   TSSetFromOptions - Sets various `TS` parameters from user options.
+   TSSetFromOptions - Sets various `TS` parameters from the options database
 
    Collective
 
@@ -34,13 +34,13 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Options Database Keys:
-+  -ts_type <type> - EULER, BEULER, SUNDIALS, PSEUDO, CN, RK, THETA, ALPHA, GLLE,  SSP, GLEE, BSYMP, IRK
++  -ts_type <type> - EULER, BEULER, SUNDIALS, PSEUDO, CN, RK, THETA, ALPHA, GLLE,  SSP, GLEE, BSYMP, IRK, see `TSType`
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_time <time> - maximum time to compute to
 .  -ts_time_span <t0,...tf> - sets the time span, solutions are computed and stored for each indicated time
 .  -ts_max_steps <steps> - maximum number of time-steps to take
 .  -ts_init_time <time> - initial time to start computation
-.  -ts_final_time <time> - final time to compute to (deprecated: use -ts_max_time)
+.  -ts_final_time <time> - final time to compute to (deprecated: use `-ts_max_time`)
 .  -ts_dt <dt> - initial time step
 .  -ts_exact_final_time <stepover,interpolate,matchstep> - whether to stop at the exact given final time and how to compute the solution at that time
 .  -ts_max_snes_failures <maxfailures> - Maximum number of nonlinear solve failures allowed
@@ -50,7 +50,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 .  -ts_atol <atol> - Absolute tolerance for local truncation error
 .  -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view - test the Jacobian at each iteration against finite difference with RHS function
 .  -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view - test the Jacobian at each iteration against finite difference with RHS function
-.  -ts_adjoint_solve <yes,no> - After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
+.  -ts_adjoint_solve <yes,no> - After solving the ODE/DAE solve the adjoint problem (requires `-ts_save_trajectory`)
 .  -ts_fd_color - Use finite differences with coloring to compute IJacobian
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_cancel - Cancel all monitors
@@ -75,9 +75,9 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
    Notes:
      See `SNESSetFromOptions()` and `KSPSetFromOptions()` for how to control the nonlinear and linear solves used by the time-stepper.
 
-     Certain `SNES` options get reset for each new nonlinear solver, for example -snes_lag_jacobian <its> and -snes_lag_preconditioner <its>, in order
-     to retain them over the multiple nonlinear solves that TS uses you mush also provide -snes_lag_jacobian_persists true and
-     -snes_lag_preconditioner_persists true
+     Certain `SNES` options get reset for each new nonlinear solver, for example `-snes_lag_jacobian its` and `-snes_lag_preconditioner its`, in order
+     to retain them over the multiple nonlinear solves that `TS` uses you mush also provide `-snes_lag_jacobian_persists true` and
+     `-snes_lag_preconditioner_persists true`
 
    Developer Note:
      We should unify all the -ts_monitor options in the way that -xxx_view has been unified
@@ -455,7 +455,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
    Note:
    This routine should be called after all `TS` options have been set
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSAdjointSolve()`, `TSTrajectory`, `TSTrajectoryCreate()`
+.seealso: [](chapter_ts), `TS`, `TSTrajectory`, `TSAdjointSolve()`, `TSTrajectory`, `TSTrajectoryCreate()`
 @*/
 PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr)
 {
@@ -485,7 +485,7 @@ PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr)
    The `TSTRAJECTORYVISUALIZATION` files can be loaded into Python with $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py and
    MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSGetTrajectory()`, `TSAdjointSolve()`
+.seealso: [](chapter_ts), `TS`, `TSTrajectory`, `TSGetTrajectory()`, `TSAdjointSolve()`
 @*/
 PetscErrorCode TSSetSaveTrajectory(TS ts)
 {
@@ -519,7 +519,7 @@ PetscErrorCode TSResetTrajectory(TS ts)
 }
 
 /*@
-   TSRemoveTrajectory - Destroys and removes the internal `TSTrajectory` object from TS
+   TSRemoveTrajectory - Destroys and removes the internal `TSTrajectory` object from a `TS`
 
    Collective
 
@@ -775,7 +775,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 }
 
 /*@
-   TSComputeIFunction - Evaluates the DAE residual written in implicit form F(t,U,Udot)=0
+   TSComputeIFunction - Evaluates the DAE residual written in the implicit form F(t,U,Udot)=0
 
    Collective
 
@@ -842,10 +842,10 @@ PetscErrorCode TSComputeIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec Y, Pe
 }
 
 /*
-   TSRecoverRHSJacobian - Recover the Jacobian matrix so that one can call TSComputeRHSJacobian() on it.
+   TSRecoverRHSJacobian - Recover the Jacobian matrix so that one can call `TSComputeRHSJacobian()` on it.
 
    Note:
-   This routine is needed when one switches from TSComputeIJacobian() to TSComputeRHSJacobian() because the Jacobian matrix may be shifted or scaled in TSComputeIJacobian().
+   This routine is needed when one switches from `TSComputeIJacobian()` to `TSComputeRHSJacobian()` because the Jacobian matrix may be shifted or scaled in `TSComputeIJacobian()`.
 
 */
 static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
@@ -882,15 +882,15 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
 
    Output Parameters:
 +  A - Jacobian matrix
--  B - matrix from which the preconditioner is constructed; often the same as A
+-  B - matrix from which the preconditioner is constructed; often the same as `A`
 
    Level: developer
 
    Notes:
    If F(t,U,Udot)=0 is the DAE, the required Jacobian is
-
+.vb
    dF/dU + shift*dF/dUdot
-
+.ve
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers.
 
@@ -1017,10 +1017,9 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
 
     Input Parameters:
 +   ts - the `TS` context obtained from `TSCreate()`
-.   r - vector to put the computed right hand side (or NULL to have it created)
+.   r - vector to put the computed right hand side (or `NULL` to have it created)
 .   f - routine for evaluating the right-hand-side function
--   ctx - [optional] user-defined context for private data for the
-          function evaluation routine (may be NULL)
+-   ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
     Calling sequence of f:
 $     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
@@ -1069,7 +1068,7 @@ PetscErrorCode TSSetRHSFunction(TS ts, Vec r, PetscErrorCode (*f)(TS, PetscReal,
 +   ts - the `TS` context obtained from `TSCreate()`
 .   f - routine for evaluating the solution
 -   ctx - [optional] user-defined context for private data for the
-          function evaluation routine (may be NULL)
+          function evaluation routine (may be `NULL`)
 
     Calling sequence of f:
 $     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
@@ -1113,7 +1112,7 @@ PetscErrorCode TSSetSolutionFunction(TS ts, PetscErrorCode (*f)(TS, PetscReal, V
 +   ts - the `TS` context obtained from `TSCreate()`
 .   func - routine for evaluating the forcing function
 -   ctx - [optional] user-defined context for private data for the
-          function evaluation routine (may be NULL)
+          function evaluation routine (may be `NULL`)
 
     Calling sequence of func:
 $     PetscErrorCode func (TS ts,PetscReal t,Vec f,void *ctx);
@@ -1157,11 +1156,10 @@ PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
-.  Amat - (approximate) Jacobian matrix
-.  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
+.  Amat - (approximate) location to store Jacobian matrix entries computed by `f`
+.  Pmat - matrix from which preconditioner is to be constructed (usually the same as `Amat`)
 .  f   - the Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the
-         Jacobian evaluation routine (may be NULL)
+-  ctx - [optional] user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of f:
 $     PetscErrorCode f(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
@@ -1169,7 +1167,7 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 +  t - current timestep
 .  u - input vector
 .  Amat - (approximate) Jacobian matrix
-.  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
+.  Pmat - matrix from which preconditioner is to be constructed (usually the same as `Amat`)
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
    Level: beginner
@@ -1220,9 +1218,9 @@ PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
-.  r   - vector to hold the residual (or NULL to have it created internally)
+.  r   - vector to hold the residual (or `NULL` to have it created internally)
 .  f   - the function evaluation routine
--  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
+-  ctx - user-defined context for private data for the function evaluation routine (may be `NULL`)
 
    Calling sequence of f:
 $     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
@@ -1272,9 +1270,9 @@ PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunction f, void *ctx)
 .  ts - the `TS` context
 
    Output Parameters:
-+  r - vector to hold residual (or NULL)
-.  func - the function to compute residual (or NULL)
--  ctx - the function context (or NULL)
++  r - vector to hold residual (or `NULL`)
+.  func - the function to compute residual (or `NULL`)
+-  ctx - the function context (or `NULL`)
 
    Level: advanced
 
@@ -1303,9 +1301,9 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunction *func, void **ctx)
 .  ts - the `TS` context
 
    Output Parameters:
-+  r - vector to hold computed right hand side (or NULL)
-.  func - the function to compute right hand side (or NULL)
--  ctx - the function context (or NULL)
++  r - vector to hold computed right hand side (or `NULL`)
+.  func - the function to compute right hand side (or `NULL`)
+-  ctx - the function context (or `NULL`)
 
    Level: advanced
 
@@ -1333,10 +1331,10 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
-.  Amat - (approximate) Jacobian matrix
-.  Pmat - matrix used to compute preconditioner (usually the same as Amat)
+.  Amat - (approximate) matrix to store Jacobian entires computed by `f`
+.  Pmat - matrix used to compute preconditioner (usually the same as `Amat`)
 .  f   - the Jacobian evaluation routine
--  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
+-  ctx - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of f:
 $    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
@@ -1346,16 +1344,16 @@ $    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat P
 .  U_t  - time derivative of state vector
 .  a    - shift
 .  Amat - (approximate) Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
-.  Pmat - matrix used for constructing preconditioner, usually the same as Amat
+.  Pmat - matrix used for constructing preconditioner, usually the same as `Amat`
 -  ctx  - [optional] user-defined context for matrix evaluation routine
 
    Level: beginner
 
    Notes:
-   The matrices Amat and Pmat are exactly the matrices that are used by `SNES` for the nonlinear solve.
+   The matrices `Amat` and `Pmat` are exactly the matrices that are used by `SNES` for the nonlinear solve.
 
    If you know the operator Amat has a null space you can use `MatSetNullSpace()` and `MatSetTransposeNullSpace()` to supply the null
-   space to Amat and the `KSP` solvers will automatically use that null space as needed during the solution process.
+   space to `Amat` and the `KSP` solvers will automatically use that null space as needed during the solution process.
 
    The matrix dF/dU + a*dF/dU_t you provide turns out to be
    the Jacobian of F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
@@ -1366,8 +1364,8 @@ $    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat P
 
    You must set all the diagonal entries of the matrices, if they are zero you must still set them with a zero value
 
-   The TS solver may modify the nonzero structure and the entries of the matrices Amat and Pmat between the calls to f()
-   You should not assume the values are the same in the next call to f() as you set them in the previous call.
+   The TS solver may modify the nonzero structure and the entries of the matrices `Amat` and `Pmat` between the calls to `f`
+   You should not assume the values are the same in the next call to `f` as you set them in the previous call.
 
 .seealso: [](chapter_ts), `TS`, `TSSetIFunction()`, `TSSetRHSJacobian()`, `SNESComputeJacobianDefaultColor()`, `SNESComputeJacobianDefault()`, `TSSetRHSFunction()`
 @*/
@@ -1395,7 +1393,7 @@ PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ct
    TSRHSJacobianSetReuse - restore RHS Jacobian before re-evaluating.  Without this flag, `TS` will change the sign and
    shift the RHS Jacobian for a finite-time-step implicit solve, in which case the user function will need to recompute
    the entire Jacobian.  The reuse flag must be set if the evaluation function will assume that the matrix entries have
-   not been changed by the TS.
+   not been changed by the `TS`.
 
    Logically Collective
 
@@ -1421,9 +1419,9 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
-.  F   - vector to hold the residual (or NULL to have it created internally)
+.  F   - vector to hold the residual (or `NULL` to have it created internally)
 .  fun - the function evaluation routine
--  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
+-  ctx - user-defined context for private data for the function evaluation routine (may be `NULL`)
 
    Calling sequence of fun:
 $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
@@ -1433,7 +1431,7 @@ $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 .  U_t  - time derivative of state vector
 .  U_tt - second time derivative of state vector
 .  F    - function vector
--  ctx  - [optional] user-defined context for matrix evaluation routine (may be NULL)
+-  ctx  - [optional] user-defined context for matrix evaluation routine (may be `NULL`)
 
    Level: beginner
 
@@ -1461,9 +1459,9 @@ PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2Function fun, void *ctx)
 . ts - the `TS` context
 
   Output Parameters:
-+ r - vector to hold residual (or NULL)
-. fun - the function to compute residual (or NULL)
-- ctx - the function context (or NULL)
++ r - vector to hold residual (or `NULL`)
+. fun - the function to compute residual (or `NULL`)
+- ctx - the function context (or `NULL`)
 
   Level: advanced
 
@@ -1491,10 +1489,10 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
-.  J   - Jacobian matrix
-.  P   - preconditioning matrix for J (may be same as J)
+.  J   - matrix to hold the Jacobian values
+.  P   - matrix for constructing the preconditioner (may be same as `J`)
 .  jac - the Jacobian evaluation routine
--  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
+-  ctx - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
    Calling sequence of jac:
 $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat J,Mat P,void *ctx);
@@ -1512,7 +1510,7 @@ $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,Pet
    Level: beginner
 
    Notes:
-   The matrices J and P are exactly the matrices that are used by `SNES` for the nonlinear solve.
+   The matrices `J` and `P` are exactly the matrices that are used by `SNES` for the nonlinear solve.
 
    The matrix dF/dU + v*dF/dU_t + a*dF/dU_tt you provide turns out to be
    the Jacobian of G(U) = F(t,U,W+v*U,W'+a*U) where F(t,U,U_t,U_tt) = 0 is the DAE to be solved.
@@ -1545,14 +1543,14 @@ PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2Jacobian jac, void *ctx)
 
   Output Parameters:
 + J  - The (approximate) Jacobian of F(t,U,U_t,U_tt)
-. P - The matrix from which the preconditioner is constructed, often the same as J
+. P - The matrix from which the preconditioner is constructed, often the same as `J`
 . jac - The function to compute the Jacobian matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
   Level: advanced
 
-  Notes:
-    You can pass in NULL for any return argument you do not need.
+  Note:
+    You can pass in `NULL` for any return argument you do not need.
 
 .seealso: [](chapter_ts), `TS`, `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`, `TSSetI2Jacobian()`, `TSGetI2Function()`, `TSCreate()`
 @*/
@@ -1725,8 +1723,9 @@ $     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
    well-conditioned formulations even in limiting cases such as low-Mach or zero porosity).  The transient variable is
    C(P), specified by calling this function.  An IFunction thus receives arguments (P, Cdot) and the IJacobian must be
    evaluated via the chain rule, as in
-
+.vb
      dF/dP + shift * dF/dCdot dC/dP.
+.ve
 
 .seealso: [](chapter_ts), `TS`, `TSBDF`, `DMTSSetTransientVariable()`, `DMTSGetTransientVariable()`, `TSSetIFunction()`, `TSSetIJacobian()`
 @*/
@@ -1756,7 +1755,7 @@ PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariable tvar, void *ctx
    Level: developer
 
    Developer Note:
-   If `DMTSSetTransientVariable()` has not been called, then C is not modified in this routine and C = NULL is allowed.
+   If `DMTSSetTransientVariable()` has not been called, then C is not modified in this routine and C = `NULL` is allowed.
    This makes it safe to call without a guard.  One can use `TSHasTransientVariable()` to check if transient variables are
    being used.
 
@@ -1785,7 +1784,7 @@ PetscErrorCode TSComputeTransientVariable(TS ts, Vec U, Vec C)
    Logically Collective
 
    Input Parameters:
-.  ts - TS on which to compute
+.  ts - `TS` on which to compute
 
    Output Parameters:
 .  has - `PETSC_TRUE` if transient variables have been set
@@ -1841,7 +1840,7 @@ PetscErrorCode TS2SetSolution(TS ts, Vec u, Vec v)
    that you are evaluating in order to move to the new timestep. This vector not
    changed until the solution at the next timestep has been calculated.
 
-   Not Collective, but Vec returned is parallel if `TS` is parallel
+   Not Collective, but `u` returned is parallel if `TS` is parallel
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -2102,8 +2101,8 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
    Level: intermediate
 
    Fortran Note:
-    To use this from Fortran you must write a Fortran interface definition for this
-    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+    You must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the `ctx` argument.
 
 .seealso: [](chapter_ts), `TS`, `TSGetApplicationContext()`
 @*/
@@ -2130,8 +2129,8 @@ PetscErrorCode TSSetApplicationContext(TS ts, void *usrP)
     Level: intermediate
 
     Fortran Note:
-    To use this from Fortran you must write a Fortran interface definition for this
-    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+    You must write a Fortran interface definition for this
+    function that tells Fortran the Fortran derived data type that you are passing in as the `ctx` argument.
 
 .seealso: [](chapter_ts), `TS`, `TSSetApplicationContext()`
 @*/
@@ -2185,7 +2184,7 @@ PetscErrorCode TSGetStepNumber(TS ts, PetscInt *steps)
    reinitialize timestepping by setting the step counter to zero (and time
    to the initial time) to solve a similar problem with different initial
    conditions or parameters. Other possible use case is to continue
-   timestepping from a previously interrupted run in such a way that TS
+   timestepping from a previously interrupted run in such a way that `TS`
    monitors will be called with a initial nonzero step counter.
 
 .seealso: [](chapter_ts), `TS`, `TSGetStepNumber()`, `TSSetTime()`, `TSSetTimeStep()`, `TSSetSolution()`
@@ -2348,11 +2347,11 @@ PetscErrorCode TSGetSolution(TS ts, Vec *v)
 
    Parameters :
 +  ts - the `TS` context obtained from `TSCreate()` (input parameter).
-.  n - If v is NULL, then the number of solution components is
+.  n - If v is `NULL`, then the number of solution components is
        returned through n, else the n-th solution component is
        returned in v.
 -  v - the vector containing the n-th solution component
-       (may be NULL to use this function to find out
+       (may be `NULL` to use this function to find out
         the number of solutions components).
 
    Level: advanced
@@ -2752,7 +2751,7 @@ PetscErrorCode TSDestroy(TS *ts)
    `KSP`, and `PC` contexts as well.
 
    `TSGetSNES()` does not work for integrators that do not use `SNES`; in
-   this case `TSGetSNES()` returns NULL in snes.
+   this case `TSGetSNES()` returns `NULL` in `snes`.
 
 .seealso: [](chapter_ts), `TS`, `SNES`, `TSCreate()`, `TSSetUp()`, `TSSolve()`
 @*/
@@ -2811,7 +2810,7 @@ PetscErrorCode TSSetSNES(TS ts, SNES snes)
    TSGetKSP - Returns the `KSP` (linear solver) associated with
    a `TS` (timestepper) context.
 
-   Not Collective, but ksp is parallel if ts is parallel
+   Not Collective, but `ksp` is parallel if `ts` is parallel
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -2827,7 +2826,7 @@ PetscErrorCode TSSetSNES(TS ts, SNES snes)
    `PC` context as well.
 
    `TSGetKSP()` does not work for integrators that do not use `KSP`;
-   in this case `TSGetKSP()` returns NULL in ksp.
+   in this case `TSGetKSP()` returns `NULL` in `ksp`.
 
 .seealso: [](chapter_ts), `TS`, `SNES`, `KSP`, `TSCreate()`, `TSSetUp()`, `TSSolve()`, `TSGetSNES()`
 @*/
@@ -3322,7 +3321,7 @@ $ func (TS ts);
   Level: intermediate
 
   Note:
-  The function set by `TSSetPostStep()` is called after each successful step. The solution vector X
+  The function set by `TSSetPostStep()` is called after each successful step. The solution vector
   obtained by `TSGetSolution()` may be different than that computed at the step end if the event handler
   locates an event and `TSPostEvent()` modifies it. Use `TSSetPostEvaluate()` if an unmodified solution is needed instead.
 
@@ -3337,7 +3336,7 @@ PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 }
 
 /*@
-  TSPostStep - Runs the user-defined post-step function that was set with `TSSetPotsStep()`
+  TSPostStep - Runs the user-defined post-step function that was set with `TSSetPostStep()`
 
   Collective
 
@@ -3524,7 +3523,7 @@ PetscErrorCode TSEvaluateWLTE(TS ts, NormType wnormtype, PetscInt *order, PetscR
    Input Parameters:
 +  ts - time stepping context
 .  order - desired order of accuracy
--  done - whether the step was evaluated at this order (pass NULL to generate an error if not available)
+-  done - whether the step was evaluated at this order (pass `NULL` to generate an error if not available)
 
    Output Parameter:
 .  U - state at the end of the current step
@@ -4038,7 +4037,7 @@ PetscErrorCode TSAppendOptionsPrefix(TS ts, const char prefix[])
    Level: intermediate
 
    Fortran Note:
-   On the fortran side, the user should pass in a string 'prefix' of
+   The user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
 .seealso: [](chapter_ts), `TS`, `TSAppendOptionsPrefix()`, `TSSetFromOptions()`
@@ -4061,15 +4060,15 @@ PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])
 .  ts  - The `TS` context obtained from `TSCreate()`
 
    Output Parameters:
-+  Amat - The (approximate) Jacobian J of G, where U_t = G(U,t)  (or NULL)
-.  Pmat - The matrix from which the preconditioner is constructed, usually the same as Amat  (or NULL)
-.  func - Function to compute the Jacobian of the RHS  (or NULL)
--  ctx - User-defined context for Jacobian evaluation routine  (or NULL)
++  Amat - The (approximate) Jacobian J of G, where U_t = G(U,t)  (or `NULL`)
+.  Pmat - The matrix from which the preconditioner is constructed, usually the same as `Amat`  (or `NULL`)
+.  func - Function to compute the Jacobian of the RHS  (or `NULL`)
+-  ctx - User-defined context for Jacobian evaluation routine  (or `NULL`)
 
    Level: intermediate
 
    Note:
-    You can pass in NULL for any return argument you do not need.
+    You can pass in `NULL` for any return argument you do not need.
 
 .seealso: [](chapter_ts), `TS`, `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
 
@@ -4100,17 +4099,16 @@ PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobian *func
 
    Output Parameters:
 +  Amat  - The (approximate) Jacobian of F(t,U,U_t)
-.  Pmat - The matrix from which the preconditioner is constructed, often the same as Amat
+.  Pmat - The matrix from which the preconditioner is constructed, often the same as `Amat`
 .  f   - The function to compute the matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
    Level: advanced
 
    Note:
-    You can pass in NULL for any return argument you do not need.
+    You can pass in `NULL` for any return argument you do not need.
 
 .seealso: [](chapter_ts), `TS`, `TSGetTimeStep()`, `TSGetRHSJacobian()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
-
 @*/
 PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobian *f, void **ctx)
 {
@@ -4136,7 +4134,7 @@ PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobian *f, void 
 
    Input Parameters:
 +  ts - the `TS` integrator object
--  dm - the dm, cannot be NULL
+-  dm - the dm, cannot be `NULL`
 
    Level: intermediate
 
@@ -4181,7 +4179,7 @@ PetscErrorCode TSSetDM(TS ts, DM dm)
 . ts - the `TS`
 
    Output Parameter:
-.  dm - the dm
+.  dm - the `DM`
 
    Level: intermediate
 
@@ -4555,7 +4553,7 @@ PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime)
 
    Level: intermediate
 
-   Notes:
+   Note:
    This counter is reset to zero for each successive call to `TSSolve()`.
 
 .seealso: [](chapter_ts), `TS`, `TSSolve()`, `TSGetKSPIterations()`
@@ -4700,7 +4698,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
 }
 
 /*@
-   TSSetErrorIfStepFails - Immediately error if no step succeeds
+   TSSetErrorIfStepFails - Immediately error if no step succeeds during `TSSolve()`
 
    Not Collective
 
@@ -4726,7 +4724,7 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts, PetscBool err)
 /*@
    TSGetAdapt - Get the adaptive controller context for the current method
 
-   Collective on ts if controller has not been created yet
+   Collective on `ts` if controller has not been created yet
 
    Input Parameter:
 .  ts - time stepping context
@@ -4752,18 +4750,18 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt)
 }
 
 /*@
-   TSSetTolerances - Set tolerances for local truncation error when using adaptive controller
+   TSSetTolerances - Set tolerances for local truncation error when using an adaptive controller
 
    Logically Collective
 
    Input Parameters:
 +  ts - time integration context
 .  atol - scalar absolute tolerances, `PETSC_DECIDE` to leave current value
-.  vatol - vector of absolute tolerances or NULL, used in preference to atol if present
+.  vatol - vector of absolute tolerances or `NULL`, used in preference to atol if present
 .  rtol - scalar relative tolerances, `PETSC_DECIDE` to leave current value
--  vrtol - vector of relative tolerances or NULL, used in preference to atol if present
+-  vrtol - vector of relative tolerances or `NULL`, used in preference to atol if present
 
-   Options Database keys:
+   Options Database Keys:
 +  -ts_rtol <rtol> - relative tolerance for local truncation error
 -  -ts_atol <atol> - Absolute tolerance for local truncation error
 
@@ -4806,10 +4804,10 @@ PetscErrorCode TSSetTolerances(TS ts, PetscReal atol, Vec vatol, PetscReal rtol,
 .  ts - time integration context
 
    Output Parameters:
-+  atol - scalar absolute tolerances, NULL to ignore
-.  vatol - vector of absolute tolerances, NULL to ignore
-.  rtol - scalar relative tolerances, NULL to ignore
--  vrtol - vector of relative tolerances, NULL to ignore
++  atol - scalar absolute tolerances, `NULL` to ignore
+.  vatol - vector of absolute tolerances, `NULL` to ignore
+.  rtol - scalar relative tolerances, `NULL` to ignore
+-  vrtol - vector of relative tolerances, `NULL` to ignore
 
    Level: beginner
 
@@ -5671,7 +5669,7 @@ PetscErrorCode TSRollBack(TS ts)
    Level: advanced
 
    Note:
-   Both ns and Y can be NULL.
+   Both `ns` and `Y` can be `NULL`.
 
 .seealso: [](chapter_ts), `TS`, `TSCreate()`
 @*/
@@ -5703,7 +5701,7 @@ PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y)
 
   Output Parameters:
 + J - Jacobian matrix (not altered in this routine)
-- B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
+- B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
 
   Level: intermediate
 
@@ -5837,7 +5835,7 @@ PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBoo
 }
 
 /*@C
-  TSClone - This function clones a time step object.
+  TSClone - This function clones a time step `TS` object.
 
   Collective
 
@@ -5853,7 +5851,12 @@ PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBoo
   This function is used to create a clone of a `TS` object. It is used in `TSARKIMEX` for initializing the slope for first stage explicit methods.
   It will likely be replaced in the future with a mechanism of switching methods on the fly.
 
-  When using `TSDestroy()` on a clone the user has to first reset the correct `TS` reference in the embedded `SNES` object: e.g.: by running `SNES` snes_dup=NULL; `TSGetSNES`(ts,&snes_dup); `TSSetSNES`(ts,snes_dup);
+  When using `TSDestroy()` on a clone the user has to first reset the correct `TS` reference in the embedded `SNES` object: e.g., by running
+.vb
+ SNES snes_dup = NULL;
+ TSGetSNES(ts,&snes_dup);
+ TSSetSNES(ts,snes_dup);
+.ve
 
 .seealso: [](chapter_ts), `TS`, `SNES`, `TSCreate()`, `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`
 @*/
@@ -5956,7 +5959,7 @@ static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec
    Level: advanced
 
    Note:
-    This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+    This only works for problems defined using `TSSetRHSFunction()` and Jacobian NOT `TSSetIFunction()` and Jacobian
 
 .seealso: [](chapter_ts), `TS`, `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMultTranspose()`, `TSRHSJacobianTestTranspose()`
 @*/
@@ -5990,7 +5993,7 @@ PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg)
    Level: advanced
 
    Notes:
-    This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+    This only works for problems defined using `TSSetRHSFunction()` and Jacobian NOT `TSSetIFunction()` and Jacobian
 
 .seealso: [](chapter_ts), `TS`, `Mat`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMultTranspose()`, `TSRHSJacobianTest()`
 @*/
@@ -6022,7 +6025,7 @@ PetscErrorCode TSRHSJacobianTestTranspose(TS ts, PetscBool *flg)
   Level: intermediate
 
   Note:
-    This is only useful for multirate methods
+  This is only for multirate methods
 
 .seealso: [](chapter_ts), `TS`, `TSGetUseSplitRHSFunction()`
 @*/
@@ -6130,7 +6133,7 @@ PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
 }
 
 /*@C
-  TSGetTimeSpan - gets the time span.
+  TSGetTimeSpan - gets the time span set with `TSSetTimeSpan()`
 
   Not Collective
 
@@ -6140,12 +6143,13 @@ PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
   Output Parameters:
 + n - number of the time points (>=2)
 - span_times - array of the time points. The first element and the last element are the initial time and the final time respectively.
-  The values are valid until the `TS` object is destroyed.
 
   Level: beginner
 
   Note:
-  Both n and span_times can be NULL.
+  The values obtained are valid until the `TS` object is destroyed.
+
+  Both `n` and `span_times` can be `NULL`.
 
 .seealso: [](chapter_ts), `TS`, `TSSetTimeSpan()`, `TSGetTimeSpanSolutions()`
  @*/
@@ -6178,9 +6182,9 @@ PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal **span_times)
    Level: intermediate
 
    Notes:
-    Both nsol and Sols can be NULL.
+    Both `nsol` and `Sols` can be `NULL`.
 
-    Some time points in the time span may be skipped by TS so that nsol is less than the number of points specified by `TSSetTimeSpan()`.
+    Some time points in the time span may be skipped by `TS` so that `nsol` is less than the number of points specified by `TSSetTimeSpan()`.
     For example, manipulating the step size, especially with a reduced precision, may cause `TS` to step over certain points in the span.
 
 .seealso: [](chapter_ts), `TS`, `TSSetTimeSpan()`
@@ -6204,26 +6208,26 @@ PetscErrorCode TSGetTimeSpanSolutions(TS ts, PetscInt *nsol, Vec **Sols)
 /*@C
   TSPruneIJacobianColor - Remove nondiagonal zeros in the Jacobian matrix and update the `MatMFFD` coloring information.
 
-  Collective on TS
+  Collective
 
   Input Parameters:
-+ ts - the TS context
++ ts - the `TS` context
 . J - Jacobian matrix (not altered in this routine)
-- B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
+- B - newly computed Jacobian matrix to use with preconditioner
 
   Level: intermediate
 
   Notes:
-  This function improves the `MatMFFD` coloring performance when the Jacobian matrix is overallocated or contains
-  many constant zeros entries, which is typically the case when the matrix is generated by a DM
+  This function improves the `MatFDColoring` performance when the Jacobian matrix was over-allocated or contains
+  many constant zeros entries, which is typically the case when the matrix is generated by a `DM`
   and multiple fields are involved.
 
   Users need to make sure that the Jacobian matrix is properly filled to reflect the sparsity
-  structure. For `MatMFFD` coloring, the values of nonzero entries are not important. So one can
+  structure. For `MatFDColoring`, the values of nonzero entries are not important. So one can
   usually call `TSComputeIJacobian()` with randomized input vectors to generate a dummy Jacobian.
   `TSComputeIJacobian()` should be called before `TSSolve()` but after `TSSetUp()`.
 
-.seealso: `TSComputeIJacobianDefaultColor()`, `MatEliminateZeros()`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
+.seealso: [](chapter_ts), `TS`, `MatFDColoring`, `TSComputeIJacobianDefaultColor()`, `MatEliminateZeros()`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
 @*/
 PetscErrorCode TSPruneIJacobianColor(TS ts, Mat J, Mat B)
 {

@@ -19,7 +19,7 @@ struct _n_TSMonitorSPEigCtx {
    Collective
 
    Input Parameters:
-+  host - the X display to open, or null for the local machine
++  host - the X display to open, or `NULL` for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of the window
 .  m, n - the screen width and height in pixels
