@@ -447,7 +447,11 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
       PetscCall(KSPDestroy(&t_ksp[grid][tid]));
     }
   }
-  PetscCall(PetscInfo(X, "Total number density: %20.12e (%20.12e); x-momentum = %20.12e (%20.12e); energy = %20.12e (%20.12e) error = %e (log10 of error = %" PetscInt_FMT "), %" PetscInt_FMT " particles. Use %" PetscInt_FMT " threads\n", (double)moments_1[0], (double)moments_0[0], (double)moments_1[1], (double)moments_0[1], (double)moments_1[2], (double)moments_0[2], (double)((moments_1[2] - moments_0[2]) / moments_0[2]), (PetscInt)PetscLog10Real(PetscAbsReal((moments_1[2] - moments_0[2]) / moments_0[2])), nTargetP, numthreads));
+  {
+    PetscReal relerr = PetscAbsReal((moments_1[2] - moments_0[2]) / moments_0[2]), logEerr = PetscLog10Real(relerr);
+    PetscCall(PetscInfo(X, "Total number density: %20.12e (%20.12e); x-momentum = %20.12e (%20.12e); energy = %20.12e (%20.12e) rerr = %e (log10(rerr) = %e, %" PetscInt_FMT "), %" PetscInt_FMT " particles. Use %" PetscInt_FMT " threads\n", (double)moments_1[0], (double)moments_0[0], (double)moments_1[1], (double)moments_0[1], (double)moments_1[2], (double)moments_0[2], (double)relerr, (double)logEerr, -((-(PetscInt)logEerr + 1) / 2) * 2, nTargetP, numthreads));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
