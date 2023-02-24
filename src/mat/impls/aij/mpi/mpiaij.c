@@ -3017,8 +3017,8 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
   /* It may happen MatDuplicate is called with a non-assembled matrix
      In fact, MatDuplicate only requires the matrix to be preallocated
      This may happen inside a DMCreateMatrix_Shell */
-  if (oldmat->lvec) { PetscCall(VecDuplicate(oldmat->lvec, &a->lvec)); }
-  if (oldmat->Mvctx) { PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx)); }
+  if (oldmat->lvec) PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
+  if (oldmat->Mvctx) PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
   PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
   PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));

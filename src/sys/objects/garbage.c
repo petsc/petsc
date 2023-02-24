@@ -94,7 +94,7 @@ static PetscErrorCode GarbageKeySortedIntersect_Private(PetscInt64 seta[], Petsc
     PetscCheck(sorted, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Provided array in argument 3 is not sorted");
   }
   for (ii = 0; ii < *lena; ii++) {
-    while (jj < lenb && seta[ii] > setb[jj]) { jj++; }
+    while (jj < lenb && seta[ii] > setb[jj]) jj++;
     if (jj >= lenb) break;
     if (seta[ii] == setb[jj]) {
       seta[counter] = seta[ii];

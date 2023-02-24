@@ -2531,7 +2531,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
    Level: intermediate
 
 .seealso: `MATDENSE`, `MatDenseRestoreArrayWriteAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayRead()`,
-  `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`,  `MatSeqAIJGetCSRAndMemType()`
+  `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
 @*/
 PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
 {
@@ -3508,7 +3508,7 @@ PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) { PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, &a->cvec)); }
+  if (!a->cvec) PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetArrayWrite(A, (PetscScalar **)&a->ptrinuse));
   PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));

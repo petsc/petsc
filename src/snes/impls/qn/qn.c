@@ -536,7 +536,7 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       Uses left nonlinear preconditioning by default.
 
 .seealso: `SNESQNRestartType`, `SNESQNSetRestartType()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`,
-          `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNSetType`, `SNESQNSetType ()`
+          `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNSetType`, `SNESQNSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 {

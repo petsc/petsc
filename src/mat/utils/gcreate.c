@@ -729,7 +729,7 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
    The bindingpropagates flag itself is also propagated by the above routines.
 
    Developer Note:
-   If the fine-scale `DMDA `has the -dm_bind_below option set to true, then `DMCreateInterpolationScale()` calls `MatSetBindingPropagates()`
+   If the fine-scale `DMDA` has the `-dm_bind_below` option set to true, then `DMCreateInterpolationScale()` calls `MatSetBindingPropagates()`
    on the restriction/interpolation operator to set the bindingpropagates flag to true.
 
 .seealso: `VecSetBindingPropagates()`, `MatGetBindingPropagates()`

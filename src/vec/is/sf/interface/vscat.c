@@ -1284,7 +1284,7 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
 
-.seealso: [](sec_scatter),  `VecScatter`, `VecScatterCreate()`, `VecScatterEnd()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterEnd()`
 @*/
 PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
 {

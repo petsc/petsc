@@ -239,7 +239,7 @@ PetscErrorCode CreateSFs_Regular(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafO
     PetscCall(PetscSFCreate(ctx->comm, &sf));
     if (ctx->sparseLeaves) {
       PetscCall(PetscCalloc1(nLeaves + 1, &ilocal));
-      for (j = 0; j < nLeaves; j++) { ilocal[j + 1] = ilocal[j] + ctx->leaveStep; }
+      for (j = 0; j < nLeaves; j++) ilocal[j + 1] = ilocal[j] + ctx->leaveStep;
       lOffsets[i + 1] = lOffsets[i] + ilocal[nLeaves];
     }
     switch (mode) {

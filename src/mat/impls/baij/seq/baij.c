@@ -2583,7 +2583,7 @@ static PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA, IS row, IS col, const MatFac
   PetscCall(ISInvertPermutation(col, PETSC_DECIDE, &a->icol));
 
   PetscCall(MatSeqBAIJSetNumericFactorization_inplace(inA, (PetscBool)(row_identity && col_identity)));
-  if (!a->solve_work) { PetscCall(PetscMalloc1(inA->rmap->N + inA->rmap->bs, &a->solve_work)); }
+  if (!a->solve_work) PetscCall(PetscMalloc1(inA->rmap->N + inA->rmap->bs, &a->solve_work));
   PetscCall(MatLUFactorNumeric(outA, inA, info));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

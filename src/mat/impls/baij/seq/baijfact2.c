@@ -269,7 +269,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isrow, IS i
   b->free_ij         = PETSC_TRUE;
   fact->preallocated = PETSC_TRUE;
   fact->assembled    = PETSC_TRUE;
-  if (!b->diag) { PetscCall(PetscMalloc1(n + 1, &b->diag)); }
+  if (!b->diag) PetscCall(PetscMalloc1(n + 1, &b->diag));
   bdiag = b->diag;
 
   if (n > 0) PetscCall(PetscArrayzero(b->a, bs2 * ai[n]));

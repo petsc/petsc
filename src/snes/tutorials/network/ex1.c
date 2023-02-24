@@ -572,7 +572,7 @@ int main(int argc, char **argv)
   PetscCall(DMGetCoordinateDM(networkdm, &dmclone));
   PetscCall(DMNetworkGetVertexRange(dmclone, &vStart, &vEnd));
   PetscCall(DMNetworkRegisterComponent(dmclone, "coordinates", 0, &compkey));
-  for (i = vStart; i < vEnd; i++) { PetscCall(DMNetworkAddComponent(dmclone, i, compkey, NULL, 2)); }
+  for (i = vStart; i < vEnd; i++) PetscCall(DMNetworkAddComponent(dmclone, i, compkey, NULL, 2));
   PetscCall(DMNetworkFinalizeComponents(dmclone));
 
   PetscCall(DMCreateLocalVector(dmclone, &coords));

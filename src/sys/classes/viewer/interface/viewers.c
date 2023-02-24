@@ -66,7 +66,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 
    Input Parameters:
 +   viewers - object created with `PetscViewersCreate()`
--   n - number of `PetscViewer `you want
+-   n - number of `PetscViewer` you want
 
    Output Parameter:
 .  viewer - the `PetscViewer`

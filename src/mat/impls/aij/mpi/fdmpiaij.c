@@ -211,7 +211,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   }
 
   /* (3) Loop over each color */
-  if (!coloring->w3) { PetscCall(VecDuplicate(x1, &coloring->w3)); }
+  if (!coloring->w3) PetscCall(VecDuplicate(x1, &coloring->w3));
   w3 = coloring->w3;
 
   PetscCall(VecGetOwnershipRange(x1, &cstart, &cend)); /* used by ghosted vscale */

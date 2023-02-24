@@ -4210,7 +4210,7 @@ PetscErrorCode MatCopy_Basic(Mat A, Mat B, MatStructure str)
    Level: intermediate
 
    Notes:
-   If you use `SAME_NONZERO_PATTERN `then the two matrices must have the same nonzero pattern or the routine will crash.
+   If you use `SAME_NONZERO_PATTERN` then the two matrices must have the same nonzero pattern or the routine will crash.
 
    `MatCopy()` copies the matrix entries of a matrix to another existing
    matrix (after first zeroing the second matrix).  A related routine is
@@ -7409,7 +7409,7 @@ PetscErrorCode MatGetBlockSizes(Mat mat, PetscInt *rbs, PetscInt *cbs)
     For `MATAIJ` matrix format, this function can be called at a later stage, provided that the specified block size
     is compatible with the matrix local sizes.
 
-.seealso: `Mat`,  `MATBAIJ`, `MATSBAIJ`, `MATAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`
+.seealso: `Mat`, `MATBAIJ`, `MATSBAIJ`, `MATAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatSetBlockSize(Mat mat, PetscInt bs)
 {

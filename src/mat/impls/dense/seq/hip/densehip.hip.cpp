@@ -1467,7 +1467,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseHIP(Mat A, PetscBool flg)
     A->ops->setup                   = MatSetUp_SeqDense;
     A->ops->setrandom               = MatSetRandom_SeqDense;
   }
-  if (a->cmat) { PetscCall(MatBindToCPU(a->cmat, flg)); }
+  if (a->cmat) PetscCall(MatBindToCPU(a->cmat, flg));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

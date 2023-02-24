@@ -2513,7 +2513,7 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
       PetscCall(PetscSFDestroy(&tmp_sf));
       PetscCall(PetscFree(tmp_rootdata));
     }
-    if (rootMode == PETSCSF_CONCATENATE_ROOTMODE_LOCAL) { nRoots = rootOffset; } // else nRoots already calculated above
+    if (rootMode == PETSCSF_CONCATENATE_ROOTMODE_LOCAL) nRoots = rootOffset; // else nRoots already calculated above
 
     /* Build the new SF */
     PetscCall(PetscSFCreate(comm, newsf));

@@ -346,7 +346,7 @@ static PetscErrorCode SetGauge_Identity(DM dm)
   PetscCall(VecGetDM(auxVec, &auxDM));
   PetscCall(DMGetLocalSection(auxDM, &s));
   PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
-  for (PetscInt i = eStart; i < eEnd; ++i) { PetscCall(VecSetValuesSection(auxVec, s, i, id, INSERT_VALUES)); }
+  for (PetscInt i = eStart; i < eEnd; ++i) PetscCall(VecSetValuesSection(auxVec, s, i, id, INSERT_VALUES));
   PetscCall(VecViewFromOptions(auxVec, NULL, "-gauge_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

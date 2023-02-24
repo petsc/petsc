@@ -855,7 +855,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_plex_box_faces <m,n,p>        - Number of faces along each dimension
 . -dm_plex_box_lower <x,y,z>        - Specify lower-left-bottom coordinates for the box
 . -dm_plex_box_upper <x,y,z>        - Specify upper-right-top coordinates for the box
-. -dm_plex_box_bd <bx,by,bz>        - Specify the `DMBoundaryType `for each direction
+. -dm_plex_box_bd <bx,by,bz>        - Specify the `DMBoundaryType` for each direction
 . -dm_plex_sphere_radius <r>        - The sphere radius
 . -dm_plex_ball_radius <r>          - Radius of the ball
 . -dm_plex_cylinder_bd <bz>         - Boundary type in the z direction
@@ -2090,7 +2090,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   Not collective
 
   Input Parameters:
-+ dm        - The `DM `object
++ dm        - The `DM` object
 . numFields - The number of fields to select
 - fields    - The field numbers of the selected fields
 
@@ -3004,7 +3004,7 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
 
     Level: beginner
 
-.seealso: `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalHookAdd()`,  `DMGlobaToLocallHookAdd()`
+.seealso: `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalHookAdd()`, `DMGlobaToLocallHookAdd()`
 @*/
 PetscErrorCode DMLocalToGlobal(DM dm, Vec l, InsertMode mode, Vec g)
 {
@@ -3022,7 +3022,7 @@ PetscErrorCode DMLocalToGlobal(DM dm, Vec l, InsertMode mode, Vec g)
     Input Parameters:
 +   dm - the `DM` object
 .   l - the local vector
-.   mode - `if INSERT_VALUES` then no parallel communication is used, if `ADD_VALUES` then all ghost points from the same base point accumulate into that base point.
+.   mode - if `INSERT_VALUES` then no parallel communication is used, if `ADD_VALUES` then all ghost points from the same base point accumulate into that base point.
 -   g - the global vector
 
     Notes:

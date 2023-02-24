@@ -293,7 +293,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PetscCall(MatCreateSubMatrices(pc->pmat, osm->n_local_true, osm->is, osm->is, scall, &osm->pmat));
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
-    for (i = 0; i < osm->n_local_true; i++) { PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix)); }
+    for (i = 0; i < osm->n_local_true; i++) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
   }
 
   /* Convert the types of the submatrices (if needbe) */

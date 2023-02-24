@@ -883,7 +883,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, bs, NULL, &bmat->middle));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, bs, &bmat->left));
 
-  if (!bmat->imax) { PetscCall(PetscMalloc2(A->rmap->n, &bmat->imax, A->rmap->n, &bmat->ilen)); }
+  if (!bmat->imax) PetscCall(PetscMalloc2(A->rmap->n, &bmat->imax, A->rmap->n, &bmat->ilen));
   if (PetscLikely(nnz)) {
     nz = 0;
     for (i = 0; i < A->rmap->n / A->rmap->bs; i++) {

@@ -4669,7 +4669,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     if (snes->vec_rhs) PetscCheck(snes->vec_func != snes->vec_rhs, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Right hand side vector cannot be function vector");
     PetscCheck(snes->vec_func != snes->vec_sol, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Solution vector cannot be function vector");
     PetscCheck(snes->vec_rhs != snes->vec_sol, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Solution vector cannot be right hand side vector");
-    if (!snes->vec_sol_update /* && snes->vec_sol */) { PetscCall(VecDuplicate(snes->vec_sol, &snes->vec_sol_update)); }
+    if (!snes->vec_sol_update /* && snes->vec_sol */) PetscCall(VecDuplicate(snes->vec_sol, &snes->vec_sol_update));
     PetscCall(DMShellSetGlobalVector(dm, snes->vec_sol));
     PetscCall(SNESSetUp(snes));
 

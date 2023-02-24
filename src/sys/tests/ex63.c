@@ -68,7 +68,7 @@ PetscErrorCode AssertSetsEqual(PetscInt64 *set, PetscInt64 *true_set)
 
   PetscFunctionBeginUser;
   PetscAssert((set[0] == true_set[0]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets of different sizes");
-  for (ii = 1; ii < set[0] + 1; ii++) { PetscAssert((set[ii] == true_set[ii]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets are different"); }
+  for (ii = 1; ii < set[0] + 1; ii++) PetscAssert((set[ii] == true_set[ii]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets are different");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

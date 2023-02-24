@@ -765,7 +765,7 @@ static PetscErrorCode MatLUFactor_ScaLAPACK(Mat A, IS row, IS col, const MatFact
   PetscBLASInt   one = 1, info;
 
   PetscFunctionBegin;
-  if (!a->pivots) { PetscCall(PetscMalloc1(a->locr + a->mb, &a->pivots)); }
+  if (!a->pivots) PetscCall(PetscMalloc1(a->locr + a->mb, &a->pivots));
   PetscCallBLAS("SCALAPACKgetrf", SCALAPACKgetrf_(&a->M, &a->N, a->loc, &one, &one, a->desc, a->pivots, &info));
   PetscCheckScaLapackInfo("getrf", info);
   A->factortype = MAT_FACTOR_LU;

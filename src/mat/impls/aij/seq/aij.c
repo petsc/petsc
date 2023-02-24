@@ -3996,7 +3996,7 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
     } else {
       PetscCall(PetscMemzero(b->ilen, B->rmap->n * sizeof(PetscInt)));
     }
-    if (!b->ipre) { PetscCall(PetscMalloc1(B->rmap->n, &b->ipre)); }
+    if (!b->ipre) PetscCall(PetscMalloc1(B->rmap->n, &b->ipre));
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 10;
       else if (nz < 0) nz = 1;
