@@ -1,130 +1,268 @@
-static char help[] = "Evolution of magnetic islands.\n\
-The aim of this model is to self-consistently study the interaction between the tearing mode and small scale drift-wave turbulence.\n\n\n";
+static char help[] = "Magnetohydrodynamics (MHD) with Poisson brackets and "
+                     "stream functions, solver testbed for M3D-C1. Used in https://arxiv.org/abs/2302.10242";
 
 /*F
-This is a three field model for the density $\tilde n$, vorticity $\tilde\Omega$, and magnetic flux $\tilde\psi$, using auxiliary variables potential $\tilde\phi$ and current $j_z$.
-\begin{equation}
-  \begin{aligned}
-    \partial_t \tilde n       &= \left\{ \tilde n, \tilde\phi \right\} + \beta \left\{ j_z, \tilde\psi \right\} + \left\{ \ln n_0, \tilde\phi \right\} + \mu \nabla^2_\perp \tilde n \\
-  \partial_t \tilde\Omega   &= \left\{ \tilde\Omega, \tilde\phi \right\} + \beta \left\{ j_z, \tilde\psi \right\} + \mu \nabla^2_\perp \tilde\Omega \\
-  \partial_t \tilde\psi     &= \left\{ \psi_0 + \tilde\psi, \tilde\phi - \tilde n \right\} - \left\{ \ln n_0, \tilde\psi \right\} + \frac{\eta}{\beta} \nabla^2_\perp \tilde\psi \\
-  \nabla^2_\perp\tilde\phi        &= \tilde\Omega \\
-  j_z  &= -\nabla^2_\perp  \left(\tilde\psi + \psi_0  \right)\\
-  \end{aligned}
-\end{equation}
+The strong form of a two field model for vorticity $\Omega$ and magnetic flux
+$\psi$, using auxiliary variables potential $\phi$ and (negative) current
+density $j_z$ \cite{Jardin04,Strauss98}.See http://arxiv.org/abs/  for more details
 F*/
 
+#include <assert.h>
 #include <petscdmplex.h>
-#include <petscts.h>
 #include <petscds.h>
+#include <petscts.h>
+
+typedef enum _testidx {
+  TEST_TILT,
+  NUM_TEST_TYPES
+} TestType;
+const char *testTypes[NUM_TEST_TYPES + 1] = {"tilt", "unknown"};
+typedef enum _modelidx {
+  TWO_FILD,
+  ONE_FILD,
+  NUM_MODELS
+} ModelType;
+const char *modelTypes[NUM_MODELS + 1] = {"two-field", "one-field", "unknown"};
+typedef enum _fieldidx {
+  JZ,
+  PSI,
+  PHI,
+  OMEGA,
+  NUM_COMP
+} FieldIdx; // add more
+typedef enum _const_idx {
+  MU_CONST,
+  ETA_CONST,
+  TEST_CONST,
+  NUM_CONSTS
+} ConstIdx;
 
 typedef struct {
-  PetscInt  debug;   /* The debugging level */
-  PetscBool plotRef; /* Plot the reference fields */
-  PetscReal lower[3], upper[3];
-  /* Problem definition */
+  PetscInt  debug; /* The debugging level */
+  PetscReal plotDt;
+  PetscReal plotStartTime;
+  PetscInt  plotIdx;
+  PetscInt  plotStep;
+  PetscBool plotting;
+  PetscInt  dim;                          /* The topological mesh dimension */
+  char      filename[PETSC_MAX_PATH_LEN]; /* The optional ExodusII file */
   PetscErrorCode (**initialFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  PetscReal mu, eta, beta;
-  PetscReal a, b, Jo, Jop, m, ke, kx, ky, DeltaPrime, eps;
-  /* solver */
-  PetscBool implicit;
+  PetscReal mu, eta;
+  PetscReal perturb;
+  TestType  testType;
+  ModelType modelType;
+  PetscInt  Nf;
 } AppCtx;
 
-static AppCtx *s_ctx;
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
+  PetscInt ii;
 
+  PetscFunctionBeginUser;
+  options->debug         = 1;
+  options->filename[0]   = '\0';
+  options->testType      = TEST_TILT;
+  options->modelType     = TWO_FILD;
+  options->mu            = 0.005;
+  options->eta           = 0.001;
+  options->perturb       = 0;
+  options->plotDt        = 0.1;
+  options->plotStartTime = 0.0;
+  options->plotIdx       = 0;
+  options->plotStep      = PETSC_MAX_INT;
+  options->plotting      = PETSC_FALSE;
+
+  PetscOptionsBegin(comm, "", "MHD Problem Options", "DMPLEX");
+  PetscCall(PetscOptionsInt("-debug", "The debugging level", "mhd.c", options->debug, &options->debug, NULL));
+  ii                = (PetscInt)options->testType;
+  options->testType = TEST_TILT;
+  ii                = options->testType;
+  PetscCall(PetscOptionsEList("-test_type", "The test type: 'tilt' Tilt instability", "mhd.c", testTypes, NUM_TEST_TYPES, testTypes[options->testType], &ii, NULL));
+  options->testType  = (TestType)ii;
+  ii                 = (PetscInt)options->modelType;
+  options->modelType = TWO_FILD;
+  ii                 = options->modelType;
+  PetscCall(PetscOptionsEList("-model_type", "The model type: 'two', 'one' field", "mhd.c", modelTypes, NUM_MODELS, modelTypes[options->modelType], &ii, NULL));
+  options->modelType = (ModelType)ii;
+  options->Nf        = options->modelType == TWO_FILD ? 4 : 2;
+
+  PetscCall(PetscOptionsReal("-mu", "Magnetic resistivity", "mhd.c", options->mu, &options->mu, NULL));
+  PetscCall(PetscOptionsReal("-eta", "Viscosity", "mhd.c", options->eta, &options->eta, NULL));
+  PetscCall(PetscOptionsReal("-plot_dt", "Plot frequency in time", "mhd.c", options->plotDt, &options->plotDt, NULL));
+  PetscCall(PetscOptionsReal("-plot_start_time", "Time to delay start of plotting", "mhd.c", options->plotStartTime, &options->plotStartTime, NULL));
+  PetscCall(PetscOptionsReal("-perturbation", "Random perturbation of initial psi scale", "mhd.c", options->perturb, &options->perturb, NULL));
+  PetscCall(PetscPrintf(comm, "Test Type = %s\n", testTypes[options->testType]));
+  PetscCall(PetscPrintf(comm, "Model Type = %s\n", modelTypes[options->modelType]));
+  PetscCall(PetscPrintf(comm, "eta = %g\n", (double)options->eta));
+  PetscCall(PetscPrintf(comm, "mu = %g\n", (double)options->mu));
+  PetscOptionsEnd();
+
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// | 0 1 | matrix to apply bracket
+// |-1 0 |
+static PetscReal s_K[2][2] = {
+  {0,  1},
+  {-1, 0}
+};
+
+/*
+ dt - "g0" are mass terms
+*/
+static void g0_dt(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  g0[0] = u_tShift;
+}
+
+/*
+ Identity, Mass
+*/
+static void g0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  g0[0] = 1;
+}
+/* 'right' Poisson bracket -<.,phi>, linearized variable is left (column), data
+ * variable right */
+static void g1_phi_right(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  PetscInt           i, j;
+  const PetscScalar *pphiDer = &u_x[uOff_x[PHI]]; // get derivative of the 'right' ("dg") and apply to
+                                                  // live var "df"
+  for (i = 0; i < dim; ++i)
+    for (j = 0; j < dim; ++j)
+      //  indexing with inner, j, index generates the left live variable [dy,-]
+      //  by convension, put j index on right, with i destination: [ d/dy,
+      //  -d/dx]'
+      g1[i] += s_K[i][j] * pphiDer[j];
+}
+/* 'left' bracket -{jz,.}, "n" for negative, linearized variable right (column),
+ * data variable left */
+static void g1_njz_left(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  PetscInt           i, j;
+  const PetscScalar *jzDer = &u_x[uOff_x[JZ]]; // get derivative of the 'left' ("df") and apply to live
+                                               // var "dg"
+  for (i = 0; i < dim; ++i)
+    for (j = 0; j < dim; ++j)
+      // live right: Der[i] * K: Der[j] --> j: [d/dy, -d/dx]'
+      g1[j] += -jzDer[i] * s_K[i][j];
+}
+/* 'left' Poisson bracket -< . , psi> */
+static void g1_npsi_right(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  PetscInt           i, j;
+  const PetscScalar *psiDer = &u_x[uOff_x[PSI]];
+  for (i = 0; i < dim; ++i)
+    for (j = 0; j < dim; ++j) g1[i] += -s_K[i][j] * psiDer[j];
+}
+
+/* < Omega , . > */
+static void g1_omega_left(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  PetscInt           i, j;
+  const PetscScalar *pOmegaDer = &u_x[uOff_x[OMEGA]];
+  for (i = 0; i < dim; ++i)
+    for (j = 0; j < dim; ++j) g1[j] += pOmegaDer[i] * s_K[i][j];
+}
+
+/* < psi , . > */
+static void g1_psi_left(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  PetscInt           i, j;
+  const PetscScalar *pPsiDer = &u_x[uOff_x[PSI]];
+  for (i = 0; i < dim; ++i)
+    for (j = 0; j < dim; ++j) g1[j] += pPsiDer[i] * s_K[i][j];
+}
+
+// -Lapacians (resistivity), negative sign goes away from IBP
+static void g3_nmu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
+  PetscReal mu = PetscRealPart(constants[MU_CONST]);
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = mu;
+}
+
+// Auxilary variable = -del^2 x, negative sign goes away from IBP
+static void g3_n1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1;
+}
+
+/* residual point methods */
 static PetscScalar poissonBracket(PetscInt dim, const PetscScalar df[], const PetscScalar dg[])
 {
   PetscScalar ret = df[0] * dg[1] - df[1] * dg[0];
+  if (dim == 3) {
+    ret += df[1] * dg[2] - df[2] * dg[1];
+    ret += df[2] * dg[0] - df[0] * dg[2];
+  }
   return ret;
 }
-
-enum field_idx {
-  DENSITY,
-  OMEGA,
-  PSI,
-  PHI,
-  JZ
-};
-
-static void f0_n(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
-{
-  const PetscScalar *pnDer        = &u_x[uOff_x[DENSITY]];
-  const PetscScalar *ppsiDer      = &u_x[uOff_x[PSI]];
-  const PetscScalar *pphiDer      = &u_x[uOff_x[PHI]];
-  const PetscScalar *jzDer        = &u_x[uOff_x[JZ]];
-  const PetscScalar *logRefDenDer = &a_x[aOff_x[DENSITY]];
-  f0[0] += -poissonBracket(dim, pnDer, pphiDer) - s_ctx->beta * poissonBracket(dim, jzDer, ppsiDer) - poissonBracket(dim, logRefDenDer, pphiDer);
-  if (u_t) f0[0] += u_t[DENSITY];
-}
-
-static void f1_n(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
-{
-  const PetscScalar *pnDer = &u_x[uOff_x[DENSITY]];
-  PetscInt           d;
-
-  for (d = 0; d < dim - 1; ++d) f1[d] = -s_ctx->mu * pnDer[d];
-}
-
+//
 static void f0_Omega(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscScalar *pOmegaDer = &u_x[uOff_x[OMEGA]];
-  const PetscScalar *ppsiDer   = &u_x[uOff_x[PSI]];
-  const PetscScalar *pphiDer   = &u_x[uOff_x[PHI]];
-  const PetscScalar *jzDer     = &u_x[uOff_x[JZ]];
+  const PetscScalar *omegaDer = &u_x[uOff_x[OMEGA]];
+  const PetscScalar *psiDer   = &u_x[uOff_x[PSI]];
+  const PetscScalar *phiDer   = &u_x[uOff_x[PHI]];
+  const PetscScalar *jzDer    = &u_x[uOff_x[JZ]];
 
-  f0[0] += -poissonBracket(dim, pOmegaDer, pphiDer) - s_ctx->beta * poissonBracket(dim, jzDer, ppsiDer);
+  f0[0] += poissonBracket(dim, omegaDer, phiDer) - poissonBracket(dim, jzDer, psiDer);
+
   if (u_t) f0[0] += u_t[OMEGA];
 }
 
 static void f1_Omega(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  const PetscScalar *pOmegaDer = &u_x[uOff_x[OMEGA]];
-  PetscInt           d;
+  const PetscScalar *omegaDer = &u_x[uOff_x[OMEGA]];
+  PetscReal          mu       = PetscRealPart(constants[MU_CONST]);
 
-  for (d = 0; d < dim - 1; ++d) f1[d] = -s_ctx->mu * pOmegaDer[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] += mu * omegaDer[d];
 }
 
-static void f0_psi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+// d/dt + {psi,phi} - eta j_z
+static void f0_psi_4f(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscScalar *pnDer        = &u_x[uOff_x[DENSITY]];
-  const PetscScalar *ppsiDer      = &u_x[uOff_x[PSI]];
-  const PetscScalar *pphiDer      = &u_x[uOff_x[PHI]];
-  const PetscScalar *refPsiDer    = &a_x[aOff_x[PSI]];
-  const PetscScalar *logRefDenDer = &a_x[aOff_x[DENSITY]];
-  PetscScalar        psiDer[3];
-  PetscScalar        phi_n_Der[3];
-  PetscInt           d;
-  if (dim < 2) {
-    MPI_Abort(MPI_COMM_WORLD, 1);
-    return;
-  } /* this is needed so that the clang static analyzer does not generate a warning about variables used by not set */
-  for (d = 0; d < dim; ++d) {
-    psiDer[d]    = refPsiDer[d] + ppsiDer[d];
-    phi_n_Der[d] = pphiDer[d] - pnDer[d];
-  }
-  f0[0] = -poissonBracket(dim, psiDer, phi_n_Der) + poissonBracket(dim, logRefDenDer, ppsiDer);
+  const PetscScalar *psiDer = &u_x[uOff_x[PSI]];
+  const PetscScalar *phiDer = &u_x[uOff_x[PHI]];
+  PetscReal          eta    = PetscRealPart(constants[ETA_CONST]);
+
+  f0[0] = -eta * u[uOff[JZ]];
+  f0[0] += poissonBracket(dim, psiDer, phiDer);
+
   if (u_t) f0[0] += u_t[PSI];
+  // printf("psiDer = %20.15e %20.15e psi = %20.15e
 }
 
-static void f1_psi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+// d/dt - eta j_z
+static void f0_psi_2f(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscScalar *ppsi = &u_x[uOff_x[PSI]];
-  PetscInt           d;
+  PetscReal eta = PetscRealPart(constants[ETA_CONST]);
 
-  for (d = 0; d < dim - 1; ++d) f1[d] = -(s_ctx->eta / s_ctx->beta) * ppsi[d];
+  f0[0] = -eta * u[uOff[JZ]];
+
+  if (u_t) f0[0] += u_t[PSI];
+  // printf("psiDer = %20.15e %20.15e psi = %20.15e
 }
 
 static void f0_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  f0[0] = -u[uOff[OMEGA]];
+  f0[0] += u[uOff[OMEGA]];
 }
 
 static void f1_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  const PetscScalar *pphi = &u_x[uOff_x[PHI]];
-  PetscInt           d;
+  const PetscScalar *phiDer = &u_x[uOff_x[PHI]];
 
-  for (d = 0; d < dim - 1; ++d) f1[d] = pphi[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = phiDer[d];
+}
+
+/* - eta M */
+static void g0_neta(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  PetscReal eta = PetscRealPart(constants[ETA_CONST]);
+
+  g0[0] = -eta;
 }
 
 static void f0_jz(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -132,146 +270,152 @@ static void f0_jz(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   f0[0] = u[uOff[JZ]];
 }
 
+/* -del^2 psi = (grad v, grad psi) */
 static void f1_jz(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  const PetscScalar *ppsi      = &u_x[uOff_x[PSI]];
-  const PetscScalar *refPsiDer = &a_x[aOff_x[PSI]]; /* aOff_x[PSI] == 2*PSI */
-  PetscInt           d;
+  const PetscScalar *psiDer = &u_x[uOff_x[PSI]];
 
-  for (d = 0; d < dim - 1; ++d) f1[d] = ppsi[d] + refPsiDer[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = psiDer[d];
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+static void f0_mhd_B_energy2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
 {
-  PetscFunctionBeginUser;
-  options->debug    = 1;
-  options->plotRef  = PETSC_FALSE;
-  options->implicit = PETSC_FALSE;
-  options->mu       = 0;
-  options->eta      = 0;
-  options->beta     = 1;
-  options->a        = 1;
-  options->b        = PETSC_PI;
-  options->Jop      = 0;
-  options->m        = 1;
-  options->eps      = 1.e-6;
-
-  PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");
-  PetscCall(PetscOptionsInt("-debug", "The debugging level", "ex48.c", options->debug, &options->debug, NULL));
-  PetscCall(PetscOptionsBool("-plot_ref", "Plot the reference fields", "ex48.c", options->plotRef, &options->plotRef, NULL));
-  PetscCall(PetscOptionsReal("-mu", "mu", "ex48.c", options->mu, &options->mu, NULL));
-  PetscCall(PetscOptionsReal("-eta", "eta", "ex48.c", options->eta, &options->eta, NULL));
-  PetscCall(PetscOptionsReal("-beta", "beta", "ex48.c", options->beta, &options->beta, NULL));
-  PetscCall(PetscOptionsReal("-Jop", "Jop", "ex48.c", options->Jop, &options->Jop, NULL));
-  PetscCall(PetscOptionsReal("-m", "m", "ex48.c", options->m, &options->m, NULL));
-  PetscCall(PetscOptionsReal("-eps", "eps", "ex48.c", options->eps, &options->eps, NULL));
-  PetscCall(PetscOptionsBool("-implicit", "Use implicit time integrator", "ex48.c", options->implicit, &options->implicit, NULL));
-  PetscOptionsEnd();
-  options->ke = PetscSqrtScalar(options->Jop);
-  if (options->Jop == 0.0) {
-    options->Jo = 1.0 / PetscPowScalar(options->a, 2);
-  } else {
-    options->Jo = options->Jop * PetscCosReal(options->ke * options->a) / (1.0 - PetscCosReal(options->ke * options->a));
-  }
-  options->ky = PETSC_PI * options->m / options->b;
-  if (PetscPowReal(options->ky, 2) < options->Jop) {
-    options->kx         = PetscSqrtScalar(options->Jop - PetscPowScalar(options->ky, 2));
-    options->DeltaPrime = -2.0 * options->kx * options->a * PetscCosReal(options->kx * options->a) / PetscSinReal(options->kx * options->a);
-  } else if (PetscPowReal(options->ky, 2) > options->Jop) {
-    options->kx         = PetscSqrtScalar(PetscPowScalar(options->ky, 2) - options->Jop);
-    options->DeltaPrime = -2.0 * options->kx * options->a * PetscCoshReal(options->kx * options->a) / PetscSinhReal(options->kx * options->a);
-  } else { /*they're equal (or there's a NaN), lim(x*cot(x))_x->0=1*/
-    options->kx         = 0;
-    options->DeltaPrime = -2.0;
-  }
-  PetscCall(PetscPrintf(comm, "DeltaPrime=%g\n", (double)options->DeltaPrime));
-
-  PetscFunctionReturn(PETSC_SUCCESS);
+  const PetscScalar *psiDer = &u_x[uOff_x[PSI]];
+  PetscScalar        b2     = 0;
+  for (int i = 0; i < dim; ++i) b2 += psiDer[i] * psiDer[i];
+  f0[0] = b2;
 }
 
-static void f_n(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+static void f0_mhd_v_energy2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
 {
-  const PetscScalar *pn = &u[uOff[DENSITY]];
-  *f0                   = *pn;
+  const PetscScalar *phiDer = &u_x[uOff_x[PHI]];
+  PetscScalar        v2     = 0;
+  for (int i = 0; i < dim; ++i) v2 += phiDer[i] * phiDer[i];
+  f0[0] = v2;
 }
 
-static PetscErrorCode PostStep(TS ts)
+static PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
 {
-  DM       dm;
-  AppCtx  *ctx;
-  PetscInt stepi, num;
-  Vec      X;
+  AppCtx             *ctx = (AppCtx *)actx; /* user-defined application context */
+  SNES                snes;
+  SNESConvergedReason reason;
+  TSConvergedReason   tsreason;
 
-  PetscFunctionBeginUser;
-  PetscCall(TSGetApplicationContext(ts, &ctx));
+  PetscFunctionBegin;
+  // PetscCall(TSGetApplicationContext(ts, &ctx));
   if (ctx->debug < 1) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(TSGetSolution(ts, &X));
-  PetscCall(VecGetDM(X, &dm));
-  PetscCall(TSGetStepNumber(ts, &stepi));
-  PetscCall(DMGetOutputSequenceNumber(dm, &num, NULL));
-  if (num < 0) PetscCall(DMSetOutputSequenceNumber(dm, 0, 0.0));
-  PetscCall(PetscObjectSetName((PetscObject)X, "u"));
-  PetscCall(VecViewFromOptions(X, NULL, "-vec_view"));
-  /* print integrals */
-  {
+  PetscCall(TSGetSNES(ts, &snes));
+  PetscCall(SNESGetConvergedReason(snes, &reason));
+  if (reason < 0) {
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "\t\t ***************** Monitor: SNES diverged with reason %d.\n", (int)reason));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (stepi > ctx->plotStep && ctx->plotting) {
+    ctx->plotting = PETSC_FALSE; /* was doing diagnostics, now done */
+    ctx->plotIdx++;
+  }
+  PetscCall(TSGetTime(ts, &time));
+  PetscCall(TSGetConvergedReason(ts, &tsreason));
+  if (((time - ctx->plotStartTime) / ctx->plotDt >= (PetscReal)ctx->plotIdx && time >= ctx->plotStartTime) || (tsreason == TS_CONVERGED_TIME || tsreason == TS_CONVERGED_ITS) || ctx->plotIdx == 0) {
+    DM          dm, plex;
+    Vec         X;
+    PetscReal   val;
+    PetscScalar tt[12]; // FE integral seems to need a large array
     PetscDS     prob;
-    DM          plex;
-    PetscScalar den, tt[5];
+    if (!ctx->plotting) { /* first step of possible backtracks */
+      ctx->plotting = PETSC_TRUE;
+    } else {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\t\t ?????? ------\n"));
+      ctx->plotting = PETSC_TRUE;
+    }
+    ctx->plotStep = stepi;
+    PetscCall(TSGetSolution(ts, &X));
+    PetscCall(VecGetDM(X, &dm));
+    PetscCall(DMGetOutputSequenceNumber(dm, NULL, &val));
+    PetscCall(DMSetOutputSequenceNumber(dm, ctx->plotIdx, val));
+    PetscCall(VecViewFromOptions(X, NULL, "-vec_view_mhd"));
+    if (ctx->debug > 2) {
+      Vec R;
+      PetscCall(SNESGetFunction(snes, &R, NULL, NULL));
+      PetscCall(VecViewFromOptions(R, NULL, "-vec_view_res"));
+    }
+    // compute energy
+    PetscCall(DMGetDS(dm, &prob));
     PetscCall(DMConvert(dm, DMPLEX, &plex));
-    PetscCall(DMGetDS(plex, &prob));
-    PetscCall(PetscDSSetObjective(prob, 0, &f_n));
-    PetscCall(DMPlexComputeIntegralFEM(plex, X, tt, ctx));
-    den = tt[0];
+    PetscCall(PetscDSSetObjective(prob, 0, &f0_mhd_v_energy2));
+    PetscCall(DMPlexComputeIntegralFEM(plex, X, &tt[0], ctx));
+    val = PetscRealPart(tt[0]);
+    PetscCall(PetscDSSetObjective(prob, 0, &f0_mhd_B_energy2));
+    PetscCall(DMPlexComputeIntegralFEM(plex, X, &tt[0], ctx));
+    val = PetscSqrtReal(val) * 0.5 + PetscSqrtReal(PetscRealPart(tt[0])) * 0.5;
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "MHD %4d) time = %9.5g, Eergy= %20.13e (plot ID %d)\n", (int)ctx->plotIdx, (double)time, (double)val, (int)ctx->plotIdx));
+    /* clean up */
     PetscCall(DMDestroy(&plex));
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "%" PetscInt_FMT ") total perturbed mass = %g\n", stepi, (double)PetscRealPart(den)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode CreateBCLabel(DM dm, const char name[])
+{
+  DMLabel label;
+  PetscFunctionBeginUser;
+  PetscCall(DMCreateLabel(dm, name));
+  PetscCall(DMGetLabel(dm, name, &label));
+  PetscCall(DMPlexMarkBoundaryFaces(dm, PETSC_DETERMINE, label));
+  PetscCall(DMPlexLabelComplete(dm, label));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+// Create mesh, dim is set here
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 {
+  const char *filename = ctx->filename;
+  size_t      len;
+  char        buff[256];
+  PetscMPIInt size;
+  PetscInt    nface = 1;
   PetscFunctionBeginUser;
-  PetscCall(DMCreate(comm, dm));
-  PetscCall(DMSetType(*dm, DMPLEX));
-  PetscCall(DMSetFromOptions(*dm));
-  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-
-  PetscCall(DMGetBoundingBox(*dm, ctx->lower, ctx->upper));
-  ctx->a = (ctx->upper[0] - ctx->lower[0]) / 2.0;
-  ctx->b = (ctx->upper[1] - ctx->lower[1]) / 2.0;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode log_n_0(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  AppCtx *lctx = (AppCtx *)ctx;
-  u[0]         = 2. * lctx->a + x[0];
-  return PETSC_SUCCESS;
-}
-
-static PetscErrorCode Omega_0(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  u[0] = 0.0;
-  return PETSC_SUCCESS;
-}
-
-static PetscErrorCode psi_0(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  AppCtx *lctx = (AppCtx *)ctx;
-  /* This sets up a symmetrix By flux aroound the mid point in x, which represents a current density flux along z.  The stability
-     is analytically known and reported in ProcessOptions. */
-  if (lctx->ke != 0.0) {
-    u[0] = (PetscCosReal(lctx->ke * (x[0] - lctx->a)) - PetscCosReal(lctx->ke * lctx->a)) / (1.0 - PetscCosReal(lctx->ke * lctx->a));
+  PetscCall(PetscStrlen(filename, &len));
+  if (len) {
+    PetscCall(DMPlexCreateFromFile(comm, filename, "", PETSC_TRUE, dm));
   } else {
-    u[0] = 1.0 - PetscPowScalar((x[0] - lctx->a) / lctx->a, 2);
+    PetscCall(DMCreate(comm, dm));
+    PetscCall(DMSetType(*dm, DMPLEX));
   }
-  return PETSC_SUCCESS;
-}
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  while (nface * nface < size) nface *= 2; // 2D
+  if (nface < 2) nface = 2;
+  PetscCall(PetscSNPrintf(buff, sizeof(buff), "-dm_plex_box_faces %d,%d -petscpartitioner_type simple", (int)nface, (int)nface));
+  PetscCall(PetscOptionsInsertString(NULL, buff));
+  PetscCall(PetscOptionsInsertString(NULL, "-dm_plex_box_lower -2,-2 -dm_plex_box_upper 2,2"));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  PetscCall(DMGetDimension(*dm, &ctx->dim));
+  {
+    char      convType[256];
+    PetscBool flg;
+    PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");
+    PetscCall(PetscOptionsFList("-dm_plex_convert_type", "Convert DMPlex to another format", "mhd", DMList, DMPLEX, convType, 256, &flg));
+    PetscOptionsEnd();
+    if (flg) {
+      DM dmConv;
+      PetscCall(DMConvert(*dm, convType, &dmConv));
+      if (dmConv) {
+        PetscCall(DMDestroy(dm));
+        *dm = dmConv;
+      }
+    }
+  }
+  PetscCall(DMLocalizeCoordinates(*dm)); /* needed for periodic */
+  {
+    PetscBool hasLabel;
+    PetscCall(DMHasLabel(*dm, "marker", &hasLabel));
+    if (!hasLabel) PetscCall(CreateBCLabel(*dm, "marker"));
+  }
+  PetscCall(PetscObjectSetName((PetscObject)*dm, "Mesh"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view_mhd"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view_res"));
 
-static PetscErrorCode initialSolution_n(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  u[0] = 0.0;
-  return PETSC_SUCCESS;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode initialSolution_Omega(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
@@ -280,194 +424,171 @@ static PetscErrorCode initialSolution_Omega(PetscInt dim, PetscReal time, const 
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode initialSolution_psi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *a_ctx)
+static PetscErrorCode initialSolution_Psi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *a_ctx)
 {
-  AppCtx     *ctx = (AppCtx *)a_ctx;
-  PetscScalar r   = ctx->eps * (PetscScalar)(rand()) / (PetscScalar)(RAND_MAX);
-  if (x[0] == ctx->lower[0] || x[0] == ctx->upper[0]) r = 0;
-  u[0] = r;
-  /* PetscPrintf(PETSC_COMM_WORLD, "rand psi %lf\n",u[0]); */
+  AppCtx   *ctx = (AppCtx *)a_ctx;
+  PetscReal r   = 0, theta, cos_theta;
+  // k = sp.jn_zeros(1, 1)[0]
+  const PetscReal k = 3.8317059702075125;
+  for (PetscInt i = 0; i < dim; i++) r += x[i] * x[i];
+  r = PetscSqrtReal(r);
+  // r = sqrt(dot(x,x))
+  theta     = PetscAtan2Real(x[1], x[0]);
+  cos_theta = PetscCosReal(theta);
+  // f = conditional(gt(r, 1.0), outer_f, inner_f)
+  if (r < 1.0) {
+    // inner_f =
+    // (2/(Constant(k)*bessel_J(0,Constant(k))))*bessel_J(1,Constant(k)*r)*cos_theta
+    u[0] = 2.0 / (k * j0(k)) * j1(k * r) * cos_theta;
+  } else {
+    // outer_f =  (1/r - r)*cos_theta
+    u[0] = (r - 1.0 / r) * cos_theta;
+  }
+  u[0] += ctx->perturb * ((double)rand() / (double)RAND_MAX - 0.5);
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode initialSolution_phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode initialSolution_Phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode initialSolution_jz(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode initialSolution_Jz(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
   return PETSC_SUCCESS;
 }
 
-static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
+static PetscErrorCode SetupProblem(PetscDS prob, DM dm, AppCtx *ctx)
 {
-  PetscDS        ds;
-  DMLabel        label;
-  const PetscInt id = 1;
-
-  PetscFunctionBeginUser;
-  PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMGetDS(dm, &ds));
-  PetscCall(PetscDSSetResidual(ds, 0, f0_n, f1_n));
-  PetscCall(PetscDSSetResidual(ds, 1, f0_Omega, f1_Omega));
-  PetscCall(PetscDSSetResidual(ds, 2, f0_psi, f1_psi));
-  PetscCall(PetscDSSetResidual(ds, 3, f0_phi, f1_phi));
-  PetscCall(PetscDSSetResidual(ds, 4, f0_jz, f1_jz));
-  ctx->initialFuncs[0] = initialSolution_n;
-  ctx->initialFuncs[1] = initialSolution_Omega;
-  ctx->initialFuncs[2] = initialSolution_psi;
-  ctx->initialFuncs[3] = initialSolution_phi;
-  ctx->initialFuncs[4] = initialSolution_jz;
-  for (PetscInt f = 0; f < 5; ++f) {
-    PetscCall(PetscDSSetImplicit(ds, f, ctx->implicit));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, f, 0, NULL, (void (*)(void))ctx->initialFuncs[f], NULL, ctx, NULL));
-  }
-  PetscCall(PetscDSSetContext(ds, 0, ctx));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
-{
-  PetscErrorCode (*eqFuncs[3])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *) = {log_n_0, Omega_0, psi_0};
-  Vec     eq;
-  AppCtx *ctxarr[3];
-
-  ctxarr[0] = ctxarr[1] = ctxarr[2] = ctx; /* each variable could have a different context */
-  PetscFunctionBeginUser;
-  PetscCall(DMCreateLocalVector(dmAux, &eq));
-  PetscCall(DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq));
-  PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, eq));
-  if (ctx->plotRef) { /* plot reference functions */
-    PetscViewer viewer = NULL;
-    PetscBool   isHDF5, isVTK;
-    char        buf[256];
-    Vec         global;
-    PetscInt    dim;
-
-    PetscCall(DMGetDimension(dm, &dim));
-    PetscCall(DMCreateGlobalVector(dmAux, &global));
-    PetscCall(VecSet(global, .0)); /* BCs! */
-    PetscCall(DMLocalToGlobalBegin(dmAux, eq, INSERT_VALUES, global));
-    PetscCall(DMLocalToGlobalEnd(dmAux, eq, INSERT_VALUES, global));
-    PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)dmAux), &viewer));
-#ifdef PETSC_HAVE_HDF5
-    PetscCall(PetscViewerSetType(viewer, PETSCVIEWERHDF5));
-#else
-    PetscCall(PetscViewerSetType(viewer, PETSCVIEWERVTK));
-#endif
-    PetscCall(PetscViewerSetFromOptions(viewer));
-    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &isHDF5));
-    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK, &isVTK));
-    if (isHDF5) {
-      PetscCall(PetscSNPrintf(buf, 256, "uEquilibrium-%" PetscInt_FMT "D.h5", dim));
-    } else if (isVTK) {
-      PetscCall(PetscSNPrintf(buf, 256, "uEquilibrium-%" PetscInt_FMT "D.vtu", dim));
-      PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_VTK_VTU));
-    }
-    PetscCall(PetscViewerFileSetMode(viewer, FILE_MODE_WRITE));
-    PetscCall(PetscViewerFileSetName(viewer, buf));
-    if (isHDF5) PetscCall(DMView(dmAux, viewer));
-    /* view equilibrium fields, this will overwrite fine grids with coarse grids! */
-    PetscCall(PetscObjectSetName((PetscObject)global, "u0"));
-    PetscCall(VecView(global, viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
-    PetscCall(VecDestroy(&global));
-  }
-  PetscCall(VecDestroy(&eq));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user)
-{
-  DM       dmAux, coordDM;
   PetscInt f;
 
   PetscFunctionBeginUser;
-  /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
-  PetscCall(DMGetCoordinateDM(dm, &coordDM));
-  if (!feAux) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(DMClone(dm, &dmAux));
-  PetscCall(DMSetCoordinateDM(dmAux, coordDM));
-  for (f = 0; f < NfAux; ++f) PetscCall(DMSetField(dmAux, f, NULL, (PetscObject)feAux[f]));
-  PetscCall(DMCreateDS(dmAux));
-  PetscCall(SetupEquilibriumFields(dm, dmAux, user));
-  PetscCall(DMDestroy(&dmAux));
+  // for both 2 & 4 field (j_z is same)
+  PetscCall(PetscDSSetJacobian(prob, JZ, JZ, g0_1, NULL, NULL, NULL));
+  PetscCall(PetscDSSetJacobian(prob, JZ, PSI, NULL, NULL, NULL, g3_n1));
+  PetscCall(PetscDSSetResidual(prob, JZ, f0_jz, f1_jz));
+
+  PetscCall(PetscDSSetJacobian(prob, PSI, JZ, g0_neta, NULL, NULL, NULL));
+  if (ctx->modelType == ONE_FILD) {
+    PetscCall(PetscDSSetJacobian(prob, PSI, PSI, g0_dt, NULL, NULL,
+                                 NULL)); // remove phi term
+
+    PetscCall(PetscDSSetResidual(prob, PSI, f0_psi_2f, NULL));
+  } else {
+    PetscCall(PetscDSSetJacobian(prob, PSI, PSI, g0_dt, g1_phi_right, NULL, NULL));
+    PetscCall(PetscDSSetJacobian(prob, PSI, PHI, NULL, g1_psi_left, NULL, NULL));
+    PetscCall(PetscDSSetResidual(prob, PSI, f0_psi_4f, NULL));
+
+    PetscCall(PetscDSSetJacobian(prob, PHI, PHI, NULL, NULL, NULL, g3_n1));
+    PetscCall(PetscDSSetJacobian(prob, PHI, OMEGA, g0_1, NULL, NULL, NULL));
+    PetscCall(PetscDSSetResidual(prob, PHI, f0_phi, f1_phi));
+
+    PetscCall(PetscDSSetJacobian(prob, OMEGA, OMEGA, g0_dt, g1_phi_right, NULL, g3_nmu));
+    PetscCall(PetscDSSetJacobian(prob, OMEGA, PSI, NULL, g1_njz_left, NULL, NULL));
+    PetscCall(PetscDSSetJacobian(prob, OMEGA, PHI, NULL, g1_omega_left, NULL, NULL));
+    PetscCall(PetscDSSetJacobian(prob, OMEGA, JZ, NULL, g1_npsi_right, NULL, NULL));
+    PetscCall(PetscDSSetResidual(prob, OMEGA, f0_Omega, f1_Omega));
+  }
+  /* Setup constants - is this persistant? */
+  {
+    PetscScalar scales[NUM_CONSTS]; // +1 adding in testType for use in the f
+                                    // and g functions
+    /* These could be set from the command line */
+    scales[MU_CONST]  = ctx->mu;
+    scales[ETA_CONST] = ctx->eta;
+    // scales[TEST_CONST] = (PetscReal)ctx->testType; -- how to make work with complex
+    PetscCall(PetscDSSetConstants(prob, NUM_CONSTS, scales));
+  }
+  for (f = 0; f < ctx->Nf; ++f) {
+    ctx->initialFuncs[f] = NULL;
+    PetscCall(PetscDSSetImplicit(prob, f, PETSC_TRUE));
+  }
+  if (ctx->testType == TEST_TILT) {
+    const PetscInt id = 1;
+    DMLabel        label;
+    PetscCall(DMGetLabel(dm, "marker", &label));
+
+    ctx->initialFuncs[JZ]  = initialSolution_Jz;
+    ctx->initialFuncs[PSI] = initialSolution_Psi;
+
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Jz for tilt test", label, 1, &id, JZ, 0, NULL, (void (*)(void))initialSolution_Jz, NULL, ctx, NULL));
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Psi for tilt test", label, 1, &id, PSI, 0, NULL, (void (*)(void))initialSolution_Psi, NULL, ctx, NULL));
+    if (ctx->modelType == TWO_FILD) {
+      ctx->initialFuncs[OMEGA] = initialSolution_Omega;
+      ctx->initialFuncs[PHI]   = initialSolution_Phi;
+      PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Omega for tilt test", label, 1, &id, OMEGA, 0, NULL, (void (*)(void))initialSolution_Omega, NULL, ctx, NULL));
+      PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Phi for tilt test", label, 1, &id, PHI, 0, NULL, (void (*)(void))initialSolution_Phi, NULL, ctx, NULL));
+    }
+  } else {
+    PetscCheck(0, PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONG, "Unsupported test type: %s (%d)", testTypes[PetscMin(ctx->testType, NUM_TEST_TYPES)], (int)ctx->testType);
+  }
+  PetscCall(PetscDSSetContext(prob, 0, ctx));
+  PetscCall(PetscDSSetFromOptions(prob));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 {
-  DM        cdm = dm;
-  PetscFE   fe[5], feAux[3];
-  PetscInt  dim, Nf = 5, NfAux = 3, f;
-  PetscBool simplex;
-  MPI_Comm  comm;
+  DM             cdm;
+  const PetscInt dim = ctx->dim;
+  PetscFE        fe[NUM_COMP];
+  PetscDS        prob;
+  PetscInt       Nf           = ctx->Nf, f;
+  PetscBool      cell_simplex = PETSC_TRUE;
+  MPI_Comm       comm         = PetscObjectComm((PetscObject)dm);
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMPlexIsSimplex(dm, &simplex));
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[0]));
-  PetscCall(PetscObjectSetName((PetscObject)fe[0], "density"));
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[1]));
-  PetscCall(PetscObjectSetName((PetscObject)fe[1], "vorticity"));
-  PetscCall(PetscFECopyQuadrature(fe[0], fe[1]));
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[2]));
-  PetscCall(PetscObjectSetName((PetscObject)fe[2], "flux"));
-  PetscCall(PetscFECopyQuadrature(fe[0], fe[2]));
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[3]));
-  PetscCall(PetscObjectSetName((PetscObject)fe[3], "potential"));
-  PetscCall(PetscFECopyQuadrature(fe[0], fe[3]));
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[4]));
-  PetscCall(PetscObjectSetName((PetscObject)fe[4], "current"));
-  PetscCall(PetscFECopyQuadrature(fe[0], fe[4]));
+  PetscCall(PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[JZ]));
+  PetscCall(PetscObjectSetName((PetscObject)fe[JZ], "j_z"));
+  PetscCall(DMSetField(dm, JZ, NULL, (PetscObject)fe[JZ]));
+  PetscCall(PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[PSI]));
+  PetscCall(PetscObjectSetName((PetscObject)fe[PSI], "psi"));
+  PetscCall(DMSetField(dm, PSI, NULL, (PetscObject)fe[PSI]));
+  if (ctx->modelType == TWO_FILD) {
+    PetscCall(PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[OMEGA]));
+    PetscCall(PetscObjectSetName((PetscObject)fe[OMEGA], "Omega"));
+    PetscCall(DMSetField(dm, OMEGA, NULL, (PetscObject)fe[OMEGA]));
 
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[0]));
-  PetscCall(PetscObjectSetName((PetscObject)feAux[0], "n_0"));
-  PetscCall(PetscFECopyQuadrature(fe[0], feAux[0]));
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[1]));
-  PetscCall(PetscObjectSetName((PetscObject)feAux[1], "vorticity_0"));
-  PetscCall(PetscFECopyQuadrature(fe[0], feAux[1]));
-  PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[2]));
-  PetscCall(PetscObjectSetName((PetscObject)feAux[2], "flux_0"));
-  PetscCall(PetscFECopyQuadrature(fe[0], feAux[2]));
+    PetscCall(PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[PHI]));
+    PetscCall(PetscObjectSetName((PetscObject)fe[PHI], "phi"));
+    PetscCall(DMSetField(dm, PHI, NULL, (PetscObject)fe[PHI]));
+  }
   /* Set discretization and boundary conditions for each mesh */
-  for (f = 0; f < Nf; ++f) PetscCall(DMSetField(dm, f, NULL, (PetscObject)fe[f]));
   PetscCall(DMCreateDS(dm));
-  PetscCall(SetupProblem(dm, ctx));
+  PetscCall(DMGetDS(dm, &prob));
+  for (f = 0; f < Nf; ++f) PetscCall(PetscDSSetDiscretization(prob, f, (PetscObject)fe[f]));
+  PetscCall(SetupProblem(prob, dm, ctx));
+  cdm = dm;
   while (cdm) {
-    PetscCall(SetupAuxDM(dm, NfAux, feAux, ctx));
     PetscCall(DMCopyDisc(dm, cdm));
+    if (dm != cdm) PetscCall(PetscObjectSetName((PetscObject)cdm, "Coarse"));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   for (f = 0; f < Nf; ++f) PetscCall(PetscFEDestroy(&fe[f]));
-  for (f = 0; f < NfAux; ++f) PetscCall(PetscFEDestroy(&feAux[f]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
 {
-  DM        dm;
-  TS        ts;
-  Vec       u, r;
-  AppCtx    ctx;
-  PetscReal t       = 0.0;
-  PetscReal L2error = 0.0;
-  AppCtx   *ctxarr[5];
+  DM          dm;
+  TS          ts;
+  Vec         u, r;
+  AppCtx      ctx;
+  PetscReal   t        = 0.0;
+  AppCtx     *ctxarr[] = {&ctx, &ctx, &ctx, &ctx}; // each variable could have a different context
+  PetscMPIInt rank;
 
-  ctxarr[0] = ctxarr[1] = ctxarr[2] = ctxarr[3] = ctxarr[4] = &ctx; /* each variable could have a different context */
-  s_ctx                                                     = &ctx;
-  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx)); // dim is not set
   /* create mesh and problem */
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
+  PetscCall(DMView(dm, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(DMSetApplicationContext(dm, &ctx));
-  PetscCall(PetscMalloc1(5, &ctx.initialFuncs));
+  PetscCall(PetscMalloc1(ctx.Nf, &ctx.initialFuncs));
   PetscCall(SetupDiscretization(dm, &ctx));
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(PetscObjectSetName((PetscObject)u, "u"));
@@ -478,25 +599,19 @@ int main(int argc, char **argv)
   PetscCall(TSSetDM(ts, dm));
   PetscCall(TSSetApplicationContext(ts, &ctx));
   PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx));
-  if (ctx.implicit) {
-    PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx));
-    PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx));
-  } else {
-    PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, &ctx));
-  }
+  PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx));
+  PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxTime(ts, 15.0));
   PetscCall(TSSetFromOptions(ts));
-  PetscCall(TSSetPostStep(ts, PostStep));
-  /* make solution & solve */
+  PetscCall(TSMonitorSet(ts, Monitor, &ctx, NULL));
+  /* make solution */
   PetscCall(DMProjectFunction(dm, t, ctx.initialFuncs, (void **)ctxarr, INSERT_ALL_VALUES, u));
+  ctx.perturb = 0.0;
   PetscCall(TSSetSolution(ts, u));
-  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
-  PetscCall(PostStep(ts)); /* print the initial state */
+  // solve
   PetscCall(TSSolve(ts, u));
-  PetscCall(TSGetTime(ts, &t));
-  PetscCall(DMComputeL2Diff(dm, t, ctx.initialFuncs, (void **)ctxarr, u, &L2error));
-  if (L2error < 1.0e-11) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n"));
-  else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)L2error));
+  // cleanup
   PetscCall(VecDestroy(&u));
   PetscCall(VecDestroy(&r));
   PetscCall(TSDestroy(&ts));
@@ -510,12 +625,15 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -debug 1 -dm_refine 1 -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_box_bd periodic,none -dm_plex_box_upper 2.0,6.283185307179586 \
-          -ts_max_steps 1 -ts_max_time 10. -ts_dt 1.0
-  test:
-    # Remapping with periodicity is broken
-    suffix: 1
-    args: -debug 1 -dm_plex_shape cylinder -dm_plex_dim 3 -dm_refine 1 -dm_refine_remap 0 -dm_plex_cylinder_bd periodic -dm_plex_boundary_label marker \
-           -ts_max_steps 1 -ts_max_time 10. -ts_dt 1.0
+    requires: triangle !complex
+    nsize: 4
+    args: -dm_plex_box_lower -2,-2 -dm_plex_box_upper 2,2 -dm_plex_simplex 1 -dm_refine_hierarchy 2 \
+      -eta 0.0001 -ksp_converged_reason -ksp_max_it 50 -ksp_rtol 1e-3 -ksp_type fgmres -mg_coarse_ksp_rtol 1e-1 \
+      -mg_coarse_ksp_type fgmres -mg_coarse_mg_levels_ksp_type gmres -mg_coarse_pc_type gamg -mg_levels_ksp_max_it 4 \
+      -mg_levels_ksp_type gmres -mg_levels_pc_type jacobi -mu 0.005 -pc_mg_type full -pc_type mg \
+      -petscpartitioner_type simple -petscspace_degree 2 -snes_converged_reason -snes_max_it 10 -snes_monitor \
+      -snes_rtol 1.e-9 -snes_stol 1.e-9 -ts_adapt_dt_max 0.01 -ts_adapt_monitor -ts_arkimex_type 1bee \
+      -ts_dt 0.001 -ts_max_reject 10 -ts_max_snes_failures -1 -ts_max_steps 1 -ts_max_time -ts_monitor -ts_type arkimex
+    filter: grep -v DM_
 
 TEST*/
