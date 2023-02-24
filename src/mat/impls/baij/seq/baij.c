@@ -3500,6 +3500,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplicateOption cpv
   PetscInt     i, mbs = a->mbs, nz = a->nz, bs2 = a->bs2;
 
   PetscFunctionBegin;
+  PetscCheck(A->assembled, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Cannot duplicate unassembled matrix");
   PetscCheck(a->i[mbs] == nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupt matrix");
 
   if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
