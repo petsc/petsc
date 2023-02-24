@@ -1330,31 +1330,99 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::ZeroEntries(Mat m) noexcept
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+namespace detail
+{
+
+// ==========================================================================================
+// SubMatIndexFunctor
+//
+// Iterator which permutes a linear index range into matrix indices for am nrows x ncols
+// submat with leading dimension lda. Essentially SubMatIndexFunctor(i) returns the index for
+// the i'th sequential entry in the matrix.
+// ==========================================================================================
+template <typename T>
+struct SubMatIndexFunctor {
+  PETSC_HOSTDEVICE_INLINE_DECL T operator()(T x) const noexcept { return ((x / nrows) * lda) + (x % nrows); }
+
+  PetscInt nrows;
+  PetscInt ncols;
+  PetscInt lda;
+};
+
+template <typename Iterator>
+struct SubMatrixIterator : MatrixIteratorBase<Iterator, SubMatIndexFunctor<typename thrust::iterator_difference<Iterator>::type>> {
+  using base_type = MatrixIteratorBase<Iterator, SubMatIndexFunctor<typename thrust::iterator_difference<Iterator>::type>>;
+
+  using iterator = typename base_type::iterator;
+
+  constexpr SubMatrixIterator(Iterator first, Iterator last, PetscInt nrows, PetscInt ncols, PetscInt lda) noexcept :
+    base_type{
+      std::move(first), std::move(last), {nrows, ncols, lda}
+  }
+  {
+  }
+
+  PETSC_NODISCARD iterator end() const noexcept { return this->begin() + (this->func.nrows * this->func.ncols); }
+};
+
+namespace
+{
+
+template <typename T>
+PETSC_NODISCARD inline SubMatrixIterator<typename thrust::device_vector<T>::iterator> make_submat_iterator(PetscInt rstart, PetscInt rend, PetscInt cstart, PetscInt cend, PetscInt lda, T *ptr) noexcept
+{
+  const auto nrows = rend - rstart;
+  const auto ncols = cend - cstart;
+  const auto dptr  = thrust::device_pointer_cast(ptr);
+
+  return {dptr + (rstart * lda) + cstart, dptr + ((rstart + nrows) * lda) + cstart, nrows, ncols, lda};
+}
+
+} // namespace
+
+} // namespace detail
+
 template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noexcept
 {
-  const auto         m = static_cast<cupmBlasInt_t>(A->rmap->n);
-  const auto         n = static_cast<cupmBlasInt_t>(A->cmap->n);
+  const auto         m = A->rmap->n;
+  const auto         n = A->cmap->n;
   const auto         N = m * n;
-  cupmBlasHandle_t   handle;
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(A, "Performing Scale %d x %d on backend\n", m, n));
-  PetscCall(GetHandles_(&dctx, &handle));
-  PetscCall(PetscLogGpuTimeBegin());
+  PetscCall(PetscInfo(A, "Performing Scale %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
+  PetscCall(GetHandles_(&dctx));
   {
-    const auto cu_alpha = cupmScalarCast(alpha);
-    const auto da       = DeviceArrayReadWrite(dctx, A);
-    const auto lda      = static_cast<cupmBlasInt_t>(MatIMPLCast(A)->lda);
+    const auto da  = DeviceArrayReadWrite(dctx, A);
+    const auto lda = MatIMPLCast(A)->lda;
 
     if (lda > m) {
-      for (cupmBlasInt_t j = 0; j < n; ++j) PetscCallCUPMBLAS(cupmBlasXscal(handle, m, &cu_alpha, da.cupmdata() + lda * j, 1));
+      cupmStream_t stream;
+
+      PetscCall(GetHandlesFrom_(dctx, &stream));
+      // clang-format off
+      PetscCallThrust(
+        const auto sub_mat = detail::make_submat_iterator(0, m, 0, n, lda, da.data());
+
+        THRUST_CALL(
+          thrust::transform,
+          stream,
+          sub_mat.begin(), sub_mat.end(), sub_mat.begin(),
+          device::cupm::functors::make_times_equals(alpha)
+        )
+      );
+      // clang-format on
     } else {
+      const auto       cu_alpha = cupmScalarCast(alpha);
+      cupmBlasHandle_t handle;
+
+      PetscCall(GetHandlesFrom_(dctx, &handle));
+      PetscCall(PetscLogGpuTimeBegin());
       PetscCallCUPMBLAS(cupmBlasXscal(handle, N, &cu_alpha, da.cupmdata(), 1));
+      PetscCall(PetscLogGpuTimeEnd());
     }
   }
-  PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(N));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1369,7 +1437,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Shift(Mat A, PetscScalar alpha) noex
   PetscFunctionBegin;
   PetscCall(GetHandles_(&dctx));
   PetscCall(PetscInfo(A, "Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
-  PetscCall(PointwiseUnaryTransform(A, 0, m, n, dctx, device::cupm::functors::make_plus_equals(alpha)));
+  PetscCall(DiagonalUnaryTransform(A, 0, m, n, dctx, device::cupm::functors::make_plus_equals(alpha)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

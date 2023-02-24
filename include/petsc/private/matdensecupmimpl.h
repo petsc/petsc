@@ -166,7 +166,7 @@ protected:
   static PetscErrorCode SetPreallocation(Mat, PetscDeviceContext, PetscScalar * = nullptr) noexcept;
 
   template <typename F>
-  static PetscErrorCode PointwiseUnaryTransform(Mat, PetscInt, PetscInt, PetscInt, PetscDeviceContext, F &&) noexcept;
+  static PetscErrorCode DiagonalUnaryTransform(Mat, PetscInt, PetscInt, PetscInt, PetscDeviceContext, F &&) noexcept;
 
   PETSC_NODISCARD static auto DeviceArrayRead(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_READ>{dctx, m})
   PETSC_NODISCARD static auto DeviceArrayWrite(PetscDeviceContext dctx, Mat m) noexcept PETSC_DECLTYPE_AUTO_RETURNS(MatrixArray<PETSC_MEMTYPE_DEVICE, PETSC_MEMORY_ACCESS_WRITE>{dctx, m})
@@ -273,44 +273,80 @@ inline PetscErrorCode MatDense_CUPM<T, D>::SetPreallocation(Mat A, PetscDeviceCo
 namespace detail
 {
 
-template <typename Iterator>
-class strided_range {
+// ==========================================================================================
+// MatrixIteratorBase
+//
+// A base class for creating thrust iterators over the local sub-matrix. This will set up the
+// proper iterator definitions so thrust knows how to handle things properly. Template
+// paramteres are as follows:
+//
+// - Iterator:
+// The type of the primary array iterator. Usually this is
+// thrust::device_pointer<PetscScalar>::iterator.
+//
+// - IndexFunctor:
+// This should be a functor which contains an operator() that when called with an index `i`,
+// returns the i'th permuted index into the array. For example, it could return the i'th
+// diagonal entry.
+// ==========================================================================================
+template <typename Iterator, typename IndexFunctor>
+class MatrixIteratorBase {
 public:
-  using difference_type = typename thrust::iterator_difference<Iterator>::type;
+  using array_iterator_type = Iterator;
+  using index_functor_type  = IndexFunctor;
 
-  struct stride_functor {
-    PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL difference_type operator()(const difference_type &i) const noexcept { return stride * i; }
-
-    difference_type stride;
-  };
-
+  using difference_type     = typename thrust::iterator_difference<array_iterator_type>::type;
   using CountingIterator    = thrust::counting_iterator<difference_type>;
-  using TransformIterator   = thrust::transform_iterator<stride_functor, CountingIterator>;
-  using PermutationIterator = thrust::permutation_iterator<Iterator, TransformIterator>;
-  using iterator            = PermutationIterator; // type of the strided_range iterator
+  using TransformIterator   = thrust::transform_iterator<index_functor_type, CountingIterator>;
+  using PermutationIterator = thrust::permutation_iterator<array_iterator_type, TransformIterator>;
+  using iterator            = PermutationIterator; // type of the begin/end iterator
 
-  constexpr strided_range(Iterator first, Iterator last, difference_type stride) noexcept : first{std::move(first)}, last{std::move(last)}, stride{std::move(stride)} { }
+  constexpr MatrixIteratorBase(array_iterator_type first, array_iterator_type last, index_functor_type idx_func) noexcept : first{std::move(first)}, last{std::move(last)}, func{std::move(idx_func)} { }
 
   PETSC_NODISCARD iterator begin() const noexcept
   {
     return PermutationIterator{
-      first, TransformIterator{CountingIterator{0}, stride_functor{stride}}
+      first, TransformIterator{CountingIterator{0}, func}
     };
   }
 
-  PETSC_NODISCARD iterator end() const noexcept { return begin() + ((last - first) + (stride - 1)) / stride; }
-
 protected:
-  Iterator        first;
-  Iterator        last;
-  difference_type stride;
+  array_iterator_type first;
+  array_iterator_type last;
+  index_functor_type  func;
+};
+
+// ==========================================================================================
+// StridedIndexFunctor
+//
+// Iterator which permutes a linear index range into strided matrix indices. Usually used to
+// get the diagonal.
+// ==========================================================================================
+template <typename T>
+struct StridedIndexFunctor {
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL constexpr T operator()(const T &i) const noexcept { return stride * i; }
+
+  T stride;
+};
+
+template <typename Iterator>
+class DiagonalIterator : public MatrixIteratorBase<Iterator, StridedIndexFunctor<typename thrust::iterator_difference<Iterator>::type>> {
+public:
+  using base_type = MatrixIteratorBase<Iterator, StridedIndexFunctor<typename thrust::iterator_difference<Iterator>::type>>;
+
+  using difference_type = typename base_type::difference_type;
+  using iterator        = typename base_type::iterator;
+
+  constexpr DiagonalIterator(Iterator first, Iterator last, difference_type stride) noexcept : base_type{std::move(first), std::move(last), {stride}} { }
+
+  PETSC_NODISCARD iterator end() const noexcept { return this->begin() + (this->last - this->first + this->func.stride - 1) / this->func.stride; }
 };
 
 } // namespace detail
 
 template <device::cupm::DeviceType T, typename D>
 template <typename F>
-inline PetscErrorCode MatDense_CUPM<T, D>::PointwiseUnaryTransform(Mat A, PetscInt rstart, PetscInt rend, PetscInt cols, PetscDeviceContext dctx, F &&functor) noexcept
+inline PetscErrorCode MatDense_CUPM<T, D>::DiagonalUnaryTransform(Mat A, PetscInt rstart, PetscInt rend, PetscInt cols, PetscDeviceContext dctx, F &&functor) noexcept
 {
   const auto rend2 = std::min(rend, cols);
 
@@ -321,12 +357,12 @@ inline PetscErrorCode MatDense_CUPM<T, D>::PointwiseUnaryTransform(Mat A, PetscI
 
     PetscCall(MatDenseGetLDA(A, &lda));
     {
-      using strided_range_type = detail::strided_range<thrust::device_vector<PetscScalar>::iterator>;
-      const auto         dptr  = thrust::device_pointer_cast(da.data());
-      const std::size_t  begin = rstart * lda;
-      const std::size_t  end   = rend2 - rstart + rend2 * lda;
-      strided_range_type diagonal{dptr + begin, dptr + end, lda + 1};
-      cupmStream_t       stream;
+      using DiagonalIterator  = detail::DiagonalIterator<thrust::device_vector<PetscScalar>::iterator>;
+      const auto        dptr  = thrust::device_pointer_cast(da.data());
+      const std::size_t begin = rstart * lda;
+      const std::size_t end   = rend2 - rstart + rend2 * lda;
+      DiagonalIterator  diagonal{dptr + begin, dptr + end, lda + 1};
+      cupmStream_t      stream;
 
       PetscCall(D::GetHandlesFrom_(dctx, &stream));
       // clang-format off
@@ -376,7 +412,7 @@ inline PetscErrorCode MatDense_CUPM<T, D>::PointwiseUnaryTransform(Mat A, PetscI
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayRead; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayWrite; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::HostArrayReadWrite; \
-    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::PointwiseUnaryTransform
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM<T, __VA_ARGS__>::DiagonalUnaryTransform
 
 } // namespace impl
 

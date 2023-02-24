@@ -47,6 +47,19 @@ private:
   value_type v_;
 };
 
+template <typename T>
+class times_equals {
+public:
+  using value_type = T;
+
+  PETSC_HOSTDEVICE_DECL constexpr explicit times_equals(value_type v = value_type{}) noexcept : v_{std::move(v)} { }
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL constexpr value_type operator()(const value_type &val) const noexcept { return val * v_; }
+
+private:
+  value_type v_;
+};
+
 namespace
 {
 
@@ -54,6 +67,12 @@ template <typename T>
 PETSC_HOSTDEVICE_INLINE_DECL constexpr plus_equals<T> make_plus_equals(const T &v) noexcept
 {
   return plus_equals<T>{v};
+}
+
+template <typename T>
+PETSC_HOSTDEVICE_INLINE_DECL constexpr times_equals<T> make_times_equals(const T &v) noexcept
+{
+  return times_equals<T>{v};
 }
 
 } // anonymous namespace
