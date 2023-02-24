@@ -1,4 +1,60 @@
-DeltaPrime=-2.62607
-0) total perturbed mass = 0.
-1) total perturbed mass = 0.
-L_2 Error: 1.51747e-06
+Test Type = tilt
+Model Type = two-field
+eta = 0.0001
+mu = 0.005
+DM Object: Mesh 4 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  Number of 0-cells per rank: 29 29 30 25
+  Number of 1-cells per rank: 60 60 60 56
+  Number of 2-cells per rank: 32 32 32 32
+Labels:
+  celltype: 3 strata with value/size (1 (60), 3 (32), 0 (29))
+  depth: 3 strata with value/size (0 (29), 1 (60), 2 (32))
+  marker: 1 strata with value/size (1 (25))
+  Face Sets: 1 strata with value/size (1 (21))
+  Defined by transform from:
+    Number of 0-cells per rank:   11   11   12   9  
+    Number of 1-cells per rank:   18   18   18   16  
+    Number of 2-cells per rank:   8   8   8   8  
+  Labels:
+    celltype: 3 strata with value/size (1 (18), 3 (8), 0 (11))
+    depth: 3 strata with value/size (0 (11), 1 (18), 2 (8))
+    marker: 1 strata with value/size (1 (13))
+    Face Sets: 1 strata with value/size (1 (9))
+    Defined by transform from:
+      Number of 0-cells per rank:     5     5     6     4    
+      Number of 1-cells per rank:     6     6     6     5    
+      Number of 2-cells per rank:     2     2     2     2    
+    Labels:
+      depth: 3 strata with value/size (0 (5), 1 (6), 2 (2))
+      celltype: 3 strata with value/size (0 (5), 1 (6), 3 (2))
+      marker: 1 strata with value/size (1 (7))
+      Face Sets: 1 strata with value/size (1 (3))
+0 TS dt 0.001 time 0.
+MHD    0) time =         0, Eergy=  2.3234950605138e+00 (plot ID 0)
+    0 SNES Function norm 2.627555109531e+00 
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+    1 SNES Function norm 2.251758045081e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+    2 SNES Function norm 7.944601836960e-11 
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+    0 SNES Function norm 1.788292282630e+00 
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    1 SNES Function norm 5.922384584620e-04 
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    2 SNES Function norm 5.539034897822e-07 
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+    3 SNES Function norm 4.438202738130e-12 
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+    0 SNES Function norm 1.789489403111e+00 
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    1 SNES Function norm 5.945687139590e-04 
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    2 SNES Function norm 5.586514188535e-07 
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+    3 SNES Function norm 4.467933754473e-12 
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+      TSAdapt basic arkimex 0:1bee step   0 accepted t=0          + 1.000e-03 dt=5.092e-03  wlte=0.0312  wltea=   -1 wlter=   -1
+1 TS dt 0.00509152 time 0.001
+MHD    1) time =     0.001, Eergy=  2.3238765844446e+00 (plot ID 1)
