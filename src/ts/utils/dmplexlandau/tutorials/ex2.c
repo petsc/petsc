@@ -198,10 +198,10 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   PetscCall(PetscDSSetConstants(prob, 1, &vz));
   PetscCall(PetscDSSetObjective(prob, 0, &f0_ve_shift));
   PetscCall(DMPlexComputeIntegralFEM(plexe, XsubArray[LAND_PACK_IDX(ctx->batch_view_idx, 0)], tt, NULL));
-  v        = ctx->n_0 * ctx->v_0 * PetscRealPart(tt[0]) / n_e;                                           /* remove number density to get velocity */
-  v2       = PetscSqr(v);                                                                                /* use real space: m^2 / s^2 */
-  Te_kev   = (v2 * ctx->masses[0] * PETSC_PI / 8) * kev_joul;                                            /* temperature in kev */
-  spit_eta = Spitzer(ctx->masses[0], -ctx->charges[0], Z, ctx->epsilon0, ctx->lnLam, Te_kev / kev_joul); /* kev --> J (kT) */
+  v        = ctx->n_0 * ctx->v_0 * PetscRealPart(tt[0]) / n_e;                                                   /* remove number density to get velocity */
+  v2       = PetscSqr(v);                                                                                        /* use real space: m^2 / s^2 */
+  Te_kev   = (v2 * ctx->masses[0] * PETSC_PI / 8) * kev_joul;                                                    /* temperature in kev */
+  spit_eta = Spitzer(ctx->masses[0], -ctx->charges[0], Z, ctx->epsilon0, ctx->lambdas[0][1], Te_kev / kev_joul); /* kev --> J (kT) */
   if (0) {
     PetscCall(DMGetDS(plexe, &prob));
     PetscCall(PetscDSSetConstants(prob, 1, q));
@@ -450,7 +450,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     PetscCall(rectx->test(ts, X, stepi, time, reason ? PETSC_TRUE : PETSC_FALSE, ctx, rectx));
   }
   /* parallel check that only works of all batches are identical */
-  if (reason && ctx->verbose > 3) {
+  if (reason && ctx->verbose > 3 && ctx->batch_sz > 1) {
     PetscReal   val, rval;
     PetscMPIInt rank;
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -610,7 +610,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   /* convert E from Connor-Hastie E_c units to real if doing Spitzer E */
   if (Connor_E) {
     PetscReal E = ctx->Ez, Tev = ctx->thermal_temps[0] * 8.621738e-5, n = ctx->n_0 * ctx->n[0];
-    CalculateE(Tev, n, ctx->lnLam, ctx->epsilon0, &E);
+    CalculateE(Tev, n, ctx->lambdas[0][1], ctx->epsilon0, &E);
     ((LandauCtx *)ctx)->Ez *= E;
   }
   PetscCall(DMDestroy(&dm_dummy));

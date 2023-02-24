@@ -18,7 +18,7 @@ PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *, PetscInt)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
-PetscErrorCode LandauCUDAStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], LandauStaticData *)
+PetscErrorCode LandauCUDAStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], LandauStaticData *)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
@@ -68,7 +68,7 @@ PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps maps[], Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal nu_alpha[], PetscReal nu_beta[], PetscReal a_invMass[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
+PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal nu_alpha[], PetscReal nu_beta[], PetscReal a_invMass[], PetscReal a_lambdas[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
 {
   PetscTabulation *Tf;
   PetscReal       *BB, *DD;
@@ -331,12 +331,12 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
       LandauTensor3D(vj, x, y, z, U, mask);
   #endif
       for (int fieldB = 0; fieldB < loc_Nf_r; fieldB++) {
-        temp1[0] += s_dfx[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r];
-        temp1[1] += s_dfy[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r];
+        temp1[0] += s_dfx[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r] * 7; // todo : bring lambdas in
+        temp1[1] += s_dfy[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r] * 7;
   #if LANDAU_DIM == 3
-        temp1[2] += s_dfz[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r];
+        temp1[2] += s_dfz[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r] * 7;
   #endif
-        temp2 += s_f[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r];
+        temp2 += s_f[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * 7;
       }
       temp1[0] *= wi;
       temp1[1] *= wi;

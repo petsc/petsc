@@ -224,8 +224,9 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     PetscInt         ip_offset[LANDAU_MAX_GRIDS + 1], ipf_offset[LANDAU_MAX_GRIDS + 1], elem_offset[LANDAU_MAX_GRIDS + 1], IPf_sz_glb, IPf_sz_tot, num_grids = ctx->num_grids, Nf[LANDAU_MAX_GRIDS];
     PetscReal       *ff, *dudx, *dudy, *dudz, *invJ_a = (PetscReal *)ctx->SData_d.invJ, *xx = (PetscReal *)ctx->SData_d.x, *yy = (PetscReal *)ctx->SData_d.y, *zz = (PetscReal *)ctx->SData_d.z, *ww = (PetscReal *)ctx->SData_d.w;
     PetscReal       *nu_alpha = (PetscReal *)ctx->SData_d.alpha, *nu_beta = (PetscReal *)ctx->SData_d.beta, *invMass = (PetscReal *)ctx->SData_d.invMass;
-    PetscSection     section[LANDAU_MAX_GRIDS], globsection[LANDAU_MAX_GRIDS];
-    PetscScalar     *coo_vals = NULL;
+    PetscReal(*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal(*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
+    PetscSection section[LANDAU_MAX_GRIDS], globsection[LANDAU_MAX_GRIDS];
+    PetscScalar *coo_vals = NULL;
     for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
       PetscCall(DMGetLocalSection(ctx->plex[grid], &section[grid]));
       PetscCall(DMGetGlobalSection(ctx->plex[grid], &globsection[grid]));
@@ -381,12 +382,12 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
 #endif
                   for (int f = 0; f < Nfloc_r; ++f) {
                     const PetscInt idx = b_id * IPf_sz_glb + ipf_offset[grid_r] + f * nip_loc_r + ei_r * Nq + qi; // IPf_idx + f*nip_loc_r + loc_fdf_idx;
-                    temp1[0] += dudx[idx] * nu_beta[f + f_off] * invMass[f + f_off];
-                    temp1[1] += dudy[idx] * nu_beta[f + f_off] * invMass[f + f_off];
+                    temp1[0] += dudx[idx] * nu_beta[f + f_off] * invMass[f + f_off] * (*lambdas)[grid][grid_r];
+                    temp1[1] += dudy[idx] * nu_beta[f + f_off] * invMass[f + f_off] * (*lambdas)[grid][grid_r];
 #if LANDAU_DIM == 3
-                    temp1[2] += dudz[idx] * nu_beta[f + f_off] * invMass[f + f_off];
+                    temp1[2] += dudz[idx] * nu_beta[f + f_off] * invMass[f + f_off] * (*lambdas)[grid][grid_r];
 #endif
-                    temp2 += ff[idx] * nu_beta[f + f_off];
+                    temp2 += ff[idx] * nu_beta[f + f_off] * (*lambdas)[grid][grid_r];
                   }
                   temp1[0] *= wi;
                   temp1[1] *= wi;
@@ -995,11 +996,45 @@ static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// make log(Lambdas) from NRL Plasma formulary
+static PetscErrorCode makeLambdas(LandauCtx *ctx)
+{
+  PetscFunctionBegin;
+  for (PetscInt gridi = 0; gridi < ctx->num_grids; gridi++) {
+    int       iii   = ctx->species_offset[gridi];
+    PetscReal Ti_ev = (ctx->thermal_temps[iii] / 1.1604525e7) * 1000; // convert (back) to eV
+    PetscReal ni    = ctx->n[iii] * ctx->n_0;
+    for (PetscInt gridj = gridi; gridj < ctx->num_grids; gridj++) {
+      PetscInt  jjj = ctx->species_offset[gridj];
+      PetscReal Zj  = ctx->charges[jjj] / 1.6022e-19;
+      if (gridi == 0) {
+        if (gridj == 0) { // lam_ee
+          ctx->lambdas[gridi][gridj] = 23.5 - PetscLogReal(PetscSqrtReal(ni) * PetscPowReal(Ti_ev, -1.25)) - PetscSqrtReal(1e-5 + PetscSqr(PetscLogReal(Ti_ev) - 2) / 16);
+        } else { // lam_ei == lam_ie
+          if (10 * Zj * Zj > Ti_ev) {
+            ctx->lambdas[gridi][gridj] = ctx->lambdas[gridj][gridi] = 23 - PetscLogReal(PetscSqrtReal(ni) * Zj * PetscPowReal(Ti_ev, -1.5));
+          } else {
+            ctx->lambdas[gridi][gridj] = ctx->lambdas[gridj][gridi] = 24 - PetscLogReal(PetscSqrtReal(ni) / Ti_ev);
+          }
+        }
+      } else { // lam_ii'
+        PetscReal mui = ctx->masses[iii] / 1.6720e-27, Zi = ctx->charges[iii] / 1.6022e-19;
+        PetscReal Tj_ev            = (ctx->thermal_temps[jjj] / 1.1604525e7) * 1000; // convert (back) to eV
+        PetscReal muj              = ctx->masses[jjj] / 1.6720e-27;
+        PetscReal nj               = ctx->n[jjj] * ctx->n_0;
+        ctx->lambdas[gridi][gridj] = ctx->lambdas[gridj][gridi] = 23 - PetscLogReal(Zi * Zj * (mui + muj) / (mui * Tj_ev + muj * Ti_ev) * PetscSqrtReal(ni * Zi * Zi / Ti_ev + nj * Zj * Zj / Tj_ev));
+      }
+    }
+  }
+  //PetscReal v0 = PetscSqrtReal(ctx->k * ctx->thermal_temps[iii] / ctx->masses[iii]); /* arbitrary units for non-dimensionalization: plasma formulary def */
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
 {
   PetscBool flg, sph_flg;
   PetscInt  ii, nt, nm, nc, num_species_grid[LANDAU_MAX_GRIDS], non_dim_grid;
-  PetscReal v0_grid[LANDAU_MAX_GRIDS];
+  PetscReal v0_grid[LANDAU_MAX_GRIDS], lnLam = 10;
   DM        dummy;
 
   PetscFunctionBegin;
@@ -1048,7 +1083,6 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   /* constants, etc. */
   ctx->epsilon0 = 8.8542e-12;     /* permittivity of free space (MKS) F/m */
   ctx->k        = 1.38064852e-23; /* Boltzmann constant (MKS) J/K */
-  ctx->lnLam    = 10;             /* cross section ratio large - small angle collisions */
   ctx->n_0      = 1.e20;          /* typical plasma n, but could set it to 1 */
   ctx->Ez       = 0;
   for (PetscInt grid = 0; grid < LANDAU_NUM_TIMERS; grid++) ctx->times[grid] = 0;
@@ -1104,7 +1138,6 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscCheck(ctx->batch_view_idx < ctx->batch_sz, ctx->comm, PETSC_ERR_ARG_WRONG, "-ctx->batch_view_idx %" PetscInt_FMT " > ctx->batch_sz %" PetscInt_FMT, ctx->batch_view_idx, ctx->batch_sz);
   PetscCall(PetscOptionsReal("-dm_landau_Ez", "Initial parallel electric field in unites of Conner-Hastie critical field", "plexland.c", ctx->Ez, &ctx->Ez, NULL));
   PetscCall(PetscOptionsReal("-dm_landau_n_0", "Normalization constant for number density", "plexland.c", ctx->n_0, &ctx->n_0, NULL));
-  PetscCall(PetscOptionsReal("-dm_landau_ln_lambda", "Cross section parameter", "plexland.c", ctx->lnLam, &ctx->lnLam, NULL));
   PetscCall(PetscOptionsBool("-dm_landau_use_mataxpy_mass", "Use fast but slightly fragile MATAXPY to add mass term", "plexland.c", ctx->use_matrix_mass, &ctx->use_matrix_mass, NULL));
   PetscCall(PetscOptionsBool("-dm_landau_use_relativistic_corrections", "Use relativistic corrections", "plexland.c", ctx->use_relativistic_corrections, &ctx->use_relativistic_corrections, NULL));
   if (LANDAU_DIM == 2 && ctx->use_relativistic_corrections) ctx->use_relativistic_corrections = PETSC_FALSE; // should warn
@@ -1156,11 +1189,22 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     int iii       = ctx->species_offset[grid];                                          // normalize with first (arbitrary) species on grid
     v0_grid[grid] = PetscSqrtReal(ctx->k * ctx->thermal_temps[iii] / ctx->masses[iii]); /* arbitrary units for non-dimensionalization: plasma formulary def */
   }
+  // get lambdas here because we need them for t_0 etc
+  PetscCall(PetscOptionsReal("-dm_landau_ln_lambda", "Universal cross section parameter. Default uses NRL formulas", "plexland.c", lnLam, &lnLam, &flg));
+  if (flg) {
+    for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
+      for (PetscInt gridj = 0; gridj < LANDAU_MAX_GRIDS; gridj++) ctx->lambdas[gridj][grid] = lnLam; /* cross section ratio large - small angle collisions */
+    }
+  } else {
+    PetscCall(makeLambdas(ctx));
+  }
   non_dim_grid = 0;
-  PetscCall(PetscOptionsInt("-dm_landau_normalization_grid", "Index of grid to use for setting v_0, m_0, t_0. (Not recommended)", "plexland.c", non_dim_grid, &non_dim_grid, NULL));
-  ctx->v_0 = v0_grid[non_dim_grid];                                                                                                                        /* arbitrary units for non dimensionalization: global mean velocity in 1D of electrons */
-  ctx->m_0 = ctx->masses[non_dim_grid];                                                                                                                    /* arbitrary reference mass, electrons */
-  ctx->t_0 = 8 * PETSC_PI * PetscSqr(ctx->epsilon0 * ctx->m_0 / PetscSqr(ctx->charges[non_dim_grid])) / ctx->lnLam / ctx->n_0 * PetscPowReal(ctx->v_0, 3); /* note, this t_0 makes nu[non_dim_grid,non_dim_grid]=1 */
+  PetscCall(PetscOptionsInt("-dm_landau_normalization_grid", "Index of grid to use for setting v_0, m_0, t_0. (Not recommended)", "plexland.c", non_dim_grid, &non_dim_grid, &flg));
+  if (non_dim_grid != 0) PetscCall(PetscInfo(dummy, "Normalization grid set to %" PetscInt_FMT ", but non-default not well verified\n", non_dim_grid));
+  PetscCheck(non_dim_grid >= 0 && non_dim_grid < ctx->num_species, ctx->comm, PETSC_ERR_ARG_WRONG, "Normalization grid wrong: %" PetscInt_FMT, non_dim_grid);
+  ctx->v_0 = v0_grid[non_dim_grid];     /* arbitrary units for non dimensionalization: global mean velocity in 1D of electrons */
+  ctx->m_0 = ctx->masses[non_dim_grid]; /* arbitrary reference mass, electrons */
+  ctx->t_0 = 8 * PETSC_PI * PetscSqr(ctx->epsilon0 * ctx->m_0 / PetscSqr(ctx->charges[non_dim_grid])) / ctx->lambdas[non_dim_grid][non_dim_grid] / ctx->n_0 * PetscPowReal(ctx->v_0, 3); /* note, this t_0 makes nu[non_dim_grid,non_dim_grid]=1 */
   /* domain */
   nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsRealArray("-dm_landau_domain_radius", "Phase space size in units of thermal velocity of grid", "plexland.c", ctx->radius, &nt, &flg));
@@ -1214,7 +1258,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscOptionsEnd();
 
   for (ii = ctx->num_species; ii < LANDAU_MAX_SPECIES; ii++) ctx->masses[ii] = ctx->thermal_temps[ii] = ctx->charges[ii] = 0;
-  if (ctx->verbose > 0) {
+  if (ctx->verbose != 0) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "masses:        e=%10.3e; ions in proton mass units:   %10.3e %10.3e ...\n", (double)ctx->masses[0], (double)(ctx->masses[1] / 1.6720e-27), (double)(ctx->num_species > 2 ? ctx->masses[2] / 1.6720e-27 : 0)));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "charges:       e=%10.3e; charges in elementary units: %10.3e %10.3e\n", (double)ctx->charges[0], (double)(-ctx->charges[1] / ctx->charges[0]), (double)(ctx->num_species > 2 ? -ctx->charges[2] / ctx->charges[0] : 0)));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "n:             e: %10.3e                           i: %10.3e %10.3e\n", (double)ctx->n[0], (double)ctx->n[1], (double)(ctx->num_species > 2 ? ctx->n[2] : 0)));
@@ -1286,17 +1330,41 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     for (PetscInt ii = ctx->species_offset[grid]; ii < ctx->species_offset[grid + 1]; ii++) {
       invMass[ii]  = ctx->m_0 / ctx->masses[ii];
       nu_alpha[ii] = PetscSqr(ctx->charges[ii] / ctx->m_0) * ctx->m_0 / ctx->masses[ii];
-      nu_beta[ii]  = PetscSqr(ctx->charges[ii] / ctx->epsilon0) * ctx->lnLam / (8 * PETSC_PI) * ctx->t_0 * ctx->n_0 / PetscPowReal(ctx->v_0, 3);
+      nu_beta[ii]  = PetscSqr(ctx->charges[ii] / ctx->epsilon0) / (8 * PETSC_PI) * ctx->t_0 * ctx->n_0 / PetscPowReal(ctx->v_0, 3);
     }
   }
   if (ctx->verbose == 4) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "nu_beta: "));
-    for (PetscInt ii = 0; ii < ctx->num_species; ii++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %e", (double)nu_beta[ii]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nalpha[i]*beta[j]:\n"));
-    for (PetscInt ii = 0; ii < ctx->num_species; ii++) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "alpha_nu[%d,:]: %e: ", (int)ii, (double)nu_alpha[ii]));
-      for (PetscInt jj = 0; jj < ctx->num_species; jj++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %e", (double)(nu_alpha[ii] * nu_beta[jj]))); }
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "nu_alpha: "));
+    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
+      int iii = ctx->species_offset[grid];
+      for (PetscInt ii = iii; ii < ctx->species_offset[grid + 1]; ii++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %e", (double)nu_alpha[ii]));
+    }
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nnu_beta: "));
+    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
+      int iii = ctx->species_offset[grid];
+      for (PetscInt ii = iii; ii < ctx->species_offset[grid + 1]; ii++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %e", (double)nu_beta[ii]));
+    }
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nnu_alpha[i]*nu_beta[j]*lambda[i][j]:\n"));
+    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
+      int iii = ctx->species_offset[grid];
+      for (PetscInt ii = iii; ii < ctx->species_offset[grid + 1]; ii++) {
+        for (PetscInt gridj = 0; gridj < ctx->num_grids; gridj++) {
+          int jjj = ctx->species_offset[gridj];
+          for (PetscInt jj = jjj; jj < ctx->species_offset[gridj + 1]; jj++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %14.9e", (double)(nu_alpha[ii] * nu_beta[jj] * ctx->lambdas[grid][gridj])));
+        }
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+      }
+    }
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "lambda[i][j]:\n"));
+    for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
+      int iii = ctx->species_offset[grid];
+      for (PetscInt ii = iii; ii < ctx->species_offset[grid + 1]; ii++) {
+        for (PetscInt gridj = 0; gridj < ctx->num_grids; gridj++) {
+          int jjj = ctx->species_offset[gridj];
+          for (PetscInt jj = jjj; jj < ctx->species_offset[gridj + 1]; jj++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %14.9e", (double)ctx->lambdas[grid][gridj]));
+        }
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+      }
     }
   }
   PetscCall(DMGetDS(ctx->plex[0], &prob));    // same DS for all grids
@@ -1550,7 +1618,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     PetscCall(PetscInfo(ctx->plex[0], "Initialize static data\n"));
     for (PetscInt grid = 0; grid < ctx->num_grids; grid++) nip_glb += Nq * numCells[grid];
     /* collect f data, first time is for Jacobian, but make mass now */
-    if (ctx->verbose > 0) {
+    if (ctx->verbose != 0) {
       PetscInt ncells = 0, N;
       PetscCall(MatGetSize(ctx->J, &N, NULL));
       for (PetscInt grid = 0; grid < ctx->num_grids; grid++) ncells += numCells[grid];
@@ -1660,13 +1728,13 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS_KERNELS)
       if (ctx->deviceType == LANDAU_CUDA) {
   #if defined(PETSC_HAVE_CUDA)
-        PetscCall(LandauCUDAStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
+        PetscCall(LandauCUDAStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, (PetscReal *)ctx->lambdas, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
   #else
         SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type cuda not built");
   #endif
       } else if (ctx->deviceType == LANDAU_KOKKOS) {
   #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-        PetscCall(LandauKokkosStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
+        PetscCall(LandauKokkosStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, (PetscReal *)ctx->lambdas, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
   #else
         SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type kokkos not built");
   #endif
@@ -1675,14 +1743,14 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
       /* free */
       PetscCall(PetscFree4(ww, xx, yy, invJ_a));
       if (dim == 3) PetscCall(PetscFree(zz));
-    } else { /* CPU version, just copy in, only use part */
-      PetscReal *nu_alpha_p = (PetscReal *)ctx->SData_d.alpha, *nu_beta_p = (PetscReal *)ctx->SData_d.beta, *invMass_p = (PetscReal *)ctx->SData_d.invMass;
+    } else {                                                                                                                                                                   /* CPU version, just copy in, only use part */
+      PetscReal *nu_alpha_p = (PetscReal *)ctx->SData_d.alpha, *nu_beta_p = (PetscReal *)ctx->SData_d.beta, *invMass_p = (PetscReal *)ctx->SData_d.invMass, *lambdas_p = NULL; // why set these ?
       ctx->SData_d.w    = (void *)ww;
       ctx->SData_d.x    = (void *)xx;
       ctx->SData_d.y    = (void *)yy;
       ctx->SData_d.z    = (void *)zz;
       ctx->SData_d.invJ = (void *)invJ_a;
-      PetscCall(PetscMalloc3(ctx->num_species, &nu_alpha_p, ctx->num_species, &nu_beta_p, ctx->num_species, &invMass_p));
+      PetscCall(PetscMalloc4(ctx->num_species, &nu_alpha_p, ctx->num_species, &nu_beta_p, ctx->num_species, &invMass_p, LANDAU_MAX_GRIDS * LANDAU_MAX_GRIDS, &lambdas_p));
       for (PetscInt ii = 0; ii < ctx->num_species; ii++) {
         nu_alpha_p[ii] = nu_alpha[ii];
         nu_beta_p[ii]  = nu_beta[ii];
@@ -1691,6 +1759,11 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
       ctx->SData_d.alpha   = (void *)nu_alpha_p;
       ctx->SData_d.beta    = (void *)nu_beta_p;
       ctx->SData_d.invMass = (void *)invMass_p;
+      ctx->SData_d.lambdas = (void *)lambdas_p;
+      for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
+        PetscReal(*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal(*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
+        for (PetscInt gridj = 0; gridj < LANDAU_MAX_GRIDS; gridj++) { (*lambdas)[grid][gridj] = ctx->lambdas[grid][gridj]; }
+      }
     }
     PetscCall(PetscLogEventEnd(ctx->events[7], 0, 0, 0, 0));
   } // initialize
@@ -2101,7 +2174,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
       if (coo_elem_offsets) {
         PetscCall(PetscFree3(coo_elem_offsets, coo_elem_fullNb, coo_elem_point_offsets)); // could be NULL
       }
-      PetscCall(PetscFree3(ctx->SData_d.alpha, ctx->SData_d.beta, ctx->SData_d.invMass));
+      PetscCall(PetscFree4(ctx->SData_d.alpha, ctx->SData_d.beta, ctx->SData_d.invMass, ctx->SData_d.lambdas));
     }
   }
 
