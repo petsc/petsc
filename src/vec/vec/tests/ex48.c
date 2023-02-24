@@ -176,8 +176,8 @@ static inline PetscErrorCode alterString(const char oldstr[], char str[])
   size_t i, n;
 
   PetscFunctionBegin;
-  PetscCall(PetscStrcpy(str, oldstr));
   PetscCall(PetscStrlen(oldstr, &n));
+  PetscCall(PetscStrncpy(str, oldstr, n + 1));
   for (i = 0; i < n; i++) {
     if (('A' <= str[i] && str[i] < 'Z') || ('a' <= str[i] && str[i] < 'z')) {
       str[i]++;
@@ -249,7 +249,7 @@ static PetscErrorCode CapsuleCreate(Capsule old, Capsule *newcapsule)
   for (t = 0; t < nt; t++) {
     c->sizes[t] = sizes[t];
     c->types[t] = types[t];
-    PetscCall(PetscStrcpy(c->typeNames[t], tNames[t]));
+    PetscCall(PetscStrncpy(c->typeNames[t], tNames[t], sizeof(c->typeNames[t])));
     PetscCall(PetscSNPrintf(c->names[t], SLEN, "attr_%" PetscInt_FMT "_%s", c->id, tNames[t]));
     PetscCall(PetscMalloc(sizes[t], &c->vals[t]));
     PetscCall(PetscMemcpy(c->vals[t], vals[t], sizes[t]));

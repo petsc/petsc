@@ -824,9 +824,9 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
 
   PetscFunctionBeginUser;
   if (diag == 0.) {
-    PetscCall(PetscStrcpy(diagstr, "zero"));
+    PetscCall(PetscStrncpy(diagstr, "zero", sizeof(diagstr)));
   } else {
-    PetscCall(PetscStrcpy(diagstr, "nonzero"));
+    PetscCall(PetscStrncpy(diagstr, "nonzero", sizeof(diagstr)));
   }
   PetscCall(ISView(is, NULL));
   PetscCall(MatGetLocalToGlobalMapping(A, &l2gr, &l2gc));

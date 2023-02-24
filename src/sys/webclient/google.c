@@ -60,14 +60,14 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
     }
     PetscCall(PetscSSLInitializeContext(&ctx));
     PetscCall(PetscHTTPSConnect("accounts.google.com", 443, ctx, &sock, &ssl));
-    PetscCall(PetscStrcpy(body, "client_id="));
-    PetscCall(PetscStrcat(body, PETSC_GOOGLE_CLIENT_ID));
-    PetscCall(PetscStrcat(body, "&client_secret="));
-    PetscCall(PetscStrcat(body, PETSC_GOOGLE_CLIENT_ST));
-    PetscCall(PetscStrcat(body, "&refresh_token="));
-    PetscCall(PetscStrcat(body, refreshtoken));
+    PetscCall(PetscStrncpy(body, "client_id=", sizeof(body)));
+    PetscCall(PetscStrlcat(body, PETSC_GOOGLE_CLIENT_ID, sizeof(body)));
+    PetscCall(PetscStrlcat(body, "&client_secret=", sizeof(body)));
+    PetscCall(PetscStrlcat(body, PETSC_GOOGLE_CLIENT_ST, sizeof(body)));
+    PetscCall(PetscStrlcat(body, "&refresh_token=", sizeof(body)));
+    PetscCall(PetscStrlcat(body, refreshtoken, sizeof(body)));
     if (!refresh_token) PetscCall(PetscFree(refreshtoken));
-    PetscCall(PetscStrcat(body, "&grant_type=refresh_token"));
+    PetscCall(PetscStrlcat(body, "&grant_type=refresh_token", sizeof(body)));
 
     PetscCall(PetscHTTPSRequest("POST", "accounts.google.com/o/oauth2/token", NULL, "application/x-www-form-urlencoded", body, ssl, buff, sizeof(buff)));
     PetscCall(PetscSSLDestroyContext(ctx));
@@ -133,26 +133,30 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    PetscCall(PetscStrcpy(head, "Authorization: Bearer "));
-    PetscCall(PetscStrcat(head, access_token));
-    PetscCall(PetscStrcat(head, "\r\n"));
-    PetscCall(PetscStrcat(head, "uploadType: multipart\r\n"));
+    PetscCall(PetscStrncpy(head, "Authorization: Bearer ", sizeof(head)));
+    PetscCall(PetscStrlcat(head, access_token, sizeof(head)));
+    PetscCall(PetscStrlcat(head, "\r\n", sizeof(head)));
+    PetscCall(PetscStrlcat(head, "uploadType: multipart\r\n", sizeof(head)));
 
     err = stat(filename, &sb);
     PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to stat file: %s", filename);
     len = 1024 + sb.st_size;
     PetscCall(PetscMalloc1(len, &body));
-    PetscCall(PetscStrcpy(body, "--foo_bar_baz\r\n"
-                                "Content-Type: application/json\r\n\r\n"
-                                "{"));
+    PetscCall(PetscStrncpy(body,
+                           "--foo_bar_baz\r\n"
+                           "Content-Type: application/json\r\n\r\n"
+                           "{",
+                           sizeof(body)));
     PetscCall(PetscPushJSONValue(body, "title", filename, len));
-    PetscCall(PetscStrcat(body, ","));
+    PetscCall(PetscStrlcat(body, ",", sizeof(body)));
     PetscCall(PetscPushJSONValue(body, "mimeType", "text.html", len));
-    PetscCall(PetscStrcat(body, ","));
+    PetscCall(PetscStrlcat(body, ",", sizeof(body)));
     PetscCall(PetscPushJSONValue(body, "description", "a file", len));
-    PetscCall(PetscStrcat(body, "}\r\n\r\n"
-                                "--foo_bar_baz\r\n"
-                                "Content-Type: text/html\r\n\r\n"));
+    PetscCall(PetscStrlcat(body,
+                           "}\r\n\r\n"
+                           "--foo_bar_baz\r\n"
+                           "Content-Type: text/html\r\n\r\n",
+                           sizeof(body)));
     PetscCall(PetscStrlen(body, &blen));
     fd = fopen(filename, "r");
     PetscCheck(fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open file: %s", filename);
@@ -160,8 +164,10 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
     PetscCheck(rd == (size_t)sb.st_size, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to read entire file: %s %d %d", filename, (int)rd, (int)sb.st_size);
     fclose(fd);
     body[blen + rd] = 0;
-    PetscCall(PetscStrcat(body, "\r\n\r\n"
-                                "--foo_bar_baz\r\n"));
+    PetscCall(PetscStrlcat(body,
+                           "\r\n\r\n"
+                           "--foo_bar_baz\r\n",
+                           sizeof(body)));
     PetscCall(PetscSSLInitializeContext(&ctx));
     PetscCall(PetscHTTPSConnect("www.googleapis.com", 443, ctx, &sock, &ssl));
     PetscCall(PetscHTTPSRequest("POST", "www.googleapis.com/upload/drive/v2/files/", head, "multipart/related; boundary=\"foo_bar_baz\"", body, ssl, buff, sizeof(buff)));
@@ -230,14 +236,14 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], cha
 
     PetscCall(PetscSSLInitializeContext(&ctx));
     PetscCall(PetscHTTPSConnect("accounts.google.com", 443, ctx, &sock, &ssl));
-    PetscCall(PetscStrcpy(body, "code="));
-    PetscCall(PetscStrcat(body, buff));
-    PetscCall(PetscStrcat(body, "&client_id="));
-    PetscCall(PetscStrcat(body, PETSC_GOOGLE_CLIENT_ID));
-    PetscCall(PetscStrcat(body, "&client_secret="));
-    PetscCall(PetscStrcat(body, PETSC_GOOGLE_CLIENT_ST));
-    PetscCall(PetscStrcat(body, "&redirect_uri=urn:ietf:wg:oauth:2.0:oob&"));
-    PetscCall(PetscStrcat(body, "grant_type=authorization_code"));
+    PetscCall(PetscStrncpy(body, "code=", sizeof(body)));
+    PetscCall(PetscStrlcat(body, buff, sizeof(body)));
+    PetscCall(PetscStrlcat(body, "&client_id=", sizeof(body)));
+    PetscCall(PetscStrlcat(body, PETSC_GOOGLE_CLIENT_ID, sizeof(body)));
+    PetscCall(PetscStrlcat(body, "&client_secret=", sizeof(body)));
+    PetscCall(PetscStrlcat(body, PETSC_GOOGLE_CLIENT_ST, sizeof(body)));
+    PetscCall(PetscStrlcat(body, "&redirect_uri=urn:ietf:wg:oauth:2.0:oob&", sizeof(body)));
+    PetscCall(PetscStrlcat(body, "grant_type=authorization_code", sizeof(body)));
 
     PetscCall(PetscHTTPSRequest("POST", "accounts.google.com/o/oauth2/token", NULL, "application/x-www-form-urlencoded", body, ssl, buff, sizeof(buff)));
     PetscCall(PetscSSLDestroyContext(ctx));
@@ -283,9 +289,9 @@ PetscErrorCode PetscURLShorten(const char url[], char shorturl[], size_t lenshor
   PetscFunctionBegin;
   PetscCall(PetscSSLInitializeContext(&ctx));
   PetscCall(PetscHTTPSConnect("www.googleapis.com", 443, ctx, &sock, &ssl));
-  PetscCall(PetscStrcpy(body, "{"));
+  PetscCall(PetscStrncpy(body, "{", sizeof(body)));
   PetscCall(PetscPushJSONValue(body, "longUrl", url, sizeof(body) - 2));
-  PetscCall(PetscStrcat(body, "}"));
+  PetscCall(PetscStrlcat(body, "}", sizeof(body)));
   PetscCall(PetscSNPrintf(post, sizeof(post), "www.googleapis.com/urlshortener/v1/url?key=%s", PETSC_GOOGLE_API_KEY));
   PetscCall(PetscHTTPSRequest("POST", post, NULL, "application/json", body, ssl, buff, sizeof(buff)));
   PetscCall(PetscSSLDestroyContext(ctx));

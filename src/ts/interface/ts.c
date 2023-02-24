@@ -2046,8 +2046,8 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
 
     PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
     PetscCall(PetscDrawGetCurrentPoint(draw, &x, &y));
-    PetscCall(PetscStrcpy(str, "TS: "));
-    PetscCall(PetscStrcat(str, ((PetscObject)ts)->type_name));
+    PetscCall(PetscStrncpy(str, "TS: ", sizeof(str)));
+    PetscCall(PetscStrlcat(str, ((PetscObject)ts)->type_name, sizeof(str)));
     PetscCall(PetscDrawStringBoxed(draw, x, y, PETSC_DRAW_BLACK, PETSC_DRAW_BLACK, str, NULL, &h));
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw, x, bottom));

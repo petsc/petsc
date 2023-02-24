@@ -40,9 +40,9 @@ PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char path[], ch
   PetscCall(PetscStrlen(path, &len));
   relative = (PetscBool)(!len || path[0] != '/');
   if (relative) {
-    PetscCall(PetscStrcpy(buf, group));
-    if (!group || len) PetscCall(PetscStrcat(buf, "/"));
-    PetscCall(PetscStrcat(buf, path));
+    PetscCall(PetscStrncpy(buf, group, sizeof(buf)));
+    if (!group || len) PetscCall(PetscStrlcat(buf, "/", sizeof(buf)));
+    PetscCall(PetscStrlcat(buf, path, sizeof(buf)));
     PetscCall(PetscStrallocpy(buf, abspath));
   } else {
     PetscCall(PetscStrallocpy(path, abspath));
@@ -1362,8 +1362,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (i = 0; i < n; i++) {
-    PetscCall(PetscStrcat(buf, "/"));
-    PetscCall(PetscStrcat(buf, hierarchy[i]));
+    PetscCall(PetscStrlcat(buf, "/", sizeof(buf)));
+    PetscCall(PetscStrlcat(buf, hierarchy[i], sizeof(buf)));
     PetscCall(PetscViewerHDF5Traverse_Inner_Internal(h5, buf, createGroup, &exists));
     if (!exists) break;
   }
@@ -1637,7 +1637,7 @@ PetscViewer PETSC_VIEWER_HDF5_(MPI_Comm comm)
       PetscFunctionReturn(NULL);
     }
     if (!flg) {
-      ierr = PetscStrcpy(fname, "output.h5");
+      ierr = PetscStrncpy(fname, "output.h5", sizeof(fname));
       if (ierr) {
         ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_HDF5_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
         PetscFunctionReturn(NULL);

@@ -857,7 +857,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
     char filename[PETSC_MAX_PATH_LEN];
     PetscCall(PetscGetHomeDirectory(filename, sizeof(filename)));
     PetscCallMPI(MPI_Bcast(filename, (int)sizeof(filename), MPI_CHAR, 0, comm));
-    if (filename[0]) PetscCall(PetscStrcat(filename, "/.petscrc"));
+    if (filename[0]) PetscCall(PetscStrlcat(filename, "/.petscrc", sizeof(filename)));
     PetscCall(PetscOptionsInsertFile(comm, options, filename, PETSC_FALSE));
     PetscCall(PetscOptionsInsertFile(comm, options, ".petscrc", PETSC_FALSE));
     PetscCall(PetscOptionsInsertFile(comm, options, "petscrc", PETSC_FALSE));
@@ -1242,10 +1242,10 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options, const char newname[], 
   oldname++;
   PetscCall(PetscStrlen(newname, &len));
   options->aliases1[options->Na] = (char *)malloc((len + 1) * sizeof(char));
-  PetscCall(PetscStrcpy(options->aliases1[options->Na], newname));
+  PetscCall(PetscStrncpy(options->aliases1[options->Na], newname, len + 1));
   PetscCall(PetscStrlen(oldname, &len));
   options->aliases2[options->Na] = (char *)malloc((len + 1) * sizeof(char));
-  PetscCall(PetscStrcpy(options->aliases2[options->Na], oldname));
+  PetscCall(PetscStrncpy(options->aliases2[options->Na], oldname, len + 1));
   ++options->Na;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1667,7 +1667,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
       char opt[PETSC_MAX_OPTION_NAME + 1] = "", tmp[PETSC_MAX_OPTION_NAME];
 
       if (c < 0) {
-        PetscCall(PetscStrcpy(opt, name));
+        PetscCall(PetscStrncpy(opt, name, sizeof(opt)));
       } else {
         PetscCall(PetscStrncpy(tmp, name, PetscMin((size_t)(locs[c] + 1), sizeof(tmp))));
         PetscCall(PetscStrlcat(opt, tmp, sizeof(opt)));
@@ -1834,12 +1834,12 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options, char *copts[])
   PetscCall(PetscMalloc1(len, &coptions));
   coptions[0] = 0;
   for (i = 0; i < options->N; i++) {
-    PetscCall(PetscStrcat(coptions, "-"));
-    PetscCall(PetscStrcat(coptions, options->names[i]));
-    PetscCall(PetscStrcat(coptions, " "));
+    PetscCall(PetscStrlcat(coptions, "-", len));
+    PetscCall(PetscStrlcat(coptions, options->names[i], len));
+    PetscCall(PetscStrlcat(coptions, " ", len));
     if (options->values[i]) {
-      PetscCall(PetscStrcat(coptions, options->values[i]));
-      PetscCall(PetscStrcat(coptions, " "));
+      PetscCall(PetscStrlcat(coptions, options->values[i], len));
+      PetscCall(PetscStrlcat(coptions, " ", len));
     }
   }
   *copts = coptions;
@@ -2467,16 +2467,13 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options, const char pre[], cons
   if (aset) {
     PetscCall(PetscEListFind(ntext, list, svalue, value, &flg));
     if (!flg) {
-      char *avail, *pavl;
+      char *avail;
 
       PetscCall(PetscMalloc1(tlen, &avail));
-      pavl = avail;
+      avail[0] = '\0';
       for (i = 0; i < ntext; i++) {
-        PetscCall(PetscStrlen(list[i], &alen));
-        PetscCall(PetscStrcpy(pavl, list[i]));
-        pavl += alen;
-        PetscCall(PetscStrcpy(pavl, " "));
-        pavl += 1;
+        PetscCall(PetscStrlcat(avail, list[i], tlen));
+        PetscCall(PetscStrlcat(avail, " ", tlen));
       }
       PetscCall(PetscStrtolower(avail));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Unknown option %s for -%s%s. Available options: %s", svalue, pre ? pre : "", opt + 1, avail);
@@ -3238,23 +3235,23 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
     quiet = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(options, NULL, quietopt, &quiet, NULL));
     if (!quiet) {
-      PetscCall(PetscStrcpy(msg, "** PETSc DEPRECATION WARNING ** : the option "));
-      PetscCall(PetscStrcat(msg, oldname));
-      PetscCall(PetscStrcat(msg, " is deprecated as of version "));
-      PetscCall(PetscStrcat(msg, version));
-      PetscCall(PetscStrcat(msg, " and will be removed in a future release."));
+      PetscCall(PetscStrncpy(msg, "** PETSc DEPRECATION WARNING ** : the option ", sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, oldname, sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, " is deprecated as of version ", sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, version, sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, " and will be removed in a future release.", sizeof(msg)));
       if (newname) {
-        PetscCall(PetscStrcat(msg, " Please use the option "));
-        PetscCall(PetscStrcat(msg, newname));
-        PetscCall(PetscStrcat(msg, " instead."));
+        PetscCall(PetscStrlcat(msg, " Please use the option ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, newname, sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, " instead.", sizeof(msg)));
       }
       if (info) {
-        PetscCall(PetscStrcat(msg, " "));
-        PetscCall(PetscStrcat(msg, info));
+        PetscCall(PetscStrlcat(msg, " ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, info, sizeof(msg)));
       }
-      PetscCall(PetscStrcat(msg, " (Silence this warning with "));
-      PetscCall(PetscStrcat(msg, quietopt));
-      PetscCall(PetscStrcat(msg, ")\n"));
+      PetscCall(PetscStrlcat(msg, " (Silence this warning with ", sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, quietopt, sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, ")\n", sizeof(msg)));
       PetscCall(PetscPrintf(comm, "%s", msg));
     }
   }

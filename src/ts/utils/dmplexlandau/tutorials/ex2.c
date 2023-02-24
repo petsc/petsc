@@ -563,15 +563,15 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   PetscCall(PetscFunctionListAdd(&plist, "step", &stepSrc));
   PetscCall(PetscFunctionListAdd(&plist, "none", &zeroSrc));
   PetscCall(PetscFunctionListAdd(&plist, "pulse", &pulseSrc));
-  PetscCall(PetscStrcpy(pname, "none"));
+  PetscCall(PetscStrncpy(pname, "none", sizeof(pname)));
   PetscCall(PetscFunctionListAdd(&testlist, "none", &testNone));
   PetscCall(PetscFunctionListAdd(&testlist, "spitzer", &testSpitzer));
   PetscCall(PetscFunctionListAdd(&testlist, "stable", &testStable));
-  PetscCall(PetscStrcpy(testname, "none"));
+  PetscCall(PetscStrncpy(testname, "none", sizeof(testname)));
   PetscCall(PetscFunctionListAdd(&elist, "none", &ENone));
   PetscCall(PetscFunctionListAdd(&elist, "induction", &EInduction));
   PetscCall(PetscFunctionListAdd(&elist, "constant", &EConstant));
-  PetscCall(PetscStrcpy(ename, "constant"));
+  PetscCall(PetscStrncpy(ename, "constant", sizeof(ename)));
 
   PetscOptionsBegin(PETSC_COMM_SELF, prefix, "Options for Runaway/seed electron model", "none");
   PetscCall(PetscOptionsReal("-ex2_plot_dt", "Plotting interval", "ex2.c", rectx->plotDt, &rectx->plotDt, NULL));

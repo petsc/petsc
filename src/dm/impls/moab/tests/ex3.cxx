@@ -30,7 +30,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->simplex       = PETSC_FALSE;
   options->write_output  = PETSC_FALSE;
   options->input_file[0] = '\0';
-  PetscCall(PetscStrcpy(options->output_file, "ex3.h5m"));
+  PetscCall(PetscStrncpy(options->output_file, "ex3.h5m", sizeof(options->output_file)));
 
   PetscOptionsBegin(comm, "", "Uniform Mesh Refinement Options", "DMMOAB");
   PetscCall(PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL));

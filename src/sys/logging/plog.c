@@ -2665,7 +2665,7 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
   if (PetscBeganMPE) {
     PetscCall(PetscInfo(0, "Finalizing MPE.\n"));
     if (sname) {
-      PetscCall(PetscStrcpy(name, sname));
+      PetscCall(PetscStrncpy(name, sname, sizeof(name)));
     } else {
       PetscCall(PetscGetProgramName(name, sizeof(name)));
     }

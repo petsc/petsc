@@ -244,8 +244,8 @@ PetscErrorCode PetscLs(MPI_Comm comm, const char dirname[], char found[], size_t
   FILE  *fp;
 
   PetscFunctionBegin;
-  PetscCall(PetscStrcpy(program, "ls "));
-  PetscCall(PetscStrcat(program, dirname));
+  PetscCall(PetscStrncpy(program, "ls ", sizeof(program)));
+  PetscCall(PetscStrlcat(program, dirname, sizeof(program)));
 #if defined(PETSC_HAVE_POPEN)
   PetscCall(PetscPOpen(comm, NULL, program, "r", &fp));
 #else

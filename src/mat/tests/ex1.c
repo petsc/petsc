@@ -100,7 +100,7 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
-  PetscCall(PetscStrcpy(solver, "petsc"));
+  PetscCall(PetscStrncpy(solver, MATSOLVERPETSC, sizeof(solver)));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nrhs", &nrhs, NULL));

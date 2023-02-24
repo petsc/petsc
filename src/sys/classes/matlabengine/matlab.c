@@ -62,13 +62,13 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
 
   if (host) {
     PetscCall(PetscInfo(0, "Starting MATLAB engine on %s\n", host));
-    PetscCall(PetscStrcpy(buffer, "ssh "));
-    PetscCall(PetscStrcat(buffer, host));
-    PetscCall(PetscStrcat(buffer, " \""));
+    PetscCall(PetscStrncpy(buffer, "ssh ", sizeof(buffer)));
+    PetscCall(PetscStrlcat(buffer, host, sizeof(buffer)));
+    PetscCall(PetscStrlcat(buffer, " \"", sizeof(buffer)));
     PetscCall(PetscStrlcat(buffer, PETSC_MATLAB_COMMAND, sizeof(buffer)));
     if (!flg) PetscCall(PetscStrlcat(buffer, " -nodisplay ", sizeof(buffer)));
     PetscCall(PetscStrlcat(buffer, " -nosplash ", sizeof(buffer)));
-    PetscCall(PetscStrcat(buffer, "\""));
+    PetscCall(PetscStrlcat(buffer, "\"", sizeof(buffer)));
   } else {
     PetscCall(PetscStrncpy(buffer, PETSC_MATLAB_COMMAND, sizeof(buffer)));
     if (!flg) PetscCall(PetscStrlcat(buffer, " -nodisplay ", sizeof(buffer)));

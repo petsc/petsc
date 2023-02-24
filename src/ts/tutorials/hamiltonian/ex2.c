@@ -47,7 +47,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->bdm              = PETSC_FALSE;
 
   PetscOptionsBegin(comm, "", "Two Stream options", "DMPLEX");
-  PetscCall(PetscStrcpy(options->meshFilename, ""));
+  PetscCall(PetscStrncpy(options->meshFilename, "", sizeof(options->meshFilename)));
   PetscCall(PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL));
   PetscCall(PetscOptionsInt("-steps", "TS steps to take", "ex2.c", options->steps, &options->steps, NULL));
   PetscCall(PetscOptionsBool("-monitor", "To use the TS monitor or not", "ex2.c", options->monitor, &options->monitor, NULL));

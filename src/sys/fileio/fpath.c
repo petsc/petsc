@@ -59,14 +59,14 @@ PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen)
       pwde = getpwnam(name);
       if (!pwde) PetscFunctionReturn(PETSC_SUCCESS);
 
-      PetscCall(PetscStrcpy(tmppath, pwde->pw_dir));
+      PetscCall(PetscStrncpy(tmppath, pwde->pw_dir, sizeof(tmppath)));
 #else
       PetscFunctionReturn(PETSC_SUCCESS);
 #endif
     }
     PetscCall(PetscStrlen(tmppath, &ln));
-    if (tmppath[ln - 1] != '/') PetscCall(PetscStrcat(tmppath + ln - 1, "/"));
-    PetscCall(PetscStrcat(tmppath, rest));
+    if (tmppath[ln - 1] != '/') PetscCall(PetscStrlcat(tmppath + ln - 1, "/", sizeof(tmppath) - ln + 1));
+    PetscCall(PetscStrlcat(tmppath, rest, sizeof(tmppath)));
     PetscCall(PetscStrncpy(fullpath, tmppath, flen));
     fullpath[flen - 1] = 0;
   } else {
@@ -87,8 +87,8 @@ PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen)
   PetscCall(PetscStrncmp(fullpath, "/tmp_mnt/", 9, &flg));
   if (flg) {
     char tmppath[PETSC_MAX_PATH_LEN];
-    PetscCall(PetscStrcpy(tmppath, fullpath + 8));
-    PetscCall(PetscStrcpy(fullpath, tmppath));
+    PetscCall(PetscStrncpy(tmppath, fullpath + 8, sizeof(tmppath)));
+    PetscCall(PetscStrncpy(fullpath, tmppath, flen));
   }
   /* We could try to handle things like the removal of .. etc */
   PetscFunctionReturn(PETSC_SUCCESS);

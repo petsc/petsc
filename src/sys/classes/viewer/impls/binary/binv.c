@@ -1627,7 +1627,7 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
       PetscFunctionReturn(NULL);
     }
     if (!flg) {
-      ierr = PetscStrcpy(fname, "binaryoutput");
+      ierr = PetscStrncpy(fname, "binaryoutput", sizeof(fname));
       if (ierr) {
         ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_BINARY_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
         PetscFunctionReturn(NULL);

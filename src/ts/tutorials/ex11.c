@@ -1433,7 +1433,7 @@ int main(int argc, char **argv)
     user->vtkmon = PETSC_TRUE;
     PetscCall(PetscOptionsBool("-ufv_vtk_monitor", "Use VTKMonitor routine", "", user->vtkmon, &user->vtkmon, NULL));
     vtkCellGeom = PETSC_FALSE;
-    PetscCall(PetscStrcpy(user->outputBasename, "ex11"));
+    PetscCall(PetscStrncpy(user->outputBasename, "ex11", sizeof(user->outputBasename)));
     PetscCall(PetscOptionsString("-ufv_vtk_basename", "VTK output basename", "", user->outputBasename, user->outputBasename, sizeof(user->outputBasename), NULL));
     PetscCall(PetscOptionsBool("-ufv_vtk_cellgeom", "Write cell geometry (for debugging)", "", vtkCellGeom, &vtkCellGeom, NULL));
     PetscCall(PetscOptionsBool("-ufv_use_amr", "use local adaptive mesh refinement", "", useAMR, &useAMR, NULL));

@@ -447,17 +447,17 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 
       PetscCall(PetscOptionsGetBool(NULL, NULL, quietopt, &quiet, NULL));
       if (!quiet) {
-        PetscCall(PetscStrcpy(msg, "** PETSc DEPRECATION WARNING ** : the option "));
-        PetscCall(PetscStrcat(msg, "-debugger_nodes"));
-        PetscCall(PetscStrcat(msg, " is deprecated as of version "));
-        PetscCall(PetscStrcat(msg, "3.14"));
-        PetscCall(PetscStrcat(msg, " and will be removed in a future release."));
-        PetscCall(PetscStrcat(msg, " Please use the option "));
-        PetscCall(PetscStrcat(msg, "-debugger_ranks"));
-        PetscCall(PetscStrcat(msg, " instead."));
-        PetscCall(PetscStrcat(msg, " (Silence this warning with "));
-        PetscCall(PetscStrcat(msg, quietopt));
-        PetscCall(PetscStrcat(msg, ")\n"));
+        PetscCall(PetscStrncpy(msg, "** PETSc DEPRECATION WARNING ** : the option ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, "-debugger_nodes", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, " is deprecated as of version ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, "3.14", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, " and will be removed in a future release.", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, " Please use the option ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, "-debugger_ranks", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, " instead.", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, " (Silence this warning with ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, quietopt, sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, ")\n", sizeof(msg)));
         PetscCall(PetscPrintf(comm, "%s", msg));
       }
     } else {

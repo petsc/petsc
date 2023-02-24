@@ -985,8 +985,8 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       PetscCall(VecRestoreArray(fv[f], &fx[f]));
       PetscCall(PetscStrlen(func->name, &len));
       PetscCall(PetscMalloc1(len + 2, &prefix));
-      PetscCall(PetscStrcpy(prefix, func->name));
-      PetscCall(PetscStrcat(prefix, "_"));
+      PetscCall(PetscStrncpy(prefix, func->name, len + 2));
+      PetscCall(PetscStrlcat(prefix, "_", len + 2));
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)fv[f], prefix));
       PetscCall(VecViewFromOptions(fv[f], NULL, "-vec_view"));
       PetscCall(PetscFree(prefix));

@@ -1068,7 +1068,7 @@ static PetscErrorCode DMPlexSetOrientInterface_Private(DM dm, PetscBool enable)
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
     options = ((PetscObject)dm)->options;
   }
-  PetscCall(PetscStrcpy(prefix_opt, "-"));
+  PetscCall(PetscStrncpy(prefix_opt, "-", sizeof(prefix_opt)));
   PetscCall(PetscStrlcat(prefix_opt, prefix, sizeof(prefix_opt)));
   PetscCall(PetscStrlcat(prefix_opt, &opt[1], sizeof(prefix_opt)));
   PetscCall(PetscOptionsGetBool(options, prefix, opt, &flg, &set));
@@ -1333,13 +1333,13 @@ static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewe
 
       switch (depth) {
       case 1:
-        PetscCall(PetscStrcpy(entityType, "edge"));
+        PetscCall(PetscStrncpy(entityType, "edge", sizeof(entityType)));
         break;
       case 2:
-        PetscCall(PetscStrcpy(entityType, "face"));
+        PetscCall(PetscStrncpy(entityType, "face", sizeof(entityType)));
         break;
       case 3:
-        PetscCall(PetscStrcpy(entityType, "cell"));
+        PetscCall(PetscStrncpy(entityType, "cell", sizeof(entityType)));
         break;
       default:
         SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for depth <= 3");

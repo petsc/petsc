@@ -27,7 +27,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscBool flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscStrcpy(options->bdLabel, "marker"));
+  PetscCall(PetscStrncpy(options->bdLabel, "marker", sizeof(options->bdLabel)));
   PetscOptionsBegin(comm, "", "Parallel Mesh Adaptation Options", "DMPLEX");
   PetscCall(PetscOptionsString("-label", "The boundary label name", "ex44.c", options->bdLabel, options->bdLabel, sizeof(options->bdLabel), NULL));
   PetscCall(PetscOptionsIntArray("-bd", "The boundaries to be extruded", "ex44.c", options->bd, &n, &flg));

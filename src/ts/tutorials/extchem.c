@@ -110,7 +110,7 @@ int main(int argc, char **argv)
       Get names of all species in easy to use array
   */
   PetscCall(PetscMalloc1((user.Nspec + 1) * LENGTHOFSPECNAME, &names));
-  PetscCall(PetscStrcpy(names, "Temp"));
+  PetscCall(PetscStrncpy(names, "Temp", (user.Nspec + 1) * LENGTHOFSPECNAME));
   TC_getSnames(user.Nspec, names + LENGTHOFSPECNAME);
   PetscCall(PetscMalloc1((user.Nspec + 2), &snames));
   for (i = 0; i < user.Nspec + 1; i++) snames[i] = names + i * LENGTHOFSPECNAME;

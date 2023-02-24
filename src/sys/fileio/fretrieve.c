@@ -153,12 +153,12 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
 
     PetscCall(PetscOptionsGetenv(comm, "PETSC_TMP", tmpname, 238, &iflg));
     if (!iflg) {
-      PetscCall(PetscStrcpy(filename, "/tmp"));
+      PetscCall(PetscStrncpy(filename, "/tmp", sizeof(filename)));
     } else {
-      PetscCall(PetscStrcpy(filename, tmpname));
+      PetscCall(PetscStrncpy(filename, tmpname, sizeof(filename)));
     }
 
-    PetscCall(PetscStrcat(filename, "/petsctestshared"));
+    PetscCall(PetscStrlcat(filename, "/petsctestshared", sizeof(filename)));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
     /* each processor creates a /tmp file and all the later ones check */
@@ -267,7 +267,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_WD_keyval, tagvalp));
 
     PetscCall(PetscGetWorkingDirectory(filename, 240));
-    PetscCall(PetscStrcat(filename, "/petsctestshared"));
+    PetscCall(PetscStrlcat(filename, "/petsctestshared", sizeof(filename)));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
     /* each processor creates a  file and all the later ones check */
@@ -383,10 +383,10 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
     if (download) {
       /* local file is not already here so use curl to get it */
       PetscCall(PetscStrncpy(localname, tlocalname, llen));
-      PetscCall(PetscStrcpy(buffer, "curl --fail --silent --show-error "));
-      PetscCall(PetscStrcat(buffer, url));
-      PetscCall(PetscStrcat(buffer, " > "));
-      PetscCall(PetscStrcat(buffer, localname));
+      PetscCall(PetscStrncpy(buffer, "curl --fail --silent --show-error ", sizeof(buffer)));
+      PetscCall(PetscStrlcat(buffer, url, sizeof(buffer)));
+      PetscCall(PetscStrlcat(buffer, " > ", sizeof(buffer)));
+      PetscCall(PetscStrlcat(buffer, localname, sizeof(buffer)));
 #if defined(PETSC_HAVE_POPEN)
       PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, buffer, "r", &fp));
       PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
@@ -422,10 +422,10 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
       PetscCall(PetscStrstr(name, ".gz", &par));
       *par = 0; /* remove .gz extension */
       /* uncompress file */
-      PetscCall(PetscStrcpy(buffer, "gzip -c -d "));
-      PetscCall(PetscStrcat(buffer, localname));
-      PetscCall(PetscStrcat(buffer, " > "));
-      PetscCall(PetscStrcat(buffer, name));
+      PetscCall(PetscStrncpy(buffer, "gzip -c -d ", sizeof(buffer)));
+      PetscCall(PetscStrlcat(buffer, localname, sizeof(buffer)));
+      PetscCall(PetscStrlcat(buffer, " > ", sizeof(buffer)));
+      PetscCall(PetscStrlcat(buffer, name, sizeof(buffer)));
 #if defined(PETSC_HAVE_POPEN)
       PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, buffer, "r", &fp));
       PetscCall(PetscPClose(PETSC_COMM_SELF, fp));

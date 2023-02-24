@@ -761,7 +761,7 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts, TSGLLEType type)
   PetscCall(PetscFunctionListFind(TSGLLEList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSGLLE type \"%s\" given", type);
   PetscCall((*r)(ts));
-  PetscCall(PetscStrcpy(gl->type_name, type));
+  PetscCall(PetscStrncpy(gl->type_name, type, sizeof(gl->type_name)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

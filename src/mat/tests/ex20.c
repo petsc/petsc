@@ -56,7 +56,7 @@ int main(int argc, char **args)
   PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(PetscStrcpy(mtype, MATSAME));
+  PetscCall(PetscStrncpy(mtype, MATSAME, sizeof(mtype)));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-conv_mat_type", mtype, sizeof(mtype), NULL));
   PetscCall(MatConvert(C, mtype, MAT_INITIAL_MATRIX, &A));
   PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO));

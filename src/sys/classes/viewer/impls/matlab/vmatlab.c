@@ -299,7 +299,7 @@ PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
       PetscFunctionReturn(NULL);
     }
     if (!flg) {
-      ierr = PetscStrcpy(fname, "matlaboutput.mat");
+      ierr = PetscStrncpy(fname, "matlaboutput.mat", sizeof(fname));
       if (ierr) {
         PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_MATLAB_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
         PetscFunctionReturn(NULL);

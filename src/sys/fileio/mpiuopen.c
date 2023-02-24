@@ -47,7 +47,7 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
       PetscCall(PetscStrreplace(PETSC_COMM_SELF, name, tname, PETSC_MAX_PATH_LEN));
       PetscCall(PetscFixFilename(tname, fname));
       PetscCall(PetscStrbeginswith(fname, "/dev/null", &devnull));
-      if (devnull) PetscCall(PetscStrcpy(fname, "/dev/null"));
+      if (devnull) PetscCall(PetscStrncpy(fname, "/dev/null", sizeof(fname)));
       PetscCall(PetscInfo(0, "Opening file %s\n", fname));
       fd = fopen(fname, mode);
       PetscCheck(fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open file %s", fname);
@@ -159,13 +159,13 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
   PetscFunctionBegin;
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
   if (PetscPOpenMachine[0] || (machine && machine[0])) {
-    PetscCall(PetscStrcpy(command, "ssh "));
+    PetscCall(PetscStrncpy(command, "ssh ", sizeof(command)));
     if (PetscPOpenMachine[0]) {
-      PetscCall(PetscStrcat(command, PetscPOpenMachine));
+      PetscCall(PetscStrlcat(command, PetscPOpenMachine, sizeof(command)));
     } else {
-      PetscCall(PetscStrcat(command, machine));
+      PetscCall(PetscStrlcat(command, machine, sizeof(command)));
     }
-    PetscCall(PetscStrcat(command, " \" export DISPLAY=${DISPLAY}; "));
+    PetscCall(PetscStrlcat(command, " \" export DISPLAY=${DISPLAY}; ", sizeof(command)));
     /*
         Copy program into command but protect the " with a \ in front of it
     */
@@ -177,9 +177,9 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
     }
     command[cnt] = 0;
 
-    PetscCall(PetscStrcat(command, "\""));
+    PetscCall(PetscStrlcat(command, "\"", sizeof(command)));
   } else {
-    PetscCall(PetscStrcpy(command, program));
+    PetscCall(PetscStrncpy(command, program, sizeof(command)));
   }
 
   PetscCall(PetscStrreplace(comm, command, commandt, 1024));
@@ -212,7 +212,7 @@ PetscErrorCode PetscPOpenSetMachine(const char machine[])
 {
   PetscFunctionBegin;
   if (machine) {
-    PetscCall(PetscStrcpy(PetscPOpenMachine, machine));
+    PetscCall(PetscStrncpy(PetscPOpenMachine, machine, sizeof(PetscPOpenMachine)));
   } else {
     PetscPOpenMachine[0] = 0;
   }

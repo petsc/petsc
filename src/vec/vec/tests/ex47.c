@@ -16,7 +16,7 @@ int main(int argc, char **args)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg));
-  if (!flg) PetscCall(PetscStrcpy(filename, "x.h5"));
+  if (!flg) PetscCall(PetscStrncpy(filename, "x.h5", sizeof(filename)));
   PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
   PetscCall(VecSetFromOptions(x));
   PetscCall(VecSetSizes(x, 11, PETSC_DETERMINE));

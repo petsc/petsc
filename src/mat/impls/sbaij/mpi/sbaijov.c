@@ -55,62 +55,73 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
     /* Make sure every processor loops through the nstages */
     PetscCall(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
 
-    for (iov = 0; iov < ov; ++iov) {
-      /* 1) Get submats for column search */
-      for (i = 0, pos = 0; i < nstages; i++) {
-        if (pos + nmax <= is_max) max_no = nmax;
-        else if (pos == is_max) max_no = 0;
-        else max_no = is_max - pos;
-        c->ijonly = PETSC_TRUE; /* only matrix data structures are requested */
-        /* The resulting submatrices should be BAIJ, not SBAIJ, hence we change this value to trigger that */
-        PetscCall(PetscStrcpy(((PetscObject)c->A)->type_name, MATSEQBAIJ));
-        PetscCall(MatCreateSubMatrices_MPIBAIJ_local(C, max_no, is_row + pos, is_new + pos, MAT_INITIAL_MATRIX, submats + pos));
-        PetscCall(PetscStrcpy(((PetscObject)c->A)->type_name, MATSEQSBAIJ));
-        pos += max_no;
-      }
+    {
+      const PetscObject obj = (PetscObject)c->A;
+      size_t            new_len, cur_len, max_len;
 
-      /* 2) Row search */
-      PetscCall(MatIncreaseOverlap_MPIBAIJ_Once(C, is_max, is_new));
+      PetscCall(PetscStrlen(MATSEQBAIJ, &new_len));
+      PetscCall(PetscStrlen(MATSEQSBAIJ, &cur_len));
+      max_len = PetscMax(cur_len, new_len) + 1;
+      PetscCall(PetscRealloc(max_len * sizeof(*(obj->type_name)), &obj->type_name));
+      /* The resulting submatrices should be BAIJ, not SBAIJ, hence we change this value to
+         trigger that */
+      for (iov = 0; iov < ov; ++iov) {
+        /* 1) Get submats for column search */
+        PetscCall(PetscStrncpy(obj->type_name, MATSEQBAIJ, max_len));
+        for (i = 0, pos = 0; i < nstages; i++) {
+          if (pos + nmax <= is_max) max_no = nmax;
+          else if (pos == is_max) max_no = 0;
+          else max_no = is_max - pos;
+          c->ijonly = PETSC_TRUE; /* only matrix data structures are requested */
 
-      /* 3) Column search */
-      for (i = 0; i < is_max; i++) {
-        asub_i = (Mat_SeqSBAIJ *)submats[i]->data;
-        ai     = asub_i->i;
-
-        /* put is_new obtained from MatIncreaseOverlap_MPIBAIJ() to table */
-        PetscCall(PetscBTMemzero(Mbs, table));
-
-        PetscCall(ISGetIndices(is_new[i], &idx));
-        PetscCall(ISGetLocalSize(is_new[i], &nis));
-        for (l = 0; l < nis; l++) {
-          PetscCall(PetscBTSet(table, idx[l]));
-          nidx[l] = idx[l];
+          PetscCall(MatCreateSubMatrices_MPIBAIJ_local(C, max_no, is_row + pos, is_new + pos, MAT_INITIAL_MATRIX, submats + pos));
+          pos += max_no;
         }
-        isz = nis;
+        PetscCall(PetscStrncpy(obj->type_name, MATSEQSBAIJ, max_len));
 
-        /* add column entries to table */
-        for (brow = 0; brow < Mbs; brow++) {
-          nz = ai[brow + 1] - ai[brow];
-          if (nz) {
-            if (!PetscBTLookupSet(table, brow)) nidx[isz++] = brow;
+        /* 2) Row search */
+        PetscCall(MatIncreaseOverlap_MPIBAIJ_Once(C, is_max, is_new));
+
+        /* 3) Column search */
+        for (i = 0; i < is_max; i++) {
+          asub_i = (Mat_SeqSBAIJ *)submats[i]->data;
+          ai     = asub_i->i;
+
+          /* put is_new obtained from MatIncreaseOverlap_MPIBAIJ() to table */
+          PetscCall(PetscBTMemzero(Mbs, table));
+
+          PetscCall(ISGetIndices(is_new[i], &idx));
+          PetscCall(ISGetLocalSize(is_new[i], &nis));
+          for (l = 0; l < nis; l++) {
+            PetscCall(PetscBTSet(table, idx[l]));
+            nidx[l] = idx[l];
           }
-        }
-        PetscCall(ISRestoreIndices(is_new[i], &idx));
-        PetscCall(ISDestroy(&is_new[i]));
+          isz = nis;
 
-        /* create updated is_new */
-        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, is_new + i));
+          /* add column entries to table */
+          for (brow = 0; brow < Mbs; brow++) {
+            nz = ai[brow + 1] - ai[brow];
+            if (nz) {
+              if (!PetscBTLookupSet(table, brow)) nidx[isz++] = brow;
+            }
+          }
+          PetscCall(ISRestoreIndices(is_new[i], &idx));
+          PetscCall(ISDestroy(&is_new[i]));
+
+          /* create updated is_new */
+          PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, is_new + i));
+        }
+
+        /* Free tmp spaces */
+        for (i = 0; i < is_max; i++) PetscCall(MatDestroy(&submats[i]));
       }
 
-      /* Free tmp spaces */
-      for (i = 0; i < is_max; i++) PetscCall(MatDestroy(&submats[i]));
+      PetscCall(PetscBTDestroy(&table));
+      PetscCall(PetscFree(submats));
+      PetscCall(ISDestroy(&is_row[0]));
+      PetscCall(PetscFree(is_row));
+      PetscCall(PetscFree(nidx));
     }
-
-    PetscCall(PetscBTDestroy(&table));
-    PetscCall(PetscFree(submats));
-    PetscCall(ISDestroy(&is_row[0]));
-    PetscCall(PetscFree(is_row));
-    PetscCall(PetscFree(nidx));
   }
 
   for (i = 0; i < is_max; i++) PetscCall(ISDestroy(&is[i]));

@@ -198,9 +198,9 @@ PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
       /* TODO Create names for components */
       for (c = 0; c < Nc[f]; ++c, ++l) {
         PetscCall(PetscObjectGetName(disc, &fname));
-        PetscCall(PetscStrcpy(tmpname, vname));
-        PetscCall(PetscStrlcat(tmpname, ":", PETSC_MAX_PATH_LEN));
-        PetscCall(PetscStrlcat(tmpname, fname, PETSC_MAX_PATH_LEN));
+        PetscCall(PetscStrncpy(tmpname, vname, sizeof(tmpname)));
+        PetscCall(PetscStrlcat(tmpname, ":", sizeof(tmpname)));
+        PetscCall(PetscStrlcat(tmpname, fname, sizeof(tmpname)));
         PetscCall(PetscStrallocpy(tmpname, &names[l]));
       }
     }

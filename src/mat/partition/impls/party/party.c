@@ -392,8 +392,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
   PetscCall(PetscNew(&party));
   part->data = (void *)party;
 
-  PetscCall(PetscStrcpy(party->global, "gcf,gbf"));
-  PetscCall(PetscStrcpy(party->local, "kl"));
+  PetscCall(PetscStrncpy(party->global, "gcf,gbf", sizeof(party->global)));
+  PetscCall(PetscStrncpy(party->local, "kl", sizeof(party->local)));
 
   party->redm         = PETSC_TRUE;
   party->redo         = PETSC_TRUE;

@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
   /* set the names of each field in the DMDA based on the species name */
   PetscCall(PetscMalloc1((user.Nspec + 1) * LENGTHOFSPECNAME, &names));
-  PetscCall(PetscStrcpy(names, "Temp"));
+  PetscCall(PetscStrncpy(names, "Temp", (user.Nspec + 1) * LENGTHOFSPECNAME);
   TC_getSnames(user.Nspec, names + LENGTHOFSPECNAME);
   PetscCall(PetscMalloc1((user.Nspec + 2), &snames));
   for (i = 0; i < user.Nspec + 1; i++) snames[i] = names + i * LENGTHOFSPECNAME;

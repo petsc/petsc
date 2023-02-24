@@ -5234,8 +5234,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   }
 
   /* compute prefixes */
-  PetscCall(PetscStrcpy(dir_prefix, ""));
-  PetscCall(PetscStrcpy(neu_prefix, ""));
+  PetscCall(PetscStrncpy(dir_prefix, "", sizeof(dir_prefix)));
+  PetscCall(PetscStrncpy(neu_prefix, "", sizeof(neu_prefix)));
   if (!pcbddc->current_level) {
     PetscCall(PetscStrncpy(dir_prefix, ((PetscObject)pc)->prefix, sizeof(dir_prefix)));
     PetscCall(PetscStrncpy(neu_prefix, ((PetscObject)pc)->prefix, sizeof(neu_prefix)));
@@ -8132,8 +8132,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, PetscScalar *coarse_submat_vals)
       /* TODO is this logic correct? should check for coarse_mat type */
       PetscCall(PCSetType(pc_temp, coarse_pc_type));
       /* prefix */
-      PetscCall(PetscStrcpy(prefix, ""));
-      PetscCall(PetscStrcpy(str_level, ""));
+      PetscCall(PetscStrncpy(prefix, "", sizeof(prefix)));
+      PetscCall(PetscStrncpy(str_level, "", sizeof(str_level)));
       if (!pcbddc->current_level) {
         PetscCall(PetscStrncpy(prefix, ((PetscObject)pc)->prefix, sizeof(prefix)));
         PetscCall(PetscStrlcat(prefix, "pc_bddc_coarse_", sizeof(prefix)));
