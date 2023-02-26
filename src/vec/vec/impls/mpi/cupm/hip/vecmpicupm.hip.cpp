@@ -40,7 +40,7 @@ PetscErrorCode VecCreate_HIP(Vec v)
 PetscErrorCode VecCreate_MPIHIP(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecMPI_HIP.create(v));
+  PetscCall(VecMPI_HIP.Create(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

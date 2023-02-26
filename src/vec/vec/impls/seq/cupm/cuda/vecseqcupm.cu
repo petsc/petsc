@@ -8,7 +8,7 @@ static constexpr auto VecSeq_CUDA = impl::VecSeq_CUPM<DeviceType::CUDA>{};
 PetscErrorCode VecCreate_SeqCUDA(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecSeq_CUDA.create(v));
+  PetscCall(VecSeq_CUDA.Create(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -8,7 +8,7 @@ static constexpr auto VecSeq_HIP = impl::VecSeq_CUPM<DeviceType::HIP>{};
 PetscErrorCode VecCreate_SeqHIP(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecSeq_HIP.create(v));
+  PetscCall(VecSeq_HIP.Create(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

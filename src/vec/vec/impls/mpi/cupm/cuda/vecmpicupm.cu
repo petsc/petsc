@@ -40,7 +40,7 @@ PetscErrorCode VecCreate_CUDA(Vec v)
 PetscErrorCode VecCreate_MPICUDA(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecMPI_CUDA.create(v));
+  PetscCall(VecMPI_CUDA.Create(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

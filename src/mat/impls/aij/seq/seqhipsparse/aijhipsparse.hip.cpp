@@ -3037,8 +3037,8 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
   PetscFunctionBegin;
   PetscCheck(!herm || trans, PetscObjectComm((PetscObject)A), PETSC_ERR_GPU, "Hermitian and not transpose not supported");
   if (!a->nz) {
-    if (yy) PetscCall(VecSeq_HIP::copy(yy, zz));
-    else PetscCall(VecSeq_HIP::set(zz, 0));
+    if (yy) PetscCall(VecSeq_HIP::Copy(yy, zz));
+    else PetscCall(VecSeq_HIP::Set(zz, 0));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
@@ -3135,12 +3135,12 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
     if (opA == HIPSPARSE_OPERATION_NON_TRANSPOSE) {
       if (yy) {                                     /* MatMultAdd: zz = A*xx + yy */
         if (compressed) {                           /* A is compressed. We first copy yy to zz, then ScatterAdd the work vector to zz */
-          PetscCall(VecSeq_HIP::copy(yy, zz));      /* zz = yy */
+          PetscCall(VecSeq_HIP::Copy(yy, zz));      /* zz = yy */
         } else if (zz != yy) {                      /* A is not compressed. zz already contains A*xx, and we just need to add yy */
-          PetscCall(VecSeq_HIP::axpy(zz, 1.0, yy)); /* zz += yy */
+          PetscCall(VecSeq_HIP::AXPY(zz, 1.0, yy)); /* zz += yy */
         }
       } else if (compressed) { /* MatMult: zz = A*xx. A is compressed, so we zero zz first, then ScatterAdd the work vector to zz */
-        PetscCall(VecSeq_HIP::set(zz, 0));
+        PetscCall(VecSeq_HIP::Set(zz, 0));
       }
 
       /* ScatterAdd the result from work vector into the full vector when A is compressed */
@@ -3163,7 +3163,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
         PetscCall(PetscLogGpuTimeEnd());
       }
     } else {
-      if (yy && yy != zz) PetscCall(VecSeq_HIP::axpy(zz, 1.0, yy)); /* zz += yy */
+      if (yy && yy != zz) PetscCall(VecSeq_HIP::AXPY(zz, 1.0, yy)); /* zz += yy */
     }
     PetscCall(VecHIPRestoreArrayRead(xx, (const PetscScalar **)&xarray));
     if (yy == zz) PetscCall(VecHIPRestoreArray(zz, &zarray));
