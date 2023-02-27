@@ -381,7 +381,7 @@ pause-for-approval:
 #
 # The tags variable used in the tests below connects the particular test with the runners
 # listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
-# For example the test linux-sycl-double any runner that has the tags 'gce-nfs, linux-fast'
+# For example the test 'linux-sycl-double' any runner that has the tags 'gce-u22-stage3, linux-fast'
 # (in a blue box beneath it)
 #
 
@@ -507,13 +507,14 @@ linux-hip-double:
 linux-sycl-double:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test_nofflags
   tags:
-    - gce-nfs, linux-fast
+    - gce-u22-stage3, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-sycl-double
-    LOAD_MODULES: compiler/latest mpi/latest cmake/3.20.5-yjp2hz6
+    LOAD_MODULES: intel-oneapi-compilers/2022.2.1 intel-oneapi-mpi/2021.5.1
     TEST_OPTS: query=requires queryval=kokkos_kernels
+    MAKE_CFLAGS: -Wno-expected-file-type -Werror
 
 linux-cuda-pkgs-gcov:
   extends:
@@ -672,12 +673,11 @@ linux-cxx-cmplx-pkgs-64idx-gcov:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-generate-u18
+    - .coverage-generate-u22
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx-gcov
-    LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
@@ -728,9 +728,9 @@ linux-pkgs-gcov:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-generate-u18
+    - .coverage-generate-u22
   tags:
-    - gce-nfs, linux-gcov
+    - gce-u22-stage3, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
 
@@ -738,12 +738,12 @@ linux-matlab-ilp64-gcov:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-generate-u18
+    - .coverage-generate-u22
   tags:
-    - gce-nfs, linux-gcov
+    - gce-u22-stage3, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
-    LOAD_MODULES: matlab/R2018a
+    LOAD_MODULES: gcc/9.4.0 matlab/R2022a
   allow_failure: true
 
 linux-pgi:
@@ -751,10 +751,10 @@ linux-pgi:
     - .stage-3
     - .linux_test_noflags
   tags:
-    - gce-nfs, linux-mcpu
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pgi
-    LOAD_MODULES: hpc_sdk/20.9
+    LOAD_MODULES: nvhpc/22.3
 
 # If the Nag license server fails then ${PETSC_DIR}/naglicenseproblem is created and the job is marked as failed but allow_failure
 linux-nagfor:
@@ -762,7 +762,7 @@ linux-nagfor:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - gce-nfs, linux-mcpu
+    - gce-stage2, linux-mcpu
   variables:
     LOAD_MODULES: nag/6.1
     TEST_ARCH: arch-ci-linux-nagfor
@@ -774,11 +774,10 @@ linux-intel-cmplx:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-intel-cmplx
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib cmake/3.20.5-yjp2hz6
-    ENABLE_PETSC4PY_LDPRELOAD: 1
+    LOAD_MODULES: intel-oneapi-compilers/2023.0.0 intel-oneapi-mkl/2022.0.2
 
 linux-xsdk-dbg:
   extends:
@@ -823,10 +822,10 @@ linux-intel:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-intel
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
+    LOAD_MODULES: intel-oneapi-compilers/2023.0.0 intel-oneapi-mkl/2022.0.2
 
 linux-opt-misc:
   extends:
@@ -862,10 +861,10 @@ linux-gcc-ifc-cmplx:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
-    LOAD_MODULES: intel/19.0-nompilib cmake/3.20.0-vov726r
+    LOAD_MODULES: intel-oneapi-compilers/2022.2.1
 
 linux-opt-cxx-quad:
   extends:
@@ -1008,7 +1007,7 @@ analyze-coverage:
   extends: .test
   stage: stage-4
   tags:
-    - gce-nfs-short
+    - gce-u22-short
   dependencies:
     - linux-pkgs-gcov
     - linux-matlab-ilp64-gcov
@@ -1017,7 +1016,6 @@ analyze-coverage:
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline
-    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
   before_script:
     - date
     - hostname
@@ -1049,7 +1047,7 @@ analyze-coverage:
   extends: .test
   stage: .post
   tags:
-    - gce-nfs-short
+    - gce-u22-short
   dependencies:
     - analyze-coverage
   script:

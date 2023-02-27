@@ -32,7 +32,7 @@
 @*/
 PetscErrorCode PetscGetRelativePath(const char fullpath[], char path[], size_t flen)
 {
-  char *p;
+  char *p = NULL;
 
   PetscFunctionBegin;
   /* Find string after last / or entire string if no / */

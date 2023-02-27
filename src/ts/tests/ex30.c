@@ -358,7 +358,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
             DM             dm   = grid_dm[grid];
             DM             sw   = globSwarmArray[LAND_PACK_IDX(b_id, grid)];
             Vec            subX = globXArray[LAND_PACK_IDX(b_id, grid)], work = t_fhat[grid][tid];
-            PetscInfo(pack, "particlesToGrid %" PetscInt_FMT ".%" PetscInt_FMT ") particlesToGrid for local batch %" PetscInt_FMT "\n", global_batch_id, grid, LAND_PACK_IDX(b_id, grid));
+            ierr_t = PetscInfo(pack, "particlesToGrid %" PetscInt_FMT ".%" PetscInt_FMT ") particlesToGrid for local batch %" PetscInt_FMT "\n", global_batch_id, grid, LAND_PACK_IDX(b_id, grid));
             ierr_t = particlesToGrid(dm, sw, Np_t[grid][tid], tid, dim, xx_t[grid][tid], yy_t[grid][tid], zz_t[grid][tid], wp_t[grid][tid], subX, &globMpArray[LAND_PACK_IDX(b_id, grid)]);
             if (ierr_t) ierr = ierr_t;
             // u = M^_1 f_w
@@ -398,7 +398,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
         if ((glb_b_id = global_batch_id + b_id) < NUserV) {
           for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { // add same particels for all grids
             PetscErrorCode ierr_t;
-            PetscInfo(pack, "gridToParticles: global batch %" PetscInt_FMT ", local batch b=%" PetscInt_FMT ", grid g=%" PetscInt_FMT ", index(b,g) %" PetscInt_FMT "\n", global_batch_id, b_id, grid, LAND_PACK_IDX(b_id, grid));
+            ierr_t = PetscInfo(pack, "gridToParticles: global batch %" PetscInt_FMT ", local batch b=%" PetscInt_FMT ", grid g=%" PetscInt_FMT ", index(b,g) %" PetscInt_FMT "\n", global_batch_id, b_id, grid, LAND_PACK_IDX(b_id, grid));
             ierr_t = gridToParticles(grid_dm[grid], globSwarmArray[LAND_PACK_IDX(b_id, grid)], globXArray[LAND_PACK_IDX(b_id, grid)], t_fhat[grid][tid], globMpArray[LAND_PACK_IDX(b_id, grid)], g_Mass[grid]);
             if (ierr_t) ierr = ierr_t;
           }
