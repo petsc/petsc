@@ -2340,7 +2340,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
     PetscCall(PetscPrintf(ctx->comm, "MatSolve              X 1.0 %10.3e\n", ctx->times[KSP_SOLVE]));
   }
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) PetscCall(DMDestroy(&ctx->plex[grid]));
-  PetscFree(ctx);
+  PetscCall(PetscFree(ctx));
   PetscCall(DMDestroy(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

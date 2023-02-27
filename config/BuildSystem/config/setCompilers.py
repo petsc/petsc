@@ -1124,7 +1124,7 @@ class Configure(config.base.Configure):
                 '\n'.join('- '+s for s in packDialects[minPackDialect]),
                 ' '.join(('But',base_mess))
               ))
-              dialectNum = minPackDiaect[-2:]
+              dialectNum = minPackDialect[-2:]
             else:
               # if nothing else then it's because the user requested a particular version
               dialectNum = dialectNumStr

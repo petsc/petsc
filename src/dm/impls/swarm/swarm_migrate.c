@@ -566,7 +566,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
     PetscCall(DMSwarmDataBucketInsertPackedArray(swarm->db, npoints + p, data_p));
   }
   PetscCall(DMSwarmDataBucketDestroyPackedArray(swarm->db, &point_buffer));
-  PetscFree(bbox);
+  PetscCall(PetscFree(bbox));
   PetscCall(DMSwarmDataExView(de));
   PetscCall(DMSwarmDataExDestroy(de));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -654,7 +654,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
   }
   /* Release memory */
   for (r = 0; r < size; r++) {
-    if (collectlist[r]) PetscFree(collectlist[r]);
+    if (collectlist[r]) PetscCall(PetscFree(collectlist[r]));
   }
   PetscCall(PetscFree(collectlist));
   PetscCall(PetscFree(n2collect));

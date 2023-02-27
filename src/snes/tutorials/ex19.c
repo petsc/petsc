@@ -1172,7 +1172,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 
    test:
      suffix: logviewmemory
-     requires: defined(PETSC_USE_LOG) !defined(PETSCTEST_VALGRIND)
+     requires: defined(PETSC_USE_LOG) !defined(PETSC_HAVE_THREADSAFETY)
      args: -log_view -log_view_memory -da_refine 4
      filter: grep MatFDColorSetUp | wc -w | xargs  -I % sh -c "expr % \> 21"
 
