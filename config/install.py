@@ -45,6 +45,7 @@ class Installer(script.Script):
     import nargs
     script.Script.setupHelp(self, help)
     help.addArgument('Installer', '-destDir=<path>', nargs.Arg(None, '', 'Destination Directory for install'))
+    help.addArgument('Installer', '-no-examples', nargs.Arg(None, '', 'Skip installing examples'))
     return
 
 
@@ -348,9 +349,10 @@ for file in files:
       shutil.rmtree(examplesdir)
     os.mkdir(examplesdir)
     os.mkdir(os.path.join(examplesdir,'src'))
-    self.copyExamples(self.rootSrcDir,os.path.join(examplesdir,'src'))
     self.copyConfig(self.rootDir,examplesdir)
-    self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
+    if not self.argDB['no-examples']:
+        self.copyExamples(self.rootSrcDir,os.path.join(examplesdir,'src'))
+        self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
     return
 
   def copyLib(self, src, dst):
