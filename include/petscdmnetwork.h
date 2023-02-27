@@ -7,6 +7,8 @@
 #include <petscdmplex.h>
 #include <petscviewer.h>
 
+/* SUBMANSEC = DMNetwork */
+
 #define ALL_COMPONENTS -1
 
 /*
@@ -84,4 +86,9 @@ PETSC_EXTERN PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor);
 PETSC_EXTERN PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor, const char *, PetscInt, PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, PetscBool);
 PETSC_EXTERN PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor, Vec);
 
+PETSC_EXTERN PetscErrorCode DMNetworkViewSetShowRanks(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMNetworkViewSetViewRanks(DM, IS);
+PETSC_EXTERN PetscErrorCode DMNetworkViewSetShowGlobal(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMNetworkViewSetShowVertices(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMNetworkViewSetShowNumbering(DM, PetscBool);
 #endif

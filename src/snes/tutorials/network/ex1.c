@@ -1,9 +1,13 @@
-static char help[] = "This example demonstrates the use of DMNetwork interface with subnetworks for solving a coupled nonlinear \n\
+static char help[] = "This example demonstrates the use of DMNetwork with subnetworks for solving a coupled nonlinear \n\
                       electric power grid and water pipe problem.\n\
                       The available solver options are in the ex1options file \n\
                       and the data files are in the datafiles of subdirectories.\n\
-                      This example shows the use of subnetwork feature in DMNetwork. \n\
                       Run this program: mpiexec -n <n> ./ex1 \n\\n";
+
+/*
+  Example:
+    mpiexec -n 3 ./ex1 -petscpartitioner_type parmetis -dmnetwork_view draw -dmnetwork_view_distributed draw -dmnetwork_view_rank_range 0,1,2
+*/
 
 #include "power/power.h"
 #include "water/water.h"
@@ -583,6 +587,7 @@ int main(int argc, char **argv)
   if (printCoord) PetscCall(CoordinatePrint(networkdm));
 
   /* Set up DM for use */
+  PetscCall(DMSetFromOptions(networkdm));
   PetscCall(DMSetUp(networkdm));
 
   /* Free user objects */

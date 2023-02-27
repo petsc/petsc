@@ -46,7 +46,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network, DMNetworkMonitor *monitorptr)
 
   Level: intermediate
 
-.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate`, `DMNetworkMonitorAdd()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorAdd()`
 @*/
 PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 {
