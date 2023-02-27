@@ -1446,30 +1446,47 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::AXPY(Mat Y, PetscScalar alpha, Mat X
 {
   const auto         m_x = X->rmap->n, m_y = Y->rmap->n;
   const auto         n_x = X->cmap->n, n_y = Y->cmap->n;
+  const auto         N = m_x * n_x;
   PetscDeviceContext dctx;
-  cupmBlasHandle_t   handle;
 
   PetscFunctionBegin;
-  if (!m_x || !n_x) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!m_x || !n_x || alpha == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscInfo(Y, "Performing AXPY %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m_y, n_y));
-  PetscCall(GetHandles_(&dctx, &handle));
+  PetscCall(GetHandles_(&dctx));
   {
-    const auto N        = m_x * n_x;
-    const auto dx       = DeviceArrayRead(dctx, X);
-    const auto dy       = alpha == 0.0 ? DeviceArrayWrite(dctx, Y).cupmdata() : DeviceArrayReadWrite(dctx, Y).cupmdata();
-    const auto ldax     = static_cast<cupmBlasInt_t>(MatIMPLCast(X)->lda);
-    const auto lday     = static_cast<cupmBlasInt_t>(MatIMPLCast(Y)->lda);
-    const auto cu_alpha = cupmScalarCast(alpha);
+    const auto dx    = DeviceArrayRead(dctx, X);
+    const auto dy    = DeviceArrayReadWrite(dctx, Y);
+    const auto lda_x = MatIMPLCast(X)->lda;
+    const auto lda_y = MatIMPLCast(Y)->lda;
 
-    PetscCall(PetscLogGpuTimeBegin());
-    if (ldax > m_x || lday > m_x) {
-      for (cupmBlasInt_t j = 0; j < n_x; j++) PetscCallCUPMBLAS(cupmBlasXaxpy(handle, m_x, &cu_alpha, dx.cupmdata() + j * ldax, 1, dy + j * lday, 1));
+    if (lda_x > m_x || lda_y > m_x) {
+      cupmStream_t stream;
+
+      PetscCall(GetHandlesFrom_(dctx, &stream));
+      // clang-format off
+      PetscCallThrust(
+        const auto sub_mat_y = detail::make_submat_iterator(0, m_y, 0, n_y, lda_y, dy.data());
+        const auto sub_mat_x = detail::make_submat_iterator(0, m_x, 0, n_x, lda_x, dx.data());
+
+        THRUST_CALL(
+          thrust::transform,
+          stream,
+          sub_mat_x.begin(), sub_mat_x.end(), sub_mat_y.begin(), sub_mat_y.begin(),
+          device::cupm::functors::make_axpy(alpha)
+        );
+      );
+      // clang-format on
     } else {
-      PetscCallCUPMBLAS(cupmBlasXaxpy(handle, N, &cu_alpha, dx.cupmdata(), 1, dy, 1));
+      const auto       cu_alpha = cupmScalarCast(alpha);
+      cupmBlasHandle_t handle;
+
+      PetscCall(GetHandlesFrom_(dctx, &handle));
+      PetscCall(PetscLogGpuTimeBegin());
+      PetscCallCUPMBLAS(cupmBlasXaxpy(handle, N, &cu_alpha, dx.cupmdata(), 1, dy.cupmdata(), 1));
+      PetscCall(PetscLogGpuTimeEnd());
     }
-    PetscCall(PetscLogGpuTimeEnd());
-    PetscCall(PetscLogGpuFlops(PetscMax(2 * N - 1, 0)));
   }
+  PetscCall(PetscLogGpuFlops(PetscMax(2 * N - 1, 0)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
