@@ -3,7 +3,7 @@ sphinxcontrib-bibtex>=1.0.0
 sphinxcontrib-katex
 sphinxcontrib-svg2pdfconverter
 sphinx-copybutton
-pydata-sphinx-theme
+pydata-sphinx-theme==0.12.0
 sphinx-design
 myst-parser
 sphinx-remove-toctrees
