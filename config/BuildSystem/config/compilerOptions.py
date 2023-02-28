@@ -131,7 +131,9 @@ class CompilerOptions(config.base.Configure):
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing', '-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
+        if config.setCompilers.Configure.isGNU(compiler, self.log):
+          flags.extend(['-Wno-psabi'])
         if not any([
             # skip -fstack-protector for brew gcc - as this gives SEGV
             config.setCompilers.Configure.isDarwin(self.log) and config.setCompilers.Configure.isGNU(compiler, self.log),
