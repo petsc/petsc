@@ -69,7 +69,7 @@ $     -sf_type my_impl
    Note:
    `PetscSFRegister()` may be called multiple times to add several user-defined implementations.
 
-.seealso: `PetscSF`, `PetscSFRegisterAll()`, `PetscSFInitializePackage()`
+.seealso: `PetscSF`, `PetscSFType`, `PetscSFRegisterAll()`, `PetscSFInitializePackage()`
 @*/
 PetscErrorCode PetscSFRegister(const char name[], PetscErrorCode (*create)(PetscSF))
 {

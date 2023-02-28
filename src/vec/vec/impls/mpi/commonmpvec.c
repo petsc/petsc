@@ -29,8 +29,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
 
 /*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of
-    a parallel vector (obtained with VecCreateGhost(), VecCreateGhostWithArray()
-    or VecCreateSeq()). Returns NULL if the Vec is not ghosted.
+    a parallel vector (obtained with `VecCreateGhost()`, `VecCreateGhostWithArray()` or `VecCreateSeq()`).
 
     Logically Collective
 
@@ -38,7 +37,9 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
 .   g - the global vector
 
     Output Parameter:
-.   l - the local (ghosted) representation, NULL if g is not ghosted
+.   l - the local (ghosted) representation,`NULL` if `g` is not ghosted
+
+    Level: advanced
 
     Notes:
     This routine does not actually update the ghost values, but rather it
@@ -47,23 +48,22 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
     vector passed in share the same array that contains the actual vector data.
 
     To update the ghost values from the locations on the other processes one must call
-    VecGhostUpdateBegin() and VecGhostUpdateEnd() before accessing the ghost values. Thus normal
+    `VecGhostUpdateBegin()` and `VecGhostUpdateEnd()` before accessing the ghost values. Thus normal
     usage is
-$     VecGhostUpdateBegin(x,INSERT_VALUES,SCATTER_FORWARD);
-$     VecGhostUpdateEnd(x,INSERT_VALUES,SCATTER_FORWARD);
-$     VecGhostGetLocalForm(x,&xlocal);
-$     VecGetArray(xlocal,&xvalues);
-$        // access the non-ghost values in locations xvalues[0:n-1] and ghost values in locations xvalues[n:n+nghost];
-$     VecRestoreArray(xlocal,&xvalues);
-$     VecGhostRestoreLocalForm(x,&xlocal);
+.vb
+     VecGhostUpdateBegin(x,INSERT_VALUES,SCATTER_FORWARD);
+     VecGhostUpdateEnd(x,INSERT_VALUES,SCATTER_FORWARD);
+     VecGhostGetLocalForm(x,&xlocal);
+     VecGetArray(xlocal,&xvalues);
+        // access the non-ghost values in locations xvalues[0:n-1] and ghost values in locations xvalues[n:n+nghost];
+     VecRestoreArray(xlocal,&xvalues);
+     VecGhostRestoreLocalForm(x,&xlocal);
+.ve
 
-    One should call VecGhostRestoreLocalForm() or VecDestroy() once one is
+    One should call `VecGhostRestoreLocalForm()` or `VecDestroy()` once one is
     finished using the object.
 
-    Level: advanced
-
-.seealso: `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
-
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
 {
@@ -100,12 +100,11 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
 -   l - the local vector
 
     Output Parameter:
-.   flg - PETSC_TRUE if local vector is local form
+.   flg - `PETSC_TRUE` if `l` is the local form
 
     Level: advanced
 
-.seealso: `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`, `VecGhostGetLocalForm()`
-
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`, `VecGhostGetLocalForm()`
 @*/
 PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
 {
@@ -129,7 +128,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
 
 /*@
     VecGhostRestoreLocalForm - Restores the local ghosted representation of
-    a parallel vector obtained with VecGhostGetLocalForm().
+    a parallel vector obtained with `VecGhostGetLocalForm()`.
 
     Logically Collective
 
@@ -137,14 +136,14 @@ PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
 +   g - the global vector
 -   l - the local (ghosted) representation
 
-    Notes:
+    Level: advanced
+
+    Note:
     This routine does not actually update the ghost values, but rather it
     returns a sequential vector that includes the locations for the ghost values
     and their current values.
 
-    Level: advanced
-
-.seealso: `VecCreateGhost()`, `VecGhostGetLocalForm()`, `VecCreateGhostWithArray()`
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostGetLocalForm()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
 {
@@ -164,8 +163,10 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
 
    Input Parameters:
 +  g - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
-.  insertmode - one of ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES
--  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+.  insertmode - one of `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`
+-  scattermode - one of `SCATTER_FORWARD` or `SCATTER_REVERSE`
+
+   Level: advanced
 
    Notes:
    Use the following to update the ghost regions with correct values from the owning process
@@ -189,11 +190,8 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
        VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
 .ve
 
-   Level: advanced
-
-.seealso: `VecCreateGhost()`, `VecGhostUpdateEnd()`, `VecGhostGetLocalForm()`,
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostUpdateEnd()`, `VecGhostGetLocalForm()`,
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
-
 @*/
 PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode scattermode)
 {
@@ -227,11 +225,12 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
 
    Input Parameters:
 +  g - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
-.  insertmode - one of ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES
--  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+.  insertmode - one of `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`
+-  scattermode - one of `SCATTER_FORWARD` or `SCATTER_REVERSE`
+
+   Level: advanced
 
    Notes:
-
    Use the following to update the ghost regions with correct values from the owning process
 .vb
        VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
@@ -253,11 +252,8 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
        VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
 .ve
 
-   Level: advanced
-
-.seealso: `VecCreateGhost()`, `VecGhostUpdateBegin()`, `VecGhostGetLocalForm()`,
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostUpdateBegin()`, `VecGhostGetLocalForm()`,
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
-
 @*/
 PetscErrorCode VecGhostUpdateEnd(Vec g, InsertMode insertmode, ScatterMode scattermode)
 {

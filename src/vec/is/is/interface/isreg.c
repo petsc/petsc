@@ -15,13 +15,13 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
    Output Parameter:
 .  is - the new index set
 
+   Level: beginner
+
    Notes:
-   When the communicator is not `MPI_COMM_SELF`, the operations on `IS` are NOT
+   When the communicator is not `MPI_COMM_SELF`, the operations on `is` are NOT
    conceptually the same as `MPI_Group` operations. The `IS` are then
    distributed sets of indices and thus certain operations on them are
    collective.
-
-   Level: beginner
 
 .seealso: [](sec_scatter), `IS`, `ISType()`, `ISSetType()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
@@ -48,14 +48,16 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
   Options Database Key:
 . -is_type <type> - Sets the index set type; use -help for a list of available types
 
+  Level: intermediate
+
   Notes:
-  See "petsc/include/petscis.h" for available istor types (for instance, ISGENERAL, ISSTRIDE, or ISBLOCK).
+  See `ISType` for available types (for instance, `ISGENERAL`, `ISSTRIDE`, or `ISBLOCK`).
+
+  Often convience constructors such as `ISCreateGeneral()`, `ISCreateStride()` or  `ISCreateBlock()` can be used to construct the desired `IS` in one step
 
   Use `ISDuplicate()` to make a duplicate
 
-  Level: intermediate
-
-.seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISBLOCK`, `ISGetType()`, `ISCreate()`
+.seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISBLOCK`, `ISGetType()`, `ISCreate()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`
 @*/
 PetscErrorCode ISSetType(IS is, ISType method)
 {
