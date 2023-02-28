@@ -83,7 +83,7 @@ bibtex_bibfiles = ['petsc.bib']
 
 myst_enable_extensions = ["dollarmath", "amsmath", "deflist"]
 
-remove_from_toctrees = ['manualpages/*/*','changes/2*','changes/3*']
+remove_from_toctrees = ['manualpages/*/[A-Z]*','changes/2*','changes/3*']
 
 # -- Options for HTML output ---------------------------------------------------
 
