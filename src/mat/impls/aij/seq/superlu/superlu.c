@@ -1,6 +1,5 @@
 
-/*  --------------------------------------------------------------------
-
+/*
      This file implements a subclass of the SeqAIJ matrix class that uses
      the SuperLU sparse solver.
 */
@@ -490,7 +489,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
    Logically Collective
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-SuperLU interface
++  F - the factored matrix obtained by calling `MatGetFactor()`
 -  dtol - drop tolerance
 
   Options Database Key:
@@ -501,7 +500,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
    References:
 .  * - SuperLU Users' Guide
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MATSOLVERSUPERLU`
 @*/
 PetscErrorCode MatSuperluSetILUDropTol(Mat F, PetscReal dtol)
 {
@@ -523,19 +522,19 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType *type)
   MATSOLVERSUPERLU = "superlu" - A solver package providing solvers LU and ILU for sequential matrices
   via the external package SuperLU.
 
-  Use ./configure --download-superlu to have PETSc installed with SuperLU
+  Use `./configure --download-superlu` to have PETSc installed with SuperLU
 
-  Use -pc_type lu -pc_factor_mat_solver_type superlu to use this direct solver
+  Use `-pc_type lu` `-pc_factor_mat_solver_type superlu` to use this direct solver
 
   Options Database Keys:
 + -mat_superlu_equil <FALSE>            - Equil (None)
-. -mat_superlu_colperm <COLAMD>         - (choose one of) NATURAL MMD_ATA MMD_AT_PLUS_A COLAMD
-. -mat_superlu_iterrefine <NOREFINE>    - (choose one of) NOREFINE SINGLE DOUBLE EXTRA
+. -mat_superlu_colperm <COLAMD>         - (choose one of) `NATURAL`, `MMD_ATA MMD_AT_PLUS_A`, `COLAMD`
+. -mat_superlu_iterrefine <NOREFINE>    - (choose one of) `NOREFINE`, `SINGLE`, `DOUBLE`, `EXTRA`
 . -mat_superlu_symmetricmode: <FALSE>   - SymmetricMode (None)
 . -mat_superlu_diagpivotthresh <1>      - DiagPivotThresh (None)
 . -mat_superlu_pivotgrowth <FALSE>      - PivotGrowth (None)
 . -mat_superlu_conditionnumber <FALSE>  - ConditionNumber (None)
-. -mat_superlu_rowperm <NOROWPERM>      - (choose one of) NOROWPERM LargeDiag
+. -mat_superlu_rowperm <NOROWPERM>      - (choose one of) `NOROWPERM`, `LargeDiag`
 . -mat_superlu_replacetinypivot <FALSE> - ReplaceTinyPivot (None)
 . -mat_superlu_printstat <FALSE>        - PrintStat (None)
 . -mat_superlu_lwork <0>                - size of work array in bytes used by factorization (None)
@@ -546,14 +545,14 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType *type)
 . -mat_superlu_ilu_norm <0>             - ILU_Norm (None)
 - -mat_superlu_ilu_milu <0>             - ILU_MILU (None)
 
+   Level: beginner
+
    Notes:
     Do not confuse this with `MATSOLVERSUPERLU_DIST` which is for parallel sparse solves
 
     Cannot use ordering provided by PETSc, provides its own.
 
-   Level: beginner
-
-.seealso: `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A, MatFactorType ftype, Mat *F)

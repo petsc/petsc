@@ -23,19 +23,21 @@
 
     Input Parameters:
 +   mat  - matrix to reorder
--   rmap,cmap - row and column permutations.  Usually obtained from
-               `MatGetOrdering()`.
+.   abstol - absolute tolerance, it attempts to move all values smaller off the diagonal
+.   ris - the row reordering
+-   cis - the column reordering; this may be changed
 
     Level: intermediate
 
     Options Database Key:
-.      -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
+.   -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
 
     Notes:
     This is not intended as a replacement for pivoting for matrices that
-    have ``bad'' structure. It is only a stop-gap measure. Should be called
-    after a call to `MatGetOrdering()`, this routine changes the column
-    ordering defined in cis.
+    have ``bad'' structure. It is only a stop-gap measure.
+
+    Should be called
+    after a call to `MatGetOrdering()`.
 
     Only works for `MATSEQAIJ` matrices
 
@@ -52,7 +54,7 @@
        swapped with; to make sure the previous nonzero diagonal remains
        nonzero
 
-.seealso: `Mat`
+.seealso: `Mat`, `MatGetFactor()`, `MatGetOrdering()`
 @*/
 PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat, PetscReal abstol, IS ris, IS cis)
 {

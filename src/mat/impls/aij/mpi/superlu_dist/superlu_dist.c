@@ -851,9 +851,9 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 /*MC
   MATSOLVERSUPERLU_DIST - Parallel direct solver package for LU factorization
 
-  Use ./configure --download-superlu_dist --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with SuperLU_DIST
+  Use `./configure --download-superlu_dist --download-parmetis --download-metis --download-ptscotch`  to have PETSc installed with SuperLU_DIST
 
-  Use -pc_type lu -pc_factor_mat_solver_type superlu_dist to use this direct solver
+  Use `-pc_type lu` `-pc_factor_mat_solver_type superlu_dist` to use this direct solver
 
    Works with `MATAIJ` matrices
 
@@ -861,19 +861,19 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 + -mat_superlu_dist_r <n> - number of rows in processor partition
 . -mat_superlu_dist_c <n> - number of columns in processor partition
 . -mat_superlu_dist_3d - use 3d partition, requires SuperLU_DIST 7.2 or later
-. -mat_superlu_dist_d <n> - depth in 3d partition (valid only if -mat_superlu_dist_3d) is provided
+. -mat_superlu_dist_d <n> - depth in 3d partition (valid only if `-mat_superlu_dist_3d`) is provided
 . -mat_superlu_dist_equil - equilibrate the matrix
 . -mat_superlu_dist_rowperm <NOROWPERM,LargeDiag_MC64,LargeDiag_AWPM,MY_PERMR> - row permutation
 . -mat_superlu_dist_colperm <NATURAL,MMD_AT_PLUS_A,MMD_ATA,METIS_AT_PLUS_A,PARMETIS> - column permutation
 . -mat_superlu_dist_replacetinypivot - replace tiny pivots
-. -mat_superlu_dist_fact <SamePattern> - (choose one of) SamePattern SamePattern_SameRowPerm DOFACT
+. -mat_superlu_dist_fact <SamePattern> - (choose one of) `SamePattern`, `SamePattern_SameRowPerm`, `DOFACT`
 . -mat_superlu_dist_iterrefine - use iterative refinement
 - -mat_superlu_dist_statprint - print factorization information
 
-  Note:
-    If PETSc was configured with --with-cuda than this solver will automatically use the GPUs.
-
   Level: beginner
 
-.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
+  Note:
+    If PETSc was configured with `--with-cuda` then this solver will automatically use the GPUs.
+
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/

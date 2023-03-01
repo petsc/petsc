@@ -191,17 +191,17 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or NULL
+         (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
 
-   Note:
-   If nnz is given then nz is ignored
-
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
+   Note:
+   If `nnz` is given then `nz` is ignored
+
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {

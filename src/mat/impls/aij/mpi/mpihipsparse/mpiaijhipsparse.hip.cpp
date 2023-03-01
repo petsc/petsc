@@ -665,41 +665,39 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJHIPSPARSE(Mat A)
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or NULL
+         (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
 
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
-   MatXXXXSetPreallocation() paradigm instead of this routine directly.
-   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+   Level: intermediate
 
    Notes:
-   If nnz is given then nz is ignored
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
+   MatXXXXSetPreallocation() paradigm instead of this routine directly.
+   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
+   If `nnz` is given then `nz` is ignored
+
+   The AIJ format (compressed row storage), is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
+   either one (as in Fortran) or zero.
 
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
-   allocation.  For large problems you MUST preallocate memory or you
-   will get TERRIBLE performance, see the users' manual chapter on matrices.
+   Specify the preallocated storage with either `nz` or `nnz` (not both).
+   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+   allocation.
 
    By default, this format uses inodes (identical nodes) when possible, to
    improve numerical efficiency of matrix-vector products and solves. We
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
-   Level: intermediate
-
-.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJHIPSPARSE`, `MATAIJHIPSPARSE`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJHIPSPARSE`, `MATAIJHIPSPARSE`
 @*/
 PetscErrorCode MatCreateAIJHIPSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {
@@ -720,34 +718,34 @@ PetscErrorCode MatCreateAIJHIPSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Pets
 }
 
 /*MC
-   MATAIJHIPSPARSE - A matrix type to be used for sparse matrices; it is as same as MATMPIAIJHIPSPARSE.
+   MATAIJHIPSPARSE - A matrix type to be used for sparse matrices; it is as same as `MATMPIAIJHIPSPARSE`.
 
-   A matrix type type whose data resides on Nvidia GPUs. These matrices can be in either
+   A matrix type type whose data resides on GPUs. These matrices can be in either
    CSR, ELL, or Hybrid format. All matrix calculations are performed on AMD GPUs using the HIPSPARSE library.
 
-   This matrix type is identical to MATSEQAIJHIPSPARSE when constructed with a single process communicator,
-   and MATMPIAIJHIPSPARSE otherwise.  As a result, for single process communicators,
-   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported
+   This matrix type is identical to `MATSEQAIJHIPSPARSE` when constructed with a single process communicator,
+   and `MATMPIAIJHIPSPARSE` otherwise.  As a result, for single process communicators,
+   `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
    for communicators controlling multiple processes.  It is recommended that you call both of
    the above preallocation routines for simplicity.
 
    Options Database Keys:
-+  -mat_type mpiaijhipsparse - sets the matrix type to "mpiaijhipsparse" during a call to MatSetFromOptions()
-.  -mat_hipsparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
-.  -mat_hipsparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
--  -mat_hipsparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
++  -mat_type mpiaijhipsparse - sets the matrix type to `MATMPIAIJHIPSPARSE`
+.  -mat_hipsparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices. Other options include ell (ellpack) or hyb (hybrid).
+.  -mat_hipsparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
+-  -mat_hipsparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
 
   Level: beginner
 
- .seealso: `MatCreateAIJHIPSPARSE()`, `MATSEQAIJHIPSPARSE`, `MATMPIAIJHIPSPARSE`, `MatCreateSeqAIJHIPSPARSE()`, `MatHIPSPARSESetFormat()`, `MatHIPSPARSEStorageFormat`, `MatHIPSPARSEFormatOperation`
+ .seealso: [](chapter_matrices), `Mat`, `MatCreateAIJHIPSPARSE()`, `MATSEQAIJHIPSPARSE`, `MATMPIAIJHIPSPARSE`, `MatCreateSeqAIJHIPSPARSE()`, `MatHIPSPARSESetFormat()`, `MatHIPSPARSEStorageFormat`, `MatHIPSPARSEFormatOperation`
 M*/
 
 /*MC
-   MATMPIAIJHIPSPARSE - A matrix type to be used for sparse matrices; it is as same as MATAIJHIPSPARSE.
+   MATMPIAIJHIPSPARSE - A matrix type to be used for sparse matrices; it is as same as `MATAIJHIPSPARSE`.
 
   Level: beginner
 
- .seealso: `MATAIJHIPSPARSE`, `MATSEQAIJHIPSPARSE`
+ .seealso: [](chapter_matrices), `Mat`, `MATAIJHIPSPARSE`, `MATSEQAIJHIPSPARSE`
 M*/
 
 // get GPU pointers to stripped down Mat. For both seq and MPI Mat.

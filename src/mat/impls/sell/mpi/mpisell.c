@@ -979,7 +979,6 @@ PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                        NULL,
                                        NULL,
@@ -1132,8 +1131,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                        NULL,
                                        /*150*/ NULL,
                                        NULL};
-
-/* ----------------------------------------------------------------------------------------*/
 
 PetscErrorCode MatStoreValues_MPISELL(Mat mat)
 {

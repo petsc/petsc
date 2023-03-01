@@ -471,7 +471,7 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
 
    A nonzero block is any block that as 1 or more nonzeros in it
 
-   The `MATSEQBAIJ` format is fully compatible with standard Fortran 77
+   The `MATSEQBAIJ` format is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 

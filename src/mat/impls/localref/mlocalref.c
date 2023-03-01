@@ -169,12 +169,12 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
    Not Collective
 
    Input Parameters:
-+ A - Full matrix, generally parallel
-. isrow - Local index set for the rows
-- iscol - Local index set for the columns
++  A - full matrix, generally parallel
+.  isrow - Local index set for the rows
+-  iscol - Local index set for the columns
 
    Output Parameter:
-. newmat - New serial Mat
+. newmat - new serial `Mat`
 
    Level: developer
 
@@ -185,7 +185,7 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
    The new matrix forwards `MatSetValuesLocal()` and `MatSetValuesBlockedLocal()` to the global system.
    In general, it does not define `MatMult()` or any other functions.  Local submatrices can be nested.
 
-.seealso: MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
+.seealso: [](chapter_matrices), `Mat`, MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat)
 {

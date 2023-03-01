@@ -213,8 +213,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------------*/
-
 PetscErrorCode MatView_Info_Matlab(Mat A, PetscViewer viewer)
 {
   PetscFunctionBegin;
@@ -241,13 +239,12 @@ PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer)
 /*MC
   MATSOLVERMATLAB - "matlab" - Providing direct solver LU for `MATSEQAIJ` matrix via the external package MATLAB.
 
-  Options Database Keys:
-. -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
+  Use `./configure` with the options `--with-matlab` to install PETSc with this capability
 
-  Note:
-    You must ./configure with the options --with-matlab
+  Options Database Key:
+. -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
 
   Level: beginner
 
-.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

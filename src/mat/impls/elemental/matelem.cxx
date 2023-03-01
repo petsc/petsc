@@ -354,7 +354,6 @@ static PetscErrorCode MatMatTransposeMultSymbolic_Elemental(Mat A, Mat B, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_Elemental_AB(Mat C)
 {
   PetscFunctionBegin;
@@ -428,7 +427,6 @@ PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C)
   if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Elemental_MPIDense_AB(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* --------------------------------------- */
 
 static PetscErrorCode MatGetDiagonal_Elemental(Mat A, Vec D)
 {
@@ -1179,7 +1177,6 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
                                        0,
                                        0,

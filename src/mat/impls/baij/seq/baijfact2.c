@@ -8,7 +8,6 @@
 #include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 
-/* ----------------------------------------------------------------*/
 extern PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat, Mat, MatDuplicateOption, PetscBool);
 
 /*

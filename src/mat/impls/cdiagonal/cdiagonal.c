@@ -242,12 +242,12 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A, MatInfoType flag, MatInfo *inf
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
 .  n - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
-       calculated if N is given) For square matrices n is almost always m.
+       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
+       calculated if `N` is given) For square matrices n is almost always `m`.
 .  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
 .  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 -  diag - the diagonal value
@@ -260,7 +260,7 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A, MatInfoType flag, MatInfo *inf
    Notes:
     Only supports square matrices with the same number of local rows and columns
 
-.seealso: `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatGetFactor()`, `MatSolve()`
+.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatGetFactor()`, `MatSolve()`
 @*/
 PetscErrorCode MatCreateConstantDiagonal(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar diag, Mat *J)
 {

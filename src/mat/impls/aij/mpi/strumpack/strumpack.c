@@ -44,19 +44,19 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReo
   MatSTRUMPACKSetReordering - Set STRUMPACK fill-reducing reordering
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor(`) from PETSc-STRUMPACK interface
--  reordering - the code to be used to find the fill-reducing reordering
-      Possible values: NATURAL=0 METIS=1 PARMETIS=2 SCOTCH=3 PTSCOTCH=4 RCM=5
++  F - the factored matrix obtained by calling `MatGetFactor()`
+-  reordering - the code to be used to find the fill-reducing reordering, see `MatSTRUMPACKReordering`
 
   Options Database Key:
-.   -mat_strumpack_reordering <METIS>  - Sparsity reducing matrix reordering (choose one of) NATURAL METIS PARMETIS SCOTCH PTSCOTCH RCM (None)
+.   -mat_strumpack_reordering <METIS>  - Sparsity reducing matrix reordering, see `MatSTRUMPACKReordering`
 
    Level: beginner
 
    References:
 .  * - STRUMPACK manual
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatSTRUMPACKReordering`, `MatGetFactor()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+          `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetReordering(Mat F, MatSTRUMPACKReordering reordering)
 {
@@ -82,7 +82,7 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm)
    Logically Collective
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()`
 -  cperm - `PETSC_TRUE` to permute (internally) the columns of the matrix
 
   Options Database Key:
@@ -93,7 +93,8 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm)
    References:
 .  * - STRUMPACK manual
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `MatSTRUMPACKSetReordering()`, `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetHSSRelTol()`, `MatSTRUMPACKSetHSSAbsTol()`,
+          `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetColPerm(Mat F, PetscBool cperm)
 {
@@ -119,7 +120,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol)
   Logically Collective
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()`
 -  rtol - relative compression tolerance
 
   Options Database Key:
@@ -130,7 +131,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol)
    References:
 .  * - STRUMPACK manual
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSAbsTol()`,
+          `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F, PetscReal rtol)
 {
@@ -156,7 +158,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol)
    Logically Collective
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()`
 -  atol - absolute compression tolerance
 
   Options Database Key:
@@ -167,7 +169,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol)
    References:
 .  * - STRUMPACK manual
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+          `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F, PetscReal atol)
 {
@@ -193,7 +196,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmax
    Logically Collective
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()`
 -  hssmaxrank - maximum rank used in low-rank approximation
 
   Options Database Key:
@@ -204,7 +207,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmax
    References:
 .  * - STRUMPACK manual
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+          `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F, PetscInt hssmaxrank)
 {
@@ -230,7 +234,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_
    Logically Collective
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()`
 -  leaf_size - Size of diagonal blocks in HSS approximation
 
   Options Database Key:
@@ -241,7 +245,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_
    References:
 .  * - STRUMPACK manual
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+          `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F, PetscInt leaf_size)
 {
@@ -267,7 +272,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hss
    Logically Collective
 
    Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-STRUMPACK interface
++  F - the factored matrix obtained by calling `MatGetFactor()`
 -  hssminsize - minimum dense matrix size for low-rank approximation
 
   Options Database Key:
@@ -278,7 +283,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hss
    References:
 .  * - STRUMPACK manual
 
-.seealso: `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+          `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F, PetscInt hssminsize)
 {
@@ -480,17 +486,13 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
 
   Consult the STRUMPACK-sparse manual for more info.
 
-  Use
-     ./configure --download-strumpack
-  to have PETSc installed with STRUMPACK
+  Use ` ./configure --download-strumpack` to have PETSc installed with STRUMPACK
 
-  Use
-    -pc_type lu -pc_factor_mat_solver_type strumpack
-  to use this as an exact (direct) solver, use
-    -pc_type ilu -pc_factor_mat_solver_type strumpack
-  to enable low-rank compression (i.e, use as a preconditioner).
+  Use `-pc_type lu` `-pc_factor_mat_solver_type strumpack` to use this as an exact (direct) solver.
 
-  Works with AIJ matrices
+  Use `-pc_type ilu` `-pc_factor_mat_solver_type strumpack` to enable low-rank compression (i.e, use as a preconditioner).
+
+  Works with `MATAIJ` matrices
 
   Options Database Keys:
 + -mat_strumpack_verbose                    - verbose info
@@ -500,12 +502,15 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
 . -mat_strumpack_hss_min_sep_size <256>     - Minimum size of separator for HSS compression (None)
 . -mat_strumpack_max_rank                   - Maximum rank in HSS compression, when using pctype ilu (None)
 . -mat_strumpack_leaf_size                  - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
-. -mat_strumpack_reordering <METIS>         - Sparsity reducing matrix reordering (choose one of) NATURAL METIS PARMETIS SCOTCH PTSCOTCH RCM (None)
-- -mat_strumpack_iterative_solver <DIRECT>  - Select iterative solver from STRUMPACK (choose one of) AUTO DIRECT REFINE PREC_GMRES GMRES PREC_BICGSTAB BICGSTAB (None)
+. -mat_strumpack_reordering <METIS>         - Sparsity reducing matrix reordering see `MatSTRUMPACKReordering`
+- -mat_strumpack_iterative_solver <DIRECT>  - Select iterative solver from STRUMPACK (choose one of) `AUTO`, `DIRECT`, `REFINE`, `PREC_GMRES`,
+                                              `GMRES`, `PREC_BICGSTAB`, `BICGSTAB`
 
  Level: beginner
 
-.seealso: `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`,
+          `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+          `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 M*/
 static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat *F)
 {

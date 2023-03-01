@@ -8,7 +8,6 @@
 #define MIS_REMOVED        -3
 #define MIS_IS_SELECTED(s) (s >= 0)
 
-/* ********************************************************************** */
 /* edge for priority queue */
 typedef struct edge_tag {
   PetscReal weight;
@@ -34,7 +33,6 @@ static PetscErrorCode PetscCoarsenDataView_private(PetscCoarsenData *agg_lists, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
   MatCoarsenApply_MISK_private - parallel heavy edge matching
 

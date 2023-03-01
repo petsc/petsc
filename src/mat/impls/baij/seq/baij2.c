@@ -260,10 +260,7 @@ PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat A, PetscInt n, const IS irow[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */
-/* -------------------------------------------------------*/
-
 PetscErrorCode MatMult_SeqBAIJ_1(Mat A, Vec xx, Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;

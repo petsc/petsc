@@ -277,7 +277,7 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 /*@
       MatNormalHermitianGetMat - Gets the `Mat` object stored inside a `MATNORMALHERMITIAN`
 
-   Logically collective
+   Logically Collective
 
    Input Parameter:
 .   A  - the `MATNORMALHERMITIAN` matrix
@@ -287,7 +287,7 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 
    Level: intermediate
 
-.seealso: `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
+.seealso: [](chapter_matrices), `Mat`, `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
 @*/
 PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M)
 {
@@ -344,6 +344,14 @@ PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse re
 }
 #endif
 
+/*MC
+  MATNORMALHERMITIAN - a matrix that behaves like (A*)'*A for `MatMult()` while only containing A
+
+  Level: intermediate
+
+.seealso: [](chapter_matrices), `Mat`, `MatCreateNormalHermitian()`, `MatMult()`, `MatNormalHermitianGetMat()`, `MATNORMAL`, `MatCreateNormal()`
+M*/
+
 /*@
       MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
 
@@ -362,7 +370,7 @@ PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse re
           object performs the matrix-vector product, `MatMult()`, by first multiplying by
           A and then (A*)'
 
-.seealso: `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
+.seealso: [](chapter_matrices), `Mat`, `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
 @*/
 PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
 {

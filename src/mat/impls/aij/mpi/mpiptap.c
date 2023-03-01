@@ -125,7 +125,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, Mat C)
   ap     = (Mat_SeqAIJ *)AP_loc->data;
 
   /* 2-1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
-  /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
     PetscCall(MatGetBrowsOfAoCols_MPIAIJ(A, P, MAT_REUSE_MATRIX, &ptap->startsj_s, &ptap->startsj_r, &ptap->bufa, &ptap->P_oth));
@@ -133,7 +132,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, Mat C)
   }
 
   /* 2-2) compute numeric A_loc*P - dominating part */
-  /* ---------------------------------------------- */
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
   if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
@@ -273,12 +271,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   ptap->P_oth = P_oth;
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
-  /* --------------------------------- */
   PetscCall(MatTranspose(p->A, MAT_INITIAL_MATRIX, &ptap->Rd));
   PetscCall(MatTranspose(p->B, MAT_INITIAL_MATRIX, &ptap->Ro));
 
   /* (1) compute symbolic AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj) */
-  /* ----------------------------------------------------------------- */
   p_loc = (Mat_SeqAIJ *)P_loc->data;
   if (P_oth) p_oth = (Mat_SeqAIJ *)P_oth->data;
 
@@ -372,7 +368,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
 #endif
 
   /* (2-1) compute symbolic Co = Ro*AP_loc  */
-  /* -------------------------------------- */
   PetscCall(MatProductCreate(ptap->Ro, ptap->AP_loc, NULL, &ptap->C_oth));
   PetscCall(MatGetOptionsPrefix(A, &prefix));
   PetscCall(MatSetOptionsPrefix(ptap->C_oth, prefix));
@@ -385,7 +380,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   PetscCall(MatProductSymbolic(ptap->C_oth));
 
   /* (3) send coj of C_oth to other processors  */
-  /* ------------------------------------------ */
   /* determine row ownership */
   PetscCall(PetscLayoutCreate(comm, &rowmap));
   PetscCall(PetscLayoutSetLocalSize(rowmap, pn));
@@ -438,7 +432,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   }
 
   /* (2-2) compute symbolic C_loc = Rd*AP_loc */
-  /* ---------------------------------------- */
   PetscCall(MatProductCreate(ptap->Rd, ptap->AP_loc, NULL, &ptap->C_loc));
   PetscCall(MatProductSetType(ptap->C_loc, MATPRODUCT_AB));
   PetscCall(MatProductSetAlgorithm(ptap->C_loc, "default"));
@@ -467,7 +460,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   PetscCall(PetscHMapIDestroy(&ta));
 
   /* (4) send and recv coi */
-  /*-----------------------*/
   PetscCall(PetscCommGetNewTag(comm, &tagi));
   PetscCall(PetscPostIrecvInt(comm, tagi, nrecv, id_r, len_ri, &buf_ri, &rwaits));
   PetscCall(PetscMalloc1(len + 1, &buf_s));
@@ -479,7 +471,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
                [1:nrows]:           row index (global)
                [nrows+1:2*nrows+1]: i-structure index
     */
-    /*-------------------------------------------*/
     nrows       = len_si[proc] / 2 - 1; /* num of rows in Co to be sent to [proc] */
     buf_si_i    = buf_si + nrows + 1;
     buf_si[0]   = nrows;
@@ -505,7 +496,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   PetscCall(PetscFree(buf_s));
 
   /* (5) compute the local portion of Cmpi      */
-  /* ------------------------------------------ */
   /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
   PetscCall(PetscFreeSpaceGet(Crmax, &free_space));
   current_space = free_space;
@@ -725,7 +715,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   PetscCall(MatZeroEntries(C));
 
   /* Get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
-  /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
     PetscCall(MatGetBrowsOfAcols_MPIXAIJ(A, P, dof, MAT_REUSE_MATRIX, &ptap->P_oth));
@@ -878,7 +867,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
   PetscCall(MatZeroEntries(C));
 
   /* Get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
-  /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
     PetscCall(MatGetBrowsOfAcols_MPIXAIJ(A, P, dof, MAT_REUSE_MATRIX, &ptap->P_oth));
@@ -1573,12 +1561,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscCall(MatMPIAIJGetLocalMat(P, MAT_INITIAL_MATRIX, &ptap->P_loc));
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
-  /* --------------------------------- */
   PetscCall(MatTranspose(p->A, MAT_INITIAL_MATRIX, &ptap->Rd));
   PetscCall(MatTranspose(p->B, MAT_INITIAL_MATRIX, &ptap->Ro));
 
   /* (1) compute symbolic AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj) */
-  /* ----------------------------------------------------------------- */
   p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
   if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
 
@@ -1673,7 +1659,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
 #endif
 
   /* (2-1) compute symbolic Co = Ro*AP_loc  */
-  /* ------------------------------------ */
   PetscCall(MatGetOptionsPrefix(A, &prefix));
   PetscCall(MatSetOptionsPrefix(ptap->Ro, prefix));
   PetscCall(MatAppendOptionsPrefix(ptap->Ro, "inner_offdiag_"));
@@ -1688,7 +1673,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscCall(MatProductSymbolic(ptap->C_oth));
 
   /* (3) send coj of C_oth to other processors  */
-  /* ------------------------------------------ */
   /* determine row ownership */
   PetscCall(PetscLayoutCreate(comm, &rowmap));
   rowmap->n  = pn;
@@ -1740,7 +1724,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   }
 
   /* (2-2) compute symbolic C_loc = Rd*AP_loc */
-  /* ---------------------------------------- */
   PetscCall(MatSetOptionsPrefix(ptap->Rd, prefix));
   PetscCall(MatAppendOptionsPrefix(ptap->Rd, "inner_diag_"));
   PetscCall(MatProductCreate(ptap->Rd, ptap->AP_loc, NULL, &ptap->C_loc));
@@ -1769,7 +1752,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscCall(PetscHMapIDestroy(&ta));
 
   /* (4) send and recv coi */
-  /*-----------------------*/
   PetscCall(PetscCommGetNewTag(comm, &tagi));
   PetscCall(PetscPostIrecvInt(comm, tagi, nrecv, id_r, len_ri, &buf_ri, &rwaits));
   PetscCall(PetscMalloc1(len + 1, &buf_s));
@@ -1781,7 +1763,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
                [1:nrows]:           row index (global)
                [nrows+1:2*nrows+1]: i-structure index
     */
-    /*-------------------------------------------*/
     nrows       = len_si[proc] / 2 - 1; /* num of rows in Co to be sent to [proc] */
     buf_si_i    = buf_si + nrows + 1;
     buf_si[0]   = nrows;
@@ -1807,7 +1788,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscCall(PetscFree(buf_s));
 
   /* (5) compute the local portion of Cmpi      */
-  /* ------------------------------------------ */
   /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
   PetscCall(PetscFreeSpaceGet(Crmax, &free_space));
   current_space = free_space;
@@ -1909,7 +1889,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   ap     = (Mat_SeqAIJ *)AP_loc->data;
 
   /* 2-1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
-  /*-----------------------------------------------------*/
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     /* P_oth and P_loc are obtained in MatPtASymbolic() when reuse == MAT_INITIAL_MATRIX */
     PetscCall(MatGetBrowsOfAoCols_MPIAIJ(A, P, MAT_REUSE_MATRIX, &ptap->startsj_s, &ptap->startsj_r, &ptap->bufa, &ptap->P_oth));
@@ -1917,7 +1896,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   }
 
   /* 2-2) compute numeric A_loc*P - dominating part */
-  /* ---------------------------------------------- */
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
   if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;

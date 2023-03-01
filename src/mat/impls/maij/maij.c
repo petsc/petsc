@@ -18,7 +18,7 @@
    Note:
     The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
 
-.seealso: `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B)
 {
@@ -55,7 +55,7 @@ PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B)
 
    Level: advanced
 
-.seealso: `MATMAIJ`, `MatCreateMAIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MATMAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJRedimension(Mat A, PetscInt dof, Mat *B)
 {
@@ -142,7 +142,7 @@ static PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
 
   Level: advanced
 
-.seealso: `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
@@ -301,8 +301,6 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMultTranspose_MatMultTranspos
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------------------- */
-
 #define MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(N) \
   static PetscErrorCode PetscConcat(MatMult_SeqMAIJ_, N)(Mat A, Vec xx, Vec yy) \
   { \
@@ -345,8 +343,6 @@ MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(18)
 // clang-format on
 
 #undef MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE
-
-/*-------------------------------------------------------------------------------------------- */
 
 static PetscErrorCode MatMult_SeqMAIJ_N(Mat A, Vec xx, Vec yy)
 {
@@ -474,8 +470,6 @@ static PetscErrorCode MatMultTransposeAdd_SeqMAIJ_N(Mat A, Vec xx, Vec yy, Vec z
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*-------------------------------------------------------------------------------------------- */
-
 static PetscErrorCode MatMult_MPIMAIJ_dof(Mat A, Vec xx, Vec yy)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ *)A->data;
@@ -525,8 +519,6 @@ static PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A, Vec xx, Vec yy, Vec
   PetscCall(VecScatterEnd(b->ctx, b->w, zz, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------- */
 
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqMAIJ(Mat C)
 {
@@ -592,7 +584,6 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------- */
 static PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A, Mat PP, Mat C)
 {
   /* This routine requires testing -- first draft only */
@@ -1022,7 +1013,6 @@ static PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS ir
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------- */
 /*@
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation
   operations for multicomponent problems.  It interpolates each component the same
@@ -1038,6 +1028,8 @@ static PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS ir
   Output Parameter:
 . maij - the new `MATMAIJ` matrix
 
+  Level: advanced
+
   Operations provided:
 .vb
     MatMult()
@@ -1047,9 +1039,7 @@ static PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS ir
     MatView()
 .ve
 
-  Level: advanced
-
-.seealso: `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
+.seealso: [](chapter_matrices), `Mat`, `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
 @*/
 PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
 {
