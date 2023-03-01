@@ -200,11 +200,9 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkCxxComplex)
     for t, sizes in {'void *': (8, 4),
-                     'short': (2, 4, 8),
                      'int': (4, 8, 2),
                      'long': (8, 4),
                      'long long': (8,),
-                     'enum': (4, 8),
                      'size_t': (8, 4)}.items():
       self.executeTest(self.checkSizeof, args=[t, sizes])
     if self.sizes['void-p'] == 8:
