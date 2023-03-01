@@ -375,7 +375,7 @@ static inline PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Inter
     PetscValidDeviceType(type, 2);
     PetscCall(PetscDeviceContextGetDeviceType(*dctx, &dtype));
     PetscCheckCompatibleDeviceTypes(dtype, 1, type, 2);
-  }
+  } else (void)type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
