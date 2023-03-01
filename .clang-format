@@ -157,6 +157,7 @@ StatementMacros:
   - PETSC_NOEXCEPT_AUTO_RETURNS
   - PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS
   - PETSC_UNUSED
+  - PetscPragmaOMP
 TabWidth: 2
 UseCRLF: false
 UseTab: Never
