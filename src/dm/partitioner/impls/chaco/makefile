@@ -4,7 +4,6 @@ CPPFLAGS  = ${CHACO_INCLUDE}
 SOURCEC   = partchaco.c
 SOURCEH   =
 LIBBASE   = libpetscdm
-LOCDIR    = src/dm/partitioner/impls/chaco/
 MANSEC    = DM
 SUBMANSEC =
 

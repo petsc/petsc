@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR          = src/snes/tests/
 DIRS	        =
 MANSEC          = SNES
 

@@ -128,14 +128,11 @@ def FixDir(petscdir,dir,verbose):
     fd.close()
     cppflags = ""
     libbase = ""
-    locdir = ""
     for line in inbuf.splitlines():
       if line.find('CPPFLAGS') >=0:
         cppflags = line
       if line.find('LIBBASE') >=0:
         libbase = line
-      elif line.find('LOCDIR') >=0:
-        locdir = line.rstrip() + 'ftn-auto/'
       elif line.find('SUBMANSEC') >=0:
         submansec = line.split('=')[1].lower().strip()
       elif line.find('BFORTSUBMANSEC') >=0:
@@ -160,7 +157,6 @@ def FixDir(petscdir,dir,verbose):
     outbuf +=  'SOURCEH  = ' +' '.join(hnames)+ '\n'
     outbuf +=  'DIRS     =\n'
     outbuf +=  libbase + '\n'
-    outbuf +=  locdir + '\n'
     outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/variables\n'
     outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/rules\n'
     outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/test\n'

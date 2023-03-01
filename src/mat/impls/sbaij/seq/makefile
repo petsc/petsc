@@ -6,7 +6,6 @@ SOURCEH	 = sbaij.h relax.h
 LIBBASE	 = libpetscmat
 DIRS     = cholmod
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/sbaij/seq/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

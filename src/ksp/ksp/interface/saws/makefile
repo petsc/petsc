@@ -6,7 +6,6 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
 DIRS     =
-LOCDIR   = src/ksp/ksp/interface/saws/
 MANSEC   = KSP
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

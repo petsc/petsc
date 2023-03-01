@@ -7,7 +7,6 @@ SOURCEH	 = ../../../include/petsc/mpiuni/mpi.h ../../../include/petsc/mpiuni/mpi
 SCRIPTS  = ../../../../lib/petsc/bin/petsc-mpiexec.uni
 LIBBASE	 = libpetscsys
 DIRS     = fsrc f90-mod
-LOCDIR   = src/sys/mpiuni/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

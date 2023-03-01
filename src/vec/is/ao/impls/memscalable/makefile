@@ -7,7 +7,6 @@ LIBBASE   = libpetscvec
 DIRS      =
 MANSEC    = Vec
 SUBMANSEC = AO
-LOCDIR    = src/vec/is/ao/impls/memscalable/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

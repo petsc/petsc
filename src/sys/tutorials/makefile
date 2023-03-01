@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR          = src/sys/tutorials/
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
 

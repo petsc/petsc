@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR          = src/dm/tests/
 EXAMPLESMATLAB  = ex12.m
 MANSEC          = DM
 

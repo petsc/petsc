@@ -6,7 +6,6 @@ SOURCEH   =
 LIBBASE   = libpetsctao
 MANSEC    = Tao
 SUBMANSEC = TaoLineSearch
-LOCDIR    = src/tao/linesearch/interface/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

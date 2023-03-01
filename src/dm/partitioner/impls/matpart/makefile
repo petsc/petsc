@@ -3,7 +3,6 @@
 SOURCEC   = partmatpart.c
 SOURCEH   =
 LIBBASE   = libpetscdm
-LOCDIR    = src/dm/partitioner/impls/matpart/
 MANSEC    = DM
 SUBMANSEC =
 

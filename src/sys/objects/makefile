@@ -6,7 +6,6 @@ SOURCEH	  = ../../../include/petscoptions.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = f2003-src cxx kokkos device
-LOCDIR	  = src/sys/objects/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

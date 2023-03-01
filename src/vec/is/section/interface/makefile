@@ -4,7 +4,6 @@ SOURCEH	  =
 SOURCEC   = section.c sectionhdf5.c
 LIBBASE	  = libpetscvec
 DIRS	    =
-LOCDIR    = src/vec/is/section/interface/
 MANSEC    = Vec
 SUBMANSEC = PetscSection
 

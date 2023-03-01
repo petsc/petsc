@@ -1,6 +1,5 @@
 -include ../../../../../../../petscdir.mk
 
-LOCDIR          = src/dm/dt/space/impls/ptrimmed/tests/
 MANSEC          = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

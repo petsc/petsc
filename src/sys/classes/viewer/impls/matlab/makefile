@@ -7,7 +7,6 @@ SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Viewer
 LIBBASE	  = libpetscsys
-LOCDIR	  = src/sys/classes/viewer/impls/matlab/
 DIRS      =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

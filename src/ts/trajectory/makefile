@@ -2,7 +2,6 @@
 
 SOURCEH  =
 DIRS     = interface utils impls
-LOCDIR   = src/ts/trajectory/
 MANSEC   = TS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

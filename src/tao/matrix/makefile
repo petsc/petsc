@@ -6,7 +6,6 @@ SOURCEH  = submatfree.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 DIRS     =
-LOCDIR   = src/tao/matrix/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

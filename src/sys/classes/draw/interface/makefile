@@ -6,7 +6,6 @@ SOURCEH   =
 LIBBASE   = libpetscsys
 MANSEC    = Sys
 SUBMANSEC = Draw
-LOCDIR    = src/sys/classes/draw/interface/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

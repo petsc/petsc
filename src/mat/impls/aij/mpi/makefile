@@ -6,7 +6,6 @@ SOURCEH	 = mpiaij.h
 LIBBASE	 = libpetscmat
 DIRS	   = superlu_dist mumps aijperm aijmkl aijsell crl pastix mpicusparse mpihipsparse mpiviennacl mpiviennaclcuda clique mkl_cpardiso strumpack kokkos
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/aij/mpi/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

@@ -5,7 +5,6 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetsctao
 MANSEC   = Tao
-LOCDIR   = src/tao/interface/
 
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

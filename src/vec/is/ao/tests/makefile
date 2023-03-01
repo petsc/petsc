@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-LOCDIR          = src/vec/is/ao/tests/
 DIRS            = ex3d
 MANSEC          = Vec
 

@@ -5,7 +5,6 @@ SOURCEF  =
 SOURCEH  = bnk.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
-LOCDIR   = src/tao/bound/impls/bnk/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

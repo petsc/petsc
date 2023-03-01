@@ -4,7 +4,6 @@
 # See also conf for additional commands.
 #
 ALL: all
-LOCDIR	 = ./
 DIRS	 = src include tutorials interfaces share/petsc/matlab
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set

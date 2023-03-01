@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR          = src/mat/tutorials/
 MANSEC          = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

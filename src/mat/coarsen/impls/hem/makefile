@@ -3,7 +3,6 @@
 SOURCEC   = hem.c
 SOURCEH   =
 LIBBASE   = libpetscmat
-LOCDIR    = src/mat/coarsen/impls/hem/
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
 

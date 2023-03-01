@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/ts/tutorials/hybrid/
 MANSEC          = TS
 DIRS            =
 

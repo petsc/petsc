@@ -4,7 +4,6 @@ SOURCEH	  = ../../../../include/petsc/private/sectionimpl.h ../../../../include/
 SOURCEC   =
 LIBBASE	  = libpetscvec
 DIRS	    = interface
-LOCDIR    = src/vec/is/section/
 MANSEC    = Vec
 SUBMANSEC = PetscSection
 

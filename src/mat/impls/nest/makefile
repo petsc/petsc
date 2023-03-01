@@ -5,7 +5,6 @@ SOURCEF  =
 SOURCEH  = matnestimpl.h
 LIBBASE  = libpetscmat
 DIRS     =
-LOCDIR   = src/mat/impls/nest/
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -2,7 +2,6 @@
 
 SOURCEH   = pfimpl.h ../../../include/petscpf.h
 DIRS      = interface impls
-LOCDIR    = src/vec/pf/
 MANSEC    = Vec
 SUBMANSEC = PF
 

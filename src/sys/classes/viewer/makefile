@@ -2,7 +2,6 @@
 
 SOURCEH   = ../../../../include/petscviewer.h ../../../../include/petscviewertypes.h ../../../../include/petsc/private/viewerimpl.h
 DIRS      = impls tests tutorials interface
-LOCDIR    = src/sys/classes/viewer/
 MANSEC    = Sys
 SUBMANSEC = Viewer
 

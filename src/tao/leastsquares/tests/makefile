@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR		 = src/tao/leastsquares/tests/
 MANSEC		 = Tao
 DOCS		 =
 DIRS		 =

@@ -7,7 +7,6 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = PetscSF
-LOCDIR   = src/vec/is/sf/impls/basic/hip
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

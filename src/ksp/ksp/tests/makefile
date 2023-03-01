@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR    = src/ksp/ksp/tests/
 DIRS       = benchmarkscatters raja
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

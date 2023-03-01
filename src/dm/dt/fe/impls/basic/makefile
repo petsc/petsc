@@ -4,7 +4,6 @@ SOURCEC   = febasic.c
 SOURCEF   =
 LIBBASE   = libpetscdm
 DIRS      =
-LOCDIR    = src/dm/dt/fe/impls/basic/
 MANSEC    = DM
 SUBMANSEC = FE
 

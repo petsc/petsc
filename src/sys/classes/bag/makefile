@@ -6,7 +6,6 @@ SOURCEH	  = ../../../../include/petscbag.h ../../../../include/petsc/private/bag
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = f2003-src
-LOCDIR	  = src/sys/classes/bag/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

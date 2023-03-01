@@ -6,7 +6,6 @@ SOURCEF  =
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/tsirm/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

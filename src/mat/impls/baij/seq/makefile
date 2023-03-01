@@ -6,7 +6,6 @@ SOURCEH  = baij.h
 LIBBASE  = libpetscmat
 DIRS     = ftn-kernels baijmkl
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/baij/seq/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

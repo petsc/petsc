@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR		 = src/snes/tutorials/
 MANSEC           = SNES
 EXAMPLESMATLAB   = ex5m.m ex29view.m
 DIRS		 = ex10d network

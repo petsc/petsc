@@ -6,7 +6,6 @@ SOURCEH	  = ../../../include/petscctable.h ../../../include/petsc/private/genera
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = ftn-kernels
-LOCDIR	  = src/sys/utils/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

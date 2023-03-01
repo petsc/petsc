@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
 
-LOCDIR           = src/snes/tutorials/network/power/
 OBJECTS_PF       = PFReadData.o pffunctions.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

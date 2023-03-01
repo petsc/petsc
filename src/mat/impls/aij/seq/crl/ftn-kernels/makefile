@@ -11,7 +11,6 @@ SOURCEF90= fmultcrl.F90
 SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
-LOCDIR   = src/mat/impls/aij/seq/crl/ftn-kernels/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

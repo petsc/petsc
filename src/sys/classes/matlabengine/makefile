@@ -7,7 +7,6 @@ SOURCEF	  =
 SOURCEH	  = ../../../../include/petscmatlab.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-LOCDIR	  = src/sys/classes/matlabengine/
 DIRS      =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -11,7 +11,6 @@ SOURCEF90= fsolvebaij.F90
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
-LOCDIR   = src/mat/impls/baij/seq/ftn-kernels/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -5,7 +5,6 @@ SOURCEC  = da2.c da1.c da3.c daghost.c dacorn.c dagtol.c daltol.c daindex.c dasc
 SOURCEH  = ../../../../include/petsc/private/dmdaimpl.h ../../../../include/petscdmda.h ../../../../include/petscdmdatypes.h ../../../../include/petscdmda_kokkos.hpp
 LIBBASE  = libpetscdm
 DIRS     = usfft hypre kokkos tests
-LOCDIR   = src/dm/impls/da/
 MANSEC   = DM
 SUBMANSEC= DMDA
 

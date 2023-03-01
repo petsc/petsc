@@ -6,7 +6,6 @@ SOURCEF  =
 LIBBASE  = libpetscksp
 DIRS     = pipegcr
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/gcr/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

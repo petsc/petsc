@@ -6,7 +6,6 @@ SOURCEF90= fcopy.F90
 SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
-LOCDIR   = src/sys/utils/ftn-kernels/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

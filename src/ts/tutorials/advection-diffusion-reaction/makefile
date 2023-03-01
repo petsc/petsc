@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/ts/tutorials/advection-diffusion-reaction/
 MANSEC          = TS
 DIRS            =
 CLEANFILES      = TS-data-*

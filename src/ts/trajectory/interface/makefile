@@ -3,7 +3,6 @@
 SOURCEC  = traj.c
 SOURCEH  =
 DIRS     =
-LOCDIR   = src/ts/trajectory/interface/
 MANSEC   = TS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

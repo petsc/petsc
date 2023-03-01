@@ -2,7 +2,6 @@
 
 SOURCEH  =
 DIRS     = interface impls
-LOCDIR   = src/ts/adapt/
 MANSEC   = TS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

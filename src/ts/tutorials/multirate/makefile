@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/ts/tutorials/multirate/
 MANSEC          = TS
 OBJECTS_FV      = finitevolume1d.o
 

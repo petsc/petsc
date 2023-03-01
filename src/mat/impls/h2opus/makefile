@@ -7,7 +7,6 @@ SOURCEH   =
 LIBBASE   = libpetscmat
 DIRS      = cuda
 MANSEC    = Mat
-LOCDIR    = src/mat/impls/h2opus/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

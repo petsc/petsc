@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/ts/tutorials/eimex/
 MANSEC          = TS
 DIRS            =
 CLEANFILES      = ct_vdp_imex allen_cahn eimex_nonstiff_vdp.txt

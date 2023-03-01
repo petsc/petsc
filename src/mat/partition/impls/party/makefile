@@ -5,7 +5,6 @@ CPPFLAGS  = ${PARTY_INCLUDE}
 SOURCEC   = party.c
 SOURCEH   =
 LIBBASE   = libpetscmat
-LOCDIR    = src/mat/partition/impls/party/
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
 

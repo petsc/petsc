@@ -6,7 +6,6 @@ SOURCEF  =
 SOURCEH  =
 MANSEC   = Sys
 LIBBASE  = libpetscsys
-LOCDIR   = src/sys/objects/cxx/
 DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

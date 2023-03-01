@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
 
-LOCDIR        = src/snes/tutorials/network/water/
 OBJECTS_WATER = waterreaddata.o waterfunctions.o water.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

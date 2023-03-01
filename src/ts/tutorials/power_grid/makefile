@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/ts/tutorials/power_grid/
 MANSEC          = TS
 DIRS            = stability_9bus
 CLEANFILES      = TS-data-*
