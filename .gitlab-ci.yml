@@ -1119,6 +1119,8 @@ docs-review:
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/html/index.html
+    auto_stop_in: one week
+    deployment_tier: development
   artifacts:
     paths:
       - public
