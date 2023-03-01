@@ -125,27 +125,9 @@ int main(int argc, char **args)
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
 
-  /*
-     Create parallel vectors.
-      - We form 1 vector from scratch and then duplicate as needed.
-      - When using VecCreate(), VecSetSizes and VecSetFromOptions()
-        in this example, we specify only the
-        vector's global dimension; the parallel partitioning is determined
-        at runtime.
-      - When solving a linear system, the vectors and matrices MUST
-        be partitioned accordingly.  PETSc automatically generates
-        appropriately partitioned matrices and vectors when MatCreate()
-        and VecCreate() are used with the same communicator.
-      - The user can alternatively specify the local vector and matrix
-        dimensions when more sophisticated partitioning is needed
-        (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
-        below).
-  */
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
-  PetscCall(VecSetSizes(u, PETSC_DECIDE, m * n));
-  PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u, &b));
-  PetscCall(VecDuplicate(b, &x));
+  /* Create parallel vectors */
+  PetscCall(MatCreateVecs(A, &u, &b));
+  PetscCall(VecDuplicate(u, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -480,44 +462,64 @@ int main(int argc, char **args)
       args: -use_mumps_ch -mat_type sbaij -mat_mumps_use_omp_threads
       output_file: output/ex52_1.out
 
-   test:
-      suffix: strumpack
+   testset:
+      suffix: strumpack_2
+      nsize: {{1 2}}
       requires: strumpack
       args: -use_strumpack_lu
       output_file: output/ex52_3.out
 
-   test:
-      suffix: strumpack_2
-      nsize: 2
-      requires: strumpack
-      args: -use_strumpack_lu
-      output_file: output/ex52_3.out
+      test:
+        suffix: aij
+        args: -mat_type aij
+
+      test:
+        requires: kokkos_kernels
+        suffix: kok
+        args: -mat_type aijkokkos
+
+      test:
+        requires: cuda
+        suffix: cuda
+        args: -mat_type aijcusparse
+
+      test:
+        requires: hip
+        suffix: hip
+        args: -mat_type aijhipsparse
 
    test:
       suffix: strumpack_ilu
+      nsize: {{1 2}}
       requires: strumpack
       args: -use_strumpack_ilu
       output_file: output/ex52_3.out
 
-   test:
-      suffix: strumpack_ilu_2
-      nsize: 2
-      requires: strumpack
-      args: -use_strumpack_ilu
-      output_file: output/ex52_3.out
-
-   test:
-      suffix: superlu
-      requires: superlu superlu_dist
-      args: -use_superlu_lu
-      output_file: output/ex52_2.out
-
-   test:
+   testset:
       suffix: superlu_dist
-      nsize: 2
+      nsize: {{1 2}}
       requires: superlu superlu_dist
       args: -use_superlu_lu
       output_file: output/ex52_2.out
+
+      test:
+        suffix: aij
+        args: -mat_type aij
+
+      test:
+        requires: kokkos_kernels
+        suffix: kok
+        args: -mat_type aijkokkos
+
+      test:
+        requires: cuda
+        suffix: cuda
+        args: -mat_type aijcusparse
+
+      test:
+        requires: hip
+        suffix: hip
+        args: -mat_type aijhipsparse
 
    test:
       suffix: superlu_ilu

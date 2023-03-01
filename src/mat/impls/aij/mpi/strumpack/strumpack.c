@@ -11,19 +11,12 @@ static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A, Vec v)
 
 static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)A->spptr;
-  PetscBool               flg;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)A->data;
 
   PetscFunctionBegin;
   /* Deallocate STRUMPACK storage */
   PetscStackCallExternalVoid("STRUMPACK_destroy", STRUMPACK_destroy(S));
-  PetscCall(PetscFree(A->spptr));
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &flg));
-  if (flg) {
-    PetscCall(MatDestroy_SeqAIJ(A));
-  } else {
-    PetscCall(MatDestroy_MPIAIJ(A));
-  }
+  PetscCall(PetscFree(A->data));
 
   /* clear composed functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
@@ -40,7 +33,7 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
 
 static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReordering reordering)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("STRUMPACK_reordering_method", STRUMPACK_set_reordering_method(*S, (STRUMPACK_REORDERING_STRATEGY)reordering));
@@ -76,7 +69,7 @@ PetscErrorCode MatSTRUMPACKSetReordering(Mat F, MatSTRUMPACKReordering reorderin
 
 static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("STRUMPACK_set_mc64job", STRUMPACK_set_mc64job(*S, cperm ? 5 : 0));
@@ -113,7 +106,7 @@ PetscErrorCode MatSTRUMPACKSetColPerm(Mat F, PetscBool cperm)
 
 static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("STRUMPACK_set_HSS_rel_tol", STRUMPACK_set_HSS_rel_tol(*S, rtol));
@@ -150,7 +143,7 @@ PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F, PetscReal rtol)
 
 static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("STRUMPACK_set_HSS_abs_tol", STRUMPACK_set_HSS_abs_tol(*S, atol));
@@ -187,7 +180,7 @@ PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F, PetscReal atol)
 
 static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmaxrank)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("STRUMPACK_set_HSS_max_rank", STRUMPACK_set_HSS_max_rank(*S, hssmaxrank));
@@ -224,7 +217,7 @@ PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F, PetscInt hssmaxrank)
 
 static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_size)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("STRUMPACK_set_HSS_leaf_size", STRUMPACK_set_HSS_leaf_size(*S, leaf_size));
@@ -261,7 +254,7 @@ PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F, PetscInt leaf_size)
 
 static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hssminsize)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("STRUMPACK_set_HSS_min_sep_size", STRUMPACK_set_HSS_min_sep_size(*S, hssminsize));
@@ -298,7 +291,7 @@ PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F, PetscInt hssminsize)
 
 static PetscErrorCode MatSolve_STRUMPACK(Mat A, Vec b_mpi, Vec x)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)A->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)A->data;
   STRUMPACK_RETURN_CODE   sp_err;
   const PetscScalar      *bptr;
   PetscScalar            *xptr;
@@ -365,23 +358,30 @@ static PetscErrorCode MatView_STRUMPACK(Mat A, PetscViewer viewer)
 
 static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactorInfo *info)
 {
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->data;
   STRUMPACK_RETURN_CODE   sp_err;
   Mat_SeqAIJ             *A_d, *A_o;
   Mat_MPIAIJ             *mat;
   PetscInt                M = A->rmap->N, m = A->rmap->n;
   PetscBool               flg;
+  const PetscScalar      *A_d_a, *A_o_a;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &flg));
-  if (flg) { /* A is MATMPIAIJ */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &flg));
+  if (flg) { /* A might be MATMPIAIJCUSPARSE etc */
     mat = (Mat_MPIAIJ *)A->data;
+    PetscCall(MatSeqAIJGetArrayRead(mat->A, &A_d_a)); /* Make sure mat is sync'ed to host */
+    PetscCall(MatSeqAIJGetArrayRead(mat->B, &A_o_a));
     A_d = (Mat_SeqAIJ *)(mat->A)->data;
     A_o = (Mat_SeqAIJ *)(mat->B)->data;
-    PetscStackCallExternalVoid("STRUMPACK_set_MPIAIJ_matrix", STRUMPACK_set_MPIAIJ_matrix(*S, &m, A_d->i, A_d->j, A_d->a, A_o->i, A_o->j, A_o->a, mat->garray));
-  } else { /* A is MATSEQAIJ */
+    PetscStackCallExternalVoid("STRUMPACK_set_MPIAIJ_matrix", STRUMPACK_set_MPIAIJ_matrix(*S, &m, A_d->i, A_d->j, A_d_a, A_o->i, A_o->j, A_o_a, mat->garray));
+    PetscCall(MatSeqAIJRestoreArrayRead(mat->A, &A_d_a));
+    PetscCall(MatSeqAIJRestoreArrayRead(mat->B, &A_o_a));
+  } else { /* A might be MATSEQAIJCUSPARSE etc */
+    PetscCall(MatSeqAIJGetArrayRead(A, &A_d_a));
     A_d = (Mat_SeqAIJ *)A->data;
-    PetscStackCallExternalVoid("STRUMPACK_set_csr_matrix", STRUMPACK_set_csr_matrix(*S, &M, A_d->i, A_d->j, A_d->a, 0));
+    PetscStackCallExternalVoid("STRUMPACK_set_csr_matrix", STRUMPACK_set_csr_matrix(*S, &M, A_d->i, A_d->j, A_d_a, 0));
+    PetscCall(MatSeqAIJRestoreArrayRead(A, &A_d_a));
   }
 
   /* Reorder and Factor the matrix. */
@@ -409,7 +409,7 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactor
 
 static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
-  STRUMPACK_SparseSolver       *S = (STRUMPACK_SparseSolver *)F->spptr;
+  STRUMPACK_SparseSolver       *S = (STRUMPACK_SparseSolver *)F->data;
   PetscBool                     flg, set;
   PetscReal                     ctol;
   PetscInt                      hssminsize, max_rank, leaf_size;
@@ -524,14 +524,14 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   /* Create the factorization matrix */
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
   PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, M, N));
-  PetscCall(MatSetType(B, ((PetscObject)A)->type_name));
-  PetscCall(MatSeqAIJSetPreallocation(B, 0, NULL));
-  PetscCall(MatMPIAIJSetPreallocation(B, 0, NULL, 0, NULL));
+  PetscCall(PetscStrallocpy("strumpack", &((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
   B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
+  B->ops->getinfo     = MatGetInfo_External;
   B->ops->view        = MatView_STRUMPACK;
   B->ops->destroy     = MatDestroy_STRUMPACK;
   B->ops->getdiagonal = MatGetDiagonal_STRUMPACK;
@@ -545,9 +545,9 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetHSSMinSepSize_C", MatSTRUMPACKSetHSSMinSepSize_STRUMPACK));
   B->factortype = ftype;
   PetscCall(PetscNew(&S));
-  B->spptr = S;
+  B->data = S;
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &flg));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &flg)); /* A might be MATSEQAIJCUSPARSE */
   iface = flg ? STRUMPACK_MT : STRUMPACK_MPI_DIST;
 
   PetscOptionsBegin(PetscObjectComm((PetscObject)B), ((PetscObject)B)->prefix, "STRUMPACK Options", "Mat");
