@@ -3263,7 +3263,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
 
   try {
     PetscCall(VecCUDAGetArrayRead(xx, (const PetscScalar **)&xarray));
-    if (yy == zz) PetscCall(VecCUDAGetArray(zz, &zarray)); /* read & write zz, so need to get uptodate zarray on GPU */
+    if (yy == zz) PetscCall(VecCUDAGetArray(zz, &zarray)); /* read & write zz, so need to get up-to-date zarray on GPU */
     else PetscCall(VecCUDAGetArrayWrite(zz, &zarray));     /* write zz, so no need to init zarray on GPU */
 
     PetscCall(PetscLogGpuTimeBegin());

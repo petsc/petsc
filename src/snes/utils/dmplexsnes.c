@@ -1383,7 +1383,7 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 - user - The user context
 
   Output Parameter:
-. F    - lcoal output vector
+. F    - local output vector
 
   Level: developer
 

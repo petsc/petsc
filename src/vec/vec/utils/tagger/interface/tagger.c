@@ -7,7 +7,7 @@
    vector, though implementations that do not follow this intent are possible.
 
    Once a VecTagger is created (VecTaggerCreate()), optionally modified by options (VecTaggerSetFromOptions()), and
-   set up (VecTaggerSetUp()), it is applied to vectors with VecTaggerComputeIS() to comute the selected index sets.
+   set up (VecTaggerSetUp()), it is applied to vectors with VecTaggerComputeIS() to compute the selected index sets.
 
    In many cases, the selection criteria for an index is whether the corresponding value falls within a collection of
    boxes: for this common case, VecTaggerCreateBoxes() can also be used to determine those boxes.

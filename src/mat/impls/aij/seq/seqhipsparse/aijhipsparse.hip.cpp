@@ -3063,7 +3063,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
   compressed = matstruct->cprowIndices ? PETSC_TRUE : PETSC_FALSE;
   try {
     PetscCall(VecHIPGetArrayRead(xx, (const PetscScalar **)&xarray));
-    if (yy == zz) PetscCall(VecHIPGetArray(zz, &zarray)); /* read & write zz, so need to get uptodate zarray on GPU */
+    if (yy == zz) PetscCall(VecHIPGetArray(zz, &zarray)); /* read & write zz, so need to get up-to-date zarray on GPU */
     else PetscCall(VecHIPGetArrayWrite(zz, &zarray));     /* write zz, so no need to init zarray on GPU */
 
     PetscCall(PetscLogGpuTimeBegin());

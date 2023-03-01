@@ -275,7 +275,7 @@ M*/
    Note:
    Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
-.seealso: MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
+.seealso: `MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
 @*/
 PetscErrorCode MatSubMatrixVirtualUpdate(Mat N, Mat A, IS isrow, IS iscol)
 {

@@ -538,7 +538,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   on the input `IS` list are assumed to be in a "deadlock-free" order.
 
   Local lists of `PetscObject`s (or their subcomms) on a comm are "deadlock-free" if subcomm1
-  preceeds subcomm2 on any local list, then it preceeds subcomm2 on all ranks.
+  precedes subcomm2 on any local list, then it precedes subcomm2 on all ranks.
   Equivalently, the local numbers of the subcomms on each local list are drawn from some global
   numbering. This is ensured, for example, by `ISPairToList()`.
 

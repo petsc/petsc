@@ -749,17 +749,22 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObjec
 
    Synopsis:
    #include "petscsys.h"
-   PetscErrorCode  PetscOptionsBoundInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt bound)
+   PetscErrorCode  PetscOptionsBoundedInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt bound)
 
    Input Parameters:
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsInt(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsInt(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+  PetscOptionsInt(..., obj->value,&obj->value,...)
+.ve
+or
+.vb
+  value = defaultvalue
+  PetscOptionsInt(..., value,&value,&flg);
+  if (flg) {
+.ve
 -  bound - the requested value should be greater than or equal this bound or an error is generated
 
    Output Parameters:
