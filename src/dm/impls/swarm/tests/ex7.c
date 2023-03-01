@@ -304,27 +304,15 @@ PetscErrorCode go()
   PetscCall(PetscLogEventBegin(solve_ev, 0, 0, 0, 0));
   /* Create particle swarm */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, createSwarm(dm_t[tid], &sw_t[tid]));
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, createSwarm(dm_t[tid], &sw_t[tid]));
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
   /* Project field to particles */
   /*   This gives f_p = M_p^+ M f */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, gridToParticles(dm_t[tid], sw_t[tid], (tid == target) ? moments_1 : NULL, rhs_t[tid], M_p_t[tid]));
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, gridToParticles(dm_t[tid], sw_t[tid], (tid == target) ? moments_1 : NULL, rhs_t[tid], M_p_t[tid]));
   /* Cleanup */
   for (int tid = 0; tid < numthreads; tid++) {
     PetscCall(MatDestroy(&M_p_t[tid]));

@@ -325,8 +325,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
       }     // fake threads
       /* Create particle swarm */
       PetscPragmaOMP(parallel for)
-        for (int tid=0; tid<numthreads; tid++)
-      {
+      for (int tid = 0; tid < numthreads; tid++) {
         const PetscInt b_id = b_id_0 + tid;
         if ((glb_b_id = global_batch_id + b_id) < NUserV) { // the ragged edge of the last batch
           //PetscCall(PetscInfo(pack,"Create swarms for 'glob' index %" PetscInt_FMT " create swarm\n",glb_b_id));
@@ -351,8 +350,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
       PetscCall(ierr);
       // p --> g: make globMpArray & set X
       PetscPragmaOMP(parallel for)
-        for (int tid=0; tid<numthreads; tid++)
-      {
+      for (int tid = 0; tid < numthreads; tid++) {
         const PetscInt b_id = b_id_0 + tid;
         if ((glb_b_id = global_batch_id + b_id) < NUserV) {
           for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { // add same particels for all grids
@@ -395,8 +393,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
     for (PetscInt b_id_0 = 0; b_id_0 < ctx->batch_sz; b_id_0 += numthreads) {
       PetscCall(PetscInfo(pack, "g2p: global batch %" PetscInt_FMT " of %" PetscInt_FMT ", Landau batch %" PetscInt_FMT " of %" PetscInt_FMT ": map back to particles\n", global_batch_id + 1, NUserV, b_id_0 + 1, ctx->batch_sz));
       PetscPragmaOMP(parallel for)
-        for (int tid=0; tid<numthreads; tid++)
-      {
+      for (int tid = 0; tid < numthreads; tid++) {
         const PetscInt b_id = b_id_0 + tid;
         if ((glb_b_id = global_batch_id + b_id) < NUserV) {
           for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { // add same particels for all grids
