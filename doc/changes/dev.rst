@@ -15,7 +15,7 @@ Changes: Development
 
 .. rubric:: Configure/Build:
 
-- Remove unused preprocessor variables ``PETSC_HAVE_VPRINTF_CHAR``, ``PETSC_HAVE_VFPRINTF_CHAR``, ``PETSC_STAT_MACROS_BROKEN``, ``PETSC_HAVE_FORTRAN_GETARG``, ``PETSC_uid_t``, ``PETSC_gid_t``, ``PETSC_HAVE_PTHREAD_BARRIER_T``, ``PETSC_HAVE_SCHED_CPU_SET_T``, ``PETSC_HAVE_SYS_SYSCTL_H``, ``PETSC_HAVE_SYS_SYSINFO_H``, and ``PETSC_HAVE_SYSINFO_3ARG``
+- Remove unused preprocessor variables ``PETSC_HAVE_VPRINTF_CHAR``, ``PETSC_HAVE_VFPRINTF_CHAR``, ``PETSC_STAT_MACROS_BROKEN``, ``PETSC_HAVE_FORTRAN_GETARG``, ``PETSC_uid_t``, ``PETSC_gid_t``, ``PETSC_HAVE_PTHREAD_BARRIER_T``, ``PETSC_HAVE_SCHED_CPU_SET_T``, ``PETSC_HAVE_SYS_SYSCTL_H``, ``PETSC_HAVE_SYS_SYSINFO_H``, ``PETSC_HAVE_SYSINFO_3ARG``, ``PETSC_SIZEOF_SHORT``, and ``PETSC_SIZEOF_ENUM``
 - Deprecate ``--with-gcov`` configure option in favor of ``--with-coverage``
 - Add ``--with-coverage-exec`` configure option to specify the coverage-collection tool to be used e.g. ``gcov`` or ``/path/to/llvm-cov-15``
 - Add ``--with-strict-petscerrorcode`` configure option to enable compile-time checking for correct usage of ``PetscErrorCode``, see below

@@ -489,6 +489,7 @@ static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &m
 
   PetscFunctionBegin;
   PetscCall(DEBUG_INFO("new mode (%s) COMPATIBLE with %s mode (%s), no need to serialize\n", PetscMemoryAccessModeToString(mode), object_dependencies.empty() ? "default" : "old", PetscMemoryAccessModeToString(marked.mode)));
+  (void)mode;
   if (it != end) {
     using std::swap;
 
@@ -536,6 +537,7 @@ static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectM
   swap(last_write, last_dep);
   if (last_write_was_also_us) {
     PetscCall(DEBUG_INFO("we were also the last write event (intent %s), updating\n", PetscMemoryAccessModeToString(mode)));
+    (void)mode;
     // we are both the last to write *and* the last to leave a write event. This is the
     // fast path, we only need to update the frame and update the recorded event
     swap(last_dep.frame(), frame);

@@ -265,11 +265,11 @@ static PetscErrorCode ADMMInternalHessianUpdate(Mat H, Mat Constraint, PetscBool
 
 /* Updates Hessian - adds second derivative of augmented Lagrangian
  * H \gets H + \rho*ATA
- * Here, \rho does not change in TAO_ADMM_UPDATE_BASIC - thus no-op
- * For ADAPTAIVE,ADAPTIVE_RELAXED,
- * H \gets H + (\rho-\rhoold)*ATA
- * Here, we assume that A is linear constraint i.e., doesnt change.
- * Thus, for both ADAPTIVE, and RELAXED, ATA matrix is pre-set (except for A=I (null case)) see TaoSetUp_ADMM */
+  Here, \rho does not change in TAO_ADMM_UPDATE_BASIC - thus no-op
+  For ADAPTAIVE,ADAPTIVE_RELAXED,
+  H \gets H + (\rho-\rhoold)*ATA
+  Here, we assume that A is linear constraint i.e., does not change.
+  Thus, for both ADAPTIVE, and RELAXED, ATA matrix is pre-set (except for A=I (null case)) see TaoSetUp_ADMM */
 static PetscErrorCode SubHessianUpdate(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   Tao       parent = (Tao)ptr;

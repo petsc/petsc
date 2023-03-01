@@ -38,7 +38,7 @@
        window to see  the correct colors. This options forces
        PETSc to use the default colormap which will usually result
        in bad contour plots.
-.  -draw_fast - Does not create colormap for countour plots.
+.  -draw_fast - Does not create colormap for contour plots.
 .  -draw_double_buffer - Uses double buffering for smooth animation.
 -  -geometry - Indicates location and size of window.
 

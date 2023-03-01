@@ -66,7 +66,7 @@ typedef struct {
      require (much) less memory.
 
   spbas_memory_requirement:
-     Calculate the number of bytes needed to store tha matrix
+     Calculate the number of bytes needed to store the matrix
 
   spbas_incomplete_cholesky:
      Incomplete Cholesky decomposition

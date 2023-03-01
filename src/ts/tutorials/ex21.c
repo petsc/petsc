@@ -288,7 +288,7 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
 
 /* --------------------------------------------------------------------- */
 /*
-  SetBounds - Sets the lower and uper bounds on the interior points
+  SetBounds - Sets the lower and upper bounds on the interior points
 
   Input parameters:
   xl - vector of lower bounds

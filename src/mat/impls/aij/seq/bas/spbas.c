@@ -24,7 +24,7 @@ M*/
 
 /*
   spbas_memory_requirement:
-    Calculate the number of bytes needed to store tha matrix
+    Calculate the number of bytes needed to store the matrix
 */
 size_t spbas_memory_requirement(spbas_matrix matrix)
 {

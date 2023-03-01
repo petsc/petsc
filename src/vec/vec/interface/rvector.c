@@ -2273,7 +2273,7 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will aways return
+   VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will always return
     a device pointer to the device memory that contains this processor's portion of the vector data.
 
    Not Collective; No Fortran Support

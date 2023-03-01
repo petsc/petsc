@@ -6,7 +6,7 @@
    Collective
 
    Input Parameters:
-+  tao - the optimation solver (Tao) context.
++  tao - the optimization solver (Tao) context.
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
@@ -31,7 +31,7 @@ PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
    Not collective
 
    Input Parameter:
-.  tao - the optimation solver (Tao) context.
+.  tao - the optimization solver (Tao) context.
 
    Output Parameter:
 .  pyname - full dotted Python name [package].module[.{class|function}]

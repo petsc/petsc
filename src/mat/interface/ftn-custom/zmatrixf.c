@@ -712,7 +712,7 @@ PETSC_EXTERN void matcreatesubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol
 
   if (*scall == MAT_INITIAL_MATRIX) {
     *ierr = MatCreateSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
-    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data struc */
+    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data structure */
       smat[i] = lsmat[i];
     }
     *ierr = PetscFree(lsmat);
@@ -733,7 +733,7 @@ PETSC_EXTERN void matcreatesubmatricesmpi_(Mat *mat,PetscInt *n,IS *isrow,IS *is
 
   if (*scall == MAT_INITIAL_MATRIX) {
     *ierr = MatCreateSubMatricesMPI(*mat,*n,isrow,iscol,*scall,&lsmat);
-    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data struc */
+    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data structure */
       smat[i] = lsmat[i];
     }
     *ierr = PetscFree(lsmat);
