@@ -6,7 +6,6 @@ SOURCECU = hpddm.cu
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
-LOCDIR   = src/ksp/ksp/impls/hpddm/cuda/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
