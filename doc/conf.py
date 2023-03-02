@@ -92,7 +92,13 @@ html_theme = 'pydata_sphinx_theme'
 html_logo_light = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc-TAO', 'web', 'PETSc-TAO_RGB.svg')
 html_logo_dark = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc-TAO', 'web', 'PETSc-TAO_RGB_white.svg')
 
-html_static_path = [html_logo_light, html_logo_dark]
+html_static_path = ['_static', html_logo_light, html_logo_dark]
+
+# use much smaller font for h1, h2 etc. They are absurdly large in the standard style
+# https://pydata-sphinx-theme.readthedocs.io/en/v0.12.0/user_guide/styling.html
+html_css_files = [
+    'css/custom.css',
+]
 
 html_theme_options = {
     "icon_links": [
