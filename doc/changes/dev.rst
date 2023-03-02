@@ -101,6 +101,8 @@ Changes: Development
 
   While currently opt-in, this feature **will be enabled by default in a future release**. Users are highly encourage to enable it and fix any discrepancies before that point. Note that ``PETSC_SUCCESS`` is defined whether or not the feature is enabled, so users may incrementally update.
 
+- Add ``PetscFFlush()``
+
 .. rubric:: Event Logging:
 
 .. rubric:: PetscViewer:

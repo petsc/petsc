@@ -422,13 +422,10 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
 @*/
 PetscErrorCode PetscInfoDestroy(void)
 {
-  int err;
-
   PetscFunctionBegin;
   PetscCall(PetscInfoAllow(PETSC_FALSE));
   PetscCall(PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames));
-  err = fflush(PetscInfoFile);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+  PetscCall(PetscFFlush(PetscInfoFile));
   if (PetscInfoFilename) PetscCall(PetscFClose(PETSC_COMM_SELF, PetscInfoFile));
   PetscCall(PetscFree(PetscInfoFilename));
   PetscAssert(PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags) == PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscInfoFlags and PetscInfoNames must be the same size");
@@ -606,7 +603,6 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
     const PetscBool oldflag = PetscLogPrintInfo;
     va_list         Argp;
     PetscMPIInt     urank;
-    int             err;
     char            string[8 * 1024];
     size_t          fullLength, len;
 
@@ -617,8 +613,7 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
     PetscCall(PetscStrlen(string, &len));
     PetscCall(PetscVSNPrintf(string + len, 8 * 1024 - len, message, &fullLength, Argp));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, PetscInfoFile, "%s", string));
-    err = fflush(PetscInfoFile);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    PetscCall(PetscFFlush(PetscInfoFile));
     if (petsc_history) {
       va_start(Argp, message);
       PetscCall((*PetscVFPrintf)(petsc_history, message, Argp));
