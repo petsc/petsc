@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEH   =
 DIRS      = viewer draw matlabengine random bag
 MANSEC    = Sys
 

@@ -2,7 +2,6 @@
 
 SOURCEC  = pgmres.c
 SOURCEH  = pgmresimpl.h
-SOURCEF  =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

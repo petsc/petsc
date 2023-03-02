@@ -2,7 +2,6 @@
 
 SOURCEC  = pipefgmres.c
 SOURCEH  = pipefgmresimpl.h
-SOURCEF  =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

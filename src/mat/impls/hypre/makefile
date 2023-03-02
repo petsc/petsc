@@ -3,10 +3,8 @@
 
 CFLAGS   = ${HYPRE_INCLUDE}
 SOURCEC  = mhypre.c
-SOURCEF  =
 SOURCEH  = mhypre.h
 LIBBASE  = libpetscmat
-DIRS     =
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

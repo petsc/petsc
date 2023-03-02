@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = galerkin.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
 

@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC	  = bag.c
-SOURCEF	  =
 SOURCEH	  = ../../../../include/petscbag.h ../../../../include/petsc/private/bagimpl.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys

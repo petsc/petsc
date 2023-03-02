@@ -1,8 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine 'PETSC_HAVE_CXX'
 
-SOURCEC	  =
-SOURCEF	  =
 SOURCEH	  = impldevicebase.hpp segmentedmempool.hpp
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys

@@ -3,10 +3,7 @@
 
 CFLAGS   = ${MKL_PARDISO_INCLUDE}
 SOURCEC	 = mkl_pardiso.c mkl_utils.c
-SOURCEF	 =
-SOURCEH	 =
 LIBBASE	 = libpetscmat
-DIRS	 =
 MANSEC	 = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -1,10 +1,7 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = pythontao.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetsctao
-DIRS     =
 MANSEC   = Tao
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

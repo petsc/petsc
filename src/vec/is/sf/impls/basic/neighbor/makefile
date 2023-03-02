@@ -1,10 +1,8 @@
 -include ../../../../../../../petscdir.mk
 #requiresdefine 'PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES'
 
-SOURCEH   =
 SOURCEC   = sfneighbor.c
 LIBBASE   = libpetscvec
-DIRS      =
 MANSEC    = Vec
 SUBMANSEC = PetscSF
 

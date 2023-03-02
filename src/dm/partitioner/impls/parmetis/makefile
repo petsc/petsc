@@ -2,10 +2,8 @@
 
 CPPFLAGS  = ${PARMETIS_INCLUDE}
 SOURCEC   = partparmetis.c
-SOURCEH   =
 LIBBASE   = libpetscdm
 MANSEC    = DM
-SUBMANSEC =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

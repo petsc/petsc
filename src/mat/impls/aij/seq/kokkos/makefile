@@ -1,12 +1,9 @@
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 -include ../../../../../../petscdir.mk
 
-SOURCECU      =
 SOURCEKOKKOS  = aijkok.kokkos.cxx
-SOURCEF       =
 SOURCEH       = aijkok.hpp
 LIBBASE       = libpetscmat
-DIRS          =
 MANSEC        = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

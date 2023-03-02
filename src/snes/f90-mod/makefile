@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC	   =
 SOURCEF90  = petscsnesmod.F90
 SOURCEH	   = petscsnes.h petscsnes.h90 petscsnesfas.h
 LIBBASE	   = libpetscsnes

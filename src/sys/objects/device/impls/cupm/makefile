@@ -1,9 +1,7 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUPM'
 
-SOURCEC	  =
 SOURCECXX = cupminterface.cxx cupmblasinterface.cxx cupmdevice.cxx
-SOURCEF	  =
 SOURCEH   = cupmcontext.hpp cupmthrustutility.hpp cupmdevice.hpp cupmallocator.hpp cupmstream.hpp cupmevent.hpp kernels.hpp
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys

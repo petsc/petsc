@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC   = spaceptrimmed.c
-SOURCEF   =
 LIBBASE   = libpetscdm
 DIRS      = tests
 MANSEC    = DM

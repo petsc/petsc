@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  =
-SOURCEF  =
-SOURCEH  =
 DIRS     = triangle tetgen ctetgen
 LIBBASE  = libpetscdm
 MANSEC   = DM

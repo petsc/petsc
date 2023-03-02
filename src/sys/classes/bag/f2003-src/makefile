@@ -2,9 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 #requiresdefine   'PETSC_USING_F2003'
 
-SOURCEC  =
-SOURCEF  =
-SOURCEH  =
 DIRS     = fsrc
 LIBBASE  = libpetscsys
 MANSEC   = Sys

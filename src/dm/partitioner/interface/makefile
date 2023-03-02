@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = partitioner.c partitionerreg.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

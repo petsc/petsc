@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = fetidp.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     =
 MANSEC   = KSP
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

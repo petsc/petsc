@@ -2,8 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = zpartitioner.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

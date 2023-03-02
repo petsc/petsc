@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = fcg.c
-SOURCEF  =
 SOURCEH  = fcgimpl.h
 LIBBASE  = libpetscksp
 DIRS     = pipefcg

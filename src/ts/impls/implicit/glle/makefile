@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = glle.c glleadapt.c
-SOURCEF  =
 SOURCEH  = glle.h
 LIBBASE  = libpetscts
 MANSEC   = TS

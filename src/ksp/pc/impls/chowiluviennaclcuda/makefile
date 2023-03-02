@@ -3,10 +3,7 @@
 #requiresdefine 'PETSC_HAVE_CUDA'
 
 SOURCECU  = chowiluviennacl.cu
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
 

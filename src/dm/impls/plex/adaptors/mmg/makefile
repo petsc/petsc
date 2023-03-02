@@ -2,9 +2,6 @@
 #requirespackage  'PETSC_HAVE_MMG'
 
 SOURCEC  = mmgadapt.c
-SOURCEF  =
-SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

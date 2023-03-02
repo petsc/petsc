@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = none.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
 

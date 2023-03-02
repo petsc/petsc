@@ -2,7 +2,6 @@
 
 CFLAGS    = ${GAMG_INCLUDE}
 SOURCEC   = gamg.c agg.c geo.c util.c classical.c
-SOURCEF   =
 SOURCEH   =  gamg.h
 LIBBASE   = libpetscksp
 MANSEC    = KSP

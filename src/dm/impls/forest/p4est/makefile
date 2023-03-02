@@ -3,8 +3,6 @@
 
 CFLAGS   = ${P4EST_INCLUDE}
 SOURCEC  = dmp4est.c dmp8est.c petsc_p4est_package.c
-SOURCEF  =
-SOURCEH  =
 DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM

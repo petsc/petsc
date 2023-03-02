@@ -1,10 +1,8 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC  = basfactor.c spbas.c
-SOURCEF  =
 SOURCEH  = spbas.h spbas_cholesky.h
 LIBBASE  = libpetscmat
-DIRS     =
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC   = tssen.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscts
 MANSEC    = TS
 SUBMANSEC = Sensitivity

@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = gpcglinesearch.c
-SOURCEF   =
 SOURCEH   = gpcglinesearch.h
 LIBBASE   = libpetsctao
 MANSEC    = Tao

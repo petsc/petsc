@@ -3,10 +3,7 @@
 #requiresdefine 'PETSC_HAVE_CUDA'
 
 SOURCECU  = aijviennaclcuda.cu
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscmat
-DIRS      =
 MANSEC    = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

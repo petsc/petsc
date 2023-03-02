@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = kspmatregi.c dmproject.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscksp
 DIRS     = lmvm schurm
 MANSEC   = KSP

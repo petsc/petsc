@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = vector.c veccreate.c vecreg.c vecregall.c dlregisvec.c rvector.c
-SOURCEF  =
-SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 

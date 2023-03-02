@@ -2,8 +2,6 @@
 #requirespackage   'PETSC_HAVE_CUDA'
 
 SOURCECU = densecuda.cu
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

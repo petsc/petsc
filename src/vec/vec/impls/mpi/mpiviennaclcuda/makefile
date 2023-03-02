@@ -3,8 +3,6 @@
 #requiresdefine 'PETSC_HAVE_CUDA'
 
 SOURCECU = mpiviennaclcuda.cu
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 

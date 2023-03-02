@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = owarmijo.c
-SOURCEF   =
 SOURCEH   = owarmijo.h
 LIBBASE   = libpetsctao
 MANSEC    = Tao

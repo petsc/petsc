@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = slda.c
-SOURCEF   =
 SOURCEH   = slda.h
 LIBBASE   = libpetscts
 MANSEC    = TS

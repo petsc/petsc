@@ -2,8 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = zda1f90.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscdm
 
 

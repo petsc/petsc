@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = bjacobi.c
-SOURCEF   =
 SOURCEH   = bjacobi.h
 LIBBASE   = libpetscksp
 DIRS      = bjkokkos

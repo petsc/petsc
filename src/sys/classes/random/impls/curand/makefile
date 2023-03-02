@@ -3,10 +3,7 @@
 
 SOURCEC  = curand.c
 SOURCECU = curand2.cu
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscsys
-DIRS     =
 MANSEC	 = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

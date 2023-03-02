@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 MANSEC          = TS
-DIRS            =
 CLEANFILES      = TS-data-*
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

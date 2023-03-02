@@ -1,8 +1,5 @@
 -include ../petscdir.mk
 
-SOURCEC	  =
-SOURCEF	  =
-SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = lua

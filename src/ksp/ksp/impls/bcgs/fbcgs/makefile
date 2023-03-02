@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC  = fbcgs.c
-SOURCEF  =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

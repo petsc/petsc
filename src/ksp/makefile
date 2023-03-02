@@ -1,6 +1,5 @@
 -include ../../petscdir.mk
 
-SOURCEH  =
 DIRS     = pc ksp f90-mod
 MANSEC   = KSP
 

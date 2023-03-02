@@ -1,8 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = alpha1.c alpha2.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = TS
 

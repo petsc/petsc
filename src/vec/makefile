@@ -1,6 +1,5 @@
 -include ../../petscdir.mk
 
-SOURCEH  =
 DIRS     = vec is pf f90-mod
 MANSEC   = Vec
 

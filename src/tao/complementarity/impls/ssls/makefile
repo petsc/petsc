@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = ssls.c ssils.c ssfls.c
-SOURCEF  =
 SOURCEH  = ssls.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao

@@ -1,10 +1,8 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = deflation.c deflationspace.c
-SOURCEF   =
 SOURCEH   = deflation.h
 LIBBASE   = libpetscksp
-DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
 

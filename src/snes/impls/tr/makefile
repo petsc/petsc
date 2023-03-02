@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = tr.c
-SOURCEF  =
 SOURCEH  = trimpl.h
 LIBBASE  = libpetscsnes
 MANSEC   = SNES

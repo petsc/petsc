@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  =
 SOURCEF90= f90_fwrap.F90
-SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

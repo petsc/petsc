@@ -1,10 +1,8 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = mpidense.c mmdense.c
-SOURCEF  =
 SOURCEH  = mpidense.h
 LIBBASE  = libpetscmat
-DIRS     =
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

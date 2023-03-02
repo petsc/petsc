@@ -3,8 +3,6 @@
 
 CFLAGS   = ${CGNS_INCLUDE}
 SOURCEC  = plexcgns2.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

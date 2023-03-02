@@ -2,9 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = zdmshellf.c
-SOURCEF  =
-SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscdm
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

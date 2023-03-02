@@ -2,7 +2,6 @@
 
 DIRS     = cuda hip
 SOURCEC  = dense.c densehdf5.c
-SOURCEF  =
 SOURCEH  = dense.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat

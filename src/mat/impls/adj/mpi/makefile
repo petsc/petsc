@@ -1,10 +1,8 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = mpiadj.c
-SOURCEF  =
 SOURCEH  = mpiadj.h
 LIBBASE  = libpetscmat
-DIRS     =
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

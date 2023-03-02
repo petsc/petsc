@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = fas.c fasgalerkin.c fasfunc.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 SUBMANSEC= SNESFAS

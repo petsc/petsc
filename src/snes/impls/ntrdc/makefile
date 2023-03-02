@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = ntrdc.c
-SOURCEF  =
 SOURCEH  = ntrdcimpl.h
 LIBBASE  = libpetscsnes
 MANSEC   = SNES

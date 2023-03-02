@@ -3,7 +3,6 @@
 
 CPPFLAGS  = ${CHACO_INCLUDE}
 SOURCEC   = chaco.c
-SOURCEH   =
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_SUNDIALS2'
 
 SOURCEC  = sundials.c
-SOURCEF  =
 SOURCEH  = sundials.h
 LIBBASE  = libpetscts
 MANSEC   = TS

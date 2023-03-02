@@ -1,10 +1,8 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = kaij.c
-SOURCEF  =
 SOURCEH  = kaij.h
 LIBBASE  = libpetscmat
-DIRS     =
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresscalar    real
 
-SOURCEH  =
 DIRS     = impls tutorials
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
