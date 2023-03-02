@@ -10,12 +10,12 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    'CC=icc',
-    'CXX=icpc',
-    'FC=ifort',
+    'CC=icx',
+    'CXX=icpx',
+    'FC=ifx',
     # Intel compilers enable GCC/clangs equivalent of -ffast-math *by default*. This is
     # bananas, so we make sure they use the same model as everyone else
-    'COPTFLAGS=-g -O -fp-model=precise',
+    'COPTFLAGS=-g -O -fp-model=precise -Wno-deprecated-non-prototype -Wno-implicit-int -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wincompatible-function-pointer-types -Wno-unused-result',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O -fp-model=precise',
     '--with-scalar-type=complex',

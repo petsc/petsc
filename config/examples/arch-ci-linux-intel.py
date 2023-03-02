@@ -10,9 +10,9 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    'CC=icc',
-    'CXX=icpc',
-    'FC=ifort',
+    'CC=icx',
+    'CXX=icpx',
+    'FC=ifx',
     # Intel compilers enable GCC/clangs equivalent of -ffast-math *by default*. This is
     # bananas, so we make sure they use the same model as everyone else
     'COPTFLAGS=-g -O -fp-model=precise',

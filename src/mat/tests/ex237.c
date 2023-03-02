@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     PetscCall(MatConvert(A, MATSEQAIJ, convert ? MAT_INITIAL_MATRIX : MAT_INPLACE_MATRIX, &E));
     PetscCall(MatSetOption(E, MAT_SYMMETRIC, PETSC_TRUE));
     for (PetscInt i = 0; i < ntype; ++i) {
-      char        *tmp;
+      char        *tmp = NULL;
       PetscInt    *ia_ptr, *ja_ptr, k;
       PetscScalar *a_ptr;
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)

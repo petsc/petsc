@@ -539,7 +539,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 {
   int           i = 0;
   size_t        l, l1, l2, l3;
-  char         *work, *par, *epar, env[1024], *tfree, *a = (char *)aa;
+  char         *work, *par, *epar = NULL, env[1024], *tfree, *a = (char *)aa;
   const char   *s[] = {"${PETSC_ARCH}", "${PETSC_DIR}", "${PETSC_LIB_DIR}", "${DISPLAY}", "${HOMEDIRECTORY}", "${WORKINGDIRECTORY}", "${USERNAME}", "${HOSTNAME}", NULL};
   char         *r[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
   PetscBool     flag;
