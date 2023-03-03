@@ -256,6 +256,39 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
 }
 
 /*@C
+  PetscFFlush - Flush a file stream
+
+  Input Parameter:
+. fd - The file stream handle
+
+  Level: intermediate
+
+  Notes:
+  For output streams (and for update streams on which the last operation was output), writes
+  any unwritten data from the stream's buffer to the associated output device.
+
+  For input streams (and for update streams on which the last operation was input), the
+  behavior is undefined.
+
+  If `fd` is `NULL`, all open output streams are flushed, including ones not directly
+  accessible to the program.
+
+.seealso: `PetscPrintf()`, `PetscFPrintf()`, `PetscVFPrintf()`, `PetscVSNPrintf()`
+@*/
+PetscErrorCode PetscFFlush(FILE *fd)
+{
+  int ret;
+
+  PetscFunctionBegin;
+  if (fd) PetscValidPointer(fd, 1);
+  ret = fflush(fd);
+  // could also use PetscCallExternal() here, but since we can get additional error explanation
+  // from strerror() we opted for a manual check
+  PetscCheck(ret == 0, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error in fflush(): error code %d (%s)", ret, strerror(errno));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
      PetscVFPrintf -  All PETSc standard out and error messages are sent through this function; so, in theory, this can
         can be replaced with something that does not simply write to a file.
 
@@ -289,7 +322,7 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
    This could be called by an error handler, if that happens then a recursion of the error handler may occur
    and a resulting crash
 
-.seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`
+.seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscFFlush()`
 @*/
 PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
 {
@@ -313,8 +346,13 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "C89 does not support va_copy() hence cannot print long strings with PETSc printing routines");
 #endif
   }
-  fprintf(fd, "%s", buff);
-  fflush(fd);
+  {
+    const int err = fprintf(fd, "%s", buff);
+    // cannot use PetscCallExternal() for fprintf since the return value is "number of
+    // characters transmitted to the output stream" on success
+    PetscCheck(err >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "fprintf() returned error code %d", err);
+  }
+  PetscCall(PetscFFlush(fd));
   if (buff != str) PetscCall(PetscFree(buff));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -333,7 +371,8 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
    Level: intermediate
 
 .seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`, `PetscVSNPrintf()`,
-          `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscVFPrintf()`
+          `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`,
+          `PetscVFPrintf()`, `PetscFFlush()`
 @*/
 PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
 {
@@ -401,7 +440,8 @@ int         petsc_printfqueuelength = 0;
     That is, you can only pass a single character string from Fortran.
 
 .seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`,
-          `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`
+          `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`,
+          `PetscFFlush()`
 @*/
 PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
 {
@@ -467,7 +507,8 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
     from all the processors to be printed.
 
 .seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`, `PetscFPrintf()`,
-          `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`
+          `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
+          `PetscFFlush()`
 @*/
 PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char format[], ...)
 {
@@ -604,7 +645,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
     could recursively restart the malloc validation.
 
 .seealso: `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
-          `PetscViewerASCIISynchronizedPrintf()`, `PetscSynchronizedFlush()`
+          `PetscViewerASCIISynchronizedPrintf()`, `PetscSynchronizedFlush()`, `PetscFFlush()`
 @*/
 PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
 {
@@ -646,7 +687,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
     The call sequence is `PetscPrintf`(MPI_Comm, character(*), `PetscErrorCode` ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
-.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscFormatConvert()`
+.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscFormatConvert()`, `PetscFFlush()`
 @*/
 PetscErrorCode PetscPrintf(MPI_Comm comm, const char format[], ...)
 {

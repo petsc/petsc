@@ -35,7 +35,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   const char            *redm, *redo;
   char                  *mesg_log;
 #if defined(PETSC_HAVE_UNISTD_H)
-  int fd_stdout, fd_pipe[2], count, err;
+  int fd_stdout, fd_pipe[2], count;
 #endif
 
   PetscFunctionBegin;
@@ -101,8 +101,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   part_info(n, vertex_w, edge_p, edge, NULL, p, part_party, 1);
 
 #if defined(PETSC_HAVE_UNISTD_H)
-  err = fflush(stdout);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on stdout");
+  PetscCall(PetscFFlush(stdout));
   count = read(fd_pipe[0], mesg_log, (SIZE_LOG - 1) * sizeof(char));
   if (count < 0) count = 0;
   mesg_log[count] = 0;

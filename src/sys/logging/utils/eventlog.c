@@ -1060,7 +1060,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o
   PetscEventPerfLog eventPerfLog = NULL;
   PetscLogDouble    cur_time;
   PetscMPIInt       rank;
-  int               stage, err;
+  int               stage;
 
   PetscFunctionBegin;
   if (!petsc_tracetime) PetscCall(PetscTime(&petsc_tracetime));
@@ -1081,8 +1081,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o
 
   petsc_tracespace[2 * petsc_tracelevel] = 0;
 
-  err = fflush(petsc_tracefile);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+  PetscCall(PetscFFlush(petsc_tracefile));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1092,7 +1091,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event, int t, PetscObject o1,
   PetscEventRegLog  eventRegLog;
   PetscEventPerfLog eventPerfLog = NULL;
   PetscLogDouble    cur_time;
-  int               stage, err;
+  int               stage;
   PetscMPIInt       rank;
 
   PetscFunctionBegin;
@@ -1112,8 +1111,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event, int t, PetscObject o1,
   petsc_tracespace[2 * petsc_tracelevel] = 0;
   PetscCall(PetscTime(&cur_time));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, petsc_tracefile, "%s[%d] %g Event end: %s\n", petsc_tracespace, rank, cur_time - petsc_tracetime, eventRegLog->eventInfo[event].name));
-  err = fflush(petsc_tracefile);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+  PetscCall(PetscFFlush(petsc_tracefile));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -864,7 +864,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
 {
   PetscInt       i, j, n, *perm;
   size_t        *shortlength;
-  int           *shortcount, err;
+  int           *shortcount;
   PetscMPIInt    rank;
   PetscBool      match;
   const char   **shortfunction;
@@ -872,8 +872,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
-  err = fflush(fp);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+  PetscCall(PetscFFlush(fp));
 
   PetscCheck(PetscLogMalloc >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
 
@@ -919,8 +918,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
     free(shortcount);
     free((char **)shortfunction);
   }
-  err = fflush(fp);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+  PetscCall(PetscFFlush(fp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -136,7 +136,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     char msgLog[10000];
     int  count;
 
-    fflush(stdout);
+    PetscCall(PetscFFlush(stdout));
     count = read(fd_pipe[0], msgLog, (10000 - 1) * sizeof(char));
     if (count < 0) count = 0;
     msgLog[count] = 0;

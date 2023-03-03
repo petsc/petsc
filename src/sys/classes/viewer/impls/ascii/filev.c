@@ -100,7 +100,6 @@ PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
 PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
-  int                err;
   MPI_Comm           comm;
   PetscMPIInt        rank, size;
   FILE              *fd = vascii->fd;
@@ -111,10 +110,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  if (!vascii->bviewer && rank == 0 && (vascii->mode != FILE_MODE_READ)) {
-    err = fflush(vascii->fd);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() call failed");
-  }
+  if (!vascii->bviewer && rank == 0 && (vascii->mode != FILE_MODE_READ)) PetscCall(PetscFFlush(vascii->fd));
 
   if (vascii->allowsynchronized) {
     PetscMPIInt tag, i, j, n = 0, dummy = 0;
@@ -522,7 +518,6 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
   PetscInt           tab, intab = ascii->tab;
   FILE              *fd = ascii->fd;
   PetscBool          iascii;
-  int                err;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
@@ -563,15 +558,13 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
 
     va_start(Argp, format);
     PetscCall((*PetscVFPrintf)(fd, format, Argp));
-    err = fflush(fd);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    PetscCall(PetscFFlush(fd));
     if (petsc_history) {
       va_start(Argp, format);
       tab = intab;
       while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, petsc_history, "  "));
       PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-      err = fflush(petsc_history);
-      PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+      PetscCall(PetscFFlush(petsc_history));
     }
     va_end(Argp);
   }
@@ -857,7 +850,6 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
   MPI_Comm           comm;
   FILE              *fp;
   PetscBool          iascii, hasbviewer = PETSC_FALSE;
-  int                err;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
@@ -899,13 +891,11 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
 
     va_start(Argp, format);
     PetscCall((*PetscVFPrintf)(fp, format, Argp));
-    err = fflush(fp);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    PetscCall(PetscFFlush(fp));
     if (petsc_history) {
       va_start(Argp, format);
       PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-      err = fflush(petsc_history);
-      PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+      PetscCall(PetscFFlush(petsc_history));
     }
     va_end(Argp);
   } else { /* other processors add to queue */

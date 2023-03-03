@@ -1360,6 +1360,7 @@ PETSC_EXTERN PetscErrorCode PetscFixFilename(const char[], char[]);
 PETSC_EXTERN PetscErrorCode PetscFOpen(MPI_Comm, const char[], const char[], FILE **);
 PETSC_EXTERN PetscErrorCode PetscFClose(MPI_Comm, FILE *);
 PETSC_EXTERN PetscErrorCode PetscFPrintf(MPI_Comm, FILE *, const char[], ...) PETSC_ATTRIBUTE_FORMAT(3, 4);
+PETSC_EXTERN PetscErrorCode PetscFFlush(FILE *);
 PETSC_EXTERN PetscErrorCode PetscPrintf(MPI_Comm, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 PETSC_EXTERN PetscErrorCode PetscSNPrintf(char *, size_t, const char[], ...) PETSC_ATTRIBUTE_FORMAT(3, 4);
 PETSC_EXTERN PetscErrorCode PetscSNPrintfCount(char *, size_t, const char[], size_t *, ...) PETSC_ATTRIBUTE_FORMAT(3, 5);

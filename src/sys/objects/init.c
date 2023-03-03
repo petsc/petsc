@@ -103,7 +103,6 @@ PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank == 0) {
     char arch[10];
-    int  err;
 
     PetscCall(PetscGetArchType(arch, 10));
     PetscCall(PetscGetDate(date, 64));
@@ -126,8 +125,7 @@ PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, *fd, "%s on a %s, %d proc. with options:\n", pname, arch, size));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, *fd, "----------------------------------------\n"));
 
-    err = fflush(*fd);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    PetscCall(PetscFFlush(*fd));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -135,18 +133,18 @@ PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
 PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
 {
   PetscMPIInt rank;
-  char        date[64];
-  int         err;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank == 0) {
-    PetscCall(PetscGetDate(date, 64));
+    char date[64];
+    int  err;
+
+    PetscCall(PetscGetDate(date, sizeof(date)));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, *fd, "----------------------------------------\n"));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, *fd, "Finished at %s\n", date));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, *fd, "----------------------------------------\n"));
-    err = fflush(*fd);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    PetscCall(PetscFFlush(*fd));
     err = fclose(*fd);
     PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fclose() failed on file");
   }

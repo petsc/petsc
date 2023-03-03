@@ -56,7 +56,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
   if (binary) {
     /* Extract raw file descriptor to read binary block */
     PetscCall(PetscViewerASCIIGetPointer(viewer, &file));
-    fflush(file);
+    PetscCall(PetscFFlush(file));
     fdes = fileno(file);
   }
 

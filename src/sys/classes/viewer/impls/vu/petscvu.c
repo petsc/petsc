@@ -47,16 +47,11 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 
 PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *)viewer->data;
-  PetscMPIInt     rank;
-  int             err;
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
-  if (rank == 0) {
-    err = fflush(vu->fd);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
-  }
+  if (rank == 0) PetscCall(PetscFFlush(((PetscViewer_VU *)viewer->data)->fd));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
