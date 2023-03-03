@@ -317,11 +317,6 @@ pause-for-approval:
     RUN_GCOV: 1
     RUN_GCOV_OPTIONS: --decisions
 
-.coverage-generate-u18:
-  extends: .coverage-generate
-  variables:
-    GCOV_MODULES: py-gcovr-5.2-gcc-7.5.0-o7fu4xq python-3.9.13-gcc-7.5.0-fq67pdh
-
 .coverage-generate-u22:
   extends: .coverage-generate
   variables:
