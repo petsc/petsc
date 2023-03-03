@@ -1301,7 +1301,7 @@ PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (Amat) {
     if (!pc->mat) {
-      if (pc->pmat && !Pmat) { /* Apmat has been set, but user did not request it, so use for Amat */
+      if (pc->pmat && !Pmat) { /* Pmat has been set, but user did not request it, so use for Amat */
         pc->mat = pc->pmat;
         PetscCall(PetscObjectReference((PetscObject)pc->mat));
       } else { /* both Amat and Pmat are empty */
