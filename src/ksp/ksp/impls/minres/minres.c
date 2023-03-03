@@ -12,15 +12,23 @@ static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#define KSPMinresSwap3(V1, V2, V3) \
+  do { \
+    Vec T = V1; \
+    V1    = V2; \
+    V2    = V3; \
+    V3    = T; \
+  } while (0)
+
 static PetscErrorCode KSPSolve_MINRES(KSP ksp)
 {
   PetscInt          i;
-  PetscScalar       alpha, beta, ibeta, betaold, eta, c = 1.0, ceta, cold = 1.0, coold, s = 0.0, sold = 0.0, soold;
-  PetscScalar       rho0, rho1, irho1, rho2, rho3, dp = 0.0;
+  PetscScalar       alpha, beta, betaold, eta, c = 1.0, ceta, cold = 1.0, coold, s = 0.0, sold = 0.0, soold;
+  PetscScalar       rho0, rho1, rho2, rho3, dp = 0.0;
   const PetscScalar none = -1.0;
   PetscReal         np;
   Vec               X, B, R, Z, U, V, W, UOLD, VOLD, WOLD, WOOLD;
-  Mat               Amat, Pmat;
+  Mat               Amat;
   KSP_MINRES       *minres = (KSP_MINRES *)ksp->data;
   PetscBool         diagonalscale;
 
@@ -40,14 +48,9 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
   WOLD  = ksp->work[7];
   WOOLD = ksp->work[8];
 
-  PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
+  PetscCall(PCGetOperators(ksp->pc, &Amat, NULL));
 
   ksp->its = 0;
-
-  PetscCall(VecSet(UOLD, 0.0)); /*     u_old  <-   0   */
-  PetscCall(VecSet(VOLD, 0.0)); /*     v_old  <-   0   */
-  PetscCall(VecSet(W, 0.0));    /*     w      <-   0   */
-  PetscCall(VecSet(WOLD, 0.0)); /*     w_old  <-   0   */
 
   if (!ksp->guess_zero) {
     PetscCall(KSP_MatMult(ksp, Amat, X, R)); /*     r <- b - A*x    */
@@ -79,12 +82,8 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
   dp   = PetscSqrtScalar(dp);
   beta = dp; /*  beta <- sqrt(r'*z  */
   eta  = beta;
-
-  PetscCall(VecCopy(R, V));
-  PetscCall(VecCopy(Z, U));
-  ibeta = 1.0 / beta;
-  PetscCall(VecScale(V, ibeta)); /*    v <- r / beta     */
-  PetscCall(VecScale(U, ibeta)); /*    u <- z / beta     */
+  PetscCall(VecAXPBY(V, 1.0 / beta, 0, R)); /* v <- r / beta */
+  PetscCall(VecAXPBY(U, 1.0 / beta, 0, Z)); /* u <- z / beta */
 
   i = 0;
   do {
@@ -96,10 +95,21 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     PetscCall(VecDot(U, R, &alpha));         /*  alpha <- r'*u  */
     PetscCall(KSP_PCApply(ksp, R, Z));       /*      z <- B*r   */
 
-    PetscCall(VecAXPY(R, -alpha, V));   /*  r <- r - alpha v     */
-    PetscCall(VecAXPY(Z, -alpha, U));   /*  z <- z - alpha u     */
-    PetscCall(VecAXPY(R, -beta, VOLD)); /*  r <- r - beta v_old  */
-    PetscCall(VecAXPY(Z, -beta, UOLD)); /*  z <- z - beta u_old  */
+    if (ksp->its > 1) {
+      Vec         T[2];
+      PetscScalar alphas[] = {-alpha, -beta};
+      /*  r <- r - alpha v - beta v_old    */
+      T[0] = V;
+      T[1] = VOLD;
+      PetscCall(VecMAXPY(R, 2, alphas, T));
+      /*  z <- z - alpha u - beta u_old    */
+      T[0] = U;
+      T[1] = UOLD;
+      PetscCall(VecMAXPY(Z, 2, alphas, T));
+    } else {
+      PetscCall(VecAXPY(R, -alpha, V)); /*  r <- r - alpha v     */
+      PetscCall(VecAXPY(Z, -alpha, U)); /*  z <- z - alpha u     */
+    }
 
     betaold = beta;
 
@@ -125,16 +135,20 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     c = rho0 / rho1;
     s = beta / rho1;
 
-    /*    Update    */
+    /* Update */
+    /*  w_oold <- w_old */
+    /*  w_old  <- w     */
+    KSPMinresSwap3(WOOLD, WOLD, W);
 
-    PetscCall(VecCopy(WOLD, WOOLD)); /*  w_oold <- w_old      */
-    PetscCall(VecCopy(W, WOLD));     /*  w_old  <- w          */
+    /* w <- (u - rho2 w_old - rho3 w_oold)/rho1 */
+    PetscCall(VecAXPBY(W, 1.0 / rho1, 0.0, U));
+    if (ksp->its > 1) {
+      Vec         T[]      = {WOLD, WOOLD};
+      PetscScalar alphas[] = {-rho2 / rho1, -rho3 / rho1};
+      PetscInt    nv       = (ksp->its == 2 ? 1 : 2);
 
-    PetscCall(VecCopy(U, W));            /*  w      <- u          */
-    PetscCall(VecAXPY(W, -rho2, WOLD));  /*  w <- w - rho2 w_old  */
-    PetscCall(VecAXPY(W, -rho3, WOOLD)); /*  w <- w - rho3 w_oold */
-    irho1 = 1.0 / rho1;
-    PetscCall(VecScale(W, irho1)); /*  w <- w / rho1        */
+      PetscCall(VecMAXPY(W, nv, alphas, T));
+    }
 
     ceta = c * eta;
     PetscCall(VecAXPY(X, ceta, W)); /*  x <- x + c eta w     */
@@ -168,13 +182,10 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     }
 
     eta = -s * eta;
-    PetscCall(VecCopy(V, VOLD));
-    PetscCall(VecCopy(U, UOLD));
-    PetscCall(VecCopy(R, V));
-    PetscCall(VecCopy(Z, U));
-    ibeta = 1.0 / beta;
-    PetscCall(VecScale(V, ibeta)); /*  v <- r / beta       */
-    PetscCall(VecScale(U, ibeta)); /*  u <- z / beta       */
+    KSPMinresSwap3(VOLD, V, R);
+    KSPMinresSwap3(UOLD, U, Z);
+    PetscCall(VecScale(V, 1.0 / beta)); /* v <- r / beta */
+    PetscCall(VecScale(U, 1.0 / beta)); /* u <- z / beta */
 
     i++;
   } while (i < ksp->max_it);

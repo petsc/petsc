@@ -35,13 +35,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  /* A is symmetric. Set symmetric flag to enable KSP_type = minres */
-  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
-
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &b));
-  PetscCall(VecSetSizes(b, PETSC_DECIDE, m));
-  PetscCall(VecSetFromOptions(b));
-  PetscCall(VecDuplicate(b, &x));
+  PetscCall(MatCreateVecs(A, &x, &b));
   PetscCall(VecSet(x, 1.0));
   PetscCall(MatMult(A, x, b));
   PetscCall(VecSet(x, 0.0));
@@ -50,6 +44,7 @@ int main(int argc, char **args)
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp, b, x));
   PetscCall(KSPSolve(ksp, b, x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
