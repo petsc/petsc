@@ -788,7 +788,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
 }
 
 /*@
-  PetscSFMerge - append/merge indices of sfb into sfa, with preference for sfb
+  PetscSFMerge - append/merge indices of `sfb` into `sfa`, with preference for `sfb`
 
   Collective
 
@@ -798,6 +798,8 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
 
   Output Arguments:
 . merged - new `PetscSF` with combined edges
+
+  Level: intermediate
 
 .seealse: `PetscSFCompose()`
 @*/

@@ -451,6 +451,8 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
 +  draw - the drawing window
 -  visible - if the surface should be visible
 
+   Level: intermediate
+
 .seealso: `PetscDraw`
 @*/
 PetscErrorCode PetscDrawSetVisible(PetscDraw draw, PetscBool visible)
