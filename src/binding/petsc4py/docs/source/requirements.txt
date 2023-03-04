@@ -1,0 +1,4 @@
+sphinx==1.8.6
+docutils==0.17.1
+epydoc; python_version <= "2.7"
+numpy

@@ -2,11 +2,12 @@
 PETSc |version|
 ===============
 PETSc, the Portable, Extensible Toolkit for Scientific Computation,
-pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is a suite of
-data structures and routines for the scalable (parallel) solution of scientific
-applications modeled by partial differential equations. It supports MPI, and GPUs through
-CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine. PETSc (sometimes called PETSc/Tao)
-also contains the Tao, the Toolkit for Advanced Optimization, software library.
+pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is
+for the scalable (parallel) solution of scientific
+applications modeled by partial differential equations. It has bindings for C, Fortran, and Python (via :any:`petsc4py<petsc4py_api>`).
+PETSc also contains Tao, the Toolkit for Advanced Optimization, software library.
+It supports MPI, and GPUs through
+CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine.
 
 PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
 
@@ -38,6 +39,7 @@ Main Topics
    tutorials/index
    manual/index
    manualpages/index
+   petsc4py/petsc4py
    faq/index
    community/index
    developers/index
@@ -137,6 +139,14 @@ For general citations on PETSc please use the following:
 .. literalinclude:: /petsc.bib
    :language: none
    :start-at: @inproceedings{petsc-efficient
+   :end-at: year
+   :append: }
+
+For petsc4py usage please cite
+
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @article{DalcinPazKlerCosimo2011
    :end-at: year
    :append: }
 
