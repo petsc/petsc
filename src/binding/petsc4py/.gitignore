@@ -14,6 +14,6 @@ __pycache__
 
 *.egg
 .eggs/
-petsc4py.egg-info/
-petsc4py.PETSc.c
-petsc4py.PETSc*.h
+src/petsc4py.egg-info/
+src/petsc4py/PETSc.c
+src/petsc4py/PETSc*.h

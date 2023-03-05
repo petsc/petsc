@@ -7,6 +7,10 @@ import unittest
 
 __unittest = True
 
+components = [
+    'PETSc',
+]
+
 
 def getoptionparser():
     parser = optparse.OptionParser()
@@ -76,15 +80,18 @@ def getprocessorinfo():
     return (rank, name)
 
 
-def getlibraryinfo():
-    from petsc4py import PETSc
-    (major, minor, micro) = PETSc.Sys.getVersion()
-    r = PETSc.Sys.getVersionInfo()['release']
+def getlibraryinfo(name):
+    modname = "%s4py.%s" % (name.lower(), name)
+    module = __import__(modname, fromlist=[name])
+    (major, minor, micro), devel = module.Sys.getVersion(devel=True)
+    r = not devel
     if r: release = 'release'
     else: release = 'development'
-    arch = PETSc.__arch__
-    return ("PETSc %d.%d.%d %s (conf: '%s')"
-            % (major, minor, micro, release, arch) )
+    arch = module.__arch__
+    return (
+        "%s %d.%d.%d %s (conf: '%s')" %
+        (name, major, minor, micro, release, arch)
+    )
 
 
 def getpythoninfo():
@@ -133,7 +140,7 @@ def setup_unittest(options):
 
 
 def import_package(options, pkgname):
-    args = [ sys.argv[0] ]
+    args = [sys.argv[0]]
     if options.memdebug:
         args.append('-malloc')
         args.append('-malloc_debug')
@@ -158,8 +165,9 @@ def print_banner(options):
     if options.verbose:
         writeln(getpythoninfo())
         writeln(getpackageinfo('numpy'))
-        writeln(getlibraryinfo())
-        writeln(getpackageinfo('petsc4py'))
+        for entry in components:
+            writeln(getlibraryinfo(entry))
+            writeln(getpackageinfo('%s4py' % entry))
 
 
 def load_tests(options, args):
@@ -176,7 +184,8 @@ def load_tests(options, args):
     if options.patterns:
         testloader.testNamePatterns = [
             ('*%s*' % p) if ('*' not in p) else p
-            for p in options.patterns]
+            for p in options.patterns
+        ]
     include = exclude = None
     if options.include:
         include = re.compile('|'.join(options.include)).search
@@ -219,7 +228,7 @@ def shutdown(success):
 
 
 def main(args=None):
-    pkgname = 'petsc4py'
+    pkgname = '%s4py' % components[-1].lower()
     parser = getoptionparser()
     (options, args) = parser.parse_args(args)
     setup_python(options)
