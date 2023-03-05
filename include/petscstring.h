@@ -678,21 +678,21 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
   memmove((char *)a, (const char *)b, n);
 #else
   if (a < b) {
-    if (a <= b - n) {
+    if ((char *)a <= (char *)b - n) {
       memcpy(a, b, n);
     } else {
-      const size_t ptr_diff = (size_t)(b - a);
+      const size_t ptr_diff = (size_t)((char *)b - (char *)a);
 
       memcpy(a, b, ptr_diff);
-      PetscCall(PetscMemmove((void *)b, b + ptr_diff, n - ptr_diff));
+      PetscCall(PetscMemmove((void *)b, (char *)b + ptr_diff, n - ptr_diff));
     }
   } else {
-    if (b <= a - n) {
+    if ((char *)b <= (char *)a - n) {
       memcpy(a, b, n);
     } else {
-      const size_t ptr_diff = (size_t)(a - b);
+      const size_t ptr_diff = (size_t)((char *)a - (char *)b);
 
-      memcpy((void *)(b + n), b + (n - ptr_diff), ptr_diff);
+      memcpy((void *)((char *)b + n), (char *)b + (n - ptr_diff), ptr_diff);
       PetscCall(PetscMemmove(a, b, n - ptr_diff));
     }
   }
