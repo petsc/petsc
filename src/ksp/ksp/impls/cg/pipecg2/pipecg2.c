@@ -18,22 +18,22 @@ static PetscErrorCode VecMergedDot_Private(Vec U, Vec W, Vec R, PetscInt normtyp
   PetscCall(VecGetLocalSize(U, &n));
 
   if (normtype == KSP_NORM_PRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       sumwu += PW[j] * PetscConj(PU[j]);
       sumru += PR[j] * PetscConj(PU[j]);
       sumuu += PU[j] * PetscConj(PU[j]);
     }
   } else if (normtype == KSP_NORM_UNPRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       sumwu += PW[j] * PetscConj(PU[j]);
       sumru += PR[j] * PetscConj(PU[j]);
       sumuu += PR[j] * PetscConj(PR[j]);
     }
   } else if (normtype == KSP_NORM_NATURAL) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       sumwu += PW[j] * PetscConj(PU[j]);
       sumru += PR[j] * PetscConj(PU[j]);
     }
@@ -63,8 +63,8 @@ static PetscErrorCode VecMergedDot2_Private(Vec N, Vec M, Vec W, PetscScalar *wm
   PetscCall(VecGetArrayRead(M, (const PetscScalar **)&PM));
   PetscCall(VecGetLocalSize(N, &n));
 
-  PetscPragmaSIMD for (j = 0; j < n; j++)
-  {
+  PetscPragmaSIMD
+  for (j = 0; j < n; j++) {
     sumwm += PW[j] * PetscConj(PM[j]);
     sumnm += PN[j] * PetscConj(PM[j]);
   }
@@ -112,8 +112,8 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
   for (j = 0; j < 15; j++) lambda[j] = 0.0;
 
   if (normtype == KSP_NORM_PRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       pz[j]  = pn[j];
       pq[j]  = pm[j];
       ps[j]  = pw[j];
@@ -167,8 +167,8 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
     lambda[14] = PetscConj(lambda[0]);
 
   } else if (normtype == KSP_NORM_UNPRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       pz[j]  = pn[j];
       pq[j]  = pm[j];
       ps[j]  = pw[j];
@@ -222,8 +222,8 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
     lambda[14] = PetscConj(lambda[0]);
 
   } else if (normtype == KSP_NORM_NATURAL) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       pz[j]  = pn[j];
       pq[j]  = pm[j];
       ps[j]  = pw[j];
@@ -334,8 +334,8 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
   for (j = 0; j < 15; j++) lambda[j] = 0.0;
 
   if (normtype == KSP_NORM_PRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       pa1[j] = (pg1[j] - pg0[j]) / alphaold;
       pb1[j] = (ph1[j] - ph0[j]) / alphaold;
 
@@ -391,8 +391,8 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
     lambda[13] = PetscConj(lambda[11]);
     lambda[14] = PetscConj(lambda[0]);
   } else if (normtype == KSP_NORM_UNPRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       pa1[j] = (pg1[j] - pg0[j]) / alphaold;
       pb1[j] = (ph1[j] - ph0[j]) / alphaold;
 
@@ -448,8 +448,8 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
     lambda[13] = PetscConj(lambda[11]);
     lambda[14] = PetscConj(lambda[0]);
   } else if (normtype == KSP_NORM_NATURAL) {
-    PetscPragmaSIMD for (j = 0; j < n; j++)
-    {
+    PetscPragmaSIMD
+    for (j = 0; j < n; j++) {
       pa1[j] = (pg1[j] - pg0[j]) / alphaold;
       pb1[j] = (ph1[j] - ph0[j]) / alphaold;
 
