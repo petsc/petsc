@@ -143,6 +143,15 @@ cdef extern from * nogil:
         SOR_APPLY_UPPER
         SOR_APPLY_LOWER
 
+    ctypedef enum PetscMatProductType "MatProductType":
+        MATPRODUCT_UNSPECIFIED
+        MATPRODUCT_AB
+        MATPRODUCT_AtB
+        MATPRODUCT_ABt
+        MATPRODUCT_PtAP
+        MATPRODUCT_RARt
+        MATPRODUCT_ABC
+
     ctypedef enum PetscMatAssemblyType "MatAssemblyType":
         MAT_FLUSH_ASSEMBLY
         MAT_FINAL_ASSEMBLY
@@ -186,6 +195,9 @@ cdef extern from * nogil:
         MAT_STRUCTURE_ONLY
         MAT_SORTED_FULL
         MAT_OPTION_MAX
+
+    ctypedef enum PetscMatOperation "MatOperation":
+        pass
 
     PetscErrorCode MatView(PetscMat,PetscViewer)
     PetscErrorCode MatDestroy(PetscMat*)
@@ -392,6 +404,7 @@ cdef extern from * nogil:
     PetscErrorCode MatH2OpusLowRankUpdate(PetscMat,PetscMat,PetscMat,PetscScalar)
 
     PetscErrorCode MatMissingDiagonal(Mat,PetscBool*,PetscInt*)
+
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":
         MAT_SHIFT_NONE
         MAT_SHIFT_NONZERO
@@ -478,6 +491,9 @@ cdef extern from * nogil:
     PetscErrorCode MatDenseCUDAGetArrayRead(PetscMat,const PetscScalar*[])
     PetscErrorCode MatDenseCUDARestoreArrayRead(PetscMat,const PetscScalar*[])
 
+    PetscErrorCode MatProductGetType(PetscMat,PetscMatProductType*)
+    PetscErrorCode MatProductGetMats(PetscMat,PetscMat*,PetscMat*,PetscMat*)
+
     PetscErrorCode MatPythonSetType(PetscMat,char[])
     PetscErrorCode MatPythonGetType(PetscMat,char*[])
 
@@ -485,10 +501,6 @@ cdef extern from "custom.h" nogil:
     PetscErrorCode MatGetCurrentMemType(PetscMat,PetscMemType*)
     PetscErrorCode MatIsPreallocated(PetscMat,PetscBool*)
     PetscErrorCode MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*,PetscBool*)
-
-cdef extern from "libpetsc4py.h":
-    PetscErrorCode MatPythonSetContext(PetscMat,void*)
-    PetscErrorCode MatPythonGetContext(PetscMat,void**)
 
 # -----------------------------------------------------------------------------
 

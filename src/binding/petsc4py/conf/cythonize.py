@@ -6,7 +6,7 @@ def cythonize(source,
               includes=(),
               destdir_c=None,
               destdir_h=None,
-              wdir=None):
+              workdir=None):
     from Cython.Compiler.Main import \
          CompilationOptions, default_options, \
          compile, \
@@ -22,8 +22,8 @@ def cythonize(source,
         outputs_c = [output]
         outputs_h = [name + '.h', name + '_api.h']
         # change working directory
-        if wdir:
-            os.chdir(wdir)
+        if workdir:
+            os.chdir(workdir)
         # run Cython on source
         options = CompilationOptions(default_options)
         if Options.directive_types['language_level'] is str:
@@ -73,9 +73,5 @@ if __name__ == "__main__":
                   'petsc4py.PETSc.c',
                   includes=['include'],
                   destdir_h=os.path.join('include', 'petsc4py'),
-                  wdir='src')
-        or
-        cythonize(os.path.join('libpetsc4py', 'libpetsc4py.pyx'),
-                  includes=['include'],
-                  wdir='src')
+                  workdir='src')
         )

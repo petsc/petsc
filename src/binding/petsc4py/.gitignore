@@ -17,4 +17,3 @@ __pycache__
 petsc4py.egg-info/
 petsc4py.PETSc.c
 petsc4py.PETSc*.h
-src/libpetsc4py/libpetsc4py.[hc]

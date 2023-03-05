@@ -264,6 +264,8 @@ cdef extern from * nogil:
     PetscErrorCode TSRollBack(PetscTS)
     PetscErrorCode TSSolve(PetscTS,PetscVec)
     PetscErrorCode TSInterpolate(PetscTS,PetscReal,PetscVec)
+    PetscErrorCode TSPreStage(PetscTS,PetscReal)
+    PetscErrorCode TSPostStage(PetscTS,PetscReal,PetscInt,PetscVec*)
 
     PetscErrorCode TSThetaSetTheta(PetscTS,PetscReal)
     PetscErrorCode TSThetaGetTheta(PetscTS,PetscReal*)
@@ -319,13 +321,10 @@ cdef extern from * nogil:
     PetscErrorCode TSGetAdapt(PetscTS,PetscTSAdapt*)
     PetscErrorCode TSAdaptGetStepLimits(PetscTSAdapt,PetscReal*,PetscReal*)
     PetscErrorCode TSAdaptSetStepLimits(PetscTSAdapt,PetscReal,PetscReal)
+    PetscErrorCode TSAdaptCheckStage(PetscTSAdapt,PetscTS,PetscReal,PetscVec,PetscBool*)
 
 cdef extern from "custom.h" nogil:
     PetscErrorCode TSSetTimeStepNumber(PetscTS,PetscInt)
-
-cdef extern from "libpetsc4py.h":
-    PetscErrorCode TSPythonSetContext(PetscTS,void*)
-    PetscErrorCode TSPythonGetContext(PetscTS,void**)
 
 # -----------------------------------------------------------------------------
 

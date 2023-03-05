@@ -3,102 +3,29 @@
 #cython: auto_pickle=False
 #cython: autotestdict=False
 #cython: warn.multiple_declarators=False
-cimport cython
 
-# ----------
-
-from petsc4py.PETSc cimport *
-cdef extern from "custom.h": pass
-
-# ----------
+# --------------------------------------------------------------------
 
 cdef extern from "Python.h":
-    bint Py_IsInitialized() nogil
     ctypedef struct PyObject
     void Py_INCREF(PyObject*)
     void Py_DECREF(PyObject*)
     void Py_CLEAR(PyObject*)
-    object PyModule_New(char*)
+    object PyModule_New(const char[])
     bint PyModule_Check(object)
     object PyImport_Import(object)
-    ctypedef size_t Py_uintptr_t
-# --------------------------------------------------------------------
-
-cdef extern from "custom.h":
-    void initlibpetsc4py() nogil except *
-
-cdef public int import_libpetsc4py() nogil except -1:
-    initlibpetsc4py()
-    return 0
 
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    MPI_Comm MPI_COMM_NULL
-    MPI_Comm PETSC_COMM_SELF
-    MPI_Comm PETSC_COMM_WORLD
-    int MPI_Comm_size(MPI_Comm,int*)
-    int MPI_Comm_rank(MPI_Comm,int*)
-
-    PetscErrorCode PetscERROR(MPI_Comm,char[],PetscErrorCode,int,char[],char[])
-
-    ctypedef enum PetscBool:
-        PETSC_TRUE
-        PETSC_FALSE
-    ctypedef long   PetscInt
-    ctypedef double PetscReal
-    ctypedef double PetscScalar
-
-    ctypedef struct _p_PetscObject:
-        MPI_Comm comm
-        char     *prefix
-        PetscInt refct
-    ctypedef int PetscClassId
-    PetscErrorCode PetscObjectGetClassId(PetscObject,PetscClassId*)
-    PetscErrorCode PetscObjectGetComm(PetscObject,MPI_Comm*)
-    PetscErrorCode PetscObjectCompose(PetscObject,char[],PetscObject)
-    PetscErrorCode PetscObjectQuery(PetscObject,char[],PetscObject*)
-    PetscErrorCode PetscObjectReference(PetscObject)
-    ctypedef void (*PetscVoidFunction)()
-    PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],void (*ptr)())
-    PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
-    PetscErrorCode PetscObjectChangeTypeName(PetscObject,char[])
-    ctypedef int PetscObjectState
-    PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*)
-
     ctypedef struct _p_PetscOptionItems
     ctypedef _p_PetscOptionItems* PetscOptionItems
-    ctypedef struct _n_PetscOptions
-    ctypedef _n_PetscOptions* PetscOptions
     PetscErrorCode PetscOptionsString(char[],char[],char[],char[],char[],size_t,PetscBool*)
-    PetscErrorCode PetscOptionsGetString(PetscOptions,char[],char[],char[],size_t,PetscBool*)
 
-    char *PETSCVIEWERASCII
-    char *PETSCVIEWERSTRING
-    PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,char[],...)
-    PetscErrorCode PetscViewerStringSPrintf(PetscViewer,char[],...)
-
-cdef inline object      toInt(PetscInt value):          return value
-cdef inline PetscInt    asInt(object value)  except?-1: return value
-cdef inline object      toReal(PetscReal value):        return value
-cdef inline PetscReal   asReal(object value) except?-1: return value
-cdef extern from "scalar.h":
-    object      toScalar"PyPetscScalar_FromPetscScalar"(PetscScalar)
-    PetscScalar asScalar"PyPetscScalar_AsPetscScalar"(object) except*
-
-# --------------------------------------------------------------------
-
-# NumPy support
-# -------------
-
-cdef extern from "string.h" nogil:
-    void* memset(void*,int,size_t)
-    void* memcpy(void*,void*,size_t)
-    char* strdup(char*)
-
-include "arraynpy.pxi"
-
-import_array()
+cdef extern from * nogil: # custom.h
+    PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt*)
+    PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject,PetscInt,PetscInt*,PetscBool*)
+    PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject,PetscInt,PetscInt)
 
 # --------------------------------------------------------------------
 
@@ -107,9 +34,8 @@ cdef char *fstack[1024]
 cdef int   istack = 0
 
 cdef inline void FunctionBegin(char name[]) nogil:
-    global FUNCT
+    global istack, fstack, FUNCT
     FUNCT = name
-    global fstack, istack
     fstack[istack] = FUNCT
     istack += 1
     if istack >= 1024:
@@ -117,9 +43,8 @@ cdef inline void FunctionBegin(char name[]) nogil:
     return
 
 cdef inline PetscErrorCode FunctionEnd() nogil:
-    global FUNCT
+    global istack, fstack, FUNCT
     FUNCT = NULL
-    global fstack, istack
     istack -= 1
     if istack < 0:
         istack = 1024
@@ -127,14 +52,13 @@ cdef inline PetscErrorCode FunctionEnd() nogil:
     return PETSC_SUCCESS
 
 cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr,char msg[]) nogil:
-    global fstack, istack
-    istack = 0; fstack[istack] = NULL;
-    global FUNCT
+    global istack, fstack
+    istack = 0
+    fstack[istack] = NULL;
     return PetscERROR(PETSC_COMM_SELF,FUNCT,ierr,
                       PETSC_ERROR_INITIAL, msg, NULL)
 
 cdef PetscErrorCode UNSUPPORTED(char msg[]) nogil:
-    global FUNCT
     return PetscERROR(PETSC_COMM_SELF,FUNCT,PETSC_ERR_USER,
                       PETSC_ERROR_INITIAL,b"method %s()",msg)
 
@@ -161,7 +85,7 @@ cdef inline PetscObject newRef(void *pobj) nogil:
         if ierr: return NULL # XXX warning!
     return obj
 
-cdef inline char* getPrefix(void *pobj) nogil:
+cdef inline const char* getPrefix(void *pobj) nogil:
     cdef PetscObject obj = <PetscObject>pobj
     if obj == NULL: return NULL
     return obj.prefix
@@ -219,15 +143,6 @@ cdef inline TAO TAO_(PetscTAO p):
     return ob
 
 # --------------------------------------------------------------------
-
-cdef inline object bytes2str(const char p[]):
-     if p == NULL:
-         return None
-     cdef bytes s = <char*>p
-     if isinstance(s, str):
-         return s
-     else:
-         return s.decode()
 
 cdef object parse_url(object url):
     path, name = url.rsplit(":", 1)
@@ -371,91 +286,22 @@ cdef int viewcontext(_PyObj ctx, PetscViewer viewer) except -1:
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    struct _n_PetscLayout
-    ctypedef _n_PetscLayout* PetscLayout
-    PetscErrorCode PetscLayoutSetLocalSize(PetscLayout,PetscInt)
-    PetscErrorCode PetscLayoutSetSize(PetscLayout,PetscInt)
-    PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*)
-    PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt)
-    PetscErrorCode PetscLayoutSetUp(PetscLayout)
-
-cdef extern from * nogil:
-    ctypedef enum NormType:
-        NORM_1
-        NORM_2
-    ctypedef enum InsertMode:
-        INSERT_VALUES
-        ADD_VALUES
-    PetscErrorCode VecDestroy(PetscVec*)
-    PetscErrorCode VecDuplicate(PetscVec,PetscVec*)
-    PetscErrorCode VecCopy(PetscVec,PetscVec)
-    PetscErrorCode VecSet(PetscVec,PetscScalar)
-    PetscErrorCode VecScale(PetscVec,PetscScalar)
-    PetscErrorCode VecShift(PetscVec,PetscScalar)
-    PetscErrorCode VecAXPY(PetscVec,PetscScalar,PetscVec)
-    PetscErrorCode VecAXPBY(PetscVec,PetscScalar,PetscScalar,PetscVec)
-    PetscErrorCode VecNorm(PetscVec,NormType,PetscReal*)
-
-# --------------------------------------------------------------------
-
-cdef extern from * nogil:
-    ctypedef enum MatDuplicateOption:
-        MAT_DO_NOT_COPY_VALUES
-        MAT_COPY_VALUES
-        MAT_SHARE_NONZERO_PATTERN
-    ctypedef enum MatAssemblyType:
-        MAT_FLUSH_ASSEMBLY
-        MAT_FINAL_ASSEMBLY
-    ctypedef enum MatOption:
-        pass
-    ctypedef enum MatStructure:
-        SAME_NONZERO_PATTERN
-        DIFFERENT_NONZERO_PATTERN
-        SUBSET_NONZERO_PATTERN
-        UNKNOWN_NONZERO_PATTERN
-    ctypedef enum MatReuse:
-        MAT_IGNORE_MATRIX
-        MAT_INITIAL_MATRIX
-        MAT_REUSE_MATRIX
-    ctypedef enum MatSORType:
-        SOR_FORWARD_SWEEP
-        SOR_BACKWARD_SWEEP
-        SOR_SYMMETRIC_SWEEP
-        SOR_LOCAL_FORWARD_SWEEP
-        SOR_LOCAL_BACKWARD_SWEEP
-        SOR_LOCAL_SYMMETRIC_SWEEP
-        SOR_ZERO_INITIAL_GUESS
-        SOR_EISENSTAT
-        SOR_APPLY_UPPER
-        SOR_APPLY_LOWER
-    ctypedef enum PetscMatProductType "MatProductType":
-        MATPRODUCT_UNSPECIFIED
-        MATPRODUCT_AB
-        MATPRODUCT_AtB
-        MATPRODUCT_ABt
-        MATPRODUCT_PtAP
-        MATPRODUCT_RARt
-        MATPRODUCT_ABC
-    ctypedef enum MatOperation:
-        pass
-
-cdef extern from * nogil:
     struct _MatOps:
         PetscErrorCode (*destroy)(PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*setfromoptions)(PetscMat,PetscOptionItems*) except PETSC_ERR_PYTHON
         PetscErrorCode (*view)(PetscMat,PetscViewer) except PETSC_ERR_PYTHON
-        PetscErrorCode (*duplicate)(PetscMat,MatDuplicateOption,PetscMat*) except PETSC_ERR_PYTHON
-        PetscErrorCode (*copy)(PetscMat,PetscMat,MatStructure) except PETSC_ERR_PYTHON
-        PetscErrorCode (*createsubmatrix)(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*) except PETSC_ERR_PYTHON
-        PetscErrorCode (*setoption)(PetscMat,MatOption,PetscBool) except PETSC_ERR_PYTHON
+        PetscErrorCode (*duplicate)(PetscMat,PetscMatDuplicateOption,PetscMat*) except PETSC_ERR_PYTHON
+        PetscErrorCode (*copy)(PetscMat,PetscMat,PetscMatStructure) except PETSC_ERR_PYTHON
+        PetscErrorCode (*createsubmatrix)(PetscMat,PetscIS,PetscIS,PetscMatReuse,PetscMat*) except PETSC_ERR_PYTHON
+        PetscErrorCode (*setoption)(PetscMat,PetscMatOption,PetscBool) except PETSC_ERR_PYTHON
         PetscErrorCode (*setup)(PetscMat) except PETSC_ERR_PYTHON
-        PetscErrorCode (*assemblybegin)(PetscMat,MatAssemblyType) except PETSC_ERR_PYTHON
-        PetscErrorCode (*assemblyend)(PetscMat,MatAssemblyType) except PETSC_ERR_PYTHON
+        PetscErrorCode (*assemblybegin)(PetscMat,PetscMatAssemblyType) except PETSC_ERR_PYTHON
+        PetscErrorCode (*assemblyend)(PetscMat,PetscMatAssemblyType) except PETSC_ERR_PYTHON
         PetscErrorCode (*zeroentries)(PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*zerorowscolumns)(PetscMat,PetscInt,PetscInt*,PetscScalar,PetscVec,PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*scale)(PetscMat,PetscScalar) except PETSC_ERR_PYTHON
         PetscErrorCode (*shift)(PetscMat,PetscScalar) except PETSC_ERR_PYTHON
-        PetscErrorCode (*sor)(PetscMat,PetscVec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,PetscVec) except PETSC_ERR_PYTHON
+        PetscErrorCode (*sor)(PetscMat,PetscVec,PetscReal,PetscMatSORType,PetscReal,PetscInt,PetscInt,PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*getvecs)(PetscMat,PetscVec*,PetscVec*) except PETSC_ERR_PYTHON
         PetscErrorCode (*mult)(PetscMat,PetscVec,PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*multtranspose)(PetscMat,PetscVec,PetscVec) except PETSC_ERR_PYTHON
@@ -469,10 +315,10 @@ cdef extern from * nogil:
         PetscErrorCode (*solveadd)(PetscMat,PetscVec,PetscVec,PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*solvetransposeadd)(PetscMat,PetscVec,PetscVec,PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*getdiagonal)(PetscMat,PetscVec) except PETSC_ERR_PYTHON
-        PetscErrorCode (*setdiagonal"diagonalset")(PetscMat,PetscVec,InsertMode) except PETSC_ERR_PYTHON
+        PetscErrorCode (*setdiagonal"diagonalset")(PetscMat,PetscVec,PetscInsertMode) except PETSC_ERR_PYTHON
         PetscErrorCode (*diagonalscale)(PetscMat,PetscVec,PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*missingdiagonal)(PetscMat,PetscBool*,PetscInt*) except PETSC_ERR_PYTHON
-        PetscErrorCode (*norm)(PetscMat,NormType,PetscReal*) except PETSC_ERR_PYTHON
+        PetscErrorCode (*norm)(PetscMat,PetscNormType,PetscReal*) except PETSC_ERR_PYTHON
         PetscErrorCode (*realpart)(PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*imagpart"imaginarypart")(PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*conjugate)(PetscMat) except PETSC_ERR_PYTHON
@@ -480,7 +326,7 @@ cdef extern from * nogil:
         PetscErrorCode (*productsetfromoptions)(PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*productsymbolic)(PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*productnumeric)(PetscMat) except PETSC_ERR_PYTHON
-        PetscErrorCode (*hasoperation)(PetscMat,MatOperation,PetscBool*) except PETSC_ERR_PYTHON
+        PetscErrorCode (*hasoperation)(PetscMat,PetscMatOperation,PetscBool*) except PETSC_ERR_PYTHON
     ctypedef _MatOps *MatOps
     ctypedef struct Mat_Product:
         void *data
@@ -492,22 +338,6 @@ cdef extern from * nogil:
         PetscLayout rmap, cmap
         Mat_Product *product
 
-cdef extern from * nogil:
-    PetscErrorCode MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
-    PetscErrorCode MatGetDiagonalBlock(PetscMat,PetscMat*)
-    PetscErrorCode MatMult(PetscMat,PetscVec,PetscVec)
-    PetscErrorCode MatMultTranspose(PetscMat,PetscVec,PetscVec)
-    PetscErrorCode MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
-    PetscErrorCode MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
-    PetscErrorCode MatSolveTranspose(PetscMat,PetscVec,PetscVec)
-    PetscErrorCode MatSolveAdd(PetscMat,PetscVec,PetscVec,PetscVec)
-    PetscErrorCode MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
-    PetscErrorCode MatProductGetType(PetscMat,PetscMatProductType*)
-    PetscErrorCode MatProductGetMats(PetscMat,PetscMat*,PetscMat*,PetscMat*)
-    PetscErrorCode MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*)
-    PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt*)
-    PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject,PetscInt,PetscInt*,PetscBool*)
-    PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject,PetscInt,PetscInt)
 
 @cython.internal
 cdef class _PyMat(_PyObj): pass
@@ -712,7 +542,7 @@ cdef PetscErrorCode MatView_Python(
 
 cdef PetscErrorCode MatDuplicate_Python(
     PetscMat mat,
-    MatDuplicateOption op,
+    PetscMatDuplicateOption op,
     PetscMat* out,
     ) \
     except PETSC_ERR_PYTHON with gil:
@@ -726,7 +556,7 @@ cdef PetscErrorCode MatDuplicate_Python(
 cdef PetscErrorCode MatCopy_Python(
     PetscMat mat,
     PetscMat out,
-    MatStructure op,
+    PetscMatStructure op,
     ) \
     except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"MatCopy_Python")
@@ -757,7 +587,7 @@ cdef PetscErrorCode MatCreateSubMatrix_Python(
     PetscMat mat,
     PetscIS  row,
     PetscIS  col,
-    MatReuse op,
+    PetscMatReuse op,
     PetscMat *out,
     ) \
     except PETSC_ERR_PYTHON with gil:
@@ -785,7 +615,7 @@ cdef PetscErrorCode MatCreateSubMatrix_Python(
 
 cdef PetscErrorCode MatSetOption_Python(
     PetscMat mat,
-    MatOption op,
+    PetscMatOption op,
     PetscBool flag,
     ) \
     except PETSC_ERR_PYTHON with gil:
@@ -833,7 +663,7 @@ cdef PetscErrorCode MatSetUp_Python(
 
 cdef PetscErrorCode MatAssemblyBegin_Python(
     PetscMat mat,
-    MatAssemblyType at,
+    PetscMatAssemblyType at,
     ) \
     except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"MatAssemblyBegin_Python")
@@ -844,7 +674,7 @@ cdef PetscErrorCode MatAssemblyBegin_Python(
 
 cdef PetscErrorCode MatAssemblyEnd_Python(
     PetscMat mat,
-    MatAssemblyType at,
+    PetscMatAssemblyType at,
     ) \
     except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"MatAssemblyEnd_Python")
@@ -1126,7 +956,7 @@ cdef PetscErrorCode MatSOR_Python(
     PetscMat mat,
     PetscVec b,
     PetscReal omega,
-    MatSORType sortype,
+    PetscMatSORType sortype,
     PetscReal shift,
     PetscInt its,
     PetscInt lits,
@@ -1153,12 +983,12 @@ cdef PetscErrorCode MatGetDiagonal_Python(
 cdef PetscErrorCode MatSetDiagonal_Python(
     PetscMat mat,
     PetscVec v,
-    InsertMode im,
+    PetscInsertMode im,
     ) \
     except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"MatSetDiagonal_Python")
     cdef setDiagonal = PyMat(mat).setDiagonal
-    cdef bint addv = True if im == ADD_VALUES else False
+    cdef bint addv = True if im == PETSC_ADD_VALUES else False
     if setDiagonal is None: return UNSUPPORTED(b"setDiagonal")
     setDiagonal(Mat_(mat), Vec_(v), addv)
     return FunctionEnd()
@@ -1192,7 +1022,7 @@ cdef PetscErrorCode MatMissingDiagonal_Python(
 
 cdef PetscErrorCode MatNorm_Python(
     PetscMat mat,
-    NormType ntype,
+    PetscNormType ntype,
     PetscReal *nrm,
     ) \
     except PETSC_ERR_PYTHON with gil:
@@ -1235,7 +1065,7 @@ cdef PetscErrorCode MatConjugate_Python(
 
 cdef PetscErrorCode MatHasOperation_Python(
     PetscMat mat,
-    MatOperation op,
+    PetscMatOperation op,
     PetscBool *flag
     ) \
     except PETSC_ERR_PYTHON with gil:
@@ -1416,8 +1246,6 @@ cdef extern from * nogil:
         void *data
         PCOps ops
 
-cdef extern from * nogil:
-    PetscErrorCode PCMatApply(PetscPC,PetscMat,PetscMat)
 
 @cython.internal
 cdef class _PyPC(_PyObj): pass
@@ -1693,19 +1521,6 @@ cdef PetscErrorCode PCMatApply_Python(
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    ctypedef enum KSPNormType:
-        KSP_NORM_NONE
-        KSP_NORM_PRECONDITIONED
-        KSP_NORM_UNPRECONDITIONED
-        KSP_NORM_NATURAL
-    ctypedef enum PCSide:
-        PC_LEFT
-        PC_RIGHT
-        PC_SYMMETRIC
-    ctypedef enum KSPConvergedReason:
-        KSP_CONVERGED_ITERATING
-        KSP_DIVERGED_ITS
-cdef extern from * nogil:
     struct _KSPOps:
       PetscErrorCode (*destroy)(PetscKSP) except PETSC_ERR_PYTHON
       PetscErrorCode (*setup)(PetscKSP) except PETSC_ERR_PYTHON
@@ -1722,22 +1537,11 @@ cdef extern from * nogil:
         PetscBool transpose_solve
         PetscInt iter"its",max_its"max_it"
         PetscReal norm"rnorm"
-        KSPConvergedReason reason
-    PetscErrorCode KSPCreate(MPI_Comm,PetscKSP*)
-    PetscErrorCode KSPSetSupportedNorm(PetscKSP,KSPNormType,PCSide,PetscInt)
-    PetscErrorCode KSPSolve(PetscKSP,PetscVec,PetscVec)
-    PetscErrorCode KSPSetOperators(PetscKSP,PetscMat,PetscMat)
-cdef extern from * nogil:
-    PetscErrorCode KSPGetRhs(PetscKSP,PetscVec*)
-    PetscErrorCode KSPGetSolution(PetscKSP,PetscVec*)
-    PetscErrorCode KSPBuildSolutionDefault(PetscKSP,PetscVec,PetscVec*)
-    PetscErrorCode KSPBuildResidualDefault(PetscKSP,PetscVec,PetscVec,PetscVec*)
-    PetscErrorCode KSPGetIterationNumber(PetscKSP,PetscInt*)
-    PetscErrorCode KSPBuildSolution(PetscKSP,PetscVec,PetscVec*)
-    PetscErrorCode KSPBuildResidual(PetscKSP,PetscVec,PetscVec,PetscVec*)
-    PetscErrorCode KSPConverged(PetscKSP,PetscInt,PetscReal,KSPConvergedReason*)
+        PetscKSPConvergedReason reason
+
+cdef extern from * nogil: # custom.h
+    PetscErrorCode KSPConverged(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     PetscErrorCode KSPLogHistory(PetscKSP,PetscReal)
-    PetscErrorCode KSPMonitor(PetscKSP,PetscInt,PetscReal)
 
 
 @cython.internal
@@ -2015,7 +1819,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
     cdef PetscReal rnorm = 0
     #
     CHKERR( KSPBuildResidual(ksp, t, v, &R) )
-    CHKERR( VecNorm(R, NORM_2, &rnorm) )
+    CHKERR( VecNorm(R, PETSC_NORM_2, &rnorm) )
     #
     CHKERR( KSPConverged(ksp, ksp.iter, rnorm, &ksp.reason) )
     CHKERR( KSPLogHistory(ksp, ksp.norm) )
@@ -2026,7 +1830,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
         #
         KSPStep_Python(ksp, B, X)
         CHKERR( KSPBuildResidual(ksp, t, v, &R) )
-        CHKERR( VecNorm(R, NORM_2, &rnorm) )
+        CHKERR( VecNorm(R, PETSC_NORM_2, &rnorm) )
         ksp.iter += 1
         #
         KSPPostStep_Python(ksp)
@@ -2035,7 +1839,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
         CHKERR( KSPMonitor(ksp, ksp.iter, ksp.norm) )
     if ksp.iter == ksp.max_its:
         if ksp.reason == KSP_CONVERGED_ITERATING:
-            ksp.reason = KSP_DIVERGED_ITS
+            ksp.reason = KSP_DIVERGED_MAX_IT
     #
     return FunctionEnd()
 
@@ -2079,10 +1883,6 @@ cdef PetscErrorCode KSPStep_Python(
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    ctypedef enum SNESConvergedReason:
-      SNES_CONVERGED_ITERATING
-      SNES_DIVERGED_MAX_IT
-cdef extern from * nogil:
     struct _SNESOps:
       PetscErrorCode (*destroy)(PetscSNES) except PETSC_ERR_PYTHON
       PetscErrorCode (*setup)(PetscSNES) except PETSC_ERR_PYTHON
@@ -2096,35 +1896,14 @@ cdef extern from * nogil:
         SNESOps ops
         PetscInt  iter,max_its,linear_its
         PetscReal norm,rtol,ttol
-        SNESConvergedReason reason
+        PetscSNESConvergedReason reason
         PetscVec vec_sol,vec_sol_update,vec_func
         PetscMat jacobian,jacobian_pre
         PetscKSP ksp
-    PetscErrorCode SNESCreate(MPI_Comm,PetscSNES*)
-    PetscErrorCode SNESSolve(PetscSNES,PetscVec,PetscVec)
-    ctypedef PetscErrorCode (*SNESFunction)(PetscSNES,PetscVec,PetscVec,void*)
-    PetscErrorCode SNESGetFunction(PetscSNES,PetscVec*,SNESFunction*,void*)
-    PetscErrorCode SNESSetFunction(PetscSNES,PetscVec,SNESFunction,void*)
-    PetscErrorCode SNESComputeFunction(PetscSNES,PetscVec,PetscVec)
-    ctypedef PetscErrorCode (*SNESJacobian)(PetscSNES,PetscVec,PetscMat,PetscMat,void*)
-    PetscErrorCode SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,SNESJacobian*,void*)
-    PetscErrorCode SNESSetJacobian(PetscSNES,PetscMat,PetscMat,SNESJacobian,void*)
-    PetscErrorCode SNESComputeJacobian(PetscSNES,PetscVec,PetscMat,PetscMat)
-    SNESJacobian MatMFFDComputeJacobian
-    PetscErrorCode SNESGetKSP(PetscSNES,PetscKSP*)
-    PetscErrorCode SNESGetLineSearch(PetscSNES,PetscSNESLineSearch*)
-    PetscErrorCode SNESLineSearchApply(PetscSNESLineSearch,PetscVec,PetscVec,PetscReal*,PetscVec)
-cdef extern from * nogil:
-    PetscErrorCode SNESGetRhs(PetscSNES,PetscVec*)
-    PetscErrorCode SNESGetSolution(PetscSNES,PetscVec*)
-    PetscErrorCode SNESGetSolutionUpdate(PetscSNES,PetscVec*)
-    PetscErrorCode SNESGetIterationNumber(PetscSNES,PetscInt*)
-    PetscErrorCode SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
-    PetscErrorCode SNESGetConvergedReason(PetscSNES,SNESConvergedReason*)
-    PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*)
+
+cdef extern from * nogil: # custom.h
+    PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscSNESConvergedReason*)
     PetscErrorCode SNESLogHistory(PetscSNES,PetscReal,PetscInt)
-    PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
-    PetscErrorCode SNESSetFromOptions(PetscSNES)
 
 
 @cython.internal
@@ -2339,8 +2118,8 @@ cdef PetscErrorCode SNESSolve_Python_default(
     #
     CHKERR( VecSet(Y, 0.0) )
     CHKERR( SNESComputeFunction(snes, X, F) )
-    CHKERR( VecNorm(X, NORM_2, &xnorm) )
-    CHKERR( VecNorm(F, NORM_2, &fnorm) )
+    CHKERR( VecNorm(X, PETSC_NORM_2, &xnorm) )
+    CHKERR( VecNorm(F, PETSC_NORM_2, &fnorm) )
     #
     CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
     CHKERR( SNESLogHistory(snes, snes.norm, lits) )
@@ -2355,15 +2134,15 @@ cdef PetscErrorCode SNESSolve_Python_default(
         CHKERR( PetscObjectStateGet(<PetscObject>X, &nstate) )
         if ostate != nstate:
             CHKERR( SNESComputeFunction(snes, X, F) )
-            CHKERR( VecNorm(F, NORM_2, &fnorm) )
+            CHKERR( VecNorm(F, PETSC_NORM_2, &fnorm) )
         #
         lits = -snes.linear_its
         SNESStep_Python(snes, X, F, Y)
         lits += snes.linear_its
         #
         CHKERR( SNESLineSearchApply(ls, X, F, &fnorm, Y) )
-        CHKERR( VecNorm(X, NORM_2, &xnorm) )
-        CHKERR( VecNorm(Y, NORM_2, &ynorm) )
+        CHKERR( VecNorm(X, PETSC_NORM_2, &xnorm) )
+        CHKERR( VecNorm(Y, PETSC_NORM_2, &ynorm) )
         snes.iter += 1
         #
         SNESPostStep_Python(snes)
@@ -2433,17 +2212,6 @@ cdef PetscErrorCode SNESStep_Python_default(
 
 
 cdef extern from * nogil:
-    ctypedef enum TSProblemType:
-      TS_LINEAR
-      TS_NONLINEAR
-    ctypedef enum TSConvergedReason:
-      TS_CONVERGED_ITERATING
-      TS_CONVERGED_TIME
-      TS_CONVERGED_ITS
-      TS_DIVERGED_NONLINEAR_SOLVE
-      TS_DIVERGED_STEP_REJECTED
-
-cdef extern from * nogil:
     struct _TSOps:
       PetscErrorCode (*destroy)(PetscTS) except PETSC_ERR_PYTHON
       PetscErrorCode (*setup)(PetscTS) except PETSC_ERR_PYTHON
@@ -2468,15 +2236,13 @@ cdef extern from * nogil:
       PetscErrorCode (*rhsjacobian)(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat,void*) except PETSC_ERR_PYTHON
       PetscErrorCode (*ijacobian)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,void*) except PETSC_ERR_PYTHON
     ctypedef _TSUserOps *TSUserOps
-    struct _p_TSAdapt
-    ctypedef _p_TSAdapt *PetscTSAdapt "TSAdapt"
     struct _p_TS:
         void *data
         PetscDM dm
         PetscTSAdapt adapt
         TSOps ops
         TSUserOps userops
-        TSProblemType problem_type
+        PetscTSProblemType problem_type
         PetscInt  snes_its
         PetscInt  ksp_its
         PetscInt  reject
@@ -2487,24 +2253,10 @@ cdef extern from * nogil:
         PetscReal time_step
         PetscInt  max_steps
         PetscReal max_time
-        TSConvergedReason reason
+        PetscTSConvergedReason reason
         PetscSNES snes
         PetscBool usessnes
-cdef extern from * nogil:
-    PetscErrorCode TSGetKSP(PetscTS,PetscKSP*)
-    PetscErrorCode TSGetSNES(PetscTS,PetscSNES*)
-    PetscErrorCode TSPreStep(PetscTS)
-    PetscErrorCode TSPreStage(PetscTS,PetscReal)
-    PetscErrorCode TSPostStage(PetscTS,PetscReal,PetscInt,PetscVec*)
-    PetscErrorCode TSPostStep(PetscTS)
-    PetscErrorCode TSAdaptCheckStage(PetscTSAdapt,PetscTS,PetscReal,PetscVec,PetscBool*)
-    PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
-    PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
-    PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,PetscBool)
-    PetscErrorCode TSComputeI2Function(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscVec)
-    PetscErrorCode TSComputeI2Jacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscReal,PetscReal,PetscMat,PetscMat)
-    PetscErrorCode SNESTSFormFunction(PetscSNES,PetscVec,PetscVec,void*)
-    PetscErrorCode SNESTSFormJacobian(PetscSNES,PetscVec,PetscMat,PetscMat,void*)
+
 
 @cython.internal
 cdef class _PyTS(_PyObj): pass
@@ -2904,44 +2656,28 @@ cdef extern from * nogil:
       PetscErrorCode (*setfromoptions)(PetscTAO,PetscOptionItems*) except PETSC_ERR_PYTHON
       PetscErrorCode (*view)(PetscTAO,PetscViewer) except PETSC_ERR_PYTHON
     ctypedef _TaoOps *TaoOps
-    ctypedef enum TaoConvergedReason:
-      TAO_CONTINUE_ITERATING
-      TAO_DIVERGED_MAXITS
-      TAO_DIVERGED_LS_FAILURE
-    ctypedef enum TaoLineSearchConvergedReason:
-      TAOLINESEARCH_CONTINUE_ITERATING
-      TAOLINESEARCH_SUCCESS
     struct _p_TAO:
         void *data
         TaoOps ops
         PetscInt niter, max_it
-        TaoConvergedReason reason
+        PetscTAOConvergedReason reason
         PetscInt ksp_its, ksp_tot_its
         PetscKSP ksp
         PetscVec gradient
         PetscVec stepdirection
         PetscTAOLineSearch linesearch
 
-cdef extern from * nogil:
-    PetscErrorCode TaoGetSolution(PetscTAO,PetscVec*)
-    PetscErrorCode TaoComputeObjective(PetscTAO,PetscVec,PetscReal*)
-    PetscErrorCode TaoComputeGradient(PetscTAO,PetscVec,PetscVec)
-    PetscErrorCode TaoComputeObjectiveAndGradient(PetscTAO,PetscVec,PetscReal*,PetscVec)
-    PetscErrorCode TaoMonitor(PetscTAO,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal)
-    PetscErrorCode TaoLogConvergenceHistory(PetscTAO,PetscReal,PetscReal,PetscReal,PetscInt)
-    PetscErrorCode VecNorm(PetscVec,NormType,PetscReal*)
-    PetscErrorCode VecCopy(PetscVec,PetscVec)
-    PetscErrorCode VecScale(PetscVec,PetscReal)
-    PetscErrorCode KSPSetFromOptions(PetscKSP)
+cdef extern from * nogil: # custom.h
+    PetscErrorCode TaoConverged(PetscTAO,PetscTAOConvergedReason*)
 
-    # custom.h
+cdef extern from * nogil: # custom.h
     PetscErrorCode TaoGetVecs(PetscTAO,PetscVec*,PetscVec*,PetscVec*)
     PetscErrorCode TaoCheckReals(PetscTAO,PetscReal,PetscReal)
-    PetscErrorCode TaoConverged(PetscTAO)
     PetscErrorCode TaoComputeUpdate(PetscTAO)
     PetscErrorCode TaoCreateDefaultLineSearch(PetscTAO)
     PetscErrorCode TaoCreateDefaultKSP(PetscTAO)
-    PetscErrorCode TaoApplyLineSearch(PetscTAO,PetscReal*,PetscReal*,TaoLineSearchConvergedReason*)
+    PetscErrorCode TaoApplyLineSearch(PetscTAO,PetscReal*,PetscReal*,PetscTAOLineSearchConvergedReason*)
+
 
 @cython.internal
 cdef class _PyTao(_PyObj): pass
@@ -3126,19 +2862,19 @@ cdef PetscErrorCode TaoSolve_Python_default(
     #
     if G != NULL:
         CHKERR( TaoComputeObjectiveAndGradient(tao, X, &f, G) )
-        CHKERR( VecNorm(G, NORM_2, &gnorm) )
+        CHKERR( VecNorm(G, PETSC_NORM_2, &gnorm) )
     else:
         CHKERR( TaoComputeObjective(tao, X, &f) )
     CHKERR( TaoCheckReals(tao, f, gnorm) )
 
     CHKERR( TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao.ksp_its) )
     CHKERR( TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step) )
-    CHKERR( TaoConverged(tao) )
+    CHKERR( TaoConverged(tao, &tao.reason) )
 
     cdef PetscObjectState ostate = -1
     cdef PetscObjectState nstate = -1
     cdef PetscInt its = 0
-    cdef TaoLineSearchConvergedReason lsr = TAOLINESEARCH_SUCCESS
+    cdef PetscTAOLineSearchConvergedReason lsr = TAOLINESEARCH_SUCCESS
     for its from 0 <= its < tao.max_it:
         if tao.reason: break
         CHKERR( PetscObjectStateGet(<PetscObject>X, &ostate) )
@@ -3149,7 +2885,7 @@ cdef PetscErrorCode TaoSolve_Python_default(
         if ostate != nstate:
             if G != NULL:
                 CHKERR( TaoComputeObjectiveAndGradient(tao, X, &f, G) )
-                CHKERR( VecNorm(G, NORM_2, &gnorm) )
+                CHKERR( VecNorm(G, PETSC_NORM_2, &gnorm) )
             else:
                 CHKERR( TaoComputeObjective(tao, X, &f) )
         #
@@ -3160,7 +2896,7 @@ cdef PetscErrorCode TaoSolve_Python_default(
         #
         if G != NULL:
             CHKERR( TaoApplyLineSearch(tao, &f, &step, &lsr) )
-            CHKERR( VecNorm(G, NORM_2, &gnorm) )
+            CHKERR( VecNorm(G, PETSC_NORM_2, &gnorm) )
             if lsr < TAOLINESEARCH_CONTINUE_ITERATING:
                 tao.reason = TAO_DIVERGED_LS_FAILURE
         else:
@@ -3172,7 +2908,7 @@ cdef PetscErrorCode TaoSolve_Python_default(
         TaoPostStep_Python(tao)
         CHKERR( TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao.ksp_its) )
         CHKERR( TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step) )
-        CHKERR( TaoConverged(tao) )
+        CHKERR( TaoConverged(tao, &tao.reason) )
 
     if tao.niter == tao.max_it:
         if tao.reason <= 0:
@@ -3254,13 +2990,6 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
 
 cdef extern from * nogil:
 
-  const char* MATPYTHON  '"python"'
-  const char* KSPPYTHON  '"python"'
-  const char* PCPYTHON   '"python"'
-  const char* SNESPYTHON '"python"'
-  const char* TSPYTHON   '"python"'
-  const char* TAOPYTHON  '"python"'
-
   ctypedef PetscErrorCode MatCreateFunction  (PetscMat)  except PETSC_ERR_PYTHON
   ctypedef PetscErrorCode PCCreateFunction   (PetscPC)   except PETSC_ERR_PYTHON
   ctypedef PetscErrorCode KSPCreateFunction  (PetscKSP)  except PETSC_ERR_PYTHON
@@ -3273,9 +3002,7 @@ cdef extern from * nogil:
   PetscErrorCode KSPRegister  (const char[],KSPCreateFunction* )
   PetscErrorCode SNESRegister (const char[],SNESCreateFunction*)
   PetscErrorCode TSRegister   (const char[],TSCreateFunction*  )
-
-  # Tao registration not available with complex numbers
-  PetscErrorCode TaoRegisterCustom (const char[],TaoCreateFunction* )
+  PetscErrorCode TaoRegister  (const char[],TaoCreateFunction* )
 
   PetscErrorCode (*PetscPythonMonitorSet_C) \
       (PetscObject, const char[]) except PETSC_ERR_PYTHON
@@ -3290,35 +3017,12 @@ cdef public PetscErrorCode PetscPythonRegisterAll() except PETSC_ERR_PYTHON:
     CHKERR( KSPRegister ( KSPPYTHON,  KSPCreate_Python  ) )
     CHKERR( SNESRegister( SNESPYTHON, SNESCreate_Python ) )
     CHKERR( TSRegister  ( TSPYTHON,   TSCreate_Python   ) )
-
-    # No preprocessor in cython
-    CHKERR( TaoRegisterCustom ( TAOPYTHON, TaoCreate_Python ) )
+    CHKERR( TaoRegister ( TAOPYTHON,  TaoCreate_Python  ) )
 
     # Python monitors
     global PetscPythonMonitorSet_C
     PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
 
     return FunctionEnd()
-
-# --------------------------------------------------------------------
-
-# Cython 0.16 - Function prototypes for unused entries are not emitted
-# despite them being marked as 'public'. The lack of explicit extern
-# "C" binding causes trouble with C++ builds of PETSc. The bogus calls
-# below trick Cython to treat all these entries as used.
-
-if PETSC_FALSE:
-    <void>import_libpetsc4py()
-    <void>MatPythonGetContext(NULL,NULL)
-    <void>MatPythonSetContext(NULL,NULL)
-    <void>PCPythonGetContext(NULL,NULL)
-    <void>PCPythonSetContext(NULL,NULL)
-    <void>KSPPythonGetContext(NULL,NULL)
-    <void>KSPPythonSetContext(NULL,NULL)
-    <void>SNESPythonGetContext(NULL,NULL)
-    <void>SNESPythonSetContext(NULL,NULL)
-    <void>TSPythonGetContext(NULL,NULL)
-    <void>TSPythonSetContext(NULL,NULL)
-    <void>PetscPythonRegisterAll()
 
 # --------------------------------------------------------------------

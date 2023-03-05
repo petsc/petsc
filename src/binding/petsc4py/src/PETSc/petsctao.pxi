@@ -53,6 +53,10 @@ cdef extern from * nogil:
         TAO_DIVERGED_TR_REDUCTION
         TAO_DIVERGED_USER
 
+    ctypedef enum PetscTAOLineSearchConvergedReason "TaoLineSearchConvergedReason":
+      TAOLINESEARCH_CONTINUE_ITERATING
+      TAOLINESEARCH_SUCCESS
+
     ctypedef PetscErrorCode (*PetscTaoMonitorDestroy)(void**)
     ctypedef PetscErrorCode PetscTaoConvergenceTest(PetscTAO,void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoMonitor(PetscTAO,void*) except PETSC_ERR_PYTHON
@@ -110,10 +114,11 @@ cdef extern from * nogil:
     PetscErrorCode TaoSetConvergenceTest(PetscTAO,PetscTaoConvergenceTest*, void*)
     PetscErrorCode TaoSetConvergedReason(PetscTAO,PetscTAOConvergedReason)
     PetscErrorCode TaoGetConvergedReason(PetscTAO,PetscTAOConvergedReason*)
+    PetscErrorCode TaoLogConvergenceHistory(PetscTAO,PetscReal,PetscReal,PetscReal,PetscInt)
     PetscErrorCode TaoGetSolutionStatus(PetscTAO,PetscInt*,
-                             PetscReal*,PetscReal*,
-                             PetscReal*,PetscReal*,
-                             PetscTAOConvergedReason*)
+                                        PetscReal*,PetscReal*,
+                                        PetscReal*,PetscReal*,
+                                        PetscTAOConvergedReason*)
 
     PetscErrorCode TaoSetMonitor(PetscTAO,PetscTaoMonitor,void*,PetscTaoMonitorDestroy)
     PetscErrorCode TaoCancelMonitors(PetscTAO)
@@ -176,10 +181,6 @@ cdef extern from * nogil:
 
     PetscErrorCode TaoPythonSetType(PetscTAO,char[])
     PetscErrorCode TaoPythonGetType(PetscTAO,char*[])
-
-cdef extern from "libpetsc4py.h":
-    PetscErrorCode TaoPythonSetContext(PetscTAO,void*)
-    PetscErrorCode TaoPythonGetContext(PetscTAO,void**)
 
 # --------------------------------------------------------------------
 

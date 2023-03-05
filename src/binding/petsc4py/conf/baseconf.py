@@ -1,11 +1,11 @@
 # --------------------------------------------------------------------
 
-__all__ = ['PetscConfig',
-           'setup', 'Extension',
-           'config', 'build', 'build_src', 'build_ext',
-           'clean', 'test', 'sdist',
-           'log',
-           ]
+__all__ = [
+    'PetscConfig',
+    'setup', 'Extension',
+    'config', 'build', 'build_src', 'build_ext',
+    'clean', 'sdist', 'log',
+]
 
 # --------------------------------------------------------------------
 
@@ -45,10 +45,33 @@ _install   = import_command('install')
 _clean     = import_command('clean')
 _sdist     = import_command('sdist')
 
-from distutils import sysconfig
 from distutils import log
-from distutils.util import split_quoted, execute
+from distutils import sysconfig
+from distutils.util import execute
+from distutils.util import split_quoted
 from distutils.errors import DistutilsError
+
+try:
+    from packaging.version import (
+        Version,
+        LegacyVersion,
+    )
+except ImportError:
+    try:
+        from setuptools.extern.packaging.version import (
+            Version,
+            LegacyVersion,
+        )
+    except ImportError:
+        from distutils.version import (
+            StrictVersion as Version,
+            LooseVersion  as LegacyVersion
+        )
+
+try:
+    from setuptools import dep_util
+except ImportError:
+    from distutils import dep_util
 
 # --------------------------------------------------------------------
 
@@ -596,19 +619,6 @@ class clean(_clean):
                               egg_info)
             except DistutilsError:
                 pass
-
-class test(Command):
-    description = "run the test suite"
-    user_options = [('args=', None, "options")]
-    def initialize_options(self):
-        self.args = None
-    def finalize_options(self):
-        if self.args:
-            self.args = split_quoted(self.args)
-        else:
-            self.args = []
-    def run(self):
-        pass
 
 class sdist(_sdist):
     def run(self):

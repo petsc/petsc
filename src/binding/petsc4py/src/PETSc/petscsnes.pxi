@@ -254,10 +254,6 @@ cdef extern from "custom.h" nogil:
     PetscErrorCode SNESLineSearchSetPreCheck(PetscSNESLineSearch,PetscSNESPreCheckFunction,void*)
     PetscErrorCode SNESLineSearchGetSNES(PetscSNESLineSearch,PetscSNES*)
 
-cdef extern from "libpetsc4py.h":
-    PetscErrorCode SNESPythonSetContext(PetscSNES,void*)
-    PetscErrorCode SNESPythonGetContext(PetscSNES,void**)
-
 # -----------------------------------------------------------------------------
 
 cdef inline SNES ref_SNES(PetscSNES snes):

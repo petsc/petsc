@@ -17,8 +17,8 @@ cdef extern from * nogil:
     PetscBool PetscInitializeCalled
     PetscBool PetscFinalizeCalled
 
-    ctypedef PetscErrorCode (*PetscErrorHandlerFunction)(MPI_Comm,int,char*,char*,
-                                              int,PetscErrorType,char*,void*)
+    ctypedef PetscErrorCode (*PetscErrorHandlerFunction)(
+        MPI_Comm,int,char*,char*,int,PetscErrorType,char*,void*)
     PetscErrorHandlerFunction PetscAttachDebuggerErrorHandler
     PetscErrorHandlerFunction PetscEmacsClientErrorHandler
     PetscErrorHandlerFunction PetscTraceBackErrorHandler
@@ -53,8 +53,6 @@ cdef extern from * nogil:
 
     PetscErrorCode PetscHasExternalPackage(const char[],PetscBool*)
 
-cdef extern from *:
-    PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)
 
 cdef inline PetscErrorCode Sys_Sizes(
     object size, object bsize,

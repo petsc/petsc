@@ -105,6 +105,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscViewerASCIIPopTab(PetscViewer)
     PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer,PetscBool)
     PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,const char[],...)
+    PetscErrorCode PetscViewerStringSPrintf(PetscViewer,char[],...)
     PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...)
 
     PetscErrorCode PetscViewerFileGetName(PetscViewer,char*[])

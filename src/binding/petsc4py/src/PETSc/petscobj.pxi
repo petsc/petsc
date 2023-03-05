@@ -27,8 +27,13 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectStateSet(PetscObject,PetscObjectState)
     PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*)
     PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
+    PetscErrorCode PetscObjectChangeTypeName(PetscObject,char[])
     PetscErrorCode PetscObjectCompose(PetscObject,char[],PetscObject)
     PetscErrorCode PetscObjectQuery(PetscObject,char[],PetscObject*)
+
+    ctypedef void (*PetscVoidFunction)()
+    PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],PetscVoidFunction)
+    PetscErrorCode PetscObjectQueryFunction(PetscObject,char[],PetscVoidFunction*)
 
     PetscErrorCode PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt)
     PetscErrorCode PetscObjectGetTabLevel(PetscObject,PetscInt*)
@@ -80,6 +85,9 @@ cdef extern from *:
 
 cdef extern from * nogil:
     ctypedef struct _p_PetscObject:
+        MPI_Comm comm
+        const char *prefix
+        PetscInt refct
         void *python_context
         PetscErrorCode (*python_destroy)(void*)
 

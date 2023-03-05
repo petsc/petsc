@@ -122,6 +122,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPGetNormType(PetscKSP,PetscKSPNormType*)
     PetscErrorCode KSPSetPCSide(PetscKSP,PetscPCSide)
     PetscErrorCode KSPGetPCSide(PetscKSP,PetscPCSide*)
+    PetscErrorCode KSPSetSupportedNorm(PetscKSP,PetscKSPNormType,PetscPCSide,PetscInt)
 
     PetscErrorCode KSPSetConvergenceTest(PetscKSP,PetscKSPConvergedFunction,void*,PetscKSPCtxDel)
     PetscErrorCode KSPSetResidualHistory(PetscKSP,PetscReal[],PetscInt,PetscBool)
@@ -175,7 +176,9 @@ cdef extern from * nogil:
     PetscErrorCode KSPGetErrorIfNotConverged(PetscKSP,PetscBool*);
 
     PetscErrorCode KSPBuildSolution(PetscKSP,PetscVec,PetscVec*)
+    PetscErrorCode KSPBuildSolutionDefault(PetscKSP,PetscVec,PetscVec*)
     PetscErrorCode KSPBuildResidual(PetscKSP,PetscVec,PetscVec,PetscVec*)
+    PetscErrorCode KSPBuildResidualDefault(PetscKSP,PetscVec,PetscVec,PetscVec*)
 
     PetscErrorCode KSPSetDiagonalScale(PetscKSP,PetscBool)
     PetscErrorCode KSPGetDiagonalScale(PetscKSP,PetscBool*)
@@ -198,10 +201,6 @@ cdef extern from "custom.h" nogil:
     PetscErrorCode KSPSetResidualNorm(PetscKSP,PetscReal)
     PetscErrorCode KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     PetscErrorCode KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)
-
-cdef extern from "libpetsc4py.h":
-    PetscErrorCode KSPPythonSetContext(PetscKSP,void*)
-    PetscErrorCode KSPPythonGetContext(PetscKSP,void**)
 
 # -----------------------------------------------------------------------------
 

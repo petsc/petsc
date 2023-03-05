@@ -358,12 +358,6 @@ cdef extern from * nogil:
 
 # --------------------------------------------------------------------
 
-cdef extern from "libpetsc4py.h":
-    PetscErrorCode PCPythonSetContext(PetscPC,void*)
-    PetscErrorCode PCPythonGetContext(PetscPC,void**)
-
-# --------------------------------------------------------------------
-
 cdef inline PC ref_PC(PetscPC pc):
     cdef PC ob = <PC> PC()
     ob.pc = pc
