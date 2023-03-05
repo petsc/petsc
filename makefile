@@ -68,11 +68,11 @@ info:
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "-----------------------------------------"
-	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
+	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//" | head -n 7
 	-@echo "-----------------------------------------"
 	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
 	-@echo "Using configuration flags:"
-	-@grep "\#define " ${PETSCCONF_H}
+	-@grep "\#define " ${PETSCCONF_H} | tail -n +2
 	-@echo "-----------------------------------------"
 	-@echo "Using C compile: ${PETSC_CCOMPILE_SINGLE}"
 	-@if [  "${MPICC_SHOW}" != "" ]; then \
