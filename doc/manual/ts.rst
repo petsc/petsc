@@ -152,6 +152,8 @@ Providing appropriate :math:`F()` and :math:`G()` for your problem
 allows for the easy runtime switching between explicit, semi-implicit
 (IMEX), and fully implicit methods.
 
+.. _sec_ts_basic:
+
 Basic TS Options
 ~~~~~~~~~~~~~~~~
 

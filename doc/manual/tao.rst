@@ -27,7 +27,7 @@ defined by
 
 where :math:`n = 2m` is the number of variables. Note that while we use
 the C language to introduce the TAO software, the package is fully
-usable from C++ and Fortran 77/90.
+usable from C++ and Fortran.
 :any:`chapter_fortran` discusses additional
 issues concerning Fortran usage.
 

@@ -603,8 +603,7 @@ where noted, add a newline after the section headings.
 
 #. ``Level:`` (no newline) followed by ``beginner``,
    ``intermediate``, ``advanced``, ``developer``, or ``deprecated``. This
-   should be listed before the various ``Note(s):`` sections but it is ok
-   if it is listed after them.
+   should be listed before the various ``Note(s):`` sections.
 
 #. (Optional) a ``Note(s):`` section containing in-depth discussion,
    technical caveats, special cases, and so on. If it is ambiguous

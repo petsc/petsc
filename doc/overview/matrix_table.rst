@@ -49,12 +49,12 @@ Summary of Matrix Types Available In PETSc
      - ``MatCreateMPIAIJCRL()``
      -
      - Vectorized version
-   * - Multiple applications of single AIJ
+   * - Multiple applications of single ``MATAIJ``
      - ``MATMAIJ``
      - ``MatCreateMAIJ()``
      -
      - Commonly used for identical interpolations on each component of a multi-component vector
-   * - Kronecker product of sparse matrx A; I \otimes S + A \otimes T
+   * - Kronecker product of sparse matrix $A$; $ I \otimes S + A \otimes T $
      - ``MATKAIJ``
      - ``MatCreateKAIJ()``
      -
@@ -113,7 +113,7 @@ Summary of Matrix Types Available In PETSc
      - ``MATLRC``
      - ``MatCreateLRC()``
      -
-     -  A + U*C*V'
+     -  $A + UCV^T$
    * - FFT
      - ``MATFFTW``
      - ``MatCreateSeqFFTW()``
@@ -154,7 +154,7 @@ Summary of Matrix Types Available In PETSc
      - ``MatCreateNormal()``
      -
      -
-   * - Hermitiona Normal, A'\*A, virtual
+   * - Hermitian Normal, A'\*A, virtual
      - ``MATNORMALHERMITIAN``
      - ``MatCreateNormalHermitian()``
      -

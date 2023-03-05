@@ -2,7 +2,7 @@
 PETSc in a nutshell
 ===================
 
-PETSc/TAO is a tool for writing, analyzing, and optimizing properties of large-scale numerical simulations.
+PETSc/TAO is a tool for writing, analyzing, and optimizing large-scale numerical simulations.
 
 .. image:: /images/manual/library_structure.svg
    :alt: PETSc Structure Diagram
@@ -15,13 +15,13 @@ Algebraic objects
 
 * :any:`Matrices <chapter_matrices>`  - contain Jacobians and operators that define linear systems (``Mat``).
 
-  * Multiple sparse and dense matrix storage formats,
+  * :any:`Multiple sparse and dense matrix storage formats<doc_matrix>`,
 
-  * limited memory variable metric representations,
+  * :any:`Limited memory variable metric representations<sec_matlmvm>`,
 
-  * block and nested representations (see ``MatType``).
+  * :any:`block<sec_block_matrices>` and :any:`nested<sec_matnest>` representations,
 
-  * :ref:`Easy, efficient matrix assembly and interface <sec_matcreate>`
+  * :any:`Easy, efficient matrix assembly and interface <sec_matcreate>`.
 
 * Indices - used to access portions of vectors and matrix, for example {1,2,4} or 1:10 (``IS``).
 
@@ -40,34 +40,37 @@ Solvers
 
 * :any:`Optimization <chapter_tao>` with equality and inequality constraints, first and second order (Newton) methods (``Tao``).
 
+* The package `SLEPc <https://slepc.upv.es>`__ provides highly scalable and efficient eigenvalue and related algorithms for PETSc.
+
+DM: Model/Discretization Interface to Solvers
+=============================================
+
+* ``DMDA`` - for simulations computed on simple structured grids
+
+* :any:`chapter_stag` - for simulations computed on staggered grids, (``DMSTAG``)
+
+* :any:`chapter_unstructured` - for simulations computed on unstructured meshes, (``DMPLEX``)
+
+* :any:`chapter_network` - for simulations on networks or graphs, for example the power grid, river networks, the nervous system, (``DMNETWORK``)
+
+* ``DMFOREST`` - for simulations on collections of quad or octree meshes
+
+* ``DMSWARM`` - for simulations on particles
+
 .. seealso::
 
    For full feature list and prerequisites see:
 
    - :ref:`Vector table <doc_vector>`
    - :ref:`Matrix table <doc_matrix>`
-   - :ref:`Linear solver table <doc_linsolve>`
-   - :ref:`Nonlinear solver table <doc_nonlinsolve>`
-   - :ref:`Tao solver table <doc_taosolve>`
+   - :ref:`Linear solvers table <doc_linsolve>`
+   - :ref:`Nonlinear solvers table <doc_nonlinsolve>`
+   - :ref:`ODE integrators table <sec_ts_basic>`
+   - :ref:`Optimizers table <doc_taosolve>`
+   - :ref:`DM table <dm_table>`
 
-DM: Interfacing Solvers to Models/Discretizations
-==========================================================
-
-* ``DMDA`` - for simulations computed on simple structured grids
-
-* :any:`chapter_stag` - for simulations computed on staggered grids, (``DMSTAG``)
-
-* :any:`chapter_unstructured` - for simulation computed on unstructured meshes, (``DMPLEX``)
-
-* :any:`chapter_network` - for simulations on networks or graphs, for example the power grid, river networks, the nervous system, (``DMNETWORK``)
-
-* ``DMP4EST`` - for simulations on collections of quad or octree meshes
-
-* ``DMSWARM`` - for simulations on particles
-
-
-Utilities for the Simulation/Solver Process
-===========================================
+Utilities for Simulations/Solvers
+=================================
 
 Runtime
 
@@ -75,8 +78,8 @@ Runtime
 
 * visualization of the solvers and simulation, :any:`sec_viewers`,
 
-* monitoring of solution progress,
+* :any:`monitoring <sec_kspmonitor>` of solution progress,
 
-*  :any:`ch_profiling` of the performance,
+* :any:`ch_profiling` of the performance,
 
 * robust :any:`sec_errors`.

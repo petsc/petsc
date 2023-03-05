@@ -4,7 +4,7 @@
 Reporting Bugs And Errors
 *************************
 Bug reports can be sent to petsc-users@mcs.anl.gov (public mailing list with public archives)
-or petsc-maint@mcs.anl.gov, a private maintenance e-mail without archives. Installation
+or petsc-maint@mcs.anl.gov (private maintenance mailing list without archives). Installation
 issues generally require sending in ``configure.log``, ``make.log`` i.e uncompressed large
 attachments - here petsc-maint@mcs.anl.gov is preferable.
 Check :ref:`Mailing lists <doc_mail>`
@@ -50,7 +50,7 @@ the problem. We suggest providing the following information:
 .. admonition:: Do's
 
    - Detailed steps to recreate the problem if possible.
-   - Copy of the **complete** error message if pheasible, otherwise include the full error
+   - Copy of the **complete** error message if feasible, otherwise include the full error
      message as an attachment.
    - If the problem involves installation, send the entire ``configure.log`` and
      ``make.log`` as attachments.
