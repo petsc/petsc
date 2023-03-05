@@ -636,6 +636,8 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 +  value - index of matching string (if found)
 -  found - boolean indicating whether string was found (can be `NULL`)
 
+   Level: developer
+
 .seealso: `PetscEnumFind()`
 @*/
 PetscErrorCode PetscEListFind(PetscInt n, const char *const *list, const char *str, PetscInt *value, PetscBool *found)

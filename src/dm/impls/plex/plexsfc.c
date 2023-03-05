@@ -903,12 +903,11 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
 
   Input Parameters:
 + dm - The `DMPLEX` on which to set periodicity
-- face_sf - SF in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
+- face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
 
-  Notes:
-
+  Note:
   One can use `-dm_plex_shape zbox` to use this mode of periodicity, wherein the periodic points are distinct both globally
   and locally, but are paired when creating a global dof space.
 
@@ -962,8 +961,10 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
   Logically Collective
 
   Input Arguments:
-+ dm - `DMPlex` that has been configured with `DMPlexSetIsoperiodicFaceSF()`
++ dm - `DMPLEX` that has been configured with `DMPlexSetIsoperiodicFaceSF()`
 - t - 4x4 affine transformation basis.
+
+  Level: advanced
 
   Notes:
   Affine transforms are 4x4 matrices in which the leading 3x3 block expresses a rotation (or identity for no rotation),
@@ -973,9 +974,11 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 
   Although the interface accepts a general affine transform, only affine translation is supported at present.
 
-  Developer Notes:
+  Developer Note:
   This interface should be replaced by making BasisTransform public, expanding it to support affine representations, and
   adding GPU implementations to apply the G2L/L2G transforms.
+
+.seealso: [](chapter_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
 @*/
 PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, const PetscScalar t[])
 {

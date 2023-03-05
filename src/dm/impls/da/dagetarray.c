@@ -78,6 +78,8 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
 
 /*MC
     DMDAVecRestoreArrayF90 - check Fortran Notes at `DMDAVecRestoreArray()`
+
+    Level: intermediate
 M*/
 
 /*@
@@ -135,6 +137,8 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
 
 /*MC
     DMDAVecGetArrayWriteF90 - check Fortran Notes at `DMDAVecGetArrayWrite()`
+
+    Level: intermediate
 M*/
 
 /*@C
@@ -215,6 +219,8 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
 
 /*MC
     DMDAVecRestoreArrayWriteF90 - check Fortran Notes at `DMDAVecRestoreArrayWrite()`
+
+    Level: intermediate
 M*/
 
 /*@
@@ -387,6 +393,8 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
 
 /*MC
     DMDAVecGetArrayReadF90 - check Fortran Notes at `DMDAVecGetArrayRead()`
+
+    Level: intermediate
 M*/
 
 /*@C
@@ -461,6 +469,8 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
 
 /*MC
     DMDAVecRestoreArrayReadF90 - check Fortran Notes at `DMDAVecRestoreArrayRead()`
+
+    Level: intermediate
 M*/
 
 /*@

@@ -1293,6 +1293,8 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 +  is - the index set
 -  ptr - the pointer obtained by ISGetIndices()
 
+   Level: intermediate
+
    Note:
    This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
 
