@@ -40,7 +40,7 @@ configure_options = [
   '--download-suitesparse=1',
   '--download-chaco=1',
   '--download-spai=1',
-  '--download-moab=1',
+  # '--download-moab=1', # disabled since its maxCxxVersion is c++14, but Kokkos-4.0's minCxxVersion is c++17
   '--download-saws',
   '--download-revolve=1',
   '--download-cams=1',
