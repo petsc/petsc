@@ -1094,6 +1094,7 @@ functionend:
 
   /* Set default */
   PetscCall(VecScatterSetFromOptions(sf));
+  PetscCall(PetscSFSetUp(sf));
 
   *newsf = sf;
   PetscFunctionReturn(PETSC_SUCCESS);
