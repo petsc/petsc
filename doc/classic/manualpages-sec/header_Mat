@@ -1,7 +1,8 @@
-# Mat Manual Pages
+# Matrix Operations (Mat)
 
 <A HREF="PETSC_DIRsrc/mat/tutorials/index.html">Examples</A><BR>
 
 PETSc matrices (`Mat` objects) are used to store Jacobians and other sparse matrices
-in PDE-based (or other) simulations. 
+in PDE-based (or other) simulations.
 
+## [](../MatOrderings/index)

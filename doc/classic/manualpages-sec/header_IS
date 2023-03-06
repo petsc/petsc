@@ -1,4 +1,3 @@
-# IS Manual Pages
+# Index sets (IS)
 
 `IS` objects are used to index into vectors and matrices and to setup vector scatters.
-

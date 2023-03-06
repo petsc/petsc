@@ -1,6 +1,5 @@
-# Manual Pages for Matrix Orders, Colorings, and Partitionings
+# Matrix colorings (MatColoring), orderings (MatOrdering), and partitionings (MatPartitioning)
 
 These tools compute reorderings (for sparse matrix factorizations), colorings
-(for computing Jacobians via finite differences) and partitionings (for parallel 
+(for computing Jacobians via finite differences) and partitionings (for parallel
 decomposition of data).
-

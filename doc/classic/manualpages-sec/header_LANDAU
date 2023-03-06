@@ -1,4 +1,3 @@
-# LANDAU Manual Pages
+# Landau Collision Operator
 
 The LANDAU class implements an AMR discretization of the Fokker-Planck collision operator in Landau form using DMPlex and DMForest, within TS function and Jacobian methods.
-

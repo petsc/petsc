@@ -1,5 +1,3 @@
-# DMNetwork Manual Pages
+# Graphs and Networks (DMNetwork)
 
 The DMNetwork class encapsulates a graph topology, and is based on DMPLEX. It is designed to handle very large scale graphs, such as those that arise in power system or wireless communication modeling.
-
-

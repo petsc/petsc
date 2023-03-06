@@ -1,4 +1,4 @@
-# DMFOREST Manual Pages
+# A Forest of Trees and Structured Adaptive Refinement (DMFOREST)
 
 <A HREF="PETSC_DIRsrc/dm/impls/forest/tutorials/index.html">Examples</A><BR>
 
@@ -7,4 +7,3 @@ The DMFOREST class encapsulates an octree mesh, with interfaces for both topolog
 <ul>
   <li><a href="http://arxiv.org/abs/1508.02470">Support for Non-conformal Meshes in PETSc's DMPlex Interface</a>, Tobin Isaac and Matthew G. Knepley, ACM Transaction on Mathematical Software, 2017.</li>
 </ul>
-

@@ -1,5 +1,3 @@
-# PETSc Section Manual Pages
+# Section Data Layout (PetscSection)
 
 PetscSection provides a simple interface to describe arbitrary data layouts.
-
-

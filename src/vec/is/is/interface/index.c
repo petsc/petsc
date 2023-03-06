@@ -1284,22 +1284,21 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 }
 
 /*@C
-   ISRestoreIndices - Restores an index set to a usable state after a call
-                      to `ISGetIndices()`.
+  ISRestoreIndices - Restores an index set to a usable state after a call to `ISGetIndices()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  is - the index set
--  ptr - the pointer obtained by ISGetIndices()
+  Input Parameters:
++ is - the index set
+- ptr - the pointer obtained by ISGetIndices()
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
+  Note:
+  This routine zeros out ptr. This is to prevent accidental use of the array after it has been restored.
 
-   Fortran Note:
-   `ISRestoreIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISRestoreIndicesF90()`
+  Fortran Note:
+  `ISRestoreIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISRestoreIndicesF90()`
 
 .seealso: `ISGetIndices()`, `ISRestoreIndicesF90()`
 @*/

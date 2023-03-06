@@ -445,13 +445,13 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
 }
 
 /*@C
-   PetscDrawSetVisible - Sets if the drawing surface (the 'window') is visible on its display.
+  PetscDrawSetVisible - Sets if the drawing surface (the 'window') is visible on its display.
 
-   Input Parameters:
-+  draw - the drawing window
--  visible - if the surface should be visible
+  Input Parameters:
++ draw - the drawing window
+- visible - if the surface should be visible
 
-   Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscDraw`
 @*/
