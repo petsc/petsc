@@ -4313,23 +4313,24 @@ PetscErrorCode MatSeqAIJCheckInode(Mat A)
   node_count = 0;
   idx        = a->j;
   ii         = a->i;
-  while (i < m) {            /* For each row */
-    nzx = ii[i + 1] - ii[i]; /* Number of nonzeros */
-    /* Limits the number of elements in a node to 'a->inode.limit' */
-    for (j = i + 1, idy = idx, blk_size = 1; j < m && blk_size < a->inode.limit; ++j, ++blk_size) {
-      nzy = ii[j + 1] - ii[j]; /* Same number of nonzeros */
-      if (nzy != nzx) break;
-      idy += nzx; /* Same nonzero pattern */
-      PetscCall(PetscArraycmp(idx, idy, nzx, &flag));
-      if (!flag) break;
+  if (idx) {
+    while (i < m) {            /* For each row */
+      nzx = ii[i + 1] - ii[i]; /* Number of nonzeros */
+      /* Limits the number of elements in a node to 'a->inode.limit' */
+      for (j = i + 1, idy = idx, blk_size = 1; j < m && blk_size < a->inode.limit; ++j, ++blk_size) {
+        nzy = ii[j + 1] - ii[j]; /* Same number of nonzeros */
+        if (nzy != nzx) break;
+        idy += nzx; /* Same nonzero pattern */
+        PetscCall(PetscArraycmp(idx, idy, nzx, &flag));
+        if (!flag) break;
+      }
+      ns[node_count++] = blk_size;
+      idx += blk_size * nzx;
+      i = j;
     }
-    ns[node_count++] = blk_size;
-    idx += blk_size * nzx;
-    i = j;
   }
-
   /* If not enough inodes found,, do not use inode version of the routines */
-  if (!m || node_count > .8 * m) {
+  if (!m || !idx || node_count > .8 * m) {
     PetscCall(MatSeqAIJ_Inode_ResetOps(A));
     PetscCall(PetscFree(a->inode.size));
     PetscCall(PetscInfo(A, "Found %" PetscInt_FMT " nodes out of %" PetscInt_FMT " rows. Not using Inode routines\n", node_count, m));

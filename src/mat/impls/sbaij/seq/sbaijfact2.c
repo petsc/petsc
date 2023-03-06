@@ -104,12 +104,12 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(const PetscInt *ai, co
     PetscCall(PetscArraycpy(xk_tmp, xk, bs)); /* xk_tmp <- xk */
     nz = ai[k + 1] - ai[k];
     vj = aj + ai[k];
-    xj = x + (*vj) * bs; /* *vj-th block of x, *vj>k */
+    xj = x + (size_t)(*vj) * bs; /* *vj-th block of x, *vj>k */
     while (nz--) {
       /* x(:) += U(k,:)^T*(Dk*xk) */
       PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, xj, v, xk_tmp); /* xj <- xj + v^t * xk */
       vj++;
-      xj = x + (*vj) * bs;
+      xj = x + (size_t)(*vj) * bs;
       v += bs2;
     }
     /* xk = inv(Dk)*(Dk*xk) */
@@ -133,13 +133,13 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(const PetscInt *ai, c
     xk = x + k * bs; /* xk */
     nz = ai[k + 1] - ai[k];
     vj = aj + ai[k];
-    xj = x + (*vj) * bs;
+    xj = x + (size_t)(*vj) * bs;
     while (nz--) {
       /* xk += U(k,:)*x(:) */
       PetscKernel_v_gets_v_plus_A_times_w(bs, xk, v, xj); /* xk <- xk + v*xj */
       vj++;
       v += bs2;
-      xj = x + (*vj) * bs;
+      xj = x + (size_t)(*vj) * bs;
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

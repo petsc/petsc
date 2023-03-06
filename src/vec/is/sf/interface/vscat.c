@@ -675,7 +675,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
   PetscSFNode    *iremote;
   PetscLayout     xlayout, ylayout;
   ISTypeID        ixid, iyid;
-  PetscInt        bs, bsx, bsy, min, max, m[2], ixfirst, ixstep, iyfirst, iystep;
+  PetscInt        bs, bsx, bsy, min, max, m[2], mg[2], ixfirst, ixstep, iyfirst, iystep;
   PetscBool       can_do_block_opt = PETSC_FALSE;
   PetscSF         sf;
 
@@ -795,31 +795,30 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
   bigcomm = (xcommsize == 1) ? ycomm : xcomm;
 
   /* Processors could go through different path in this if-else test */
-  m[0] = m[1] = PETSC_MPI_INT_MIN;
+  m[0] = PETSC_MAX_INT;
+  m[1] = PETSC_MIN_INT;
   if (ixid == IS_BLOCK && iyid == IS_BLOCK) {
-    m[0] = PetscMax(bsx, bsy);
-    m[1] = -PetscMin(bsx, bsy);
+    m[0] = PetscMin(bsx, bsy);
+    m[1] = PetscMax(bsx, bsy);
   } else if (ixid == IS_BLOCK && iyid == IS_STRIDE && iystep == 1 && iyfirst % bsx == 0) {
     m[0] = bsx;
-    m[1] = -bsx;
+    m[1] = bsx;
   } else if (ixid == IS_STRIDE && iyid == IS_BLOCK && ixstep == 1 && ixfirst % bsy == 0) {
     m[0] = bsy;
-    m[1] = -bsy;
+    m[1] = bsy;
   }
   /* Get max and min of bsx,bsy over all processes in one allreduce */
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, m, 2, MPIU_INT, MPI_MAX, bigcomm));
-  max = m[0];
-  min = -m[1];
+  PetscCall(PetscGlobalMinMaxInt(bigcomm, m, mg));
 
   /* Since we used allreduce above, all ranks will have the same min and max. min==max
      implies all ranks have the same bs. Do further test to see if local vectors are dividable
      by bs on ALL ranks. If they are, we are ensured that no blocks span more than one processor.
    */
-  if (min == max && min > 1) {
+  if (mg[0] == mg[1] && mg[0] > 1) {
     PetscCall(VecGetLocalSize(x, &xlen));
     PetscCall(VecGetLocalSize(y, &ylen));
-    m[0] = xlen % min;
-    m[1] = ylen % min;
+    m[0] = xlen % mg[0];
+    m[1] = ylen % mg[0];
     PetscCall(MPIU_Allreduce(MPI_IN_PLACE, m, 2, MPIU_INT, MPI_LOR, bigcomm));
     if (!m[0] && !m[1]) can_do_block_opt = PETSC_TRUE;
   }
@@ -835,7 +834,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
     const PetscInt *indices;
 
     /* Shrink x and ix */
-    bs = min;
+    bs = mg[0];
     PetscCall(VecCreateMPIWithArray(bigcomm, 1, xlen / bs, PETSC_DECIDE, NULL, &xx)); /* We only care xx's layout */
     if (ixid == IS_BLOCK) {
       PetscCall(ISBlockGetIndices(ix, &indices));

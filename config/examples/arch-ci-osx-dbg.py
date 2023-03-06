@@ -10,7 +10,7 @@ configure_options = [
   '--with-cxx=g++',
   'COPTFLAGS=-g -O -fsanitize=address',
   'FOPTFLAGS=-g -O',
-  'CXXOPTFLAGS=-g -O',
+  'CXXOPTFLAGS=-g -O -fsanitize=address',
   '--download-mpich=1',
   '--download-mpich-device=ch3:nemesis', #for some reason runex174_2_elemental takes very long with ch3:p4
   '--download-metis=1',
