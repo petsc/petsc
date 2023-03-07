@@ -272,7 +272,7 @@ PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char 
 
   PetscCall(PetscBinaryWrite(sock, request, request_len, PETSC_CHAR));
   PetscCall(PetscFree(request));
-  PetscBinaryRead(sock, buff, buffsize, NULL, PETSC_CHAR);
+  PetscCall(PetscBinaryRead(sock, buff, buffsize, NULL, PETSC_CHAR));
   buff[buffsize - 1] = 0;
   PetscCall(PetscInfo(NULL, "HTTP result follows: \n%s\n", buff));
   PetscFunctionReturn(PETSC_SUCCESS);
