@@ -1,6 +1,6 @@
-============================================
-Guide to PETSc Tutorial Examples, by Physics
-============================================
+=====================
+Tutorials, by Physics
+=====================
 .. highlight:: none
 
 Below we list examples which simulate particular physics problems so that users interested in a particular set of governing equations can easily locate a relevant example. Often PETSc will have several examples looking at the same physics using different numerical tools, such as different discretizations, meshing strategy, closure model, or parameter regime.
@@ -80,7 +80,7 @@ In the example itself, everything can be expressed in terms of determinants and 
 Stokes
 ======
 
-The Stokes equations
+The Stokes equations (see :doc:`physics/guide_to_stokes` for a detailed discussion)
 
 .. math::
 
@@ -93,8 +93,6 @@ describe slow flow of an incompressible fluid with velocity :math:`u`, pressure 
   Finite Element
     :2D: `SNES example 62 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex62.c.html>`_
     :3D: `SNES example 62 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex62.c.html>`_
-
-    See :doc:`physics/guide_to_stokes` for more.
 
 Euler
 =====

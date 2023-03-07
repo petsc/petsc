@@ -1,11 +1,10 @@
-==================================================
-Guide to the Meshing for Subsurface Flows in PETSc
-==================================================
+=====================================
+Meshing for Subsurface Flows in PETSc
+=====================================
 
 This tutorials guides users in creating meshes for the TDyCore simulation framework for subsurface flows. The user inputs a surface mesh, a refinement prescription, and an extrusion prescription in order to create the simulation mesh.
 
 Reading the ASCII Output
-------------------------
 
 For example, a very simple mesh would start with a square surface mesh divided into two triangles, which is then extruded to form two triangular prisms. This is the first test in the DMPlex tutorial code ex10,
 
@@ -19,13 +18,7 @@ which outputs
 
 We can see that there are two 3-cells, meaning three-dimensional cells, and from the `celltype` label we see that those cells have celltype 9, meaning they are triangular prisms. The original surface mesh had 5 edges, so we would expect 10 edges for the two surfaces and four edges connecting those surfaces. This is exactly what we see, since there are 14 1-cells, but 4 of them noted in parentheses are tensor cells created by extrusion. We can see this another way in the celltype label, where there are ten mesh points of type 1, meaning segments, and four mesh points of type 2, meaning tensor products of a vertex and segment. Similarly, there are 9 2-cells, but 5 of them stretch between the two surfaces, meaning they are tensor products of two segments.
 
-Refinement of Simplex Meshes
-----------------------------
-
-In PETSc, we can refine meshes uniformly and adaptively. Adaptive refinement can be controlled using tagging of cells, as well as specifying a target metric for the refined mesh. We will focus on the first type of adaptivity in this tutorial.
-
-Regular Refinement
-^^^^^^^^^^^^^^^^^^
+Regular Refinement of Simplex Meshes
 
 We can regularly refine the surface before extrusion using `-dm_refine <k>`, where `k` is the number of refinements,
 
@@ -64,8 +57,7 @@ We can similarly look at this in parallel. Test 2 uses three refinements and thr
 
    **Parallel extruded mesh with refined surface**
 
-Adaptive Refinement
-^^^^^^^^^^^^^^^^^^^
+Adaptive Refinement of Simplex Meshes
 
 Adaptive refinement of simplicial meshes is somewhat tricky when we demand that the meshes be conforming, as we do in this case. We would like different grid cells to have different levels of refinement, for example headwaters cells in a watershed be refined twice, while river channel cells be refined four times. In order to differentiate between cells, we first mark the cells on the surface using a `DMLabel`. We can do this programmatically,
 

@@ -1,6 +1,6 @@
-==========================================================================
-Guide to PETSc Quick Start Tutorial on Time, Accuracy, Speed Analysis(TAS)
-==========================================================================
+====================================
+Time, Accuracy, Speed Analysis (TAS)
+====================================
 .. highlight:: none
 
 Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D and 3D with Finite Elements:
