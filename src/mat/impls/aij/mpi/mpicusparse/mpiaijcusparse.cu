@@ -681,8 +681,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
    (the default parallel PETSc format).  This matrix will ultimately pushed down
    to NVIDIA GPUs and use the CuSPARSE library for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
-   the parameter nz (or the array nnz).  By setting these parameters accurately,
-   performance during matrix assembly can be increased by more than a factor of 50.
+   the parameter `nz` (or the array nnz).
 
    Collective
 
@@ -692,36 +691,35 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or NULL
+         (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
 
+   Level: intermediate
+
+   Notes:
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Notes:
-   If nnz is given then nz is ignored
+   If `nnz` is given then `nz` is ignored
 
    The AIJ format, also called the
-   compressed row storage), is fully compatible with standard Fortran 77
+   compressed row storage), is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
+   either one (as in Fortran) or zero.
 
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  For large problems you MUST preallocate memory or you
-   will get TERRIBLE performance, see the users' manual chapter on matrices.
+   Specify the preallocated storage with either `nz` or `nnz` (not both).
+   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+   allocation.
 
    By default, this format uses inodes (identical nodes) when possible, to
    improve numerical efficiency of matrix-vector products and solves. We
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
-   Level: intermediate
-
-.seealso: `MATAIJCUSPARSE`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJCUSPARSE`, `MATAIJCUSPARSE`
+.seealso: [](chapter_matrices), `Mat`, `MATAIJCUSPARSE`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJCUSPARSE`, `MATAIJCUSPARSE`
 @*/
 PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {
@@ -755,14 +753,14 @@ PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
    the above preallocation routines for simplicity.
 
    Options Database Keys:
-+  -mat_type mpiaijcusparse - sets the matrix type to `MATMPIAIJCUSPARSE` during a call to `MatSetFromOptions()`
-.  -mat_cusparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
-.  -mat_cusparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to `MatSetFromOptions()`. Other options include ell (ellpack) or hyb (hybrid).
--  -mat_cusparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to `MatSetFromOptions()`. Other options include ell (ellpack) or hyb (hybrid).
++  -mat_type mpiaijcusparse - sets the matrix type to `MATMPIAIJCUSPARSE`
+.  -mat_cusparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices. Other options include ell (ellpack) or hyb (hybrid).
+.  -mat_cusparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
+-  -mat_cusparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
 
   Level: beginner
 
- .seealso: `MatCreateAIJCUSPARSE()`, `MATSEQAIJCUSPARSE`, `MATMPIAIJCUSPARSE`, `MatCreateSeqAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
+ .seealso: [](chapter_matrices), `Mat`, `MatCreateAIJCUSPARSE()`, `MATSEQAIJCUSPARSE`, `MATMPIAIJCUSPARSE`, `MatCreateSeqAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 M*/
 
 /*MC
@@ -770,7 +768,7 @@ M*/
 
   Level: beginner
 
- .seealso: `MATAIJCUSPARSE`, `MATSEQAIJCUSPARSE`
+ .seealso: [](chapter_matrices), `Mat`, `MATAIJCUSPARSE`, `MATSEQAIJCUSPARSE`
 M*/
 
 // get GPU pointers to stripped down Mat. For both seq and MPI Mat.

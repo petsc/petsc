@@ -606,7 +606,6 @@ PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const Pe
 }
 #endif
 
-/* -------------------------------------------------------------------------*/
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
 PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
 {

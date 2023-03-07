@@ -74,7 +74,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
   nbcols             = 0;
   color_start[bcols] = 0;
 
-  if (c->htype[0] == 'd') { /* ----  c->htype == 'ds', use MatEntry --------*/
+  if (c->htype[0] == 'd') { /*  c->htype == 'ds', use MatEntry */
     MatEntry *Jentry_new, *Jentry = c->matentry;
 
     PetscCall(PetscMalloc1(nz, &Jentry_new));
@@ -119,7 +119,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
     }
     PetscCall(PetscFree(Jentry));
     c->matentry = Jentry_new;
-  } else { /* ---------  c->htype == 'wp', use MatEntry2 ------------------*/
+  } else { /*  c->htype == 'wp', use MatEntry2 */
     MatEntry2 *Jentry2_new, *Jentry2 = c->matentry2;
 
     PetscCall(PetscMalloc1(nz, &Jentry2_new));

@@ -27,7 +27,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
   PetscCall(ISCompressIndicesGeneral(N, C->rmap->n, bs, is_max, is, is_new));
   PetscCheck(ov >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative overlap specified");
 
-  /* ----- previous non-scalable implementation ----- */
+  /*  previous non-scalable implementation  */
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsHasName(NULL, NULL, "-IncreaseOverlap_old", &flg));
   if (flg) { /* previous non-scalable implementation */
@@ -184,7 +184,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscCall(MPIU_Allreduce(&is_max, &ois_max, 1, MPIU_INT, MPI_MAX, comm));
 
   /* 1. Send this processor's is[] to other processors */
-  /*---------------------------------------------------*/
   /* allocate spaces */
   PetscCall(PetscMalloc1(is_max, &n));
   len = 0;
@@ -304,7 +303,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   }
 
   /* 2. Receive other's is[] and process. Then send back */
-  /*-----------------------------------------------------*/
   len = 0;
   for (i = 0; i < nrqr; i++) {
     if (len_r1[i] > len) len = len_r1[i];
@@ -363,7 +361,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscCall(PetscBTDestroy(&otable));
 
   /* 3. Do local work on this processor's is[] */
-  /*-------------------------------------------*/
   /* make sure there is enough unused space in odata2(=data) array */
   len_max = is_max * (Mbs + 1); /* max space storing all is[] for this processor */
   if (len_unused < len_max) {   /* allocate more space for odata2 */
@@ -377,7 +374,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscCall(PetscFree(data1_start));
 
   /* 4. Receive work done on other processors, then merge */
-  /*------------------------------------------------------*/
   /* get max number of messages that this processor expects to recv */
   PetscCall(MPIU_Allreduce(len_s, iwork, size, MPI_INT, MPI_MAX, comm));
   PetscCall(PetscMalloc1(iwork[rank] + 1, &data2));
@@ -425,7 +421,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscCall(PetscFree(s_status));
 
   /* 5. Create new is[] */
-  /*--------------------*/
   for (i = 0; i < is_max; i++) {
     data_i = data + 1 + is_max + Mbs * i;
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, data[1 + i], data_i, PETSC_COPY_VALUES, is + i));

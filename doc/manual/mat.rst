@@ -1190,6 +1190,39 @@ separation of the stages and a unified operation that internally utilized the tw
 
 See :any:`sec_matsub` and :any:`sec_matmatproduct`.
 
+.. _sec_graph:
+
+Graph Operations
+~~~~~~~~~~~~~~~~
+
+PETSc has four families of graph operations that treat sparse `Mat` as representing graphs.
+
+.. list-table::
+   :widths: auto
+   :align: center
+   :header-rows: 1
+
+   * - Operation
+     - Type
+     - Available methods
+     - User guide
+   * - Ordering to reduce fill
+     - N/A
+     - ``MatOrderingType``
+     - :any:`sec_matfactor`
+   * - Partitioning for parallelism
+     - ``MatPartitioning``
+     - ``MatPartitioningType``
+     - :any:`sec_partitioning`
+   * - Coloring for parallelism or Jacobians
+     - ``MatColoring``
+     - ``MatColoringType``
+     - :any:`sec_fdmatrix`
+   * - Coarsening for multigrid
+     - ``MatCoarsen``
+     - ``MatCoarsenType``
+     - :any:`sec_amg`
+
 .. _sec_partitioning:
 
 Partitioning

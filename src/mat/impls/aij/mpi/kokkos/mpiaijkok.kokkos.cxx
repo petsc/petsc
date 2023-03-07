@@ -283,7 +283,7 @@ static PetscErrorCode MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(Mat mat, M
    Suppose C's j-th row is connected to a root identified by PetscSFNode (k,i), it means we will bcast the i-th row of B on rank k
    to j-th row of C. ownerSF's leaves must be contiguous (in other words, as if ilocal=NULL was used to set its graph).
 
-   Collective on comm of ownerSF
+   Collective
 
    Input Parameters:
 +   B       - the SEQAIJKOKKOS matrix, using local col ids
@@ -661,7 +661,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A, MatReuse reuse, PetscBool loc
   Note:
    Between calls with `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`, csrmat must have the same nonzero pattern
 
-.seealso: `MATMPIAIJKOKKOS`
+.seealso: [](chapter_matrices), `Mat`, `MATMPIAIJKOKKOS`
  */
 static PetscErrorCode MatSetMPIAIJKokkosWithGlobalCSRMatrix(Mat C, MatReuse reuse, const KokkosCsrMatrix &csrmat, MatRowMapKokkosView &Cdstart)
 {
@@ -1532,12 +1532,12 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
 
    A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
-   Options Database Keys:
-.  -mat_type aijkokkos - sets the matrix type to "aijkokkos" during a call to MatSetFromOptions()
+   Options Database Key:
+.  -mat_type aijkokkos - sets the matrix type to `MATAIJKOKKOS`
 
   Level: beginner
 
-.seealso: `MatCreateAIJKokkos()`, `MATSEQAIJKOKKOS`, `MATSEQAIJ`, `MATMPIAIJ`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateAIJKokkos()`, `MATSEQAIJKOKKOS`, `MATSEQAIJ`, `MATMPIAIJ`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A)
 {
@@ -1553,8 +1553,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A)
    (the default parallel PETSc format).  This matrix will ultimately pushed down
    to Kokkos for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
-   the parameter nz (or the array nnz).  By setting these parameters accurately,
-   performance during matrix assembly can be increased by more than a factor of 50.
+   the parameter `nz` (or the array `nnz`).
 
    Collective
 
@@ -1564,24 +1563,26 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A)
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or NULL
+         (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
 
+   Level: intermediate
+
+   Notes:
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Notes:
-   If nnz is given then nz is ignored
+   If `nnz` is given then `nz` is ignored
 
    The AIJ format, also called compressed row storage), is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
+   either one (as in Fortran) or zero.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
+   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
@@ -1590,9 +1591,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A)
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
-   Level: intermediate
+   Developer Note:
+   This manual page is for the sequential constructor, not the parallel constructor
 
-.seealso: `MATAIJKOKOS`, `MATSEQAIJKOKOS`, `MATMPIAIJKOKOS`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJKOKKOS`, `MATAIJKOKKOS`
+.seealso: [](chapter_matrices), `Mat`, `MATAIJKOKOS`, `MATSEQAIJKOKOS`, `MATMPIAIJKOKOS`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`,
+          `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJKOKKOS`, `MATAIJKOKKOS`
 @*/
 PetscErrorCode MatCreateAIJKokkos(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

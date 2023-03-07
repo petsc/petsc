@@ -122,7 +122,6 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A, Vec b, Vec x, int uflag)
                                    "volume={30},\n  number={2},\n  pages={196--199},\n  year={2004},\n  publisher={ACM}\n}\n",
                                    &cite));
   /* solve Ax = b by umfpack_*_wsolve */
-  /* ----------------------------------*/
 
   if (!lu->Wi) { /* first time, allocate working space for wsolve */
     PetscCall(PetscMalloc1(A->rmap->n, &lu->Wi));
@@ -173,7 +172,6 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorIn
   PetscFunctionBegin;
   if (!A->rmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   /* numeric factorization of A' */
-  /* ----------------------------*/
 
   if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) umfpack_UMF_free_numeric(&lu->Numeric);
 #if defined(PETSC_USE_COMPLEX)
@@ -282,7 +280,6 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
   if (lu->Control[UMFPACK_PRL] > 1) umfpack_UMF_report_control(lu->Control);
 
   /* symbolic factorization of A' */
-  /* ---------------------------------------------------------------------- */
   if (r) { /* use Petsc row ordering */
 #if !defined(PETSC_USE_COMPLEX)
     status = umfpack_UMF_qsymbolic(n, m, ai, aj, av, lu->perm_c, &lu->Symbolic, lu->Control, lu->Info);
@@ -370,17 +367,17 @@ PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType *type)
   MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers, LU, for sequential matrices
   via the external package UMFPACK.
 
-  Use ./configure --download-suitesparse to install PETSc to use UMFPACK
+  Use `./configure --download-suitesparse` to install PETSc to use UMFPACK
 
-  Use -pc_type lu -pc_factor_mat_solver_type umfpack to use this direct solver
+  Use `-pc_type lu` `-pc_factor_mat_solver_type umfpack` to use this direct solver
 
   Consult UMFPACK documentation for more information about the Control parameters
   which correspond to the options database keys below.
 
   Options Database Keys:
-+ -mat_umfpack_ordering                - CHOLMOD, AMD, GIVEN, METIS, BEST, NONE
++ -mat_umfpack_ordering                - `CHOLMOD`, `AMD`, `GIVEN`, `METIS`, `BEST`, `NONE`
 . -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
-. -mat_umfpack_strategy <AUTO>         - (choose one of) AUTO UNSYMMETRIC SYMMETRIC 2BY2
+. -mat_umfpack_strategy <AUTO>         - (choose one of) `AUTO`, `UNSYMMETRIC`, `SYMMETRIC 2BY2`
 . -mat_umfpack_dense_col <alpha_c>     - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
 . -mat_umfpack_dense_row <0.2>         - Control[UMFPACK_DENSE_ROW]
 . -mat_umfpack_amd_dense <10>          - Control[UMFPACK_AMD_DENSE]
@@ -397,9 +394,10 @@ PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType *type)
 
    Level: beginner
 
-   Note: UMFPACK is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
+   Note:
+   UMFPACK is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: `PCLU`, `MATSOLVERSUPERLU`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `MATSOLVERSUPERLU`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType ftype, Mat *F)
@@ -436,7 +434,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType fty
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_LU]));
 
   /* initializations */
-  /* ------------------------------------------------*/
   /* get the default control parameters */
   umfpack_UMF_defaults(lu->Control);
   lu->perm_c                  = NULL; /* use defaul UMFPACK col permutation */

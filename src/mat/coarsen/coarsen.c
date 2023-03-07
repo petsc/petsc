@@ -42,7 +42,7 @@ PetscErrorCode MatCoarsenRegister(const char sname[], PetscErrorCode (*function)
    MatCoarsenGetType - Gets the Coarsen method type and name (as a string)
         from the coarsen context.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  coarsen - the coarsen context
@@ -51,8 +51,6 @@ PetscErrorCode MatCoarsenRegister(const char sname[], PetscErrorCode (*function)
 .  type - coarsener type
 
    Level: advanced
-
-   Not Collective
 
 .seealso: `MatCoarsen`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatCoarsenSetType()`, `MatCoarsenRegister()`
 @*/

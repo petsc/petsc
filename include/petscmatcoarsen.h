@@ -12,19 +12,20 @@ PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
    Level: advanced
 
-  Notes:
+  Note:
     This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
 
-.seealso: `MatCoarsenCreate()`, `MatCoarsenType`
+.seealso: [](chapter_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
+          `MatColoring`, `MatPartitioning`
 S*/
 typedef struct _p_MatCoarsen *MatCoarsen;
 
 /*J
-    MatCoarsenType - String with the name of a PETSc matrix coarsen algorithm
+    MatCoarsenType - String with the name of a PETSc matrix coarsening algorithm
 
    Level: beginner
 
-.seealso: `MatCoarsenCreate()`, `MatCoarsen`
+.seealso: [](chapter_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsen`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
 J*/
 typedef const char *MatCoarsenType;
 #define MATCOARSENMIS  "mis"

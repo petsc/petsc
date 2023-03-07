@@ -82,7 +82,6 @@ L100:
   lvsize = *ccsize - lvlend;
   if (lvsize > 0) goto L100;
   /*       RESET XADJ TO ITS CORRECT SIGN AND RETURN. */
-  /*       ------------------------------------------*/
   i__1 = *ccsize;
   for (i = 1; i <= i__1; ++i) {
     node       = ls[i];

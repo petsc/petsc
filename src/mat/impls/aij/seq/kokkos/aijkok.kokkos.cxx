@@ -577,12 +577,12 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
 
    A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
-   Options Database Keys:
+   Options Database Key:
 .  -mat_type aijkokkos - sets the matrix type to `MATSEQAIJKOKKOS` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MatCreateSeqAIJKokkos()`, `MATMPIAIJKOKKOS`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJKokkos()`, `MATMPIAIJKOKKOS`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJKokkos(Mat A)
 {
@@ -1290,7 +1290,6 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------------*/
 /*@C
    MatCreateSeqAIJKokkos - Creates a sparse matrix in `MATSEQAIJKOKKOS` (compressed row) format
    (the default parallel PETSc format). This matrix will ultimately be handled by
@@ -1307,36 +1306,35 @@ PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm, Ma
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or NULL
+         (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
 
+   Level: intermediate
+
+   Notes:
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradgm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Notes:
-   If nnz is given then nz is ignored
+   If `nnz` is given then `nz` is ignored
 
    The AIJ format, also called
-   compressed row storage, is fully compatible with standard Fortran 77
+   compressed row storage, is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  For large problems you MUST preallocate memory or you
-   will get TERRIBLE performance, see the users' manual chapter on matrices.
+   Specify the preallocated storage with either `nz` or `nnz` (not both).
+   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+   allocation.
 
    By default, this format uses inodes (identical nodes) when possible, to
    improve numerical efficiency of matrix-vector products and solves. We
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
-   Level: intermediate
-
-.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`
 @*/
 PetscErrorCode MatCreateSeqAIJKokkos(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {
@@ -1823,7 +1821,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos_device(Mat A, MatSolv
 
   Level: beginner
 
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatCreateSeqAIJKokkos()`, `MATAIJKOKKOS`, `MatKokkosSetFormat()`, `MatKokkosStorageFormat`, `MatKokkosFormatOperation`
+.seealso: [](chapter_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatCreateSeqAIJKokkos()`, `MATAIJKOKKOS`, `MatKokkosSetFormat()`, `MatKokkosStorageFormat`, `MatKokkosFormatOperation`
 M*/
 PETSC_EXTERN PetscErrorCode MatGetFactor_SeqAIJKokkos_Kokkos(Mat A, MatFactorType ftype, Mat *B) /* MatGetFactor_<MatType>_<MatSolverType> */
 {

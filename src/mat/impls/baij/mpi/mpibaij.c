@@ -2110,9 +2110,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
 
-  /* ----------------------------------------------------------------
-     Tell every processor the number of nonzeros per row
-  */
+  /*   Tell every processor the number of nonzeros per row  */
   PetscCall(PetscMalloc1(A->rmap->N / bs, &lens));
   for (i = A->rmap->rstart / bs; i < A->rmap->rend / bs; i++) lens[i] = ad->i[i - A->rmap->rstart / bs + 1] - ad->i[i - A->rmap->rstart / bs] + bd->i[i - A->rmap->rstart / bs + 1] - bd->i[i - A->rmap->rstart / bs];
   PetscCall(PetscMalloc1(2 * size, &recvcounts));
@@ -2122,18 +2120,14 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
     displs[i]     = A->rmap->range[i] / bs;
   }
   PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, lens, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-  /* ---------------------------------------------------------------
-     Create the sequential matrix of the same type as the local block diagonal
-  */
+  /* Create the sequential matrix of the same type as the local block diagonal  */
   PetscCall(MatCreate(PETSC_COMM_SELF, &B));
   PetscCall(MatSetSizes(B, A->rmap->N / bs, A->cmap->N / bs, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetType(B, MATSEQAIJ));
   PetscCall(MatSeqAIJSetPreallocation(B, 0, lens));
   b = (Mat_SeqAIJ *)B->data;
 
-  /*--------------------------------------------------------------------
-    Copy my part of matrix column indices over
-  */
+  /*     Copy my part of matrix column indices over  */
   sendcount  = ad->nz + bd->nz;
   jsendbuf   = b->j + b->i[rstarts[rank] / bs];
   a_jsendbuf = ad->j;
@@ -2158,9 +2152,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
   }
   PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
-  /*--------------------------------------------------------------------
-    Gather all column indices to all processors
-  */
+  /*  Gather all column indices to all processors  */
   for (i = 0; i < size; i++) {
     recvcounts[i] = 0;
     for (j = A->rmap->range[i] / bs; j < A->rmap->range[i + 1] / bs; j++) recvcounts[i] += lens[j];
@@ -2168,9 +2160,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
   displs[0] = 0;
   for (i = 1; i < size; i++) displs[i] = displs[i - 1] + recvcounts[i - 1];
   PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, b->j, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-  /*--------------------------------------------------------------------
-    Assemble the matrix into useable form (note numerical values not yet set)
-  */
+  /*  Assemble the matrix into useable form (note numerical values not yet set)  */
   /* set the b->ilen (length of each row) values */
   PetscCall(PetscArraycpy(b->ilen, lens, A->rmap->N / bs));
   /* set the b->i indices */
@@ -2421,7 +2411,6 @@ PetscErrorCode MatGetDiagonalBlock_MPIBAIJ(Mat A, Mat *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatGetRow_MPIBAIJ,
                                        MatRestoreRow_MPIBAIJ,

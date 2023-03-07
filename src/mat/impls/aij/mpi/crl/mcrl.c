@@ -152,17 +152,17 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or NULL
+         (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
 
+   Level: intermediate
+
    Note:
    If nnz is given then nz is ignored
 
-   Level: intermediate
-
-.seealso: [Sparse Matrix Creation](sec_matsparse), `MATAIJ`, `MATAIJSELL`, `MATAIJPERM`, `MATAIJMKL`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
+.seealso: [](chapter_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATAIJ`, `MATAIJSELL`, `MATAIJPERM`, `MATAIJMKL`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], PetscInt onz, const PetscInt onnz[], Mat *A)
 {

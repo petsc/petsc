@@ -1268,21 +1268,21 @@ static PetscErrorCode MatBindToCPU_H2OPUS(Mat A, PetscBool flg)
 /*MC
      MATH2OPUS = "h2opus" - A matrix type for hierarchical matrices using the H2Opus package.
 
-   Options Database Keys:
-.     -mat_type h2opus - matrix type to "h2opus" during a call to MatSetFromOptions()
+   Options Database Key:
+.     -mat_type h2opus - matrix type to "h2opus"
+
+   Level: beginner
 
    Notes:
      H2Opus implements hierarchical matrices in the H^2 flavour. It supports CPU or NVIDIA GPUs.
 
-     For CPU only builds, use ./configure --download-h2opus --download-thrust to install PETSc to use H2Opus.
-     In order to run on NVIDIA GPUs, use ./configure --download-h2opus --download-magma --download-kblas.
-
-   Level: beginner
+     For CPU only builds, use `./configure --download-h2opus --download-thrust` to install PETSc to use H2Opus.
+     In order to run on NVIDIA GPUs, use `./configure --download-h2opus --download-magma --download-kblas`.
 
    Reference:
 .  * -  "H2Opus: A distributed-memory multi-GPU software package for non-local operators", https://arxiv.org/abs/2109.05451
 
-.seealso: `MATH2OPUS`, `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
+.seealso: [](chapter_matrices), `Mat`, `MATH2OPUS`, `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
 {
@@ -1349,7 +1349,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`
 @*/
 PetscErrorCode MatH2OpusOrthogonalize(Mat A)
 {
@@ -1433,7 +1433,7 @@ PetscErrorCode MatH2OpusOrthogonalize(Mat A)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusOrthogonalize()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusOrthogonalize()`
 @*/
 PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
 {
@@ -1532,7 +1532,7 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
 }
 
 /*@C
-     MatH2OpusSetSamplingMat - Set a matrix to be sampled from matrix vector product to construct a hierarchical matrix.
+     MatH2OpusSetSamplingMat - Set a matrix to be sampled from matrix-vector products on another matrix to construct a hierarchical matrix.
 
    Input Parameters:
 +     A - the hierarchical matrix
@@ -1545,7 +1545,7 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`, `MatH2OpusOrthogonalize()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`, `MatH2OpusOrthogonalize()`
 @*/
 PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 {
@@ -1575,14 +1575,14 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 
    Input Parameters:
 +     comm - MPI communicator
-.     m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
-.     n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
-.     M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
-.     N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
+.     m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+.     n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+.     M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+.     N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .     spacedim - dimension of the space coordinates
 .     coords - coordinates of the points
 .     cdist - whether or not coordinates are distributed
-.     kernel - computational kernel (or NULL)
+.     kernel - computational kernel (or `NULL`)
 .     kernelctx - kernel context
 .     eta - admissibility condition tolerance
 .     leafsize - leaf size in cluster tree
@@ -1599,7 +1599,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`
 @*/
 PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernel kernel, void *kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat *nA)
 {
@@ -1656,12 +1656,12 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
 .     -mat_h2opus_hara_verbose <`PetscBool`> - Verbose output from hara construction
 -     -mat_h2opus_normsamples <`PetscInt`> - Maximum bumber of samples to be when estimating norms
 
+   Level: intermediate
+
    Note:
    Not available in parallel
 
-   Level: intermediate
-
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, PetscReal eta, PetscInt leafsize, PetscInt maxrank, PetscInt bs, PetscReal rtol, Mat *nA)
 {
@@ -1728,7 +1728,7 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
 {
@@ -1759,7 +1759,7 @@ PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
 {
@@ -1806,14 +1806,14 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
 +     A - the hierarchical `MATH2OPUS` matrix
 .     s - the scaling factor
 .     U - the dense low-rank update matrix
--     V - (optional) the dense low-rank update matrix (if NULL, then V = U is assumed)
+-     V - (optional) the dense low-rank update matrix (if `NULL`, then `V` = `U` is assumed)
 
    Note:
-   The U and V matrices must be in dense format
+   The `U` and `V` matrices must be in dense format
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`, `MatH2OpusOrthogonalize()`, `MATDENSE`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`, `MatH2OpusOrthogonalize()`, `MATDENSE`
 @*/
 PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
 {

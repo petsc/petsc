@@ -96,15 +96,14 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
 -  matype   - matrix type
 
    Options Database Key:
-.  -mat_type  <method> - Sets the type; use -help for a list
-    of available methods (for instance, seqaij)
-
-   Note:
-   See "${PETSC_DIR}/include/petscmat.h" for available methods
+.  -mat_type  <method> - Sets the type; see `MatType`
 
   Level: intermediate
 
-.seealso: `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
+   Note:
+   See `MatType` for possible values
+
+.seealso: [](chapter_matrices), `Mat`, `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
 @*/
 PetscErrorCode MatSetType(Mat mat, MatType matype)
 {
@@ -188,7 +187,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
 
    Level: intermediate
 
-.seealso: `MatType`, `MatSetType()`
+.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatSetType()`
 @*/
 PetscErrorCode MatGetType(Mat mat, MatType *type)
 {
@@ -212,7 +211,7 @@ PetscErrorCode MatGetType(Mat mat, MatType *type)
 
    Level: intermediate
 
-.seealso: `MatType`, `Mat`, `MatSetVecType()`, `VecType`
+.seealso: [](chapter_matrices), `Mat`, `MatType`, `Mat`, `MatSetVecType()`, `VecType`
 @*/
 PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
 {
@@ -232,12 +231,12 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
 +  mat   - the matrix object
 -  vtype - vector type
 
+  Level: advanced
+
    Note:
      This is rarely needed in practice since each matrix object internally sets the proper vector type.
 
-  Level: intermediate
-
-.seealso: `VecType`, `VecSetType()`, `MatGetVecType()`
+.seealso: [](chapter_matrices), `Mat`, `VecType`, `VecSetType()`, `MatGetVecType()`
 @*/
 PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 {
@@ -249,7 +248,7 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 }
 
 /*@C
-  MatRegister -  - Adds a new matrix type
+  MatRegister -  - Adds a new matrix type implementation
 
    Not Collective
 
@@ -272,7 +271,7 @@ $     MatSetType(Mat,"my_mat")
    or at runtime via the option
 $     -mat_type my_mat
 
-.seealso: `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
+.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/
 PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
 {
@@ -286,7 +285,7 @@ MatRootName MatRootNameList = NULL;
 
 /*@C
       MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type. `MatSetType()`
-        and -mat_type will automatically use the sequential or parallel version based on the size of the MPI communicator associated with the
+        and `-mat_type name` will automatically use the sequential or parallel version based on the size of the MPI communicator associated with the
         matrix.
 
   Input Parameters:
@@ -305,7 +304,7 @@ MatRootName MatRootNameList = NULL;
       appropriate creation routine. Why have two different ways of implementing the same functionality for different types of objects? It is
       confusing.
 
-.seealso: `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
+.seealso: [](chapter_matrices), `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
 @*/
 PetscErrorCode MatRegisterRootName(const char rname[], const char sname[], const char mname[])
 {

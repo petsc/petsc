@@ -35,25 +35,25 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
 +  comm - MPI communicator
 .  bs   - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
+.  n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
            This value should be the same as the local size used in creating the
            x vector for the matrix-vector product y = Ax.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .  d_nz  - number of nonzero blocks per block row in diagonal portion of local
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of nonzero blocks in the various block rows
            of the in diagonal portion of the local (possibly different for each block
-           row) or NULL.  If you plan to factor the matrix you must leave room for the diagonal entry
+           row) or `NULL`.  If you plan to factor the matrix you must leave room for the diagonal entry
            and set it even if it is zero.
 .  o_nz  - number of nonzero blocks per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -  o_nnz - array containing the number of nonzero blocks in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
-           each block row) or NULL.
+           each block row) or `NULL`.
 
    Output Parameter:
 .  A - the matrix
@@ -62,11 +62,13 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
 +   -mat_block_size - size of the blocks to use
 -   -mat_use_hash_table <fact> - set hash table factor
 
+     Level: intermediate
+
+   Notes:
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Notes:
    This type inherits from `MATBAIJ` and is largely identical, but uses sparse BLAS
    routines from Intel MKL whenever possible.
    `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
@@ -121,13 +123,9 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
    Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
    and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
-   or you will get TERRIBLE performance; see the users' manual chapter on
-   matrices.
+   one expects `d_nz` >> `o_nz`.
 
-   Level: intermediate
-
-.seealso: `MATBAIJMKL`, `MATBAIJ`, `MatCreate()`, `MatCreateSeqBAIJMKL()`, `MatSetValues()`, `MatCreateBAIJMKL()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
+.seealso: [](chapter_matrices), `Mat`, `MATBAIJMKL`, `MATBAIJ`, `MatCreate()`, `MatCreateSeqBAIJMKL()`, `MatSetValues()`, `MatCreateBAIJMKL()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
 
 PetscErrorCode MatCreateBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
@@ -165,10 +163,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type baijmkl - sets the matrix type to `MATBAIJMKL` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MatCreateBAIJMKL()`, `MATSEQBAIJMKL`, `MATMPIBAIJMKL`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateBAIJMKL()`, `MATSEQBAIJMKL`, `MATMPIBAIJMKL`
 M*/

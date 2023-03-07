@@ -562,7 +562,7 @@ static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::Virtu
 
    Level: advanced
 
-.seealso: `MATHTOOL`
+.seealso: [](chapter_matrices), `Mat`, `MATHTOOL`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::VirtualHMatrix<PetscScalar> **hmatrix)
 {
@@ -590,12 +590,12 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel kernel, void
 
    Input Parameters:
 +     A - hierarchical matrix
-.     kernel - computational kernel (or NULL)
--     kernelctx - kernel context (if kernel is NULL, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
+.     kernel - computational kernel (or `NULL`)
+-     kernelctx - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
 
    Level: advanced
 
-.seealso: `MATHTOOL`, `MatCreateHtoolFromKernel()`
+.seealso: [](chapter_matrices), `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernel kernel, void *kernelctx)
 {
@@ -630,7 +630,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
 
    Level: advanced
 
-.seealso: `MATHTOOL`, `MatHtoolGetPermutationTarget()`, `MatHtoolUsePermutation()`
+.seealso: [](chapter_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationTarget()`, `MatHtoolUsePermutation()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
 {
@@ -664,7 +664,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
 
    Level: advanced
 
-.seealso: `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolUsePermutation()`
+.seealso: [](chapter_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolUsePermutation()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat A, IS *is)
 {
@@ -693,7 +693,7 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
 
    Level: advanced
 
-.seealso: `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolGetPermutationTarget()`
+.seealso: [](chapter_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolGetPermutationTarget()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat A, PetscBool use)
 {
@@ -811,15 +811,15 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 
    Input Parameters:
 +     comm - MPI communicator
-.     m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
-.     n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
-.     M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
-.     N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
+.     m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+.     n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+.     M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+.     N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .     spacedim - dimension of the space coordinates
 .     coords_target - coordinates of the target
 .     coords_source - coordinates of the source
-.     kernel - computational kernel (or NULL)
--     kernelctx - kernel context (if kernel is NULL, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
+.     kernel - computational kernel (or `NULL`)
+-     kernelctx - kernel context (if kernel is `NULL`, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
 
    Output Parameter:
 .     B - matrix
@@ -836,7 +836,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATHTOOL`, `PCSetCoordinates()`, `MatHtoolSetKernel()`, `MatHtoolCompressorType`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MATHTOOL`, `PCSetCoordinates()`, `MatHtoolSetKernel()`, `MatHtoolCompressorType`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords_target[], const PetscReal coords_source[], MatHtoolKernel kernel, void *kernelctx, Mat *B)
 {
@@ -874,14 +874,14 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, P
 /*MC
      MATHTOOL = "htool" - A matrix type for hierarchical matrices using the Htool package.
 
-  Use ./configure --download-htool to install PETSc to use Htool.
+  Use `./configure --download-htool` to install PETSc to use Htool.
 
-   Options Database Keys:
-.     -mat_type htool - matrix type to `MATHTOOL` during a call to `MatSetFromOptions()`
+   Options Database Key:
+.     -mat_type htool - matrix type to `MATHTOOL`
 
    Level: beginner
 
-.seealso: `MATH2OPUS`, `MATDENSE`, `MatCreateHtoolFromKernel()`, `MatHtoolSetKernel()`
+.seealso: [](chapter_matrices), `Mat`, `MATH2OPUS`, `MATDENSE`, `MatCreateHtoolFromKernel()`, `MatHtoolSetKernel()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
 {

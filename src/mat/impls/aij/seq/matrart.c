@@ -48,7 +48,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A, Mat R, PetscReal f
   C->product->data    = rart;
   C->product->destroy = MatDestroy_SeqAIJ_RARt;
 
-  /* ------ Use coloring ---------- */
+  /* Use coloring  */
   /* inode causes memory problem */
   PetscCall(MatSetOption(C, MAT_USE_INODES, PETSC_FALSE));
 
@@ -365,7 +365,6 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A, Mat R, MatReuse scall, PetscReal fil
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------- */
 PetscErrorCode MatProductSymbolic_RARt_SeqAIJ_SeqAIJ(Mat C)
 {
   Mat_Product        *product = C->product;

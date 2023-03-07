@@ -425,7 +425,7 @@ PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer)
 /*@
    MatColoringSetWeightType - Set the type of weight computation used while computing the coloring
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 -  mc - the `MatColoring` context

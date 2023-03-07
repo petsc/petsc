@@ -440,12 +440,9 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
   MATSOLVERLUSOL - "lusol" - Provides direct solvers, LU, for sequential matrices
                          via the external package LUSOL.
 
-  If LUSOL is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-
   Works with `MATSEQAIJ` matrices
 
    Level: beginner
 
-.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

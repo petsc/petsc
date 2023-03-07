@@ -1049,7 +1049,6 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------- */
 static PetscErrorCode MatProductSymbolic_AB_HYPRE(Mat C)
 {
   PetscFunctionBegin;
@@ -1138,8 +1137,6 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE(Mat C)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* -------------------------------------------------------- */
 
 static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
 {
@@ -1518,24 +1515,24 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
           (same value is used for all local rows)
 .  dnnz - array containing the number of nonzeros in the various rows of the
           DIAGONAL portion of the local submatrix (possibly different for each row)
-          or NULL (`PETSC_NULL_INTEGER` in Fortran), if d_nz is used to specify the nonzero structure.
-          The size of this array is equal to the number of local rows, i.e 'm'.
+          or `NULL` (`PETSC_NULL_INTEGER` in Fortran), if `d_nz` is used to specify the nonzero structure.
+          The size of this array is equal to the number of local rows, i.e `m`.
           For matrices that will be factored, you must leave room for (and set)
           the diagonal entry even if it is zero.
 .  onz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
           submatrix (same value is used for all local rows).
 -  onnz - array containing the number of nonzeros in the various rows of the
           OFF-DIAGONAL portion of the local submatrix (possibly different for
-          each row) or NULL (`PETSC_NULL_INTEGER` in Fortran), if o_nz is used to specify the nonzero
+          each row) or `NULL` (`PETSC_NULL_INTEGER` in Fortran), if `o_nz` is used to specify the nonzero
           structure. The size of this array is equal to the number
-          of local rows, i.e 'm'.
+          of local rows, i.e `m`.
 
    Note:
-    If the *nnz parameter is given then the *nz parameter is ignored; for sequential matrices, onz and onnz are ignored.
+    If the *nnz parameter is given then the *nz parameter is ignored; for sequential matrices, `onz` and `onnz` are ignored.
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatMPIAIJSetPreallocation()`, `MATHYPRE`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatMPIAIJSetPreallocation()`, `MATHYPRE`, `MATAIJ`
 @*/
 PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
 {
@@ -1547,13 +1544,13 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 }
 
 /*
-   MatCreateFromParCSR - Creates a matrix from a hypre_ParCSRMatrix
+   MatCreateFromParCSR - Creates a `Mat` from a `hypre_ParCSRMatrix`
 
    Collective
 
    Input Parameters:
-+  parcsr   - the pointer to the hypre_ParCSRMatrix
-.  mtype    - matrix type to be created. Currently MATAIJ, MATIS and MATHYPRE are supported.
++  parcsr   - the pointer to the `hypre_ParCSRMatrix`
+.  mtype    - matrix type to be created. Currently `MATAIJ`, `MATIS` and `MATHYPRE` are supported.
 -  copymode - PETSc copying options
 
    Output Parameter:
@@ -1561,7 +1558,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 
    Level: intermediate
 
-.seealso: `MatHYPRE`, `PetscCopyMode`
+.seealso: [](chapter_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
 */
 PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatType mtype, PetscCopyMode copymode, Mat *A)
 {
@@ -1701,17 +1698,17 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
 /*
    MatHYPREGetParCSR - Gets the pointer to the ParCSR matrix
 
-   Not collective
+   Not Collective
 
    Input Parameters:
-+  A  - the MATHYPRE object
++  A  - the `MATHYPRE` object
 
    Output Parameter:
-.  parcsr  - the pointer to the hypre_ParCSRMatrix
+.  parcsr  - the pointer to the `hypre_ParCSRMatrix`
 
    Level: intermediate
 
-.seealso: `MatHYPRE`, `PetscCopyMode`
+.seealso: [](chapter_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
 */
 PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
 {
@@ -2293,12 +2290,12 @@ static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], Inse
 }
 
 /*MC
-   MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
+   MATHYPRE - "hypre" - A matrix type to be used for sequential and parallel sparse matrices
           based on the hypre IJ interface.
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatHYPRESetPreallocation`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatHYPRESetPreallocation`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)

@@ -685,7 +685,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-/* -------------------------- MatProduct code -------------------------- */
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 static PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse_operation_t transA, Mat B, const sparse_operation_t transB, Mat C)
 {
@@ -995,7 +994,6 @@ PetscErrorCode MatProductSetFromOptions_SeqAIJMKL(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
-/* ------------------------ End MatProduct code ------------------------ */
 
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
  * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqAIJMKL()
@@ -1100,21 +1098,22 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or NULL
+         (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
 
    Options Database Keys:
 +  -mat_aijmkl_no_spmv2 - disable use of the SpMV2 inspector-executor routines
--  -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection, performing this step the first time the matrix is applied
-
-   Note:
-   If nnz is given then nz is ignored
+-  -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection,
+                                  performing this step the first time the matrix is applied
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateMPIAIJMKL()`, `MatSetValues()`
+   Note:
+   If `nnz` is given then `nz` is ignored
+
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJMKL()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {

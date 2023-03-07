@@ -1,6 +1,6 @@
 -include ../../../petscdir.mk
 # This directory contains some computational kernels written in
-# Fortran77.  These are mainly intended to provide high performance for
+# Fortran.  These are mainly intended to provide high performance for
 # COMPLEX arithmetic (since most C++ compilers do not do a good job
 # optimizing complex number calculations), but can also be used to
 # compare against C versions of the same kernels.

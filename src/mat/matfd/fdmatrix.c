@@ -71,7 +71,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
-   Collective on c
+   Collective
 
    Input Parameters:
 +  c - the coloring context

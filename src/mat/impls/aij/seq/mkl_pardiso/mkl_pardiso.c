@@ -877,7 +877,7 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F, PetscInt icntl, PetscInt
    References:
 .  * - Mkl_Pardiso Users' Guide
 
-.seealso: `MATSOLVERMKL_PARDISO`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MATSOLVERMKL_PARDISO`, `MatGetFactor()`
 @*/
 PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
 {
@@ -890,7 +890,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
   MATSOLVERMKL_PARDISO -  A matrix type providing direct solvers, LU, for
   `MATSEQAIJ` matrices via the external package MKL_PARDISO.
 
-  Use -pc_type lu -pc_factor_mat_solver_type mkl_pardiso to use this direct solver
+  Use `-pc_type lu` `-pc_factor_mat_solver_type mkl_pardiso` to use this direct solver
 
   Options Database Keys:
 + -mat_mkl_pardiso_65 - Suggested number of threads to use within MKL_PARDISO
@@ -921,12 +921,12 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
   Level: beginner
 
   Notes:
-    Use -mat_mkl_pardiso_68 1 to display the number of threads the solver is using. MKL does not provide a way to directly access this
+    Use `-mat_mkl_pardiso_68 1` to display the number of threads the solver is using. MKL does not provide a way to directly access this
     information.
 
     For more information on the options check the MKL_Pardiso manual
 
-.seealso: `MATSEQAIJ`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](chapter_matrices), `Mat`, `MATSEQAIJ`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMkl_PardisoSetCntl()`
 M*/
 static PetscErrorCode MatFactorGetSolverType_mkl_pardiso(Mat A, MatSolverType *type)
 {

@@ -14,14 +14,14 @@
               matrix that represents the operator. For sequential matrices it returns itself.
 
     Input Parameter:
-.      A - the sequential or MPI dense matrix
+.      A - the sequential or MPI `MATDENSE` matrix
 
     Output Parameter:
 .      B - the inner matrix
 
     Level: intermediate
 
-.seealso: `MATDENSE`, `MATMPIDENSE`, `MATSEQDENSE`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATMPIDENSE`, `MATSEQDENSE`
 @*/
 PetscErrorCode MatDenseGetLocalMatrix(Mat A, Mat *B)
 {
@@ -1648,7 +1648,6 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat, Mat, Mat
 static PetscErrorCode MatEqual_MPIDense(Mat, Mat, PetscBool *);
 static PetscErrorCode MatLoad_MPIDense(Mat, PetscViewer);
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
                                        MatGetRow_MPIDense,
                                        MatRestoreRow_MPIDense,
@@ -2297,12 +2296,12 @@ PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A, Mat *v)
 /*MC
    MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type mpidense - sets the matrix type to `MATMPIDENSE` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MatCreateDense()`, `MATSEQDENSE`, `MATDENSE`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateDense()`, `MATSEQDENSE`, `MATDENSE`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 {
@@ -2376,12 +2375,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 /*MC
    MATMPIDENSECUDA - MATMPIDENSECUDA = "mpidensecuda" - A matrix type to be used for distributed dense matrices on GPUs.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type mpidensecuda - sets the matrix type to `MATMPIDENSECUDA` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MATMPIDENSE`, `MATSEQDENSE`, `MATSEQDENSECUDA`, `MATSEQDENSEHIP`
+.seealso: [](chapter_matrices), `Mat`, `MATMPIDENSE`, `MATSEQDENSE`, `MATSEQDENSECUDA`, `MATSEQDENSEHIP`
 M*/
 #if defined(PETSC_HAVE_CUDA)
   #include <petsc/private/deviceimpl.h>
@@ -2398,12 +2397,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat B)
 /*MC
    MATMPIDENSEHIP - MATMPIDENSEHIP = "mpidensehip" - A matrix type to be used for distributed dense matrices on GPUs.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type mpidensehip - sets the matrix type to `MATMPIDENSEHIP` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MATMPIDENSE`, `MATSEQDENSE`, `MATSEQDENSECUDA`, `MATMPIDENSEHIP`
+.seealso: [](chapter_matrices), `Mat`, `MATMPIDENSE`, `MATSEQDENSE`, `MATSEQDENSECUDA`, `MATMPIDENSEHIP`
 M*/
 #if defined(PETSC_HAVE_HIP)
   #include <petsc/private/deviceimpl.h>
@@ -2423,42 +2422,42 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseHIP(Mat B)
    This matrix type is identical to `MATSEQDENSE` when constructed with a single process communicator,
    and `MATMPIDENSE` otherwise.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type dense - sets the matrix type to `MATDENSE` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`, `MATDENSEHIP`
+.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`, `MATDENSEHIP`
 M*/
 
 /*MC
-   MATDENSECUDA - MATDENSECUDA = "densecuda" - A matrix type to be used for dense matrices on GPUs.
+   MATDENSECUDA -  "densecuda" - A matrix type to be used for dense matrices on GPUs.
    Similarly,
-   MATDENSEHIP - MATDENSEHIP = "densehip"
+   `MATDENSEHIP` = "densehip"
 
    This matrix type is identical to `MATSEQDENSECUDA` when constructed with a single process communicator,
    and `MATMPIDENSECUDA` otherwise.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type densecuda - sets the matrix type to `MATDENSECUDA` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATDENSE`
+.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATDENSE`
 M*/
 
 /*MC
-   MATDENSEHIP - MATDENSEHIP = "densehip" - A matrix type to be used for dense matrices on GPUs.
+   MATDENSEHIP - "densehip" - A matrix type to be used for dense matrices on GPUs.
 
    This matrix type is identical to `MATSEQDENSEHIP` when constructed with a single process communicator,
    and `MATMPIDENSEHIP` otherwise.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type densehip - sets the matrix type to `MATDENSEHIP` during a call to `MatSetFromOptions()`
 
   Level: beginner
 
-.seealso: `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATDENSE`
+.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATDENSE`
 M*/
 
 /*@C
@@ -2468,20 +2467,20 @@ M*/
 
    Input Parameters:
 .  B - the matrix
--  data - optional location of matrix data.  Set data=NULL for PETSc
+-  data - optional location of matrix data.  Set to `NULL` for PETSc
    to control all matrix memory allocation.
 
+   Level: intermediate
+
    Notes:
-   The dense format is fully compatible with standard Fortran 77
+   The dense format is fully compatible with standard Fortran
    storage by columns.
 
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=NULL.
+   set `data` to `NULL`.
 
-   Level: intermediate
-
-.seealso: `MATMPIDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
+.seealso: [](chapter_matrices), `Mat`, `MATMPIDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatMPIDenseSetPreallocation(Mat B, PetscScalar *data)
 {
@@ -2502,13 +2501,13 @@ PetscErrorCode MatMPIDenseSetPreallocation(Mat B, PetscScalar *data)
 +  mat - the matrix
 -  array - the array in column major order
 
+   Level: developer
+
    Note:
    You can return to the original array with a call to `MatDenseResetArray()`. The user is responsible for freeing this array; it will not be
    freed when the matrix is destroyed.
 
-   Level: developer
-
-.seealso: `MATDENSE`, `MatDenseGetArray()`, `MatDenseResetArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`,
+.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseResetArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`,
           `MatDenseReplaceArray()`
 @*/
 PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
@@ -2531,12 +2530,12 @@ PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
    Input Parameters:
 .  mat - the matrix
 
+   Level: developer
+
    Note:
    You can only call this after a call to `MatDensePlaceArray()`
 
-   Level: developer
-
-.seealso: `MATDENSE`, `MatDenseGetArray()`, `MatDensePlaceArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDensePlaceArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 @*/
 PetscErrorCode MatDenseResetArray(Mat mat)
 {
@@ -2558,13 +2557,13 @@ PetscErrorCode MatDenseResetArray(Mat mat)
 +  mat - the matrix
 -  array - the array in column major order
 
+   Level: developer
+
    Note:
    The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
    freed by the user. It will be freed when the matrix is destroyed.
 
-   Level: developer
-
-.seealso: `MatDensePlaceArray()`, `MatDenseGetArray()`, `VecReplaceArray()`
+.seealso: [](chapter_matrices), `Mat`, `MatDensePlaceArray()`, `MatDenseGetArray()`, `VecReplaceArray()`
 @*/
 PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
 {
@@ -2590,13 +2589,13 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
 +  mat - the matrix
 -  array - the array in column major order
 
+   Level: developer
+
    Note:
    You can return to the original array with a call to `MatDenseCUDAResetArray()`. The user is responsible for freeing this array; it will not be
    freed when the matrix is destroyed. The array must have been allocated with cudaMalloc().
 
-   Level: developer
-
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDAResetArray()`, `MatDenseCUDAReplaceArray()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDAResetArray()`, `MatDenseCUDAReplaceArray()`
 @*/
 PetscErrorCode MatDenseCUDAPlaceArray(Mat mat, const PetscScalar *array)
 {
@@ -2616,12 +2615,12 @@ PetscErrorCode MatDenseCUDAPlaceArray(Mat mat, const PetscScalar *array)
    Input Parameters:
 .  mat - the matrix
 
+   Level: developer
+
    Note:
    You can only call this after a call to `MatDenseCUDAPlaceArray()`
 
-   Level: developer
-
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDAPlaceArray()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDAPlaceArray()`
 @*/
 PetscErrorCode MatDenseCUDAResetArray(Mat mat)
 {
@@ -2643,14 +2642,14 @@ PetscErrorCode MatDenseCUDAResetArray(Mat mat)
 +  mat - the matrix
 -  array - the array in column major order
 
+   Level: developer
+
    Note:
    This permanently replaces the GPU array and frees the memory associated with the old GPU array.
    The memory passed in CANNOT be freed by the user. It will be freed
    when the matrix is destroyed. The array should respect the matrix leading dimension.
 
-   Level: developer
-
-.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDAPlaceArray()`, `MatDenseCUDAResetArray()`
+.seealso: [](chapter_matrices), `Mat`, `MatDenseCUDAGetArray()`, `MatDenseCUDAPlaceArray()`, `MatDenseCUDAResetArray()`
 @*/
 PetscErrorCode MatDenseCUDAReplaceArray(Mat mat, const PetscScalar *array)
 {
@@ -2673,14 +2672,14 @@ PetscErrorCode MatDenseCUDAReplaceArray(Mat mat, const PetscScalar *array)
    Output Parameters
 .  array - the GPU array in column major order
 
+   Level: developer
+
    Notes:
    The data on the GPU may not be updated due to operations done on the CPU. If you need updated data, use `MatDenseCUDAGetArray()`.
 
    The array must be restored with `MatDenseCUDARestoreArrayWrite()` when no longer needed.
 
-   Level: developer
-
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayRead()`, `MatDenseCUDARestoreArrayRead()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayRead()`, `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
 {
@@ -2702,7 +2701,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
 
    Level: developer
 
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
 {
@@ -2725,12 +2724,12 @@ PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
    Output Parameters
 .  array - the GPU array in column major order
 
+   Level: developer
+
    Note:
    Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use `MatDenseCUDAGetArrayWrite()`.
 
-   Level: developer
-
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
 {
@@ -2749,12 +2748,12 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
 +  A - the matrix
 -  array - the GPU array in column major order
 
+   Level: developer
+
    Note:
    Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use `MatDenseCUDAGetArrayWrite()`.
 
-   Level: developer
-
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDAGetArrayRead()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
 {
@@ -2774,12 +2773,12 @@ PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
    Output Parameters
 .  array - the GPU array in column major order
 
+   Level: developer
+
    Note:
    Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use `MatDenseCUDAGetArrayWrite()`. For read-only access, use `MatDenseCUDAGetArrayRead()`.
 
-   Level: developer
-
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArrayRead()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArrayRead()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
 {
@@ -2801,7 +2800,7 @@ PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
 
    Level: developer
 
-.seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 {
@@ -2826,13 +2825,13 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 +  mat - the matrix
 -  array - the array in column major order
 
-   Notes:
-   You can return to the original array with a call to MatDenseHIPResetArray(). The user is responsible for freeing this array; it will not be
-   freed when the matrix is destroyed. The array must have been allocated with hipMalloc().
-
    Level: developer
 
-.seealso: MatDenseHIPGetArray(), MatDenseHIPResetArray()
+   Note:
+   You can return to the original array with a call to `MatDenseHIPResetArray()`. The user is responsible for freeing this array; it will not be
+   freed when the matrix is destroyed. The array must have been allocated with `hipMalloc()`.
+
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPResetArray()
 @*/
 PetscErrorCode MatDenseHIPPlaceArray(Mat mat, const PetscScalar *array)
 {
@@ -2845,20 +2844,19 @@ PetscErrorCode MatDenseHIPPlaceArray(Mat mat, const PetscScalar *array)
 }
 
 /*@C
-   MatDenseHIPResetArray - Resets the matrix array to that it previously had before the call to MatDenseHIPPlaceArray()
+   MatDenseHIPResetArray - Resets the matrix array to that it previously had before the call to `MatDenseHIPPlaceArray()`
 
    Not Collective
 
    Input Parameters:
 .  mat - the matrix
 
-   Notes:
-   You can only call this after a call to MatDenseHIPPlaceArray()
-
    Level: developer
 
-.seealso: MatDenseHIPGetArray(), MatDenseHIPPlaceArray()
+   Notes:
+   You can only call this after a call to `MatDenseHIPPlaceArray()`
 
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPPlaceArray()
 @*/
 PetscErrorCode MatDenseHIPResetArray(Mat mat)
 {
@@ -2880,14 +2878,14 @@ PetscErrorCode MatDenseHIPResetArray(Mat mat)
 +  mat - the matrix
 -  array - the array in column major order
 
-   Notes:
+   Level: developer
+
+   Note:
    This permanently replaces the GPU array and frees the memory associated with the old GPU array.
    The memory passed in CANNOT be freed by the user. It will be freed
    when the matrix is destroyed. The array should respect the matrix leading dimension.
 
-   Level: developer
-
-.seealso: MatDenseHIPGetArray(), MatDenseHIPPlaceArray(), MatDenseHIPResetArray()
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPPlaceArray(), MatDenseHIPResetArray()
 @*/
 PetscErrorCode MatDenseHIPReplaceArray(Mat mat, const PetscScalar *array)
 {
@@ -2910,12 +2908,13 @@ PetscErrorCode MatDenseHIPReplaceArray(Mat mat, const PetscScalar *array)
    Output Parameters
 .  array - the GPU array in column major order
 
-   Notes:
-   The data on the GPU may not be updated due to operations done on the CPU. If you need updated data, use MatDenseHIPGetArray(). The array must be restored with MatDenseHIPRestoreArrayWrite() when no longer needed.
-
    Level: developer
 
-.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayRead(), MatDenseHIPRestoreArrayRead()
+   Note:
+   The data on the GPU may not be updated due to operations done on the CPU. If you need updated data, use `MatDenseHIPGetArray()`.
+   The array must be restored with `MatDenseHIPRestoreArrayWrite()` when no longer needed.
+
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayRead(), MatDenseHIPRestoreArrayRead()
 @*/
 PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
 {
@@ -2927,7 +2926,7 @@ PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
 }
 
 /*@C
-   MatDenseHIPRestoreArrayWrite - Restore write access to the HIP buffer inside a dense matrix previously obtained with MatDenseHIPGetArrayWrite().
+   MatDenseHIPRestoreArrayWrite - Restore write access to the HIP buffer inside a dense matrix previously obtained with `MatDenseHIPGetArrayWrite()`.
 
    Not Collective
 
@@ -2935,11 +2934,9 @@ PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
 +  A - the matrix
 -  array - the GPU array in column major order
 
-   Notes:
-
    Level: developer
 
-.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead(), MatDenseHIPGetArrayRead()
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead(), MatDenseHIPGetArrayRead()
 @*/
 PetscErrorCode MatDenseHIPRestoreArrayWrite(Mat A, PetscScalar **a)
 {
@@ -2962,12 +2959,12 @@ PetscErrorCode MatDenseHIPRestoreArrayWrite(Mat A, PetscScalar **a)
    Output Parameters
 .  array - the GPU array in column major order
 
-   Notes:
-   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use MatDenseHIPGetArrayWrite().
-
    Level: developer
 
-.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead()
+   Note:
+   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use `MatDenseHIPGetArrayWrite()`.
+
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead()
 @*/
 PetscErrorCode MatDenseHIPGetArrayRead(Mat A, const PetscScalar **a)
 {
@@ -2986,12 +2983,12 @@ PetscErrorCode MatDenseHIPGetArrayRead(Mat A, const PetscScalar **a)
 +  A - the matrix
 -  array - the GPU array in column major order
 
-   Notes:
-   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use MatDenseHIPGetArrayWrite().
-
    Level: developer
 
-.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPGetArrayRead()
+   Notes:
+   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use `MatDenseHIPGetArrayWrite()`.
+
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPGetArrayRead()
 @*/
 PetscErrorCode MatDenseHIPRestoreArrayRead(Mat A, const PetscScalar **a)
 {
@@ -3011,12 +3008,14 @@ PetscErrorCode MatDenseHIPRestoreArrayRead(Mat A, const PetscScalar **a)
    Output Parameters
 .  array - the GPU array in column major order
 
-   Notes:
-   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use MatDenseHIPGetArrayWrite(). For read-only access, use MatDenseHIPGetArrayRead().
-
    Level: developer
 
-.seealso: MatDenseHIPGetArrayRead(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead()
+   Note:
+   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use `MatDenseHIPGetArrayWrite()`.
+
+   For read-only access, use `MatDenseHIPGetArrayRead()`.
+
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArrayRead(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead()
 @*/
 PetscErrorCode MatDenseHIPGetArray(Mat A, PetscScalar **a)
 {
@@ -3036,11 +3035,9 @@ PetscErrorCode MatDenseHIPGetArray(Mat A, PetscScalar **a)
 +  A - the matrix
 -  array - the GPU array in column major order
 
-   Notes:
-
    Level: developer
 
-.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead(), MatDenseHIPGetArrayRead()
+.seealso: [](chapter_matrices), `Mat`, MatDenseHIPGetArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead(), MatDenseHIPGetArrayRead()
 @*/
 PetscErrorCode MatDenseHIPRestoreArray(Mat A, PetscScalar **a)
 {
@@ -3060,18 +3057,20 @@ PetscErrorCode MatDenseHIPRestoreArray(Mat A, PetscScalar **a)
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
-.  n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
-.  M - number of global rows (or `PETSC_DECIDE` to have calculated if m is given)
-.  N - number of global columns (or `PETSC_DECIDE` to have calculated if n is given)
--  data - optional location of matrix data.  Set data to NULL (`PETSC_NULL_SCALAR` for Fortran users) for PETSc
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+.  n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+.  M - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
+.  N - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
+-  data - optional location of matrix data.  Set data to `NULL` (`PETSC_NULL_SCALAR` for Fortran users) for PETSc
    to control all matrix memory allocation.
 
    Output Parameter:
 .  A - the matrix
 
+   Level: intermediate
+
    Notes:
-   The dense format is fully compatible with standard Fortran 77
+   The dense format is fully compatible with standard Fortran
    storage by columns.
 
    Although local portions of the matrix are stored in column-major
@@ -3079,14 +3078,12 @@ PetscErrorCode MatDenseHIPRestoreArray(Mat A, PetscScalar **a)
 
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=NULL (`PETSC_NULL_SCALAR` for Fortran users).
+   set `data` to `NULL` (`PETSC_NULL_SCALAR` for Fortran users).
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   Level: intermediate
-
-.seealso: `MATDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar *data, Mat *A)
 {
@@ -3107,11 +3104,11 @@ PetscErrorCode MatCreateDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M,
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
-.  n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
-.  M - number of global rows (or `PETSC_DECIDE` to have calculated if m is given)
-.  N - number of global columns (or `PETSC_DECIDE` to have calculated if n is given)
--  data - optional location of GPU matrix data.  Set data=NULL for PETSc
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+.  n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+.  M - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
+.  N - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
+-  data - optional location of GPU matrix data.  Use `NULL` for PETSc
    to control matrix memory allocation.
 
    Output Parameter:
@@ -3119,7 +3116,7 @@ PetscErrorCode MatCreateDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M,
 
    Level: intermediate
 
-.seealso: `MATDENSECUDA`, `MatCreate()`, `MatCreateDense()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatCreate()`, `MatCreateDense()`
 @*/
 PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar *data, Mat *A)
 {
@@ -3142,11 +3139,11 @@ PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
 
    Input Parameters:
 +  comm - MPI communicator
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
-.  n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
-.  M - number of global rows (or `PETSC_DECIDE` to have calculated if m is given)
-.  N - number of global columns (or `PETSC_DECIDE` to have calculated if n is given)
--  data - optional location of GPU matrix data.  Set data=NULL for PETSc
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
+.  n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
+.  M - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
+.  N - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
+-  data - optional location of GPU matrix data.  Use `NULL` for PETSc
    to control matrix memory allocation.
 
    Output Parameter:
@@ -3154,7 +3151,7 @@ PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
 
    Level: intermediate
 
-.seealso: `MATDENSEHIP`, `MatCreate()`, `MatCreateDense()`
+.seealso: [](chapter_matrices), `Mat`, `MATDENSEHIP`, `MatCreate()`, `MatCreateDense()`
 @*/
 PetscErrorCode MatCreateDenseHIP(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar *data, Mat *A)
 {
@@ -3621,7 +3618,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
-/* ----------------------------------------------- */
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 static PetscErrorCode MatProductSetFromOptions_MPIDense_AB(Mat C)
 {

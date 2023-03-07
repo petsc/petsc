@@ -116,7 +116,6 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A, Vec b, Vec x)
 
   PetscFunctionBegin;
   /* KLU uses a column major format, solve Ax = b by klu_*_solve */
-  /* ----------------------------------*/
   PetscCall(VecCopy(b, x)); /* klu_solve stores the solution in rhs */
   PetscCall(VecGetArray(x, &xa));
   status = klu_K_solve(lu->Symbolic, lu->Numeric, A->rmap->n, 1, (PetscReal *)xa, &lu->Common);
@@ -133,7 +132,6 @@ static PetscErrorCode MatSolve_KLU(Mat A, Vec b, Vec x)
 
   PetscFunctionBegin;
   /* KLU uses a column major format, solve A^Tx = b by klu_*_tsolve */
-  /* ----------------------------------*/
   PetscCall(VecCopy(b, x)); /* klu_solve stores the solution in rhs */
   PetscCall(VecGetArray(x, &xa));
 #if defined(PETSC_USE_COMPLEX)
@@ -156,7 +154,6 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *
 
   PetscFunctionBegin;
   /* numeric factorization of A' */
-  /* ----------------------------*/
 
   if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) klu_K_free_numeric(&lu->Numeric, &lu->Common);
   lu->Numeric = klu_K_factor(ai, aj, (PetscReal *)av, lu->Symbolic, &lu->Common);
@@ -189,7 +186,6 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const Ma
   }
 
   /* symbolic factorization of A' */
-  /* ---------------------------------------------------------------------- */
   if (r) {
     lu->PetscMatOrdering = PETSC_TRUE;
     lu->Symbolic         = klu_K_analyze_given(n, ai, aj, lu->perm_c, lu->perm_r, &lu->Common);
@@ -250,23 +246,24 @@ PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type)
   MATSOLVERKLU = "klu" - A matrix type providing direct solvers, LU, for sequential matrices
   via the external package KLU.
 
-  ./configure --download-suitesparse to install PETSc to use KLU
+  `./configure --download-suitesparse` to install PETSc to use KLU
 
-  Use -pc_type lu -pc_factor_mat_solver_type klu to use this direct solver
+  Use `-pc_type lu` `-pc_factor_mat_solver_type klu` to use this direct solver
 
   Consult KLU documentation for more information on the options database keys below.
 
   Options Database Keys:
 + -mat_klu_pivot_tol <0.001>                  - Partial pivoting tolerance
 . -mat_klu_use_btf <1>                        - Use BTF preordering
-. -mat_klu_ordering <AMD>                     - KLU reordering scheme to reduce fill-in (choose one of) AMD COLAMD PETSC
-- -mat_klu_row_scale <NONE>                   - Matrix row scaling (choose one of) NONE SUM MAX
-
-   Note: KLU is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
+. -mat_klu_ordering <AMD>                     - KLU reordering scheme to reduce fill-in (choose one of) `AMD`, `COLAMD`, `PETSC`
+- -mat_klu_row_scale <NONE>                   - Matrix row scaling (choose one of) `NONE`, `SUM`, `MAX`
 
    Level: beginner
 
-.seealso: `PCLU`, `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `PCFactorSetMatSolverType()`, `MatSolverType`
+   Note:
+   KLU is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
+
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, Mat *F)
@@ -303,7 +300,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, 
   PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_LU]));
 
   /* initializations */
-  /* ------------------------------------------------*/
   /* get the default control parameters */
   status = klu_K_defaults(&lu->Common);
   PetscCheck(status > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "KLU Initialization failed");

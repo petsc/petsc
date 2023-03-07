@@ -15,12 +15,12 @@ struct _PetscHeap {
 };
 
 /*
- * The arity of the heap can be changed via the parameter B below. Consider the B=2 (arity=4 case below)
- *
- * [00 (sentinel); 01 (min node); 10 (unused); 11 (unused); 0100 (first child); 0101; 0110; 0111; ...]
- *
- * Slots 10 and 11 are referred to as the "hole" below in the implementation.
- */
+  The arity of the heap can be changed via the parameter B below. Consider the B=2 (arity=4 case below)
+
+  [00 (sentinel); 01 (min node); 10 (unused); 11 (unused); 0100 (first child); 0101; 0110; 0111; ...]
+
+  Slots 10 and 11 are referred to as the "hole" below in the implementation.
+*/
 
 #define B     1        /* log2(ARITY) */
 #define ARITY (1 << B) /* tree branching factor */

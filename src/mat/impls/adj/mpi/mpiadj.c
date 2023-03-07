@@ -6,8 +6,8 @@
 #include <petscsf.h>
 
 /*
- * The interface should be easy to use for both MatCreateSubMatrix (parallel sub-matrix) and MatCreateSubMatrices (sequential sub-matrices)
- * */
+  The interface should be easy to use for both MatCreateSubMatrix (parallel sub-matrix) and MatCreateSubMatrices (sequential sub-matrices)
+*/
 static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj, IS irows, IS icols, PetscInt **sadj_xadj, PetscInt **sadj_adjncy, PetscInt **sadj_values)
 {
   PetscInt        nlrows_is, icols_n, i, j, nroots, nleaves, rlocalindex, *ncols_send, *ncols_recv;
@@ -576,7 +576,6 @@ PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAdj,
                                        MatGetRow_MPIAdj,
                                        MatRestoreRow_MPIAdj,
@@ -924,19 +923,19 @@ PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B)
    Collective
 
    Input Parameter:
-.  A - original MPIAdj matrix
+.  A - original `MATMPIADJ` matrix
 
    Output Parameter:
-.  B - matrix on subcommunicator, NULL on ranks that owned zero rows of A
+.  B - matrix on subcommunicator, `NULL` on ranks that owned zero rows of `A`
 
    Level: developer
 
    Note:
    This function is mostly useful for internal use by mesh partitioning packages that require that every process owns at least one row.
 
-   The matrix B should be destroyed with `MatDestroy()`. The arrays are not copied, so B should be destroyed before A is destroyed.
+   The matrix `B` should be destroyed with `MatDestroy()`. The arrays are not copied, so `B` should be destroyed before `A` is destroyed.
 
-.seealso: `MATMPIADJ`, `MatCreateMPIAdj()`
+.seealso: [](chapter_matrices), `Mat`, `MATMPIADJ`, `MatCreateMPIAdj()`
 @*/
 PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A, Mat *B)
 {
@@ -956,9 +955,8 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A, Mat *B)
     You can provide values to the matrix using `MatMPIAdjSetPreallocation()`, `MatCreateMPIAdj()`, or
     by calling `MatSetValues()` and `MatAssemblyBegin()` followed by `MatAssemblyEnd()`
 
-.seealso: `MatCreateMPIAdj()`, `MatMPIAdjSetPreallocation()`, `MatSetValues()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateMPIAdj()`, `MatMPIAdjSetPreallocation()`, `MatSetValues()`
 M*/
-
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj *b;
@@ -991,7 +989,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 
    Level: intermediate
 
-.seealso: `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeqRankZero()`
+.seealso: [](chapter_matrices), `Mat`, `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeqRankZero()`
 @*/
 PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B)
 {
@@ -1018,7 +1016,7 @@ PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B)
      is stored on the first node, instead of the number of ranks copies. This can allow partitioning much larger
      parallel graph sequentially.
 
-.seealso: `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeq()`
+.seealso: [](chapter_matrices), `Mat`, `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeq()`
 @*/
 PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B)
 {
@@ -1034,14 +1032,14 @@ PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B)
 
    Input Parameters:
 +  A - the matrix
-.  i - the indices into j for the start of each row
+.  i - the indices into `j` for the start of each row
 .  j - the column indices for each row (sorted for each row).
-       The indices in i and j start with zero (NOT with one).
--  values - [optional] edge weights
+       The indices in `i` and `j` start with zero (NOT with one).
+-  values - [use `NULL` if not provided] edge weights
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MATMPIADJ`, `MatCreateMPIAdj()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MATMPIADJ`, `MatCreateMPIAdj()`
 @*/
 PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscInt *values)
 {
@@ -1061,10 +1059,10 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
 +  comm - MPI communicator
 .  m - number of local rows
 .  N - number of global columns
-.  i - the indices into j for the start of each row
+.  i - the indices into `j` for the start of each row
 .  j - the column indices for each row (sorted for each row).
-       The indices in i and j start with zero (NOT with one).
--  values -[optional] edge weights
+       The indices in `i` and `j` start with zero (NOT with one).
+-  values -[use `NULL` if not provided] edge weights
 
    Output Parameter:
 .  A - the matrix
@@ -1072,7 +1070,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
    Level: intermediate
 
    Notes:
-   You must NOT free the ii, values and jj arrays yourself. PETSc will free them
+   You must NOT free the `i`, `values` and `j` arrays yourself. PETSc will free them
    when the matrix is destroyed; you must allocate them with `PetscMalloc()`. If you
    call from Fortran you need not create the arrays with `PetscMalloc()`.
 
@@ -1083,7 +1081,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
 
    Possible values for `MatSetOption()` - `MAT_STRUCTURALLY_SYMMETRIC`
 
-.seealso: `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/
 PetscErrorCode MatCreateMPIAdj(MPI_Comm comm, PetscInt m, PetscInt N, PetscInt *i, PetscInt *j, PetscInt *values, Mat *A)
 {

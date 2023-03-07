@@ -388,7 +388,6 @@ PetscErrorCode MatSolve_MKL_CPARDISO(Mat A, Vec b, Vec x)
   PetscCall(VecGetArrayRead(b, &barray));
 
   /* solve phase */
-  /*-------------*/
   mat_mkl_cpardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
   cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
                         mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
@@ -432,7 +431,6 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A, Mat B, Mat X)
     PetscCheck(barray != xarray, PETSC_COMM_SELF, PETSC_ERR_SUP, "B and X cannot share the same memory location");
 
     /* solve phase */
-    /*-------------*/
     mat_mkl_cpardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
     cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
                           mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
@@ -636,7 +634,6 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F, Mat A, IS r, IS c, con
   if (mat_mkl_cpardiso->iparm[36]) mat_mkl_cpardiso->n /= mat_mkl_cpardiso->iparm[36];
 
   /* analysis phase */
-  /*----------------*/
   mat_mkl_cpardiso->phase = JOB_ANALYSIS;
 
   cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
@@ -670,7 +667,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_CPARDISO(Mat F, Mat A, IS perm, 
   else mat_mkl_cpardiso->mtype = -2;
 
   /* analysis phase */
-  /*----------------*/
   mat_mkl_cpardiso->phase = JOB_ANALYSIS;
 
   cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
@@ -766,12 +762,12 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F, PetscInt icntl, PetscI
 
    Note:
     This routine cannot be used if you are solving the linear system with `TS`, `SNES`, or `KSP`, only if you directly call `MatGetFactor()` so use the options
-          database approach when working with `TS`, `SNES`, or `KSP`.
+          database approach when working with `TS`, `SNES`, or `KSP`. See `MATSOLVERMKL_CPARDISO` for the options
 
    References:
 .  * - Mkl_Pardiso Users' Guide
 
-.seealso: `MatGetFactor()`, `MATMPIAIJ`, `MATSOLVERMKL_CPARDISO`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MATMPIAIJ`, `MATSOLVERMKL_CPARDISO`
 @*/
 PetscErrorCode MatMkl_CPardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
 {
@@ -785,7 +781,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
 
   Works with `MATMPIAIJ` matrices
 
-  Use -pc_type lu -pc_factor_mat_solver_type mkl_cpardiso to use this direct solver
+  Use `-pc_type lu` `-pc_factor_mat_solver_type mkl_cpardiso` to use this direct solver
 
   Options Database Keys:
 + -mat_mkl_cpardiso_65 - Suggested number of threads to use within MKL_CPARDISO
@@ -816,12 +812,12 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
   Level: beginner
 
   Notes:
-    Use -mat_mkl_cpardiso_68 1 to display the number of threads the solver is using. MKL does not provide a way to directly access this
+    Use `-mat_mkl_cpardiso_68 1` to display the number of threads the solver is using. MKL does not provide a way to directly access this
     information.
 
     For more information on the options check the MKL_CPARDISO manual
 
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMkl_CPardisoSetCntl()`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMkl_CPardisoSetCntl()`, `MatGetFactor()`
 M*/
 
 static PetscErrorCode MatFactorGetSolverType_mkl_cpardiso(Mat A, MatSolverType *type)
