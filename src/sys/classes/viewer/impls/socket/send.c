@@ -56,7 +56,6 @@ PETSC_EXTERN int sleep(unsigned);
 PETSC_EXTERN int connect(int, struct sockaddr *, int);
 #endif
 
-/*--------------------------------------------------------------*/
 static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)viewer->data;
@@ -79,7 +78,6 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------------------------------*/
 /*@C
     PetscSocketOpen - handles connected to an open port where someone is waiting.
 
@@ -263,7 +261,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport, int *t)
 
    Input Parameters:
 +  comm - the MPI communicator
-.  machine - the machine the server is running on, use NULL for the local machine, use "server" to passively wait for
+.  machine - the machine the server is running on, use `NULL` for the local machine, use "server" to passively wait for
              a connection from elsewhere
 -  port - the port to connect to, use `PETSC_DEFAULT` for the default
 
@@ -273,27 +271,29 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport, int *t)
    Options Database Keys:
    For use with  `PETSC_VIEWER_SOCKET_WORLD`, `PETSC_VIEWER_SOCKET_SELF`,
    `PETSC_VIEWER_SOCKET_()` or if
-    NULL is passed for machine or PETSC_DEFAULT is passed for port
-$    -viewer_socket_machine <machine>
-$    -viewer_socket_port <port>
+    `NULL` is passed for machine or PETSC_DEFAULT is passed for port
++    -viewer_socket_machine <machine> - the machine where the socket is available
+-    -viewer_socket_port <port> - the socket to conntect to
 
    Environmental variables:
-+   `PETSC_VIEWER_SOCKET_PORT` - portnumber
--   `PETSC_VIEWER_SOCKET_MACHINE` - machine name
++   `PETSC_VIEWER_SOCKET_MACHINE` - machine name
+-   `PETSC_VIEWER_SOCKET_PORT` - portnumber
 
    Level: intermediate
 
    Notes:
    Most users should employ the following commands to access the
    MATLAB `PetscViewer`
-$
-$    PetscViewerSocketOpen(MPI_Comm comm, char *machine,int port,PetscViewer &viewer)
-$    MatView(Mat matrix,PetscViewer viewer)
-$
-$                or
-$
-$    PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer &viewer)
-$    VecView(Vec vector,PetscViewer viewer)
+.vb
+
+    PetscViewerSocketOpen(MPI_Comm comm, char *machine,int port,PetscViewer &viewer)
+    MatView(Mat matrix,PetscViewer viewer)
+.ve
+                or
+.vb
+    PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer &viewer)
+    VecView(Vec vector,PetscViewer viewer)
+.ve
 
      Currently the only socket client available is MATLAB, PETSc must be configured with --with-matlab for this client. See
      src/dm/tests/ex12.c and ex12.m for an example of usage.
@@ -405,7 +405,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 
   Input Parameters:
 +   v - viewer to connect
-.   machine - host to connect to, use NULL for the local machine,use "server" to passively wait for
+.   machine - host to connect to, use `NULL` for the local machine,use "server" to passively wait for
              a connection from elsewhere
 -   port - the port on the machine one is connecting to, use `PETSC_DEFAULT` for default
 
@@ -458,7 +458,6 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
@@ -477,7 +476,7 @@ PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
    Options Database Keys:
    For use with the default `PETSC_VIEWER_SOCKET_WORLD` or if
-    NULL is passed for machine or `PETSC_DEFAULT` is passed for port
+    `NULL` is passed for machine or `PETSC_DEFAULT` is passed for port
 +    -viewer_socket_machine <machine> - machine to connect to
 -    -viewer_socket_port <port> - port to connect to
 

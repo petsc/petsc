@@ -3,7 +3,7 @@
 
 /*@C
    PetscViewerGetSubViewer - Creates a new `PetscViewer` (same type as the old)
-    that lives on a subcommunicator
+    that lives on a subcommunicator of the original viewers communicator
 
     Collective
 

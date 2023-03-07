@@ -11,7 +11,7 @@ static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: `PetscSysInitializePackage()`, `PetscFinalize()`
 @*/
 PetscErrorCode PetscSysFinalizePackage(void)
 {
@@ -28,7 +28,7 @@ PetscErrorCode PetscSysFinalizePackage(void)
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: `PetscSysFinalizePackage()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscSysInitializePackage(void)
 {

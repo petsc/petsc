@@ -178,14 +178,13 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 
   Level: beginner
 
-  Notes:
+  Options Database Key:
+. -viewer_cgns_batch_size SIZE - set max number of output sequence times to write per batch
 
+  Note:
   If the filename contains an integer format character, the CGNS viewer will created a batched output sequence. For
   example, one could use `-ts_monitor_solution cgns:flow-%d.cgns`. This is desirable if one wants to limit file sizes or
   if the job might crash/be killed by a resource manager before exiting cleanly.
-
-  Options Database Keys:
-. -viewer_cgns_batch_size SIZE - set max number of output sequence times to write per batch
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `TSSetFromOptions()`
 M*/
