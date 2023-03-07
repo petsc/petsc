@@ -112,16 +112,16 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 .  ctx        - User context to store the relevant data to apply g2lfields
 -  destroyctx - Destroy function for userctx
 
+  Level: intermediate
+
   Notes:
-    g2lfields is called on the vector V to be visualized in order to extract the relevant dofs to be put in Vfield[], as
+    `g2lfields` is called on the vector V to be visualized in order to extract the relevant dofs to be put in `Vfield`, as
 .vb
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
 
-  For vector spaces, the block size of Vfield[i] represents the vector dimension.
-  The names of the Vfield vectors will be displayed in the window title.
-
-  Level: intermediate
+  For vector spaces, the block size of `Vfield`[i] represents the vector dimension.
+  The names of the `Vfield` vectors will be displayed in the window title.
 
 .seealso: [](sec_viewers), `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectSetName()`
 @*/

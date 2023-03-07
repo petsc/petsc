@@ -181,7 +181,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     Not Collective, depending on the viewer the value may be meaningless except for process 0 of the viewer; No Fortran Support
 
     Input Parameter:
-.    viewer - PetscViewer context, obtained from `PetscViewerASCIIOpen()`
+.    viewer - `PetscViewer` context, obtained from `PetscViewerASCIIOpen()`
 
     Output Parameter:
 .    fd - file pointer
@@ -191,8 +191,8 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     Note:
     For the standard `PETSCVIEWERASCII` the value is valid only on process 0 of the viewer
 
-.seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscViewerASCIIOpen()`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerCreate()`, `PetscViewerASCIIPrintf()`,
-          `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerFlush()`
+.seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscViewerASCIIOpen()`, `PetscViewerDestroy()`, `PetscViewerSetType()`,
+          `PetscViewerCreate()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerFlush()`
 @*/
 PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer viewer, FILE **fd)
 {
@@ -228,7 +228,7 @@ PetscErrorCode PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mo
 PETSC_INTERN FILE *petsc_history;
 
 /*@
-    PetscViewerASCIISetTab - Causes `PetscViewer` to tab in a number of times
+    PetscViewerASCIISetTab - Causes `PetscViewer` to tab in a number of times before printing
 
     Not Collective, but only first processor in set has any effect; No Fortran Support
 
@@ -238,9 +238,14 @@ PETSC_INTERN FILE *petsc_history;
 
     Level: developer
 
-.seealso: [](sec_viewers), `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIIGetTab()`,
+    Note:
+     `PetscViewerASCIIPushTab()` and `PetscViewerASCIIPopTab()` are the preferred usage
+
+.seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
+          `PetscViewerASCIIGetTab()`,
           `PetscViewerASCIIPopTab()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIOpen()`,
-          `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerASCIIGetPointer()`, `PetscViewerASCIIPushTab()`
+          `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerASCIIGetPointer()`,
+          `PetscViewerASCIIPushTab()`
 @*/
 PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer, PetscInt tabs)
 {
@@ -267,7 +272,8 @@ PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer, PetscInt tabs)
 
     Level: developer
 
-.seealso: [](sec_viewers), `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISetTab()`,
+.seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
+          `PetscViewerASCIISetTab()`,
           `PetscViewerASCIIPopTab()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIOpen()`,
           `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerASCIIGetPointer()`, `PetscViewerASCIIPushTab()`
 @*/
@@ -284,7 +290,7 @@ PetscErrorCode PetscViewerASCIIGetTab(PetscViewer viewer, PetscInt *tabs)
 }
 
 /*@
-    PetscViewerASCIIAddTab - Add to the number of times an ASCII viewer tabs before printing
+    PetscViewerASCIIAddTab - Add to the number of times a `PETSCVIEWERASCII` viewer tabs before printing
 
     Not Collective, but only first processor in set has any effect; No Fortran Support
 
@@ -294,7 +300,10 @@ PetscErrorCode PetscViewerASCIIGetTab(PetscViewer viewer, PetscInt *tabs)
 
     Level: developer
 
-.seealso: [](sec_viewers), `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
+    Note:
+     `PetscViewerASCIIPushTab()` and `PetscViewerASCIIPopTab()` are the preferred usage
+
+.seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
           `PetscViewerASCIIPopTab()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIOpen()`,
           `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerASCIIGetPointer()`, `PetscViewerASCIIPushTab()`
 @*/
@@ -311,7 +320,7 @@ PetscErrorCode PetscViewerASCIIAddTab(PetscViewer viewer, PetscInt tabs)
 }
 
 /*@
-    PetscViewerASCIISubtractTab - Subtracts from the number of times an ASCII viewer tabs before printing
+    PetscViewerASCIISubtractTab - Subtracts from the number of times a `PETSCVIEWERASCII` viewer tabs before printing
 
     Not Collective, but only first processor in set has any effect; No Fortran Support
 
@@ -321,9 +330,13 @@ PetscErrorCode PetscViewerASCIIAddTab(PetscViewer viewer, PetscInt tabs)
 
     Level: developer
 
-.seealso: [](sec_viewers), `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
+    Note:
+     `PetscViewerASCIIPushTab()` and `PetscViewerASCIIPopTab()` are the preferred usage
+
+.seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
           `PetscViewerASCIIPopTab()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIOpen()`,
-          `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerASCIIGetPointer()`, `PetscViewerASCIIPushTab()`
+          `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerASCIIGetPointer()`,
+          `PetscViewerASCIIPushTab()`
 @*/
 PetscErrorCode PetscViewerASCIISubtractTab(PetscViewer viewer, PetscInt tabs)
 {
@@ -428,7 +441,8 @@ PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
 }
 
 /*@C
-    PetscViewerASCIIPopTab - Removes one tab from the amount that `PetscViewerASCIIPrintf()` lines are tabbed that was provided by `PetscViewerASCIIPushTab()`
+    PetscViewerASCIIPopTab - Removes one tab from the amount that `PetscViewerASCIIPrintf()` lines are tabbed that was provided by
+    `PetscViewerASCIIPushTab()`
 
     Not Collective, but only first processor in set has any effect; No Fortran Support
 
@@ -493,7 +507,7 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
 
 /*@C
     PetscViewerASCIIPrintf - Prints to a file, only from the first
-    processor in the PetscViewer
+    processor in the `PetscViewer` of type `PETSCVIEWERASCII`
 
     Not Collective, but only first processor in set has any effect
 
@@ -577,7 +591,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     Collective
 
   Input Parameters:
-+  viewer - the PetscViewer; either `PETSCVIEWERASCII` or `PETSCVIEWERBINARY`
++  viewer - the `PetscViewer`; for example, of type `PETSCVIEWERASCII` or `PETSCVIEWERBINARY`
 -  name - the name of the file it should use
 
     Level: advanced
@@ -603,7 +617,7 @@ PetscErrorCode PetscViewerFileSetName(PetscViewer viewer, const char name[])
     Not Collective
 
   Input Parameter:
-.  viewer - the `PetscViewer`; either `PETSCVIEWERASCII` or `PETSCVIEWERBINARY`
+.  viewer - the `PetscViewer`
 
   Output Parameter:
 .  name - the name of the file it is using
@@ -941,13 +955,13 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
    Only process 0 in the `PetscViewer` may call this
 
    Input Parameters:
-+  viewer - the ascii viewer
++  viewer - the `PETSCVIEWERASCII` viewer
 .  data - location to write the data
 .  num - number of items of data to read
 -  datatype - type of data to read
 
    Output Parameters:
-.  count - number of items of data actually read, or NULL
+.  count - number of items of data actually read, or `NULL`
 
    Level: beginner
 

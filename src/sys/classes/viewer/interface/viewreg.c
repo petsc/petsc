@@ -50,11 +50,11 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 
     Input Parameters:
 +     hp - the object used to manage tracking what help messages have been printed
-.     pre - the prefix part of the string, many be NULL
--     name - the string to look for (cannot be NULL)
+.     pre - the prefix part of the string, many be `NULL`
+-     name - the string to look for (cannot be `NULL`)
 
     Output Parameter:
-.     found - PETSC_TRUE if the string was already set
+.     found - `PETSC_TRUE` if the string was already set
 
     Level: intermediate
 
@@ -170,13 +170,13 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
 
    Input Parameters:
 +  comm - the communicator to own the viewer
-.  options - options database, use NULL for default global database
-.  pre - the string to prepend to the name or NULL
+.  options - options database, use `NULL` for default global database
+.  pre - the string to prepend to the name or `NULL`
 -  name - the option one is seeking
 
    Output Parameters:
-+  viewer - the viewer, pass NULL if not needed
-.  format - the `PetscViewerFormat` requested by the user, pass NULL if not needed
++  viewer - the viewer, pass `NULL` if not needed
+.  format - the `PetscViewerFormat` requested by the user, pass `NULL` if not needed
 -  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: intermediate
@@ -197,7 +197,7 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
    `PetscOptionsPushGetViewerOff()`.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
    an appreciable fraction of the runtime.
 
-   If PETSc is configured with --with-viewfromoptions=0 this function always returns with *set of `PETSC_FALSE`
+   If PETSc is configured with `--with-viewfromoptions=0` this function always returns with *set of `PETSC_FALSE`
 
 .seealso: [](sec_viewers), `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -397,8 +397,7 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
    Level: advanced
 
    Note:
-   See "include/petscviewer.h" for available methods (for instance,
-   `PETSCVIEWERSOCKET`)
+   See `PetscViewerType` for possible values
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewerGetType()`, `PetscViewerType`, `PetscViewerPushFormat()`
 @*/
@@ -463,7 +462,7 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
 }
 
 /*@C
-   PetscViewerSetFromOptions - Sets various options for a viewer from the options database.
+   PetscViewerSetFromOptions - Sets various options for a viewer based on values in the options database.
 
    Collective
 
@@ -473,7 +472,7 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
    Level: intermediate
 
    Note:
-    Must be called after PetscViewerCreate() before the PetscViewer is used.
+    Must be called after `PetscViewerCreate()` before the `PetscViewer` is used.
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/

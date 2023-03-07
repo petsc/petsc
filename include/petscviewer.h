@@ -77,11 +77,15 @@ PETSC_EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscVie
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm, const char[], PetscFileMode, PetscViewer *);
 
 /*E
-    PetscViewerGLVisType - indicates what type of GLVis viewer to use
+    PetscViewerGLVisType - indicates what type of `PETSCVIEWERGLVIS` viewer to use
 
     Level: beginner
 
-.seealso: [](sec_viewers), `PetscViewerGLVisOpen()`
+    Values:
++   `PETSC_VIEWER_GLVIS_DUMP` - save the data to a file
+-   `PETSC_VIEWER_GLVIS_SOCKET` - communicate the data to another program via a socket
+
+.seealso: [](sec_viewers), `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`
 E*/
 typedef enum {
   PETSC_VIEWER_GLVIS_DUMP,
@@ -118,6 +122,35 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
     PetscViewerFormat - Way a viewer presents the object
 
    Level: beginner
+
+   Values:
++    `PETSC_VIEWER_DEFAULT` - default format for the specific object being viewed
+.    `PETSC_VIEWER_ASCII_MATLAB` - MATLAB format
+.    `PETSC_VIEWER_ASCII_DENSE` - print matrix as dense
+.    `PETSC_VIEWER_ASCII_IMPL` - implementation-specific format
+      (which is in many cases the same as the default)
+.    `PETSC_VIEWER_ASCII_INFO` - basic information about object
+.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info
+       about object
+.    `PETSC_VIEWER_ASCII_COMMON` - identical output format for
+       all objects of a particular type
+.    `PETSC_VIEWER_ASCII_INDEX` - (for vectors) prints the vector
+       element number next to each vector entry
+.    `PETSC_VIEWER_ASCII_SYMMODU` - print parallel vectors without
+       indicating the processor ranges
+.    `PETSC_VIEWER_ASCII_VTK` - outputs the object to a VTK file (deprecated since v3.14)
+.    `PETSC_VIEWER_NATIVE` - store the object to the binary
+       file in its native format (for example, dense
+       matrices are stored as dense), `DMDA` vectors are dumped directly to the
+       file instead of being first put in the natural ordering
+.    `PETSC_VIEWER_ASCII_LATEX` - output the data in LaTeX
+.    `PETSC_VIEWER_BINARY_MATLAB` - output additional information that can be used to read the data into MATLAB
+.    `PETSC_VIEWER_DRAW_BASIC` - views the vector with a simple 1d plot
+.    `PETSC_VIEWER_DRAW_LG` - views the vector with a line graph
+-    `PETSC_VIEWER_DRAW_CONTOUR` - views the vector with a contour plot
+
+   Note:
+   A variety of specialized formats also exist
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerType`, `PetscViewerPushFormat()`, `PetscViewerPopFormat()`
 E*/
@@ -264,7 +297,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
   Note:
   Use `PetscViewerFileSetMode()` instead.
 
-.seealso: [](sec_viewers), `PetscViewerFileSetMode()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerFileSetMode()`
 @*/
 PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 {
@@ -424,7 +457,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject, PetscViewer);
 #endif
 
 /*S
-     PetscViewers - Abstract collection of `PetscViewer`s. It is just an expandable array of viewers.
+   PetscViewers - Abstract collection of `PetscViewer`s. It is stored as an expandable array of viewers.
 
    Level: intermediate
 

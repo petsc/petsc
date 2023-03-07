@@ -290,7 +290,7 @@ static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer, Pe
 #endif
 
 /*@
-    PetscViewerBinaryGetUseMPIIO - Returns PETSC_TRUE if the binary viewer uses MPI-IO.
+    PetscViewerBinaryGetUseMPIIO - Returns `PETSC_TRUE` if the binary viewer uses MPI-IO.
 
     Not Collective
 
@@ -303,7 +303,7 @@ static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer, Pe
     Level: advanced
 
     Note:
-    If MPI-IO is not available, this function will always return PETSC_FALSE
+    If MPI-IO is not available, this function will always return `PETSC_FALSE`
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryGetMPIIOOffset()`
 @*/
@@ -442,7 +442,7 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer, int *fdes)
 
     Notes:
     This must be called after `PetscViewerSetType()`. If you use `PetscViewerBinaryOpen()` then
-    you can only skip the info file with the -viewer_binary_skip_info flag. To use the function you must open the
+    you can only skip the info file with the `-viewer_binary_skip_info` flag. To use the function you must open the
     viewer with `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinarySkipInfo()`.
 
     The .info contains meta information about the data in the binary file, for example the block size if it was
@@ -466,8 +466,8 @@ PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
     Not Collective
 
     Input Parameters:
-+   viewer - PetscViewer context, obtained from PetscViewerCreate()
--   skip - PETSC_TRUE implies the .info file will not be generated
++   viewer - PetscViewer context, obtained from `PetscViewerCreate()`
+-   skip - `PETSC_TRUE` implies the .info file will not be generated
 
     Options Database Key:
 .   -viewer_binary_skip_info - true indicates do not generate .info file
@@ -621,10 +621,8 @@ static PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,
 
     Level: advanced
 
-    Notes:
+    Note:
       This must be called after `PetscViewerSetType()`
-
-      Is ignored on anything but a binary viewer
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`, `PetscViewerBinarySkipInfo()`,
           `PetscViewerBinaryGetSkipHeader()`
@@ -830,9 +828,11 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 +  comm - MPI communicator
 .  name - name of file
 -  mode - open mode of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_APPEND - open existing file for binary output
+.vb
+    FILE_MODE_WRITE - create new file for binary output
+    FILE_MODE_READ - open existing file for binary input
+    FILE_MODE_APPEND - open existing file for binary output
+.ve
 
    Output Parameter:
 .  viewer - PetscViewer for binary input/output to use with the specified file
@@ -915,7 +915,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer, void *
 -  dtype - type of data to read
 
    Output Parameters:
-.  count - number of items of data actually read, or NULL.
+.  count - number of items of data actually read, or `NULL`.
 
    Level: beginner
 
@@ -1141,7 +1141,7 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, P
    Level: intermediate
 
     Note:
-    The array of strings must be null terminated
+    The array of strings must be `NULL` terminated
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
@@ -1184,7 +1184,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char 
    Level: intermediate
 
     Note:
-    The array of strings must null terminated
+    The array of strings must `NULL` terminated
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
@@ -1558,7 +1558,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Binary_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
