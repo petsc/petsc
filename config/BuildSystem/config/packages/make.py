@@ -14,8 +14,8 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.minversion        = '3.81'
-    self.download          = ['https://ftp.gnu.org/gnu/make/make-4.4.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.4.tar.gz']
+    self.download          = ['https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.4.1.tar.gz']
     self.downloadonWindows = 1
     self.useddirectly      = 0
     self.linkedbypetsc     = 0
