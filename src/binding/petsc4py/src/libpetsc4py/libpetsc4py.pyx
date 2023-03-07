@@ -1550,15 +1550,22 @@ cdef PetscErrorCode PCSetUp_Python(
     #
     return FunctionEnd()
 
-cdef PetscErrorCode PCReset_Python(
+cdef inline PetscErrorCode PCReset_Python_inner(
     PetscPC pc,
     ) \
     except PETSC_ERR_PYTHON with gil:
-    if getRef(pc) == 0: return PETSC_SUCCESS
-    FunctionBegin(b"PCReset_Python")
     cdef reset = PyPC(pc).reset
     if reset is not None:
         reset(PC_(pc))
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode PCReset_Python(
+    PetscPC pc,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
+    if getRef(pc) == 0: return PETSC_SUCCESS
+    FunctionBegin(b"PCReset_Python")
+    if Py_IsInitialized(): PCReset_Python_inner(pc)
     return FunctionEnd()
 
 cdef PetscErrorCode PCSetFromOptions_Python(
@@ -1863,17 +1870,24 @@ cdef PetscErrorCode KSPSetUp_Python(
         setUp(KSP_(ksp))
     return FunctionEnd()
 
-cdef PetscErrorCode KSPReset_Python(
+cdef inline PetscErrorCode KSPReset_Python_inner(
     PetscKSP ksp,
     ) \
     except PETSC_ERR_PYTHON with gil:
+    cdef reset = PyKSP(ksp).reset
+    if reset is not None:
+        reset(KSP_(ksp))
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode KSPReset_Python(
+    PetscKSP ksp,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
     if getRef(ksp) == 0: return PETSC_SUCCESS
     FunctionBegin(b"KSPReset_Python")
     CHKERR( PetscObjectCompose(<PetscObject>ksp, b"@ksp.vec_work_sol", NULL) )
     CHKERR( PetscObjectCompose(<PetscObject>ksp, b"@ksp.vec_work_res", NULL) )
-    cdef reset = PyKSP(ksp).reset
-    if reset is not None:
-        reset(KSP_(ksp))
+    if Py_IsInitialized(): KSPReset_Python_inner(ksp)
     return FunctionEnd()
 
 cdef PetscErrorCode KSPSetFromOptions_Python(
@@ -2235,15 +2249,22 @@ cdef PetscErrorCode SNESSetUp_Python(
         setUp(SNES_(snes))
     return FunctionEnd()
 
-cdef PetscErrorCode SNESReset_Python(
+cdef inline PetscErrorCode SNESReset_Python_inner(
     PetscSNES snes,
     ) \
     except PETSC_ERR_PYTHON with gil:
-    if getRef(snes) == 0: return PETSC_SUCCESS
-    FunctionBegin(b"SNESReset_Python")
     cdef reset = PySNES(snes).reset
     if reset is not None:
         reset(SNES_(snes))
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode SNESReset_Python(
+    PetscSNES snes,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
+    if getRef(snes) == 0: return PETSC_SUCCESS
+    FunctionBegin(b"SNESReset_Python")
+    if Py_IsInitialized(): SNESReset_Python_inner(snes)
     return FunctionEnd()
 
 cdef PetscErrorCode SNESSetFromOptions_Python(
@@ -2620,19 +2641,24 @@ cdef PetscErrorCode TSSetUp_Python(
         setUp(TS_(ts))
     return FunctionEnd()
 
-cdef PetscErrorCode TSReset_Python(
+cdef inline PetscErrorCode TSReset_Python_inner(
     PetscTS ts,
     ) \
     except PETSC_ERR_PYTHON with gil:
-    if getRef(ts) == 0: return PETSC_SUCCESS
-    FunctionBegin(b"TSReset_Python")
-    #
-    CHKERR( PetscObjectCompose(<PetscObject>ts, b"@ts.vec_update", NULL) )
-    CHKERR( PetscObjectCompose(<PetscObject>ts, b"@ts.vec_dot",    NULL) )
-    #
     cdef reset = PyTS(ts).reset
     if reset is not None:
         reset(TS_(ts))
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode TSReset_Python(
+    PetscTS ts,
+    ) \
+    nogil except PETSC_ERR_PYTHON:
+    if getRef(ts) == 0: return PETSC_SUCCESS
+    FunctionBegin(b"TSReset_Python")
+    CHKERR( PetscObjectCompose(<PetscObject>ts, b"@ts.vec_update", NULL) )
+    CHKERR( PetscObjectCompose(<PetscObject>ts, b"@ts.vec_dot",    NULL) )
+    if Py_IsInitialized(): TSReset_Python_inner(ts)
     return FunctionEnd()
 
 cdef PetscErrorCode TSSetFromOptions_Python(
