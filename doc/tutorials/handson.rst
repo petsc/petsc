@@ -1,42 +1,11 @@
-==============
-PETSc Hands On
-==============
-
-PETSc comes with a large number of example codes to illustrate usage. Here, we highlight a few, key ones:
-
--  :ref:`Linear Poisson equation on a 2D grid <handson_example_1>`
-
-   -  example of linear equation problem
-   -  see also `src/ksp/ksp/tutorials <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/index.html>`__
-
--  :ref:`Nonlinear ODE arising from a time-dependent one dimensional PDE <handson_example_2>`
-
-   -  example of time-stepping problem
-   -  see also `src/ts/tutorials <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/index.html>`__
-
--  :ref:`Nonlinear PDE on a structured grid <handson_example_3>`
-
-   -  example of nonlinear PDE
-   -  see also `src/snes/tutorials <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/index.html>`__
-
--  :ref:`Linear Stokes-type PDE on a structured grid <handson_example_4>`
--  :ref:`Nonlinear time dependent PDE on Unstructured Grid <handson_example_5>`
-
-Several examples are also included that represent the
-interoperability with other numerical software packages in the `xSDK
-Toolkit <http://www.xsdk.info>`__. These packages can be
-automatically installed by PETSc by :ref:`configuring <tut_install_config>` with
-``--download-trilinos``, ``--download-hypre``, and/or
-``--download-superlu_dist``.
-
--  :ref:`Nonlinear PDE Example <handson_example_3>` using `Trilinos preconditioner ML <http://trilinos.org/packages/ml>`__
--  :ref:`Nonlinear PDE Example <handson_example_3>` using BoomerAMG from `HYPRE <https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods>`__
--  :ref:`Linear Equation Example <handson_example_1>` using direct solver `SuperLU_DIST <https://crd-legacy.lbl.gov/~xiaoye/SuperLU/>`__
+===========================================
+Hands-On Tutorials, by Mathematical Problem
+===========================================
 
 .. _handson_example_1:
 
-Example 1: Linear Poisson equation on a 2D grid
------------------------------------------------
+Linear elliptic PDE on a 2D grid
+--------------------------------
 
 WHAT THIS EXAMPLE DEMONSTRATES:
 
@@ -101,8 +70,8 @@ DO THE FOLLOWING:
 
 .. _handson_example_2:
 
-Example 2: Nonlinear ODE arising from a time-dependent one dimensional PDE
---------------------------------------------------------------------------
+Nonlinear ODE arising from a time-dependent one-dimensional PDE
+---------------------------------------------------------------
 
 WHAT THIS EXAMPLE DEMONSTRATES:
 
@@ -167,8 +136,8 @@ DO THE FOLLOWING:
 
 .. _handson_example_3:
 
-Example 3: Nonlinear PDE on a structured grid
----------------------------------------------
+Nonlinear PDE on a structured grid
+----------------------------------
 
 WHAT THIS EXAMPLE DEMONSTRATES:
 
@@ -323,84 +292,8 @@ DO THE FOLLOWING:
 
 .. _handson_example_4:
 
-Example 4: Linear Stokes-type PDE on a structured grid
-------------------------------------------------------
-
-WHAT THIS EXAMPLE DEMONSTRATES:
-
--  Handling a 3d structured grid
--  Controlling linear solver options
--  Selecting composible preconditioners
--  Solving a Stokes problem
--  Adding your own problem specific visualization
-
-FURTHER DETAILS:
-
--  `Mathematical description of the problem <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex42.c.html>`__
--  `main program source code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex42.c.html#line2059>`__
--  `physics source code <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex42.c.html#line819>`__
-
-DO THE FOLLOWING:
-
--  Compile ``src/ksp/ksp/tutorials/ex42.c``
-
-   .. code-block:: console
-
-            $ cd petsc/src/ksp/ksp/tutorials
-            $ make ex42
-
-
--  Solve with the default solver
-
-   .. code-block:: console
-
-           $ mpiexec -n 4 ./ex42  -stokes_ksp_monitor
-
-   Expected output:
-
-   .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex42_tut_1.out
-     :language: none
-
-
-   Note the poor convergence for even a very small problem
-
--  Solve with a solver appropriate for Stoke's problems
-   ``-stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur``
-
-   .. code-block:: console
-
-           $ mpiexec -n 4 ./ex42  -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
-
-   Expected output:
-
-   .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex42_tut_2.out
-    :language: none
-
-
--  Solve with a finer mesh
-
-   .. code-block:: console
-
-           $ mpiexec -n 4 ./ex42  -mx 20 -stokes_ksp_monitor  -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
-
-   Expected output:
-
-   .. literalinclude:: /../src/ksp/ksp/tutorials/output/ex42_tut_3.out
-    :language: none
-
-
-   Repeat with
-
-   ::
-
-       -mx 40
-
-   and/or more MPI ranks.
-
-.. _handson_example_5:
-
-Example 5: Nonlinear time dependent PDE on Unstructured Grid
-------------------------------------------------------------
+Nonlinear time dependent PDE on unstructured grid
+-------------------------------------------------
 
 WHAT THIS EXAMPLE DEMONSTRATES:
 

@@ -35,9 +35,9 @@ Main Topics
 
    overview/index
    install/index
+   tutorials/index
    manual/index
    manualpages/index
-   tutorials/index
    faq/index
    community/index
    developers/index
