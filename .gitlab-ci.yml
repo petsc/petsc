@@ -363,18 +363,6 @@ pause-for-approval:
     - date
     - ccache --show-stats
 
-.opensolaris_test:
-  extends:
-    - .coverage-disable
-  before_script:
-    - date
-    - hostname
-    - uname -a
-    - nproc
-    - isainfo -x
-  after_script:
-    - date
-
 .mswin_test:
   extends:
     - .coverage-disable
@@ -958,33 +946,6 @@ mswin-gnu:
 #    - os:win
 #  variables:
 #    TEST_ARCH: arch-ci-mswin-intel
-
-opensolaris-pkgs-opt:
-  extends:
-    - .stage-3
-    - .opensolaris_test
-  tags:
-    - name:n-gage
-  variables:
-    TEST_ARCH: arch-ci-opensolaris-pkgs-opt
-
-opensolaris-cmplx-pkgs-dbg:
-  extends:
-    - .stage-3
-    - .opensolaris_test
-  tags:
-    - name:n-gage
-  variables:
-    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
-
-opensolaris-misc:
-  extends:
-    - .stage-3
-    - .opensolaris_test
-  tags:
-    - name:n-gage
-  variables:
-    TEST_ARCH: arch-ci-opensolaris-misc
 
 osx-cxx-cmplx-pkgs-dbg:
   extends:
