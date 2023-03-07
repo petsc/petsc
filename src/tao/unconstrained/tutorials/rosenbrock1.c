@@ -357,4 +357,12 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
      suffix: 28
      args: -tao_fmin 10 -tao_converged_reason
 
+   test:
+     suffix: snes
+     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtontr -snes_atol 1.e-4 -pc_type none -tao_mf_hessian -ksp_type cg
+
+   test:
+     suffix: snes_ls_armijo
+     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtonls -snes_atol 1.e-4 -pc_type none -tao_mf_hessian -snes_linesearch_monitor -snes_linesearch_order 1
+
 TEST*/

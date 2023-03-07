@@ -196,6 +196,7 @@ typedef const char *TaoType;
 #define TAOADMM     "admm"
 #define TAOALMM     "almm"
 #define TAOPYTHON   "python"
+#define TAOSNES     "snes"
 
 PETSC_EXTERN PetscClassId      TAO_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoList;

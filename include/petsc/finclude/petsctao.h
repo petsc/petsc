@@ -45,5 +45,6 @@
 #define TAOADMM     'admm'
 #define TAOALMM     'almm'
 #define TAOPYTHON   'python'
+#define TAOSNES     'snes'
 
 #endif
