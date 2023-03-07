@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=ps3
-set USR=sbalay
-set PETSC_DIR=/home/sbalay/${RNAME}
-set PETSC_ARCH=arch-mswin
