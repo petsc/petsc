@@ -906,6 +906,15 @@ linux-64idx-i8-uni:
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8-uni
 
+linux-misc-32bit:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-u22-stage3
+  variables:
+    TEST_ARCH: arch-ci-linux-misc-32bit
+
 mswin-intel-cxx-cmplx:
   extends:
     - .stage-3
