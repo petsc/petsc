@@ -757,7 +757,7 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lin
 }
 
 /*@
-    ISComplement - Given an index set `IS` generates the complement index set. That is all
+    ISComplement - Given an index set `IS` generates the complement index set. That is
        all indices that are NOT in the given set.
 
     Collective
