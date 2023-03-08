@@ -412,7 +412,6 @@ static PetscErrorCode CoordinatePrint(DM dm)
 int main(int argc, char **argv)
 {
   DM                  networkdm, dmclone;
-  PetscLogStage       stage[4];
   PetscMPIInt         rank, size;
   PetscInt            Nsubnet = 2, numVertices[2], numEdges[2], i, j, nv, ne, it_max = 10;
   PetscInt            vStart, vEnd, compkey;
@@ -423,6 +422,9 @@ int main(int argc, char **argv)
   PetscBool           ghost, viewJ = PETSC_FALSE, viewX = PETSC_FALSE, test = PETSC_FALSE, distribute = PETSC_TRUE, flg, printCoord = PETSC_FALSE, viewCSV = PETSC_FALSE;
   UserCtx             user;
   SNESConvergedReason reason;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage stage[4];
+#endif
 
   /* Power subnetwork */
   UserCtx_Power *appctx_power                    = &user.appctx_power;

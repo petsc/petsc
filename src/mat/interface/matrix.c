@@ -9837,6 +9837,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   if (F->schur_status == MAT_FACTOR_SCHUR_INVERTED || F->schur_status == MAT_FACTOR_SCHUR_FACTORED) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(MAT_FactorFactS, F, 0, 0, 0));
+  PetscCall(PetscMemzero(&info, sizeof(MatFactorInfo)));
   if (F->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
     PetscCall(MatCholeskyFactor(F->schur, NULL, &info));
   } else {
