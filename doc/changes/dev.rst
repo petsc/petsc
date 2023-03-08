@@ -20,6 +20,7 @@ Changes: Development
 - Add ``--with-coverage-exec`` configure option to specify the coverage-collection tool to be used e.g. ``gcov`` or ``/path/to/llvm-cov-15``
 - Add ``--with-strict-petscerrorcode`` configure option to enable compile-time checking for correct usage of ``PetscErrorCode``, see below
 - Add support for C++20
+- Add support for CUDA-12
 
 .. rubric:: Sys:
 

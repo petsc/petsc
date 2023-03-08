@@ -534,6 +534,7 @@ linux-cuda-pkgs:
     # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
     # shell, and I could not manage to escape it enough times...
     TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='requires,requires,requires%OR%name'
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda112-omp:
   extends:
@@ -548,6 +549,7 @@ linux-cuda112-omp:
     LOAD_MODULES: cuda/11.2.2 u-gcc-9/9.4.0
     OMP_PROC_BIND: "false"
     OMP_NUM_THREADS: 1
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-cmplx:
   extends:
@@ -557,17 +559,18 @@ linux-cuda-cmplx:
     - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-cmplx
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-double-64idx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - cuda-stage3
+    - cuda12
   variables:
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
-    TEST_OPTS: -j15 query=requires queryval=cuda
-    MAKE_CUDAFLAGS: --compiler-options -Wall,-Wunused-parameter,-Wno-deprecated-declarations,-Werror
+    TEST_OPTS: -j3 query=requires queryval=cuda
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-single-cxx:
   extends:
@@ -591,6 +594,7 @@ linux-cuda-uni-pkgs:
   variables:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
     TEST_OPTS: -j20 query=requires queryval=cuda
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-clang-cuda:
   extends:
@@ -604,6 +608,7 @@ linux-clang-cuda:
     TEST_OPTS: -j 1  queryval='cuda*,snes*' query='requires%OR%name'
     MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
     LOAD_MODULES: llvm-15.0.7-gcc-11.3.0-pjldtxf cuda-11.5.2-gcc-11.3.0-jkoottx gcc-11.3.0-gcc-11.3.0-pgrvke5
+    MAKE_CUDAFLAGS: -Wall,-Werror
 
 linux-viennacl:
   extends:
