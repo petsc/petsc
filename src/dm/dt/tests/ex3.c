@@ -150,6 +150,9 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !complex
+
   test:
     suffix: 0
 TEST*/

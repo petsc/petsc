@@ -1647,6 +1647,7 @@ class GNUPackage(Package):
   def __init__(self, framework):
     Package.__init__(self,framework)
     self.builddir = 'no' # requires build be done in a subdirectory, not in the directory tree
+    self.configureName = 'configure'
     return
 
   def setupHelp(self, help):
@@ -1736,7 +1737,7 @@ class GNUPackage(Package):
 
   def preInstall(self):
     '''Run pre-install steps like generate configure script'''
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+    if not os.path.isfile(os.path.join(self.packageDir,self.configureName)):
       if not self.programs.autoreconf:
         raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)! Use your package manager to install autoconf')
       if not self.programs.libtoolize:
@@ -1787,7 +1788,7 @@ class GNUPackage(Package):
     ### Configure and Build package
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand(dot+'/configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
+      output1,err1,ret1  = config.base.Configure.executeShellCommand(os.path.join(dot, self.configureName)+' '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running configure on ' + self.PACKAGE+': '+str(e))
       try:
@@ -1816,7 +1817,7 @@ class GNUPackage(Package):
   def Bootstrap(self,command):
     '''check for configure script - and run bootstrap - if needed'''
     import os
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+    if not os.path.isfile(os.path.join(self.packageDir,self.configureName)):
       if not self.programs.libtoolize:
         raise RuntimeError('Could not bootstrap '+self.PACKAGE+' using autotools: libtoolize not found')
       if not self.programs.autoreconf:
