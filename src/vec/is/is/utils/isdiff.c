@@ -706,16 +706,16 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 }
 
 /*@
-   ISEmbed - Embed `IS` a into `IS` b by finding the locations in `b` that have the same indices as in `a`.
+   ISEmbed - Embed `IS` `a` into `IS` `b` by finding the locations in `b` that have the same indices as in `a`.
              If `c` is the `IS` of these locations, we have `a = b*c`, regarded as a composition of the
-             corresponding `ISLocalToGlobalMap`s.
+             corresponding `ISLocalToGlobalMapping`.
 
   Not Collective
 
   Input Parameters:
 + a    -  `IS` to embed
 . b    -  `IS` to embed into
-- drop -  flag indicating whether to drop `a`'s indices that are not in `b`.
+- drop -  flag indicating whether to drop indices of `a` that are not in `b`.
 
   Output Parameters:
 . c    -  local embedding indices
@@ -723,9 +723,9 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   Level: developer
 
   Notes:
-  If some of `a`'s global indices are not among `b`'s indices the embedding is impossible.  The local indices of a
-  corresponding to these global indices are either mapped to -1 (if !drop) or are omitted (if drop).  In the former
-  case the size of `c` is that same as that of `a`, in the latter case `c`'s size may be smaller.
+  If some of the global indices of `a` are not among the indices of `b`, the embedding is impossible. The local indices of `a`
+  corresponding to these global indices are either mapped to -1 (if `!drop`) or are omitted (if `drop`). In the former
+  case the size of `c` is the same as that of `a`, in the latter case the size of `c` may be smaller.
 
   The resulting `IS` is sequential, since the index substitution it encodes is purely local.
 
