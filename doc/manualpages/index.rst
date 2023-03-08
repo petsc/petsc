@@ -1,6 +1,6 @@
-========
-API-Docs
-========
+=============
+C/Fortran API
+=============
 
   `MPI Documentation <https://www.open-mpi.org/doc/current/>`__
 

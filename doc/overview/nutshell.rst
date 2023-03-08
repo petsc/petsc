@@ -2,6 +2,8 @@
 PETSc in a nutshell
 ===================
 
+See :any:`handson` to immediately jump in and run PETSc code.
+
 PETSc/TAO is a tool for writing, analyzing, and optimizing large-scale numerical simulations.
 
 .. image:: /images/manual/library_structure.svg

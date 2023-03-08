@@ -142,6 +142,8 @@ set ``$PETSC_ARCH``, look in the directory indicated by ``$PETSC_DIR``, if
 there are subdirectories beginning with ``arch`` then those
 subdirectories give the possible values for ``$PETSC_ARCH``.
 
+See :any:`handson` to immediately jump in and run PETSc code.
+
 All PETSc programs use the MPI (Message Passing Interface) standard for
 message-passing communication :cite:`MPI-final`. Thus, to
 execute PETSc programs, users must know the procedure for beginning MPI

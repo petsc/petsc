@@ -49,7 +49,6 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
     configure = [
         './configure',
         '--with-mpi=0',
-        '--with-blaslapack=0',
         '--with-fc=0',
         '--with-cxx=0',
         '--with-x=0',
@@ -60,6 +59,7 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
         '--download-c2html',
         '--with-mkl_sparse_optimize=0',
         '--with-mkl_sparse=0',
+        '--with-petsc4py',
         'PETSC_ARCH=' + petsc_arch,
     ]
     print('==================================================================')
@@ -97,13 +97,36 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch, stage):
         print(command)
         print('============================================')
         subprocess.run(command, cwd=petsc_dir, check=True)
+    if stage ==  "pre":
+        try:
+            subprocess.run(['python2', '--version'])
+        except:
+            print('Skipping petsc4py documentation build since python2 is not available in PATH')
+            return
+        command = ['make', 'all',
+                   'PETSC_DIR=%s' % petsc_dir,
+                   'PETSC_ARCH=%s' % petsc_arch]
+        print('==============================================')
+        print('Building library to make petsc4py classic docs')
+        print(command)
+        print('==============================================')
+        subprocess.run(command, cwd=petsc_dir, check=True)
+        command = ['make', 'website',
+                   'PETSC_DIR=%s' % petsc_dir,
+                   'PETSC_ARCH=%s' % petsc_arch,
+                   'LOC=%s' % CLASSIC_DOCS_LOC]
+        print('============================================')
+        print('Building petsc4py classic docs')
+        print(command)
+        print('============================================')
+        subprocess.run(command, cwd=os.path.join(petsc_dir,'src','binding','petsc4py'), check=True)
 
 
 def classic_docs_subdirs(stage):
-    if stage == 'pre':
-        return [os.path.join('manualpages')]
-    if stage == 'post':
-        return ['include', 'src']
+    if stage == 'pre':   # generated .rst files that Sphinx will use to create website
+        return ['manualpages']
+    if stage == 'post':  # raw .html files that get copied directly to the website (not processed by Sphinx)
+        return ['include', 'src', 'petsc4py']
     raise Exception('Unrecognized stage %s' % stage)
 
 

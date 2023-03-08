@@ -51,6 +51,9 @@ uninstall:
 
 # ----
 
+website:
+	virtualenv -p ${PYTHON2} petsc-doc-env && . petsc-doc-env/bin/activate  && ${PYTHON2} -m pip install -r docs/source/requirements.txt && make epydoc-website && deactivate
+
 .PHONY: docs docs-html docs-pdf docs-misc
 docs: docs-html docs-pdf docs-misc
 docs-html: rst2html sphinx-html epydoc-html
@@ -112,6 +115,11 @@ epydoc-html: srcbuild
 	env PYTHONPATH=$$PWD/build/lib.py2 ${PYTHON2} -c 'import ${package}.${MODULE}'
 	env PYTHONPATH=$$PWD/build/lib.py2 ${EPYDOCBUILD} ${EPYDOCOPTS} --html -o docs/apiref
 epydoc-pdf:
+
+epydoc-website:
+	env CFLAGS=-O0 ${PYTHON2} setup.py -q build --build-lib build/lib.py2
+	env PYTHONPATH=$$PWD/build/lib.py2 ${PYTHON2} -c 'import ${package}.${MODULE}'
+	env PYTHONPATH=$$PWD/build/lib.py2 ${EPYDOCBUILD} ${EPYDOCOPTS} -q -q -q --html -o ${LOC}/petsc4py
 
 .PHONY: docsclean
 docsclean:

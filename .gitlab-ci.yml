@@ -1085,18 +1085,20 @@ analyze-pipeline:
       fi
 
 #
-# Base job for a documentation build
+# Base job for a documentation build (runs in venv to allow installing additional packages without root)
 #
 .docs:
   stage: stage-3
   tags:
     - gce-stage2
   before_script:
+    - printf "PATH:$PATH\n"
+    - printf "PYTHONPATH:$PYTHONPATH\n"
     - VENV=venv-petsc-docs &&
       python3 -m venv $VENV &&
       . $VENV/bin/activate &&
       cd doc &&
-      pip install -r requirements.txt
+      python3 -m pip install -r requirements.txt
 
 #
 # Build documentation and make available for review using GitLab pages
