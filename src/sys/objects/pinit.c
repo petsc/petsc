@@ -57,6 +57,9 @@ PetscMPIInt Petsc_ShmComm_keyval      = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_CreationIdx_keyval  = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_Garbage_HMap_keyval = MPI_KEYVAL_INVALID;
 
+PetscMPIInt Petsc_SharedWD_keyval  = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_SharedTmp_keyval = MPI_KEYVAL_INVALID;
+
 /*
      Declare and set all the string names of the PETSc enums
 */
@@ -1757,6 +1760,10 @@ PetscErrorCode PetscFinalize(void)
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_ShmComm_keyval));
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_CreationIdx_keyval));
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Garbage_HMap_keyval));
+
+  // Free keyvals which may be silently created by some routines
+  if (Petsc_SharedWD_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_SharedWD_keyval));
+  if (Petsc_SharedTmp_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_SharedTmp_keyval));
 
   PetscCall(PetscSpinlockDestroy(&PetscViewerASCIISpinLockOpen));
   PetscCall(PetscSpinlockDestroy(&PetscViewerASCIISpinLockStdout));

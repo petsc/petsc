@@ -19,6 +19,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
+#include <petsc/private/petscimpl.h>
 
 /*
    Private routine to delete tmp/shared storage
@@ -116,11 +117,10 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len)
 @*/
 PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
 {
-  PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
-  PetscBool          flg, iflg;
-  FILE              *fd;
-  static PetscMPIInt Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
-  int                err;
+  PetscMPIInt size, rank, *tagvalp, sum, cnt, i;
+  PetscBool   flg, iflg;
+  FILE       *fd;
+  int         err;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -141,15 +141,15 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_Tmp_keyval, NULL));
+  if (Petsc_SharedTmp_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_SharedTmp_keyval, NULL));
 
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Tmp_keyval, (void **)&tagvalp, (int *)&iflg));
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_SharedTmp_keyval, (void **)&tagvalp, (int *)&iflg));
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN], tmpname[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared tmp attribute */
     PetscCall(PetscMalloc1(1, &tagvalp));
-    PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Tmp_keyval, tagvalp));
+    PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_SharedTmp_keyval, tagvalp));
 
     PetscCall(PetscOptionsGetenv(comm, "PETSC_TMP", tmpname, 238, &iflg));
     if (!iflg) {
@@ -231,11 +231,10 @@ $   2) each has a separate working directory
 @*/
 PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
 {
-  PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
-  PetscBool          flg, iflg;
-  FILE              *fd;
-  static PetscMPIInt Petsc_WD_keyval = MPI_KEYVAL_INVALID;
-  int                err;
+  PetscMPIInt size, rank, *tagvalp, sum, cnt, i;
+  PetscBool   flg, iflg;
+  FILE       *fd;
+  int         err;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -256,15 +255,15 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if (Petsc_WD_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_WD_keyval, NULL));
+  if (Petsc_SharedWD_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_SharedWD_keyval, NULL));
 
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_WD_keyval, (void **)&tagvalp, (int *)&iflg));
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_SharedWD_keyval, (void **)&tagvalp, (int *)&iflg));
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared  attribute */
     PetscCall(PetscMalloc1(1, &tagvalp));
-    PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_WD_keyval, tagvalp));
+    PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_SharedWD_keyval, tagvalp));
 
     PetscCall(PetscGetWorkingDirectory(filename, 240));
     PetscCall(PetscStrlcat(filename, "/petsctestshared", sizeof(filename)));
