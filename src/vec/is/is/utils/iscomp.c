@@ -5,7 +5,7 @@
 /*@
    ISEqual  - Compares if two index sets have the same set of indices.
 
-   Collective on is1
+   Collective
 
    Input Parameters:
 .  is1, is2 - The index sets being compared
@@ -22,11 +22,13 @@
    the comparison is made, so the order of the indices on a processor is immaterial.
 
    Each processor has to have the same indices in the two sets, for example,
-$           Processor
-$             0      1
-$    is1 = {0, 1} {2, 3}
-$    is2 = {2, 3} {0, 1}
-   will return false.
+.vb
+           Processor
+             0      1
+    is1 = {0, 1} {2, 3}
+    is2 = {2, 3} {0, 1}
+.ve
+    will return false.
 
 .seealso: [](sec_scatter), `IS`, `ISEqualUnsorted()`
 @*/
@@ -91,7 +93,7 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
 /*@
    ISEqualUnsorted  - Compares if two index sets have the same indices.
 
-   Collective on is1
+   Collective
 
    Input Parameters:
 .  is1, is2 - The index sets being compared
@@ -104,7 +106,7 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
    Level: intermediate
 
    Note:
-   Unlike ISEqual(), this routine does NOT sort the contents of the index sets before
+   Unlike `ISEqual()`, this routine does NOT sort the contents of the index sets before
    the comparison is made, i.e., the order of indices is important.
 
    Each MPI rank must have the same indices.

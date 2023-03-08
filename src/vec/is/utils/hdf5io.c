@@ -182,8 +182,10 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 /*@C
   PetscViewerHDF5Load - Read a raw array from the `PETSCVIEWERHDF5` dataset.
 
+  Collective; No Fortran Support
+
   Input Parameters:
-+ viewer   - The HDF5 viewer
++ viewer   - The `PETSCVIEWERHDF5` viewer
 . name     - The dataset name
 - datatype - The HDF5 datatype of the items in the dataset
 
@@ -203,10 +205,8 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 
   This name is relative to the current group returned by `PetscViewerHDF5OpenGroup()`.
 
-  Fortran Note:
-  This routine is not available in Fortran.
-
-.seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`, `VecLoad()`, `ISLoad()`
+.seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`,
+          `VecLoad()`, `ISLoad()`
 @*/
 PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
@@ -252,7 +252,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
  PetscViewerHDF5ReadSizes - Read block size and global size of a `Vec` or `IS` stored in an HDF5 file.
 
   Input Parameters:
-+ viewer - The HDF5 viewer
++ viewer - The `PETSCVIEWERHDF5` viewer
 - name   - The dataset name
 
   Output Parameters:

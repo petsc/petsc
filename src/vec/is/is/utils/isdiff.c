@@ -6,7 +6,7 @@
 /*@
    ISDifference - Computes the difference between two index sets.
 
-   Collective on is1
+   Collective
 
    Input Parameters:
 +  is1 - first index, to have items removed from it
@@ -18,11 +18,13 @@
    Level: intermediate
 
    Notes:
-   Negative values are removed from the lists. is2 may have values
-   that are not in is1. This requires O(imax-imin) memory and O(imax-imin)
+   Negative values are removed from the lists. `is2` may have values
+   that are not in `is1`.
+
+   This computation requires O(imax-imin) memory and O(imax-imin)
    work, where imin and imax are the bounds on the indices in is1.
 
-   If is2 is NULL, the result is the same as for an empty IS, i.e., a duplicate of is1.
+   If `is2` is `NULL`, the result is the same as for an empty `IS`, i.e., a duplicate of `is1`.
 
    The difference is computed separately on each MPI rank
 
@@ -103,7 +105,7 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 -  is2 - index values to be added
 
    Output Parameter:
-.   is3 - the sum; this can not be is1 or is2
+.   is3 - the sum; this can not be `is1` or `is2`
 
    Level: intermediate
 
@@ -246,23 +248,23 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
    ISExpand - Computes the union of two index sets, by concatenating 2 lists and
    removing duplicates.
 
-   Collective on is1
+   Collective
 
    Input Parameters:
 +  is1 - first index set
 -  is2 - index values to be added
 
    Output Parameters:
-.  isout - is1 + is2 The index set is2 is appended to is1 removing duplicates
+.  isout - `is1` + `is2` The index set `is2` is appended to `is1` removing duplicates
 
    Level: intermediate
 
    Notes:
    Negative values are removed from the lists. This requires O(imax-imin)
    memory and O(imax-imin) work, where imin and imax are the bounds on the
-   indices in is1 and is2.
+   indices in `is1` and `is2`.
 
-   The IS's do not need to be sorted.
+   `is1` and `is2` do not need to be sorted.
 
    The operations are performed separately on each MPI rank
 
@@ -337,14 +339,14 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
 /*@
    ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
 
-   Collective on is1
+   Collective
 
    Input Parameters:
 +  is1 - first index set
 -  is2 - second index set
 
    Output Parameters:
-.  isout - the sorted intersection of is1 and is2
+.  isout - the sorted intersection of `is1` and `is2`
 
    Level: intermediate
 
@@ -352,7 +354,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
    Negative values are removed from the lists. This requires O(min(is1,is2))
    memory and O(max(is1,is2)log(max(is1,is2))) work
 
-   The IS's do not need to be sorted.
+   `is1` and `is2` do not need to be sorted.
 
    The operations are performed separately on each MPI rank
 
@@ -454,20 +456,20 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 /*@
    ISConcatenate - Forms a new `IS` by locally concatenating the indices from an `IS` list without reordering.
 
-   Collective.
+   Collective
 
    Input Parameters:
-+  comm    - communicator of the concatenated IS.
++  comm    - communicator of the concatenated `IS`.
 .  len     - size of islist array (nonnegative)
 -  islist  - array of index sets
 
    Output Parameters:
-.  isout   - The concatenated index set; empty, if len == 0.
+.  isout   - The concatenated index set; empty, if `len` == 0.
 
    Level: intermediate
 
    Notes:
-    The semantics of calling this on comm imply that the comms of the members of islist also contain this rank.
+    The semantics of calling this on comm imply that the comms of the members of `islist` also contain this rank.
 
 .seealso: [](sec_scatter), `IS`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISIntersect()`
 @*/
@@ -516,7 +518,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
                    Each `IS` on the input list is assigned an integer j so that all of the indices of that `IS` are
                    mapped to j.
 
-   Collective.
+   Collective
 
    Input Parameters:
 +  comm    -  `MPI_Comm`
@@ -525,7 +527,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 
    Output Parameters:
 +  xis -  domain `IS`
--  yis -  range  `I`S
+-  yis -  range  `IS`
 
   Level: developer
 
@@ -586,17 +588,17 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
   Collective
 
   Input Parameters:
-+ xis -  domain IS
-- yis -  range IS
++ xis -  domain `IS`
+- yis -  range `IS`
 
   Output Parameters:
-+ listlen -  length of islist
-- islist  -  list of ISs breaking up indis by color
++ listlen -  length of `islist`
+- islist  -  list of `IS`s breaking up indis by color
 
   Level: developer
 
   Notes:
-  xis and yis must be of the same length and have congruent communicators.
+  `xis` and `yis` must be of the same length and have congruent communicators.
 
   The resulting `IS` have subcommunicators in a "deadlock-free" order (see `ISListToPair()`).
 
@@ -704,16 +706,16 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 }
 
 /*@
-   ISEmbed - Embed `IS` a into `IS` b by finding the locations in b that have the same indices as in a.
-             If c is the `IS` of these locations, we have a = b*c, regarded as a composition of the
+   ISEmbed - Embed `IS` a into `IS` b by finding the locations in `b` that have the same indices as in `a`.
+             If `c` is the `IS` of these locations, we have `a = b*c`, regarded as a composition of the
              corresponding `ISLocalToGlobalMap`s.
 
-  Not collective.
+  Not Collective
 
   Input Parameters:
 + a    -  `IS` to embed
 . b    -  `IS` to embed into
-- drop -  flag indicating whether to drop a's indices that are not in b.
+- drop -  flag indicating whether to drop `a`'s indices that are not in `b`.
 
   Output Parameters:
 . c    -  local embedding indices
@@ -721,9 +723,9 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   Level: developer
 
   Notes:
-  If some of a's global indices are not among b's indices the embedding is impossible.  The local indices of a
+  If some of `a`'s global indices are not among `b`'s indices the embedding is impossible.  The local indices of a
   corresponding to these global indices are either mapped to -1 (if !drop) or are omitted (if drop).  In the former
-  case the size of c is that same as that of a, in the latter case c's size may be smaller.
+  case the size of `c` is that same as that of `a`, in the latter case `c`'s size may be smaller.
 
   The resulting `IS` is sequential, since the index substitution it encodes is purely local.
 
@@ -761,22 +763,22 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 /*@
   ISSortPermutation  -  calculate the permutation of the indices into a nondecreasing order.
 
-  Not collective.
+  Not Collective
 
   Input Parameters:
 + f      -  `IS` to sort
-- always -  build the permutation even when f's indices are nondecreasing.
+- always -  build the permutation even when `f`'s indices are nondecreasing.
 
   Output Parameter:
-. h    -  permutation or NULL, if f is nondecreasing and always == `PETSC_FALSE`.
+. h    -  permutation or `NULL`, if `f` is nondecreasing and `always` == `PETSC_FALSE`.
 
   Level: advanced
 
   Notes:
-  Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
+  Indices in `f` are unchanged. f[h[i]] is the i-th smallest f index.
 
   If always == `PETSC_FALSE`, an extra check is performed to see whether
-  the f indices are nondecreasing. h is built on `PETSC_COMM_SELF`, since
+  the `f` indices are nondecreasing. `h` is built on `PETSC_COMM_SELF`, since
   the permutation has a local meaning only.
 
 .seealso: `IS`, `ISLocalToGlobalMapping`, `ISSort()`

@@ -509,12 +509,12 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
 /*MC
    VECMPI - VECMPI = "mpi" - The basic parallel vector
 
-   Options Database Keys:
-. -vec_type mpi - sets the vector type to VECMPI during a call to VecSetFromOptions()
+   Options Database Key:
+. -vec_type mpi - sets the vector type to `VECMPI` during a call to `VecSetFromOptions()`
 
   Level: beginner
 
-.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
 M*/
 
 PetscErrorCode VecCreate_MPI(Vec vv)
@@ -525,14 +525,14 @@ PetscErrorCode VecCreate_MPI(Vec vv)
 }
 
 /*MC
-   VECSTANDARD = "standard" - A VECSEQ on one process and VECMPI on more than one process
+   VECSTANDARD = "standard" - A `VECSEQ` on one process and `VECMPI` on more than one process
 
-   Options Database Keys:
-. -vec_type standard - sets a vector type to standard on calls to VecSetFromOptions()
+   Options Database Key:
+. -vec_type standard - sets a vector type to standard on calls to `VecSetFromOptions()`
 
   Level: beginner
 
-.seealso: `VecCreateSeq()`, `VecCreateMPI()`
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreateMPI()`
 M*/
 
 PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
@@ -557,29 +557,29 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
 
    Input Parameters:
 +  comm  - the MPI communicator to use
-.  bs    - block size, same meaning as VecSetBlockSize()
-.  n     - local vector length, cannot be PETSC_DECIDE
-.  N     - global vector length (or PETSC_DECIDE to have calculated)
+.  bs    - block size, same meaning as `VecSetBlockSize()`
+.  n     - local vector length, cannot be `PETSC_DECIDE`
+.  N     - global vector length (or `PETSC_DETERMINE` to have calculated)
 -  array - the user provided array to store the vector values
 
    Output Parameter:
 .  vv - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
-
-   If the user-provided array is NULL, then VecPlaceArray() can be used
-   at a later stage to SET the array for storing the vector values.
-
-   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
-   The user should not free the array until the vector is destroyed.
-
    Level: intermediate
 
-.seealso: `VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
-          `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
+   Notes:
+   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
+   same type as an existing vector.
 
+   If the user-provided array is `NULL`, then `VecPlaceArray()` can be used
+   at a later stage to SET the array for storing the vector values.
+
+   PETSc does NOT free `array` when the vector is destroyed via `VecDestroy()`.
+
+   The user should not free `array` until the vector is destroyed.
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+          `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar array[], Vec *vv)
 {
@@ -602,7 +602,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
    Input Parameters:
 +  comm - the MPI communicator to use
 .  n - local vector length
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  N - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .  nghost - number of local ghost points
 .  ghosts - global indices of ghost points (or NULL if not needed), these do not need to be in increasing order (sorted)
 -  array - the space to store the vector values (as long as n + nghost)
@@ -610,18 +610,17 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
 
-   Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation
-   of the vector.
-
-   This also automatically sets the ISLocalToGlobalMapping() for this vector.
-
    Level: advanced
 
-.seealso: `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
+   Notes:
+   Use `VecGhostGetLocalForm()` to access the local, ghosted representation
+   of the vector.
+
+   This also automatically sets the `ISLocalToGlobalMapping()` for this vector.
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhost()`, `VecCreateSeqWithArray()`, `VecCreateMPIWithArray()`,
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`
-
 @*/
 PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv)
 {
@@ -676,22 +675,22 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
    Input Parameters:
 +  comm - the MPI communicator to use
 .  n - local vector length
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  N - global vector length (or `PETSC_DETERMEINE` to have calculated if `n` is given)
 .  nghost - number of local ghost points
 -  ghosts - global indices of ghost points, these do not need to be in increasing order (sorted)
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
 
-   Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation
-   of the vector.
-
-   This also automatically sets the ISLocalToGlobalMapping() for this vector.
-
    Level: advanced
 
-.seealso: `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
+   Notes:
+   Use `VecGhostGetLocalForm()` to access the local, ghosted representation
+   of the vector.
+
+   This also automatically sets the `ISLocalToGlobalMapping()` for this vector.
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
           `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`, `VecGhostUpdateBegin()`,
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecGhostUpdateEnd()`,
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`
@@ -714,21 +713,20 @@ PetscErrorCode VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt ng
 .  nghost - number of local ghost points
 -  ghosts - global indices of ghost points, these do not need to be in increasing order (sorted)
 
-   Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation
-   of the vector.
-
-   This also automatically sets the ISLocalToGlobalMapping() for this vector.
-
-   You must call this AFTER you have set the type of the vector (with VecSetType()) and the size (with VecSetSizes()).
-
    Level: advanced
 
-.seealso: `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
+   Notes:
+   Use `VecGhostGetLocalForm()` to access the local, ghosted representation
+   of the vector.
+
+   This also automatically sets the `ISLocalToGlobalMapping()` for this vector.
+
+   You must call this AFTER you have set the type of the vector (with` VecSetType()`) and the size (with `VecSetSizes()`).
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
           `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`, `VecGhostUpdateBegin()`,
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecGhostUpdateEnd()`,
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`
-
 @*/
 PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
 {
@@ -795,28 +793,27 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
 +  comm - the MPI communicator to use
 .  bs - block size
 .  n - local vector length
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  N - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .  nghost - number of local ghost blocks
-.  ghosts - global indices of ghost blocks (or NULL if not needed), counts are by block not by index, these do not need to be in increasing order (sorted)
--  array - the space to store the vector values (as long as n + nghost*bs)
+.  ghosts - global indices of ghost blocks (or `NULL` if not needed), counts are by block not by index, these do not need to be in increasing order (sorted)
+-  array - the space to store the vector values (as long as `n + nghost*bs`)
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
 
+   Level: advanced
+
    Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation
+   Use `VecGhostGetLocalForm()` to access the local, ghosted representation
    of the vector.
 
    n is the local vector size (total local size not the number of blocks) while nghost
    is the number of blocks in the ghost portion, i.e. the number of elements in the ghost
    portion is bs*nghost
 
-   Level: advanced
-
-.seealso: `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhost()`, `VecCreateSeqWithArray()`, `VecCreateMPIWithArray()`,
           `VecCreateGhostWithArray()`, `VecCreateGhostBlock()`
-
 @*/
 PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv)
 {
@@ -879,27 +876,26 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt
 +  comm - the MPI communicator to use
 .  bs - the block size
 .  n - local vector length
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  N - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .  nghost - number of local ghost blocks
 -  ghosts - global indices of ghost blocks, counts are by block, not by individual index, these do not need to be in increasing order (sorted)
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
 
-   Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation
-   of the vector.
-
-   n is the local vector size (total local size not the number of blocks) while nghost
-   is the number of blocks in the ghost portion, i.e. the number of elements in the ghost
-   portion is bs*nghost
-
    Level: advanced
 
-.seealso: `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
+   Notes:
+   Use `VecGhostGetLocalForm()` to access the local, ghosted representation
+   of the vector.
+
+   `n` is the local vector size (total local size not the number of blocks) while `nghost`
+   is the number of blocks in the ghost portion, i.e. the number of elements in the ghost
+   portion is `bs*nghost`
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
           `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecCreateGhostBlockWithArray()`
-
 @*/
 PetscErrorCode VecCreateGhostBlock(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], Vec *vv)
 {

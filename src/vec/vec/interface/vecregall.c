@@ -20,13 +20,13 @@ PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
 #endif
 
 /*@C
-  VecRegisterAll - Registers all of the vector components in the Vec package.
+  VecRegisterAll - Registers all of the vector types in the `Vec` package.
 
   Not Collective
 
   Level: advanced
 
-.seealso: `VecRegister()`, `VecRegisterDestroy()`, `VecRegister()`
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecRegister()`, `VecRegisterDestroy()`, `VecRegister()`
 @*/
 PetscErrorCode VecRegisterAll(void)
 {

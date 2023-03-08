@@ -12,21 +12,20 @@
 
    Input Parameters:
 +  comm - the MPI communicator to use
-.  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
--  N - global vector length (or PETSC_DETERMINE to have calculated if n is given)
+.  n - local vector length (or `PETSC_DECIDE` to have calculated if `N` is given)
+-  N - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 
    Output Parameter:
 .  vv - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
-
    Level: intermediate
 
-.seealso: `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
-          `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
+   Notes:
+   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
+   same type as an existing vector.
 
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+          `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
 @*/
 PetscErrorCode VecCreateMPI(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 {

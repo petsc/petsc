@@ -26,7 +26,6 @@ cdef extern from * nogil:
         PETSC_SCATTER_REVERSE       "SCATTER_REVERSE"
         PETSC_SCATTER_FORWARD_LOCAL "SCATTER_FORWARD_LOCAL"
         PETSC_SCATTER_REVERSE_LOCAL "SCATTER_REVERSE_LOCAL"
-        PETSC_SCATTER_LOCAL         "SCATTER_LOCAL"
 
     ctypedef enum  PetscNormType "NormType":
         PETSC_NORM_1          "NORM_1"

@@ -12,28 +12,20 @@
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
-#define PETSCSFBASIC      "basic"
-#define PETSCSFNEIGHBOR   "neighbor"
-#define PETSCSFALLGATHERV "allgatherv"
-#define PETSCSFALLGATHER  "allgather"
-#define PETSCSFGATHERV    "gatherv"
-#define PETSCSFGATHER     "gather"
-#define PETSCSFALLTOALL   "alltoall"
-#define PETSCSFWINDOW     "window"
-
 /*E
-   PetscSFPattern - Pattern of the PetscSF graph
+   PetscSFPattern - Pattern of the `PetscSF` graph
 
-$  `PETSCSF_PATTERN_GENERAL`   - A general graph. One sets the graph with PetscSFSetGraph() and usually does not use this enum directly.
-$  `PETSCSF_PATTERN_ALLGATHER` - A graph that every rank gathers all roots from all ranks (like `MPI_Allgather()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
-$  `PETSCSF_PATTERN_GATHER`    - A graph that rank 0 gathers all roots from all ranks (like `MPI_Gatherv()` with root=0). One sets the graph with `PetscSFSetGraphWithPattern()`.
-$  `PETSCSF_PATTERN_ALLTOALL`  - A graph that every rank gathers different roots from all ranks (like `MPI_Alltoall()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
+   Values:
++  `PETSCSF_PATTERN_GENERAL`   - A general graph. One sets the graph with `PetscSFSetGraph()` and usually does not use this enum directly.
+.  `PETSCSF_PATTERN_ALLGATHER` - A graph that every rank gathers all roots from all ranks (like `MPI_Allgather()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
+.  `PETSCSF_PATTERN_GATHER`    - A graph that rank 0 gathers all roots from all ranks (like `MPI_Gatherv()` with root=0). One sets the graph with `PetscSFSetGraphWithPattern()`.
+-  `PETSCSF_PATTERN_ALLTOALL`  - A graph that every rank gathers different roots from all ranks (like `MPI_Alltoall()`). One sets the graph with `PetscSFSetGraphWithPattern()`.
                                In an ALLTOALL graph, we assume each process has <size> leaves and <size> roots, with each leaf connecting to a remote root. Here <size> is
                                the size of the communicator. This does not mean one can not communicate multiple data items between a pair of processes. One just needs to
                                create a new MPI datatype for the multiple data items, e.g., by `MPI_Type_contiguous`.
    Level: beginner
 
-.seealso: `PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`
+.seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`
 E*/
 typedef enum {
   PETSCSF_PATTERN_GENERAL = 0,
@@ -45,13 +37,14 @@ typedef enum {
 /*E
     PetscSFWindowSyncType - Type of synchronization for `PETSCSFWINDOW`
 
-$  `PETSCSF_WINDOW_SYNC_FENCE` - simplest model, synchronizing across communicator
-$  `PETSCSF_WINDOW_SYNC_LOCK` - passive model, less synchronous, requires less setup than PETSCSF_WINDOW_SYNC_ACTIVE, but may require more handshakes
-$  `PETSCSF_WINDOW_SYNC_ACTIVE` - active model, provides most information to MPI implementation, needs to construct 2-way process groups (more setup than PETSCSF_WINDOW_SYNC_LOCK)
+   Values:
++  `PETSCSF_WINDOW_SYNC_FENCE` - simplest model, synchronizing across communicator
+.  `PETSCSF_WINDOW_SYNC_LOCK` - passive model, less synchronous, requires less setup than `PETSCSF_WINDOW_SYNC_ACTIVE`, but may require more handshakes
+-  `PETSCSF_WINDOW_SYNC_ACTIVE` - active model, provides most information to MPI implementation, needs to construct 2-way process groups (more setup than `PETSCSF_WINDOW_SYNC_LOCK`)
 
    Level: advanced
 
-.seealso: `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
+.seealso: `PetscSF`, `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
 E*/
 typedef enum {
   PETSCSF_WINDOW_SYNC_FENCE,
@@ -61,16 +54,17 @@ typedef enum {
 PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
 
 /*E
-    PetscSFWindowFlavorType - Flavor for the creation of MPI windows for PETSCSFWINDOW
+    PetscSFWindowFlavorType - Flavor for the creation of MPI windows for `PETSCSFWINDOW`
 
-$  `PETSCSF_WINDOW_FLAVOR_CREATE` - Use `MPI_Win_create()`, no reuse
-$  `PETSCSF_WINDOW_FLAVOR_DYNAMIC` - Use `MPI_Win_create_dynamic()` and dynamically attach pointers
-$  `PETSCSF_WINDOW_FLAVOR_ALLOCATE` - Use `MPI_Win_allocate()`
-$  `PETSCSF_WINDOW_FLAVOR_SHARED` - Use `MPI_Win_allocate_shared()`
+    Values:
++  `PETSCSF_WINDOW_FLAVOR_CREATE` - Use `MPI_Win_create()`, no reuse
+.  `PETSCSF_WINDOW_FLAVOR_DYNAMIC` - Use `MPI_Win_create_dynamic()` and dynamically attach pointers
+.  `PETSCSF_WINDOW_FLAVOR_ALLOCATE` - Use `MPI_Win_allocate()`
+-  `PETSCSF_WINDOW_FLAVOR_SHARED` - Use `MPI_Win_allocate_shared()`
 
    Level: advanced
 
-.seealso: `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
+.seealso: `PetscSF`, `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
 E*/
 typedef enum {
   PETSCSF_WINDOW_FLAVOR_CREATE,
@@ -83,13 +77,14 @@ PETSC_EXTERN const char *const PetscSFWindowFlavorTypes[];
 /*E
     PetscSFDuplicateOption - Aspects to preserve when duplicating a `PetscSF`
 
-$  `PETSCSF_DUPLICATE_CONFONLY` - configuration only, user must call `PetscSFSetGraph()`
-$  `PETSCSF_DUPLICATE_RANKS` - communication ranks preserved, but different graph (allows simpler setup after calling `PetscSFSetGraph()`)
-$  `PETSCSF_DUPLICATE_GRAPH` - entire graph duplicated
+   Values:
++  `PETSCSF_DUPLICATE_CONFONLY` - configuration only, user must call `PetscSFSetGraph()`
+.  `PETSCSF_DUPLICATE_RANKS` - communication ranks preserved, but different graph (allows simpler setup after calling `PetscSFSetGraph()`)
+-  `PETSCSF_DUPLICATE_GRAPH` - entire graph duplicated
 
    Level: beginner
 
-.seealso: `PetscSFDuplicate()`
+.seealso: `PetscSF`, `PetscSFDuplicate()`
 E*/
 typedef enum {
   PETSCSF_DUPLICATE_CONFONLY,
@@ -99,15 +94,16 @@ typedef enum {
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
 /*E
-    PetscSFConcatenateRootMode - Modes of root concatenation when concatenating SFs
+    PetscSFConcatenateRootMode - Modes of root concatenation when concatenating `PetscSF`s
 
-$  `PETSCSF_CONCATENATE_ROOTMODE_LOCAL`  - concatenate root spaces locally (separately on each rank)
-$  `PETSCSF_CONCATENATE_ROOTMODE_SHARED` - do not concatenate roots; root space is considered the same for each input SF (checked in debug mode)
-$  `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL` - concatenate root spaces globally
+   Values:
++  `PETSCSF_CONCATENATE_ROOTMODE_LOCAL`  - concatenate root spaces locally (separately on each rank)
+.  `PETSCSF_CONCATENATE_ROOTMODE_SHARED` - do not concatenate roots; root space is considered the same for each input `PetscSF` (checked in debug mode)
+-  `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL` - concatenate root spaces globally
 
    Level: advanced
 
-.seealso: `PetscSFConcatenate()`
+.seealso: `PetscSF`, `PetscSFConcatenate()`
 E*/
 typedef enum {
   PETSCSF_CONCATENATE_ROOTMODE_LOCAL,

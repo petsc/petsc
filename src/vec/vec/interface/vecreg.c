@@ -17,14 +17,14 @@ PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 . -vec_type <type> - Sets the vector type; use -help for a list
                      of available types
 
-  Notes:
-  See "petsc/include/petscvec.h" for available vector types (for instance, VECSEQ, VECMPI, or VECSHARED).
-
-  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the same type as an existing vector.
-
   Level: intermediate
 
-.seealso: `VecGetType()`, `VecCreate()`
+  Notes:
+  See `VecType` for available vector types (for instance, `VECSEQ` or `VECMPI`)
+
+  Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the same type as an existing vector.
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecGetType()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecSetType(Vec vec, VecType method)
 {
@@ -92,7 +92,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
 }
 
 /*@C
-  VecGetType - Gets the vector type name (as a string) from the Vec.
+  VecGetType - Gets the vector type name (as a string) from a `Vec`.
 
   Not Collective
 
@@ -100,11 +100,11 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
 . vec  - The vector
 
   Output Parameter:
-. type - The vector type name
+. type - The `VecType` of the vector
 
   Level: intermediate
 
-.seealso: `VecSetType()`, `VecCreate()`
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecGetType()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecGetType(Vec vec, VecType *type)
 {
