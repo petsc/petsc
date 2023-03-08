@@ -1,4 +1,10 @@
+#include <petscconf.h>
+// We need to define this ahead of any other includes to make sure mkstemp is actually defined
+#if defined(PETSC_HAVE_MKSTEMP)
+  #define _XOPEN_SOURCE 600
+#endif
 #include <petsc/private/dmnetworkimpl.h> /*I  "petscdmnetwork.h"  I*/
+#include <petscdraw.h>
 
 static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
 {
@@ -64,7 +70,6 @@ static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#include <petscdraw.h>
 static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
 {
   PetscMPIInt rank, size;
@@ -103,7 +108,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
 #if defined(PETSC_HAVE_TMPNAM_S)
     // Acquire a temporary file to write to and open an ASCII/CSV viewer
     PetscCheck(tmpnam_s(filename, sizeof(filename)) == 0, comm, PETSC_ERR_SYS, "Could not acquire temporary file");
-#elif defined(PETSC_HAVE_MKSTEMP) && __STDC_VERSION__ > 199901L
+#elif defined(PETSC_HAVE_MKSTEMP)
     PetscBool isTmpOverridden;
     size_t    numChars;
     // Same thing, but for POSIX systems on which tmpnam is deprecated
