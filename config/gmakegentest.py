@@ -391,6 +391,7 @@ class generateExamples(Petsc):
       subst['mpiexec']='petsc_mpiexec_valgrind ' + self.conf['MPIEXEC']
     else:
       subst['mpiexec']=self.conf['MPIEXEC']
+    subst['mpiexec_tail']=self.conf['MPIEXEC_TAIL']
     subst['pkg_name']=self.pkg_name
     subst['pkg_dir']=self.pkg_dir
     subst['pkg_arch']=self.petsc_arch

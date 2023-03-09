@@ -9,7 +9,7 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
 testex100: ex100.PETSc
-	-@OMPI_MCA_mpi_warn_on_fork=0 ${MPIEXEC} -n 1 ./ex100 -test  > ex100_1.tmp 2>&1; \
+	-@OMPI_MCA_mpi_warn_on_fork=0 ${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./ex100 -test  > ex100_1.tmp 2>&1; \
 	 if (${DIFF} output/ex100_1.testout ex100_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ Python example src/ksp/ksp/tutorials/ex100 run successfully with 1 MPI process"; \
 	 else \

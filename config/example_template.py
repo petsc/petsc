@@ -31,6 +31,7 @@ export PETSC_OPTIONS="${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_
 
 mpiexec=${PETSCMPIEXEC:-"@MPIEXEC@"}
 diffexec=${PETSCDIFF:-"${petsc_bindir}/petscdiff"}
+mpiexec_tail='@MPIEXEC_TAIL@'
 
 . "${config_dir}/petsc_harness.sh"
 
@@ -43,6 +44,6 @@ footer='petsc_testend "@TESTROOT@" '
 
 todoline='petsc_report_tapoutput "" "${label}" "TODO @TODOCOMMENT@"'
 skipline='petsc_report_tapoutput "" "${label}" "SKIP @SKIPCOMMENT@"'
-mpitest='petsc_testrun "${mpiexec} -n ${insize} ${exec} ${args} @SUBARGS@" @REDIRECT_FILE@ ${testname}.err "${label}@LABEL_SUFFIX@" @ERROR@'
+mpitest='petsc_testrun "${mpiexec} -n ${insize} ${mpiexec_tail} ${exec} ${args} @SUBARGS@" @REDIRECT_FILE@ ${testname}.err "${label}@LABEL_SUFFIX@" @ERROR@'
 difftest='petsc_testrun "${diff_exe} @OUTPUT_FILE@ @REDIRECT_FILE@" diff-${testname}.out diff-${testname}.out diff-${label}@LABEL_SUFFIX@ ""'
 commandtest='petsc_testrun "@COMMAND@" @REDIRECT_FILE@ ${testname}.err cmd-${label}@LABEL_SUFFIX@ @ERROR@'
