@@ -704,13 +704,14 @@ PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (q == fem->faceQuadrature) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFEGetNumComponents(fem, &Nc));
   PetscCall(PetscQuadratureGetNumComponents(q, &qNc));
   PetscCheck(!(qNc != 1) || !(Nc != qNc), PetscObjectComm((PetscObject)fem), PETSC_ERR_ARG_SIZ, "FE components %" PetscInt_FMT " != Quadrature components %" PetscInt_FMT " and non-scalar quadrature", Nc, qNc);
   PetscCall(PetscTabulationDestroy(&fem->Tf));
+  PetscCall(PetscObjectReference((PetscObject)q));
   PetscCall(PetscQuadratureDestroy(&fem->faceQuadrature));
   fem->faceQuadrature = q;
-  PetscCall(PetscObjectReference((PetscObject)q));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2160,6 +2161,8 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
   PetscInt dOffset = 0, fOffset = 0, f, g;
 
   for (f = 0; f < Nf; ++f) {
+    PetscCheck(r < T[f]->Nr, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Replica number %" PetscInt_FMT " should be in [0, %" PetscInt_FMT ")", r, T[f]->Nr);
+    PetscCheck(q < T[f]->Np, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point number %" PetscInt_FMT " should be in [0, %" PetscInt_FMT ")", q, T[f]->Np);
     PetscFE          fe;
     const PetscInt   k       = ds->jetDegree[f];
     const PetscInt   cdim    = T[f]->cdim;
