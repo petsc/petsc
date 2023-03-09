@@ -185,11 +185,11 @@ alltree_makefile: ${ACTION}
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done
 
-# This target goes through all dirs specified by DIRS,EDIRS, and
+# This target goes through all dirs specified by DIRS and
 # excludes dirs specified by $XDIRS
 alltree: ${ACTION}
-	@-if [ "${DIRS} ${EDIRS}" != " " ]; then \
-	NDIRS="${DIRS} ${EDIRS}" ;\
+	@-if [ "${DIRS}" != "" ]; then \
+	NDIRS="${DIRS}" ;\
 	if [ "${XDIRS}" != "" ]; then \
 	for XDIR in ${XDIRS} qwertyuiop ; do \
 	NDIRS=`echo $$NDIRS | sed s/$$XDIR//g`; \

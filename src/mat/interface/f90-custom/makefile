@@ -2,8 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = zmatrixf90.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscmat
 
 

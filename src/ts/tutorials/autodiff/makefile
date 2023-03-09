@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 MANSEC          = TS
-DIRS            =
 CLEANFILES      = TS-data-* *.tap
 
 LIB             = ${PETSC_TS_LIB}

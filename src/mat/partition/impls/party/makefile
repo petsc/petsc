@@ -3,7 +3,6 @@
 
 CPPFLAGS  = ${PARTY_INCLUDE}
 SOURCEC   = party.c
-SOURCEH   =
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

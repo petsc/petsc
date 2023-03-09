@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = tcqmr.c
-SOURCEF   =
 SOURCEH   = tcqmrimpl.h
 LIBBASE   = libpetscksp
 MANSEC    = KSP

@@ -4,10 +4,7 @@
 
 CFLAGS   = ${SUITESPARSE_INCLUDE}
 SOURCEC  = aijcholmod.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     =
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

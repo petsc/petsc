@@ -1,8 +1,6 @@
 -include ../../../petscdir.mk
 
 SOURCEC   = fdmatrix.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscmat
 SUBMANSEC = MatFD
 MANSEC    = Mat

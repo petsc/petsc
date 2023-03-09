@@ -2,10 +2,8 @@
 #requirespackage 'PETSC_HAVE_CUDA'
 
 SOURCECU = mpiaijcusparse.cu
-SOURCEF	 =
 SOURCEH	 = mpicusparsematimpl.h
 LIBBASE	 = libpetscmat
-DIRS	 =
 MANSEC	 = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

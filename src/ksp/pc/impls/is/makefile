@@ -3,7 +3,6 @@
 LIBBASE   = libpetscksp
 DIRS      = nn
 SOURCEC   = pcis.c
-SOURCEH   =
 MANSEC    = KSP
 SUBMANSEC = PC
 

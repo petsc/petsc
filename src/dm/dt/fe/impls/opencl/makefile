@@ -2,9 +2,7 @@
 #requirespackage 'PETSC_HAVE_OPENCL'
 
 SOURCEC   = feopencl.c
-SOURCEF   =
 LIBBASE   = libpetscdm
-DIRS      =
 MANSEC    = DM
 SUBMANSEC = FE
 

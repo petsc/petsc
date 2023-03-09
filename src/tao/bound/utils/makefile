@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = isutil.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

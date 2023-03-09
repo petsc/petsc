@@ -1,9 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC  = tagger.c taggerregi.c dlregistagger.c
-SOURCEF  =
-SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 

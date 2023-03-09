@@ -2,8 +2,6 @@
 #requirespackage   'PETSC_HAVE_RADAU5'
 
 SOURCEC  = radau5.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = TS
 

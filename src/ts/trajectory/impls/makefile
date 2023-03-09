@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEH  =
 DIRS     = basic singlefile memory visualization
 MANSEC   = TS
 

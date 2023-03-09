@@ -1,9 +1,7 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC   = dspacesimple.c
-SOURCEF   =
 LIBBASE   = libpetscdm
-DIRS      =
 MANSEC    = DM
 SUBMANSEC = DUALSPACE
 

@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = telescope.c telescope_dmda.c telescope_coarsedm.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
 

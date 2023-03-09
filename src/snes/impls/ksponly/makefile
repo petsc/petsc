@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = ksponly.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 

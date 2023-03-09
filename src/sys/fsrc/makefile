@@ -1,9 +1,7 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  =
 SOURCEF90= somefort.F90
-SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

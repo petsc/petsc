@@ -3,7 +3,6 @@
 
 CPPFLAGS  = ${SCOTCH_INCLUDE}
 SOURCEC   = scotch.c
-SOURCEH   =
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

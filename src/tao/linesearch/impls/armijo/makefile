@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = armijo.c
-SOURCEF   =
 SOURCEH   = armijo.h
 LIBBASE   = libpetsctao
 MANSEC    = Tao

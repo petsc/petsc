@@ -3,7 +3,6 @@
 #requiresdefine   'PETSC_USE_SOCKET_VIEWER'
 
 SOURCEC	  = client.c google.c box.c textbelt.c globus.c tellmycell.c
-SOURCEF	  =
 SOURCEH	  = ../../../include/petscwebclient.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys

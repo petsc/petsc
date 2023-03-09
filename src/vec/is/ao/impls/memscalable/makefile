@@ -1,10 +1,7 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC   = aomemscalable.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscvec
-DIRS      =
 MANSEC    = Vec
 SUBMANSEC = AO
 

@@ -6,12 +6,9 @@
 # compare against C versions of the same kernels.
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-SOURCEC  =
 SOURCEF90= fmultcrl.F90
-SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
-DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

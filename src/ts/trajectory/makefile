@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEH  =
 DIRS     = interface utils impls
 MANSEC   = TS
 

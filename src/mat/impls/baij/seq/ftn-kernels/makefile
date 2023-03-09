@@ -6,12 +6,9 @@
 # compare against C versions of the same kernels.
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-SOURCEC  =
 SOURCEF90= fsolvebaij.F90
-SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
-DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

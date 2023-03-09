@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = lmvmimpl.c lmvmutils.c
-SOURCEF  =
 SOURCEH  = lmvm.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP

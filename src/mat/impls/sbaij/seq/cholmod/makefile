@@ -4,10 +4,8 @@
 
 CFLAGS	 = ${SUITESPARSE_INCLUDE}
 SOURCEC	 = sbaijcholmod.c
-SOURCEF	 =
 SOURCEH	 = cholmodimpl.h
 LIBBASE	 = libpetscmat
-DIRS     =
 MANSEC	 = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

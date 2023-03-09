@@ -2,8 +2,6 @@
 
 CFLAGS   = ${MATLAB_INCLUDE}
 SOURCEC  = bvec2.c bvec1.c dvec2.c vseqcr.c bvec3.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 DIRS     = ftn-kernels seqviennacl seqviennaclcuda kokkos cupm

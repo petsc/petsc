@@ -5,10 +5,7 @@
 
 CXXFLAGS  = ${HPDDM_INCLUDE}
 SOURCECXX = pchpddm.cxx
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
 

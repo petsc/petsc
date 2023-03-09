@@ -3,10 +3,7 @@
 
 CFLAGS   = ${SUPERLU_DIST_INCLUDE}
 SOURCEC	 = superlu_dist.c
-SOURCEF	 =
-SOURCEH	 =
 LIBBASE	 = libpetscmat
-DIRS	 =
 MANSEC	 = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

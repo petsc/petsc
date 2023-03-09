@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEH  =
 DIRS     = impls  interface
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

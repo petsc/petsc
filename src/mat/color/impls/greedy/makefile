@@ -1,8 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC   = greedy.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

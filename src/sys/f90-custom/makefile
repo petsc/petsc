@@ -2,7 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = zsysf90.c
-SOURCEF  = 
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

@@ -1,11 +1,8 @@
 -include ../../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_NVSHMEM'
 
-SOURCEH       =
-SOURCEC       =
 SOURCECU      = sfnvshmem.cu
 LIBBASE       = libpetscvec
-DIRS          =
 MANSEC        = Vec
 SUBMANSEC     = PetscSF
 

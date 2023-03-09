@@ -3,10 +3,7 @@
 
 CFLAGS   = ${RANDOM123_INCLUDE}
 SOURCEC  = random123.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscsys
-DIRS     =
 MANSEC	 = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

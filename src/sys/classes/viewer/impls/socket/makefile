@@ -2,7 +2,6 @@
 #requiresdefine  'PETSC_USE_SOCKET_VIEWER'
 
 SOURCEC   = send.c
-SOURCEF   =
 SOURCEH   = socket.h
 MANSEC    = Sys
 SUBMANSEC = Viewer

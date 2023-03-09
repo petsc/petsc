@@ -1,10 +1,7 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = normm.c normmh.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     =
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

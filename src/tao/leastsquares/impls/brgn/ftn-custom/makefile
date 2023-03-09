@@ -2,9 +2,6 @@
 #requirespackage 	'PETSC_HAVE_FORTRAN'
 
 SOURCEC = zbrgnf.c
-SOURCEF =
-SOURCEH =
-DIR     =
 LIBBASE = libpetsctao
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

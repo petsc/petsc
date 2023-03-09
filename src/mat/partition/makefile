@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 
 SOURCEC   = partition.c spartition.c
-SOURCEH   =
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

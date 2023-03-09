@@ -3,7 +3,6 @@
 
 CPPFLAGS  = ${PARMETIS_INCLUDE}
 SOURCEC   = pmetis.c
-SOURCEH   =
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

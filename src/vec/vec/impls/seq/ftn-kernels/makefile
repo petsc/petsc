@@ -6,9 +6,7 @@
 # compare against C versions of the same kernels.
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-SOURCEC  =
 SOURCEF90= fwaxpy.F90 faypx.F90 fnorm.F90 fxtimesy.F90 fmdot.F90 fmaxpy.F90
-SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Sys
 

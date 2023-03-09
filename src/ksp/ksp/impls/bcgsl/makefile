@@ -2,7 +2,6 @@
 
 SOURCEC  = bcgsl.c
 SOURCEH  = bcgslimpl.h
-SOURCEF  =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

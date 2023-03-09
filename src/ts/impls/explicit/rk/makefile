@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = rk.c mrk.c
-SOURCEF  =
 SOURCEH  = rk.h
 LIBBASE  = libpetscts
 MANSEC   = TS
