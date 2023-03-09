@@ -390,6 +390,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   const PetscInt Nf   = prob->Nf;
   PetscBool      hasH = PETSC_FALSE;
   PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
+  PetscInt       gorder = -1, fgorder = -1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -473,6 +474,20 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
         PetscFE fe = (PetscFE)obj;
 
         PetscCall(PetscFEGetQuadrature(fe, &q));
+        {
+          PetscQuadrature fq;
+          PetscInt        order, forder;
+
+          PetscCall(PetscQuadratureGetOrder(q, &order));
+          if (gorder < 0) gorder = order;
+          PetscCheck(order == gorder, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " cell quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS cell quadrature order", f, order, gorder);
+          PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
+          if (fq) {
+            PetscCall(PetscQuadratureGetOrder(fq, &forder));
+            if (fgorder < 0) fgorder = forder;
+            PetscCheck(forder == fgorder, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " face quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS face quadrature order", f, forder, fgorder);
+          }
+        }
         PetscCall(PetscFEGetDimension(fe, &Nb));
         PetscCall(PetscFEGetNumComponents(fe, &Nc));
         PetscCall(PetscFEGetCellTabulation(fe, prob->jetDegree[f], &prob->T[f]));
