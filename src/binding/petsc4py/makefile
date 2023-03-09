@@ -129,7 +129,7 @@ docsclean:
 # ----
 
 .PHONY: sdist
-sdist: docs
+sdist:
 	${PYTHON} setup.py sdist ${SDISTOPT}
 
 # ----
