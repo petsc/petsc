@@ -33,6 +33,9 @@ typedef struct {
   PetscScalar *e, *d;
   PetscReal   *ee, *dd; /* work space for Lanczos algorithm */
 
+  /* Trust region support */
+  PetscReal radius;
+
   PetscBool singlereduction; /* use variant of CG that combines both inner products */
 } KSP_CG;
 
