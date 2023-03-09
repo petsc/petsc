@@ -326,3 +326,19 @@
 +/*@C
    testFunctionPointerArguments - the first set of arguments are unnamed and should be errored
  
+@@ -440,8 +440,4 @@
+   testIllFormedDeprecated - check that deprecated (since VERSION) works
+ 
+-  Input Parameters:
+-+ foo - a nonexistent foo
+-. bar - a nonexistent bar
+-- baz - a nonexistent baz
+ 
+   Level: dpcrtd (since 3.18.5)
+@@ -445,5 +445,5 @@
+ - baz - a nonexistent baz
+ 
+-  Level: dpcrtd (since 3.18.5)
++  Level: deprecated (since 3.18.5)
+ 
+ .seealso: `testDeprecated()`

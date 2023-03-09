@@ -660,45 +660,80 @@ class SourceCode(VerbatimBlock):
   ('spelling', 'Verify that level subheadings are correctly spelled'),
 )
 class Level(InlineList):
+  __slots__ = ('valid_levels',)
+
   def __init__(self, *args, **kwargs):
     kwargs.setdefault('name', 'level')
     kwargs.setdefault('required', True)
     super().__init__(*args, **kwargs)
+    self.valid_levels = ('beginner', 'intermediate', 'advanced', 'developer', 'deprecated')
     return
 
   @classmethod
   def __diagnostic_prefix__(cls, *flags):
     return DiagnosticManager.flag_prefix(super())('level', *flags)
 
+  def __do_check_valid_level_spelling(self, docstring, loc, level_name):
+    if level_name in self.valid_levels:
+      return # all good
+
+    def make_sub_loc(loc, sub):
+      return docstring.make_source_range(sub, loc.raw(), loc.start.line, offset=loc.start.column - 1)
+
+    locase  = level_name.casefold()
+    patch   = None
+    sub_loc = loc
+    if locase in self.valid_levels:
+      diag  = self.diags.casefold
+      mess  = f"Level subheading must be lowercase, expected '{locase}' found '{level_name}'"
+      patch = Patch(loc, locase)
+    else:
+      diag      = self.diags.spelling
+      lvl_match = difflib.get_close_matches(locase, self.valid_levels, n=1)
+      if not lvl_match:
+        sub_split = level_name.split(maxsplit=1)[0]
+        if sub_split != level_name:
+          sub_loc   = make_sub_loc(loc, sub_split)
+          lvl_match = difflib.get_close_matches(sub_split.casefold(), self.valid_levels, n=1)
+
+      if lvl_match:
+        lvl_match = lvl_match[0]
+        if lvl_match == 'deprecated':
+          re_match = re.match(
+            r'(\w+)\s*(\(\s*[sS][iI][nN][cC][eE]\s*\d+\.\d+[\.\d\s]*\))', level_name
+          )
+          if re_match:
+            # given:
+            #
+            # deprecated (since MAJOR.MINOR[.PATCH])
+            # ^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            #     |                     |
+            # re_match[1]               |
+            #                   re_match[2]
+            #
+            # check that invalid_name_match is properly formatted
+            invalid_name_match = re_match[1]
+            return self.__do_check_valid_level_spelling(
+              docstring, make_sub_loc(loc, invalid_name_match), invalid_name_match
+            )
+
+        mess  = f"Unknown Level subheading '{level_name}', assuming you meant '{lvl_match}'"
+        patch = Patch(loc, lvl_match)
+      else:
+        if 'level' not in loc.raw().casefold():
+          return # TODO fix this with _check_level_heading_on_same_line()
+        expected = ', or '.join([', '.join(self.valid_levels[:-1]), self.valid_levels[-1]])
+        mess     = f"Unknown Level subheading '{level_name}', expected one of {expected}"
+    docstring.add_error_from_source_range(diag, mess, sub_loc, patch=patch)
+    return
+
   def _check_valid_level_spelling(self, docstring):
     """
     Ensure that the level values are both proper and properly spelled
     """
-    valid_levels = ('beginner', 'intermediate', 'advanced', 'developer', 'deprecated')
-    expected     = ', or '.join([', '.join(valid_levels[:-1]), valid_levels[-1]])
     for line_after_colon, sub_items in self.items:
       for loc, level_name in sub_items:
-        if level_name in valid_levels:
-          continue
-
-        locase = level_name.casefold()
-        if locase in valid_levels:
-          diag  = self.diags.casefold
-          mess  = f"Level subheading must be lowercase, expected '{locase}' found '{level_name}'"
-          patch = Patch(loc, locase)
-        else:
-          diag      = self.diags.spelling
-          lvl_match = difflib.get_close_matches(locase, valid_levels, n=1)
-          if lvl_match:
-            lvl_match = lvl_match[0]
-            mess      = f"Unknown Level subheading '{level_name}', assuming you meant '{lvl_match}'"
-            patch     = Patch(loc, lvl_match)
-          else:
-            if 'level' not in loc.raw().casefold():
-              continue # TODO fix this with _check_level_heading_on_same_line()
-            mess  = f"Unknown Level subheading '{level_name}', expected one of {expected}"
-            patch = None
-        docstring.add_error_from_source_range(diag, mess, loc, patch=patch)
+        self.__do_check_valid_level_spelling(docstring, loc, level_name)
     return
 
   def _check_level_heading_on_same_line(self):
