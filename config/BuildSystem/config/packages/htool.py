@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = 'b6e91690f8d7c20d67dfb3b8db2e7ea674405a37' # main feb-18-2022
+    self.gitcommit              = '777f768c6e4de0eefa938dd3bffca6b312d3e27f' # main mar-10-2023
     self.download               = ['git://https://github.com/htool-ddm/htool','https://github.com/htool-ddm/htool/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '0.8.0'
     self.versionname            = 'HTOOL_VERSION'
