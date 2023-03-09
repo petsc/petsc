@@ -1920,7 +1920,7 @@ static PetscErrorCode SetupFE(DM dm, PetscInt Nf, PetscInt Nc[], const char *nam
   AppCtx         *user = (AppCtx *)ctx;
   DM              cdm  = dm;
   PetscFE         fe;
-  PetscQuadrature q = NULL;
+  PetscQuadrature q = NULL, fq = NULL;
   char            prefix[PETSC_MAX_PATH_LEN];
   PetscInt        dim, f;
   PetscBool       simplex;
@@ -1934,7 +1934,9 @@ static PetscErrorCode SetupFE(DM dm, PetscInt Nf, PetscInt Nc[], const char *nam
     PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc[f], simplex, name[f] ? prefix : NULL, -1, &fe));
     PetscCall(PetscObjectSetName((PetscObject)fe, name[f]));
     if (!q) PetscCall(PetscFEGetQuadrature(fe, &q));
+    if (!fq) PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
     PetscCall(PetscFESetQuadrature(fe, q));
+    PetscCall(PetscFESetFaceQuadrature(fe, fq));
     PetscCall(DMSetField(dm, f, NULL, (PetscObject)fe));
     PetscCall(PetscFEDestroy(&fe));
   }
