@@ -150,7 +150,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
 /*@
   DMPlexVecView1D - Plot many 1D solutions on the same line graph
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The `DMPLEX` object
@@ -1827,7 +1827,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 /*@
   DMPlexTopologyView - Saves a `DMPLEX` topology into a file
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm     - The `DM` whose topology is to be saved
@@ -1868,7 +1868,7 @@ PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer)
 /*@
   DMPlexCoordinatesView - Saves `DMPLEX` coordinates into a file
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm     - The `DM` whose coordinates are to be saved
@@ -1905,7 +1905,7 @@ PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer)
 /*@
   DMPlexLabelsView - Saves `DMPLEX` labels into a file
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm     - The `DM` whose labels are to be saved
@@ -1946,7 +1946,7 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
 /*@
   DMPlexSectionView - Saves a section associated with a `DMPLEX`
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm         - The `DM` that contains the topology on which the section to be saved is defined
@@ -1986,7 +1986,7 @@ PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
 /*@
   DMPlexGlobalVectorView - Saves a global vector
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm        - The `DM` that represents the topology
@@ -2062,18 +2062,18 @@ PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, V
 /*@
   DMPlexLocalVectorView - Saves a local vector
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm        - The `DM` that represents the topology
 . viewer    - The `PetscViewer` to save data with
-. sectiondm - The `DM` that contains the local section on which vec is defined; may be the same as dm
+. sectiondm - The `DM` that contains the local section on which `vec` is defined; may be the same as `dm`
 - vec       - The local vector to be saved
 
   Level: advanced
 
   Note:
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Typical calling sequence:
 .vb
@@ -2161,14 +2161,14 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 /*@
   DMPlexTopologyLoad - Loads a topology into a `DMPLEX`
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm                - The `DM` into which the topology is loaded
 - viewer            - The `PetscViewer` for the saved topology
 
   Output Parameters:
-. globalToLocalPointSF - The `PetscSF` that pushes points in [0, N) to the associated points in the loaded plex, where N is the global number of points; NULL if unneeded
+. globalToLocalPointSF - The `PetscSF` that pushes points in [0, N) to the associated points in the loaded `DMPLEX`, where N is the global number of points; `NULL` if unneeded
 
   Level: advanced
 
@@ -2203,7 +2203,7 @@ PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLo
 /*@
   DMPlexCoordinatesLoad - Loads coordinates into a `DMPLEX`
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm     - The `DM` into which the coordinates are loaded
@@ -2243,12 +2243,12 @@ PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalTo
 /*@
   DMPlexLabelsLoad - Loads labels into a `DMPLEX`
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm     - The `DM` into which the labels are loaded
 . viewer - The `PetscViewer` for the saved labels
-- globalToLocalPointSF - The `PetscSF` returned by `DMPlexTopologyLoad()` when loading dm from viewer
+- globalToLocalPointSF - The `PetscSF` returned by `DMPlexTopologyLoad()` when loading `dm` from viewer
 
   Level: advanced
 
@@ -2287,7 +2287,7 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
 /*@
   DMPlexSectionLoad - Loads section into a `DMPLEX`
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm          - The `DM` that represents the topology
@@ -2296,17 +2296,17 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
 - globalToLocalPointSF - The `PetscSF` returned by `DMPlexTopologyLoad(`) when loading dm from viewer
 
   Output Parameters
-+ globalDofSF - The SF that migrates any on-disk Vec data associated with sectionA into a global Vec associated with the sectiondm's global section (NULL if not needed)
-- localDofSF  - The SF that migrates any on-disk Vec data associated with sectionA into a local Vec associated with the sectiondm's local section (NULL if not needed)
++ globalDofSF - The `PetscSF` that migrates any on-disk `Vec` data associated with sectionA into a global `Vec` associated with the `sectiondm`'s global section (`NULL` if not needed)
+- localDofSF  - The `PetscSF` that migrates any on-disk `Vec` data associated with sectionA into a local `Vec` associated with the `sectiondm`'s local section (`NULL` if not needed)
 
   Level: advanced
 
   Notes:
-  This function is a wrapper around `PetscSectionLoad()`; it loads, in addition to the raw section, a list of global point numbers that associates each on-disk section point with a global point number in [0, NX), where NX is the number of topology points in dm. Noting that globalToLocalPointSF associates each topology point in dm with a global number in [0, NX), one can readily establish an association of the on-disk section points with the topology points.
+  This function is a wrapper around `PetscSectionLoad()`; it loads, in addition to the raw section, a list of global point numbers that associates each on-disk section point with a global point number in [0, NX), where NX is the number of topology points in `dm`. Noting that globalToLocalPointSF associates each topology point in dm with a global number in [0, NX), one can readily establish an association of the on-disk section points with the topology points.
 
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
-  The output parameter, globalDofSF (localDofSF), can later be used with `DMPlexGlobalVectorLoad()` (`DMPlexLocalVectorLoad()`) to load on-disk vectors into global (local) vectors associated with sectiondm's global (local) section.
+  The output parameter, `globalDofSF` (`localDofSF`), can later be used with `DMPlexGlobalVectorLoad()` (`DMPlexLocalVectorLoad()`) to load on-disk vectors into global (local) vectors associated with sectiondm's global (local) section.
 
   Example using 2 processes:
 .vb
@@ -2360,7 +2360,7 @@ PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscS
 /*@
   DMPlexGlobalVectorLoad - Loads on-disk vector data into a global vector
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm        - The `DM` that represents the topology
@@ -2435,7 +2435,7 @@ PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, P
 /*@
   DMPlexLocalVectorLoad - Loads on-disk vector data into a local vector
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm        - The `DM` that represents the topology
@@ -2447,7 +2447,7 @@ PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, P
   Level: advanced
 
   Notes:
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Typical calling sequence:
 .vb
@@ -2712,7 +2712,7 @@ PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection)
 }
 
 /*@
-  DMPlexGetChart - Return the interval for all mesh points [pStart, pEnd)
+  DMPlexGetChart - Return the interval for all mesh points [`pStart`, `pEnd`)
 
   Not Collective
 
@@ -2739,7 +2739,7 @@ PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
 }
 
 /*@
-  DMPlexSetChart - Set the interval for all mesh points [pStart, pEnd)
+  DMPlexSetChart - Set the interval for all mesh points [`pStart`, `pEnd`)
 
   Not Collective
 
@@ -2773,7 +2773,7 @@ PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
 - p - The point, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. size - The cone size for point p
+. size - The cone size for point `p`
 
   Level: beginner
 
@@ -2799,7 +2799,7 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
   Input Parameters:
 + mesh - The `DMPLEX`
 . p - The point, which must lie in the chart set with `DMPlexSetChart()`
-- size - The cone size for point p
+- size - The cone size for point `p`
 
   Level: beginner
 
@@ -2829,7 +2829,7 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 - p - The point, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. cone - An array of points which are on the in-edges for point p
+. cone - An array of points which are on the in-edges for point `p`
 
   Level: beginner
 
@@ -2862,8 +2862,8 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 - p - The `IS` of points, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameters:
-+ pConesSection - `PetscSection` describing the layout of pCones
-- pCones - An array of points which are on the in-edges for the point set p
++ pConesSection - `PetscSection` describing the layout of `pCones`
+- pCones - An array of points which are on the in-edges for the point set `p`
 
   Level: intermediate
 
@@ -2903,7 +2903,7 @@ PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *
   Level: advanced
 
   Notes:
-  Like `DMPlexGetConeRecursive()` but returns only the 0-depth IS (i.e. vertices only) and no sections.
+  Like `DMPlexGetConeRecursive()` but returns only the 0-depth `IS` (i.e. vertices only) and no sections.
 
   There is no corresponding Restore function, just call `ISDestroy()` on the returned `IS` to deallocate.
 
@@ -2945,12 +2945,12 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
   Notes:
   Like `DMPlexGetConeTuple()` but recursive.
 
-  Array expandedPoints has size equal to depth. Each expandedPoints[d] contains DAG points with maximum depth d, recursively cone-wise expanded from the input points.
+  Array `expandedPoints` has size equal to `depth`. `Each expandedPoints`[d] contains DAG points with maximum depth d, recursively cone-wise expanded from the input points.
   For example, for d=0 it contains only vertices, for d=1 it can contain vertices and edges, etc.
 
-  Array section has size equal to depth.  Each `PetscSection` sections[d] realizes mapping from expandedPoints[d+1] (section points) to expandedPoints[d] (section dofs) as follows:
-  (1) DAG points in expandedPoints[d+1] with depth d+1 to their cone points in expandedPoints[d];
-  (2) DAG points in expandedPoints[d+1] with depth in [0,d] to the same points in expandedPoints[d].
+  Array section has size equal to depth.  Each `PetscSection` sections[d] realizes mapping from `expandedPoints`[d+1] (section points) to `expandedPoints`[d] (section dofs) as follows:
+  (1) DAG points in expandedPoints[d+1] with `depth` d+1 to their cone points in `expandedPoints`[d];
+  (2) DAG points in expandedPoints[d+1] with `depth` in [0,d] to the same points in `expandedPoints`[d].
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexRestoreConeRecursive()`, `DMPlexGetConeRecursiveVertices()`,
           `DMPlexGetDepth()`, `PetscSection`, `IS`
@@ -3068,7 +3068,7 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
   Input Parameters:
 + mesh - The `DMPLEX`
 . p - The point, which must lie in the chart set with `DMPlexSetChart()`
-- cone - An array of points which are on the in-edges for point p
+- cone - An array of points which are on the in-edges for point `p`
 
   Level: beginner
 
@@ -3107,7 +3107,7 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 - p - The point, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. coneOrientation - An array of orientations which are on the in-edges for point p. An orientation is an
+. coneOrientation - An array of orientations which are on the in-edges for point `p`. An orientation is an
                     integer giving the prescription for cone traversal.
 
   Level: beginner
@@ -3262,8 +3262,8 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
 - p  - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameters:
-+ cone - An array of points which are on the in-edges for point p
-- ornt - An array of orientations which are on the in-edges for point p. An orientation is an
++ cone - An array of points which are on the in-edges for point `p`
+- ornt - An array of orientations which are on the in-edges for point `p`. An orientation is an
         integer giving the prescription for cone traversal.
 
   Level: beginner
@@ -3271,16 +3271,14 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
   Notes:
   The number indexes the symmetry transformations for the cell type (see manual). Orientation 0 is always
   the identity transformation. Negative orientation indicates reflection so that -(o+1) is the reflection
-  of o, however it is not necessarily the inverse. To get the inverse, use DMPolytopeTypeComposeOrientationInv()
+  of o, however it is not necessarily the inverse. To get the inverse, use `DMPolytopeTypeComposeOrientationInv()`
   with the identity.
 
   Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
-  You must also call DMPlexRestoreCone() after you finish using the returned array.
-  DMPlexRestoreCone() is not needed/available in C.
+  You must also call `DMPlexRestoreCone()` after you finish using the returned array.
+  `DMPlexRestoreCone()` is not needed/available in C.
 
-.seealso: `DMPlexRestoreOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
 @*/
 PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], const PetscInt *ornt[])
 {
@@ -3310,13 +3308,13 @@ PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], 
 /*@C
   DMPlexRestoreOrientedCone - Restore the points and orientations on the in-edges for this point in the DAG
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dm - The DMPlex
-. p  - The point, which must lie in the chart set with DMPlexSetChart()
+. p  - The point, which must lie in the chart set with `DMPlexSetChart()`
 . cone - An array of points which are on the in-edges for point p
-- ornt - An array of orientations which are on the in-edges for point p. An orientation is an
+- ornt - An array of orientations which are on the in-edges for point `p`. An orientation is an
         integer giving the prescription for cone traversal.
 
   Level: beginner
@@ -3324,16 +3322,14 @@ PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], 
   Notes:
   The number indexes the symmetry transformations for the cell type (see manual). Orientation 0 is always
   the identity transformation. Negative orientation indicates reflection so that -(o+1) is the reflection
-  of o, however it is not necessarily the inverse. To get the inverse, use DMPolytopeTypeComposeOrientationInv()
+  of o, however it is not necessarily the inverse. To get the inverse, use `DMPolytopeTypeComposeOrientationInv()`
   with the identity.
 
-  Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
-  You must also call DMPlexRestoreCone() after you finish using the returned array.
-  DMPlexRestoreCone() is not needed/available in C.
+  Fortran Note:
+  You must also call `DMPlexRestoreCone()` after you finish using the returned array.
+  `DMPlexRestoreCone()` is not needed/available in C.
 
-.seealso: `DMPlexGetOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
 @*/
 PetscErrorCode DMPlexRestoreOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], const PetscInt *ornt[])
 {
@@ -3355,7 +3351,7 @@ PetscErrorCode DMPlexRestoreOrientedCone(DM dm, PetscInt p, const PetscInt *cone
 - p - The point, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. size - The support size for point p
+. size - The support size for point `p`
 
   Level: beginner
 
@@ -3380,12 +3376,12 @@ PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size)
   Input Parameters:
 + mesh - The `DMPLEX`
 . p - The point, which must lie in the chart set with `DMPlexSetChart()`
-- size - The support size for point p
+- size - The support size for point `p`
 
   Level: beginner
 
   Note:
-  This should be called after DMPlexSetChart().
+  This should be called after `DMPlexSetChart()`.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexGetSupportSize()`, `DMPlexSetChart()`
 @*/
@@ -3409,7 +3405,7 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
 - p - The point, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. support - An array of points which are on the out-edges for point p
+. support - An array of points which are on the out-edges for point `p`
 
   Level: beginner
 
@@ -3440,7 +3436,7 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
   Input Parameters:
 + mesh - The `DMPLEX`
 . p - The point, which must lie in the chart set with `DMPlexSetChart()`
-- support - An array of points which are on the out-edges for point p
+- support - An array of points which are on the out-edges for point `p`
 
   Level: beginner
 
@@ -3813,18 +3809,18 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
 
   Input/Output Parameter:
 . points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...];
-           if NULL on input, internal storage will be returned, otherwise the provided array is used
+           if `NULL` on input, internal storage will be returned, otherwise the provided array is used
 
   Output Parameter:
-. numPoints - The number of points in the closure, so points[] is of size 2*numPoints
+. numPoints - The number of points in the closure, so points[] is of size 2*`numPoints`
 
   Level: beginner
 
   Note:
-  If using internal storage (points is NULL on input), each call overwrites the last output.
+  If using internal storage (points is `NULL` on input), each call overwrites the last output.
 
   Fortran Note:
-  The numPoints argument is not present in the Fortran binding since it is internal to the array.
+  The `numPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
@@ -3847,13 +3843,13 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 + dm        - The `DMPLEX`
 . p         - The mesh point
 . useCone   - `PETSC_TRUE` for the closure, otherwise return the star
-. numPoints - The number of points in the closure, so points[] is of size 2*numPoints
+. numPoints - The number of points in the closure, so points[] is of size 2*`numPoints`
 - points    - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
 
   Level: beginner
 
   Note:
-  If not using internal storage (points is not NULL on input), this call is unnecessary
+  If not using internal storage (points is not `NULL` on input), this call is unnecessary
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
@@ -4044,7 +4040,7 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
   same grade, and this function calculates the strata. This grade can be seen as the height (or depth) of the point in
   the DAG.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . mesh - The `DMPLEX`
@@ -4295,7 +4291,7 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
 /*@
   DMPlexComputeCellTypes - Infer the polytope type of every cell using its dimension and cone size.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . mesh - The `DMPLEX`
@@ -4357,7 +4353,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
   Currently, this is restricted to a single level join
 
   Fortran Note:
-  The numCoveredPoints argument is not present in the Fortran binding since it is internal to the array.
+  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
@@ -4423,7 +4419,7 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
   Level: intermediate
 
   Fortran Note:
-  The numCoveredPoints argument is not present in the Fortran binding since it is internal to the array.
+  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetJoin()`, `DMPlexGetFullJoin()`, `DMPlexGetMeet()`
 @*/
@@ -4456,7 +4452,7 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
   Level: intermediate
 
   Fortran Note:
-  The numCoveredPoints argument is not present in the Fortran binding since it is internal to the array.
+  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetJoin()`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
@@ -4556,7 +4552,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   Currently, this is restricted to a single level meet
 
   Fortran Notes:
-  The numCoveredPoints argument is not present in the Fortran binding since it is internal to the array.
+  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
@@ -4622,7 +4618,7 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
   Level: intermediate
 
   Fortran Note:
-  The numCoveredPoints argument is not present in the Fortran binding since it is internal to the array.
+  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetMeet()`, `DMPlexGetFullMeet()`, `DMPlexGetJoin()`
 @*/
@@ -4655,7 +4651,7 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
   Level: intermediate
 
   Fortran Note:
-  The numCoveredPoints argument is not present in the Fortran binding since it is internal to the array.
+  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetMeet()`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
@@ -4952,7 +4948,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 }
 
 /*@
-  DMPlexGetDepthStratum - Get the bounds [start, end) for all points at a certain depth.
+  DMPlexGetDepthStratum - Get the bounds [`start`, `end`) for all points at a certain depth.
 
   Not Collective
 
@@ -4961,8 +4957,8 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 - depth - The requested depth
 
   Output Parameters:
-+ start - The first point at this depth
-- end   - One beyond the last point at this depth
++ start - The first point at this `depth`
+- end   - One beyond the last point at this `depth`
 
   Level: developer
 
@@ -5007,7 +5003,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
 }
 
 /*@
-  DMPlexGetHeightStratum - Get the bounds [start, end) for all points at a certain height.
+  DMPlexGetHeightStratum - Get the bounds [`start`, `end`) for all points at a certain height.
 
   Not Collective
 
@@ -5016,8 +5012,8 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
 - height - The requested height
 
   Output Parameters:
-+ start - The first point at this height
-- end   - One beyond the last point at this height
++ start - The first point at this `height`
+- end   - One beyond the last point at this `height`
 
   Level: developer
 
@@ -5058,7 +5054,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, P
 }
 
 /*@
-  DMPlexGetPointDepth - Get the depth of a given point
+  DMPlexGetPointDepth - Get the `depth` of a given point
 
   Not Collective
 
@@ -5067,7 +5063,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, P
 - point - The point
 
   Output Parameter:
-. depth - The depth of the point
+. depth - The depth of the `point`
 
   Level: intermediate
 
@@ -5083,7 +5079,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 }
 
 /*@
-  DMPlexGetPointHeight - Get the height of a given point
+  DMPlexGetPointHeight - Get the `height` of a given point
 
   Not Collective
 
@@ -5092,7 +5088,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 - point - The point
 
   Output Parameter:
-. height - The height of the point
+. height - The height of the `point`
 
   Level: intermediate
 
@@ -5154,7 +5150,7 @@ PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`
 @*/
 PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
 {
@@ -5387,12 +5383,12 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
   DMPlexSetClosurePermutationTensor - Create a permutation from the default (BFS) point ordering in the closure, to a
   lexicographic ordering over the tensor product cell (i.e., line, quad, hex, etc.), and set this permutation in the
-  section provided (or the section of the DM).
+  section provided (or the section of the `DM`).
 
   Input Parameters:
-+ dm      - The DM
-. point   - Either a cell (highest dim point) or an edge (dim 1 point), or PETSC_DETERMINE
-- section - The PetscSection to reorder, or NULL for the default section
++ dm      - The `DM`
+. point   - Either a cell (highest dim point) or an edge (dim 1 point), or `PETSC_DETERMINE`
+- section - The `PetscSection` to reorder, or `NULL` for the default section
 
   Example:
   A typical interpolated single-quad mesh might order points as
@@ -5964,19 +5960,19 @@ static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSecti
 
   Input Parameters:
 + dm - The `DM`
-. section - The section describing the layout in v, or NULL to use the default section
+. section - The section describing the layout in `v`, or `NULL` to use the default section
 . v - The local vector
 - point - The point in the `DM`
 
   Input/Output Parameters:
-+ csize  - The size of the input values array, or NULL; on output the number of values in the closure
-- values - An array to use for the values, or NULL to have it allocated automatically;
-           if the user provided NULL, it is a borrowed array and should not be freed
++ csize  - The size of the input values array, or `NULL`; on output the number of values in the closure
+- values - An array to use for the values, or `NULL` to have it allocated automatically;
+           if the user provided `NULL`, it is a borrowed array and should not be freed
 
   Level: intermediate
 
   Notes:
-  `DMPlexVecGetClosure()`/`DMPlexVecRestoreClosure()` only allocates the values array if it set to NULL in the
+  `DMPlexVecGetClosure()`/`DMPlexVecRestoreClosure()` only allocates the values array if it set to `NULL` in the
   calling function. This is because `DMPlexVecGetClosure()` is typically called in the inner loop of a `Vec` or `Mat`
   assembly function, and a user may already have allocated storage for this operation.
 
@@ -6003,7 +5999,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSecti
 .ve
 
   Fortran Note:
-  The csize argument is not present in the Fortran binding since it is internal to the array.
+  The `csize` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
@@ -6140,19 +6136,19 @@ PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, 
 
   Input Parameters:
 + dm - The `DM`
-. section - The section describing the layout in v, or NULL to use the default section
+. section - The section describing the layout in `v`, or `NULL` to use the default section
 . v - The local vector
 . point - The point in the `DM`
-. csize - The number of values in the closure, or NULL
+. csize - The number of values in the closure, or `NULL`
 - values - The array of values, which is a borrowed array and should not be freed
 
   Level: intermediate
 
   Note:
-  The array values are discarded and not copied back into v. In order to copy values back to v, use `DMPlexVecSetClosure()`
+  The array values are discarded and not copied back into `v`. In order to copy values back to `v`, use `DMPlexVecSetClosure()`
 
   Fortran Note:
-  The csize argument is not present in the Fortran binding since it is internal to the array.
+  The `csize` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
@@ -6542,15 +6538,15 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
 }
 
 /*@C
-  DMPlexVecSetClosure - Set an array of the values on the closure of 'point'
+  DMPlexVecSetClosure - Set an array of the values on the closure of `point`
 
   Not collective
 
   Input Parameters:
 + dm - The `DM`
-. section - The section describing the layout in v, or NULL to use the default section
+. section - The section describing the layout in `v`, or `NULL` to use the default section
 . v - The local vector
-. point - The point in the DM
+. point - The point in the `DM`
 . values - The array of values
 - mode - The insert mode. One of `INSERT_ALL_VALUES`, `ADD_ALL_VALUES`, `INSERT_VALUES`, `ADD_VALUES`, `INSERT_BC_VALUES`, and `ADD_BC_VALUES`,
          where `INSERT_ALL_VALUES` and `ADD_ALL_VALUES` also overwrite boundary conditions.
@@ -6972,7 +6968,7 @@ PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscBool is
 
  Input Parameters:
 + section - a section (global or local)
-- islocal - PETSC_TRUE if requesting local indices (i.e., section is local); PETSC_FALSE for global
+- islocal - `PETSC_TRUE` if requesting local indices (i.e., section is local); `PETSC_FALSE` for global
 . point - point within section
 . off - The offset of this point in the (local or global) indexed space - should match islocal and (usually) the section
 . foffs - array of length numFields containing the offset in canonical point ordering (the location in indices) of each field
@@ -7574,18 +7570,18 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   Output Parameters:
 + numIndices - The number of dof indices in the closure of point with the input sections
 . indices    - The dof indices
-. outOffsets - Array to write the field offsets into, or NULL
-- values     - The input values, which may be modified if sign flips are induced by the point symmetries, or NULL
+. outOffsets - Array to write the field offsets into, or `NULL`
+- values     - The input values, which may be modified if sign flips are induced by the point symmetries, or `NULL`
 
   Level: advanced
 
   Notes:
   Must call `DMPlexRestoreClosureIndices()` to free allocated memory
 
-  If idxSection is global, any constrained dofs (see `DMAddBoundary()`, for example) will get negative indices.  The value
-  of those indices is not significant.  If idxSection is local, the constrained dofs will yield the involution -(idx+1)
+  If `idxSection` is global, any constrained dofs (see `DMAddBoundary()`, for example) will get negative indices.  The value
+  of those indices is not significant.  If `idxSection` is local, the constrained dofs will yield the involution -(idx+1)
   of their index in a local vector.  A caller who does not wish to distinguish those points may recover the nonnegative
-  indices via involution, -(-(idx+1)+1)==idx.  Local indices are provided when idxSection == section, otherwise global
+  indices via involution, -(-(idx+1)+1)==idx.  Local indices are provided when `idxSection` == section, otherwise global
   indices (with the above semantics) are implied.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreClosureIndices()`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`, `DMGetLocalSection()`,
@@ -7772,8 +7768,8 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   Output Parameters:
 + numIndices - The number of dof indices in the closure of point with the input sections
 . indices    - The dof indices
-. outOffsets - Array to write the field offsets into, or NULL
-- values     - The input values, which may be modified if sign flips are induced by the point symmetries, or NULL
+. outOffsets - Array to write the field offsets into, or `NULL`
+- values     - The input values, which may be modified if sign flips are induced by the point symmetries, or `NULL`
 
   Level: advanced
 
@@ -7804,8 +7800,8 @@ PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSec
 
   Input Parameters:
 + dm - The `DM`
-. section - The section describing the layout in v, or NULL to use the default section
-. globalSection - The section describing the layout in v, or NULL to use the default global section
+. section - The section describing the layout in `v`, or `NULL` to use the default section
+. globalSection - The section describing the layout in `v`, or `NULL` to use the default global section
 . A - The matrix
 . point - The point in the `DM`
 . values - The array of values
@@ -7865,11 +7861,11 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
   Input Parameters:
 + dmRow - The `DM` for the row fields
-. sectionRow - The section describing the layout, or NULL to use the default section in dmRow
-. globalSectionRow - The section describing the layout, or NULL to use the default global section in dmRow
+. sectionRow - The section describing the layout, or `NULL` to use the default section in `dmRow`
+. globalSectionRow - The section describing the layout, or `NULL` to use the default global section in `dmRow`
 . dmCol - The `DM` for the column fields
-. sectionCol - The section describing the layout, or NULL to use the default section in dmCol
-. globalSectionCol - The section describing the layout, or NULL to use the default global section in dmCol
+. sectionCol - The section describing the layout, or `NULL` to use the default section in `dmCol`
+. globalSectionCol - The section describing the layout, or `NULL` to use the default global section in `dmCol`
 . A - The matrix
 . point - The point in the `DM`
 . values - The array of values
@@ -8286,8 +8282,8 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 . dm - The `DMPLEX` object
 
   Output Parameters:
-+ gcStart - The first ghost cell, or NULL
-- gcEnd   - The upper bound on ghost cells, or NULL
++ gcStart - The first ghost cell, or `NULL`
+- gcEnd   - The upper bound on ghost cells, or `NULL`
 
   Level: advanced
 
@@ -8410,7 +8406,7 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 /*@
   DMPlexCreatePointNumbering - Create a global numbering for all points.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm   - The `DMPLEX` object
@@ -8501,7 +8497,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 . ranks - The rank field
 
   Options Database Key:
-. -dm_partition_view - Adds the rank field into the DM output from -dm_view using the same viewer
+. -dm_partition_view - Adds the rank field into the `DM` output from `-dm_view` using the same viewer
 
   Level: intermediate
 
@@ -8549,14 +8545,14 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   DMPlexCreateLabelField - Create a cell field whose value is the label value for that cell
 
   Input Parameters:
-+ dm    - The DMPlex
-- label - The DMLabel
++ dm    - The `DMPLEX`
+- label - The `DMLabel`
 
   Output Parameter:
 . val - The label value field
 
-  Options Database Keys:
-. -dm_label_view - Adds the label value field into the DM output from -dm_view using the same viewer
+  Options Database Key:
+. -dm_label_view - Adds the label value field into the `DM` output from `-dm_view` using the same viewer
 
   Level: intermediate
 
@@ -8608,7 +8604,7 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
   Notes:
   This is a useful diagnostic when creating meshes programmatically.
 
-  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMSetFromOptions()`
 @*/
@@ -8757,7 +8753,7 @@ static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPol
   This is a useful diagnostic when creating meshes programmatically.
   Currently applicable only to homogeneous simplex or tensor meshes.
 
-  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMSetFromOptions()`
 @*/
@@ -8804,7 +8800,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 /*@
   DMPlexCheckFaces - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The `DMPLEX` object
@@ -8905,7 +8901,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
   Notes:
   This is a useful diagnostic when creating meshes programmatically.
 
-  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMSetFromOptions()`
 @*/
@@ -8966,13 +8962,13 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 }
 
 /*@
-  DMPlexCheckPointSF - Check that several necessary conditions are met for the Point SF of this plex.
+  DMPlexCheckPointSF - Check that several necessary conditions are met for the point `PetscSF` of this plex.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The `DMPLEX` object
-. pointSF - The `PetscSF`, or NULL for `PointSF` attached to `DM`
+. pointSF - The `PetscSF`, or `NULL` for `PointSF` attached to `DM`
 - allowExtraRoots - Flag to allow extra points not present in the `DM`
 
   Level: developer
@@ -9074,7 +9070,7 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
 }
 
 /*@
-  DMPlexCheck - Perform various checks of Plex sanity
+  DMPlexCheck - Perform various checks of `DMPLEX` sanity
 
   Input Parameter:
 . dm - The `DMPLEX` object
@@ -9084,9 +9080,9 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
   Notes:
   This is a useful diagnostic when creating meshes programmatically.
 
-  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
 
-  Currently does not include DMPlexCheckCellShape().
+  Currently does not include `DMPlexCheckCellShape()`.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, DMCreate(), DMSetFromOptions()
 @*/
@@ -9129,11 +9125,11 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int *len, MPI_Datatype *d
 /*@
   DMPlexCheckCellShape - Checks the Jacobian of the mapping from reference to real cells and computes some minimal statistics.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm        - The `DMPLEX` object
-. output    - If true, statistics will be displayed on stdout
+. output    - If true, statistics will be displayed on `stdout`
 - condLimit - Display all cells above this condition number, or `PETSC_DETERMINE` for no cell output
 
   Level: developer
@@ -9261,7 +9257,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   DMPlexComputeOrthogonalQuality - Compute cell-wise orthogonal quality mesh statistic. Optionally tags all cells with
   orthogonal quality below given tolerance.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm   - The `DMPLEX` object
@@ -9269,7 +9265,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
 - atol - [0, 1] Absolute tolerance for tagging cells.
 
   Output Parameters:
-+ OrthQual      - Vec containing orthogonal quality per cell
++ OrthQual      - `Vec` containing orthogonal quality per cell
 - OrthQualLabel - `DMLabel` tagging cells below atol with `DM_ADAPT_REFINE`
 
   Options Database Keys:
@@ -9741,8 +9737,8 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 . dm - The `DMPLEX` object
 
   Output Parameters:
-+ anchorSection - If not NULL, set to the section describing which points anchor the constrained points.
-- anchorIS - If not NULL, set to the list of anchors indexed by anchorSection
++ anchorSection - If not `NULL`, set to the section describing which points anchor the constrained points.
+- anchorIS - If not `NULL`, set to the list of anchors indexed by `anchorSection`
 
   Level: intermediate
 
@@ -9765,7 +9761,7 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
   when a point's degrees of freedom in a section are constrained to an outside value, the anchor constraints set a
   point's degrees of freedom to be a linear combination of other points' degrees of freedom.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The `DMPLEX` object
@@ -9779,7 +9775,7 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
   After specifying the layout of constraints with `DMPlexSetAnchors()`, one specifies the constraints by calling
   `DMGetDefaultConstraints()` and filling in the entries in the constraint matrix.
 
-  The reference counts of anchorSection and anchorIS are incremented.
+  The reference counts of `anchorSection` and `anchorIS` are incremented.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetAnchors()`, `DMGetDefaultConstraints()`, `DMSetDefaultConstraints()`
 @*/

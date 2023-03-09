@@ -1930,7 +1930,7 @@ PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, 
 +   pc  - the preconditioner object
 -   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
-    Options Database Keys:
+    Options Database Key:
 .   -pc_fieldsplit_diag_use_amat - use the Amat to provide the diagonal blocks
 
     Level: intermediate
@@ -1956,10 +1956,10 @@ PetscErrorCode PCFieldSplitSetDiagUseAmat(PC pc, PetscBool flg)
 
     Logically Collective
 
-    Input Parameters:
+    Input Parameter:
 .   pc  - the preconditioner object
 
-    Output Parameters:
+    Output Parameter:
 .   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
     Level: intermediate
@@ -1990,7 +1990,7 @@ PetscErrorCode PCFieldSplitGetDiagUseAmat(PC pc, PetscBool *flg)
 +   pc  - the preconditioner object
 -   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
-    Options Database Keys:
+    Options Database Key:
 .     -pc_fieldsplit_off_diag_use_amat <bool> - use the Amat to extract the off-diagonal blocks
 
     Level: intermediate
@@ -2016,10 +2016,10 @@ PetscErrorCode PCFieldSplitSetOffDiagUseAmat(PC pc, PetscBool flg)
 
     Logically Collective
 
-    Input Parameters:
+    Input Parameter:
 .   pc  - the preconditioner object
 
-    Output Parameters:
+    Output Parameter:
 .   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
     Level: intermediate
@@ -2353,7 +2353,7 @@ PetscErrorCode PCFieldSplitGetSchurPre(PC pc, PCFieldSplitSchurPreType *ptype, M
 /*@
     PCFieldSplitSchurGetS -  extract the `MATSCHURCOMPLEMENT` object used by this `PCFIELDSPLIT` in case it needs to be configured separately
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   pc      - the preconditioner context
@@ -2389,7 +2389,7 @@ PetscErrorCode PCFieldSplitSchurGetS(PC pc, Mat *S)
 /*@
     PCFieldSplitSchurRestoreS -  returns the `MATSCHURCOMPLEMENT` matrix used by this `PC`
 
-    Not collective
+    Not Collective
 
     Input Parameters:
 +   pc      - the preconditioner context
@@ -2696,7 +2696,7 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc, PetscInt delay)
 +   pc     - the preconditioner context
 -   nu     - the shift parameter
 
-    Options Database Keys:
+    Options Database Key:
 .   -pc_fieldsplit_gkb_nu - default is 1
 
     Level: intermediate

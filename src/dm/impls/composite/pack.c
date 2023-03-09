@@ -8,7 +8,7 @@
     DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the
       separate components `DM` in a `DMCOMPOSITE` to build the correct matrix nonzero structure.
 
-    Logically Collective
+    Logically Collective; No Fortran Support
 
     Input Parameters:
 +   dm - the composite object
@@ -19,9 +19,6 @@
     Note:
     See `DMSetApplicationContext()` and `DMGetApplicationContext()` for how to get user information into
     this routine
-
-    Fortran Note:
-    Not available from Fortran
 
 .seealso: `DMCOMPOSITE`, `DM`
 @*/
@@ -152,7 +149,7 @@ PetscErrorCode DMCompositeGetNumberDM(DM dm, PetscInt *nDM)
     DMCompositeGetAccess - Allows one to access the individual packed vectors in their global
        representation.
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -219,7 +216,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
     DMCompositeGetAccessArray - Allows one to access the individual packed vectors in their global
        representation.
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE`
@@ -279,7 +276,7 @@ PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, cons
     DMCompositeGetLocalAccessArray - Allows one to access the individual
     packed vectors in their local representation.
 
-    Collective on dm.
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE`
@@ -346,7 +343,7 @@ PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted,
     DMCompositeRestoreAccess - Returns the vectors obtained with `DMCompositeGetAccess()`
        representation.
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -395,7 +392,7 @@ PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
 /*@C
     DMCompositeRestoreAccessArray - Returns the vectors obtained with `DMCompositeGetAccessArray()`
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -438,7 +435,7 @@ PetscErrorCode DMCompositeRestoreAccessArray(DM dm, Vec pvec, PetscInt nwanted, 
 /*@C
     DMCompositeRestoreLocalAccessArray - Returns the vectors obtained with `DMCompositeGetLocalAccessArray()`.
 
-    Collective on dm.
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -487,7 +484,7 @@ PetscErrorCode DMCompositeRestoreLocalAccessArray(DM dm, Vec pvec, PetscInt nwan
 /*@C
     DMCompositeScatter - Scatters from a global packed vector into its individual local vectors
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -546,7 +543,7 @@ PetscErrorCode DMCompositeScatter(DM dm, Vec gvec, ...)
 /*@
     DMCompositeScatterArray - Scatters from a global packed vector into its individual local vectors
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -598,7 +595,7 @@ PetscErrorCode DMCompositeScatterArray(DM dm, Vec gvec, Vec *lvecs)
 /*@C
     DMCompositeGather - Gathers into a global packed vector from its individual local vectors
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -656,7 +653,7 @@ PetscErrorCode DMCompositeGather(DM dm, InsertMode imode, Vec gvec, ...)
 /*@
     DMCompositeGatherArray - Gathers into a global packed vector from its individual local vectors
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dm - the `DMCOMPOSITE` object
@@ -709,7 +706,7 @@ PetscErrorCode DMCompositeGatherArray(DM dm, InsertMode imode, Vec gvec, Vec *lv
 /*@
     DMCompositeAddDM - adds a `DM` vector to a `DMCOMPOSITE`
 
-    Collective on dm
+    Collective
 
     Input Parameters:
 +    dmc - the  `DMCOMPOSITE` object
@@ -847,7 +844,7 @@ PetscErrorCode DMCreateLocalVector_Composite(DM dm, Vec *lvec)
 /*@C
     DMCompositeGetISLocalToGlobalMappings - gets an `ISLocalToGlobalMapping` for each `DM` in the `DMCOMPOSITE`, maps to the composite global space
 
-    Collective on dm
+    Collective; No Fortran Support
 
     Input Parameter:
 .    dm - the `DMCOMPOSITE` object
@@ -860,9 +857,6 @@ PetscErrorCode DMCreateLocalVector_Composite(DM dm, Vec *lvec)
 
     Note:
     Each entry of ltogs should be destroyed with `ISLocalToGlobalMappingDestroy()`, the ltogs array should be freed with `PetscFree()`.
-
-    Fortran Note:
-    Not available from Fortran
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
@@ -933,7 +927,7 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
 /*@C
    DMCompositeGetLocalISs - Gets index sets for each component of a composite local vector
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 . dm - the `DMCOMPOSITE`
@@ -953,9 +947,6 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
    To get index sets for pieces of the composite global vector, use `DMCompositeGetGlobalISs()`.
 
    Each returned `IS` should be destroyed with `ISDestroy()`, the array should be freed with `PetscFree()`.
-
-   Fortran Note:
-   Not available from Fortran
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`, `MatCreateLocalRef()`
 @*/
@@ -984,7 +975,7 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
 /*@C
     DMCompositeGetGlobalISs - Gets the index sets for each composed object in a `DMCOMPOSITE`
 
-    Collective on dm
+    Collective
 
     Input Parameter:
 .    dm - the `DMCOMPOSITE` object
@@ -1124,18 +1115,15 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len, char *
     DMCompositeGetLocalVectors - Gets local vectors for each part of a `DMCOMPOSITE`
        Use `DMCompositeRestoreLocalVectors()` to return them.
 
-    Not Collective
+    Not Collective; No Fortran Support
 
     Input Parameter:
 .    dm - the `DMCOMPOSITE` object
 
     Output Parameter:
-.   Vec ... - the individual sequential Vecs
+.   Vec ... - the individual sequential `Vec`s
 
     Level: advanced
-
-    Fortran Note:
-    Not available from Fortran
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
@@ -1168,7 +1156,7 @@ PetscErrorCode DMCompositeGetLocalVectors(DM dm, ...)
 /*@C
     DMCompositeRestoreLocalVectors - Restores local vectors for each part of a `DMCOMPOSITE`
 
-    Not Collective
+    Not Collective; No Fortran Support
 
     Input Parameter:
 .    dm - the `DMCOMPOSITE` object
@@ -1177,9 +1165,6 @@ PetscErrorCode DMCompositeGetLocalVectors(DM dm, ...)
 .   Vec ... - the individual sequential `Vec`
 
     Level: advanced
-
-    Fortran Note:
-    Not available from Fortran
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,

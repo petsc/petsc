@@ -4,19 +4,19 @@
   #include <petscdmceed.h>
 
 /*@C
-  DMGetCeed - Get the LibCEED context associated with this DM
+  DMGetCeed - Get the LibCEED context associated with this `DM`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. DM   - The DM
+. DM   - The `DM`
 
   Output Parameter:
 . ceed - The LibCEED context
 
   Level: intermediate
 
-.seealso: `DMCreate()`
+.seealso: `DM`, `DMCreate()`
 @*/
 PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
 {

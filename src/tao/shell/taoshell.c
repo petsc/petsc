@@ -16,19 +16,13 @@ struct _n_TaoShell {
 +  tao - the nonlinear solver context
 -  solve - the application-provided solver routine
 
-   Calling sequence of solve:
-.vb
-   PetscErrorCode solve (Tao tao)
-.ve
-
-.  tao - the optimizer, get the application context with TaoShellGetContext()
-
-   Notes:
-    the function MUST return an error code of 0 on success and nonzero on failure.
+   Calling sequence of `solve`:
+$   PetscErrorCode solve(Tao tao)
+.  tao - the optimizer, get the application context with `TaoShellGetContext()`
 
    Level: advanced
 
-.seealso: `TAOSHELL`, `TaoShellSetContext()`, `TaoShellGetContext()`
+.seealso: `Tao`, `TAOSHELL`, `TaoShellSetContext()`, `TaoShellGetContext()`
 @*/
 PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao))
 {
@@ -41,22 +35,22 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao))
 }
 
 /*@
-    TaoShellGetContext - Returns the user-provided context associated with a shell Tao
+    TaoShellGetContext - Returns the user-provided context associated with a `TAOSHELL`
 
     Not Collective
 
     Input Parameter:
-.   tao - should have been created with TaoSetType(tao,TAOSHELL);
+.   tao - should have been created with `TaoSetType`(tao,`TAOSHELL`);
 
     Output Parameter:
 .   ctx - the user provided context
 
     Level: advanced
 
-    Notes:
+    Note:
     This routine is intended for use within various shell routines
 
-.seealso: `TaoCreateShell()`, `TaoShellSetContext()`
+.seealso: `Tao`, `TAOSHELL`, `TaoCreateShell()`, `TaoShellSetContext()`
 @*/
 PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 {
@@ -72,7 +66,7 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 }
 
 /*@
-    TaoShellSetContext - sets the context for a shell Tao
+    TaoShellSetContext - sets the context for a `TAOSHELL`
 
    Logically Collective
 
@@ -82,11 +76,10 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 
    Level: advanced
 
-   Fortran Notes:
-    The context can only be an integer or a PetscObject
-      unfortunately it cannot be a Fortran array or derived type.
+   Fortran Note:
+  The context can only be an integer or a `PetscObject`
 
-.seealso: `TaoCreateShell()`, `TaoShellGetContext()`
+.seealso: `Tao`, `TAOSHELL`, `TaoCreateShell()`, `TaoShellGetContext()`
 @*/
 PetscErrorCode TaoShellSetContext(Tao tao, void *ctx)
 {
@@ -137,7 +130,7 @@ PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
 }
 
 /*MC
-  TAOSHELL - a user provided nonlinear solver
+  TAOSHELL - a user provided optimizer
 
    Level: advanced
 

@@ -65,16 +65,16 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
 /*@
   PetscSectionVecView - View a vector, using the section to structure the values
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ s      - the organizing PetscSection
-. v      - the Vec
-- viewer - the PetscViewer
++ s      - the organizing `PetscSection`
+. v      - the `Vec`
+- viewer - the `PetscViewer`
 
   Level: developer
 
-.seealso: `PetscSection`, `PetscSectionCreate()`, `VecSetValuesSection()`
+.seealso: `PetscSection`, `PetscViewer`, `PetscSectionCreate()`, `VecSetValuesSection()`
 @*/
 PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 {
@@ -106,13 +106,13 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 }
 
 /*@C
-  VecGetValuesSection - Gets all the values associated with a given point, according to the section, in the given Vec
+  VecGetValuesSection - Gets all the values associated with a given point, according to the section, in the given `Vec`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ v - the Vec
-. s - the organizing PetscSection
++ v - the `Vec`
+. s - the organizing `PetscSection`
 - point - the point
 
   Output Parameter:
@@ -137,23 +137,22 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 }
 
 /*@C
-  VecSetValuesSection - Sets all the values associated with a given point, according to the section, in the given Vec
+  VecSetValuesSection - Sets all the values associated with a given point, according to the section, in the given `Vec`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ v - the Vec
-. s - the organizing PetscSection
++ v - the `Vec`
+. s - the organizing `PetscSection`
 . point - the point
 . values - the array of input values
-- mode - the insertion mode, either ADD_VALUES or INSERT_VALUES
+- mode - the insertion mode, either `ADD_VALUES` or `INSERT_VALUES`
 
   Level: developer
 
-  Note: This is similar to MatSetValuesStencil(). The Fortran binding is
-$
+  Fortran Note:
+  This is similar to MatSetValuesStencil(). The binding is
 $   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
-$
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecGetValuesSection()`
 @*/
@@ -303,7 +302,7 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
 + s    - the local Section
 . gs   - the global section
 . x    - the vector
-- type - one of NORM_1, NORM_2, NORM_INFINITY.
+- type - one of `NORM_1`, `NORM_2`, `NORM_INFINITY`.
 
   Output Parameter:
 . val  - the array of norms

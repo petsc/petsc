@@ -99,7 +99,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 /*
   PetscMonitorCompare - Checks if two monitors are identical; if they are then it destroys the new one
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + nmon      - The new monitor

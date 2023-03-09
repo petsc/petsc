@@ -514,7 +514,7 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes, PetscBool 
 /*@
    SNESNASMSetDamping - Sets the update damping for `SNESNASM` the nonlinear additive Schwarz solver
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -893,10 +893,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 /*@
    SNESNASMGetSNES - Gets a subsolver
 
-   Not collective
+   Not Collective
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 -  i - the number of the subsnes to get
 
    Output Parameters:
@@ -919,10 +919,10 @@ PetscErrorCode SNESNASMGetSNES(SNES snes, PetscInt i, SNES *subsnes)
 /*@
    SNESNASMGetNumber - Gets number of subsolvers
 
-   Not collective
+   Not Collective
 
    Input Parameters:
-.  snes - the SNES context
+.  snes - the `SNES` context
 
    Output Parameters:
 .  n - the number of subsolvers
@@ -946,7 +946,7 @@ PetscErrorCode SNESNASMGetNumber(SNES snes, PetscInt *n)
    Collective
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 -  weight - the weights to use (typically 1/N for each dof, where N is the number of patches it appears in)
 
    Level: intermediate

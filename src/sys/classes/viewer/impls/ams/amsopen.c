@@ -7,7 +7,7 @@
 
     Collective; No Fortran Support
 
-    Input Parameters:
+    Input Parameter:
 .   comm - the MPI communicator
 
     Output Parameter:

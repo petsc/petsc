@@ -44,27 +44,22 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
 
 /*@C
  MatSeqSELLSetPreallocation - For good matrix assembly performance
- the user should preallocate the matrix storage by setting the parameter nz
- (or the array nnz).  By setting these parameters accurately, performance
- during matrix assembly can be increased significantly.
+ the user should preallocate the matrix storage by setting the parameter `nz`
+ (or the array `nnz`).
 
  Collective
 
  Input Parameters:
- +  B - The `MATSEQSELL` matrix
- .  rlenmax - number of nonzeros per row (same for all rows)
- -  rlen - array containing the number of nonzeros in the various rows
- (possibly different for each row) or `NULL`
++  B - The `MATSEQSELL` matrix
+.  rlenmax - number of nonzeros per row (same for all rows), ignored if `rlen` is provided
+-  rlen - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
 
  Level: intermediate
 
  Notes:
- If `rlen` is given then `rlenmax` is ignored.
-
  Specify the preallocated storage with either `rlenmax` or `rlen` (not both).
  Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
- allocation.  For large problems you MUST preallocate memory or you
- will get TERRIBLE performance, see the users' manual chapter on matrices.
+ allocation.
 
  You can call `MatGetInfo()` to get information on how effective the preallocation was;
  for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
@@ -1921,8 +1916,8 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
  Not Collective
 
  Input Parameters:
- .  mat - a `MATSEQSELL` matrix
- .  array - pointer to the data
++  mat - a `MATSEQSELL` matrix
+-  array - pointer to the data
 
  Level: intermediate
 
@@ -2066,7 +2061,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B)
    MATSEQSELL - MATSEQSELL = "seqsell" - A matrix type to be used for sequential sparse matrices,
    based on the sliced Ellpack format
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type seqsell - sets the matrix type to "`MATSEQELL` during a call to `MatSetFromOptions()`
 
    Level: beginner
@@ -2083,7 +2078,7 @@ M*/
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
-   Options Database Keys:
+   Options Database Key:
 . -mat_type sell - sets the matrix type to "sell" during a call to MatSetFromOptions()
 
   Level: beginner
@@ -2138,36 +2133,32 @@ M*/
 +  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
-.  rlenmax - maximum number of nonzeros in a row
--  rlen - array containing the number of nonzeros in the various rows
- (possibly different for each row) or NULL
+.  rlenmax - maximum number of nonzeros in a row, ignored if `rlen` is provided
+-  rlen - array containing the number of nonzeros in the various rows (possibly different for each row) or NULL
 
  Output Parameter:
 .  A - the matrix
 
+ Level: intermediate
+
+ Notes:
  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
  MatXXXXSetPreallocation() paradigm instead of this routine directly.
  [MatXXXXSetPreallocation() is, for example, `MatSeqSELLSetPreallocation()`]
 
- Notes:
- If nnz is given then nz is ignored
-
- Specify the preallocated storage with either rlenmax or rlen (not both).
- Set rlenmax = `PETSC_DEFAULT` and rlen = NULL for PETSc to control dynamic memory
- allocation.  For large problems you MUST preallocate memory or you
- will get TERRIBLE performance, see the users' manual chapter on matrices.
-
- Level: intermediate
+ Specify the preallocated storage with either `rlenmax` or `rlen` (not both).
+ Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
+ allocation.
 
  .seealso: `Mat`, `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
  @*/
-PetscErrorCode MatCreateSeqSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt maxallocrow, const PetscInt rlen[], Mat *A)
+PetscErrorCode MatCreateSeqSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt rlenmax, const PetscInt rlen[], Mat *A)
 {
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQSELL));
-  PetscCall(MatSeqSELLSetPreallocation_SeqSELL(*A, maxallocrow, rlen));
+  PetscCall(MatSeqSELLSetPreallocation_SeqSELL(*A, rlenmax, rlen));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

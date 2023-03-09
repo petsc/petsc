@@ -216,12 +216,15 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
  .  ctx      - user provided context for the modify preconditioner function
  -  destroy  - the function to use to destroy the user provided application context.
 
- Calling Sequence of function:
-  PetscErrorCode function (KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
+ Calling Sequence of `function`:
+$  PetscErrorCode function (KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
 +  ksp   - iterative context
 .  n     - the total number of GCR iterations that have occurred
 .  rnorm - 2-norm residual value
 -  ctx   - the user provided application context
+
+ Calling Sequence of `destroy`:
+$ PetscErrorCode destroy(void *ctx)
 
  Level: intermediate
 

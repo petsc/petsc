@@ -7,7 +7,7 @@
 /*@
    PetscDrawGetBoundingBox - Gets the bounding box of all `PetscDrawStringBoxed()` commands
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -37,7 +37,7 @@ PetscErrorCode PetscDrawGetBoundingBox(PetscDraw draw, PetscReal *xl, PetscReal 
 /*@
    PetscDrawGetCurrentPoint - Gets the current draw point, some codes use this point to determine where to draw next
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -63,7 +63,7 @@ PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw draw, PetscReal *x, PetscReal 
 /*@
    PetscDrawSetCurrentPoint - Sets the current draw point, some codes use this point to determine where to draw next
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -85,7 +85,7 @@ PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y
 /*@
    PetscDrawPushCurrentPoint - Pushes a new current draw point, retaining the old one, some codes use this point to determine where to draw next
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -108,7 +108,7 @@ PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw draw, PetscReal x, PetscReal 
 /*@
    PetscDrawPopCurrentPoint - Pops a current draw point (discarding it)
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -128,7 +128,7 @@ PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw draw)
 /*@
    PetscDrawLine - draws a line onto a drawable.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -151,7 +151,7 @@ PetscErrorCode PetscDrawLine(PetscDraw draw, PetscReal xl, PetscReal yl, PetscRe
 /*@
    PetscDrawArrow - draws a line with arrow head at end if the line is long enough
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -176,7 +176,7 @@ PetscErrorCode PetscDrawArrow(PetscDraw draw, PetscReal xl, PetscReal yl, PetscR
    relative to the user coordinates of the window; 0.0 denotes the natural
    width; 1.0 denotes the entire viewport.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -199,7 +199,7 @@ PetscErrorCode PetscDrawLineSetWidth(PetscDraw draw, PetscReal width)
    relative to the user coordinates of the window; 0.0 denotes the natural
    width; 1.0 denotes the interior viewport.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context

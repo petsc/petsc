@@ -3,7 +3,7 @@
 /*@
   DMPlexSetMigrationSF - Sets the `PetscSF` for migrating from a parent `DM` into this `DM`
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm        - The `DM`
@@ -91,8 +91,8 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 
   Input Parameters:
 + dm          - The redistributed `DM`
-. section     - The local `PetscSection` describing the `Vec` before the mesh was distributed, or NULL if not available
-- sfMigration - The `PetscSF` used to distribute the mesh, or NULL if it cannot be computed
+. section     - The local `PetscSection` describing the `Vec` before the mesh was distributed, or `NULL` if not available
+- sfMigration - The `PetscSF` used to distribute the mesh, or `NULL` if it cannot be computed
 
   Output Parameter:
 . sfNatural   - `PetscSF` for mapping the `Vec` in PETSc ordering to the canonical ordering
@@ -207,14 +207,14 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 /*@
   DMPlexGlobalToNaturalBegin - Rearranges a global `Vec` in the natural order.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The distributed `DMPLEX`
 - gv - The global `Vec`
 
   Output Parameters:
-. nv - `Vec` in the canonical ordering distributed over all processors associated with gv
+. nv - `Vec` in the canonical ordering distributed over all processors associated with `gv`
 
   Level: intermediate
 
@@ -266,7 +266,7 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 /*@
   DMPlexGlobalToNaturalEnd - Rearranges a global `Vec` in the natural order.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The distributed `DMPLEX`
@@ -309,7 +309,7 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 /*@
   DMPlexNaturalToGlobalBegin - Rearranges a `Vec` in the natural order to the Global order.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The distributed `DMPLEX`
@@ -357,7 +357,7 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 /*@
   DMPlexNaturalToGlobalEnd - Rearranges a `Vec` in the natural order to the Global order.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The distributed `DMPLEX`
@@ -400,7 +400,7 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
 /*@
   DMPlexCreateNaturalVector - Provide a `Vec` capable of holding the natural ordering and distribution.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - The distributed `DMPLEX`

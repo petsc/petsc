@@ -337,10 +337,14 @@ M*/
 /*MC
   PETSC_NULLPTR - Standard way of indicating a null value or pointer
 
+  No Fortran Support
+
+  Level: beginner
+
   Notes:
-  Equivalent to NULL in C source, and nullptr in C++ source. Note that for the purposes of
+  Equivalent to `NULL` in C source, and nullptr in C++ source. Note that for the purposes of
   interoperability between C and C++, setting a pointer to `PETSC_NULLPTR` in C++ is functonially
-  equivalent to setting the same pointer to NULL in C. That is to say that the following
+  equivalent to setting the same pointer to `NULL` in C. That is to say that the following
   expressions are equivalent\:
 
 .vb
@@ -359,9 +363,6 @@ M*/
 .vb
   PETSC_NULLPTR == NULL
 .ve
-
-  Fortran Notes:
-  Not available in Fortran
 
   Example Usage:
 .vb
@@ -384,22 +385,21 @@ M*/
   files compiled with a C++ compiler may lead to unexpected side-effects in function overload
   resolution and/or compiler warnings.
 
-  Level: beginner
-
 .seealso: `PETSC_CONSTEXPR_14`, `PETSC_NODISCARD`
 M*/
 
 /*MC
   PETSC_CONSTEXPR_14 - C++14 constexpr
 
+  No Fortran Support
+
+  Level: beginner
+
   Notes:
   Equivalent to constexpr when using a C++ compiler that supports C++14. Expands to nothing
   if the C++ compiler does not support C++14 or when not compiling with a C++ compiler. Note
   that this cannot be used in cases where an empty expansion would result in invalid code. It
   is safe to use this in C source files.
-
-  Fortran Notes:
-  Not available in Fortran
 
   Example Usage:
 .vb
@@ -413,8 +413,6 @@ M*/
     return r;
   }
 .ve
-
-  Level: beginner
 
 .seealso: `PETSC_NULLPTR`, `PETSC_NODISCARD`
 M*/

@@ -51,7 +51,7 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt 
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
+- create_func - The creation routine
 
   Sample usage:
 .vb
@@ -167,19 +167,16 @@ PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr)
 /*@C
   DMPlexTransformSetType - Sets the particular implementation for a transform.
 
-  Collective on tr
+  Collective
 
   Input Parameters:
 + tr     - The transform
 - method - The name of the transform type
 
   Options Database Key:
-. -dm_plex_transform_type <type> - Sets the transform type; use -help for a list of available types
+. -dm_plex_transform_type <type> - Sets the transform type; see `DMPlexTransformType`
 
   Level: intermediate
-
-  Notes:
-  See "petsc/include/petscdmplextransform.h" for available transform types
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformType`, `DMPlexTransformGetType()`, `DMPlexTransformCreate()`
 @*/
@@ -278,7 +275,7 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
 /*@C
   DMPlexTransformView - Views a `DMPlexTransform`
 
-  Collective on tr
+  Collective
 
   Input Parameters:
 + tr - the `DMPlexTransform` object to view
@@ -306,9 +303,9 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 }
 
 /*@
-  DMPlexTransformSetFromOptions - Sets parameters in a transform from the options database
+  DMPlexTransformSetFromOptions - Sets parameters in a transform from values in the options database
 
-  Collective on tr
+  Collective
 
   Input Parameter:
 . tr - the `DMPlexTransform` object to set options for
@@ -342,7 +339,7 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
 /*@C
   DMPlexTransformDestroy - Destroys a `DMPlexTransform`
 
-  Collective on tr
+  Collective
 
   Input Parameter:
 . tr - the transform object to destroy
@@ -771,16 +768,16 @@ PetscErrorCode DMPlexTransformGetDepthStratum(DMPlexTransform tr, PetscInt depth
 /*@
   DMPlexTransformGetTargetPoint - Get the number of a point in the transformed mesh based on information from the original mesh.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + tr    - The `DMPlexTransform`
 . ct    - The type of the original point which produces the new point
 . ctNew - The type of the new point
 . p     - The original point which produces the new point
-- r     - The replica number of the new point, meaning it is the rth point of type ctNew produced from p
+- r     - The replica number of the new point, meaning it is the rth point of type `ctNew` produced from `p`
 
-  Output Parameters:
+  Output Parameter:
 . pNew  - The new point number
 
   Level: developer
@@ -828,7 +825,7 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
 /*@
   DMPlexTransformGetSourcePoint - Get the number of a point in the original mesh based on information from the transformed mesh.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + tr    - The `DMPlexTransform`
@@ -958,10 +955,10 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
   Output Parameters:
 + rt     - The refine type for this point
 . Nt     - The number of types produced by this point
-. target - An array of length Nt giving the types produced
-. size   - An array of length Nt giving the number of cells of each type produced
-. cone   - An array of length Nt*size[t]*coneSize[t] giving the cell type for each point in the cone of each produced point
-- ornt   - An array of length Nt*size[t]*coneSize[t] giving the orientation for each point in the cone of each produced point
+. target - An array of length `Nt` giving the types produced
+. size   - An array of length `Nt` giving the number of cells of each type produced
+. cone   - An array of length `Nt`*size[t]*coneSize[t] giving the cell type for each point in the cone of each produced point
+- ornt   - An array of length `Nt`*size[t]*coneSize[t] giving the orientation for each point in the cone of each produced point
 
   Level: advanced
 
@@ -1506,11 +1503,11 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
   DMPlexTransformGetCellVertices - Get the set of transformed vertices lying in the closure of a reference cell of given type
 
   Input Parameters:
-+ tr - The DMPlexTransform object
++ tr - The `DMPlexTransform` object
 - ct - The cell type
 
   Output Parameters:
@@ -1519,8 +1516,8 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
 
   Level: developer
 
-.seealso: `DMPlexTransformGetSubcellVertices()`
-*/
+.seealso: `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformGetSubcellVertices()`
+@*/
 PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nv, PetscScalar *trVerts[])
 {
   PetscFunctionBegin;
@@ -1530,22 +1527,22 @@ PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
   DMPlexTransformGetSubcellVertices - Get the set of transformed vertices defining a subcell in the reference cell of given type
 
   Input Parameters:
-+ tr  - The DMPlexTransform object
++ tr  - The `DMPlexTransform` object
 . ct  - The cell type
 . rct - The subcell type
 - r   - The subcell index
 
   Output Parameter:
-. subVerts - The indices of these vertices in the set of vertices returned by DMPlexTransformGetCellVertices()
+. subVerts - The indices of these vertices in the set of vertices returned by `DMPlexTransformGetCellVertices()`
 
   Level: developer
 
-.seealso: `DMPlexTransformGetCellVertices()`
-*/
+.seealso:  `DMPLEX`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexTransformGetCellVertices()`
+@*/
 PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, PetscInt *subVerts[])
 {
   PetscFunctionBegin;
@@ -1845,12 +1842,12 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
 }
 
 /*@C
-  DMPlexCellRefinerMapLocalizedCoordinates - Given a cell of type ct with localized coordinates x, we generate localized coordinates xr for subcell r of type rct.
+  DMPlexCellRefinerMapLocalizedCoordinates - Given a cell of `DMPolytopeType` ct with localized coordinates x, generate localized coordinates xr for subcell r of type rct.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ cr  - The DMPlexCellRefiner
++ tr  - The `DMPlexTransform`
 . ct  - The type of the parent cell
 . rct - The type of the produced cell
 . r   - The index of the produced cell

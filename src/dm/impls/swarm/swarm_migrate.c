@@ -668,17 +668,17 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
 /*@
   DMSwarmGetMigrateType - Get the style of point migration
 
-  Logically collective on dm
+  Logically Collective
 
   Input parameter:
-. dm    - the DMSwarm
+. dm    - the `DMSWARM`
 
   Output parameter:
-. mtype - The migration type
+. mtype - The migration type, see `DMSwarmMigrateType`
 
   Level: intermediate
 
-.seealso: `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
 @*/
 PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
 {
@@ -692,15 +692,15 @@ PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
 /*@
   DMSwarmSetMigrateType - Set the style of point migration
 
-  Logically collective on dm
+  Logically Collective
 
   Input parameters:
-+ dm    - the DMSwarm
-- mtype - The migration type
++ dm    - the `DMSWARM`
+- mtype - The migration type, see `DMSwarmMigrateType`
 
   Level: intermediate
 
-.seealso: `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmMigrateType`, `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
 @*/
 PetscErrorCode DMSwarmSetMigrateType(DM dm, DMSwarmMigrateType mtype)
 {

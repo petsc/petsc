@@ -57,7 +57,7 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
 /*@C
   PetscLimiterSetType - Builds a `PetscLimiter` for a given `PetscLimiterType`
 
-  Collective on lim
+  Collective
 
   Input Parameters:
 + lim  - The `PetscLimiter` object
@@ -121,7 +121,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 /*@C
    PetscLimiterViewFromOptions - View a `PetscLimiter` based on values in the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the `PetscLimiter` object to view
@@ -143,7 +143,7 @@ PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, cons
 /*@C
   PetscLimiterView - Views a `PetscLimiter`
 
-  Collective on lim
+  Collective
 
   Input Parameters:
 + lim - the `PetscLimiter` object to view
@@ -165,7 +165,7 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 /*@
   PetscLimiterSetFromOptions - sets parameters in a `PetscLimiter` from the options database
 
-  Collective on lim
+  Collective
 
   Input Parameter:
 . lim - the `PetscLimiter` object to set options for
@@ -204,7 +204,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 /*@C
   PetscLimiterSetUp - Construct data structures for the `PetscLimiter`
 
-  Collective on lim
+  Collective
 
   Input Parameter:
 . lim - the `PetscLimiter` object to setup
@@ -224,7 +224,7 @@ PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 /*@
   PetscLimiterDestroy - Destroys a `PetscLimiter` object
 
-  Collective on lim
+  Collective
 
   Input Parameter:
 . lim - the `PetscLimiter` object to destroy
@@ -932,7 +932,7 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
 /*@C
   PetscFVSetType - Builds a particular `PetscFV`
 
-  Collective on fvm
+  Collective
 
   Input Parameters:
 + fvm  - The `PetscFV` object
@@ -995,7 +995,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 /*@C
    PetscFVViewFromOptions - View a `PetscFV` based on values in the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the `PetscFV` object
@@ -1017,7 +1017,7 @@ PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char nam
 /*@C
   PetscFVView - Views a `PetscFV`
 
-  Collective on fvm
+  Collective
 
   Input Parameters:
 + fvm - the `PetscFV` object to view
@@ -1039,7 +1039,7 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
 /*@
   PetscFVSetFromOptions - sets parameters in a `PetscFV` from the options database
 
-  Collective on fvm
+  Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object to set options for
@@ -1083,7 +1083,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
 /*@
   PetscFVSetUp - Setup the data structures for the `PetscFV` based on the `PetscFVType` provided by `PetscFVSetType()`
 
-  Collective on fvm
+  Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object to setup
@@ -1104,7 +1104,7 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm)
 /*@
   PetscFVDestroy - Destroys a `PetscFV` object
 
-  Collective on fvm
+  Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object to destroy
@@ -1181,7 +1181,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
 /*@
   PetscFVSetLimiter - Set the `PetscLimiter` to the `PetscFV`
 
-  Logically collective on fvm
+  Logically Collective
 
   Input Parameters:
 + fvm - the `PetscFV` object
@@ -1205,7 +1205,7 @@ PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
 /*@
   PetscFVGetLimiter - Get the `PetscLimiter` object from the `PetscFV`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object
@@ -1229,7 +1229,7 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
 /*@
   PetscFVSetNumComponents - Set the number of field components in a `PetscFV`
 
-  Logically collective on fvm
+  Logically Collective
 
   Input Parameters:
 + fvm - the `PetscFV` object
@@ -1259,7 +1259,7 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
 /*@
   PetscFVGetNumComponents - Get the number of field components in a `PetscFV`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object
@@ -1283,7 +1283,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 /*@C
   PetscFVSetComponentName - Set the name of a component (used in output and viewing) in a `PetscFV`
 
-  Logically collective on fvm
+  Logically Collective
 
   Input Parameters:
 + fvm - the `PetscFV` object
@@ -1305,7 +1305,7 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 /*@C
   PetscFVGetComponentName - Get the name of a component (used in output and viewing) in a `PetscFV`
 
-  Logically collective on fvm
+  Logically Collective
   Input Parameters:
 + fvm - the `PetscFV` object
 - comp - the component number
@@ -1327,7 +1327,7 @@ PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **
 /*@
   PetscFVSetSpatialDimension - Set the spatial dimension of a `PetscFV`
 
-  Logically collective on fvm
+  Logically Collective
 
   Input Parameters:
 + fvm - the `PetscFV` object
@@ -1348,7 +1348,7 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
 /*@
   PetscFVGetSpatialDimension - Get the spatial dimension of a `PetscFV`
 
-  Logically collective on fvm
+  Not Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object
@@ -1372,7 +1372,7 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
 /*@
  PetscFVSetComputeGradients - Toggle computation of cell gradients on a `PetscFV`
 
-  Logically collective on fvm
+  Logically Collective
 
   Input Parameters:
 + fvm - the `PetscFV` object
@@ -1393,7 +1393,7 @@ PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradient
 /*@
   PetscFVGetComputeGradients - Return flag for computation of cell gradients on a `PetscFV`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object
@@ -1417,7 +1417,7 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 /*@
   PetscFVSetQuadrature - Set the `PetscQuadrature` object for a `PetscFV`
 
-  Logically collective on fvm
+  Logically Collective
 
   Input Parameters:
 + fvm - the `PetscFV` object
@@ -1440,7 +1440,7 @@ PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
 /*@
   PetscFVGetQuadrature - Get the `PetscQuadrature` from a `PetscFV`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fvm - the `PetscFV` object
@@ -1474,13 +1474,13 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 /*@
   PetscFVGetDualSpace - Returns the `PetscDualSpace` used to define the inner product on a `PetscFV`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fvm - The `PetscFV` object
 
   Output Parameter:
-. sp - The PetscDualSpace object
+. sp - The `PetscDualSpace` object
 
   Level: intermediate
 
@@ -1529,7 +1529,7 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
 /*@
   PetscFVSetDualSpace - Sets the `PetscDualSpace` used to define the inner product
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fvm - The `PetscFV` object
@@ -1556,7 +1556,7 @@ PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
 /*@C
   PetscFVGetCellTabulation - Returns the tabulation of the basis functions at the quadrature points
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fvm - The `PetscFV` object
@@ -1592,7 +1592,7 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
 /*@C
   PetscFVCreateTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fvm     - The `PetscFV` object
@@ -1684,7 +1684,7 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 /*@C
   PetscFVIntegrateRHSFunction - Produce the cell residual vector for a chunk of elements by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fvm          - The `PetscFV` object for the field being integrated
@@ -2209,7 +2209,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm)
 /*@
   PetscFVLeastSquaresSetMaxFaces - Set the maximum number of cell faces for gradient reconstruction
 
-  Not collective
+  Not Collective
 
   Input parameters:
 + fvm      - The `PetscFV` object

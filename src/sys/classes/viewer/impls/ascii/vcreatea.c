@@ -277,7 +277,7 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
 
    Input Parameters:
 +  comm - the communicator
--  fd - the FILE pointer
+-  fd - the `FILE` pointer
 
    Output Parameter:
 .  lab - the `PetscViewer` to use with the specified file
@@ -307,11 +307,11 @@ PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer
 /*@C
    PetscViewerASCIISetFILE - Given an open file sets the `PETSCVIEWERASCII` viewer to use the file for output
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  viewer - the `PetscViewer` to use with the specified file
--  fd - the FILE pointer
+-  fd - the `FILE` pointer
 
    Level: beginner
 

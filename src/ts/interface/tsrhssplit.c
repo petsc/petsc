@@ -22,7 +22,7 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RH
 
    Input Parameters:
 +  ts        - the `TS` context obtained from `TSCreate()`
-.  splitname - name of this split, if NULL the number of the split is used
+.  splitname - name of this split, if `NULL` the number of the split is used
 -  is        - the index set for part of the solution vector
 
    Level: intermediate
@@ -98,21 +98,21 @@ PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
    Input Parameters:
 +  ts        - the `TS` context obtained from `TSCreate()`
 .  splitname - name of this split
-.  r         - vector to hold the residual (or NULL to have it created internally)
+.  r         - vector to hold the residual (or `NULL` to have it created internally)
 .  rhsfunc   - the RHS function evaluation routine
--  ctx       - user-defined context for private data for the split function evaluation routine (may be NULL)
+-  ctx       - user-defined context for private data for the split function evaluation routine (may be `NULL`)
 
- Calling sequence of fun:
-$  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
-
-+  t    - time at step/stage being solved
+ Calling sequence of `rhsfun`:
+$  PetscErrorCode rhsfunc(TS ts, PetscReal t, Vec u, Vec f,ctx)
++  ts  - the `TS` context obtained from `TSCreate()`
+.  t    - time at step/stage being solved
 .  u    - state vector
 .  f    - function vector
--  ctx  - [optional] user-defined context for matrix evaluation routine (may be NULL)
+-  ctx  - [optional] user-defined context for matrix evaluation routine (may be `NULL`)
 
- Level: beginner
+ Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `IS`, `TSRHSSplitSetIS()`
+.seealso: [](chapter_ts), `TS`, `TSRHSFunction`, `IS`, `TSRHSSplitSetIS()`
 @*/
 PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunction rhsfunc, void *ctx)
 {
@@ -161,7 +161,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
 
    Output Parameters:
 +  splitname - the number of the split
--  subts - the array of `TS` contexts
+-  subts - the sub-`TS`
 
    Level: advanced
 
@@ -197,7 +197,7 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
 
    Note:
    After `TSRHSSplitGetSubTS()` the array of `TS`s is to be freed by the user with `PetscFree()`
-   (not the `TS` just the array that contains them).
+   (not the `TS` in the array just the array that contains them).
 
 .seealso: [](chapter_ts), `TS`, `IS`, `TSGetRHSSplitFunction()`
 @*/

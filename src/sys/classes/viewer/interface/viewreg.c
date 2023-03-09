@@ -28,7 +28,7 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
       PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
          been printed so they will not be printed again.
 
-     Not collective
+     Not Collective
 
     Level: developer
 
@@ -46,7 +46,7 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 /*@C
       PetscOptionsHelpPrintedCheck - Checks if a particular pre, name pair has previous been entered (meaning the help message was printed)
 
-     Not collective
+     Not Collective
 
     Input Parameters:
 +     hp - the object used to manage tracking what help messages have been printed

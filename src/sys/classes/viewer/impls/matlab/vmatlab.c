@@ -11,11 +11,12 @@ typedef struct {
 /*@C
     PetscViewerMatlabPutArray - Puts an array into the `PETSCVIEWERMATLAB` viewer.
 
-      Not collective: only processor zero saves `array`
+      Not Collective: only processor zero saves `array`
 
     Input Parameters:
 +    mfile - the viewer
-.    m,n - the dimensions of `array`
+.    m - the first dimensions of `array`
+.    n - the second dimensions of `array`
 .    array - the array (represented in one dimension)
 -    name - the MATLAB name of `array`
 
@@ -65,7 +66,8 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 
     Input Parameters:
 +    mfile - the MATLAB file viewer
-.    m,n - the dimensions of `array`
+.    m - the first dimensions of `array`
+.    n - the second dimensions of `array`
 .    array - the array (represented in one dimension)
 -    name - the MATLAB name of `array`
 

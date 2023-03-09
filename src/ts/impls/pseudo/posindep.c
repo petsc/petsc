@@ -358,9 +358,8 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
 -  ctx - [optional] user-defined context for private data
          for the timestep verification routine (may be NULL)
 
-   Calling sequence of func:
-$  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(TS ts, Vec update, void *ctx, PetscReal *newdt, PetscBool  *flag);
 +  update - latest solution vector
 .  ctx - [optional] timestep context
 .  newdt - the timestep to use for the next step
@@ -473,9 +472,8 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
 -  ctx - [optional] user-defined context for private data
          required by the function (may be NULL)
 
-   Calling sequence of func:
-$  func (TS ts,PetscReal *newdt,void *ctx);
-
+   Calling sequence of `dt`:
+$  PetscErrorCode dt(TS ts, PetscReal *newdt, void *ctx);
 +  newdt - the newly computed timestep
 -  ctx - [optional] timestep context
 

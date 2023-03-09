@@ -1543,7 +1543,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
    MatCreateFromParCSR - Creates a `Mat` from a `hypre_ParCSRMatrix`
 
    Collective
@@ -1551,7 +1551,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
    Input Parameters:
 +  parcsr   - the pointer to the `hypre_ParCSRMatrix`
 .  mtype    - matrix type to be created. Currently `MATAIJ`, `MATIS` and `MATHYPRE` are supported.
--  copymode - PETSc copying options
+-  copymode - PETSc copying options, see  `PetscCopyMode`
 
    Output Parameter:
 .  A  - the matrix
@@ -1559,7 +1559,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
    Level: intermediate
 
 .seealso: [](chapter_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
-*/
+@*/
 PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatType mtype, PetscCopyMode copymode, Mat *A)
 {
   Mat        T;
@@ -1695,13 +1695,13 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@C
    MatHYPREGetParCSR - Gets the pointer to the ParCSR matrix
 
    Not Collective
 
-   Input Parameters:
-+  A  - the `MATHYPRE` object
+   Input Parameter:
+.  A  - the `MATHYPRE` object
 
    Output Parameter:
 .  parcsr  - the pointer to the `hypre_ParCSRMatrix`
@@ -1709,7 +1709,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
    Level: intermediate
 
 .seealso: [](chapter_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
-*/
+@*/
 PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
 {
   PetscFunctionBegin;

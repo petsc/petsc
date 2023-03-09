@@ -65,7 +65,7 @@ PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
   SET the array for storing the vector values. Otherwise, the array must be allocated on the
   device.
 
-  If both cpuarray and gpuarray are provided, the provided arrays must have identical
+  If both `cpuarray` and `gpuarray` are provided, the provided arrays must have identical
   values.
 
   The arrays are NOT freed when the vector is destroyed via `VecDestroy()`. The user must free

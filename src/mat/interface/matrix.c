@@ -57,9 +57,6 @@ const char *const MatFactorTypes[] = {"NONE", "LU", "CHOLESKY", "ILU", "ICC", "I
 -  rctx - the `PetscRandom` object, formed by `PetscRandomCreate()`, or `NULL` and
           it will create one internally.
 
-   Output Parameter:
-.  x  - the matrix
-
    Example:
 .vb
      PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
@@ -327,7 +324,7 @@ PetscErrorCode MatFindZeroRows(Mat mat, IS *zerorows)
    Input Parameters:
 .   A - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .   a - the diagonal part (which is a SEQUENTIAL matrix)
 
    Level: advanced
@@ -553,7 +550,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
    where maxcols >= maximum nonzeros in any row of the matrix.
 
    Caution:
-   Do not try to change the contents of the output arrays (cols and vals).
+   Do not try to change the contents of the output arrays (`cols` and `vals`).
    In some cases, this may corrupt the matrix.
 
 .seealso: [](chapter_matrices), `Mat`, `MatRestoreRow()`, `MatSetValues()`, `MatGetValues()`, `MatCreateSubMatrices()`, `MatGetDiagonal()`, `MatGetRowIJ()`, `MatRestoreRowIJ()`
@@ -608,7 +605,8 @@ PetscErrorCode MatConjugate(Mat mat)
    Input Parameters:
 +  mat - the matrix
 .  row - the row to get
-.  ncols, cols - the number of nonzeros and their columns
+.  ncols - the number of nonzeros
+.  cols - the columns of the nonzeros
 -  vals - if nonzero the column values
 
    Level: advanced
@@ -988,6 +986,22 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 +  mat - the matrix
 -  viewer - visualization context
 
+   Options Database Keys:
++  -mat_view ::ascii_info - Prints info on matrix at conclusion of `MatAssemblyEnd()`
+.  -mat_view ::ascii_info_detail - Prints more detailed info
+.  -mat_view - Prints matrix in ASCII format
+.  -mat_view ::ascii_matlab - Prints matrix in Matlab format
+.  -mat_view draw - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
+.  -display <name> - Sets display name (default is host)
+.  -draw_pause <sec> - Sets number of seconds to pause after display
+.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
+.  -viewer_socket_machine <machine> -
+.  -viewer_socket_port <port> -
+.  -mat_view binary - save matrix to file in binary format
+-  -viewer_binary_filename <name> -
+
+   Level: beginner
+
   Notes:
   The available visualization contexts include
 +    `PETSC_VIEWER_STDOUT_SELF` - for sequential matrices
@@ -1020,23 +1034,6 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 -    `PETSC_VIEWER_ASCII_INFO_DETAIL` - prints more detailed information about
          the matrix structure
 
-   Options Database Keys:
-+  -mat_view ::ascii_info - Prints info on matrix at conclusion of `MatAssemblyEnd()`
-.  -mat_view ::ascii_info_detail - Prints more detailed info
-.  -mat_view - Prints matrix in ASCII format
-.  -mat_view ::ascii_matlab - Prints matrix in Matlab format
-.  -mat_view draw - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
-.  -display <name> - Sets display name (default is host)
-.  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
-.  -viewer_socket_machine <machine> -
-.  -viewer_socket_port <port> -
-.  -mat_view binary - save matrix to file in binary format
--  -viewer_binary_filename <name> -
-
-   Level: beginner
-
-   Notes:
     The ASCII viewers are only recommended for small matrices on at most a moderate number of processes,
     the program will seemingly hang and take hours for larger matrices, for larger matrices one should use the binary format.
 
@@ -1226,7 +1223,6 @@ $ -viewer_type {binary,hdf5}
    See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
    and src/mat/tutorials/ex10.c with the second approach.
 
-   Notes:
    In case of `PETSCVIEWERBINARY`, a native PETSc binary format is used. Each of the blocks
    is read onto rank 0 and then shipped to its destination rank, one after another.
    Multiple objects, both matrices and vectors, can be stored within the same file.
@@ -1401,8 +1397,10 @@ PetscErrorCode MatDestroy(Mat *A)
    Input Parameters:
 +  mat - the matrix
 .  v - a logically two-dimensional array of values
-.  m, idxm - the number of rows and their global indices
-.  n, idxn - the number of columns and their global indices
+.  m - the number of rows
+.  idxm - the global indices of the rows
+.  n - the number of columns
+.  idxn - the global indices of the columns
 -  addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
    Level: beginner
@@ -2502,7 +2500,7 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt i
 +  mat - the matrix
 -  x   - the vector to be multiplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: developer
@@ -2540,7 +2538,7 @@ PetscErrorCode MatMultDiagonalBlock(Mat mat, Vec x, Vec y)
 +  mat - the matrix
 -  x   - the vector to be multiplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: beginner
@@ -2588,7 +2586,7 @@ PetscErrorCode MatMult(Mat mat, Vec x, Vec y)
 +  mat - the matrix
 -  x   - the vector to be multiplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: beginner
@@ -2646,7 +2644,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y)
 +  mat - the matrix
 -  x   - the vector to be multilplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: beginner
@@ -2709,9 +2707,10 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat, Vec x, Vec y)
 
     Input Parameters:
 +   mat - the matrix
--   v1, v2 - the vectors
+.   v1 - the vector to be multiplied by `mat`
+-   v2 - the vector to be added to the result
 
-    Output Parameters:
+    Output Parameter:
 .   v3 - the result
 
     Level: beginner
@@ -2757,9 +2756,10 @@ PetscErrorCode MatMultAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 
    Input Parameters:
 +  mat - the matrix
--  v1, v2 - the vectors
+.  v1 - the vector to be multipled by the transpose of the matrix
+-  v2 - the vector to be added to the result
 
-   Output Parameters:
+   Output Parameter:
 .  v3 - the result
 
    Level: beginner
@@ -2806,9 +2806,10 @@ PetscErrorCode MatMultTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 
    Input Parameters:
 +  mat - the matrix
--  v1, v2 - the vectors
+.  v1 - the vector to be multiplied by the Hermitian transpose
+-  v2 - the vector to be added to the result
 
-   Output Parameters:
+   Output Parameter:
 .  v3 - the result
 
    Level: beginner
@@ -2869,7 +2870,7 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  t - the type, one of `MAT_FACTOR_NONE`, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ILU`, `MAT_FACTOR_ICC,MAT_FACTOR_ILUDT`, `MAT_FACTOR_QR`
 
    Level: intermediate
@@ -2920,7 +2921,7 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
 +  mat - the matrix
 -  flag - flag indicating the type of parameters to be returned (`MAT_LOCAL` - local matrix, `MAT_GLOBAL_MAX` - maximum over all processors, `MAT_GLOBAL_SUM` - sum over all processors)
 
-   Output Parameters:
+   Output Parameter:
 .  info - matrix information context
 
    Notes:
@@ -3113,7 +3114,8 @@ PetscErrorCode MatILUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
    Input Parameters:
 +  fact - the factor matrix obtained with `MatGetFactor()`
 .  mat - the matrix
-.  row, col - row and column permutations
+.  row - the row permutation
+.  col - the column permutation
 -  info - options for factorization, includes
 .vb
           fill - expected fill as ratio of original fill. Run with the option -info to determine an optimal value to use
@@ -3349,10 +3351,9 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFa
    Collective
 
    Input Parameters:
-+  fact - the factor matrix obtained with `MatGetFactor()`
-.  mat - the initial matrix
-.  info - options for factorization
--  fact - the symbolic factor of mat
++  fact - the factor matrix obtained with `MatGetFactor()`, where the factored values are stored
+.  mat - the initial matrix that is to be factored
+-  info - options for factorization
 
    Level: developer
 
@@ -4646,7 +4647,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  flg - `PETSC_TRUE` if uses the ordering
 
    Level: developer
@@ -4670,10 +4671,11 @@ PetscErrorCode MatFactorGetCanUseOrdering(Mat mat, PetscBool *flg)
    Logically Collective
 
    Input Parameters:
-.  mat - the matrix obtained with `MatGetFactor()`
++  mat - the matrix obtained with `MatGetFactor()`
+-  ftype - the factorization type to be used
 
-   Output Parameters:
-.  otype - the preferred type
+   Output Parameter:
+.  otype - the preferred ordering type
 
    Level: developer
 
@@ -4697,7 +4699,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 .  type - name of solver type, for example, superlu, petsc (to use PETSc's default)
 -  ftype - factor type, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 
-   Output Parameters:
+   Output Parameter:
 .  f - the factor matrix used with MatXXFactorSymbolic() calls
 
    Options Database Key:
@@ -4872,8 +4874,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
    Logically Collective
 
    Input Parameters:
-+  mat - the matrix
--  v - the vector for storing the diagonal
+.  mat - the matrix
 
    Output Parameter:
 .  v - the diagonal of the matrix
@@ -5286,9 +5287,10 @@ PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
 
    Input Parameters:
 +  A - the matrix to test
--  B - the matrix to test against, this can equal the first parameter
+.  B - the matrix to test against, this can equal the first parameter
+-  tol - tolerance, differences between entries smaller than this are counted as zero
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -5357,9 +5359,10 @@ PetscErrorCode MatHermitianTranspose(Mat mat, MatReuse reuse, Mat *B)
 
    Input Parameters:
 +  A - the matrix to test
--  B - the matrix to test against, this can equal the first parameter
+.  B - the matrix to test against, this can equal the first parameter
+-  tol - tolerance, differences between entries smaller than this are counted as zero
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -5401,7 +5404,7 @@ PetscErrorCode MatIsHermitianTranspose(Mat A, Mat B, PetscReal tol, PetscBool *f
 .  row - row permutation, each processor supplies only the permutation for its rows
 -  col - column permutation, each processor supplies only the permutation for its columns
 
-   Output Parameters:
+   Output Parameter:
 .  B - the permuted matrix
 
    Level: advanced
@@ -5535,9 +5538,6 @@ PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
     Input Parameters:
 +   mat - the matrix to be scaled
 -   a  - the scaling value
-
-    Output Parameter:
-.   mat - the scaled matrix
 
     Level: intermediate
 
@@ -6742,7 +6742,7 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  ranges - start of each processors portion plus one more than the total length at the end
 
    Level: beginner
@@ -6768,7 +6768,7 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  ranges - start of each processors portion plus one more then the total length at the end
 
    Level: beginner
@@ -6830,7 +6830,7 @@ PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
 +  fact - the factorized matrix obtained with `MatGetFactor()`
 .  mat - the matrix
 .  row - row permutation
-.  column - column permutation
+.  col - column permutation
 -  info - structure containing
 .vb
       levels - number of levels of fill.
@@ -6839,7 +6839,7 @@ PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
                 missing diagonal entries)
 .ve
 
-   Output Parameters:
+   Output Parameter:
 .  fact - new matrix that has been symbolically factored
 
    Level: developer
@@ -6906,9 +6906,6 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const Mat
       expected fill - as ratio of original fill.
 .ve
 
-   Output Parameter:
-.  fact - the factored matrix
-
    Level: developer
 
    Notes:
@@ -6962,7 +6959,8 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorI
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted (on this processor, may be zero)
-.  irow, icol - index sets of rows and columns to extract
+.  irow - index set of rows to extract
+.  icol - index set of columns to extract
 -  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
@@ -7051,7 +7049,8 @@ PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const 
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted
-.  irow, icol - index sets of rows and columns to extract
+.  irow - index set of rows to extract
+.  icol - index set of columns to extract
 -  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
@@ -7593,15 +7592,16 @@ static PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
   Collective
 
   Input Parameters:
-. A - the matrix
++ A - the matrix
+- reuse - indicates if the `C` matrix was obtained from a previous call to this routine
 
-  Output Parameters:
-. C - matrix with inverted block diagonal of A.  This matrix should be created and may have its type set.
+  Output Parameter:
+. C - matrix with inverted block diagonal of `A`
 
   Level: advanced
 
   Note:
-     For efficiency the matrix A should have all the nonzero entries clustered in smallish blocks along the diagonal.
+     For efficiency the matrix `A` should have all the nonzero entries clustered in smallish blocks along the diagonal.
 
 .seealso: [](chapter_matrices), `Mat`, `MatInvertBlockDiagonal()`, `MatComputeBlockDiagonal()`
 @*/
@@ -7954,7 +7954,7 @@ PetscErrorCode MatGetRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBo
 .   ia - the column pointers; that is ia[0] = 0, ia[col] = i[col-1] + number of elements in that col of the matrix
 -   ja - the row indices
 
-    Output Parameters:
+    Output Parameter:
 .   done - `PETSC_TRUE` or `PETSC_FALSE`, indicating whether the values have been returned
 
     Level: developer
@@ -7995,7 +7995,7 @@ PetscErrorCode MatGetColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pets
 .   ia - the row pointers
 -   ja - the column indices
 
-    Output Parameters:
+    Output Parameter:
 .   done - `PETSC_TRUE` or `PETSC_FALSE` indicated that the values have been returned
 
     Level: developer
@@ -8007,6 +8007,7 @@ PetscErrorCode MatGetColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pets
 
     Fortran Note:
    `MatRestoreRowIJ()` Fortran binding is deprecated (since PETSc 3.19), use `MatRestoreRowIJF90()`
+
 .seealso: [](chapter_matrices), `Mat`, `MatGetRowIJ()`, `MatRestoreRowIJF90()`, `MatRestoreColumnIJ()`
 @*/
 PetscErrorCode MatRestoreRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscBool *done)
@@ -8081,11 +8082,11 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, 
 
     Input Parameters:
 +   mat - the matrix
-.   ncolors - max color value
+.   ncolors - maximum color value
 .   n   - number of entries in colorarray
 -   colorarray - array indicating color for each column
 
-    Output Parameters:
+    Output Parameter:
 .   iscoloring - coloring generated using colorarray information
 
     Level: developer
@@ -8162,7 +8163,7 @@ PetscErrorCode MatSetUnfactored(Mat mat)
     Synopsis:
     MatDenseGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   x - matrix
@@ -8192,7 +8193,7 @@ M*/
     Synopsis:
     MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameters:
 +   x - matrix
@@ -8221,7 +8222,7 @@ M*/
     Synopsis:
     MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   x - matrix
@@ -8251,7 +8252,7 @@ M*/
     Synopsis:
     MatSeqAIJRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameters:
 +   x - matrix
@@ -8282,17 +8283,17 @@ M*/
 
     Input Parameters:
 +   mat - the original matrix
-.   isrow - parallel IS containing the rows this processor should obtain
-.   iscol - parallel IS containing all columns you wish to keep. Each process should list the columns that will be in IT's "diagonal part" in the new matrix.
+.   isrow - parallel `IS` containing the rows this processor should obtain
+.   iscol - parallel `IS` containing all columns you wish to keep. Each process should list the columns that will be in IT's "diagonal part" in the new matrix.
 -   cll - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
     Output Parameter:
-.   newmat - the new submatrix, of the same type as the old
+.   newmat - the new submatrix, of the same type as the original matrix
 
     Level: advanced
 
     Notes:
-    The submatrix will be able to be multiplied with vectors using the same layout as iscol.
+    The submatrix will be able to be multiplied with vectors using the same layout as `iscol`.
 
     Some matrix types place restrictions on the row and column indices, such
     as that they be sorted or that they be equal to each other. For `MATBAIJ` and `MATSBAIJ` matrices the indices must include all rows/columns of a block;
@@ -8303,20 +8304,19 @@ M*/
       The first time this is called you should use a cll of `MAT_INITIAL_MATRIX`,
    the `MatCreateSubMatrix()` routine will create the newmat for you. Any additional calls
    to this routine with a mat of the same nonzero structure and with a call of `MAT_REUSE_MATRIX`
-   will reuse the matrix generated the first time.  You should call `MatDestroy()` on newmat when
+   will reuse the matrix generated the first time.  You should call `MatDestroy()` on `newmat` when
    you are finished using it.
 
     The communicator of the newly obtained matrix is ALWAYS the same as the communicator of
     the input matrix.
 
-    If iscol is `NULL` then all columns are obtained (not supported in Fortran).
+    If `iscol` is `NULL` then all columns are obtained (not supported in Fortran).
 
    Example usage:
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Let's assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
-
+   as follows
 .vb
             1  2  0  |  0  3  0  |  0  4
     Proc0   0  5  6  |  7  0  0  |  8  0
@@ -8330,7 +8330,7 @@ M*/
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-    Suppose isrow = [0 1 | 4 | 6 7] and iscol = [1 2 | 3 4 5 | 6].  The resulting submatrix is
+    Suppose `isrow` = [0 1 | 4 | 6 7] and `iscol` = [1 2 | 3 4 5 | 6].  The resulting submatrix is
 
 .vb
             2  0  |  0  3  0  |  0
@@ -8512,8 +8512,11 @@ PetscErrorCode MatStashSetInitialSize(Mat mat, PetscInt size, PetscInt bsize)
 
    Input Parameters:
 +  mat   - the matrix
-.  x,y - the vectors
--  w - where the result is stored
+.  x - the vector to be multiplied by the interpolation operator
+-  y - the vector to be added to the result
+
+   Output Parameter:
+.  w - the resulting vector
 
    Level: intermediate
 
@@ -8552,7 +8555,10 @@ PetscErrorCode MatInterpolateAdd(Mat A, Vec x, Vec y, Vec w)
 
    Input Parameters:
 +  mat   - the matrix
--  x,y - the vectors
+-  x - the vector to be interpolated
+
+   Output Parameter:
+.  y - the resulting vector
 
    Level: intermediate
 
@@ -8587,7 +8593,10 @@ PetscErrorCode MatInterpolate(Mat A, Vec x, Vec y)
 
    Input Parameters:
 +  mat   - the matrix
--  x,y - the vectors
+-  x - the vector to be restricted
+
+   Output Parameter:
+.  y - the resulting vector
 
    Level: intermediate
 
@@ -8622,9 +8631,10 @@ PetscErrorCode MatRestrict(Mat A, Vec x, Vec y)
 
    Input Parameters:
 +  mat   - the matrix
--  w, x - the input dense matrices
+.  x - the input dense matrix to be multiplied
+-  w - the input dense matrix to be added to the result
 
-   Output Parameters:
+   Output Parameter:
 .  y - the output dense matrix
 
    Level: intermediate
@@ -8701,7 +8711,7 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
 +  mat   - the matrix
 -  x - the input dense matrix
 
-   Output Parameters:
+   Output Parameter:
 .  y - the output dense matrix
 
    Level: intermediate
@@ -8729,7 +8739,7 @@ PetscErrorCode MatMatInterpolate(Mat A, Mat x, Mat *y)
 +  mat   - the matrix
 -  x - the input dense matrix
 
-   Output Parameters:
+   Output Parameter:
 .  y - the output dense matrix
 
    Level: intermediate
@@ -8935,8 +8945,7 @@ PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
    Input Parameters:
 +  mat - the matrix
 .  row - row/column permutation
-.  fill - expected fill factor >= 1.0
--  level - level of fill, for ICC(k)
+-  info - information on desired factorization process
 
    Notes:
    Probably really in-place only when level of fill is zero, otherwise allocates
@@ -8952,7 +8961,7 @@ PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatFactorInfo`, `MatGetFactor()`, `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`
 @*/
 PetscErrorCode MatICCFactor(Mat mat, IS row, const MatFactorInfo *info)
 {
@@ -9091,7 +9100,7 @@ PetscErrorCode MatSolves(Mat mat, Vecs b, Vecs x)
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact transpose)
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -9136,7 +9145,7 @@ PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact Hermitian)
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -9293,7 +9302,7 @@ PetscErrorCode MatIsHermitianKnown(Mat A, PetscBool *set, PetscBool *flg)
    Input Parameter:
 .  A - the matrix to test
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -9361,7 +9370,7 @@ PetscErrorCode MatIsStructurallySymmetricKnown(Mat A, PetscBool *set, PetscBool 
    MatStashGetInfo - Gets how many values are currently in the matrix stash, i.e. need
        to be communicated to other processors during the `MatAssemblyBegin()`/`MatAssemblyEnd()` process
 
-    Not collective
+    Not Collective
 
    Input Parameter:
 .   mat - the matrix
@@ -9860,7 +9869,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P)), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -9913,7 +9922,7 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
 -  fill - expected fill as ratio of nnz(C)/nnz(A), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -10012,7 +10021,7 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Notes:
@@ -10060,7 +10069,7 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 .  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if not known
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -10669,9 +10678,8 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
     Collective
 
     Input Parameters:
-+   B - sparse matrix B
-.   Btdense - symbolic dense matrix B^T
--   coloring - coloring context created with `MatTransposeColoringCreate()`
++   coloring - coloring context created with `MatTransposeColoringCreate()`
+-   B - sparse matrix
 
     Output Parameter:
 .   Btdense - dense matrix B^T
@@ -10698,12 +10706,12 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring, Mat B
     MatTransColoringApplyDenToSp - Given a symbolic matrix product Csp=A*B^T for which
     a `MatTransposeColoring` context has been created and a dense matrix Cden=A*Btdense
     in which Btdens is obtained from `MatTransColoringApplySpToDen()`, recover sparse matrix
-    Csp from Cden.
+    `Csp` from `Cden`.
 
     Collective
 
     Input Parameters:
-+   coloring - coloring context created with `MatTransposeColoringCreate()`
++   matcoloring - coloring context created with `MatTransposeColoringCreate()`
 -   Cden - matrix product of a sparse matrix and a dense matrix Btdense
 
     Output Parameter:
@@ -11151,10 +11159,11 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
   Input Parameter:
 . A - the matrix
 
-  Output Parameter:
-. A - the matrix
-
   Level: intermediate
+
+  Developer Note:
+  The entries in the sparse matrix data structure are shifted to fill in the unneeded locations in the data. Thus the end
+  of the arrays in the data structure are unneeded.
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatChop()`
 @*/

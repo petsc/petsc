@@ -190,13 +190,13 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 
 /*@C
     DMMoabSetBlockFills - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by DMCreateMatrix().
+    of the matrix returned by `DMCreateMatrix()`.
 
-    Logically Collective on da
+    Logically Collective
 
     Input Parameters:
-+   dm - the DMMoab object
-.   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
++   dm - the `DMMOAB` object
+.   dfill - the fill pattern in the diagonal block (may be `NULL`, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
 
     Level: developer
@@ -207,14 +207,16 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 
            The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
        representing coupling and 0 entries for missing coupling. For example
-$             dfill[9] = {1, 0, 0,
-$                         1, 1, 0,
-$                         0, 1, 1}
+.vb
+             dfill[9] = {1, 0, 0,
+                         1, 1, 0,
+                         0, 1, 1}
+.ve
        means that row 0 is coupled with only itself in the diagonal block, row 1 is coupled with
        itself and row 0 (in the diagonal block) and row 2 is coupled with itself and row 1 (in the
        diagonal block).
 
-     DMDASetGetMatrix() allows you to provide general code for those more complicated nonzero patterns then
+     `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
      can be represented in the dfill, ofill format
 
    Contributed by Glenn Hammond

@@ -2,9 +2,7 @@
 /*@C
    MatCreateMPIAIJMKL - Creates a sparse parallel matrix whose local
    portions are stored as `MATSEQAIJMKL` matrices (a matrix class that inherits
-   from `MATSEQAIJ` but uses some operations provided by Intel MKL).  The same
-   guidelines that apply to `MATMPIAIJ` matrices for preallocating the matrix
-   storage apply here as well.
+   from `MATSEQAIJ` but uses some operations provided by Intel MKL).
 
       Collective
 
@@ -71,8 +69,12 @@
 
    When calling this routine with a single process communicator, a matrix of
    type `MATSEQAIJMKL` is returned.  If a matrix of type `MATMPIAIJMKL` is desired
-   for this type of communicator, use the construction mechanism:
-     `MatCreate`(...,&A); `MatSetType`(A,MPIAIJMKL); `MatMPIAIJSetPreallocation`(A,...);
+   for this type of communicator, use the construction mechanism
+.vb
+  MatCreate(...,&A);
+  MatSetType(A,MPIAIJMKL);
+  MatMPIAIJSetPreallocation(A,...);
+.ve
 
 .seealso: [](chapter_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJMKL`, `MatCreate()`, `MatCreateSeqAIJMKL()`, `MatSetValues()`
 @*/

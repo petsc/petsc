@@ -1164,7 +1164,7 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***ma
  Fortran Note:
  This routine has a calling sequence
 $   call MatNestGetSubMats(A, M, N, mat, ierr)
- where the space allocated for the optional argument mat is assumed large enough (if provided).
+ where the space allocated for the optional argument `mat` is assumed large enough (if provided).
 
 .seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
           `MatNestSetSubMats()`, `MatNestGetISs()`, `MatNestSetSubMat()`

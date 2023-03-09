@@ -28,7 +28,7 @@ PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[])
 /*@C
    SNESPythonGetType - Get the type of a `SNES` object implemented in Python.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  snes - the nonlinear solver (`SNES`) context.

@@ -834,7 +834,7 @@ PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
 /*@C
  VecNestGetSubVecs - Returns the entire array of vectors defining a nest vector.
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .  X  - nest vector
@@ -939,7 +939,7 @@ PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx)
 /*@
    VecNestSetSubVec - Set a single component vector in a nest vector at specified index.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  X  - nest vector
@@ -973,7 +973,7 @@ PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, Vec *sx
 /*@C
    VecNestSetSubVecs - Sets the component vectors at the specified indices in a nest vector.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  X  - nest vector
@@ -1008,7 +1008,7 @@ PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N)
 /*@
  VecNestGetSize - Returns the size of the nest vector.
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .  X  - nest vector

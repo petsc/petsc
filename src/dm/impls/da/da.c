@@ -3,7 +3,7 @@
 /*@
   DMDASetSizes - Sets the number of grid points in the three dimensional directions
 
-  Logically Collective on da
+  Logically Collective
 
   Input Parameters:
 + da - the `DMDA`
@@ -41,7 +41,7 @@ PetscErrorCode DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 /*@
   DMDASetNumProcs - Sets the number of processes in each dimension
 
-  Logically Collective on da
+  Logically Collective
 
   Input Parameters:
 + da - the `DMDA`
@@ -84,7 +84,7 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 /*@
   DMDASetBoundaryType - Sets the type of ghost nodes on domain boundaries.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + da    - The `DMDA`
@@ -113,7 +113,7 @@ PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, 
 /*@
   DMDASetDof - Sets the number of degrees of freedom per vertex
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + da  - The `DMDA`
@@ -139,7 +139,7 @@ PetscErrorCode DMDASetDof(DM da, PetscInt dof)
 /*@
   DMDAGetDof - Gets the number of degrees of freedom per vertex
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . da  - The `DMDA`
@@ -165,7 +165,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 /*@
   DMDAGetOverlap - Gets the size of the per-processor overlap.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . da  - The `DMDA`
@@ -194,7 +194,7 @@ PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z)
 /*@
   DMDASetOverlap - Sets the size of the per-processor overlap.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + da  - The `DMDA`
@@ -224,7 +224,7 @@ PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z)
 /*@
   DMDAGetNumLocalSubDomains - Gets the number of local subdomains created upon decomposition.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 . da  - The `DMDA`
@@ -249,7 +249,7 @@ PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub)
 /*@
   DMDASetNumLocalSubDomains - Sets the number of local subdomains created upon decomposition.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + da  - The `DMDA`
@@ -273,7 +273,7 @@ PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub)
 /*@
   DMDASetOffset - Sets the index offset of the DA.
 
-  Collective on da
+  Collective
 
   Input Parameters:
 + da  - The `DMDA`
@@ -315,7 +315,7 @@ PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Petsc
 /*@
   DMDAGetOffset - Gets the index offset of the `DMDA`.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . da  - The `DMDA`
@@ -350,7 +350,7 @@ PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, Pe
 /*@
   DMDAGetNonOverlappingRegion - Gets the indices of the nonoverlapping region of a subdomain `DM`.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . da  - The `DMDA`
@@ -385,7 +385,7 @@ PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, Pe
 /*@
   DMDASetNonOverlappingRegion - Sets the indices of the nonoverlapping region of a subdomain `DM`.
 
-  Collective on da
+  Collective
 
   Input Parameters:
 + da  - The `DMDA`
@@ -425,7 +425,7 @@ PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pets
 /*@
   DMDASetStencilType - Sets the type of the communication stencil
 
-  Logically Collective on da
+  Logically Collective
 
   Input Parameters:
 + da    - The `DMDA`
@@ -450,7 +450,7 @@ PetscErrorCode DMDASetStencilType(DM da, DMDAStencilType stype)
 /*@
   DMDAGetStencilType - Gets the type of the communication stencil
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . da    - The `DMDA`
@@ -476,7 +476,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 /*@
   DMDASetStencilWidth - Sets the width of the communication stencil
 
-  Logically Collective on da
+  Logically Collective
 
   Input Parameters:
 + da    - The `DMDA`
@@ -501,7 +501,7 @@ PetscErrorCode DMDASetStencilWidth(DM da, PetscInt width)
 /*@
   DMDAGetStencilWidth - Gets the width of the communication stencil
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . da    - The `DMDA`
@@ -538,7 +538,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscI
 /*@
   DMDASetOwnershipRanges - Sets the number of nodes in each direction on each process
 
-  Logically Collective on da
+  Logically Collective
 
   Input Parameters:
 + da - The `DMDA`
@@ -584,7 +584,7 @@ PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt
        DMDASetInterpolationType - Sets the type of interpolation that will be
           returned by `DMCreateInterpolation()`
 
-   Logically Collective on da
+   Logically Collective
 
    Input Parameters:
 +  da - initial distributed array
@@ -696,7 +696,7 @@ PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
     These numbers are NOT multiplied by the number of dof per node.
 
     Fortran Note:
-    In Fortran one must pass in arrays lx, ly, and lz that are long enough to hold the values; the sixth, seventh and
+    In Fortran one must pass in arrays `lx`, `ly`, and `lz` that are long enough to hold the values; the sixth, seventh and
     eighth arguments from `DMDAGetInfo()`
 
 .seealso: `DM`, `DMDA`, `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDACreate()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `VecGetOwnershipRanges()`
@@ -716,7 +716,7 @@ PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscIn
 /*@
      DMDASetRefinementFactor - Set the ratios that the `DMDA` grid is refined
 
-    Logically Collective on da
+    Logically Collective
 
   Input Parameters:
 +    da - the `DMDA` object
@@ -769,7 +769,7 @@ PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine
   Level: intermediate
 
     Note:
-    Pass NULL for values you do not need
+    Pass `NULL` for values you do not need
 
 .seealso: `DM`, `DMDA`, `DMRefine()`, `DMDASetRefinementFactor()`
 @*/
@@ -788,7 +788,7 @@ PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refi
 /*@C
      DMDASetGetMatrix - Sets the routine used by the `DMDA` to allocate a matrix.
 
-    Logically Collective on da
+    Logically Collective; No Fortran Support
 
   Input Parameters:
 +    da - the `DMDA` object
@@ -799,9 +799,6 @@ PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refi
    Note:
     See `DMDASetBlockFills()` that provides a simple way to provide the nonzero structure for
        the diagonal and off-diagonal blocks of the matrix
-
-   Fortran Note:
-   Not supported from Fortran
 
 .seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetBlockFills()`
 @*/
@@ -1338,7 +1335,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes)
 
      DMDASetGLLCoordinates - Sets the global coordinates from -1 to 1 to the GLL points of as many GLL elements that fit the number of grid points
 
-   Collective on da
+   Collective
 
    Input Parameters:
 +   da - the `DMDA` object

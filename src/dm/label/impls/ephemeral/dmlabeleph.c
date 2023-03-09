@@ -203,18 +203,18 @@ PETSC_EXTERN PetscErrorCode DMLabelCreate_Ephemeral(DMLabel label)
 /*@
   DMLabelEphemeralGetLabel - Get the base label for this ephemeral label
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Output Paramater:
 . olabel - the base label for this ephemeral label
 
+  Level: intermediate
+
   Note:
   Ephemeral labels are produced automatically from a base label and a `DMPlexTransform`.
-
-  Level: intermediate
 
 .seealso: `DMLabelEphemeralSetLabel()`, `DMLabelEphemeralGetTransform()`, `DMLabelSetType()`
 @*/
@@ -228,16 +228,16 @@ PetscErrorCode DMLabelEphemeralGetLabel(DMLabel label, DMLabel *olabel)
 /*@
   DMLabelEphemeralSetLabel - Set the base label for this ephemeral label
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - olabel - the base label for this ephemeral label
+
+  Level: intermediate
 
   Note:
   Ephemeral labels are produced automatically from a base label and a `DMPlexTransform`.
-
-  Level: intermediate
 
 .seealso: `DMLabelEphemeralGetLabel()`, `DMLabelEphemeralSetTransform()`, `DMLabelSetType()`
 @*/

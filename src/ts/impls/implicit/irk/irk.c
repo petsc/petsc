@@ -664,7 +664,7 @@ static PetscErrorCode TSLoad_IRK(TS ts, PetscViewer viewer)
 /*@C
   TSIRKSetType - Set the type of `TSIRK` scheme to use
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -689,7 +689,7 @@ PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
 /*@C
   TSIRKGetType - Get the type of `TSIRK` IMEX scheme being used
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  ts - timestepping context
@@ -712,7 +712,7 @@ PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
 /*@C
   TSIRKSetNumStages - Set the number of stages of `TSIRK` scheme to use
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -736,7 +736,7 @@ PetscErrorCode TSIRKSetNumStages(TS ts, PetscInt nstages)
 /*@C
   TSIRKGetNumStages - Get the number of stages of `TSIRK` scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context

@@ -4,18 +4,18 @@
 /*@
   DMLabelEphemeralGetTransform - Get the transform for this ephemeral label
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Output Paramater:
 . tr - the transform for this ephemeral label
 
+  Level: intermediate
+
   Note:
   Ephemeral labels are produced automatically from a base label and a `DMPlexTransform`.
-
-  Level: intermediate
 
 .seealso: `DMLabelEphemeralSetTransform()`, `DMLabelEphemeralGetLabel()`, `DMLabelSetType()`
 @*/
@@ -29,16 +29,16 @@ PetscErrorCode DMLabelEphemeralGetTransform(DMLabel label, DMPlexTransform *tr)
 /*@
   DMLabelEphemeralSetTransform - Set the transform for this ephemeral label
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - tr    - the transform for this ephemeral label
+
+  Level: intermediate
 
   Note:
   Ephemeral labels are produced automatically from a base label and a `DMPlexTransform`.
-
-  Level: intermediate
 
 .seealso: `DMLabelEphemeralGetTransform()`, `DMLabelEphemeralSetLabel()`, `DMLabelSetType()`
 @*/

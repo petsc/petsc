@@ -52,7 +52,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat, Vec, Vec);
 /*@
     MatSNESMFGetSNES - returns the `SNES` associated with a matrix created with `MatCreateSNESMF()`
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   J - the matrix
@@ -161,6 +161,8 @@ static PetscErrorCode MatSNESMFSetReuseBase_SNESMF(Mat J, PetscBool use)
 -   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the `MATMFFD` is
           not `SNESComputeFunction()`
 
+    Level: advanced
+
     Note:
     Care must be taken when using this routine to insure that the function provided to `MatMFFDSetFunction()`, call it F_MF() is compatible with
     with that provided to `SNESSetFunction()`, call it F_SNES(). That is, (F_MF(u + h*d) - F_SNES(u))/h has to approximate the derivative
@@ -169,8 +171,6 @@ static PetscErrorCode MatSNESMFSetReuseBase_SNESMF(Mat J, PetscBool use)
     This was provided for the MOOSE team who desired to have a `SNESSetFunction()` function that could change configurations (similar to variable
     switching) to contacts while the function provided to `MatMFFDSetFunction()` cannot. Except for the possibility of changing the configuration
     both functions compute the same mathematical function so the differencing makes sense.
-
-    Level: advanced
 
 .seealso: `MATMFFD`, `MatMFFDSetFunction()`, `SNESSetFunction()`, `MatCreateSNESMF()`, `MatSNESMFGetReuseBase()`
 @*/

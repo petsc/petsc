@@ -4,8 +4,7 @@
    MatCreateMPIAIJPERM - Creates a sparse parallel matrix whose local
    portions are stored as `MATSEQAIJPERM` matrices (a matrix class that inherits
    from SEQAIJ but includes some optimizations to allow more effective
-   vectorization).  The same guidelines that apply to `MATMPIAIJ` matrices for
-   preallocating the matrix storage apply here as well.
+   vectorization).
 
       Collective
 

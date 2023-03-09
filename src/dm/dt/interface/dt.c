@@ -50,7 +50,7 @@ PetscClassId PETSCQUADRATURE_CLASSID = 0;
 . comm - The communicator for the `PetscQuadrature` object
 
   Output Parameter:
-. q  - The PetscQuadrature object
+. q  - The `PetscQuadrature` object
 
   Level: beginner
 
@@ -74,7 +74,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 /*@
   PetscQuadratureDuplicate - Create a deep copy of the `PetscQuadrature` object
 
-  Collective on q
+  Collective
 
   Input Parameter:
 . q  - The `PetscQuadrature` object
@@ -109,7 +109,7 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 /*@
   PetscQuadratureDestroy - Destroys a `PetscQuadrature` object
 
-  Collective on q
+  Collective
 
   Input Parameter:
 . q  - The `PetscQuadrature` object
@@ -136,7 +136,7 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 /*@
   PetscQuadratureGetOrder - Return the order of the method in the `PetscQuadrature`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . q - The `PetscQuadrature` object
@@ -160,7 +160,7 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 /*@
   PetscQuadratureSetOrder - Set the order of the method in the `PetscQuadrature`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + q - The `PetscQuadrature` object
@@ -181,7 +181,7 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 /*@
   PetscQuadratureGetNumComponents - Return the number of components for functions to be integrated
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . q - The `PetscQuadrature` object
@@ -189,10 +189,10 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
   Output Parameter:
 . Nc - The number of components
 
+  Level: intermediate
+
   Note:
   We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
-
-  Level: intermediate
 
 .seealso: `PetscQuadrature`, `PetscQuadratureSetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
@@ -208,16 +208,16 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 /*@
   PetscQuadratureSetNumComponents - Return the number of components for functions to be integrated
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + q  - The PetscQuadrature object
 - Nc - The number of components
 
+  Level: intermediate
+
   Note:
   We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
-
-  Level: intermediate
 
 .seealso: `PetscQuadrature`, `PetscQuadratureGetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
@@ -232,7 +232,7 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 /*@C
   PetscQuadratureGetData - Returns the data defining the `PetscQuadrature`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . q  - The `PetscQuadrature` object
@@ -416,7 +416,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 /*@
    PetscQuadraturePushForward - Push forward a quadrature functional under an affine transformation.
 
-   Collecive on `PetscQuadrature`
+   Collective
 
    Input Parameters:
 +  q - the quadrature functional
@@ -490,7 +490,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
 /*@C
   PetscQuadratureSetData - Sets the data defining the quadrature
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + q  - The `PetscQuadrature` object
@@ -558,7 +558,7 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
 /*@C
   PetscQuadratureView - View a `PetscQuadrature` object
 
-  Collective on quad
+  Collective
 
   Input Parameters:
 + quad  - The `PetscQuadrature` object
@@ -586,7 +586,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 /*@C
   PetscQuadratureExpandComposite - Return a quadrature over the composite element, which has the original quadrature in each subelement
 
-  Not collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + q - The original `PetscQuadrature`
@@ -597,13 +597,10 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   Output Parameters:
 . dim - The dimension
 
+  Level: intermediate
+
   Note:
   Together v0 and jac define an affine mapping from the original reference element to each subelement
-
-  Fortran Note:
-  Not available from Fortran
-
-  Level: intermediate
 
 .seealso: `PetscQuadrature`, `PetscFECreate()`, `PetscSpaceGetDimension()`, `PetscDualSpaceGetDimension()`
 @*/
@@ -1177,7 +1174,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
 - formDegree - the degree of the form
 
   Output Parameters:
-- size - The number ((dim + degree) choose (dim + formDegree)) x ((degree + formDegree - 1) choose (formDegree))
+- size - The number ((`dim` + `degree`) choose (`dim` + `formDegree`)) x ((`degree` + `formDegree` - 1) choose (`formDegree`))
 
   Level: advanced
 
@@ -1319,8 +1316,8 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
 - jetDegree - the maximum order partial derivative to evaluate in the jet.  There are ((dim + jetDegree) choose dim) partial derivatives
               in the jet.  Choosing jetDegree = 0 means to evaluate just the function and no derivatives
 
-  Output Parameters:
-- p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
+  Output Parameter:
+. p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
       `PetscDTPTrimmedSize()` x ((dim + formDegree) choose dim) x ((dim + k) choose dim) x npoints,
       which also describes the order of the dimensions of this
       four-dimensional array:
@@ -1663,7 +1660,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints, Pe
   PetscDTGaussJacobiQuadrature - quadrature for the interval [a, b] with the weight function
   $(x-a)^\alpha (x-b)^\beta$.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + npoints - the number of points in the quadrature rule
@@ -1673,8 +1670,8 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints, Pe
 - beta - the right exponent
 
   Output Parameters:
-+ x - array of length npoints, the locations of the quadrature points
-- w - array of length npoints, the weights of the quadrature points
++ x - array of length `npoints`, the locations of the quadrature points
+- w - array of length `npoints`, the weights of the quadrature points
 
   Level: intermediate
 
@@ -1720,7 +1717,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
   PetscDTGaussLobattoJacobiQuadrature - quadrature for the interval [a, b] with the weight function
   $(x-a)^\alpha (x-b)^\beta$, with endpoints a and b included as quadrature points.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + npoints - the number of points in the quadrature rule
@@ -1730,8 +1727,8 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
 - beta - the right exponent
 
   Output Parameters:
-+ x - array of length npoints, the locations of the quadrature points
-- w - array of length npoints, the weights of the quadrature points
++ x - array of length `npoints`, the locations of the quadrature points
+- w - array of length `npoints`, the weights of the quadrature points
 
   Level: intermediate
 
@@ -1923,12 +1920,12 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 - b       - right end of interval (often +1)
 
   Output Parameter:
-. q - A PetscQuadrature object
+. q - A `PetscQuadrature` object
 
   Level: intermediate
 
   Note:
-  For dim == 1, this is Gauss-Legendre quadrature
+  For `dim` == 1, this is Gauss-Legendre quadrature
 
   References:
 . * - Karniadakis and Sherwin.  FIAT
@@ -2799,7 +2796,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
 
    Output Parameters:
 .  AA - the stiffness element
--  AAT - the transpose of AA (pass in NULL if you do not need this array)
+-  AAT - the transpose of AA (pass in `NULL` if you do not need this array)
 
    Level: beginner
 

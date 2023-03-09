@@ -906,7 +906,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 /*MC
    MatSetValue - Set a single entry into a matrix.
 
-   Not collective
+   Not Collective
 
    Synopsis:
      #include <petscmat.h>

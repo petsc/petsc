@@ -77,7 +77,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
 /*@C
      PetscGlobusAuthorize - Get an access token allowing PETSc applications to make Globus file transfer requests
 
-   Not collective, only the first process in `MPI_Comm` does anything
+   Not Collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -86,12 +86,12 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
    Output Parameters:
 .  access_token - can be used with `PetscGlobusUpLoad()` for 30 days
 
+   Level: intermediate
+
    Notes:
-    This call requires stdout and stdin access from process 0 on the MPI communicator
+    This call requires `stdout` and `stdin` access from process 0 on the MPI communicator
 
    You can run src/sys/webclient/tutorials/globusobtainaccesstoken to get an access token
-
-   Level: intermediate
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`
 @*/
@@ -143,11 +143,11 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t t
 /*@C
      PetscGlobusGetTransfers - Get a record of current transfers requested from Globus
 
-   Not collective, only the first process in `MPI_Comm` does anything
+   Not Collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
-.  access_token - Globus access token, if NULL will check in options database for -globus_access_token XXX otherwise
+.  access_token - Globus access token, if `NULL` will check in options database for -globus_access_token XXX otherwise
                   will call `PetscGlobusAuthorize()`.
 -  buffsize - size of the buffer
 
@@ -193,11 +193,11 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[],
 /*@C
      PetscGlobusUpload - Loads a file to Globus
 
-     Not collective, only the first process in the `MPI_Comm` uploads the file
+     Not Collective, only the first process in the `MPI_Comm` uploads the file
 
   Input Parameters:
 +   comm - MPI communicator
-.   access_token - obtained with `PetscGlobusAuthorize()`, pass NULL to use -globus_access_token XXX from the PETSc database
+.   access_token - obtained with `PetscGlobusAuthorize()`, pass `NULL` to use `-globus_access_token XXX` from the PETSc database
 -   filename - file to upload
 
   Options Database Key:

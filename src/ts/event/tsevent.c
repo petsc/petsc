@@ -50,7 +50,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 }
 
 /*@
-  TSSetPostEventIntervalStep - Set the time-step used immediately following the event interval
+  TSSetPostEventIntervalStep - Set the time-step used immediately following an event interval
 
   Logically Collective
 
@@ -82,14 +82,14 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
 }
 
 /*@
-   TSSetEventTolerances - Set tolerances for event zero crossings when using event handler
+   TSSetEventTolerances - Set tolerances for event zero crossings
 
    Logically Collective
 
    Input Parameters:
 +  ts - time integration context
 .  tol - scalar tolerance, `PETSC_DECIDE` to leave current value
--  vtol - array of tolerances or NULL, used in preference to tol if present
+-  vtol - array of tolerances or `NULL`, used in preference to tol if present
 
    Options Database Key:
 .  -ts_event_tol <tol> - tolerance for event zero crossing
@@ -99,7 +99,10 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
    Notes:
    Must call `TSSetEventHandler(`) before setting the tolerances.
 
-   The size of vtol is equal to the number of events.
+   The size of `vtol` is equal to the number of events.
+
+   The tolerance is some measure of how close the event function is to zero for the event detector to stop
+   and declare the time of the event has been detected.
 
 .seealso: [](chapter_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
@@ -136,28 +139,22 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
                +1 => Zero crossing in positive direction, 0 => both ways (one for each event)
 .  terminate - flag to indicate whether time stepping should be terminated after
                event is detected (one for each event)
-.  eventhandler - event monitoring routine
-.  postevent - [optional] post-event function
+.  eventhandler - a change in sign of this function (see `direction`) is used to determine an even has occurred
+.  postevent - [optional] post-event function, this function can change properties of the solution, ODE etc at the time of the event
 -  ctx       - [optional] user-defined context for private data for the
-               event monitor and post event routine (use NULL if no
+               event detector and post event routine (use `NULL` if no
                context is desired)
 
-   Calling sequence of eventhandler:
-   PetscErrorCode PetscEventHandler(TS ts,PetscReal t,Vec U,PetscScalar fvalue[],void* ctx)
-
-   Input Parameters:
+   Calling sequence of `eventhandler`:
+$   PetscErrorCode eventhandler(TS ts, PetscReal t, Vec U, PetscScalar fvalue[], void* ctx)
 +  ts  - the TS context
 .  t   - current time
 .  U   - current iterate
--  ctx - [optional] context passed with eventhandler
+.  ctx - [optional] context passed with eventhandler
+-  fvalue    - function value of events at time t
 
-   Output parameters:
-.  fvalue    - function value of events at time t
-
-   Calling sequence of postevent:
-   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
-
-   Input Parameters:
+   Calling sequence of `postevent`:
+$   PetscErrorCode postevent(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
 +  ts - the TS context
 .  nevents_zero - number of local events whose event function is zero
 .  events_zero  - indices of local events which have reached zero
@@ -167,6 +164,10 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 -  ctx          - the context passed with eventhandler
 
    Level: intermediate
+
+   Note:
+   The `eventhandler` is actually the event detector function and the `postevent` function actually handles the desired changes that
+   should take place at the time of the event
 
 .seealso: [](chapter_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
@@ -587,7 +588,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 }
 
 /*@
-  TSGetNumEvents - Get the numbers of events set
+  TSGetNumEvents - Get the numbers of events currently set to be detected
 
   Logically Collective
 
@@ -595,7 +596,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 . ts - the `TS` context
 
   Output Parameter:
-. nevents - number of events
+. nevents - the number of events
 
   Level: intermediate
 

@@ -5,9 +5,9 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@
-   DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the `DMDA`
+   DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a `x`, `y`, `z` point in the coordinates of the `DMDA`
 
-   Collective on da
+   Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -82,7 +82,7 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
 /*@
    DMDAGetRay - Returns a vector on process zero that contains a row or column of the values in a `DMDA` vector
 
-   Collective on da
+   Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -90,7 +90,7 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
 -  gp - global grid point number in this direction
 
    Output Parameters:
-+  newvec - the new vector that can hold the values (size zero on all processes except process 0)
++  newvec - the new vector that can hold the values (size zero on all processes except rank 0)
 -  scatter - the `VecScatter` that will map from the original vector to the slice
 
    Level: advanced
@@ -173,7 +173,7 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
    processors in a `DMDA` that own a particular global x, y, or z grid point
    (corresponding to a logical plane in a 3D grid or a line in a 2D grid).
 
-   Collective on da
+   Collective; No Fortran Support
 
    Input Parameters:
 +  da - the distributed array
@@ -193,9 +193,6 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
    This routine is particularly useful to compute boundary conditions
    or other application-specific calculations that require manipulating
    sets of data throughout a logical plane of grid points.
-
-   Fortran Note:
-   Not supported from Fortran
 
 .seealso: `DM`, `DMDA`, `DMDirection`
 @*/
@@ -250,7 +247,7 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
    processors in a `DMDA` adjacent in a particular dimension,
    corresponding to a logical plane in a 3D grid or a line in a 2D grid.
 
-   Collective on da
+   Collective; No Fortran Support
 
    Input Parameters:
 +  da - the distributed array
@@ -264,10 +261,7 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
    Notes:
    This routine is useful for distributing one-dimensional data in a tensor product grid.
 
-   After use, comm should be freed with` MPI_Comm_free()`
-
-   Fortran Note:
-   Not supported from Fortran
+   After use, comm should be freed with `MPI_Comm_free()`
 
 .seealso: `DM`, `DMDA`, `DMDirection`
 @*/

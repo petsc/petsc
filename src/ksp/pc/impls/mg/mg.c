@@ -439,14 +439,14 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
            on smaller sets of processes. For processes that are not included in the computation
-           you must pass `MPI_COMM_NULL`. Use comms = NULL to specify that all processes
+           you must pass `MPI_COMM_NULL`. Use comms = `NULL` to specify that all processes
            should participate in each level of problem.
 
    Level: intermediate
 
    Notes:
-     If the number of levels is one then the multigrid uses the -mg_levels prefix
-     for setting the level options rather than the -mg_coarse prefix.
+     If the number of levels is one then the multigrid uses the `-mg_levels` prefix
+     for setting the level options rather than the `-mg_coarse` prefix.
 
      You can free the information in comms after this routine is called.
 
@@ -463,10 +463,10 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
      the full number of ranks for that level and then use an MPI call to copy the resulting vector
      array entries (after calls to VecGetArray()) to the smaller or larger number of ranks, note in both
      cases the MPI calls must be made on the larger of the two communicators. Traditional MPI send and
-     receives or MPI_AlltoAllv() could be used to do the reshuffling of the vector entries.
+     receives or `MPI_AlltoAllv()` could be used to do the reshuffling of the vector entries.
 
    Fortran Note:
-     Use comms = `PETSC_NULL_MPI_COMM` as the equivalent of NULL in the C interface. Note `PETSC_NULL_MPI_COMM`
+     Use comms = `PETSC_NULL_MPI_COMM` as the equivalent of `NULL` in the C interface. Note `PETSC_NULL_MPI_COMM`
      is not `MPI_COMM_NULL`. It is more like `PETSC_NULL_INTEGER`, `PETSC_NULL_REAL` etc.
 
 .seealso: `PCMGSetType()`, `PCMGGetLevels()`
@@ -1321,8 +1321,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
 -  form - multigrid form, one of `PC_MG_MULTIPLICATIVE`, `PC_MG_ADDITIVE`, `PC_MG_FULL`, `PC_MG_KASKADE`
 
    Options Database Key:
-.  -pc_mg_type <form> - Sets <form>, one of multiplicative,
-   additive, full, kaskade
+.  -pc_mg_type <form> - Sets <form>, one of multiplicative, additive, full, kaskade
 
    Level: advanced
 
@@ -1630,7 +1629,7 @@ PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt)
   PCMGGetAdaptInterpolation - Get the flag to adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh,
   and thus accurately interpolated.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . pc    - the multigrid context
@@ -1678,7 +1677,7 @@ PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr)
 /*@
   PCMGGetAdaptCR - Get the flag to monitor coarse space quality using an auxiliary solve with compatible relaxation.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . pc    - the multigrid context
@@ -1826,17 +1825,17 @@ PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseO
 /*@C
    PCMGRegisterCoarseSpaceConstructor -  Adds a method to the `PCMG` package for coarse space construction.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  name     - name of the constructor
 -  function - constructor routine
 
-   Calling sequence for the routine:
-$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp)
-+  pc        - The PC object
+   Calling sequence of `function`:
+$  PetscErrorCode my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp)
++  pc        - The `PC` object
 .  l         - The multigrid level, 0 is the coarse level
-.  dm        - The DM for this level
+.  dm        - The `DM` for this level
 .  smooth    - The level smoother
 .  Nc        - The size of the coarse space
 .  initGuess - Basis for an initial guess for the space
@@ -1860,7 +1859,7 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
 /*@C
   PCMGGetCoarseSpaceConstructor -  Returns the given coarse space construction method.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . name     - name of the constructor
@@ -1896,6 +1895,8 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
 -  -pc_mg_dump_binary - dumps the matrices for each level and the restriction/interpolation matrices
                         to the binary output file called binaryoutput
 
+   Level: intermediate
+
    Notes:
     If one uses a Krylov method such `KSPGMRES` or `KSPCG` as the smoother then one must use `KSPFGMRES`, `KSPGCR`, or `KSPRICHARDSON` as the outer Krylov method
 
@@ -1905,8 +1906,6 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
        is because without monitoring the residual norm is computed WITHIN each multigrid cycle on the finest level after the pre-smoothing
        (because the residual has just been computed for the multigrid algorithm and is hence available for free) while with monitoring the
        residual is computed at the end of each cycle.
-
-   Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`, `PCEXOTIC`, `PCGAMG`, `PCML`, `PCHYPRE`
           `PCMGSetLevels()`, `PCMGGetLevels()`, `PCMGSetType()`, `PCMGSetCycleType()`,

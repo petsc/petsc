@@ -437,13 +437,13 @@ PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char na
 }
 
 /*@
-   PetscFunctionListView - prints out contents of an PetscFunctionList
+   PetscFunctionListView - prints out contents of a `PetscFunctionList`
 
-   Collective on `viewer`
+   Collective
 
    Input Parameters:
 +  list - the list of functions
--  viewer - the `PetscViewer` used to view the PetscFunctionList
+-  viewer - the `PetscViewer` used to view the `PetscFunctionList`
 
    Level: developer
 

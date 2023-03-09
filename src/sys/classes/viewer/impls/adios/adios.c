@@ -126,9 +126,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
 +  comm - MPI communicator
 .  name - name of file
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_APPEND - open existing file for binary output
+.vb
+    FILE_MODE_WRITE - create new file for binary output
+    FILE_MODE_READ - open existing file for binary input
+    FILE_MODE_APPEND - open existing file for binary output
+.ve
 
    Output Parameter:
 .  adiosv - `PetscViewer` for ADIOS input/output to use with the specified file
@@ -136,7 +138,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Level: beginner
 
    Note:
-   This PetscViewer should be destroyed with `PetscViewerDestroy()`.
+   This `PetscViewer` should be destroyed with `PetscViewerDestroy()`.
 
 .seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5Open()`,
           `VecView()`, `MatView()`, `VecLoad()`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`

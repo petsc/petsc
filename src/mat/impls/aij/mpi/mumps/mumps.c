@@ -2695,12 +2695,11 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
 
    Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  spRHS - sequential sparse matrix in `MATTRANSPOSEVIRTUAL` format holding specified indices in processor[0]
+   Input Parameter:
+.  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 
   Output Parameter:
-. spRHS - requested entries of inverse of `A`
+. spRHS - sequential sparse matrix in `MATTRANSPOSEVIRTUAL` format with requested entries of inverse of `A`
 
    Level: beginner
 
@@ -2734,12 +2733,11 @@ PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST)
 
    Logically Collective
 
-   Input Parameters:
-+  F - the factored matrix of A obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
--  spRHST - sequential sparse matrix in `MATAIJ` format holding specified indices of `A`^T in processor[0]
+   Input Parameter:
+.  F - the factored matrix of A obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
 
   Output Parameter:
-. spRHST - requested entries of inverse of `A`^T
+. spRHST - sequential sparse matrix in `MATAIJ` format containing the requested entries of inverse of `A`^T
 
    Level: beginner
 

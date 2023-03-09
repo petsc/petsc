@@ -5,7 +5,7 @@
 /*@
   DMPlexGetActivePoint - Get the point on which projection is currently working
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . dm   - the `DM`
@@ -27,7 +27,7 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 /*@
   DMPlexSetActivePoint - Set the point on which projection is currently working
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dm   - the `DM`
@@ -449,13 +449,13 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
 }
 
 /*@C
-  DMGetFirstLabeledPoint - Find first labeled point p_o in odm such that the corresponding point p in dm has the specified height. Return p and the corresponding ds.
+  DMGetFirstLabeledPoint - Find first labeled `point` in `odm` such that the corresponding point in `dm` has the specified `height`. Return `point` and the corresponding `ds`.
 
   Input Parameters:
   dm - the `DM`
   odm - the enclosing `DM`
-  label - label for `DM` domain, or NULL for whole domain
-  numIds - the number of ids
+  label - label for `DM` domain, or `NULL` for whole domain
+  numIds - the number of `ids`
   ids - An array of the label ids in sequence for the domain
   height - Height of target cells in `DMPLEX` topology
 

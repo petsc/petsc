@@ -8,7 +8,7 @@
 /*@
     DMDASetUniformCoordinates - Sets a `DMDA` coordinates to be a uniform grid
 
-  Collective on da
+  Collective
 
   Input Parameters:
 +  da - the distributed array object

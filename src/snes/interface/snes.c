@@ -21,7 +21,7 @@ PetscLogEvent SNES_Solve, SNES_SetUp, SNES_FunctionEval, SNES_JacobianEval, SNES
 +  snes - iterative context obtained from `SNESCreate()`
 -  flg - `PETSC_TRUE` indicates you want the error generated
 
-   Options database keys:
+   Options Database Key:
 .  -snes_error_if_not_converged <true,false> - cause an immediate error condition and stop the program if the solver does not converge
 
    Level: intermediate
@@ -173,7 +173,7 @@ PetscErrorCode SNESSetJacobianDomainError(SNES snes)
    Logically Collective
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 -  flg  - indicates if or not to check Jacobian domain error after each Jacobian evaluation
 
    Level: advanced
@@ -708,7 +708,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
    Collective
 
    Input Parameter:
-.  snes - snes to configure
+.  snes - `SNES` object to configure
 
    Level: developer
 
@@ -1443,7 +1443,7 @@ PetscErrorCode SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
    Not Collective
 
    Input Parameter:
-.  snes     - SNES context
+.  snes     - `SNES` context
 
    Output Parameter:
 .  maxFails - maximum of unsuccessful steps
@@ -1673,7 +1673,7 @@ PetscErrorCode SNESSetKSP(SNES snes, KSP ksp)
 .  comm - MPI communicator
 
    Output Parameter:
-.  outsnes - the new SNES context
+.  outsnes - the new `SNES` context
 
    Options Database Keys:
 +   -snes_mf - Activates default matrix-free Jacobian-vector products, and no preconditioning matrix
@@ -1848,7 +1848,7 @@ M*/
    Input Parameters:
 +  snes - the `SNES` context
 .  r - vector to store function values, may be `NULL`
-.  f - function evaluation routine; see `SNESFunction` for calling sequence details
+.  f - function evaluation routine;  for calling sequence see `SNESFunction`
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be `NULL`)
 
@@ -2152,10 +2152,8 @@ M*/
 -  ctx    - [optional] user-defined context for private data for the
             smoother evaluation routine (may be `NULL`)
 
-   Calling sequence of f:
-$  PetscErrorCode f(SNES snes,Vec X,Vec B,void *ctx);
-
-   Arguments of f:
+   Calling sequence of `f`:
+$  PetscErrorCode f(SNES snes, Vec X, Vec B, void *ctx)
 +  snes - the `SNES` context
 .  X - the current solution
 .  B - the right hand side vector (which may be `NULL`)
@@ -2249,7 +2247,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
 .  bp - function evaluation routine, may be `NULL`
 .  Amat - matrix with which A(x) x - bp(x) - b is to be computed
 .  Pmat - matrix from which preconditioner is computed (usually the same as `Amat`)
-.  J  - function to compute matrix values, see `SNESJacobianFunction()` for details on its calling sequence
+.  J  - function to compute matrix values, for the calling sequence see `SNESJacobianFunction()`
 -  ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
    Level: intermediate
@@ -2308,10 +2306,10 @@ PetscErrorCode SNESSetPicard(SNES snes, Vec r, PetscErrorCode (*bp)(SNES, Vec, V
 
    Output Parameters:
 +  r - the function (or `NULL`)
-.  f - the function (or `NULL`); see `SNESFunction` for calling sequence details
+.  f - the function (or `NULL`);  for calling sequence see `SNESFunction`
 .  Amat - the matrix used to defined the operation A(x) x - b(x) (or `NULL`)
 .  Pmat  - the matrix from which the preconditioner will be constructed (or `NULL`)
-.  J - the function for matrix evaluation (or `NULL`); see `SNESJacobianFunction` for calling sequence details
+.  J - the function for matrix evaluation (or `NULL`);  for calling sequence see `SNESJacobianFunction`
 -  ctx - the function context (or `NULL`)
 
    Level: advanced
@@ -2342,10 +2340,10 @@ PetscErrorCode SNESGetPicard(SNES snes, Vec *r, PetscErrorCode (**f)(SNES, Vec, 
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func (SNES snes,Vec x,void *ctx);
-
-.  f - function vector
+   Calling sequence of `func`:
+$    PetscErrorCode func(SNES snes, Vec x, void *ctx);
++  snes - the `SNES` solver
+.  x - vector to put initial guess
 -  ctx - optional user-defined function context
 
    Level: intermediate
@@ -3085,7 +3083,7 @@ PetscErrorCode SNESSetJacobian(SNES snes, Mat Amat, Mat Pmat, PetscErrorCode (*J
    Output Parameters:
 +  Amat - location to stash (approximate) Jacobian matrix (or `NULL`)
 .  Pmat - location to stash matrix used to compute the preconditioner (or `NULL`)
-.  J - location to put Jacobian function (or `NULL`), see `SNESJacobianFunction` for details on its calling sequence
+.  J - location to put Jacobian function (or `NULL`), for calling sequence see `SNESJacobianFunction`
 -  ctx - location to stash Jacobian ctx (or `NULL`)
 
    Level: advanced
@@ -3991,7 +3989,7 @@ M*/
 
    Input Parameters:
 +  snes - the `SNES` context
-.  f - the monitor function, see `SNESMonitorFunction` for the calling sequence
+.  f - the monitor function,  for the calling sequence see `SNESMonitorFunction`
 .  mctx - [optional] user-defined context for private data for the
           monitor routine (use `NULL` if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
@@ -4270,19 +4268,20 @@ PETSC_EXTERN mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
 +  a   - array to hold history, usually was set with `SNESSetConvergenceHistory()`
 .  its - integer array holds the number of linear iterations (or
          negative if not converged) for each solve.
--  na  - size of a and its
+-  na  - size of `a` and `its`
 
    Level: intermediate
 
-   Notes:
+   Note:
+   This routine is useful, e.g., when running a code for purposes
+   of accurate performance monitoring, when no I/O should be done
+   during the section of code that is being timed.
+
+   Fortran Note:
     The calling sequence for this routine in Fortran is
 .vb
     call SNESGetConvergenceHistory(SNES snes, integer na, integer ierr)
 .ve
-
-   This routine is useful, e.g., when running a code for purposes
-   of accurate performance monitoring, when no I/O should be done
-   during the section of code that is being timed.
 
 .seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESSetConvergenceHistory()`
 @*/
@@ -4307,10 +4306,10 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes, PetscReal *a[], PetscInt *it
 + snes - The nonlinear solver context
 - func - The function
 
-  Calling sequence of func:
-$ func (SNES snes, PetscInt step);
-
-. step - The current step of the iteration
+  Calling sequence of `func`:
+$ PetscErrorCode func(SNES snes, PetscInt step);
++ snes - the nonlinear solver context
+- step - The current step of the iteration
 
   Level: advanced
 
@@ -4920,7 +4919,7 @@ PetscErrorCode SNESGetSolutionUpdate(SNES snes, Vec *x)
 
    Output Parameters:
 +  r - the vector that is used to store residuals (or `NULL` if you don't want it)
-.  f - the function (or `NULL` if you don't want it); see `SNESFunction` for calling sequence details
+.  f - the function (or `NULL` if you don't want it);  for calling sequence see `SNESFunction`
 -  ctx - the function context (or `NULL` if you don't want it)
 
    Level: advanced
@@ -5074,11 +5073,11 @@ PetscErrorCode SNESGetOptionsPrefix(SNES snes, const char *prefix[])
 /*@C
   SNESRegister - Adds a method to the nonlinear solver package.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined solver
--  routine_create - routine to create method context
++  sname - name of a new user-defined solver
+-  function - routine to create method context
 
    Level: advanced
 

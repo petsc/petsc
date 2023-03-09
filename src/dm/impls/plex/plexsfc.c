@@ -899,7 +899,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
 /*@
   DMPlexSetIsoperiodicFaceSF - Express periodicity from an existing mesh
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + dm - The `DMPLEX` on which to set periodicity
@@ -934,13 +934,13 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
 /*@
   DMPlexGetIsoperiodicFaceSF - Obtain periodicity for a mesh
 
-  Logically collective
+  Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The `DMPLEX` for which to obtain periodic relation
 
-  Output Parameters:
-. face_sf - SF in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
+  Output Parameter:
+. face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
 

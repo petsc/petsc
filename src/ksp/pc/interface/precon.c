@@ -280,11 +280,11 @@ PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
    Options Database Key:
 .  -pc_use_amat <true,false> - use the amat to apply the operator
 
+   Level: intermediate
+
    Note:
    For the common case in which the linear system matrix and the matrix used to construct the
    preconditioner are identical, this routine is does nothing.
-
-   Level: intermediate
 
 .seealso: `PC`, `PCGetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
 @*/
@@ -338,11 +338,11 @@ PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg)
    Output Parameter:
 .  flg - `PETSC_TRUE` to use the Amat, `PETSC_FALSE` to use the Pmat (default is false)
 
+   Level: intermediate
+
    Note:
    For the common case in which the linear system matrix and the matrix used to construct the
    preconditioner are identical, this routine is does nothing.
-
-   Level: intermediate
 
 .seealso: `PC`, `PCSetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
 @*/
@@ -365,11 +365,11 @@ PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg)
    Output Parameter:
 .  pc - location to put the preconditioner context
 
+   Level: developer
+
    Note:
    The default preconditioner for sparse matrices is `PCILU` or `PCICC` with 0 fill on one process and block Jacobi (`PCBJACOBI`) with `PCILU` or `PCICC`
    in parallel. For dense matrices it is always `PCNONE`.
-
-   Level: developer
 
 .seealso: `PC`, `PCSetUp()`, `PCApply()`, `PCDestroy()`
 @*/
@@ -519,10 +519,10 @@ PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
    Output Parameter:
 .  y - output vector
 
+   Level: developer
+
    Note:
    Currently, this routine is implemented only for `PCICC` and `PCJACOBI` preconditioners.
-
-   Level: developer
 
 .seealso: `PC`, `PCApply()`, `PCApplySymmetricRight()`
 @*/
@@ -593,13 +593,13 @@ PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y)
    Output Parameter:
 .  y - output vector
 
+   Level: developer
+
    Note:
     For complex numbers this applies the non-Hermitian transpose.
 
    Developer Note:
     We need to implement a `PCApplyHermitianTranspose()`
-
-   Level: developer
 
 .seealso: `PC`, `PCApply()`, `PCApplyBAorAB()`, `PCApplyBAorABTranspose()`, `PCApplyTransposeExists()`
 @*/
@@ -741,11 +741,11 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
    Output Parameter:
 .  y - output vector
 
+    Level: developer
+
    Note:
     This routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
       defined by B'. This is why this has the funny form that it computes tr(B) * tr(A)
-
-    Level: developer
 
 .seealso: `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorAB()`
 @*/
@@ -826,14 +826,14 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 .  reason - the reason the apply terminated
 -  y - the solution (also contains initial guess if guesszero is `PETSC_FALSE`
 
+   Level: developer
+
    Notes:
    Most preconditioners do not support this function. Use the command
    `PCApplyRichardsonExists()` to determine if one does.
 
    Except for the `PCMG` this routine ignores the convergence tolerances
    and always runs for the number of iterations
-
-   Level: developer
 
 .seealso: `PC`, `PCApplyRichardsonExists()`
 @*/
@@ -909,10 +909,10 @@ PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
    Output Parameter:
 .  reason - the reason it failed
 
+   Level: advanced
+
    Note:
      Different ranks may have different reasons or no reason, see `PCGetFailedReason()`
-
-   Level: advanced
 
 .seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`
 @*/
@@ -1043,16 +1043,18 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 .  func - routine for modifying the submatrices
 -  ctx - optional user-defined context (may be null)
 
-   Calling sequence of func:
-$     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
-
-+  row - an array of index sets that contain the global row numbers
+   Calling sequence of `func`:
+$  PetscErrorCode func (PC pc, PetscInt nsub, IS *row, IS *col, Mat *submat, void *ctx);
++  pc - the preconditioner context
+.  row - an array of index sets that contain the global row numbers
          that comprise each local submatrix
 .  col - an array of index sets that contain the global column numbers
          that comprise each local submatrix
 .  submat - array of local submatrices
 -  ctx - optional user-defined context for private data for the
          user-defined func routine (may be null)
+
+   Level: advanced
 
    Notes:
    `PCSetModifySubMatrices()` MUST be called before `KSPSetUp()` and
@@ -1061,8 +1063,6 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
    A routine set by `PCSetModifySubMatrices()` is currently called within
    the block Jacobi (`PCBJACOBI`) and additive Schwarz (`PCASM`)
    preconditioners.  All other preconditioners ignore this routine.
-
-   Level: advanced
 
 .seealso: `PC`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
 @*/
@@ -1096,6 +1096,8 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt
 .  submat - array of local submatrices (the entries of which may
             have been modified)
 
+   Level: developer
+
    Notes:
    The user should NOT generally call this routine, as it will
    automatically be called within certain preconditioners (currently
@@ -1105,8 +1107,6 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt
    as usual; the user can then alter these (for example, to set different
    boundary conditions for each submatrix) before they are used for the
    local solves.
-
-   Level: developer
 
 .seealso: `PC`, `PCSetModifySubMatrices()`
 @*/
@@ -1132,20 +1132,20 @@ PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const I
 .  Amat - the matrix that defines the linear system
 -  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
-   Notes:
-    Passing a NULL for Amat or Pmat removes the matrix that is currently used.
+   Level: intermediate
 
-    If you wish to replace either Amat or Pmat but leave the other one untouched then
+   Notes:
+    Passing a `NULL` for `Amat` or `Pmat` removes the matrix that is currently used.
+
+    If you wish to replace either `Amat` or `Pmat` but leave the other one untouched then
     first call `KSPGetOperators()` to get the one you wish to keep, call `PetscObjectReference()`
     on it and then pass it back in in your call to `KSPSetOperators()`.
 
    More Notes about Repeated Solution of Linear Systems:
-   PETSc does NOT reset the matrix entries of either Amat or Pmat
+   PETSc does NOT reset the matrix entries of either `Amat` or `Pmat`
    to zero after a linear solve; the user is completely responsible for
    matrix assembly.  See the routine `MatZeroEntries()` if desiring to
    zero all elements of a matrix.
-
-   Level: intermediate
 
 .seealso: `PC`, `PCGetOperators()`, `MatZeroEntries()`
  @*/
@@ -1238,7 +1238,7 @@ PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
 
-   Not collective, though parallel mats are returned if pc is parallel
+   Not Collective, though parallel mats are returned if pc is parallel
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -1336,7 +1336,7 @@ PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat)
    PCGetOperatorsSet - Determines if the matrix associated with the linear system and
    possibly a different one associated with the preconditioner have been set in the `PC`.
 
-   Not collective, though the results on all processes should be the same
+   Not Collective, though the results on all processes should be the same
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -1540,11 +1540,10 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
 +   pc - the preconditioner object
 -   presolve - the function to call before the solve
 
-   Calling sequence of presolve:
-$  func(PC pc,KSP ksp)
-
-+  pc - the PC context
--  ksp - the KSP context
+   Calling sequence of `presolve`:
+$  PetscErrorCode presolve(PC pc, KSP ksp)
++  pc - the `PC` context
+-  ksp - the `KSP` context
 
    Level: developer
 
@@ -1645,7 +1644,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
    Collective
 
    Input Parameters:
-+  A - the PC context
++  A - the `PC` context
 .  obj - Optional object that provides the options prefix
 -  name - command line option
 
@@ -1670,6 +1669,8 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
 +  PC - the `PC` context
 -  viewer - optional visualization context
 
+   Level: developer
+
    Notes:
    The available visualization contexts include
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
@@ -1680,8 +1681,6 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
 
    The user can open an alternative visualization contexts with
    `PetscViewerASCIIOpen()` (output to a specified file).
-
-   Level: developer
 
 .seealso: `PC`, `PetscViewer`, `KSPView()`, `PetscViewerASCIIOpen()`
 @*/
@@ -1792,11 +1791,8 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
    Not collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined solver
--  routine_create - routine to create method context
-
-   Note:
-   `PCRegister()` may be called multiple times to add several user-defined preconditioners.
++  sname - name of a new user-defined solver
+-  function - routine to create method context
 
    Sample usage:
 .vb
@@ -1809,6 +1805,9 @@ $     PCSetType(pc,"my_solver")
 $     -pc_type my_solver
 
    Level: advanced
+
+   Note:
+   `PCRegister()` may be called multiple times to add several user-defined preconditioners.
 
 .seealso: `PC`, `PCType`, `PCRegisterAll()`
 @*/
@@ -1842,15 +1841,14 @@ static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
     Output Parameter:
 .   mat - the explicit preconditioned operator
 
+    Level: advanced
+
     Note:
     This computation is done by applying the operators to columns of the identity matrix.
     This routine is costly in general, and is recommended for use only with relatively small systems.
     Currently, this routine uses a dense matrix format when mattype == NULL
 
-    Level: advanced
-
 .seealso: `PC`, `KSPComputeOperator()`, `MatType`
-
 @*/
 PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
 {
@@ -1884,8 +1882,8 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
    Level: intermediate
 
    Note:
-   coords is an array of the dim coordinates for the nodes on
-   the local processor, of size dim*nloc.
+   `coords` is an array of the dim coordinates for the nodes on
+   the local processor, of size `dim`*`nloc`.
    If there are 108 equation on a processor
    for a displacement finite element discretization of elasticity (so
    that there are nloc = 36 = 108/3 nodes) then the array must have 108

@@ -477,7 +477,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
 /*@C
   DMPlexCreatePartitionerGraph - Create a CSR graph of point connections for the partitioner
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm      - The mesh `DM`
@@ -489,7 +489,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
 . adjacency       - Point connectivity in the graph
 - globalNumbering - A map from the local cell numbering to the global numbering used in "adjacency".  Negative indicates that the cell is a duplicate from another process.
 
-  Options Database Keys:
+  Options Database Key:
 . -dm_plex_csr_alg <mat,graph,overlap> - Choose the algorithm for computing the CSR graph
 
   Level: developer
@@ -523,7 +523,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 /*@C
   DMPlexCreateNeighborCSR - Create a mesh graph (cell-cell adjacency) in parallel CSR format.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The `DMPLEX`
@@ -722,11 +722,11 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
 /*@
   PetscPartitionerDMPlexPartition - Create a non-overlapping partition of the cells in the mesh
 
-  Collective on part
+  Collective
 
   Input Parameters:
 + part    - The `PetscPartitioner`
-. targetSection - The `PetscSection` describing the absolute weight of each partition (can be NULL)
+. targetSection - The `PetscSection` describing the absolute weight of each partition (can be `NULL`)
 - dm      - The mesh `DM`
 
   Output Parameters:
@@ -872,7 +872,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
 /*@
   DMPlexGetPartitioner - Get the mesh partitioner
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . dm - The `DM`
@@ -901,7 +901,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 /*@
   DMPlexSetPartitioner - Set the mesh partitioner
 
-  logically collective on dm
+  logically Collective
 
   Input Parameters:
 + dm - The `DM`
@@ -1625,7 +1625,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
 . useInitialGuess  - whether to use the current distribution as initial guess (only used by ParMETIS).
 - parallel         - whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
 
-  Output parameters:
+  Output parameter:
 . success          - whether the graph partitioning was successful or not, optional. Unsuccessful simply means no change to the partitioning
 
   Options Database Keys:

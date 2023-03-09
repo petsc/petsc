@@ -8,7 +8,7 @@
    PetscDrawSetCoordinates - Sets the application coordinates of the corners of
    the window (or page).
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing object
@@ -40,13 +40,13 @@ PetscErrorCode PetscDrawSetCoordinates(PetscDraw draw, PetscReal xl, PetscReal y
    Input Parameter:
 .  draw - the drawing object
 
-   Level: advanced
-
    Output Parameters:
 +  xl - the horizontal coordinate of the lower left corner of the drawing region.
 .  yl - the vertical coordinate of the lower left corner of the drawing region.
 .  xr - the horizontal coordinate of the upper right corner of the drawing region.
 -  yr - the vertical coordinate of the upper right corner of the drawing region.
+
+   Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawSetCoordinates()`
 @*/

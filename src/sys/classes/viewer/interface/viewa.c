@@ -87,7 +87,7 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
 /*@C
    PetscViewerGetFormat - Gets the current format for `PetscViewer`.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  viewer - the `PetscViewer`

@@ -917,7 +917,7 @@ M*/
   #include <petscerror.h>
   void PetscCallCXXAbort(MPI_Comm comm, ...) noexcept;
 
-  Collective on `comm`
+  Collective; No Fortran Support
 
   Input Parameters:
 + comm        - The MPI communicator to abort on
@@ -937,9 +937,6 @@ M*/
   instead.
 
   See `PetscCallCXX()` for additional discussion.
-
-  Fortran Note:
-  Not available from Fortran.
 
   Example Usage:
 .vb
@@ -1398,7 +1395,7 @@ M*/
    #include <petscsys.h>
    void PetscFunctionBegin;
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Usage:
 .vb
@@ -1407,12 +1404,10 @@ M*/
      PetscFunctionBegin;
 .ve
 
-   Notes:
-     Use `PetscFunctionBeginUser` for application codes.
-
-     Not available in Fortran
-
    Level: developer
+
+   Note:
+     Use `PetscFunctionBeginUser` for application codes.
 
 .seealso: `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPushNoCheck()`
 
@@ -1431,7 +1426,7 @@ M*/
    #include <petscsys.h>
    void PetscFunctionBeginHot;
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Usage:
 .vb
@@ -1439,9 +1434,6 @@ M*/
 
      PetscFunctionBeginHot;
 .ve
-
-   Notes:
-     Not available in Fortran
 
    Level: developer
 
@@ -1461,7 +1453,7 @@ M*/
    #include <petscsys.h>
    void PetscFunctionBeginUser;
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Usage:
 .vb
@@ -1470,17 +1462,15 @@ M*/
      PetscFunctionBeginUser;
 .ve
 
+   Level: intermediate
+
    Notes:
       Functions that incorporate this must call `PetscFunctionReturn()` instead of return except for main().
 
       May be used before `PetscInitialize()`
 
-      Not available in Fortran
-
       This is identical to `PetscFunctionBegin` except it labels the routine as a user
       routine instead of as a PETSc library routine.
-
-   Level: intermediate
 
 .seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, `PetscFunctionBeginHot`, `PetscStackPushNoCheck()`
 

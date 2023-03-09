@@ -33,7 +33,7 @@
 /*MC
     PetscCallBLAS - Calls a BLAS or LAPACK routine with error check handling
 
-    Not collective
+    Not Collective
 
     Synopsis:
    #include <petscsys.h>

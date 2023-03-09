@@ -696,17 +696,17 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
 /*@
   DMPlexTransformExtrudeGetLayers - Get the number of extruded layers.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. tr  - The DMPlexTransform
+. tr  - The `DMPlexTransform`
 
   Output Parameter:
 . layers - The number of layers
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeSetLayers()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetLayers()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *layers)
 {
@@ -722,15 +722,15 @@ PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *lay
 /*@
   DMPlexTransformExtrudeSetLayers - Set the number of extruded layers.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ tr  - The DMPlexTransform
++ tr  - The `DMPlexTransform`
 - layers - The number of layers
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeGetLayers()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetLayers()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt layers)
 {
@@ -747,17 +747,17 @@ PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt laye
 /*@
   DMPlexTransformExtrudeGetThickness - Get the total thickness of the layers
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. tr  - The DMPlexTransform
+. tr  - The `DMPlexTransform`
 
   Output Parameter:
 . thickness - The total thickness of the layers
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeSetThickness()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal *thickness)
 {
@@ -773,15 +773,15 @@ PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal 
 /*@
   DMPlexTransformExtrudeSetThickness - Set the total thickness of the layers
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ tr  - The DMPlexTransform
++ tr  - The `DMPlexTransform`
 - thickness - The total thickness of the layers
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeGetThickness()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetThickness()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal thickness)
 {
@@ -797,19 +797,28 @@ PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal 
 /*@
   DMPlexTransformExtrudeGetTensor - Get the flag to use tensor cells
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. tr  - The DMPlexTransform
+. tr  - The `DMPlexTransform`
 
   Output Parameter:
 . useTensor - The flag to use tensor cells
 
-  Note: This flag determines the orientation behavior of the created points. For example, if tensor is PETSC_TRUE, then DM_POLYTOPE_POINT_PRISM_TENSOR is made instead of DM_POLYTOPE_SEGMENT, DM_POLYTOPE_SEG_PRISM_TENSOR instead of DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_TRI_PRISM_TENSOR instead of DM_POLYTOPE_TRI_PRISM, and DM_POLYTOPE_QUAD_PRISM_TENSOR instead of DM_POLYTOPE_HEXAHEDRON.
+  Note:
+  This flag determines the orientation behavior of the created points.
+
+  For example, if tensor is `PETSC_TRUE`, then
+.vb
+  DM_POLYTOPE_POINT_PRISM_TENSOR is made instead of DM_POLYTOPE_SEGMENT,
+  DM_POLYTOPE_SEG_PRISM_TENSOR instead of DM_POLYTOPE_QUADRILATERAL,
+  DM_POLYTOPE_TRI_PRISM_TENSOR instead of DM_POLYTOPE_TRI_PRISM, and
+  DM_POLYTOPE_QUAD_PRISM_TENSOR instead of DM_POLYTOPE_HEXAHEDRON.
+.ve
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeSetTensor()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetTensor()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *useTensor)
 {
@@ -825,17 +834,25 @@ PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *us
 /*@
   DMPlexTransformExtrudeSetTensor - Set the flag to use tensor cells
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ tr  - The DMPlexTransform
++ tr  - The `DMPlexTransform`
 - useTensor - The flag for tensor cells
 
-  Note: This flag determines the orientation behavior of the created points. For example, if tensor is PETSC_TRUE, then DM_POLYTOPE_POINT_PRISM_TENSOR is made instead of DM_POLYTOPE_SEGMENT, DM_POLYTOPE_SEG_PRISM_TENSOR instead of DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_TRI_PRISM_TENSOR instead of DM_POLYTOPE_TRI_PRISM, and DM_POLYTOPE_QUAD_PRISM_TENSOR instead of DM_POLYTOPE_HEXAHEDRON.
+  Note:
+  This flag determines the orientation behavior of the created points
+  For example, if tensor is `PETSC_TRUE`, then
+.vb
+  DM_POLYTOPE_POINT_PRISM_TENSOR is made instead of DM_POLYTOPE_SEGMENT,
+  DM_POLYTOPE_SEG_PRISM_TENSOR instead of DM_POLYTOPE_QUADRILATERAL,
+  DM_POLYTOPE_TRI_PRISM_TENSOR instead of DM_POLYTOPE_TRI_PRISM, and
+  DM_POLYTOPE_QUAD_PRISM_TENSOR instead of DM_POLYTOPE_HEXAHEDRON.
+.ve
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeGetTensor()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetTensor()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool useTensor)
 {
@@ -850,17 +867,17 @@ PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool use
 /*@
   DMPlexTransformExtrudeGetSymmetric - Get the flag to extrude symmetrically from the initial surface
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. tr  - The DMPlexTransform
+. tr  - The `DMPlexTransform`
 
   Output Parameter:
 . symmetric - The flag to extrude symmetrically
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeSetSymmetric()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetSymmetric()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool *symmetric)
 {
@@ -876,15 +893,15 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
 /*@
   DMPlexTransformExtrudeSetSymmetric - Set the flag to extrude symmetrically from the initial surface
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ tr  - The DMPlexTransform
++ tr  - The `DMPlexTransform`
 - symmetric - The flag to extrude symmetrically
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeGetSymmetric()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetSymmetric()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool symmetric)
 {
@@ -899,19 +916,20 @@ PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool 
 /*@
   DMPlexTransformExtrudeGetNormal - Get the extrusion normal vector
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. tr  - The DMPlexTransform
+. tr  - The `DMPlexTransform`
 
   Output Parameter:
 . normal - The extrusion direction
 
-  Note: The user passes in an array, which is filled by the library.
+  Note:
+  The user passes in an array, which is filled by the library.
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeSetNormal()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetNormal()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal normal[])
 {
@@ -931,15 +949,15 @@ PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal nor
 /*@
   DMPlexTransformExtrudeSetNormal - Set the extrusion normal
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ tr     - The DMPlexTransform
++ tr     - The `DMPlexTransform`
 - normal - The extrusion direction
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeGetNormal()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetNormal()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscReal normal[])
 {
@@ -956,23 +974,24 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
 /*@C
   DMPlexTransformExtrudeSetNormalFunction - Set a function to determine the extrusion normal
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ tr     - The DMPlexTransform
++ tr     - The `DMPlexTransform`
 - normalFunc - A function determining the extrusion direction
 
-  Note: The calling sequence for the function is normalFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
-$ dim  - The coordinate dimension of the original mesh (usually a surface)
-$ time - The current time, or 0.
-$ x    - The location of the current normal, in the coordinate space of the original mesh
-$ r    - The extrusion replica number (layer number) of this point
-$ u    - The user provides the computed normal on output; the sign and magnitude is not significant
-$ ctx  - An optional user context
+  Calling sequence of `normalFunc`:
+$ PetscErrorCode normalFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
++ dim  - The coordinate dimension of the original mesh (usually a surface)
+. time - The current time, or 0.
+. x    - The location of the current normal, in the coordinate space of the original mesh
+. r    - The extrusion replica number (layer number) of this point
+. u    - The user provides the computed normal on output; the sign and magnitude is not significant
+- ctx  - An optional user context
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeGetNormal()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetNormal()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, PetscSimplePointFunc normalFunc)
 {
@@ -987,16 +1006,16 @@ PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, Petsc
 /*@
   DMPlexTransformExtrudeSetThicknesses - Set the thickness of each layer
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ tr  - The DMPlexTransform
++ tr  - The `DMPlexTransform`
 . Nth - The number of thicknesses
 - thickness - The array of thicknesses
 
   Level: intermediate
 
-.seealso: `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeGetThickness()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeGetThickness()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt Nth, const PetscReal thicknesses[])
 {

@@ -482,7 +482,8 @@ PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *PetscOptions
 
      For the multiplicative form the product is mat[nmat-1]*mat[nmat-2]*....*mat[0]
 
-.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCompositeGetMat()`, `MatCompositeMerge()`, `MatCompositeSetType()`, `MATCOMPOSITE`
+.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCompositeGetMat()`, `MatCompositeMerge()`, `MatCompositeSetType()`,
+          `MATCOMPOSITE`, `MatCompositeType`
 @*/
 PetscErrorCode MatCreateComposite(MPI_Comm comm, PetscInt nmat, const Mat *mats, Mat *mat)
 {
@@ -580,11 +581,13 @@ static PetscErrorCode MatCompositeSetType_Composite(Mat mat, MatCompositeType ty
    Logically Collective
 
    Input Parameters:
-.  mat - the composite matrix
++  mat - the composite matrix
+-  type - the `MatCompositeType` to use for the matrix
 
    Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeGetType()`, `MATCOMPOSITE`
+.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeGetType()`, `MATCOMPOSITE`,
+          `MatCompositeType`
 @*/
 PetscErrorCode MatCompositeSetType(Mat mat, MatCompositeType type)
 {

@@ -6,7 +6,7 @@ static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const ch
 /*@C
   PetscViewerHDF5GetGroup - Get the current HDF5 group name (full path), set with `PetscViewerHDF5PushGroup()`/`PetscViewerHDF5PopGroup()`.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -368,10 +368,10 @@ static PetscErrorCode PetscViewerHDF5GetCollective_HDF5(PetscViewer viewer, Pets
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . viewer - the `PETSCVIEWERHDF5` `PetscViewer`
 
-  Output Parameters:
+  Output Parameter:
 . flg - the flag
 
   Level: intermediate
@@ -511,7 +511,7 @@ PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer viewer, PetscBo
 /*@
   PetscViewerHDF5GetDefaultTimestepping - Get the flag for default timestepping
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -633,7 +633,7 @@ PetscErrorCode PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMo
 /*@C
   PetscViewerHDF5GetFileId - Retrieve the file id, this file ID then can be used in direct HDF5 calls
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer`
@@ -658,7 +658,7 @@ PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 /*@C
   PetscViewerHDF5PushGroup - Set the current HDF5 group for output
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -730,7 +730,7 @@ PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
 /*@
   PetscViewerHDF5PopGroup - Return the current HDF5 group for output to the previous value
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -771,7 +771,7 @@ PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer viewer, const char *
   and return this group's ID and file ID.
   If `PetscViewerHDF5GetGroup()` yields NULL, then group ID is file ID.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -819,7 +819,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, const char path[], h
 /*@C
   PetscViewerHDF5WriteGroup - Ensure the HDF5 group exists in the HDF5 file
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -848,7 +848,7 @@ PetscErrorCode PetscViewerHDF5WriteGroup(PetscViewer viewer, const char path[])
 /*@
   PetscViewerHDF5PushTimestepping - Activate timestepping mode for subsequent HDF5 reading and writing.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -885,7 +885,7 @@ PetscErrorCode PetscViewerHDF5PushTimestepping(PetscViewer viewer)
 /*@
   PetscViewerHDF5PopTimestepping - Deactivate timestepping mode for subsequent HDF5 reading and writing.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -911,7 +911,7 @@ PetscErrorCode PetscViewerHDF5PopTimestepping(PetscViewer viewer)
 /*@
   PetscViewerHDF5IsTimestepping - Ask the viewer whether it is in timestepping mode currently.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -939,7 +939,7 @@ PetscErrorCode PetscViewerHDF5IsTimestepping(PetscViewer viewer, PetscBool *flg)
 /*@
   PetscViewerHDF5IncrementTimestep - Increments current timestep for the HDF5 output. Fields are stacked in time.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -965,7 +965,7 @@ PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
 /*@
   PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time.
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -994,7 +994,7 @@ PetscErrorCode PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep)
 /*@
   PetscViewerHDF5GetTimestep - Get the current timestep for the HDF5 output. Fields are stacked in time.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . viewer - the `PetscViewer` of type `PETSCVIEWERHDF5`
@@ -1024,7 +1024,7 @@ PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep
 /*@C
   PetscDataTypeToHDF5DataType - Converts the PETSc name of a datatype to its HDF5 name.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . ptype - the PETSc datatype name (for example `PETSC_DOUBLE`)
@@ -1061,7 +1061,7 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
 /*@C
   PetscHDF5DataTypeToPetscDataType - Finds the PETSc name of a datatype from its HDF5 name
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . htype - the HDF5 datatype (for example `H5T_NATIVE_DOUBLE`, ...)
@@ -1588,13 +1588,13 @@ PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
   Input Parameter:
 . comm - the MPI communicator to share the `PETSCVIEWERHDF5` `PetscViewer`
 
-  Level: intermediate
-
   Options Database Key:
 . -viewer_hdf5_filename <name> - name of the HDF5 file
 
   Environmental variable:
 . `PETSC_VIEWER_HDF5_FILENAME` - name of the HDF5 file
+
+  Level: intermediate
 
   Note:
   Unlike almost all other PETSc routines, `PETSC_VIEWER_HDF5_()` does not return

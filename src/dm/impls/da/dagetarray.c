@@ -11,7 +11,7 @@ M*/
    DMDAVecGetArray - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Logically collective on da
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -87,7 +87,7 @@ M*/
 /*@
    DMDAVecRestoreArray - Restores a multiple dimension array obtained with `DMDAVecGetArray()`
 
-   Logically collective on da
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -147,7 +147,7 @@ M*/
    DMDAVecGetArrayWrite - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Logically collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -228,7 +228,7 @@ M*/
 /*@
    DMDAVecRestoreArrayWrite - Restores a multiple dimension array obtained with `DMDAVecGetArrayWrite()`
 
-   Logically collective on vec
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -285,7 +285,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
    DMDAVecGetArrayDOF - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -347,7 +347,7 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
 /*@
    DMDAVecRestoreArrayDOF - Restores a multiple dimension array obtained with `DMDAVecGetArrayDOF()`
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -403,7 +403,7 @@ M*/
    DMDAVecGetArrayRead - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -478,7 +478,7 @@ M*/
 /*@
    DMDAVecRestoreArrayRead - Restores a multiple dimension array obtained with `DMDAVecGetArrayRead()`
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  da - the distributed array

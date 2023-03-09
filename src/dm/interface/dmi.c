@@ -86,23 +86,24 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
 }
 
 /*@C
-  DMCreateSectionSubDM - Returns an IS and subDM+subSection encapsulating a subproblem defined by the fields in a PetscSection in the DM.
+  DMCreateSectionSubDM - Returns an `IS` and subDM+subSection encapsulating a subproblem defined by the fields in a `PetscSection` in the `DM`.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ dm        - The DM object
++ dm        - The `DM` object
 . numFields - The number of fields in this subproblem
 - fields    - The field numbers of the selected fields
 
   Output Parameters:
 + is - The global indices for the subproblem
-- subdm - The DM for the subproblem, which must already have be cloned from dm
-
-  Note: This handles all information in the DM class and the PetscSection. This is used as the basis for creating subDMs in specialized classes,
-  such as Plex and Forest.
+- subdm - The `DM` for the subproblem, which must already have be cloned from `dm`
 
   Level: intermediate
+
+  Note:
+  This handles all information in the `DM` class and the `PetscSection`. This is used as the basis for creating subDMs in specialized classes,
+  such as `DMPLEX` and `DMFOREST`
 
 .seealso `DMCreateSubDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
@@ -299,22 +300,23 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 }
 
 /*@C
-  DMCreateSectionSuperDM - Returns an arrays of ISes and DM+Section encapsulating a superproblem defined by the DM+Sections passed in.
+  DMCreateSectionSuperDM - Returns an arrays of `IS` and DM+Section encapsulating a superproblem defined by the DM+Sections passed in.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ dms - The DM objects
-- len - The number of DMs
++ dms - The `DM` objects
+- len - The number of `DM`s
 
   Output Parameters:
-+ is - The global indices for the subproblem, or NULL
-- superdm - The DM for the superproblem, which must already have be cloned
-
-  Note: This handles all information in the DM class and the PetscSection. This is used as the basis for creating subDMs in specialized classes,
-  such as Plex and Forest.
++ is - The global indices for the subproblem, or `NULL`
+- superdm - The `DM` for the superproblem, which must already have be cloned
 
   Level: intermediate
+
+  Note:
+  This handles all information in the `DM` class and the `PetscSection`. This is used as the basis for creating subDMs in specialized classes,
+  such as `DMPLEX` and `DMFOREST`
 
 .seealso `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/

@@ -484,12 +484,13 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx &genCtx, PetscI
   Input Parameters:
 + comm - The communicator for the DM object
 . dim - The spatial dimension
+. useSimplex- use a simplex mesh
 . bounds - The bounds of the box specified with [x-left, x-right, y-bottom, y-top, z-bottom, z-top] depending on the spatial dimension
 . nele - The number of discrete elements in each direction
-- user_nghost - The number of ghosted layers needed in the partitioned mesh
+- nghost - The number of ghosted layers needed in the partitioned mesh
 
   Output Parameter:
-. dm  - The DM object
+. dm  - The `DM` object
 
   Level: beginner
 
@@ -819,6 +820,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
   Input Parameters:
 + comm - The communicator for the DM object
 . dim - The spatial dimension
+. nghost - The number of ghosted layers needed in the partitioned mesh
 . filename - The name of the mesh file to be loaded
 - usrreadopts - The options string to read a MOAB mesh.
 

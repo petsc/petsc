@@ -28,7 +28,7 @@ PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[])
 /*@C
    KSPPythonGetType - Get the type of a `KSP` object implemented in Python.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  ksp - the linear solver `KSP` context.

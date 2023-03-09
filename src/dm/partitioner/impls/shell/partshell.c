@@ -146,17 +146,17 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 /*@C
   PetscPartitionerShellSetPartition - Set an artificial partition for a mesh
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameters:
-+ part   - The PetscPartitioner
++ part   - The `PetscPartitioner`
 . size   - The number of partitions
-. sizes  - array of length size (or NULL) providing the number of points in each partition
-- points - array of length sum(sizes) (may be NULL iff sizes is NULL), a permutation of the points that groups those assigned to each partition in order (i.e., partition 0 first, partition 1 next, etc.)
+. sizes  - array of length size (or `NULL`) providing the number of points in each partition
+- points - array of length sum(sizes) (may be `NULL` iff sizes is `NULL`), a permutation of the points that groups those assigned to each partition in order (i.e., partition 0 first, partition 1 next, etc.)
 
   Level: developer
 
-  Notes:
+  Note:
     It is safe to free the sizes and points arrays after use in this routine.
 
 .seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
@@ -186,10 +186,10 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 /*@
   PetscPartitionerShellSetRandom - Set the flag to use a random partition
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameters:
-+ part   - The PetscPartitioner
++ part   - The `PetscPartitioner`
 - random - The flag to use a random partition
 
   Level: intermediate
@@ -209,10 +209,10 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
 /*@
   PetscPartitionerShellGetRandom - get the flag to use a random partition
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameter:
-. part   - The PetscPartitioner
+. part   - The `PetscPartitioner`
 
   Output Parameter:
 . random - The flag to use a random partition

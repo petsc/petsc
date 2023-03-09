@@ -3415,8 +3415,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
    (the default parallel PETSc format). This matrix will ultimately pushed down
    to NVIDIA GPUs and use the CuSPARSE library for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
-   the parameter nz (or the array nnz).  By setting these parameters accurately,
-   performance during matrix assembly can be increased by more than a factor of 50.
+   the parameter `nz` (or the array `nnz`).
 
    Collective
 
@@ -3424,9 +3423,8 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
 +  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
-.  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or `NULL`
+.  nz - number of nonzeros per row (same for all rows), ignored if `nnz` is provide
+-  nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
@@ -3438,22 +3436,14 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
    MatXXXXSetPreallocation() paradgm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   If `nnz` is given then `nz` is ignored
-
    The AIJ format, also called
    compressed row storage, is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
+   either one (as in Fortran) or zero.
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
-   allocation.  For large problems you MUST preallocate memory or you
-   will get TERRIBLE performance, see the users' manual chapter on matrices.
-
-   By default, this format uses inodes (identical nodes) when possible, to
-   improve numerical efficiency of matrix-vector products and solves. We
-   search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
+   allocation.
 
 .seealso: [](chapter_matrices), `Mat`, `MATSEQAIJCUSPARSE`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATSEQAIJCUSPARSE`, `MATAIJCUSPARSE`
 @*/
@@ -4318,8 +4308,8 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
 -   compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
 
     Output Parameters:
-+   ia - the CSR row pointers
--   ja - the CSR column indices
++   i - the CSR row pointers
+-   j - the CSR column indices
 
     Level: developer
 
@@ -4364,20 +4354,21 @@ PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const int **i
     Input Parameters:
 +   A - the matrix
 .   compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
-.   ia - the CSR row pointers
--   ja - the CSR column indices
+.   i - the CSR row pointers
+-   j - the CSR column indices
 
     Level: developer
 
 .seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetIJ()`
 @*/
-PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool, const int **i, const int **j)
+PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const int **i, const int **j)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscCheckTypeName(A, MATSEQAIJCUSPARSE);
   if (i) *i = NULL;
   if (j) *j = NULL;
+  (void)compressed;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

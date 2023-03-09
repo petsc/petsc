@@ -28,7 +28,7 @@ PetscErrorCode PCPythonSetType(PC pc, const char pyname[])
 /*@C
    PCPythonGetType - Get the type of a `PC` object implemented in Python, a `PCPYTHON`.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  pc - the preconditioner (`PC`) context.

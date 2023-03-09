@@ -3,16 +3,16 @@
 #include "../src/vec/vec/utils/tagger/impls/andor.h"
 
 /*@C
-  VecTaggerOrGetSubs - Get the sub VecTaggers whose union defines the outer VecTagger
+  VecTaggerOrGetSubs - Get the sub `VecTagger`s whose union defines the outer `VecTagger`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. tagger - the VecTagger context
+. tagger - the `VecTagger` context
 
   Output Parameters:
-+ nsubs - the number of sub VecTaggers
-- subs - the sub VecTaggers
++ nsubs - the number of sub `VecTagger`s
+- subs - the sub `VecTagger`s
 
   Level: advanced
 
@@ -26,14 +26,14 @@ PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger *
 }
 
 /*@C
-  VecTaggerOrSetSubs - Set the sub VecTaggers whose union defines the outer VecTagger
+  VecTaggerOrSetSubs - Set the sub `VecTagger`s whose union defines the outer `VecTagger`
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
-+ tagger - the VecTagger context
-. nsubs - the number of sub VecTaggers
-- subs - the sub VecTaggers
++ tagger - the `VecTagger` context
+. nsubs - the number of sub `VecTagger`s
+- subs - the sub `VecTagger`s
 
   Level: advanced
 

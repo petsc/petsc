@@ -1447,7 +1447,7 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
 /*@C
   TSRosWSetType - Set the type of Rosenbrock-W, `TSROSW`, scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -1469,7 +1469,7 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
 /*@C
   TSRosWGetType - Get the type of Rosenbrock-W scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  ts - timestepping context
@@ -1492,7 +1492,7 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
 /*@C
   TSRosWSetRecomputeJacobian - Set whether to recompute the Jacobian at each stage. The default is to update the Jacobian once per step.
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context

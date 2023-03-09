@@ -175,9 +175,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
    the matrix-vector product. At the cost of increased storage, the `MATSEQAIJ` formatted
    matrix can be copied to a format in which pieces of the matrix are
    stored in ELLPACK format, allowing the vectorized matrix multiply
-   routine to use stride-1 memory accesses.  As with the `MATSEQAIJ` type, it is
-   important to preallocate matrix storage in order to get good assembly
-   performance.
+   routine to use stride-1 memory accesses.
 
    Collective
 
@@ -185,7 +183,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 +  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
-.  nz - number of nonzeros per row (same for all rows)
+.  nz - number of nonzeros per row (same for all rows), ignored if `nnz` is given
 -  nnz - array containing the number of nonzeros in the various rows
          (possibly different for each row) or `NULL`
 
@@ -193,9 +191,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 .  A - the matrix
 
    Level: intermediate
-
-   Note:
-   If `nnz` is given then `nz` is ignored
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/

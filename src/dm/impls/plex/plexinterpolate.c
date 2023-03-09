@@ -1090,22 +1090,20 @@ static PetscErrorCode DMPlexAddSharedFace_Private(DM dm, PetscSection candidateS
 }
 
 /*@
-  DMPlexInterpolatePointSF - Insert interpolated points in the overlap into the PointSF in parallel, following local interpolation
+  DMPlexInterpolatePointSF - Insert interpolated points in the overlap into the `PointSF` in parallel, following local interpolation
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ dm      - The interpolated DM
-- pointSF - The initial SF without interpolated points
-
-  Output Parameter:
-. pointSF - The SF including interpolated points
++ dm      - The interpolated `DMPLEX`
+- pointSF - The initial `PetscSF` without interpolated points
 
   Level: developer
 
-   Note: All debugging for this process can be turned on with the options: -dm_interp_pre_view -petscsf_interp_pre_view -petscsection_interp_candidate_view -petscsection_interp_candidate_remote_view -petscsection_interp_claim_view -petscsf_interp_pre_view -dmplex_interp_debug
+   Note:
+   Debugging for this process can be turned on with the options: `-dm_interp_pre_view` `-petscsf_interp_pre_view` `-petscsection_interp_candidate_view` `-petscsection_interp_candidate_remote_view` `-petscsection_interp_claim_view` `-petscsf_interp_pre_view` `-dmplex_interp_debug`
 
-.seealso: `DMPlexInterpolate()`, `DMPlexUninterpolate()`
+.seealso: `DMPLEX`, `DMPlexInterpolate()`, `DMPlexUninterpolate()`
 @*/
 PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
 {
@@ -1442,24 +1440,23 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
 /*@
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
-  Collective on dm
+  Collective
 
-  Input Parameters:
-+ dm - The DMPlex object with only cells and vertices
-- dmInt - The interpolated DM
+  Input Parameter:
+. dm - The `DMPLEX` object with only cells and vertices
 
   Output Parameter:
-. dmInt - The complete DMPlex object
+. dmInt - The complete `DMPLEX` object
 
   Level: intermediate
 
-  Notes:
+  Note:
     Labels and coordinates are copied.
 
-  Developer Notes:
-    It sets plex->interpolated = DMPLEX_INTERPOLATED_FULL.
+  Developer Note:
+    It sets plex->interpolated = `DMPLEX_INTERPOLATED_FULL`.
 
-.seealso: `DMPlexUninterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
+.seealso: `DMPLEX`, `DMPlexUninterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
@@ -1522,19 +1519,20 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 /*@
   DMPlexCopyCoordinates - Copy coordinates from one mesh to another with the same vertices
 
-  Collective on dmA
+  Collective
 
   Input Parameter:
-. dmA - The DMPlex object with initial coordinates
+. dmA - The `DMPLEX` object with initial coordinates
 
   Output Parameter:
-. dmB - The DMPlex object with copied coordinates
+. dmB - The `DMPLEX` object with copied coordinates
 
   Level: intermediate
 
-  Note: This is typically used when adding pieces other than vertices to a mesh
+  Note:
+  This is typically used when adding pieces other than vertices to a mesh
 
-.seealso: `DMCopyLabels()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMGetCoordinateSection()`
+.seealso: `DMPLEX`, `DMCopyLabels()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMGetCoordinateSection()`
 @*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 {
@@ -1667,23 +1665,23 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 /*@
   DMPlexUninterpolate - Take in a mesh with all intermediate faces, edges, etc. and return a cell-vertex mesh
 
-  Collective on dm
+  Collective
 
   Input Parameter:
-. dm - The complete DMPlex object
+. dm - The complete `DMPLEX` object
 
   Output Parameter:
-. dmUnint - The DMPlex object with only cells and vertices
+. dmUnint - The `DMPLEX` object with only cells and vertices
 
   Level: intermediate
 
-  Notes:
+  Note:
     It does not copy over the coordinates.
 
-  Developer Notes:
-    It sets plex->interpolated = DMPLEX_INTERPOLATED_NONE.
+  Developer Note:
+  Sets plex->interpolated = `DMPLEX_INTERPOLATED_NONE`.
 
-.seealso: `DMPlexInterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
+.seealso: `DMPLEX`, `DMPlexInterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {
@@ -1834,38 +1832,38 @@ finish:
 }
 
 /*@
-  DMPlexIsInterpolated - Find out to what extent the DMPlex is topologically interpolated.
+  DMPlexIsInterpolated - Find out to what extent the `DMPLEX` is topologically interpolated.
 
   Not Collective
 
   Input Parameter:
-. dm      - The DM object
+. dm      - The `DMPLEX` object
 
   Output Parameter:
-. interpolated - Flag whether the DM is interpolated
+. interpolated - Flag whether the `DM` is interpolated
 
   Level: intermediate
 
   Notes:
-  Unlike DMPlexIsInterpolatedCollective(), this is NOT collective
+  Unlike `DMPlexIsInterpolatedCollective()`, this is NOT collective
   so the results can be different on different ranks in special cases.
-  However, DMPlexInterpolate() guarantees the result is the same on all.
+  However, `DMPlexInterpolate()` guarantees the result is the same on all.
 
-  Unlike DMPlexIsInterpolatedCollective(), this cannot return DMPLEX_INTERPOLATED_MIXED.
+  Unlike `DMPlexIsInterpolatedCollective()`, this cannot return `DMPLEX_INTERPOLATED_MIXED`.
 
   Developer Notes:
-  Initially, plex->interpolated = DMPLEX_INTERPOLATED_INVALID.
+  Initially, plex->interpolated = `DMPLEX_INTERPOLATED_INVALID`.
 
-  If plex->interpolated == DMPLEX_INTERPOLATED_INVALID, DMPlexIsInterpolated_Internal() is called.
+  If plex->interpolated == `DMPLEX_INTERPOLATED_INVALID`, `DMPlexIsInterpolated_Internal()` is called.
   It checks the actual topology and sets plex->interpolated on each rank separately to one of
-  DMPLEX_INTERPOLATED_NONE, DMPLEX_INTERPOLATED_PARTIAL or DMPLEX_INTERPOLATED_FULL.
+  `DMPLEX_INTERPOLATED_NONE`, `DMPLEX_INTERPOLATED_PARTIAL` or `DMPLEX_INTERPOLATED_FULL`.
 
-  If plex->interpolated != DMPLEX_INTERPOLATED_INVALID, this function just returns plex->interpolated.
+  If plex->interpolated != `DMPLEX_INTERPOLATED_INVALID`, this function just returns plex->interpolated.
 
-  DMPlexInterpolate() sets plex->interpolated = DMPLEX_INTERPOLATED_FULL,
-  and DMPlexUninterpolate() sets plex->interpolated = DMPLEX_INTERPOLATED_NONE.
+  `DMPlexInterpolate()` sets plex->interpolated = `DMPLEX_INTERPOLATED_FULL`,
+  and DMPlexUninterpolate() sets plex->interpolated = `DMPLEX_INTERPOLATED_NONE`.
 
-.seealso: `DMPlexInterpolate()`, `DMPlexIsInterpolatedCollective()`
+.seealso: `DMPLEX`, `DMPlexInterpolate()`, `DMPlexIsInterpolatedCollective()`
 @*/
 PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
 {
@@ -1887,34 +1885,34 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
 }
 
 /*@
-  DMPlexIsInterpolatedCollective - Find out to what extent the DMPlex is topologically interpolated (in collective manner).
+  DMPlexIsInterpolatedCollective - Find out to what extent the `DMPLEX` is topologically interpolated (in collective manner).
 
   Collective
 
   Input Parameter:
-. dm      - The DM object
+. dm      - The `DMPLEX` object
 
   Output Parameter:
-. interpolated - Flag whether the DM is interpolated
+. interpolated - Flag whether the `DM` is interpolated
 
   Level: intermediate
 
   Notes:
-  Unlike DMPlexIsInterpolated(), this is collective so the results are guaranteed to be the same on all ranks.
+  Unlike `DMPlexIsInterpolated()`, this is collective so the results are guaranteed to be the same on all ranks.
 
-  This function will return DMPLEX_INTERPOLATED_MIXED if the results of DMPlexIsInterpolated() are different on different ranks.
+  This function will return `DMPLEX_INTERPOLATED_MIXED` if the results of `DMPlexIsInterpolated()` are different on different ranks.
 
   Developer Notes:
-  Initially, plex->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID.
+  Initially, plex->interpolatedCollective = `DMPLEX_INTERPOLATED_INVALID`.
 
-  If plex->interpolatedCollective == DMPLEX_INTERPOLATED_INVALID, this function calls DMPlexIsInterpolated() which sets plex->interpolated.
-  MPI_Allreduce() is then called and collectively consistent flag plex->interpolatedCollective is set and returned;
-  if plex->interpolated varies on different ranks, plex->interpolatedCollective = DMPLEX_INTERPOLATED_MIXED,
+  If plex->interpolatedCollective == `DMPLEX_INTERPOLATED_INVALID`, this function calls `DMPlexIsInterpolated()` which sets plex->interpolated.
+  `MPI_Allreduce()` is then called and collectively consistent flag plex->interpolatedCollective is set and returned;
+  if plex->interpolated varies on different ranks, plex->interpolatedCollective = `DMPLEX_INTERPOLATED_MIXED`,
   otherwise sets plex->interpolatedCollective = plex->interpolated.
 
-  If plex->interpolatedCollective != DMPLEX_INTERPOLATED_INVALID, this function just returns plex->interpolatedCollective.
+  If plex->interpolatedCollective != `DMPLEX_INTERPOLATED_INVALID`, this function just returns plex->interpolatedCollective.
 
-.seealso: `DMPlexInterpolate()`, `DMPlexIsInterpolated()`
+.seealso: `DMPLEX`, `DMPlexInterpolate()`, `DMPlexIsInterpolated()`
 @*/
 PetscErrorCode DMPlexIsInterpolatedCollective(DM dm, DMPlexInterpolatedFlag *interpolated)
 {

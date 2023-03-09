@@ -104,17 +104,17 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
 
   Input Parameters:
 + dm - The original `DM`
-- val - The marker value, or PETSC_DETERMINE to use some value in the closure (or 1 if none are found)
+- val - The marker value, or `PETSC_DETERMINE` to use some value in the closure (or 1 if none are found)
 
   Output Parameter:
-. label - The DMLabel marking boundary faces with the given value
-
-  Note:
-  This function will use the point `PetscSF` from the input `DM` to exclude points on the partition boundary from being marked, unless the partition overlap is greater than zero. If you also wish to mark the partition boundary, you can use `DMSetPointSF()` to temporarily set it to NULL, and then reset it to the original object after the call.
+. label - The `DMLabel` marking boundary faces with the given value
 
   Level: developer
 
-.seealso: `DMLabelCreate()`, `DMCreateLabel()`
+  Note:
+  This function will use the point `PetscSF` from the input `DM` to exclude points on the partition boundary from being marked, unless the partition overlap is greater than zero. If you also wish to mark the partition boundary, you can use `DMSetPointSF()` to temporarily set it to `NULL`, and then reset it to the original object after the call.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMLabelCreate()`, `DMCreateLabel()`
 @*/
 PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
 {
@@ -211,15 +211,15 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
   DMPlexLabelComplete - Starting with a label marking points on a surface, we add the transitive closure to the surface
 
   Input Parameters:
-+ dm - The DM
-- label - A DMLabel marking the surface points
++ dm - The `DM`
+- label - A `DMLabel` marking the surface points
 
   Output Parameter:
-. label - A DMLabel marking all surface points in the transitive closure
+. label - A `DMLabel` marking all surface points in the transitive closure
 
   Level: developer
 
-.seealso: `DMPlexLabelCohesiveComplete()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
 {
@@ -232,17 +232,18 @@ PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
   DMPlexLabelAddCells - Starting with a label marking points on a surface, we add a cell for each point
 
   Input Parameters:
-+ dm - The DM
-- label - A DMLabel marking the surface points
++ dm - The `DM`
+- label - A `DMLabel` marking the surface points
 
   Output Parameter:
-. label - A DMLabel incorporating cells
+. label - A `DMLabel` incorporating cells
 
   Level: developer
 
-  Note: The cells allow FEM boundary conditions to be applied using the cell geometry
+  Note:
+  The cells allow FEM boundary conditions to be applied using the cell geometry
 
-.seealso: `DMPlexLabelAddFaceCells()`, `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexLabelAddFaceCells()`, `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
 {
@@ -302,17 +303,18 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
   DMPlexLabelAddFaceCells - Starting with a label marking faces on a surface, we add a cell for each face
 
   Input Parameters:
-+ dm - The DM
-- label - A DMLabel marking the surface points
++ dm - The `DM`
+- label - A `DMLabel` marking the surface points
 
   Output Parameter:
-. label - A DMLabel incorporating cells
+. label - A `DMLabel` incorporating cells
 
   Level: developer
 
-  Note: The cells allow FEM boundary conditions to be applied using the cell geometry
+  Note:
+  The cells allow FEM boundary conditions to be applied using the cell geometry
 
-.seealso: `DMPlexLabelAddCells()`, `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexLabelAddCells()`, `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
 {
@@ -362,17 +364,18 @@ PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
   DMPlexLabelClearCells - Remove cells from a label
 
   Input Parameters:
-+ dm - The DM
-- label - A DMLabel marking surface points and their adjacent cells
++ dm - The `DM`
+- label - A `DMLabel` marking surface points and their adjacent cells
 
   Output Parameter:
-. label - A DMLabel without cells
+. label - A `DMLabel` without cells
 
   Level: developer
 
-  Note: This undoes DMPlexLabelAddCells() or DMPlexLabelAddFaceCells()
+  Note:
+  This undoes `DMPlexLabelAddCells()` or `DMPlexLabelAddFaceCells()`
 
-.seealso: `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`, `DMPlexLabelAddCells()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`, `DMPlexLabelAddCells()`
 @*/
 PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label)
 {
@@ -957,21 +960,22 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
 /*@C
   DMPlexConstructGhostCells - Construct ghost cells which connect to every boundary face
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ dm - The original DM
-- labelName - The label specifying the boundary faces, or "Face Sets" if this is NULL
++ dm - The original `DM`
+- labelName - The label specifying the boundary faces, or "Face Sets" if this is `NULL`
 
   Output Parameters:
-+ numGhostCells - The number of ghost cells added to the DM
-- dmGhosted - The new DM
-
-  Note: If no label exists of that name, one will be created marking all boundary faces
++ numGhostCells - The number of ghost cells added to the `DM`
+- dmGhosted - The new `DM`
 
   Level: developer
 
-.seealso: `DMCreate()`
+  Note:
+  If no label exists of that name, one will be created marking all boundary faces
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt *numGhostCells, DM *dmGhosted)
 {
@@ -1851,19 +1855,19 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
 /*@C
   DMPlexConstructCohesiveCells - Construct cohesive cells which split the face along an internal interface
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ dm - The original DM
-- label - The label specifying the boundary faces (this could be auto-generated)
++ dm - The original `DM`
+- label - The `DMLabel` specifying the boundary faces (this could be auto-generated)
 
   Output Parameters:
-+ splitLabel - The label containing the split points, or NULL if no output is desired
-- dmSplit - The new DM
++ splitLabel - The `DMLabel` containing the split points, or `NULL` if no output is desired
+- dmSplit - The new `DM`
 
   Level: developer
 
-.seealso: `DMCreate()`, `DMPlexLabelCohesiveComplete()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DMLabel splitLabel, DM *dmSplit)
 {
@@ -2019,21 +2023,22 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
   to complete the surface
 
   Input Parameters:
-+ dm     - The DM
-. label  - A DMLabel marking the surface
-. blabel - A DMLabel marking the vertices on the boundary which will not be duplicated, or NULL to find them automatically
-. bvalue - Value of DMLabel marking the vertices on the boundary
++ dm     - The `DM`
+. label  - A `DMLabel` marking the surface
+. blabel - A `DMLabel` marking the vertices on the boundary which will not be duplicated, or `NULL` to find them automatically
+. bvalue - Value of `DMLabel` marking the vertices on the boundary
 . flip   - Flag to flip the submesh normal and replace points on the other side
-- subdm  - The subDM associated with the label, or NULL
+- subdm  - The `DM` associated with the label, or `NULL`
 
   Output Parameter:
-. label - A DMLabel marking all surface points
-
-  Note: The vertices in blabel are called "unsplit" in the terminology from hybrid cell creation.
+. label - A `DMLabel` marking all surface points
 
   Level: developer
 
-.seealso: `DMPlexConstructCohesiveCells()`, `DMPlexLabelComplete()`
+  Note:
+  The vertices in blabel are called "unsplit" in the terminology from hybrid cell creation.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexConstructCohesiveCells()`, `DMPlexLabelComplete()`
 @*/
 PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscInt bvalue, PetscBool flip, DM subdm)
 {
@@ -2264,21 +2269,24 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
 /*@
   DMPlexCreateHybridMesh - Create a mesh with hybrid cells along an internal interface
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ dm - The original DM
++ dm - The original `DM`
 . label - The label specifying the interface vertices
 . bdlabel - The optional label specifying the interface boundary vertices
 - bdvalue - Value of optional label specifying the interface boundary vertices
 
   Output Parameters:
-+ hybridLabel - The label fully marking the interface, or NULL if no output is desired
-. splitLabel - The label containing the split points, or NULL if no output is desired
-. dmInterface - The new interface DM, or NULL
-- dmHybrid - The new DM with cohesive cells
++ hybridLabel - The label fully marking the interface, or `NULL` if no output is desired
+. splitLabel - The label containing the split points, or `NULL` if no output is desired
+. dmInterface - The new interface `DM`, or `NULL`
+- dmHybrid - The new `DM` with cohesive cells
 
-  Note: The hybridLabel indicates what parts of the original mesh impinged on the division surface. For points
+  Level: developer
+
+  Note:
+  The hybridLabel indicates what parts of the original mesh impinged on the division surface. For points
   directly on the division surface, they are labeled with their dimension, so an edge 7 on the division surface would be
   7 (1) in hybridLabel. For points that impinge from the positive side, they are labeled with 100+dim, so an edge 6 with
   one vertex 3 on the surface would be 6 (101) and 3 (0) in hybridLabel. If an edge 9 from the negative side of the
@@ -2288,12 +2296,10 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
   mesh. The label value is $\pm 100+dim$ for each point. For example, if two edges 10 and 14 in the hybrid resulting from
   splitting an edge in the original mesh, you would have 10 (101) and 14 (-101) in the splitLabel.
 
-  The dmInterface is a DM built from the original division surface. It has a label which can be retrieved using
-  DMPlexGetSubpointMap() which maps each point back to the point in the surface of the original mesh.
+  The dmInterface is a `DM` built from the original division surface. It has a label which can be retrieved using
+  `DMPlexGetSubpointMap()` which maps each point back to the point in the surface of the original mesh.
 
-  Level: developer
-
-.seealso: `DMPlexConstructCohesiveCells()`, `DMPlexLabelCohesiveComplete()`, `DMPlexGetSubpointMap()`, `DMCreate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexConstructCohesiveCells()`, `DMPlexLabelCohesiveComplete()`, `DMPlexGetSubpointMap()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, PetscInt bdvalue, DMLabel *hybridLabel, DMLabel *splitLabel, DM *dmInterface, DM *dmHybrid)
 {
@@ -2903,7 +2909,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
   DMPlexGetOrientedFace - Given a cell and a face, as a set of vertices, return the oriented face, as a set of vertices,
   in faceVertices. The orientation is such that the face normal points out of the cell
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dm           - The original mesh
@@ -2916,11 +2922,11 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
 
   Output Parameters:
 + faceVertices - The face vertices properly oriented
-- posOriented  - PETSC_TRUE if the face was oriented with outward normal
+- posOriented  - `PETSC_TRUE` if the face was oriented with outward normal
 
   Level: developer
 
-.seealso: `DMPlexGetCone()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCone()`
 @*/
 PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, const PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
@@ -2955,15 +2961,15 @@ PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, co
 /*
   DMPlexInsertFace_Internal - Puts a face into the mesh
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-  + dm              - The DMPlex
+  + dm              - The `DMPLEX`
   . numFaceVertex   - The number of vertices in the face
-  . faceVertices    - The vertices in the face for dm
+  . faceVertices    - The vertices in the face for `dm`
   . subfaceVertices - The vertices in the face for subdm
-  . numCorners      - The number of vertices in the cell
-  . cell            - A cell in dm containing the face
+  . numCorners      - The number of vertices in the `cell`
+  . cell            - A cell in `dm` containing the face
   . subcell         - A cell in subdm containing the face
   . firstFace       - First face in the mesh
   - newFacePoint    - Next face in the mesh
@@ -3591,18 +3597,19 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
 
   Input Parameters:
 + dm           - The original mesh
-. vertexLabel  - The DMLabel marking points contained in the surface
+. vertexLabel  - The `DMLabel` marking points contained in the surface
 . value        - The label value to use
-- markedFaces  - PETSC_TRUE if surface faces are marked in addition to vertices, PETSC_FALSE if only vertices are marked
+- markedFaces  - `PETSC_TRUE` if surface faces are marked in addition to vertices, `PETSC_FALSE` if only vertices are marked
 
   Output Parameter:
 . subdm - The surface mesh
 
-  Note: This function produces a DMLabel mapping original points in the submesh to their depth. This can be obtained using DMPlexGetSubpointMap().
-
   Level: developer
 
-.seealso: `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`
+  Note:
+  This function produces a `DMLabel` mapping original points in the submesh to their depth. This can be obtained using `DMPlexGetSubpointMap()`.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DM *subdm)
 {
@@ -3846,22 +3853,23 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 }
 
 /*@C
-  DMPlexCreateCohesiveSubmesh - Extract from a mesh with cohesive cells the hypersurface defined by one face of the cells. Optionally, a Label can be given to restrict the cells.
+  DMPlexCreateCohesiveSubmesh - Extract from a mesh with cohesive cells the hypersurface defined by one face of the cells. Optionally, a label can be given to restrict the cells.
 
   Input Parameters:
 + dm          - The original mesh
 . hasLagrange - The mesh has Lagrange unknowns in the cohesive cells
-. label       - A label name, or NULL
+. label       - A label name, or `NULL`
 - value  - A label value
 
   Output Parameter:
 . subdm - The surface mesh
 
-  Note: This function produces a DMLabel mapping original points in the submesh to their depth. This can be obtained using DMPlexGetSubpointMap().
-
   Level: developer
 
-.seealso: `DMPlexGetSubpointMap()`, `DMPlexCreateSubmesh()`
+  Note:
+  This function produces a `DMLabel` mapping original points in the submesh to their depth. This can be obtained using `DMPlexGetSubpointMap()`.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetSubpointMap()`, `DMPlexCreateSubmesh()`
 @*/
 PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const char label[], PetscInt value, DM *subdm)
 {
@@ -3891,18 +3899,18 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 
   Input Parameters:
 + dm        - The original mesh
-. cellLabel - The DMLabel marking cells contained in the new mesh
+. cellLabel - The `DMLabel` marking cells contained in the new mesh
 - value     - The label value to use
 
   Output Parameter:
 . subdm - The new mesh
 
-  Notes:
-  This function produces a `DMLabel` mapping original points in the submesh to their depth. This can be obtained using `DMPlexGetSubpointMap()`.
-
   Level: developer
 
-.seealso: `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`, `DMPlexCreateSubmesh()`
+  Note:
+  This function produces a `DMLabel` mapping original points in the submesh to their depth. This can be obtained using `DMPlexGetSubpointMap()`.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`, `DMPlexCreateSubmesh()`
 @*/
 PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
 {
@@ -3944,17 +3952,17 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
 }
 
 /*@
-  DMPlexGetSubpointMap - Returns a DMLabel with point dimension as values
+  DMPlexGetSubpointMap - Returns a `DMLabel` with point dimension as values
 
   Input Parameter:
-. dm - The submesh DM
+. dm - The submesh `DM`
 
   Output Parameter:
-. subpointMap - The DMLabel of all the points from the original mesh in this submesh, or NULL if this is not a submesh
+. subpointMap - The `DMLabel` of all the points from the original mesh in this submesh, or `NULL` if this is not a submesh
 
   Level: developer
 
-.seealso: `DMPlexCreateSubmesh()`, `DMPlexGetSubpointIS()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSubmesh()`, `DMPlexGetSubpointIS()`
 @*/
 PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 {
@@ -3966,17 +3974,18 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 }
 
 /*@
-  DMPlexSetSubpointMap - Sets the DMLabel with point dimension as values
+  DMPlexSetSubpointMap - Sets the `DMLabel` with point dimension as values
 
   Input Parameters:
-+ dm - The submesh DM
-- subpointMap - The DMLabel of all the points from the original mesh in this submesh
-
-  Note: Should normally not be called by the user, since it is set in DMPlexCreateSubmesh()
++ dm - The submesh `DM`
+- subpointMap - The `DMLabel` of all the points from the original mesh in this submesh
 
   Level: developer
 
-.seealso: `DMPlexCreateSubmesh()`, `DMPlexGetSubpointIS()`
+  Note:
+  Should normally not be called by the user, since it is set in `DMPlexCreateSubmesh()`
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSubmesh()`, `DMPlexGetSubpointIS()`
 @*/
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
@@ -4051,19 +4060,20 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
 }
 
 /*@
-  DMPlexGetSubpointIS - Returns an IS covering the entire subdm chart with the original points as data
+  DMPlexGetSubpointIS - Returns an `IS` covering the entire subdm chart with the original points as data
 
   Input Parameter:
-. dm - The submesh DM
+. dm - The submesh `DM`
 
   Output Parameter:
-. subpointIS - The IS of all the points from the original mesh in this submesh, or NULL if this is not a submesh
-
-  Note: This IS is guaranteed to be sorted by the construction of the submesh
+. subpointIS - The `IS` of all the points from the original mesh in this submesh, or `NULL` if this is not a submesh
 
   Level: developer
 
-.seealso: `DMPlexCreateSubmesh()`, `DMPlexGetSubpointMap()`
+  Note:
+  This `IS` is guaranteed to be sorted by the construction of the submesh
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSubmesh()`, `DMPlexGetSubpointMap()`
 @*/
 PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
 {
@@ -4082,18 +4092,18 @@ PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
 }
 
 /*@
-  DMGetEnclosureRelation - Get the relationship between dmA and dmB
+  DMGetEnclosureRelation - Get the relationship between `dmA` and `dmB`
 
   Input Parameters:
-+ dmA - The first DM
-- dmB - The second DM
++ dmA - The first `DM`
+- dmB - The second `DM`
 
   Output Parameter:
-. rel - The relation of dmA to dmB
+. rel - The relation of `dmA` to `dmB`
 
   Level: intermediate
 
-.seealso: `DMGetEnclosurePoint()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetEnclosurePoint()`
 @*/
 PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
 {
@@ -4140,20 +4150,20 @@ end:
 }
 
 /*@
-  DMGetEnclosurePoint - Get the point pA in dmA which corresponds to the point pB in dmB
+  DMGetEnclosurePoint - Get the point `pA` in `dmA` which corresponds to the point `pB` in `dmB`
 
   Input Parameters:
-+ dmA   - The first DM
-. dmB   - The second DM
-. etype - The type of enclosure relation that dmA has to dmB
-- pB    - A point of dmB
++ dmA   - The first `DM`
+. dmB   - The second `DM`
+. etype - The type of enclosure relation that `dmA` has to `dmB`
+- pB    - A point of `dmB`
 
   Output Parameter:
-. pA    - The corresponding point of dmA
+. pA    - The corresponding point of `dmA`
 
   Level: intermediate
 
-.seealso: `DMGetEnclosureRelation()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetEnclosureRelation()`
 @*/
 PetscErrorCode DMGetEnclosurePoint(DM dmA, DM dmB, DMEnclosureType etype, PetscInt pB, PetscInt *pA)
 {

@@ -89,10 +89,10 @@ PetscErrorCode SNESNewtonTRSetFallbackType(SNES snes, SNESNewtonTRFallbackType f
 
    Input Parameters:
 +  snes - the nonlinear solver object
-.  func - [optional] function evaluation routine, see `SNESNewtonTRPreCheck()`  for the calling sequence
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
+.  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPreCheck()`
+-  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+   Level: deprecated (since 3.19)
 
    Note:
    This function is called BEFORE the function evaluation within the solver.
@@ -117,16 +117,18 @@ PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, V
 /*@C
    SNESNewtonTRGetPreCheck - Gets the pre-check function
 
-   Not collective
+   Deprecated use `SNESNEWTONDCTRDC`
+
+   Not Collective
 
    Input Parameter:
 .  snes - the nonlinear solver context
 
    Output Parameters:
-+  func - [optional] function evaluation routine, see for the calling sequence `SNESNewtonTRPreCheck()`
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
++  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPreCheck()`
+-  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+   Level: deprecated (since 3.19)
 
 .seealso: `SNESNEWTONTR`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRPreCheck()`
 @*/
@@ -152,10 +154,10 @@ PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, 
 
    Input Parameters:
 +  snes - the nonlinear solver object
-.  func - [optional] function evaluation routine, see `SNESNewtonTRPostCheck()`  for the calling sequence
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
+.  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPostCheck()`
+-  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Level: intermediate
+   Level: deprecated (since 3.19)
 
    Note:
    This function is called BEFORE the function evaluation within the solver while the function set in
@@ -181,14 +183,14 @@ PetscErrorCode SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES, 
 /*@C
    SNESNewtonTRGetPostCheck - Gets the post-check function
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  snes - the nonlinear solver context
 
    Output Parameters:
-+  func - [optional] function evaluation routine, see for the calling sequence `SNESNewtonTRPostCheck()`
--  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
++  func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPostCheck()`
+-  ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
    Level: intermediate
 
@@ -618,7 +620,7 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes, PetscViewer viewer)
     Reference:
 .   * - "Numerical Optimization" by Nocedal and Wright, chapter 4.
 
-   Level: intermediate
+   Level: deprecated (since 3.19)
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`,
           `SNESNewtonTRPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`,

@@ -71,7 +71,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
 /*@C
      PetscBoxAuthorize - Get authorization and refresh token for accessing Box drive from PETSc
 
-   Not collective, only the first rank in `MPI_Comm` does anything
+   Not Collective, only the first rank in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -82,23 +82,23 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
 -  refresh_token - can be used for ever to obtain new access_tokens with `PetscBoxRefresh()`, guard this like a password
                    it gives access to your Box Drive
 
+   Level: intermediate
+
    Notes:
-    This call requires stdout and stdin access from process 0 on the MPI communicator
+    This call requires `stdout` and `stdin` access from process 0 on the MPI communicator
 
    You can run src/sys/webclient/tutorials/boxobtainrefreshtoken to get a refresh token and then in the future pass it to
-   PETSc programs with -box_refresh_token XXX
+   PETSc programs with `-box_refresh_token XXX`
 
-   This requires PETSc be installed using --with-saws or --download-saws
+   This requires PETSc be installed using `--with-saws` or `--download-saws`
 
    Requires the user have created a self-signed ssl certificate with
-
-$    saws/CA.pl  -newcert  (using the passphrase of password)
-$    cat newkey.pem newcert.pem > sslclient.pem
-
+.vb
+    saws/CA.pl  -newcert  (using the passphrase of password)
+    cat newkey.pem newcert.pem > sslclient.pem
+.ve
     and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
     silly but it was all I could figure out.
-
-   Level: intermediate
 
 .seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`, `PetscURLShorten()`
 @*/
@@ -155,11 +155,11 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refres
 /*@C
      PetscBoxRefresh - Get a new authorization token for accessing Box drive from PETSc from a refresh token
 
-   Not collective, only the first process in the `MPI_Comm` does anything
+   Not Collective, only the first process in the `MPI_Comm` does anything
 
    Input Parameters:
 +   comm - MPI communicator
-.   refresh token - obtained with `PetscBoxAuthorize()`, if NULL PETSc will first look for one in the options data
+.   refresh token - obtained with `PetscBoxAuthorize()`, if `NULL` PETSc will first look for one in the options data
                     if not found it will call `PetscBoxAuthorize()`
 -   tokensize - size of the output string access_token
 
@@ -236,7 +236,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
 
   Input Parameters:
 +   comm - MPI communicator
-.   access_token - obtained with `PetscBoxRefresh()`, pass NULL to have PETSc generate one
+.   access_token - obtained with `PetscBoxRefresh()`, pass `NULL` to have PETSc generate one
 -   filename - file to upload; if you upload multiple times it will have different names each time on Box Drive
 
   Options Database Key:

@@ -9,7 +9,7 @@
 /*@
   DMPlexSetReferenceTree - set the reference tree for hierarchically non-conforming meshes.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dm - The `DMPLEX` object
@@ -35,7 +35,7 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 /*@
   DMPlexGetReferenceTree - get the reference tree for hierarchically non-conforming meshes.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 . dm - The `DMPLEX` object
@@ -183,8 +183,8 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
 - parentOrientB - the new orientation for describing the parent
 
   Output Parameters:
-+ childOrientB - if not NULL, set to the new oreintation for describing the child
-- childB - if not NULL, the new childID for describing the child
++ childOrientB - if not `NULL`, set to the new orientation for describing the child
+- childB - if not `NULL`, the new childID for describing the child
 
   Level: developer
 
@@ -977,7 +977,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   the point-to-point constraints determined by the tree: a point is constained to the points in the closure of its
   tree root.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - the `DMPLEX` object
@@ -1000,7 +1000,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
 
 /*@
   DMPlexGetTree - get the tree that describes the hierarchy of non-conforming mesh points.
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DMPLEX` object
@@ -1040,8 +1040,8 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
 - point - the query point
 
   Output Parameters:
-+ parent - if not NULL, set to the parent of the point, or the point itself if the point does not have a parent
-- childID - if not NULL, set to the child ID of the point with respect to its parent, or 0 if the point
++ parent - if not `NULL`, set to the parent of the point, or the point itself if the point does not have a parent
+- childID - if not `NULL`, set to the child ID of the point with respect to its parent, or 0 if the point
             does not have a parent
 
   Level: intermediate
@@ -1082,8 +1082,8 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
 - point - the query point
 
   Output Parameters:
-+ numChildren - if not NULL, set to the number of children
-- children - if not NULL, set to a list children, or set to NULL if the point has no children
++ numChildren - if not `NULL`, set to the number of children
+- children - if not `NULL`, set to a list children, or set to `NULL` if the point has no children
 
   Level: intermediate
 
@@ -4193,29 +4193,30 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   that can be represented by a common reference tree used by both.  This routine can be used for a combination of
   coarsening and refinement at the same time.
 
-  Collective on dmIn
+  Collective
 
   Input Parameters:
 + dmIn        - The `DMPLEX` mesh for the input vector
+. dmOut        - The second `DMPLEX` mesh
 . vecIn       - The input vector
-. sfRefine    - A star forest indicating points in the mesh dmIn (roots in the star forest) that are parents to points in
-                the mesh dmOut (leaves in the star forest), i.e. where dmOut is more refined than dmIn
-. sfCoarsen   - A star forest indicating points in the mesh dmOut (roots in the star forest) that are parents to points in
-                the mesh dmIn (leaves in the star forest), i.e. where dmOut is more coarsened than dmIn
-. cidsRefine  - The childIds of the points in dmOut.  These childIds relate back to the reference tree: childid[j] = k implies
-                that mesh point j of dmOut was refined from a point in dmIn just as the mesh point k in the reference
-                tree was refined from its parent.  childid[j] = -1 indicates that the point j in dmOut is exactly
-                equivalent to its root in dmIn, so no interpolation is necessary.  childid[j] = -2 indicates that this
-                point j in dmOut is not a leaf of sfRefine.
-. cidsCoarsen - The childIds of the points in dmIn.  These childIds relate back to the reference tree: childid[j] = k implies
-                that mesh point j of dmIn coarsens to a point in dmOut just as the mesh point k in the reference
-                tree coarsens to its parent.  childid[j] = -2 indicates that point j in dmOut is not a leaf in sfCoarsen.
-. useBCs      - PETSC_TRUE indicates that boundary values should be inserted into vecIn before transfer.
+. sfRefine    - A star forest indicating points in the mesh `dmIn` (roots in the star forest) that are parents to points in
+                the mesh `dmOut` (leaves in the star forest), i.e. where `dmOut` is more refined than `dmIn`
+. sfCoarsen   - A star forest indicating points in the mesh `dmOut` (roots in the star forest) that are parents to points in
+                the mesh `dmIn` (leaves in the star forest), i.e. where `dmOut` is more coarsened than `dmIn`
+. cidsRefine  - The childIds of the points in `dmOut`.  These childIds relate back to the reference tree: childid[j] = k implies
+                that mesh point j of `dmOut` was refined from a point in `dmIn` just as the mesh point k in the reference
+                tree was refined from its parent.  childid[j] = -1 indicates that the point j in `dmOut` is exactly
+                equivalent to its root in `dmIn`, so no interpolation is necessary.  childid[j] = -2 indicates that this
+                point j in `dmOut` is not a leaf of `sfRefine`.
+. cidsCoarsen - The childIds of the points in `dmIn`.  These childIds relate back to the reference tree: childid[j] = k implies
+                that mesh point j of dmIn coarsens to a point in `dmOut` just as the mesh point k in the reference
+                tree coarsens to its parent.  childid[j] = -2 indicates that point j in `dmOut` is not a leaf in `sfCoarsen`.
+. useBCs      - `PETSC_TRUE` indicates that boundary values should be inserted into `vecIn` before transfer.
 - time        - Used if boundary values are time dependent.
 
   Output Parameters:
 . vecOut      - Using interpolation and injection operators calculated on the reference tree, the transferred
-                projection of vecIn from dmIn to dmOut.  Note that any field discretized with a `PetscFV` finite volume
+                projection of `vecIn` from `dmIn` to `dmOut`.  Note that any field discretized with a `PetscFV` finite volume
                 method that uses gradient reconstruction will use reconstructed gradients when interpolating from
                 coarse points to fine points.
 

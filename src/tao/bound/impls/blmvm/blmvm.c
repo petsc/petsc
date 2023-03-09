@@ -211,12 +211,14 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 /*MC
   TAOBLMVM - Bounded limited memory variable metric is a quasi-Newton method
          for nonlinear minimization with bound constraints. It is an extension
-         of TAOLMVM
+         of `TAOLMVM`
 
-  Options Database Keys:
-.     -tao_lmm_recycle - enable recycling of LMVM information between subsequent TaoSolve calls
+  Options Database Key:
+.     -tao_lmm_recycle - enable recycling of LMVM information between subsequent `TaoSolve()` calls
 
   Level: beginner
+
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
 {
@@ -253,13 +255,15 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
 }
 
 /*@
-  TaoLMVMRecycle - Enable/disable recycling of the QN history between subsequent TaoSolve calls.
+  TaoLMVMRecycle - Enable/disable recycling of the QN history between subsequent `TaoSolve()` calls.
 
   Input Parameters:
-+  tao  - the Tao solver context
--  flg - Boolean flag for recycling (PETSC_TRUE or PETSC_FALSE)
++  tao  - the `Tao` solver context
+-  flg - Boolean flag for recycling (`PETSC_TRUE` or `PETSC_FALSE`)
 
   Level: intermediate
+
+seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`
 @*/
 PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
 {
@@ -284,12 +288,12 @@ PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
   TaoLMVMSetH0 - Set the initial Hessian for the QN approximation
 
   Input Parameters:
-+  tao  - the Tao solver context
--  H0 - Mat object for the initial Hessian
++  tao  - the `Tao` solver context
+-  H0 - `Mat` object for the initial Hessian
 
   Level: advanced
 
-.seealso: `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`, `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 @*/
 PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 {
@@ -315,15 +319,15 @@ PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 /*@
   TaoLMVMGetH0 - Get the matrix object for the QN initial Hessian
 
-  Input Parameters:
-.  tao  - the Tao solver context
+  Input Parameter:
+.  tao  - the `Tao` solver context
 
-  Output Parameters:
-.  H0 - Mat object for the initial Hessian
+  Output Parameter:
+.  H0 - `Mat` object for the initial Hessian
 
   Level: advanced
 
-.seealso: `TaoLMVMSetH0()`, `TaoLMVMGetH0KSP()`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`, `TaoLMVMSetH0()`, `TaoLMVMGetH0KSP()`
 @*/
 PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 {
@@ -350,14 +354,14 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
   TaoLMVMGetH0KSP - Get the iterative solver for applying the inverse of the QN initial Hessian
 
   Input Parameters:
-.  tao  - the Tao solver context
+.  tao  - the `Tao` solver context
 
   Output Parameters:
-.  ksp - KSP solver context for the initial Hessian
+.  ksp - `KSP` solver context for the initial Hessian
 
   Level: advanced
 
-.seealso: `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM``TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 @*/
 PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {

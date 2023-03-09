@@ -702,7 +702,7 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
 /*@C
   PetscCIFilename - returns the basename of a file name when the PETSc CI portable error output mode is enabled.
 
-  Not collective; No Fortran Support
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . file - the file name

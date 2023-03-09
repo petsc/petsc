@@ -2,9 +2,7 @@
 /*@C
    MatCreateMPIAIJSELL - Creates a sparse parallel matrix whose local
    portions are stored as `MATSEQAIJSELL` matrices (a matrix class that inherits
-   from SEQAIJ but performs some operations in SELL format).  The same
-   guidelines that apply to `MATMPIAIJ` matrices for preallocating the matrix
-   storage apply here as well.
+   from SEQAIJ but performs some operations in SELL format).
 
       Collective
 
@@ -72,7 +70,7 @@
 
    When calling this routine with a single process communicator, a matrix of
    type `MATSEQAIJSELL` is returned.  If a matrix of type `MATMPIAIJSELL` is desired
-   for this type of communicator, use the construction mechanism:
+   for this type of communicator, use the construction mechanism
 .vb
    MatCreate(...,&A);
    MatSetType(A,MPIAIJSELL);

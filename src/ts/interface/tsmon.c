@@ -99,10 +99,9 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
 .  mctx - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
 
-   Calling sequence of monitor:
-$    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
-
-+    ts - the TS context
+   Calling sequence of `monitor`:
+$    PetscErrorCode monitor(TS ts, PetscInt steps, PetscReal time, Vec u, void *mctx)
++    ts - the `TS` context
 .    steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
 .    time - current time
 .    u - current iterate
@@ -1179,16 +1178,11 @@ PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, vo
 .  u - current solution
 -  dctx - the `TSMonitorSPCtx` object that contains all the options for the monitoring, this is created with `TSMonitorSPCtxCreate()`
 
-   Options Database:
+   Options Database Keys:
 + -ts_monitor_sp_swarm <n>                  - Monitor the solution every n steps, or -1 for plotting only the final solution
 . -ts_monitor_sp_swarm_retain <n>           - Retain n old points so we can see the history, or -1 for all points
 . -ts_monitor_sp_swarm_multi_species <bool> - Color each species differently
 - -ts_monitor_sp_swarm_phase <bool>         - Plot in phase space, as opposed to coordinate space
-
-   Options Database Keys:
-+ -ts_monitor_sp_swarm <n>          - Monitor the solution every n steps, or -1 for plotting only the final solution
-. -ts_monitor_sp_swarm_retain <n>   - Retain n old points so we can see the history, or -1 for all points
-- -ts_monitor_sp_swarm_phase <bool> - Plot in phase space, as opposed to coordinate space
 
    Level: intermediate
 
@@ -1268,16 +1262,16 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 }
 
 /*@C
-   TSMonitorHGSwarmSolution - Graphically displays histograms of DMSwarm particles
+   TSMonitorHGSwarmSolution - Graphically displays histograms of `DMSWARM` particles
 
    Input Parameters:
-+  ts - the TS context
++  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
 .  u - current solution
--  dctx - the TSMonitorSPCtx object that contains all the options for the monitoring, this is created with TSMonitorHGCtxCreate()
+-  dctx - the `TSMonitorSPCtx` object that contains all the options for the monitoring, this is created with `TSMonitorHGCtxCreate()`
 
-   Options Database:
+   Options Database Keys:
 + -ts_monitor_hg_swarm <n>             - Monitor the solution every n steps, or -1 for plotting only the final solution
 . -ts_monitor_hg_swarm_species <num>   - Number of species to histogram
 . -ts_monitor_hg_swarm_bins <num>      - Number of histogram bins
@@ -1285,7 +1279,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 
    Level: intermediate
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
    to be used during the `TS` integration.
 
@@ -1605,7 +1599,7 @@ PetscErrorCode TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 /*@C
   TSDMSwarmMonitorMoments - Monitors the first three moments of a `DMSWARM` being evolved by the `TS`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + ts   - the `TS` context
