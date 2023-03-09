@@ -344,7 +344,7 @@ static inline PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
   PetscFunctionBegin;
   if (!t) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssert(n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "String buffer length must be positive");
-  PetscCall(PetscStrlen(t, &len));
+  PetscCall(PetscStrlen(s, &len));
 #if PetscHasBuiltin(__builtin_strncat)
   __builtin_strncat(s, t, n - len);
 #else
