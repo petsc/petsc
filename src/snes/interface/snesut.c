@@ -309,7 +309,27 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
   PetscCall(PetscViewerPushFormat(viewer, format));
   if (isascii) {
     PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e \n", its, (double)fgnorm));
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      Vec       dx;
+      PetscReal upnorm;
+      PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+
+      PetscCall(SNESGetSolutionUpdate(snes, &dx));
+      PetscCall(VecNorm(dx, NORM_2, &upnorm));
+      PetscCall(SNESGetObjective(snes, &objective, NULL));
+      if (objective) {
+        Vec       x;
+        PetscReal obj;
+
+        PetscCall(SNESGetSolution(snes, &x));
+        PetscCall(SNESComputeObjective(snes, x, &obj));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e, Update norm %14.12e, Objective %14.12e\n", its, (double)fgnorm, (double)upnorm, (double)obj));
+      } else {
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e, Update norm %14.12e\n", its, (double)fgnorm, (double)upnorm));
+      }
+    } else {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e \n", its, (double)fgnorm));
+    }
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
   } else if (isdraw) {
     if (format == PETSC_VIEWER_DRAW_LG) {
