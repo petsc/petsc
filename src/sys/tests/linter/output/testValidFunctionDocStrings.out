@@ -709,6 +709,34 @@ Function requires custom fortran interface but missing 'C' from docstring header
 > 419: PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), int (*bar)(int bar_parm1, double bar_parm2, float bar_parm3), void (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3))
                                                                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   420: {
+
+ERROR 17: ./src/sys/tests/linter/testValidFunctionDocStrings.c:448:16
+'testIllFormedDeprecated' of type 'PetscErrorCode ()' (a.k.a. 'int ()')
+  446: .seealso: `testDeprecated()`
+  447: */
+> 448: PetscErrorCode testIllFormedDeprecated(void)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  449: {
+  450:   return PETSC_SUCCESS;
+
+Found parameter docstring(s) but 'testIllFormedDeprecated()' has no parameters [-fdoc-param-list-func-parameter-documentation]:
+  437:   testIllFormedDeprecated - check that deprecated (since VERSION) works
+  438: 
+> 439:   Input Parameters:
+> 440: + foo - a nonexistent foo
+> 441: . bar - a nonexistent bar
+> 442: - baz - a nonexistent baz
+> 443: 
+  444:   Level: dpcrtd (since 3.18.5)
+  445: 
+
+Unknown Level subheading 'dpcrtd', assuming you meant 'deprecated' [-fdoc-inline-list-level-spelling]:
+  442: - baz - a nonexistent baz
+  443: 
+> 444:   Level: dpcrtd (since 3.18.5)
+                ^^^^^^
+  445: 
+  446: .seealso: `testDeprecated()`
 --------------------------------------------------------------------------------------------
 <--- LEFT --->
 --------------------------------------------------------------------------------------------
@@ -808,7 +836,7 @@ Unknown Level subheading 'Lorem ipsum dolor sit amet', expected one of beginner,
   50: . z - a nonexistent parameter
   51: 
 > 52:   level: Lorem ipsum dolor sit amet
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+               ^^^^^
   53: 
   54:   Level:
 

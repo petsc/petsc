@@ -420,3 +420,32 @@ PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), int 
 {
   return 0;
 }
+
+/*@
+  testDeprecated - check that deprecated (since VERSION) works
+
+  Level: deprecated (since 3.17)
+
+.seealso: `testIllFormedDeprecated()`
+*/
+PetscErrorCode testDeprecated(void)
+{
+  return PETSC_SUCCESS;
+}
+
+/*@
+  testIllFormedDeprecated - check that deprecated (since VERSION) works
+
+  Input Parameters:
++ foo - a nonexistent foo
+. bar - a nonexistent bar
+- baz - a nonexistent baz
+
+  Level: dpcrtd (since 3.18.5)
+
+.seealso: `testDeprecated()`
+*/
+PetscErrorCode testIllFormedDeprecated(void)
+{
+  return PETSC_SUCCESS;
+}
