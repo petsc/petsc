@@ -17,8 +17,8 @@ Online Documentation
 .. _User Manual (PDF):  petsc4py.pdf
 .. _API Reference:      apiref/index.html
 
-.. _Sphinx:    http://sphinx.pocoo.org/
-.. _Epydoc:    http://epydoc.sourceforge.net/
+.. _Sphinx:    https://www.sphinx-doc.org/
+.. _Epydoc:    https://epydoc.sourceforge.net/
 
 
 Discussion and Support
@@ -30,8 +30,8 @@ Discussion and Support
 Downloads and Development
 -------------------------
 
-+ Issue Tracker:   https://gitlab.com/petsc/petsc/-/issues
-+ Git Repository:  https://gitlab.com/petsc/petsc.git
++ Issue Tracker:  https://gitlab.com/petsc/petsc/-/issues
++ Git Repository: https://gitlab.com/petsc/petsc.git
 + The source code is in ``src/binding/petsc4py``
 + Previous source releases: https://pypi.org/project/petsc4py/
 

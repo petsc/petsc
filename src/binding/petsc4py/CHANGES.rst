@@ -5,10 +5,12 @@ CHANGES: PETSc for Python
 :Author:  Lisandro Dalcin
 :Contact: dalcinl@gmail.com
 
+
 Release 3.19.0
 ==============
 
-- Expose ``PetscDevice`` and ``PetscDeviceContext`` API as ``PETSc.Device`` and ``PETSc.DeviceContext`` classes respectively.
+- Expose ``PetscDevice`` and ``PetscDeviceContext`` API as
+  ``PETSc.Device`` and ``PETSc.DeviceContext`` classes respectively.
 
 Release 3.18.0
 ==============

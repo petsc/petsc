@@ -49,7 +49,6 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
     configure = [
         './configure',
         '--with-mpi=0',
-        '--with-fc=0',
         '--with-cxx=0',
         '--with-x=0',
         '--with-cmake=0',

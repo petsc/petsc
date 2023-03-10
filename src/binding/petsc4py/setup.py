@@ -2,18 +2,17 @@
 # Author:  Lisandro Dalcin
 # Contact: dalcinl@gmail.com
 
-"""
-PETSc for Python
-"""
-
-import sys
-import os
 import re
+import os
+import sys
 
 try:
     import setuptools
 except ImportError:
     setuptools = None
+
+topdir = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(topdir, 'conf'))
 
 pyver = sys.version_info[:2]
 if pyver < (2, 6) or (3, 0) <= pyver < (3, 2):
@@ -22,68 +21,140 @@ if pyver == (2, 6) or pyver == (3, 2):
     sys.stderr.write(
         "WARNING: Python %d.%d is not supported.\n" % pyver)
 
+PNAME = 'PETSc'
+EMAIL = 'petsc-maint@mcs.anl.gov'
+PLIST = [PNAME]
+
 # --------------------------------------------------------------------
 # Metadata
 # --------------------------------------------------------------------
 
-topdir = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, topdir)
+def F(string):
+    return string.format(
+        Name=PNAME,
+        name=PNAME.lower(),
+        pyname=PNAME.lower()+'4py',
+    )
 
-from conf.metadata import metadata
+def get_name():
+    return F('{pyname}')
 
-def name():
-    return 'petsc4py'
-
-def version():
-    with open(os.path.join(topdir, 'src', '__init__.py')) as f:
+def get_version():
+    try:
+        return get_version.result
+    except AttributeError:
+        pass
+    pkg_init_py = os.path.join(F('{pyname}'), '__init__.py')
+    with open(os.path.join(topdir, 'src', pkg_init_py)) as f:
         m = re.search(r"__version__\s*=\s*'(.*)'", f.read())
-        return m.groups()[0]
+    version = m.groups()[0]
+    get_version.result = version
+    return version
 
 def description():
+    return F('{Name} for Python')
+
+def long_description():
     with open(os.path.join(topdir, 'DESCRIPTION.rst')) as f:
         return f.read()
 
-name     = name()
-version  = version()
+url      = F('https://gitlab.com/{name}/{name}')
+pypiroot = F('https://pypi.io/packages/source')
+pypislug = F('{pyname}')[0] + F('/{pyname}')
+tarball  = F('{pyname}-%s.tar.gz' % get_version())
+download = '/'.join([pypiroot, pypislug, tarball])
 
-url      = 'https://gitlab.com/petsc/petsc'
-pypiroot = 'https://pypi.io/packages/source/%s/%s/' % (name[0], name)
-download = pypiroot + '%(name)s-%(version)s.tar.gz' % vars()
+classifiers = """
+License :: OSI Approved :: BSD License
+Operating System :: POSIX
+Intended Audience :: Developers
+Intended Audience :: Science/Research
+Programming Language :: C
+Programming Language :: C++
+Programming Language :: Cython
+Programming Language :: Python
+Programming Language :: Python :: 2
+Programming Language :: Python :: 3
+Programming Language :: Python :: Implementation :: CPython
+Topic :: Scientific/Engineering
+Topic :: Software Development :: Libraries :: Python Modules
+Development Status :: 5 - Production/Stable
+""".strip().split('\n')
 
-devstat  = ['Development Status :: 5 - Production/Stable']
-keywords = ['PETSc', 'MPI']
+keywords = """
+scientific computing
+parallel computing
+MPI
+""".strip().split('\n')
 
-metadata['name'] = name
-metadata['version'] = version
-metadata['description'] = __doc__.strip()
-metadata['long_description'] = description()
-metadata['keywords'] += keywords
-metadata['classifiers'] += devstat
-metadata['url'] = url
-metadata['download_url'] = download
+platforms = """
+POSIX
+Linux
+macOS
+FreeBSD
+""".strip().split('\n')
 
-metadata['provides'] = ['petsc4py']
-metadata['requires'] = ['numpy']
+metadata = {
+    'name'             : get_name(),
+    'version'          : get_version(),
+    'description'      : description(),
+    'long_description' : long_description(),
+    'url'              : url,
+    'download_url'     : download,
+    'classifiers'      : classifiers,
+    'keywords'         : keywords + PLIST,
+    'license'          : 'BSD-2-Clause',
+    'platforms'        : platforms,
+    'author'           : 'Lisandro Dalcin',
+    'author_email'     : 'dalcinl@gmail.com',
+    'maintainer'       : F('{Name} Team'),
+    'maintainer_email' : EMAIL,
+}
+metadata.update({
+    'requires': ['numpy'],
+})
+
+metadata_extra = {
+    'long_description_content_type': 'text/rst',
+}
 
 # --------------------------------------------------------------------
 # Extension modules
 # --------------------------------------------------------------------
 
-def get_ext_modules(Extension):
+def sources():
+    src = dict(
+        source=F('{pyname}/{Name}.pyx'),
+        depends=[
+            F('{pyname}/*.pyx'),
+            F('{pyname}/*.pxd'),
+            F('{pyname}/{Name}/*.pyx'),
+            F('{pyname}/{Name}/*.pxd'),
+            F('{pyname}/{Name}/*.pxi'),
+        ],
+        workdir='src',
+    )
+    return [src]
+
+def extensions():
     from os import walk
     from glob import glob
     from os.path import join
-    glob_join = lambda *args: glob(join(*args))
+    #
     depends = []
+    glob_join = lambda *args: glob(join(*args))
     for pth, dirs, files in walk('src'):
         depends += glob_join(pth, '*.h')
         depends += glob_join(pth, '*.c')
-    if 'PETSC_DIR' in os.environ:
-        pd = os.environ['PETSC_DIR']
-        pa = os.environ.get('PETSC_ARCH', '')
-        depends += glob_join(pd, 'include', '*.h')
-        depends += glob_join(pd, 'include', 'petsc', 'private', '*.h')
-        depends += glob_join(pd, pa, 'include', 'petscconf.h')
+    for pkg in map(str.lower, reversed(PLIST)):
+        if (pkg.upper()+'_DIR') in os.environ:
+            pd = os.environ[pkg.upper()+'_DIR']
+            pa = os.environ.get('PETSC_ARCH', '')
+            depends += glob_join(pd, 'include', '*.h')
+            depends += glob_join(pd, 'include', pkg, 'private', '*.h')
+            depends += glob_join(pd, pa, 'include', '%sconf.h' % pkg)
+    #
+    include_dirs = []
     numpy_include = os.environ.get('NUMPY_INCLUDE')
     if numpy_include is not None:
         numpy_includes = [numpy_include]
@@ -93,39 +164,47 @@ def get_ext_modules(Extension):
             numpy_includes = [numpy.get_include()]
         except ImportError:
             numpy_includes = []
-    return [Extension('petsc4py.lib.PETSc',
-                      sources=['src/PETSc.c',
-                               'src/libpetsc4py.c',
-                               ],
-                      include_dirs=['src/include',
-                                    ] + numpy_includes,
-                      depends=depends)]
+    include_dirs.extend(numpy_includes)
+    if F('{pyname}') != 'petsc4py':
+        try:
+            import petsc4py
+            petsc4py_includes = [petsc4py.get_include()]
+        except ImportError:
+            petsc4py_includes = []
+        include_dirs.extend(petsc4py_includes)
+    #
+    ext = dict(
+        name=F('{pyname}.lib.{Name}'),
+        sources=[F('src/{pyname}/{Name}.c')],
+        depends=depends,
+        include_dirs=[
+            'src',
+            F('src/{pyname}/include'),
+        ] + include_dirs,
+        define_macros=[
+            ('MPICH_SKIP_MPICXX', 1),
+            ('OMPI_SKIP_MPICXX', 1),
+            ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
+        ],
+    )
+    return [ext]
 
 # --------------------------------------------------------------------
 # Setup
 # --------------------------------------------------------------------
 
-from conf.petscconf import setup, Extension
-from conf.petscconf import config, build, build_src, build_ext, install
-from conf.petscconf import clean, test, sdist
-
-# python-3.11+ requires cython 0.29.32+
-if pyver >= (3, 11):
-  CYTHON = '0.29.32'
-else:
-  CYTHON = '0.24'
-
 def get_release():
+    suffix = os.path.join('src', 'binding', F('{pyname}'))
+    if not topdir.endswith(os.path.join(os.path.sep, suffix)):
+        return False
     release = 1
-    if topdir.endswith(os.path.join(os.path.sep, 'src', 'binding', name)):
-        topname = name.replace('4py', '')
-        rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
-        version_h = os.path.join(rootdir, 'include', '%sversion.h' % topname)
-        release_macro = '%s_VERSION_RELEASE' % topname.upper()
-        version_re = re.compile(r"#define\s+%s\s+([-]*\d+)" % release_macro)
-        if os.path.exists(version_h) and os.path.isfile(version_h):
-            with open(version_h, 'r') as f:
-                release = int(version_re.search(f.read()).groups()[0])
+    rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
+    version_h = os.path.join(rootdir, 'include', F('{name}version.h'))
+    release_macro = '%s_VERSION_RELEASE' % F('{name}').upper()
+    version_re = re.compile(r"#define\s+%s\s+([-]*\d+)" % release_macro)
+    if os.path.exists(version_h) and os.path.isfile(version_h):
+        with open(version_h, 'r') as f:
+            release = int(version_re.search(f.read()).groups()[0])
     return bool(release)
 
 def requires(pkgname, major, minor, release=True):
@@ -145,167 +224,42 @@ def run_setup():
     if setuptools:
         setup_args['zip_safe'] = False
         setup_args['install_requires'] = ['numpy']
-        PETSC_DIR = os.environ.get('PETSC_DIR')
-        if not (PETSC_DIR and os.path.isdir(PETSC_DIR)):
-            petsc = requires('petsc', x, y, release)
-            setup_args['install_requires'] += [petsc]
-    if setuptools:
-        src = os.path.join('src', 'petsc4py.PETSc.c')
-        has_src = os.path.exists(os.path.join(topdir, src))
-        has_git = os.path.isdir(os.path.join(topdir, '.git'))
-        has_hg  = os.path.isdir(os.path.join(topdir, '.hg'))
-        suffix = os.path.join('src', 'binding', 'petsc4py')
-        in_petsc = topdir.endswith(os.path.sep + suffix)
-        if not has_src or has_git or has_hg or in_petsc:
-            setup_args['setup_requires'] = ['Cython>='+CYTHON]
+        for pkg in map(str.lower, PLIST):
+            PKG_DIR = os.environ.get(pkg.upper() + '_DIR')
+            if not (PKG_DIR and os.path.isdir(PKG_DIR)):
+                package = requires(pkg, x, y, release)
+                setup_args['install_requires'] += [package]
+        if F('{pyname}') != 'petsc4py':
+            package = requires('petsc4py', x, y, release)
+            setup_args['install_requires'] += [package]
+        setup_args.update(metadata_extra)
     #
-    setup(packages     = ['petsc4py',
-                          'petsc4py.lib',],
-          package_dir  = {'petsc4py'     : 'src',
-                          'petsc4py.lib' : 'src/lib'},
-          package_data = {'petsc4py'     : ['include/petsc4py/*.h',
-                                            'include/petsc4py/*.i',
-                                            'include/petsc4py/*.pxd',
-                                            'include/petsc4py/*.pxi',
-                                            'include/petsc4py/*.pyx',
-                                            'PETSc.pxd',],
-                          'petsc4py.lib' : ['petsc.cfg'],},
-          ext_modules  = get_ext_modules(Extension),
-          cmdclass     = {'config'     : config,
-                          'build'      : build,
-                          'build_src'  : build_src,
-                          'build_ext'  : build_ext,
-                          'install'    : install,
-                          'clean'      : clean,
-                          'test'       : test,
-                          'sdist'      : sdist,
-                          },
-          **setup_args)
-
-def chk_cython(VERSION):
-    from distutils import log
-    from distutils.version import LooseVersion
-    from distutils.version import StrictVersion
-    warn = lambda msg='': sys.stderr.write(msg+'\n')
-    #
-    try:
-        import Cython
-    except ImportError:
-        warn("*"*80)
-        warn()
-        warn(" You need to generate C source files with Cython!!")
-        warn(" Download and install Cython <http://www.cython.org>")
-        warn()
-        warn("*"*80)
-        return False
-    #
-    try:
-        CYTHON_VERSION = Cython.__version__
-    except AttributeError:
-        from Cython.Compiler.Version import version as CYTHON_VERSION
-    REQUIRED = VERSION
-    m = re.match(r"(\d+\.\d+(?:\.\d+)?).*", CYTHON_VERSION)
-    if m:
-        Version = StrictVersion
-        AVAILABLE = m.groups()[0]
-    else:
-        Version = LooseVersion
-        AVAILABLE = CYTHON_VERSION
-    if (REQUIRED is not None and
-        Version(AVAILABLE) < Version(REQUIRED)):
-        warn("*"*80)
-        warn()
-        warn(" You need to install Cython %s (you have version %s)"
-             % (REQUIRED, CYTHON_VERSION))
-        warn(" Download and install Cython <http://www.cython.org>")
-        warn()
-        warn("*"*80)
-        return False
-    #
-    return True
-
-def run_cython(source, target=None,
-               depends=(), includes=(),
-               destdir_c=None, destdir_h=None,
-               wdir=None, force=False, VERSION=None):
-    from glob import glob
-    from distutils import log
-    from distutils import dep_util
-    from distutils.errors import DistutilsError
-    if target is None:
-        target = os.path.splitext(source)[0]+'.c'
-    cwd = os.getcwd()
-    try:
-        if wdir: os.chdir(wdir)
-        alldeps = [source]
-        for dep in depends:
-            alldeps += glob(dep)
-        if not (force or dep_util.newer_group(alldeps, target)):
-            log.debug("skipping '%s' -> '%s' (up-to-date)",
-                      source, target)
-            return
-    finally:
-        os.chdir(cwd)
-    if not chk_cython(VERSION):
-        raise DistutilsError("requires Cython>=%s" % VERSION)
-    log.info("cythonizing '%s' -> '%s'", source, target)
-    from conf.cythonize import cythonize
-    err = cythonize(source, target,
-                    includes=includes,
-                    destdir_c=destdir_c,
-                    destdir_h=destdir_h,
-                    wdir=wdir)
-    if err:
-        raise DistutilsError(
-            "Cython failure: '%s' -> '%s'" % (source, target))
-
-def build_sources(cmd):
-    from os.path import exists, isdir, join
-
-    # petsc4py.PETSc
-    source = 'petsc4py.PETSc.pyx'
-    target = 'petsc4py.PETSc.c'
-    depends = ['include/*/*.pxd',
-               'PETSc/*.pyx',
-               'PETSc/*.pxi']
-    includes = ['include']
-    destdir_h = os.path.join('include', 'petsc4py')
-    run_cython(source, target,
-               depends=depends, includes=includes,
-               destdir_c=None, destdir_h=destdir_h, wdir='src',
-               force=cmd.force, VERSION=CYTHON)
-    # libpetsc4py
-    source = os.path.join('libpetsc4py', 'libpetsc4py.pyx')
-    depends = ['include/petsc4py/*.pxd',
-               'libpetsc4py/*.pyx',
-               'libpetsc4py/*.pxi']
-    includes = ['include']
-    run_cython(source,
-               depends=depends, includes=includes,
-               destdir_c=None, destdir_h=None, wdir='src',
-               force=cmd.force, VERSION=CYTHON)
-
-build_src.run = build_sources
-
-def run_testsuite(cmd):
-    from distutils.errors import DistutilsError
-    sys.path.insert(0, 'test')
-    try:
-        from runtests import main
-    finally:
-        del sys.path[0]
-    if cmd.dry_run:
-        return
-    args = cmd.args[:] or []
-    if cmd.verbose < 1:
-        args.insert(0,'-q')
-    if cmd.verbose > 1:
-        args.insert(0,'-v')
-    err = main(args)
-    if err:
-        raise DistutilsError("test")
-
-test.run = run_testsuite
+    conf = __import__(F('conf{name}'))
+    conf.setup(
+        packages=[
+            F('{pyname}'),
+            F('{pyname}.lib'),
+        ],
+        package_dir={'' : 'src'},
+        package_data={
+            F('{pyname}'): [
+                F('{Name}.pxd'),
+                F('{Name}*.h'),
+                F('include/{pyname}/*.h'),
+                F('include/{pyname}/*.i'),
+            ],
+            F('{pyname}.lib'): [
+                F('{name}.cfg'),
+            ],
+        },
+        cython_sources=[
+            src for src in sources()
+        ],
+        ext_modules=[
+            conf.Extension(**ext) for ext in extensions()
+        ],
+        **setup_args
+    )
 
 # --------------------------------------------------------------------
 

@@ -3,6 +3,24 @@ PETSc for Python
 
 Python bindings for PETSc.
 
+Install
+-------
+
+If you have a working MPI implementation and the ``mpicc`` compiler
+wrapper is on your search path, it is highly recommended to install
+``mpi4py`` first::
+
+  $ pip install mpi4py
+
+Ensure you have NumPy installed::
+
+  $ pip install numpy
+
+and finally::
+
+  $ pip install petsc petsc4py
+
+
 Citations
 ---------
 
