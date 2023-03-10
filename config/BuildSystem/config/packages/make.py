@@ -43,6 +43,7 @@ class Configure(config.package.GNUPackage):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.installDir]
+    args.append('--without-guile')
     if 'download-make-cc' in self.argDB and self.argDB['download-make-cc']:
       args.append('CC="'+self.argDB['download-make-cc']+'"')
     return args
