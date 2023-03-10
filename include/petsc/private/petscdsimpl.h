@@ -92,6 +92,7 @@ struct _p_PetscDS {
   void        *data;       /* Implementation object */
   PetscDS     *subprobs;   /* The subspaces for each dimension */
   PetscBool    setup;      /* Flag for setup */
+  PetscBool    forceQuad;  /* Flag to force matching quadratures in discretizations */
   PetscInt     dimEmbed;   /* The real space coordinate dimension */
   PetscInt     Nf;         /* The number of solution fields */
   PetscObject *disc;       /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
