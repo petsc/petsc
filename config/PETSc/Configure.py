@@ -985,7 +985,9 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           user_set = 1
           break
 
-    if not user_set:
+    # disable this for now, the warning should be sufficient. If the user still chooses to
+    # ignore it, then that's on them
+    if 0 and not user_set:
       debug_flags = make_flag_list('-Og', extra_debug_flags)
       with self.setCompilers.Language(lang):
         for flag in debug_flags:
