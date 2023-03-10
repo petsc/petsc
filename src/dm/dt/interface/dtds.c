@@ -364,6 +364,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
     PetscCall(PetscDSSetType(prob, defaultType));
   }
   PetscCall(PetscOptionsBool("-petscds_jac_pre", "Discrete System", "PetscDSUseJacobianPreconditioner", prob->useJacPre, &prob->useJacPre, &flg));
+  PetscCall(PetscOptionsBool("-petscds_force_quad", "Discrete System", "PetscDSSetForceQuad", prob->forceQuad, &prob->forceQuad, &flg));
   PetscTryTypeMethod(prob, setfromoptions);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)prob, PetscOptionsObject));
@@ -389,6 +390,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   const PetscInt Nf   = prob->Nf;
   PetscBool      hasH = PETSC_FALSE;
   PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
+  PetscInt       gorder = -1, fgorder = -1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -401,6 +403,59 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   PetscCall(PetscCalloc2(Nf + 1, &prob->off, Nf + 1, &prob->offDer));
   PetscCall(PetscCalloc6(Nf + 1, &prob->offCohesive[0], Nf + 1, &prob->offCohesive[1], Nf + 1, &prob->offCohesive[2], Nf + 1, &prob->offDerCohesive[0], Nf + 1, &prob->offDerCohesive[1], Nf + 1, &prob->offDerCohesive[2]));
   PetscCall(PetscMalloc2(Nf, &prob->T, Nf, &prob->Tf));
+  if (prob->forceQuad) {
+    PetscQuadrature mq = NULL, mfq = NULL;
+    PetscInt        maxOrder = -1, maxFOrder = -1;
+
+    for (f = 0; f < Nf; ++f) {
+      PetscObject     obj;
+      PetscClassId    id;
+      PetscQuadrature q = NULL, fq = NULL;
+      PetscInt        order = -1, forder = -1;
+
+      PetscCall(PetscDSGetDiscretization(prob, f, &obj));
+      if (!obj) continue;
+      PetscCall(PetscObjectGetClassId(obj, &id));
+      if (id == PETSCFE_CLASSID) {
+        PetscFE fe = (PetscFE)obj;
+
+        PetscCall(PetscFEGetQuadrature(fe, &q));
+        PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
+      } else if (id == PETSCFV_CLASSID) {
+        PetscFV fv = (PetscFV)obj;
+
+        PetscCall(PetscFVGetQuadrature(fv, &q));
+      }
+      if (q) PetscCall(PetscQuadratureGetOrder(q, &order));
+      if (fq) PetscCall(PetscQuadratureGetOrder(fq, &forder));
+      if (order > maxOrder) {
+        maxOrder = order;
+        mq       = q;
+      }
+      if (forder > maxFOrder) {
+        maxFOrder = forder;
+        mfq       = fq;
+      }
+    }
+    for (f = 0; f < Nf; ++f) {
+      PetscObject  obj;
+      PetscClassId id;
+
+      PetscCall(PetscDSGetDiscretization(prob, f, &obj));
+      if (!obj) continue;
+      PetscCall(PetscObjectGetClassId(obj, &id));
+      if (id == PETSCFE_CLASSID) {
+        PetscFE fe = (PetscFE)obj;
+
+        PetscCall(PetscFESetQuadrature(fe, mq));
+        PetscCall(PetscFESetFaceQuadrature(fe, mfq));
+      } else if (id == PETSCFV_CLASSID) {
+        PetscFV fv = (PetscFV)obj;
+
+        PetscCall(PetscFVSetQuadrature(fv, mq));
+      }
+    }
+  }
   for (f = 0; f < Nf; ++f) {
     PetscObject     obj;
     PetscClassId    id;
@@ -419,6 +474,20 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
         PetscFE fe = (PetscFE)obj;
 
         PetscCall(PetscFEGetQuadrature(fe, &q));
+        {
+          PetscQuadrature fq;
+          PetscInt        order, forder;
+
+          PetscCall(PetscQuadratureGetOrder(q, &order));
+          if (gorder < 0) gorder = order;
+          PetscCheck(order == gorder, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " cell quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS cell quadrature order", f, order, gorder);
+          PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
+          if (fq) {
+            PetscCall(PetscQuadratureGetOrder(fq, &forder));
+            if (fgorder < 0) fgorder = forder;
+            PetscCheck(forder == fgorder, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " face quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS face quadrature order", f, forder, fgorder);
+          }
+        }
         PetscCall(PetscFEGetDimension(fe, &Nb));
         PetscCall(PetscFEGetNumComponents(fe, &Nc));
         PetscCall(PetscFEGetCellTabulation(fe, prob->jetDegree[f], &prob->T[f]));
@@ -615,6 +684,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
   p->constants    = NULL;
   p->dimEmbed     = -1;
   p->useJacPre    = PETSC_TRUE;
+  p->forceQuad    = PETSC_TRUE;
   PetscCall(PetscWeakFormCreate(comm, &p->wf));
 
   *ds = p;
@@ -725,6 +795,51 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(dimEmbed >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension must be non-negative, not %" PetscInt_FMT, dimEmbed);
   prob->dimEmbed = dimEmbed;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDSGetForceQuad - Returns the flag to force matching quadratures among the field discretizations
+
+  Not collective
+
+  Input Parameter:
+. prob - The `PetscDS` object
+
+  Output Parameter:
+. forceQuad - The flag
+
+  Level: intermediate
+
+.seealso: `PetscDS`, `PetscDSSetForceQuad()`, `PetscDSGetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+@*/
+PetscErrorCode PetscDSGetForceQuad(PetscDS ds, PetscBool *forceQuad)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidIntPointer(forceQuad, 2);
+  *forceQuad = ds->forceQuad;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDSSetForceQuad - Set the flag to force matching quadratures among the field discretizations
+
+  Logically collective on ds
+
+  Input Parameters:
++ ds - The `PetscDS` object
+- forceQuad - The flag
+
+  Level: intermediate
+
+.seealso: `PetscDS`, `PetscDSGetForceQuad()`, `PetscDSGetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+@*/
+PetscErrorCode PetscDSSetForceQuad(PetscDS ds, PetscBool forceQuad)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  ds->forceQuad = forceQuad;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

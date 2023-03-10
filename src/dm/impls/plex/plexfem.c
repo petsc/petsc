@@ -187,6 +187,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   Vec          mode[6];
   PetscSection section, globalSection;
   PetscInt     dim, dimEmbed, Nf, n, m, mmin, d, i, j;
+  void       **ctxs;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -201,7 +202,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(DMGetGlobalSection(dm, &globalSection));
   PetscCall(PetscSectionGetConstrainedStorageSize(globalSection, &n));
-  PetscCall(PetscCalloc1(Nf, &func));
+  PetscCall(PetscCalloc2(Nf, &func, Nf, &ctxs));
   m = (dim * (dim + 1)) / 2;
   PetscCall(VecCreate(comm, &mode[0]));
   PetscCall(VecSetType(mode[0], dm->vectype));
@@ -213,11 +214,11 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   for (i = 1; i < m; ++i) PetscCall(VecDuplicate(mode[0], &mode[i]));
   for (d = 0; d < m; d++) {
     PetscInt ctx[2];
-    void    *voidctx = (void *)(&ctx[0]);
 
-    ctx[0] = dimEmbed;
-    ctx[1] = d;
-    PetscCall(DMProjectFunction(dm, 0.0, func, &voidctx, INSERT_VALUES, mode[d]));
+    ctxs[field] = (void *)(&ctx[0]);
+    ctx[0]      = dimEmbed;
+    ctx[1]      = d;
+    PetscCall(DMProjectFunction(dm, 0.0, func, ctxs, INSERT_VALUES, mode[d]));
   }
   /* Orthonormalize system */
   for (i = 0; i < mmin; ++i) {
@@ -232,7 +233,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   }
   PetscCall(MatNullSpaceCreate(comm, PETSC_FALSE, mmin, mode, sp));
   for (i = 0; i < m; ++i) PetscCall(VecDestroy(&mode[i]));
-  PetscCall(PetscFree(func));
+  PetscCall(PetscFree2(func, ctxs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

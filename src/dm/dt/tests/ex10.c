@@ -147,6 +147,7 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
 static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (*setup)(DM, UserCtx *), UserCtx *user)
 {
   DM        cdm = mesh, cdm_sum = mesh_sum;
+  PetscDS   ds;
   PetscFE   u, divu, u_sum, divu_sum;
   PetscInt  dim;
   PetscBool simplex;
@@ -154,6 +155,15 @@ static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (
   PetscFunctionBegin;
   PetscCall(DMGetDimension(mesh, &dim));
   PetscCall(DMPlexIsSimplex(mesh, &simplex));
+
+  {
+    PetscBool force;
+    // Turn off automatic quadrature selection as a test
+    PetscCall(DMGetDS(mesh_sum, &ds));
+    PetscCall(PetscDSGetForceQuad(ds, &force));
+    if (force) PetscCall(PetscDSSetForceQuad(ds, PETSC_FALSE));
+  }
+
   /* Create FE objects and give them names so that options can be set from
    * command line. Each field gets 2 instances (i.e. velocity and velocity_sum)created twice so that we can compare between approaches. */
   PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)mesh), dim, dim, simplex, "velocity_", -1, &u));

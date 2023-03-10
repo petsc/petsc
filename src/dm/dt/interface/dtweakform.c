@@ -291,26 +291,40 @@ PetscErrorCode PetscWeakFormClear(PetscWeakForm wf)
 static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscHMapForm hmap, DMLabel label, PetscInt Nv, const PetscInt values[])
 {
   PetscFormKey *keys;
-  PetscInt      n, i, v, off = 0;
+  void (**tmpfuncs)(void);
+  PetscInt n, off = 0, maxNf = 0;
 
   PetscFunctionBegin;
   PetscCall(PetscHMapFormGetSize(hmap, &n));
   PetscCall(PetscMalloc1(n, &keys));
   PetscCall(PetscHMapFormGetKeys(hmap, &off, keys));
-  for (i = 0; i < n; ++i) {
+  // Need to make a copy since SetFunction() can invalidate the storage
+  for (PetscInt i = 0; i < n; ++i) {
+    if (keys[i].label == label) {
+      void (**funcs)(void);
+      PetscInt Nf;
+
+      PetscCall(PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs));
+      maxNf = PetscMax(maxNf, Nf);
+    }
+  }
+  PetscCall(PetscMalloc1(maxNf, &tmpfuncs));
+  for (PetscInt i = 0; i < n; ++i) {
     if (keys[i].label == label) {
       PetscBool clear = PETSC_TRUE;
       void (**funcs)(void);
       PetscInt Nf;
 
       PetscCall(PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs));
-      for (v = 0; v < Nv; ++v) {
-        PetscCall(PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, values[v], keys[i].field, keys[i].part, Nf, funcs));
+      for (PetscInt f = 0; f < Nf; ++f) tmpfuncs[f] = funcs[f];
+      for (PetscInt v = 0; v < Nv; ++v) {
+        PetscCall(PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, values[v], keys[i].field, keys[i].part, Nf, tmpfuncs));
         if (values[v] == keys[i].value) clear = PETSC_FALSE;
       }
       if (clear) PetscCall(PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, 0, NULL));
     }
   }
+  PetscCall(PetscFree(tmpfuncs));
   PetscCall(PetscFree(keys));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
