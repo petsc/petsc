@@ -292,7 +292,34 @@ static PetscErrorCode ISContiguousLocal_Stride(IS is, PetscInt gstart, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _ISOps myops = {PetscDesignatedInitializer(getindices, ISGetIndices_Stride), PetscDesignatedInitializer(restoreindices, ISRestoreIndices_Stride), PetscDesignatedInitializer(invertpermutation, ISInvertPermutation_Stride), PetscDesignatedInitializer(sort, ISSort_Stride), PetscDesignatedInitializer(sortremovedups, ISSort_Stride), PetscDesignatedInitializer(sorted, ISSorted_Stride), PetscDesignatedInitializer(duplicate, ISDuplicate_Stride), PetscDesignatedInitializer(destroy, ISDestroy_Stride), PetscDesignatedInitializer(view, ISView_Stride), PetscDesignatedInitializer(load, ISLoad_Default), PetscDesignatedInitializer(copy, ISCopy_Stride), PetscDesignatedInitializer(togeneral, ISToGeneral_Stride), PetscDesignatedInitializer(oncomm, ISOnComm_Stride), PetscDesignatedInitializer(setblocksize, ISSetBlockSize_Stride), PetscDesignatedInitializer(contiguous, ISContiguousLocal_Stride), PetscDesignatedInitializer(locate, ISLocate_Stride), PetscDesignatedInitializer(sortedlocal, ISSorted_Stride), NULL, PetscDesignatedInitializer(uniquelocal, ISUniqueLocal_Stride), NULL, PetscDesignatedInitializer(permlocal, ISPermutationLocal_Stride), NULL, PetscDesignatedInitializer(intervallocal, ISIntervalLocal_Stride), NULL};
+// clang-format off
+static struct _ISOps myops = {
+  PetscDesignatedInitializer(getindices, ISGetIndices_Stride),
+  PetscDesignatedInitializer(restoreindices, ISRestoreIndices_Stride),
+  PetscDesignatedInitializer(invertpermutation, ISInvertPermutation_Stride),
+  PetscDesignatedInitializer(sort, ISSort_Stride),
+  PetscDesignatedInitializer(sortremovedups, ISSort_Stride),
+  PetscDesignatedInitializer(sorted, ISSorted_Stride),
+  PetscDesignatedInitializer(duplicate, ISDuplicate_Stride),
+  PetscDesignatedInitializer(destroy, ISDestroy_Stride),
+  PetscDesignatedInitializer(view, ISView_Stride),
+  PetscDesignatedInitializer(load, ISLoad_Default),
+  PetscDesignatedInitializer(copy, ISCopy_Stride),
+  PetscDesignatedInitializer(togeneral, ISToGeneral_Stride),
+  PetscDesignatedInitializer(oncomm, ISOnComm_Stride),
+  PetscDesignatedInitializer(setblocksize, ISSetBlockSize_Stride),
+  PetscDesignatedInitializer(contiguous, ISContiguousLocal_Stride),
+  PetscDesignatedInitializer(locate, ISLocate_Stride),
+  PetscDesignatedInitializer(sortedlocal, ISSorted_Stride),
+  PetscDesignatedInitializer(sortedglobal, NULL),
+  PetscDesignatedInitializer(uniquelocal, ISUniqueLocal_Stride),
+  PetscDesignatedInitializer(uniqueglobal, NULL),
+  PetscDesignatedInitializer(permlocal, ISPermutationLocal_Stride),
+  PetscDesignatedInitializer(permglobal, NULL),
+  PetscDesignatedInitializer(intervallocal, ISIntervalLocal_Stride),
+  PetscDesignatedInitializer(intervalglobal, NULL)
+};
+// clang-format on
 
 /*@
    ISStrideSetStride - Sets the stride information for a stride index set.

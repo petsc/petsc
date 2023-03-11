@@ -838,7 +838,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
-  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) mat->product->fill = 2.0;
+  if (fill == (PetscReal)PETSC_DEFAULT || fill == (PetscReal)PETSC_DECIDE) mat->product->fill = 2.0;
   else mat->product->fill = fill;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

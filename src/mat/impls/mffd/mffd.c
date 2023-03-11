@@ -544,11 +544,13 @@ static PetscErrorCode MatMFFDSetFunction_MFFD(Mat mat, PetscErrorCode (*func)(vo
 
 static PetscErrorCode MatMFFDSetFunctionError_MFFD(Mat mat, PetscReal error)
 {
-  MatMFFD ctx;
-
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(mat, &ctx));
-  if (error != PETSC_DEFAULT) ctx->error_rel = error;
+  if (error != (PetscReal)PETSC_DEFAULT) {
+    MatMFFD ctx;
+
+    PetscCall(MatShellGetContext(mat, &ctx));
+    ctx->error_rel = error;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -29,10 +29,10 @@ struct Marker {
   }
 };
 
-static constexpr auto read       = Marker{PETSC_MEMORY_ACCESS_READ};
-static constexpr auto write      = Marker{PETSC_MEMORY_ACCESS_WRITE};
-static constexpr auto read_write = Marker{PETSC_MEMORY_ACCESS_READ_WRITE};
-static constexpr auto mark_funcs = Petsc::util::make_array(read, write, read_write);
+static constexpr auto mem_read       = Marker{PETSC_MEMORY_ACCESS_READ};
+static constexpr auto mem_write      = Marker{PETSC_MEMORY_ACCESS_WRITE};
+static constexpr auto mem_read_write = Marker{PETSC_MEMORY_ACCESS_READ_WRITE};
+static constexpr auto mark_funcs     = Petsc::util::make_array(mem_read, mem_write, mem_read_write);
 
 static PetscErrorCode MarkedObjectMapView(PetscViewer vwr, std::size_t nkeys, const PetscObjectId *keys, const PetscMemoryAccessMode *modes, const std::size_t *ndeps, const PetscEvent **dependencies)
 {
@@ -150,7 +150,7 @@ static PetscErrorCode TestAllCombinations(PetscDeviceContext dctx, const std::ve
 
           // if it == next, then even though we might num_expected_keys keys we never "look
           // for" the missing key
-          PetscCheck(cont.size() == 1 || it != next, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Test assumes different inputs, otherwise key check may fail");
+          PetscCheck(cont.size() == 1 || it != next, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Test assumes different inputs, otherwise key check may fail (cont.size(): %zu, it != next: %s)", cont.size(), it != next ? "true" : "false");
           PetscCall(CheckMarkedObjectMap(nkeys == num_expected_keys, "marked object map has %zu keys expected %zu", nkeys, num_expected_keys));
           // check that each function properly applied its mode, it == next if cont.size() = 1,
           // i.e. testing identity
@@ -306,8 +306,8 @@ int main(int argc, char *argv[])
     const auto remain_reader = readers[remain_idx];
 
     PetscFunctionBegin;
-    for (auto &&ctx : readers) PetscCall(read(ctx, x));
-    for (auto &&ctx : readers) PetscCall(read(ctx, y));
+    for (auto &&ctx : readers) PetscCall(mem_read(ctx, x));
+    for (auto &&ctx : readers) PetscCall(mem_read(ctx, y));
     PetscCall(CheckMapEqual({
       make_map_entry(x_id, PETSC_MEMORY_ACCESS_READ, readers[0], readers[1]),
       make_map_entry(y_id, PETSC_MEMORY_ACCESS_READ, readers[0], readers[1]),
@@ -329,8 +329,8 @@ int main(int argc, char *argv[])
   PetscCall(test_multiple_readers({dctx_a, dctx_b}, 1));
 
   // Test that sync of unrelated ctx does not affect the map
-  PetscCall(read(dctx_a, x));
-  PetscCall(read(dctx_b, y));
+  PetscCall(mem_read(dctx_a, x));
+  PetscCall(mem_read(dctx_b, y));
   PetscCall(PetscDeviceContextSynchronize(dctx_c));
   // clang-format off
   PetscCall(CheckMapEqual({
@@ -344,19 +344,19 @@ int main(int argc, char *argv[])
   PetscCall(CheckMapEqual({}));
 
   // Test another context writing over two reads
-  PetscCall(read(dctx_a, x));
-  PetscCall(read(dctx_b, x));
+  PetscCall(mem_read(dctx_a, x));
+  PetscCall(mem_read(dctx_b, x));
   // C writing should kick out both A and B
-  PetscCall(write(dctx_c, x));
+  PetscCall(mem_write(dctx_c, x));
   PetscCall(CheckMapEqual({make_map_entry(x_id, PETSC_MEMORY_ACCESS_WRITE, dctx_c)}));
   PetscCall(PetscDeviceContextSynchronize(dctx_c));
   PetscCall(CheckMapEqual({}));
 
   // Test that write and synchronize does not interfere with unrelated read
-  PetscCall(read_write(dctx_a, x));
-  PetscCall(read(dctx_a, y));
-  PetscCall(read_write(dctx_b, x));
-  PetscCall(read(dctx_b, y));
+  PetscCall(mem_read_write(dctx_a, x));
+  PetscCall(mem_read(dctx_a, y));
+  PetscCall(mem_read_write(dctx_b, x));
+  PetscCall(mem_read(dctx_b, y));
   // Synchronizing B here must clear everything *but* A's read on Y!
   PetscCall(PetscDeviceContextSynchronize(dctx_b));
   PetscCall(CheckMapEqual({make_map_entry(y_id, PETSC_MEMORY_ACCESS_READ, dctx_a)}));
@@ -365,8 +365,8 @@ int main(int argc, char *argv[])
   PetscCall(CheckMapEqual({}));
 
   // Test that implicit stream-dependencies are properly tracked
-  PetscCall(read(dctx_a, x));
-  PetscCall(read(dctx_b, y));
+  PetscCall(mem_read(dctx_a, x));
+  PetscCall(mem_read(dctx_b, y));
   // A waits for B
   PetscCall(PetscDeviceContextWaitForContext(dctx_a, dctx_b));
   // Because A waits on B, synchronizing A implicitly implies B read must have finished so the
@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
   PetscCall(PetscDeviceContextSynchronize(dctx_a));
   PetscCall(CheckMapEqual({}));
 
-  PetscCall(write(dctx_a, x));
+  PetscCall(mem_write(dctx_a, x));
   PetscCall(CheckMapEqual({make_map_entry(x_id, PETSC_MEMORY_ACCESS_WRITE, dctx_a)}));
   PetscCall(PetscDeviceContextWaitForContext(dctx_b, dctx_a));
   PetscCall(PetscDeviceContextWaitForContext(dctx_c, dctx_b));
@@ -384,8 +384,8 @@ int main(int argc, char *argv[])
   PetscCall(CheckMapEqual({}));
 
   // Test that superfluous stream-dependencies are properly ignored
-  PetscCall(read(dctx_a, x));
-  PetscCall(read(dctx_b, y));
+  PetscCall(mem_read(dctx_a, x));
+  PetscCall(mem_read(dctx_b, y));
   PetscCall(PetscDeviceContextWaitForContext(dctx_c, dctx_b));
   // C waited on B, so synchronizing C should remove B from the map but *not* remove A
   PetscCall(PetscDeviceContextSynchronize(dctx_c));
@@ -394,11 +394,11 @@ int main(int argc, char *argv[])
   PetscCall(CheckMapEqual({}));
 
   // Test that read->write correctly wipes out the map
-  PetscCall(read(dctx_a, x));
-  PetscCall(read(dctx_b, x));
-  PetscCall(read(dctx_c, x));
+  PetscCall(mem_read(dctx_a, x));
+  PetscCall(mem_read(dctx_b, x));
+  PetscCall(mem_read(dctx_c, x));
   PetscCall(CheckMapEqual({make_map_entry(x_id, PETSC_MEMORY_ACCESS_READ, dctx_a, dctx_b, dctx_c)}));
-  PetscCall(write(dctx_a, x));
+  PetscCall(mem_write(dctx_a, x));
   PetscCall(CheckMapEqual({make_map_entry(x_id, PETSC_MEMORY_ACCESS_WRITE, dctx_a)}));
   PetscCall(PetscDeviceContextSynchronize(dctx_a));
   PetscCall(CheckMapEqual({}));

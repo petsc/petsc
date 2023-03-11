@@ -293,9 +293,9 @@ PetscErrorCode MatSNESMFMoreSetParameters(Mat mat, PetscReal error, PetscReal um
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
   if (ctx) {
-    if (error != PETSC_DEFAULT) ctx->error_rel = error;
-    if (umin != PETSC_DEFAULT) ctx->umin = umin;
-    if (h != PETSC_DEFAULT) {
+    if (error != (PetscReal)PETSC_DEFAULT) ctx->error_rel = error;
+    if (umin != (PetscReal)PETSC_DEFAULT) ctx->umin = umin;
+    if (h != (PetscReal)PETSC_DEFAULT) {
       ctx->h      = h;
       ctx->need_h = PETSC_FALSE;
     }

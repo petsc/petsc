@@ -6,7 +6,7 @@ static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, P
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
-  refRatio = refRatio == PETSC_DEFAULT ? (PetscReal)((PetscInt)1 << dim) : refRatio;
+  refRatio = refRatio == (PetscReal)PETSC_DEFAULT ? (PetscReal)((PetscInt)1 << dim) : refRatio;
   for (c = cStart; c < cEnd; c++) {
     PetscReal vol;
     PetscInt  closureSize = 0, cl;
@@ -59,7 +59,7 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
   Vec             coordinates, mb, mx;
   Mat             A;
   PetscScalar    *metric, *eqns;
-  const PetscReal coarseRatio = refRatio == PETSC_DEFAULT ? PetscSqr(0.5) : 1 / refRatio;
+  const PetscReal coarseRatio = refRatio == (PetscReal)PETSC_DEFAULT ? PetscSqr(0.5) : 1 / refRatio;
   PetscInt        dim, Nv, Neq, c, v;
 
   PetscFunctionBegin;

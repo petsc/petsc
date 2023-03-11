@@ -1581,15 +1581,15 @@ PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, Petsc
   PetscValidLogicalCollectiveReal(ksp, dtol, 4);
   PetscValidLogicalCollectiveInt(ksp, maxits, 5);
 
-  if (rtol != PETSC_DEFAULT) {
+  if (rtol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(rtol >= 0.0 && rtol < 1.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %g must be non-negative and less than 1.0", (double)rtol);
     ksp->rtol = rtol;
   }
-  if (abstol != PETSC_DEFAULT) {
+  if (abstol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(abstol >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g must be non-negative", (double)abstol);
     ksp->abstol = abstol;
   }
-  if (dtol != PETSC_DEFAULT) {
+  if (dtol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(dtol >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Divergence tolerance %g must be larger than 1.0", (double)dtol);
     ksp->divtol = dtol;
   }

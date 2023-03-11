@@ -149,7 +149,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
   PetscCall(PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG_XRANGE));
   PetscCall(PetscViewerDrawGetDrawLG(node->viewer, 0, &drawlg));
   PetscCall(PetscDrawLGGetAxis(drawlg, &axis));
-  if (xmin != PETSC_DECIDE && xmax != PETSC_DECIDE) PetscCall(PetscDrawAxisSetLimits(axis, xmin, xmax, ymin, ymax));
+  if (xmin != (PetscReal)PETSC_DECIDE && xmax != (PetscReal)PETSC_DECIDE) PetscCall(PetscDrawAxisSetLimits(axis, xmin, xmax, ymin, ymax));
   else PetscCall(PetscDrawAxisSetLimits(axis, 0, nodes - 1, ymin, ymax));
   PetscCall(PetscDrawAxisSetHoldLimits(axis, hold));
 

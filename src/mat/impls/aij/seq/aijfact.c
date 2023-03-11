@@ -3220,7 +3220,7 @@ static PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A, IS isrow, IS iscol, const Mat
   PetscBool       missing;
 
   PetscFunctionBegin;
-  if (dt == PETSC_DEFAULT) dt = 0.005;
+  if (dt == (PetscReal)PETSC_DEFAULT) dt = 0.005;
   if (dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5 * a->rmax);
 
   /* symbolic factorization, can be reused */

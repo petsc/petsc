@@ -14,6 +14,7 @@ class Configure(config.package.CMakePackage):
     self.precisions       = ['double']
     self.cxx              = 1
     self.requires32bitint = 1
+    self.maxCxxVersion    = 'c++17' # https://github.com/NVIDIA/AMGX/issues/231
     return
 
   def setupDependencies(self, framework):

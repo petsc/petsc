@@ -10,6 +10,7 @@
 
   #include <cstdint>   // std::uint32_t
   #include <climits>   // CHAR_BIT
+  #include <iterator>  // std::inserter
   #include <limits>    // std::numeric_limits
   #include <algorithm> // std::fill
   #include <vector>

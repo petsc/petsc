@@ -13,7 +13,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc, PetscReal z)
 
   PetscFunctionBegin;
   lu->nonzerosalongdiagonal = PETSC_TRUE;
-  if (z == PETSC_DECIDE) lu->nonzerosalongdiagonaltol = 1.e-10;
+  if (z == (PetscReal)PETSC_DECIDE) lu->nonzerosalongdiagonaltol = 1.e-10;
   else lu->nonzerosalongdiagonaltol = z;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

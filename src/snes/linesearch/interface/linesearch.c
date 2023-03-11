@@ -1152,27 +1152,27 @@ PetscErrorCode SNESLineSearchSetTolerances(SNESLineSearch linesearch, PetscReal 
   PetscValidLogicalCollectiveReal(linesearch, ltol, 6);
   PetscValidLogicalCollectiveInt(linesearch, max_its, 7);
 
-  if (steptol != PETSC_DEFAULT) {
+  if (steptol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(steptol >= 0.0, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_OUTOFRANGE, "Minimum step length %14.12e must be non-negative", (double)steptol);
     linesearch->steptol = steptol;
   }
 
-  if (maxstep != PETSC_DEFAULT) {
+  if (maxstep != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(maxstep >= 0.0, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_OUTOFRANGE, "Maximum step length %14.12e must be non-negative", (double)maxstep);
     linesearch->maxstep = maxstep;
   }
 
-  if (rtol != PETSC_DEFAULT) {
+  if (rtol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(rtol >= 0.0 && rtol < 1.0, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %14.12e must be non-negative and less than 1.0", (double)rtol);
     linesearch->rtol = rtol;
   }
 
-  if (atol != PETSC_DEFAULT) {
+  if (atol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(atol >= 0.0, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %14.12e must be non-negative", (double)atol);
     linesearch->atol = atol;
   }
 
-  if (ltol != PETSC_DEFAULT) {
+  if (ltol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(ltol >= 0.0, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_OUTOFRANGE, "Lambda tolerance %14.12e must be non-negative", (double)ltol);
     linesearch->ltol = ltol;
   }
