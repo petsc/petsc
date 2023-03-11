@@ -406,6 +406,9 @@ cdef class KSP(Object):
     def solveTranspose(self, Vec b, Vec x):
         CHKERR( KSPSolveTranspose(self.ksp, b.vec, x.vec) )
 
+    def matSolve(self, Mat B, Mat X):
+        CHKERR( KSPMatSolve(self.ksp, B.mat, X.mat) )
+
     def setIterationNumber(self, its):
         cdef PetscInt ival = asInt(its)
         CHKERR( KSPSetIterationNumber(self.ksp, ival) )
