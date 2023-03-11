@@ -4,7 +4,6 @@ import os
 import sys
 import re
 import pickle
-import textwrap
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -876,7 +875,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.addDefine('ARCH','"'+self.installdir.petscArch+'"')
     return
 
-  def configureCoverageForLang(self, lang, extra_coverage_flags=None, extra_debug_flags=None):
+  def configureCoverageForLang(self, log_printer_cls, lang, extra_coverage_flags=None, extra_debug_flags=None):
     """
     Check that a compiler accepts code-coverage flags. If the compiler does accept code-coverage flags
     try to set debugging flags equivalent to -Og.
@@ -889,16 +888,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     On success:
     - defines PETSC_USE_COVERAGE to 1
     """
-    try:
-      import inspect
-
-      FUNC_NAME = inspect.currentframe().f_code.co_name
-    except:
-      FUNC_NAME = 'Unknown'
-
-    def log_print(msg, *args, **kwargs):
-      self.logPrint('{}(): {}'.format(FUNC_NAME, msg), *args, **kwargs)
-      return
+    log_print = log_printer_cls(self)
 
     def quoted(string):
       return string.join(("'", "'"))
@@ -914,18 +904,14 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
 
     compiler = self.getCompiler(lang=lang)
     if self.setCompilers.isGNU(compiler, self.log):
-      compiler_kind = 'GNU'
+      is_gnuish = True
     elif self.setCompilers.isClang(compiler, self.log):
-      compiler_kind = 'clang'
+      is_gnuish = True
     else:
-      compiler_kind = ''
-
-    if not self.argDB['with-coverage']:
-      log_print('coverage was disabled from command line or default')
-      return
+      is_gnuish = False
 
     # if not gnuish and we don't have a set of extra flags, bail
-    if compiler_kind not in {'GNU', 'clang'} and extra_coverage_flags is None:
+    if not is_gnuish and extra_coverage_flags is None:
       log_print('Don\'t know how to add coverage for compiler {}. Only know how to add coverage for gnu-like compilers (either gcc or clang). Skipping it!'.format(quoted(compiler)))
       return
 
@@ -1001,6 +987,44 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     return
 
   def configureCoverage(self):
+    """
+    Configure coverage for all available languages.
+
+    If user did not request coverage, this function does nothing and returns immediatel.
+    Therefore the following only apply to the case where the user requested coverage.
+
+    On success:
+    - defines PETSC_USE_COVERAGE to 1
+
+    On failure:
+    - If no compilers supported the coverage flag, throws RuntimeError
+    -
+    """
+    class LogPrinter:
+      def __init__(self, cfg):
+        self.cfg = cfg
+        try:
+          import inspect
+
+          calling_func_stack = inspect.stack()[1]
+          if sys.version_info >= (3, 5):
+            func_name = calling_func_stack.function
+          else:
+            func_name = calling_func_stack[3]
+        except:
+          func_name = 'Unknown'
+        self.fmt_str = func_name + '(): {}'
+
+      def __call__(self, msg, *args, **kwargs):
+        return self.cfg.logPrint(self.fmt_str.format(msg), *args, **kwargs)
+
+    argdb_flag = 'with-coverage'
+    log_print  = LogPrinter(self)
+    if not self.argDB[argdb_flag]:
+      log_print('coverage was disabled from command line or default')
+      return
+
+    tested_langs = []
     for LANG in ['C', 'Cxx', 'CUDA', 'HIP', 'SYCL', 'FC']:
       compilerName = LANG.upper() if LANG in {'Cxx', 'FC'} else LANG + 'C'
       if hasattr(self.setCompilers, compilerName):
@@ -1026,7 +1050,78 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
             # flags above.
             kwargs['extra_coverage_flags'].append('-arch=native')
             kwargs['extra_debug_flags'] = ['-Xcompiler -Og']
-        self.executeTest(self.configureCoverageForLang, args=[LANG], kargs=kwargs)
+        tested_langs.append(LANG)
+        self.executeTest(self.configureCoverageForLang, args=[LogPrinter, LANG], kargs=kwargs)
+
+    if not self.defines.get('USE_COVERAGE'):
+      # coverage was requested but no compilers accepted it, this is an error
+      raise RuntimeError(
+        'Coverage was requested (--{}={}) but none of the compilers supported it:\n{}\n'.format(
+          argdb_flag, self.argDB[argdb_flag],
+          '\n'.join(['  - {} ({})'.format(self.getCompiler(lang=lang), lang) for lang in tested_langs])
+        )
+      )
+
+    return
+    # Disabled for now, since this does not really work. It solves the problem of
+    # "undefined reference to __gcov_flush()" but if we add -lgcov we get:
+    #
+    # duplicate symbol '___gcov_reset' in:
+    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
+    #     /opt/.../libgcov.a(_gcov_reset.o)
+    # duplicate symbol '___gcov_dump' in:
+    #     /opt/.../libgcov.a(_gcov_dump.o)
+    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
+    # duplicate symbol '___gcov_fork' in:
+    #     /opt/.../libgcov.a(_gcov_fork.o)
+    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
+    #
+    # I don't know how to solve this.
+
+    log_print('Checking if compilers can cross-link disparate coverage libraries')
+    # At least one of the compilers has coverage enabled. Now need to make sure multiple
+    # code coverage impls work together, specifically when using clang C/C++ compiler with
+    # gfortran.
+    if not hasattr(self.setCompilers, 'FC'):
+      log_print('No fortran compiler detected. No need to check cross-linking!')
+      return
+
+    c_lang = self.languages.clanguage
+    if not self.setCompilers.isClang(self.getCompiler(lang=c_lang), self.log):
+      # must be GCC
+      log_print('C-language ({}) compiler is not clang, assuming it is GCC, so cross-linking with FC ({}) assumed to be OK'.format(c_lang, self.getCompiler(lang='FC')))
+      return
+
+    # If we are here we:
+    #   1. Have both C/C++ compiler and fortran compiler
+    #   2. The C/C++ compiler is *not* the same as the fortran compiler (unless we start
+    #      using flang)
+    #
+    # Now we check if we can cross-link
+    def can_cross_link(**kwargs):
+      f_body = "      subroutine foo()\n      print*,'testing'\n      return\n      end\n"
+      c_body = "int main() { }"
+
+      return self.compilers.checkCrossLink(
+        f_body, c_body, language1='FC', language2=c_lang, extralibs=self.compilers.flibs, **kwargs
+      )
+
+    log_print('Trying to cross-link WITHOUT extra libs')
+    if can_cross_link():
+      log_print('Successfully cross-linked WITHOUT extra libs')
+      # success, we already can cross-link
+      return
+
+    extra_libs = ['-lgcov']
+    log_print('Trying to cross-link with extra libs: {}'.format(extra_libs))
+    if can_cross_link(extraObjs=extra_libs):
+      log_print(
+        'Successfully cross-linked using extra libs: {}, adding them to LIBS'.format(extra_libs)
+      )
+      self.setCompilers.LIBS += ' ' + ' '.join(extra_libs)
+    else:
+      # maybe should be an error?
+      self.logPrintWarning("Could not successfully cross-link covered code between {} and FC. Sometimes this is a false positive. Assuming this does eventually end up working when the full link-line is assembled when building PETSc. If you later encounter linker errors about missing __gcov_exit(), __gcov_init(), __llvm_cov_flush() etc. this is why!".format(c_lang))
     return
 
   def configureCoverageExecutable(self):

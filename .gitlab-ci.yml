@@ -399,6 +399,7 @@ osx-m1:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos-m1
   variables:
@@ -988,6 +989,7 @@ osx-cxx-cmplx-pkgs-dbg:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos
   variables:
@@ -1009,6 +1011,7 @@ osx-dbg:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos
   variables:
@@ -1018,6 +1021,7 @@ osx-xsdk-opt:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos, opt
   variables:
@@ -1057,11 +1061,7 @@ coverage-analyze:
     - linux-opt-cxx-quad
     - linux-ILP64
     - linux-64idx-i8-uni
-    - osx-cxx-cmplx-pkgs-dbg
     - osx-cxx-pkgs-opt
-    - osx-dbg
-    - osx-xsdk-opt
-    - osx-m1
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline
