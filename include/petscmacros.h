@@ -339,6 +339,14 @@ M*/
   subjected to type-based alias analysis, but is instead assumed to be able to
   alias any other type of objects
 
+  Example Usage:
+.vb
+  typedef PetscScalar PetscScalarAlias PETSC_ATTRIBUTE_MAY_ALIAS;
+
+  PetscReal        *pointer;
+  PetscScalarAlias *other_pointer = reinterpret_cast<PetscScalarAlias *>(pointer);
+.ve
+
   Level: advanced
 
 .seealso: `PetscHasAttribute()`
