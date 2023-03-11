@@ -529,14 +529,14 @@ linux-sycl-double:
     TEST_OPTS: query=requires queryval=kokkos_kernels
     MAKE_CFLAGS: -Wno-expected-file-type -Werror
 
-linux-cuda-pkgs-gcov:
+linux-cuda-pkgs:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda-pkgs-gcov
+    TEST_ARCH: arch-ci-linux-cuda-pkgs
     # run all tests that:
     # 1. require cuda, OR
     # 2. require device, OR
@@ -687,14 +687,14 @@ linux-intel-mkl-single:
     TEST_ARCH: arch-ci-linux-intel-mkl-single
     LOAD_MODULES: intel-oneapi-compilers/2022.0.2 intel-oneapi-mkl/2022.0.2 intel-oneapi-mpi/2021.5.1
 
-linux-cxx-cmplx-pkgs-64idx-gcov:
+linux-cxx-cmplx-pkgs-64idx:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - gce-u22-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx-gcov
+    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
@@ -743,23 +743,23 @@ linux-pkgs-opt:
     LOAD_MODULES: gcc/12.1.0
     MAKE_CXXFLAGS: -Wno-deprecated-declarations -Werror
 
-linux-pkgs-gcov:
+linux-pkgs-dbg:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - gce-u22-stage3, linux-gcov
   variables:
-    TEST_ARCH: arch-ci-linux-pkgs-gcov
+    TEST_ARCH: arch-ci-linux-pkgs-dbg
 
-linux-matlab-ilp64-gcov:
+linux-matlab-ilp64:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - gce-u22-stage3, linux-gcov
   variables:
-    TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
+    TEST_ARCH: arch-ci-linux-matlab-ilp64
     LOAD_MODULES: gcc/9.4.0 matlab/R2022a
   allow_failure: true
 
@@ -1035,10 +1035,10 @@ coverage-analyze:
     - linux-gcc-pkgs-opt
     - linux-gcc-complex-opt-32bit
     # stage-3
-    - linux-pkgs-gcov
-    - linux-matlab-ilp64-gcov
-    - linux-cuda-pkgs-gcov
-    - linux-cxx-cmplx-pkgs-64idx-gcov
+    - linux-pkgs-dbg
+    - linux-matlab-ilp64
+    - linux-cuda-pkgs
+    - linux-cxx-cmplx-pkgs-64idx
     - linux-cuda-cmplx
     - linux-cuda-double-64idx
     - linux-cuda-uni-pkgs
