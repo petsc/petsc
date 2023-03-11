@@ -676,13 +676,14 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
               nip_loc_r = d_numCells[grid_r] * Nq;
               loc_Nf_r  = d_species_offset[grid_r + 1] - d_species_offset[grid_r];
               for (fieldB = 0; fieldB < loc_Nf_r; ++fieldB) { // fieldB is \beta  d_lambdas[grid][grid_r]
-                const PetscInt idx = d_ipf_offset[grid_r] + fieldB * nip_loc_r + ipidx_g;
-                temp1[0] += d_fdf_k(b_id, 1, idx) * d_beta[fieldB + f_off_r] * d_invMass[fieldB + f_off_r] * d_lambdas[LANDAU_MAX_GRIDS * grid + grid_r];
-                temp1[1] += d_fdf_k(b_id, 2, idx) * d_beta[fieldB + f_off_r] * d_invMass[fieldB + f_off_r] * d_lambdas[LANDAU_MAX_GRIDS * grid + grid_r];
+                const PetscInt  idx = d_ipf_offset[grid_r] + fieldB * nip_loc_r + ipidx_g;
+                const PetscReal ff1 = d_beta[fieldB + f_off_r] * d_lambdas[LANDAU_MAX_GRIDS * grid + grid_r], ff2 = d_invMass[fieldB + f_off_r] * ff1;
+                temp1[0] += d_fdf_k(b_id, 1, idx) * ff2;
+                temp1[1] += d_fdf_k(b_id, 2, idx) * ff2;
   #if LANDAU_DIM == 3
-                temp1[2] += d_fdf_k(b_id, 3, idx) * d_beta[fieldB + f_off_r] * d_invMass[fieldB + f_off_r] * d_lambdas[LANDAU_MAX_GRIDS * grid + grid_r];
+                temp1[2] += d_fdf_k(b_id, 3, idx) * ff2;
   #endif
-                temp2 += d_fdf_k(b_id, 0, idx) * d_beta[fieldB + f_off_r] * d_lambdas[LANDAU_MAX_GRIDS * grid + grid_r];
+                temp2 += d_fdf_k(b_id, 0, idx) * ff1;
               }
               temp1[0] *= wi;
               temp1[1] *= wi;
