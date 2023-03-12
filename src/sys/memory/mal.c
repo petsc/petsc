@@ -448,7 +448,7 @@ PetscErrorCode PetscFreeA(int n, int lineno, const char *function, const char *f
   int     i;
 
   PetscFunctionBegin;
-  PetscCheck(n <= 8, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Attempt to allocate %d objects but only up to 8 supported", n);
+  PetscCheck((n >= 1) && (n <= 8), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Attempt to allocate %d objects but only up to 8 supported", n);
   ptr[0] = (void **)ptr0;
   va_start(Argp, ptr0);
   for (i = 1; i < n; i++) ptr[i] = va_arg(Argp, void **);

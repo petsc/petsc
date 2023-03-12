@@ -572,15 +572,16 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
 
     va_start(Argp, format);
     PetscCall((*PetscVFPrintf)(fd, format, Argp));
+    va_end(Argp);
     PetscCall(PetscFFlush(fd));
     if (petsc_history) {
-      va_start(Argp, format);
       tab = intab;
       while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, petsc_history, "  "));
+      va_start(Argp, format);
       PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
+      va_end(Argp);
       PetscCall(PetscFFlush(petsc_history));
     }
-    va_end(Argp);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -905,10 +906,12 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
 
     va_start(Argp, format);
     PetscCall((*PetscVFPrintf)(fp, format, Argp));
+    va_end(Argp);
     PetscCall(PetscFFlush(fp));
     if (petsc_history) {
       va_start(Argp, format);
       PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
+      va_end(Argp);
       PetscCall(PetscFFlush(petsc_history));
     }
     va_end(Argp);

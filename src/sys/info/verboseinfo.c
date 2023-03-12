@@ -608,17 +608,18 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
 
     PetscLogPrintInfo = PETSC_FALSE;
     PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &urank));
-    va_start(Argp, message);
     PetscCall(PetscSNPrintf(string, PETSC_STATIC_ARRAY_LENGTH(string), "[%d] <%s> %s(): ", urank, PetscInfoNames[classid - PETSC_SMALLEST_CLASSID], func));
     PetscCall(PetscStrlen(string, &len));
+    va_start(Argp, message);
     PetscCall(PetscVSNPrintf(string + len, 8 * 1024 - len, message, &fullLength, Argp));
+    va_end(Argp);
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, PetscInfoFile, "%s", string));
     PetscCall(PetscFFlush(PetscInfoFile));
     if (petsc_history) {
       va_start(Argp, message);
       PetscCall((*PetscVFPrintf)(petsc_history, message, Argp));
+      va_end(Argp);
     }
-    va_end(Argp);
     PetscLogPrintInfo = oldflag;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

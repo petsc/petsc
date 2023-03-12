@@ -701,7 +701,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
   Mat                     A, B;
   MatShellMatFunctionList matmat;
   Mat_Shell              *shell;
-  PetscBool               flg;
+  PetscBool               flg = PETSC_FALSE;
   char                    composedname[256];
   MatMatDataShell        *mdata;
 
