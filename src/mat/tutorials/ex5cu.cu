@@ -30,7 +30,7 @@ __global__ void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start
   }
 }
 
-PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank)
+PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt)
 {
   PetscFunctionBeginUser;
   for (PetscInt i = start; i < end + 1; i++) {
