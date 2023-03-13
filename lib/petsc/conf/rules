@@ -512,7 +512,7 @@ manexamples:
                   if [ $$l -eq 0 ] ; then \
                     printf "\n## Examples\n" >> $$b; \
                   fi; \
-                  echo  "<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/BB\">BB</A><BR>" | sed s?BB?$${LOCDIR}$$i.html?g >> $$b; \
+                  echo  "<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/XX\">BB</A><BR>" | sed s?XX?$${LOCDIR}$$i.html?g | sed s?BB?$${LOCDIR}$$i?g >> $$b; \
                 fi; \
               done; \
             fi; \
