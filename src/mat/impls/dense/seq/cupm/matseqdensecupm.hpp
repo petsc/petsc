@@ -1630,7 +1630,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::RestoreColumnVec(Mat A, PetscInt, Ve
 template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::GetFactor(Mat A, MatFactorType ftype, Mat *fact_out) noexcept
 {
-  Mat                fact;
+  Mat                fact = nullptr;
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;

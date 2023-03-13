@@ -433,15 +433,15 @@ struct BlasInterface : BlasInterfaceImpl<T> {
   {
     PetscFunctionBegin;
     PetscCheck((std::is_same<PetscInt, cupmBlasInt_t>::value) || (x <= std::numeric_limits<cupmBlasInt_t>::max()), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for %s, which may be restricted to 32 bit integers", x, cupmBlasName());
-    PetscCheck(x >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to %s routine: %" PetscInt_FMT, cupmBlasName(), x);
+    PetscCheck(x >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer (%" PetscInt_FMT ") to %s routine", x, cupmBlasName());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   static PetscErrorCode PetscCUPMBlasIntCast(PetscInt x, cupmBlasInt_t *y) noexcept
   {
     PetscFunctionBegin;
-    PetscCall(checkCupmBlasIntCast(x));
     *y = static_cast<cupmBlasInt_t>(x);
+    PetscCall(checkCupmBlasIntCast(x));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
