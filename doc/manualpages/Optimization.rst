@@ -1,6 +1,6 @@
-================================
-Forward and Adjoint Timestepping
-================================
+============
+Optimization
+============
 
 .. toctree::
    :maxdepth: 1
