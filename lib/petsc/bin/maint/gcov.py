@@ -317,10 +317,9 @@ def extract_tarballs(base_paths, dest_dir):
   tar_files = []
   for path in base_paths:
     if path.is_dir():
-      tar_files.extend(list(path.glob('*.json.tar.gz')))
+      tar_files.extend(list(path.glob('*.json.tar.*')))
     else:
       assert path.is_file(), 'path {} is not a file'.format(path)
-      assert path.name.endswith('.json.tar.gz'), 'path {} must be a path to tarball'.format(path)
       tar_files.append(path)
 
   tar_files = unique_list(tar_files)

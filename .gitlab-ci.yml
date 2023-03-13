@@ -270,7 +270,7 @@ pause-for-approval:
     - arch-*/tests/testresults.xml
     - arch-*/tests/test_arch-*_tap.log
     - arch-*/tests/test_arch-*_err.log
-    - arch-*/arch-*-gcovr-report.json.tar.gz
+    - arch-*/arch-*-gcovr-report.json.tar.bz2
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
