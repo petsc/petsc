@@ -31,6 +31,9 @@ PETSC_EXTERN const char    *PetscBasename(const char[]);
 PETSC_EXTERN PetscErrorCode PetscEListFind(PetscInt, const char *const *, const char *, PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const *, const char *, PetscEnum *, PetscBool *);
 
+PETSC_EXTERN PetscErrorCode PetscStrcat(char[], const char[]);
+PETSC_EXTERN PetscErrorCode PetscStrcpy(char[], const char[]);
+
 #define PetscAssertPointer_Private(ptr, arg) PetscAssert((ptr), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter '" PetscStringize(ptr) "' # " PetscStringize(arg))
 
 /*@C
@@ -114,43 +117,6 @@ static inline PetscErrorCode PetscStrlen(const char s[], size_t *len)
 }
 
 /*@C
-  PetscStrcpy - Copies a string
-
-  Not Collective, No Fortran Support
-
-  Input Parameters:
-. t - pointer to string
-
-  Output Parameter:
-. s - the copied string
-
-  Level: intermediate
-
-  Notes:
-  `NULL` strings returns a string starting with zero. It is recommended you use
-  `PetscStrncpy()` (equivelently `PetscArraycpy()` or `PetscMemcpy()`) instead of this routine.
-
-.seealso: `PetscStrncpy()`, `PetscStrcat()`, `PetscStrlcat()`, `PetscStrallocpy()`,
-          `PetscArrycpy()`, `PetscMemcpy()`
-@*/
-static inline PetscErrorCode PetscStrcpy(char s[], const char t[])
-{
-  PetscFunctionBegin;
-  if (t) {
-    PetscAssertPointer_Private(s, 1);
-    PetscAssertPointer_Private(t, 2);
-#if PetscHasBuiltin(__builtin_strcpy)
-    __builtin_strcpy(s, t);
-#else
-    strcpy(s, t);
-#endif
-  } else if (s) {
-    s[0] = '\0';
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
   PetscStrallocpy - Allocates space to hold a copy of a string then copies the string in the new space
 
   Not Collective, No Fortran Support
@@ -169,7 +135,7 @@ static inline PetscErrorCode PetscStrcpy(char s[], const char t[])
   If `t` has previously been allocated then that memory is lost, you may need to `PetscFree()`
   the array before calling this routine.
 
-.seealso: `PetscStrArrayallocpy()`, `PetscStrcpy()`, `PetscStrNArrayallocpy()`
+.seealso: `PetscStrArrayallocpy()`, `PetscStrNArrayallocpy()`
 @*/
 static inline PetscErrorCode PetscStrallocpy(const char s[], char *t[])
 {
@@ -258,7 +224,7 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   Should this be `PetscStrlcpy()` to reflect its behavior which is like `strlcpy()` not
   `strncpy()`?
 
-.seealso: `PetscStrcpy()`, `PetscStrcat()`, `PetscStrlcat()`, `PetscStrallocpy()`
+.seealso: `PetscStrlcat()`, `PetscStrallocpy()`
 @*/
 static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
 {
@@ -290,35 +256,6 @@ static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
 }
 
 /*@C
-  PetscStrcat - Concatenates a string onto a given string
-
-  Not Collective, No Fortran Support
-
-  Input Parameters:
-+ s - string to be added to
-- t - pointer to string to be added to end
-
-  Level: intermediate
-
-  Notes:
-  It is recommended you use `PetscStrlcat()` instead of this routine.
-
-.seealso: `PetscStrcpy()`, `PetscStrncpy()`, `PetscStrlcat()`
-@*/
-static inline PetscErrorCode PetscStrcat(char s[], const char t[])
-{
-  PetscFunctionBegin;
-  if (!t) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscAssertPointer_Private(s, 1);
-#if PetscHasBuiltin(__builtin_strcat)
-  __builtin_strcat(s, t);
-#else
-  strcat(s, t);
-#endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
   PetscStrlcat - Concatenates a string onto a given string, up to a given length
 
   Not Collective, No Fortran Support
@@ -335,7 +272,7 @@ static inline PetscErrorCode PetscStrcat(char s[], const char t[])
   original allocated space, not the length of the left-over space. This is
   similar to the BSD system call `strlcat()`.
 
-.seealso: `PetscStrcpy()`, `PetscStrncpy()`, `PetscStrcat()`
+.seealso: `PetscStrncpy()`
 @*/
 static inline PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
 {

@@ -103,6 +103,7 @@ Changes: Development
   While currently opt-in, this feature **will be enabled by default in a future release**. Users are highly encourage to enable it and fix any discrepancies before that point. Note that ``PETSC_SUCCESS`` is defined whether or not the feature is enabled, so users may incrementally update.
 
 - Add ``PetscFFlush()``
+- Soft-deprecate ``PetscStrcpy()`` and ``PetscStrcat()``. No diagnostics will be emitted if these routines are used, but users are highly encouraged to switch to the more secure (and possibly performant) ``PetscStrncpy()`` and ``PetscStrlcat()``
 
 .. rubric:: Event Logging:
 
