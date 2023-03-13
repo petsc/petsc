@@ -1,6 +1,6 @@
-==========================
-Graphics and Visualization
-==========================
+===========================================
+System Routines, Profiling, Data Structures
+===========================================
 
 .. toctree::
    :maxdepth: 1
