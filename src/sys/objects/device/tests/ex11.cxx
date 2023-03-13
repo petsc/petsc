@@ -54,8 +54,8 @@ static PetscErrorCode MarkedObjectMapView(PetscViewer vwr, std::size_t nkeys, co
     for (std::size_t j = 0; j < ndeps[i]; ++j) {
       const auto event = dependencies[i][j];
 
-      PetscCall(
-        PetscViewerASCIISynchronizedPrintf(vwr, "event %zu {dtype: %s, dctx_id: %" PetscInt64_FMT ", dctx_state: %" PetscInt64_FMT ", data: %p, destroy: %p}\n", j, PetscDeviceTypes[event->dtype], event->dctx_id, event->dctx_state, event->data, event->destroy));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(vwr, "event %zu {dtype: %s, dctx_id: %" PetscInt64_FMT ", dctx_state: %" PetscInt64_FMT ", data: %p, destroy: %p}\n", j, PetscDeviceTypes[event->dtype], event->dctx_id, event->dctx_state, event->data,
+                                                   reinterpret_cast<void *>(event->destroy)));
     }
     PetscCall(PetscViewerASCIIPopTab(vwr));
     PetscCall(PetscViewerASCIIPopTab(vwr));
