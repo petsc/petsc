@@ -7818,24 +7818,27 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
       PetscCall(PetscMalloc2(nloc, &d_nnz, isseqaij ? 0 : nloc, &o_nnz));
       for (c = a, kk = 0; c && kk < 2; c = b, kk++) {
         PetscInt       *nnz = (c == a) ? d_nnz : o_nnz;
-        const PetscInt *cols;
-        for (PetscInt brow = 0, jj, ok = 1, j0; brow < nloc * bs; brow += bs) { // block rows
-          PetscCall(MatGetRow(c, brow, &jj, &cols, NULL));
-          nnz[brow / bs] = jj / bs;
-          if (jj % bs) ok = 0;
-          if (cols) j0 = cols[0];
-          else j0 = -1;
-          PetscCall(MatRestoreRow(c, brow, &jj, &cols, NULL));
+        const PetscInt *cols1, *cols2;
+        for (PetscInt brow = 0, nc1, nc2, ok = 1; brow < nloc * bs; brow += bs) { // block rows
+          PetscCall(MatGetRow(c, brow, &nc2, &cols2, NULL));
+          nnz[brow / bs] = nc2 / bs;
+          if (nc2 % bs) ok = 0;
           if (nnz[brow / bs] > nmax) nmax = nnz[brow / bs];
-          for (PetscInt ii = 1; ii < bs && nnz[brow / bs]; ii++) { // check for non-dense blocks
-            PetscCall(MatGetRow(c, brow + ii, &jj, &cols, NULL));
-            if (jj % bs) ok = 0;
-            if ((cols && j0 != cols[0]) || (!cols && j0 != -1)) ok = 0;
-            if (nnz[brow / bs] != jj / bs) ok = 0;
-            PetscCall(MatRestoreRow(c, brow + ii, &jj, &cols, NULL));
+          for (PetscInt ii = 1; ii < bs; ii++) { // check for non-dense blocks
+            PetscCall(MatGetRow(c, brow + ii, &nc1, &cols1, NULL));
+            if (nc1 != nc2) ok = 0;
+            else {
+              for (PetscInt jj = 0; jj < nc1 && ok == 1; jj++) {
+                if (cols1[jj] != cols2[jj]) ok = 0;
+                if (cols1[jj] % bs != jj % bs) ok = 0;
+              }
+            }
+            PetscCall(MatRestoreRow(c, brow + ii, &nc1, &cols1, NULL));
           }
+          PetscCall(MatRestoreRow(c, brow, &nc2, &cols2, NULL));
           if (!ok) {
             PetscCall(PetscFree2(d_nnz, o_nnz));
+            PetscCall(PetscInfo(Amat, "Found sparse blocks - revert to slow method\n"));
             goto old_bs;
           }
         }
@@ -7859,6 +7862,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
               val += PetscAbs(PetscRealPart(aa[jj])); // a sort of norm
             }
           }
+          PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%d) >= nmax (%d)", (int)(k / bs), (int)nmax);
           AA[k / bs] = val;
         }
         grow = Istart / bs + brow / bs;
@@ -7873,6 +7877,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
         for (PetscInt brow = 0, grow; brow < nloc * bs; brow += bs) { // block rows
           PetscCall(MatGetRow(b, brow, &ncols, &cols, NULL));
           for (int k = 0, cidx = 0; k < ncols; k += bs, cidx++) {
+            PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs >= nmax");
             AA[k / bs] = 0;
             AJ[cidx]   = garray[cols[k]] / bs;
           }
@@ -7882,6 +7887,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
             PetscCall(MatGetRow(b, brow + ii, &ncols, &cols, &vals));
             for (int k = 0; k < ncols; k += bs) {
               for (int jj = 0; jj < bs; jj++) { // cols in block
+                PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%d) >= nmax (%d)", (int)(k / bs), (int)nmax);
                 AA[k / bs] += PetscAbs(PetscRealPart(vals[k + jj]));
               }
             }
