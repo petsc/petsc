@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = 'fbf6872f85d61e9b6235aa3e11ab8e161d85ae3c' # main feb-12-2023
+    self.gitcommit              = '6de1168878a50fd9ee55e80758cc9a6820d7b1f1' # main mar-15-2023
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.2.1'
     self.versionname            = 'HPDDM_VERSION'
@@ -61,21 +61,20 @@ class Configure(config.package.Package):
       self.log.write(output+err)
     except RuntimeError as e:
       raise RuntimeError('Error copying HPDDM: '+str(e))
-    # SLEPc dependency
-    if self.slepc.found:
-      if self.checkSharedLibrariesEnabled():
-        slepcbuilddep = ''
-        ldflags = ' '.join(self.setCompilers.sharedLibraryFlags)
-        cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),incDir])
-        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt)])
-        slepcbuilddep = 'slepc-install slepc-build'
-        oldFlags = self.compilers.CXXPPFLAGS
-        self.compilers.CXXPPFLAGS += ' -I'+incDir
-        self.checkVersion()
-        self.compilers.CXXPPFLAGS = oldFlags
-        # check for Windows-specific define
-        if self.sharedLibraries.getMakeMacro('PETSC_DLL_EXPORTS'):
-          cxxflags += ' -Dpetsc_EXPORTS'
+    if self.checkSharedLibrariesEnabled():
+      ldflags = ' '.join(self.setCompilers.sharedLibraryFlags)
+      cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),incDir])
+      ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt)])
+      slepcbuilddep = 'slepc-install slepc-build'
+      oldFlags = self.compilers.CXXPPFLAGS
+      self.compilers.CXXPPFLAGS += ' -I'+incDir
+      self.checkVersion()
+      self.compilers.CXXPPFLAGS = oldFlags
+      # check for Windows-specific define
+      if self.sharedLibraries.getMakeMacro('PETSC_DLL_EXPORTS'):
+        cxxflags += ' -Dpetsc_EXPORTS'
+      # SLEPc dependency
+      if self.slepc.found:
         self.addMakeRule('hpddmbuild',slepcbuilddep,\
                            ['@echo "*** Building and installing HPDDM ***"',\
                             '@${RM} '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.errorflg'),\
@@ -94,10 +93,10 @@ class Configure(config.package.Package):
           self.addMakeRule('hpddm-install','')
           return self.installDir
       else:
-        self.logPrintWarning('Skipping PCHPDDM installation, remove --with-shared-libraries=0')
+        self.logPrintWarning('Compiling HPDDM without SLEPc, \
+PCHPDDM won\'t be available, unless reconfiguring with --download-slepc or configuring SLEPc with --download-hpddm')
     else:
-      self.logPrintWarning('Compiling HPDDM without SLEPc, \
-PCHPDDM won\'t be available, unless reconfiguring with --download-slepc')
+      self.logPrintWarning('Skipping PCHPDDM installation, remove --with-shared-libraries=0')
     self.addMakeRule('hpddm-build','')
     self.addMakeRule('hpddm-install','')
     return self.installDir

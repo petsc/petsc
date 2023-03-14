@@ -21,7 +21,7 @@ const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
                              "  Url = {https://github.com/prj-/jolivet2020petsc}\n"
                              "}\n";
 
-#if PetscDefined(HAVE_SLEPC) && PetscDefined(USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_SLEPC) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
 static PetscBool loadedDL = PETSC_FALSE;
 #endif
 
