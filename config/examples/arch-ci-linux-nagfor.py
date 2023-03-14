@@ -9,6 +9,7 @@ configure_options = [
   '--download-mpich',
   '--with-fc=petscnagfor',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
 ]
 
 if __name__ == '__main__':

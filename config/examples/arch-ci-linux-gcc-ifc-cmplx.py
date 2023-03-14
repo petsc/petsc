@@ -18,7 +18,7 @@ configure_options = [
   #'--download-mpich=1',
   #'--download-mpich-pm=gforker',
   '--with-mpi-dir='+mpich_install_dir,
-  'LIBS=-L'+ifort_lib_dir+' -lifport -lifcoremt_pic -limf -lsvml -lm -lipgo -lirc -lpthread -L'+mpich_lib_dir+' -lmpifort -lmpi',
+  'LIBS=-L'+ifort_lib_dir+' -lifport -lifcoremt_pic -limf -lsvml -lm -lipgo -lirc -lpthread -L'+mpich_lib_dir+' -lmpifort -lmpi -lgcov',
 
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
@@ -31,6 +31,7 @@ configure_options = [
   '--download-kokkos-kernels=1',
   '--download-fblaslapack=1',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':

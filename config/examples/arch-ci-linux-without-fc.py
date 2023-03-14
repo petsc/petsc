@@ -15,6 +15,7 @@ configure_options = [
   '--download-hpddm=1',
   '--with-shared-libraries=1',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':

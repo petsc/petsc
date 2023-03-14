@@ -17,6 +17,7 @@ configure_options = [
   '--download-slepc=1',
   '--download-f2cblaslapack=1',
   '--with-f2cblaslapack-fp16-bindings=1',
+  #'--with-coverage',
   '--with-strict-petscerrorcode',
   ]
 

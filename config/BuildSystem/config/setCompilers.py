@@ -1954,7 +1954,7 @@ class Configure(config.base.Configure):
     raise RuntimeError('Bad compiler flag: '+flag)
 
   @contextlib.contextmanager
-  def extraCompilerFlags(self, extraFlags, lang = None):
+  def extraCompilerFlags(self, extraFlags, lang = None, **kwargs):
     assert isinstance(extraFlags,(list,tuple)), "extraFlags must be either a list or tuple"
     if lang:
       self.pushLanguage(lang)
@@ -1964,7 +1964,7 @@ class Configure(config.base.Configure):
     try:
       for i,flag in enumerate(extraFlags):
         try:
-          self.addCompilerFlag(flag)
+          self.addCompilerFlag(flag, **kwargs)
         except RuntimeError:
           skipFlags.append((i,flag))
       yield skipFlags

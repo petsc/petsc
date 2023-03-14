@@ -9,9 +9,9 @@ configure_options = [
   '--with-fc=gfortran',
   '--with-cxx=g++',
 
-  'COPTFLAGS=-g -O',
-  'FOPTFLAGS=-g -O',
-  'CXXOPTFLAGS=-g -O',
+  'COPTFLAGS=-g -O0',
+  'FOPTFLAGS=-g -O0',
+  'CXXOPTFLAGS=-g -O0',
 
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',

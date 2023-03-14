@@ -32,6 +32,7 @@ configure_options = [
   '--with-ssl=1',
   '--with-tau-perfstubs=0',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
 ]
 
 if __name__ == '__main__':
