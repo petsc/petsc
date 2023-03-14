@@ -393,7 +393,7 @@ PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const c
     char gifmovie[PETSC_MAX_PATH_LEN];
     PetscCall(PetscSNPrintf(gifmovie, sizeof(gifmovie), "%s/%s_movie.gif", basename, basename));
     PetscCall(PetscDrawMovieSaveGIF(input, count, gifmovie));
-    PetscCall(PetscStrcpy(input, gifmovie));
+    PetscCall(PetscStrncpy(input, gifmovie, sizeof(input)));
   }
 #endif
 

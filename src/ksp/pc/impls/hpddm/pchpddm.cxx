@@ -315,8 +315,8 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "pc_hpddm_coarse_"));
     PetscCall(PetscOptionsHasName(NULL, prefix, "-mat_mumps_use_omp_threads", &flg));
     if (flg) {
-      char type[64];                                                                                     /* same size as in src/ksp/pc/impls/factor/factimpl.c */
-      PetscCall(PetscStrcpy(type, n > 1 && PetscDefined(HAVE_MUMPS) ? MATSOLVERMUMPS : MATSOLVERPETSC)); /* default solver for a MatMPIAIJ or a MatSeqAIJ */
+      char type[64];                                                                                                    /* same size as in src/ksp/pc/impls/factor/factimpl.c */
+      PetscCall(PetscStrncpy(type, n > 1 && PetscDefined(HAVE_MUMPS) ? MATSOLVERMUMPS : MATSOLVERPETSC, sizeof(type))); /* default solver for a MatMPIAIJ or a MatSeqAIJ */
       PetscCall(PetscOptionsGetString(NULL, prefix, "-pc_factor_mat_solver_type", type, sizeof(type), NULL));
       PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
       PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "-%smat_mumps_use_omp_threads and -%spc_factor_mat_solver_type != %s", prefix, prefix, MATSOLVERMUMPS);
@@ -1782,13 +1782,13 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
   PetscFunctionBegin;
   PetscValidBoolPointer(found, 1);
-  PetscCall(PetscStrcpy(dir, "${PETSC_LIB_DIR}"));
+  PetscCall(PetscStrncpy(dir, "${PETSC_LIB_DIR}", sizeof(dir)));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-hpddm_dir", dir, sizeof(dir), NULL));
   PetscCall(PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir));
   PetscCall(PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, found));
 #if defined(SLEPC_LIB_DIR) /* this variable is passed during SLEPc ./configure since    */
   if (!*found) {           /* slepcconf.h is not yet built (and thus can't be included) */
-    PetscCall(PetscStrcpy(dir, HPDDM_STR(SLEPC_LIB_DIR)));
+    PetscCall(PetscStrncpy(dir, HPDDM_STR(SLEPC_LIB_DIR), sizeof(dir)));
     PetscCall(PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir));
     PetscCall(PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, found));
   }

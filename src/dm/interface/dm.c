@@ -995,7 +995,7 @@ PetscErrorCode DMView(DM dm, PetscViewer v)
     char     type[256];
 
     PetscCall(PetscViewerBinaryWrite(v, &classid, 1, PETSC_INT));
-    PetscCall(PetscStrncpy(type, ((PetscObject)dm)->type_name, 256));
+    PetscCall(PetscStrncpy(type, ((PetscObject)dm)->type_name, sizeof(type)));
     PetscCall(PetscViewerBinaryWrite(v, type, 256, PETSC_CHAR));
   }
   PetscTryTypeMethod(dm, view, v);
@@ -5345,7 +5345,7 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
   PetscCall(PetscFree(labels));
   PetscCallMPI(MPI_Allreduce(&maxLen, &gmaxLen, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscCalloc1(Nl * gmaxLen, &sendNames));
-  for (l = 0; l < Nl; ++l) PetscCall(PetscStrcpy(&sendNames[gmaxLen * l], names[l]));
+  for (l = 0; l < Nl; ++l) PetscCall(PetscStrncpy(&sendNames[gmaxLen * l], names[l], gmaxLen));
   PetscCall(PetscFree(names));
   /* Put all names on all processes */
   PetscCall(PetscCalloc2(size, &counts, size + 1, &displs));

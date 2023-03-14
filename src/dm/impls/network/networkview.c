@@ -98,7 +98,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
     size_t numChars;
     // Same thing, but for POSIX systems on which tmpnam is deprecated
     // Note: Configure may detect mkstemp but it will not be defined if compiling for C99, so check additional defines to see if we can use it
-    PetscCall(PetscStrcpy(filename, "/tmp/"));
+    PetscCall(PetscStrncpy(filename, "/tmp/", sizeof(filename)));
     // Mkstemp requires us to explicitly specify part of the path, but some systems may not like putting files in /tmp/ so have an option for it
     PetscCall(PetscOptionsGetString(NULL, NULL, "-dmnetwork_view_tmpdir", filename, sizeof(filename), NULL));
     // Make sure the filename ends with a '/'
@@ -108,7 +108,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
       filename[numChars + 1] = 0;
     }
     // Perform the actual temporary file creation
-    PetscCall(PetscStrcat(filename, "XXXXXX"));
+    PetscCall(PetscStrlcat(filename, "XXXXXX", sizeof(filename)));
     PetscCheck(mkstemp(filename) != -1, comm, PETSC_ERR_SYS, "Could not acquire temporary file");
 #else
     // Same thing, but for older C versions which don't have the safe form

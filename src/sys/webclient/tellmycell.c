@@ -57,16 +57,17 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm, const char number[], const char me
     PetscCheck(set, PETSC_COMM_SELF, PETSC_ERR_USER, "You must pass in a tellmycell user name with -tellmycell_user <Username>");
     PetscCall(PetscOptionsGetString(NULL, NULL, "-tellmycell_password", Password, sizeof(Password), &set));
     PetscCheck(set, PETSC_COMM_SELF, PETSC_ERR_USER, "You must pass in a tellmycell password with -tellmycell_password <Password>");
-    PetscCall(PetscMalloc1(mlen + nlen + 100, &body));
-    PetscCall(PetscStrcpy(body, "User="));
-    PetscCall(PetscStrcat(body, Username));
-    PetscCall(PetscStrcat(body, "&Password="));
-    PetscCall(PetscStrcat(body, Password));
-    PetscCall(PetscStrcat(body, "&PhoneNumbers[]="));
-    PetscCall(PetscStrcat(body, number));
-    PetscCall(PetscStrcat(body, "&"));
-    PetscCall(PetscStrcat(body, "Message="));
-    PetscCall(PetscStrcat(body, message));
+    blen = mlen + nlen + 100;
+    PetscCall(PetscMalloc1(blen, &body));
+    PetscCall(PetscStrncpy(body, "User=", blen));
+    PetscCall(PetscStrlcat(body, Username, blen));
+    PetscCall(PetscStrlcat(body, "&Password=", blen));
+    PetscCall(PetscStrlcat(body, Password, blen));
+    PetscCall(PetscStrlcat(body, "&PhoneNumbers[]=", blen));
+    PetscCall(PetscStrlcat(body, number, blen));
+    PetscCall(PetscStrlcat(body, "&", blen));
+    PetscCall(PetscStrlcat(body, "Message=", blen));
+    PetscCall(PetscStrlcat(body, message, blen));
     PetscCall(PetscStrlen(body, &blen));
     for (i = 0; i < (int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';

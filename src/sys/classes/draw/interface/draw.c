@@ -232,15 +232,12 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
   if (!title || !title[0]) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (draw->title) {
-    size_t len1, len2;
-    char  *newtitle;
-    PetscCall(PetscStrlen(title, &len1));
-    PetscCall(PetscStrlen(draw->title, &len2));
-    PetscCall(PetscMalloc1(len1 + len2 + 1, &newtitle));
-    PetscCall(PetscStrcpy(newtitle, draw->title));
-    PetscCall(PetscStrcat(newtitle, title));
-    PetscCall(PetscFree(draw->title));
-    draw->title = newtitle;
+    size_t len1, len2, new_len;
+    PetscCall(PetscStrlen(draw->title, &len1));
+    PetscCall(PetscStrlen(title, &len2));
+    new_len = len1 + len2 + 1;
+    PetscCall(PetscRealloc(new_len * sizeof(*(draw->title)), &draw->title));
+    PetscCall(PetscStrncpy(draw->title + len1, title, len2 + 1));
   } else {
     PetscCall(PetscStrallocpy(title, &draw->title));
   }

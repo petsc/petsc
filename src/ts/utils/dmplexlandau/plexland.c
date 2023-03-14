@@ -1107,13 +1107,13 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     char opstring[256];
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
     ctx->deviceType = LANDAU_KOKKOS;
-    PetscCall(PetscStrcpy(opstring, "kokkos"));
+    PetscCall(PetscStrncpy(opstring, "kokkos", sizeof(opstring)));
 #elif defined(PETSC_HAVE_CUDA)
     ctx->deviceType = LANDAU_CUDA;
-    PetscCall(PetscStrcpy(opstring, "cuda"));
+    PetscCall(PetscStrncpy(opstring, "cuda", sizeof(opstring)));
 #else
     ctx->deviceType = LANDAU_CPU;
-    PetscCall(PetscStrcpy(opstring, "cpu"));
+    PetscCall(PetscStrncpy(opstring, "cpu", sizeof(opstring)));
 #endif
     PetscCall(PetscOptionsString("-dm_landau_device_type", "Use kernels on 'cpu', 'cuda', or 'kokkos'", "plexland.c", opstring, opstring, sizeof(opstring), NULL));
     PetscCall(PetscStrcmp("cpu", opstring, &flg));

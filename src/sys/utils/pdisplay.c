@@ -38,7 +38,7 @@ PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], 
   /* first check options database */
   PetscCall(PetscStrncmp(name, "PETSC_", 6, &spetsc));
 
-  PetscCall(PetscStrcpy(work, "-"));
+  PetscCall(PetscStrncpy(work, "-", sizeof(work)));
   if (spetsc) {
     PetscCall(PetscStrlcat(work, name + 6, sizeof(work)));
   } else {

@@ -154,7 +154,7 @@ int main(int argc, char **args)
     PetscCall(PetscOptionsFList("-permute", "Permute matrix and vector to solve in new ordering", "", MatOrderingList, ordering, ordering, sizeof(ordering), &permute));
 
     if (flg) {
-      PetscCall(PetscStrcpy(file[1], file[0]));
+      PetscCall(PetscStrncpy(file[1], file[0], sizeof(file[1])));
       preload = PETSC_FALSE;
     } else {
       PetscCall(PetscOptionsString("-f0", "First file to load (small system)", "", file[0], file[0], sizeof(file[0]), &flg));

@@ -1929,7 +1929,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
 
     oldPrefix[0] = '\0';
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
-    PetscCall(PetscStrcpy(oldPrefix, prefix));
+    PetscCall(PetscStrncpy(oldPrefix, prefix, sizeof(oldPrefix)));
     PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)dm, "dist_"));
     PetscCall(DMPlexGetOverlap(dm, &overlap));
     PetscObjectOptionsBegin((PetscObject)dm);

@@ -17,8 +17,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscBool flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscStrcpy(options->filename, ""));
-  PetscCall(PetscStrcpy(options->tagname, "petsc_tag"));
+  PetscCall(PetscStrncpy(options->filename, "", sizeof(options->filename)));
+  PetscCall(PetscStrncpy(options->tagname, "petsc_tag", sizeof(options->tagname)));
   options->dim = -1;
 
   PetscOptionsBegin(comm, "", "MOAB example options", "DMMOAB");

@@ -76,11 +76,12 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const ch
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 #if !defined(PETSC_HAVE_THREADSAFETY)
-  PetscCall(PetscSegBufferGet(hp->strings, l1 + l2 + 1, &both));
-  PetscCall(PetscStrcpy(both, pre));
-  PetscCall(PetscStrcat(both, name));
+  size_t lboth = l1 + l2 + 1;
+  PetscCall(PetscSegBufferGet(hp->strings, lboth, &both));
+  PetscCall(PetscStrncpy(both, pre, lboth));
+  PetscCall(PetscStrncpy(both + l1, name, l2 + 1));
   kh_put(HTPrinted, hp->printed, both, &newitem);
-  if (!newitem) PetscCall(PetscSegBufferUnuse(hp->strings, l1 + l2 + 1));
+  if (!newitem) PetscCall(PetscSegBufferUnuse(hp->strings, lboth));
   *found = newitem ? PETSC_FALSE : PETSC_TRUE;
 #else
   *found = PETSC_FALSE;

@@ -115,7 +115,7 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
   olist->obj  = obj;
 
   PetscCall(PetscObjectReference(obj));
-  PetscCall(PetscStrcpy(olist->name, name));
+  PetscCall(PetscStrncpy(olist->name, name, sizeof(olist->name)));
 
   if (!*fl) *fl = olist;
   else { /* go to end of list */ nlist = *fl;

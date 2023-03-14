@@ -103,7 +103,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
       PetscCall(PetscSectionGetFieldName(s, f, &fname));
       PetscCall(PetscStrlen(fname, &len));
       if (len) {
-        PetscCall(PetscStrcpy(name, fname));
+        PetscCall(PetscStrncpy(name, fname, sizeof(name)));
       } else {
         PetscCall(PetscSNPrintf(name, 256, "Field%" PetscInt_FMT, f));
       }

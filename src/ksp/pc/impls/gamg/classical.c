@@ -63,7 +63,7 @@ static PetscErrorCode PCGAMGClassicalSetType_GAMG(PC pc, PCGAMGClassicalType typ
   PC_GAMG_Classical *cls     = (PC_GAMG_Classical *)pc_gamg->subctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscStrcpy(cls->prolongtype, type));
+  PetscCall(PetscStrncpy(cls->prolongtype, type, sizeof(cls->prolongtype)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

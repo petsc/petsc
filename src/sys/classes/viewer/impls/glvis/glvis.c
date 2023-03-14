@@ -676,7 +676,7 @@ PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
       PetscFunctionReturn(NULL);
     }
     if (!flg) {
-      ierr = PetscStrcpy(fname, "localhost");
+      ierr = PetscStrncpy(fname, "localhost", sizeof(fname));
       if (ierr) {
         ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
         PetscFunctionReturn(NULL);

@@ -128,7 +128,7 @@ static PetscErrorCode PCGASMPrintSubdomains(PC pc)
   PetscCall(PetscOptionsHasName(NULL, prefix, "-pc_gasm_print_subdomains", &found));
   if (!found) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscOptionsGetString(NULL, prefix, "-pc_gasm_print_subdomains", fname, sizeof(fname), &found));
-  if (!found) PetscCall(PetscStrcpy(fname, "stdout"));
+  if (!found) PetscCall(PetscStrncpy(fname, "stdout", sizeof(fname)));
   PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc), fname, &viewer));
   /*
    Make sure the viewer has a name. Otherwise this may cause a deadlock or other weird errors when creating a subcomm viewer:

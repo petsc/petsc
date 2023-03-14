@@ -242,7 +242,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
   PetscCall(MPIU_Allreduce(&ne, &Nedge, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
 
   i = network->cloneshared->nsubnet;
-  if (name) PetscCall(PetscStrcpy(network->cloneshared->subnet[i].name, name));
+  if (name) PetscCall(PetscStrncpy(network->cloneshared->subnet[i].name, name, sizeof(network->cloneshared->subnet[i].name)));
   network->cloneshared->subnet[i].nvtx     = nvtx; /* include ghost vertices */
   network->cloneshared->subnet[i].nedge    = ne;
   network->cloneshared->subnet[i].edgelist = edgelist;
@@ -267,7 +267,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
   network->cloneshared->nEdges += ne;
   network->cloneshared->NEdges += network->cloneshared->subnet[i].Nedge;
 
-  PetscCall(PetscStrcpy(network->cloneshared->subnet[i].name, name));
+  PetscCall(PetscStrncpy(network->cloneshared->subnet[i].name, name, sizeof(network->cloneshared->subnet[i].name)));
   if (netnum) *netnum = network->cloneshared->nsubnet;
   network->cloneshared->nsubnet++;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -939,7 +939,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm, const char *name, size_t size, 
     PetscCall(PetscCalloc1(network->max_comps_registered, &newcomponent));
     /* Copy over the previous component info */
     for (i = 0; i < network->ncomponent; i++) {
-      PetscCall(PetscStrcpy(newcomponent[i].name, network->component[i].name));
+      PetscCall(PetscStrncpy(newcomponent[i].name, network->component[i].name, sizeof(newcomponent[i].name)));
       newcomponent[i].size = network->component[i].size;
     }
     /* Free old one */
@@ -950,7 +950,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm, const char *name, size_t size, 
 
   component = &network->component[network->ncomponent];
 
-  PetscCall(PetscStrcpy(component->name, name));
+  PetscCall(PetscStrncpy(component->name, name, sizeof(component->name)));
   component->size = size / sizeof(DMNetworkComponentGenericDataType);
   *key            = network->ncomponent;
   network->ncomponent++;

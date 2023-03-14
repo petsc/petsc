@@ -116,24 +116,22 @@ PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject obj, const char prefix[])
 @*/
 PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject obj, const char prefix[])
 {
-  char  *buf = obj->prefix;
-  size_t len1, len2;
+  size_t len1, len2, new_len;
 
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   if (!prefix) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!buf) {
+  if (!obj->prefix) {
     PetscCall(PetscObjectSetOptionsPrefix(obj, prefix));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(prefix[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
 
-  PetscCall(PetscStrlen(prefix, &len1));
-  PetscCall(PetscStrlen(buf, &len2));
-  PetscCall(PetscMalloc1(1 + len1 + len2, &obj->prefix));
-  PetscCall(PetscStrcpy(obj->prefix, buf));
-  PetscCall(PetscStrcat(obj->prefix, prefix));
-  PetscCall(PetscFree(buf));
+  PetscCall(PetscStrlen(obj->prefix, &len1));
+  PetscCall(PetscStrlen(prefix, &len2));
+  new_len = len1 + len2 + 1;
+  PetscCall(PetscRealloc(new_len * sizeof(*(obj->prefix)), &obj->prefix));
+  PetscCall(PetscStrncpy(obj->prefix + len1, prefix, len2 + 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -180,23 +178,24 @@ PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj, const char *prefix[]
 PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject obj, const char prefix[])
 {
   char  *buf;
-  size_t len1, len2;
+  size_t len1, len2, new_len;
 
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  buf = obj->prefix;
   if (!prefix) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!buf) {
+  if (!obj->prefix) {
     PetscCall(PetscObjectSetOptionsPrefix(obj, prefix));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(prefix[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
 
   PetscCall(PetscStrlen(prefix, &len1));
-  PetscCall(PetscStrlen(buf, &len2));
-  PetscCall(PetscMalloc1(1 + len1 + len2, &obj->prefix));
-  PetscCall(PetscStrcpy(obj->prefix, prefix));
-  PetscCall(PetscStrcat(obj->prefix, buf));
+  PetscCall(PetscStrlen(obj->prefix, &len2));
+  buf     = obj->prefix;
+  new_len = len1 + len2 + 1;
+  PetscCall(PetscMalloc1(new_len, &obj->prefix));
+  PetscCall(PetscStrncpy(obj->prefix, prefix, len1 + 1));
+  PetscCall(PetscStrncpy(obj->prefix + len1, buf, len2 + 1));
   PetscCall(PetscFree(buf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

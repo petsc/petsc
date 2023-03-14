@@ -455,8 +455,8 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   dd2->numFields         = dmb->numFields;
   dd2->rw_dbglevel       = dmb->rw_dbglevel;
   dd2->partition_by_rank = dmb->partition_by_rank;
-  PetscCall(PetscStrcpy(dd2->extra_read_options, dmb->extra_read_options));
-  PetscCall(PetscStrcpy(dd2->extra_write_options, dmb->extra_write_options));
+  PetscCall(PetscStrncpy(dd2->extra_read_options, dmb->extra_read_options, sizeof(dd2->extra_read_options)));
+  PetscCall(PetscStrncpy(dd2->extra_write_options, dmb->extra_write_options, sizeof(dd2->extra_write_options)));
   dd2->read_mode  = dmb->read_mode;
   dd2->write_mode = dmb->write_mode;
 

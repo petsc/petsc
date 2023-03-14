@@ -62,7 +62,7 @@ PetscErrorCode PFStringCreateFunction(PF pf, char *string, void **f)
     PetscCall(PetscGetTmp(PetscObjectComm((PetscObject)pf), tmp, PETSC_STATIC_ARRAY_LENGTH(tmp)));
     comm = PETSC_COMM_SELF;
   } else { /* do it in current directory */
-    PetscCall(PetscStrcpy(tmp, "."));
+    PetscCall(PetscStrncpy(tmp, ".", sizeof(tmp)));
     PetscCall(PetscObjectGetComm((PetscObject)pf, &comm));
   }
   PetscCall(PetscOptionsGetBool(((PetscObject)pf)->options, ((PetscObject)pf)->prefix, "-pf_string_keep_files", &keeptmpfiles, NULL));

@@ -93,7 +93,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(PetscOptionsGetString(NULL, prefix, "-pc_asm_print_subdomains", fname, sizeof(fname), NULL));
-  if (fname[0] == 0) PetscCall(PetscStrcpy(fname, "stdout"));
+  if (fname[0] == 0) PetscCall(PetscStrncpy(fname, "stdout", sizeof(fname)));
   PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc), fname, &viewer));
   for (i = 0; i < osm->n_local; i++) {
     if (i < osm->n_local_true) {

@@ -32,7 +32,7 @@ int main(int argc, char **args)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatCreate(PETSC_COMM_SELF, &aux));
   PetscCall(ISCreate(PETSC_COMM_SELF, &is));
-  PetscCall(PetscStrcpy(dir, "."));
+  PetscCall(PetscStrncpy(dir, ".", sizeof(dir)));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-load_dir", dir, sizeof(dir), NULL));
   /* loading matrices */
   PetscCall(PetscSNPrintf(name, sizeof(name), "%s/sizes_%d_%d.dat", dir, rank, size));
@@ -68,7 +68,7 @@ int main(int argc, char **args)
   PetscCall(MatSetOption(aux, MAT_SYMMETRIC, PETSC_TRUE));
   /* ready for testing */
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "", "");
-  PetscCall(PetscStrcpy(type, MATAIJ));
+  PetscCall(PetscStrncpy(type, MATAIJ, sizeof(type)));
   PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, type, type, 256, &flg));
   PetscOptionsEnd();
   PetscCall(MatConvert(A, type, MAT_INPLACE_MATRIX, &A));
