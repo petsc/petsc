@@ -2,7 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  =  zsys.c  zutils.c
-SOURCEH  = ../../../include/petsc/private/fortranimpl.h
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

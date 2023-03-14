@@ -2,8 +2,6 @@
 #requirespackage 'PETSC_HAVE_HIP'
 ALL: lib
 
-SOURCEHIP = mpiaijhipsparse.hip.cpp
-SOURCEH	 	= mpihipsparsematimpl.h
 LIBBASE	 	= libpetscmat
 MANSEC	 	= Mat
 

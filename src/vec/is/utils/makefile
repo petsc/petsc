@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC	  = hdf5io.c isio.c isltog.c pmap.c psort.c
-SOURCEH	  = isltog.h
 LIBBASE	  = libpetscvec
 MANSEC	  = Vec
 SUBMANSEC = IS

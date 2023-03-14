@@ -2,7 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEF90  = petsctsmod.F90
-SOURCEH	   = petscts.h petscts.h90
 LIBBASE	   = libpetscts
 MANSEC	   = TS
 CLEANFILES = *.mod

@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEH  = ../../../include/petsc/private/linesearchimpl.h
 DIRS     = interface impls
 MANSEC   = SNES
 

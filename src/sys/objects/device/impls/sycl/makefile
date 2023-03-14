@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_SYCL'
 
 SOURCESYCL = sycldevice.sycl.cxx syclcontext.sycl.cxx
-SOURCEH   = sycldevice.hpp
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEH  = mmgcommon.h
 DIRS     = pragmatic mmg parmmg
 LIBBASE  = libpetscdm
 MANSEC   = DM

@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCECXX = hostdevice.cxx hostcontext.cxx
-SOURCEH   = hostdevice.hpp
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

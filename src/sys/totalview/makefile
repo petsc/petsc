@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 
 SOURCEC	  = tv_data_display.c
-SOURCEH	  = tv_data_display.h
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 

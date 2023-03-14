@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = pounders.c gqt.c
-SOURCEH  = pounders.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

@@ -3,7 +3,6 @@
 #requiresdefine 'PETSC_HAVE_VIENNACL_NO_CUDA'
 
 SOURCECXX = aijviennacl.cxx
-SOURCEH   = viennaclmatimpl.h
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 

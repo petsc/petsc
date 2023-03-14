@@ -3,7 +3,6 @@
 
 CFLAGS   = ${HYPRE_INCLUDE}
 SOURCEC  = mhypre.c
-SOURCEH  = mhypre.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

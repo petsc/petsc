@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC  = gltr.c
-SOURCEH  = gltrimpl.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC  = lgmres.c
-SOURCEH  = lgmresimpl.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

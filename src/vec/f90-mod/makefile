@@ -2,7 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEF90  = petscvecmod.F90
-SOURCEH	   = petscao.h petscis.h petscis.h90 petscvec.h petscvec.h90
 LIBBASE	   = libpetscvec
 MANSEC	   = Vec
 CLEANFILES = *.mod

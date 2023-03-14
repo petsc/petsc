@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEH	  = ../../../../include/petsc/private/sectionimpl.h ../../../../include/petscsection.h ../../../../include/petscsectiontypes.h
 LIBBASE	  = libpetscvec
 DIRS	    = interface
 MANSEC    = Vec

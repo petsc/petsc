@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC  = brdn.c badbrdn.c
-SOURCEH  = brdn.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c mpiptap.c mpimatmatmult.c mpb_aij.c mpimatmatmatmult.c mpimattransposematmult.c
-SOURCEH	 = mpiaij.h
 LIBBASE	 = libpetscmat
 DIRS	   = superlu_dist mumps aijperm aijmkl aijsell crl pastix mpicusparse mpihipsparse mpiviennacl mpiviennaclcuda clique mkl_cpardiso strumpack kokkos
 MANSEC	 = Mat

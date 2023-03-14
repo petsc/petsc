@@ -4,7 +4,6 @@
 
 CFLAGS     = ${MATHEMATICA_INCLUDE}
 SOURCEC    = mathematica.c
-SOURCEH    = mathematica.h
 MANSEC     = Sys
 SUBMANSEC  = Viewer
 LIBBASE    = libpetscsys

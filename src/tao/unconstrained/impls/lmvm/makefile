@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = lmvm.c
-SOURCEH  = lmvm.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

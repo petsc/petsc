@@ -2,7 +2,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEKOKKOS  = aijkok.kokkos.cxx
-SOURCEH       = aijkok.hpp
 LIBBASE       = libpetscmat
 MANSEC        = Mat
 

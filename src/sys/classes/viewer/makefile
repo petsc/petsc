@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEH   = ../../../../include/petscviewer.h ../../../../include/petscviewertypes.h ../../../../include/petsc/private/viewerimpl.h
 DIRS      = impls tests tutorials interface
 MANSEC    = Sys
 SUBMANSEC = Viewer

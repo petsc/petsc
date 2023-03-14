@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 
 SOURCEC  = basfactor.c spbas.c
-SOURCEH  = spbas.h spbas_cholesky.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

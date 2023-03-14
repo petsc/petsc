@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_CUPM'
 
 SOURCECXX = cupminterface.cxx cupmblasinterface.cxx cupmsolverinterface.cxx cupmdevice.cxx
-SOURCEH   = cupmcontext.hpp cupmthrustutility.hpp cupmdevice.hpp cupmallocator.hpp cupmstream.hpp cupmevent.hpp kernels.hpp
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = cuda hip

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEH  = ../../../../include/petsc/private/randomimpl.h
 DIRS     = interface tests tutorials impls
 MANSEC   = Sys
 

@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEH = vecmpicupm.hpp
 LIBBASE = libpetscvec
 DIRS    = cuda hip
 MANSEC  = Vec

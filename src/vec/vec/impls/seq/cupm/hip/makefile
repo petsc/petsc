@@ -1,7 +1,6 @@
 -include ../../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HIP'
 
-SOURCEHIP = vecseqcupm.hip.cpp
 LIBBASE   = libpetscvec
 MANSEC    = Vec
 

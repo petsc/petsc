@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 
 SOURCEC	  = adebug.c err.c errtrace.c errabort.c errstop.c fp.c signal.c pstack.c checkptr.c
-SOURCEH	  = ../../../include/petscerror.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = tests

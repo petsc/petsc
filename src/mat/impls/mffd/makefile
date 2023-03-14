@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = mffd.c  mffddef.c mfregis.c wp.c
-SOURCEH  = mffdimpl.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

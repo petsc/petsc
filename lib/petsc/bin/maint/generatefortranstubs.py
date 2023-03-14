@@ -151,7 +151,6 @@ def FixDir(petscdir,dir,verbose):
     outbuf +=  'ALL: lib\n'
     outbuf +=   cppflags + '\n'
     outbuf +=  'SOURCEC  = ' +' '.join(cnames)+ '\n'
-    outbuf +=  'SOURCEH  = ' +' '.join(hnames)+ '\n'
     outbuf +=  libbase + '\n'
     outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/variables\n'
     outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/rules\n'

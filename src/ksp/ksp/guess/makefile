@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEH  = ../../../../include/petsc/private/kspimpl.h ../../../../include/petscksp.h
 DIRS     = impls
 MANSEC   = KSP
 

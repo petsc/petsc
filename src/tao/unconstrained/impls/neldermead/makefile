@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = neldermead.c
-SOURCEH  = neldermead.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

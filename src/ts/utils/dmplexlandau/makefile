@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 SOURCEC  = plexland.c
-SOURCEH  = land_tensors.h ../../../../include/petsclandau.h
 DIRS     = tutorials cuda kokkos
 LIBBASE  = libpetscts
 MANSEC   = TS

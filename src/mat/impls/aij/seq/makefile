@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 SOURCEC  = aij.c aijfact.c ij.c fdaij.c matmatmult.c symtranspose.c matptap.c matrart.c inode.c inode2.c matmatmatmult.c mattransposematmult.c aijhdf5.c
-SOURCEH  = aij.h
 LIBBASE  = libpetscmat
 DIRS     = superlu umfpack essl lusol matlab aijperm aijsell aijmkl crl bas ftn-kernels seqviennacl seqviennaclcuda cholmod seqcusparse seqhipsparse klu mkl_pardiso kokkos spqr
 MANSEC   = Mat
