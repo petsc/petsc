@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_SAWS'
 
-SOURCEC  = kspsaws.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

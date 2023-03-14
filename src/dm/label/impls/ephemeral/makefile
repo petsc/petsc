@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = dmlabeleph.c
 LIBBASE  = libpetscdm
 DIRS     = plex
 MANSEC   = DM

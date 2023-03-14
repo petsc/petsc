@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = tsdiscgrad.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

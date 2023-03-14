@@ -1,6 +1,5 @@
 -include ../../../../../../../petscdir.mk
 
-SOURCEC   = sfallgatherv.c
 LIBBASE   = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = PetscSF

@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CFLAGS   = ${MATLAB_INCLUDE}
-SOURCEC  = bvec2.c bvec1.c dvec2.c vseqcr.c bvec3.c
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 DIRS     = ftn-kernels seqviennacl seqviennaclcuda kokkos cupm

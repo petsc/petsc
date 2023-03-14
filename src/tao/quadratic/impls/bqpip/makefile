@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = bqpip.c
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

@@ -2,7 +2,6 @@
 #requirespackage  'PETSC_HAVE_PARMS'
 
 CFLAGS    = ${PARMS_INCLUDE}
-SOURCEC   = parms.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

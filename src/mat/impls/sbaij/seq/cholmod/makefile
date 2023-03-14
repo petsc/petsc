@@ -3,7 +3,6 @@
 #requiresprecision  double
 
 CFLAGS	 = ${SUITESPARSE_INCLUDE}
-SOURCEC	 = sbaijcholmod.c
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = bdf.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

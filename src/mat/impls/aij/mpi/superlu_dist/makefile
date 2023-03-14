@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_SUPERLU_DIST'
 
 CFLAGS   = ${SUPERLU_DIST_INCLUDE}
-SOURCEC	 = superlu_dist.c
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

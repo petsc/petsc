@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = cheby.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

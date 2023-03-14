@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine  'PETSC_HAVE_MATLAB'
 
-SOURCEC  = cmatlab.c
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 

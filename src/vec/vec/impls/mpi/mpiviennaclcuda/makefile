@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_VIENNACL'
 #requiresdefine 'PETSC_HAVE_CUDA'
 
-SOURCECU = mpiviennaclcuda.cu
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 

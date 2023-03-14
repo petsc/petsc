@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CPPFLAGS  = ${PTSCOTCH_INCLUDE}
-SOURCEC   = partptscotch.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 

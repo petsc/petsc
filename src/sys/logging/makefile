@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC	  = plog.c xmllogevent.c xmlviewer.c
 MANSEC	  = Sys
 SUBMANSEC = Profiling
 LIBBASE	  = libpetscsys

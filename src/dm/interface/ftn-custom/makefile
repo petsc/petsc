@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = zdmf.c zdmgetf.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

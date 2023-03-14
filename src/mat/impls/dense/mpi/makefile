@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = mpidense.c mmdense.c
 LIBBASE  = libpetscmat
 DIRS     = cupm
 MANSEC   = Mat

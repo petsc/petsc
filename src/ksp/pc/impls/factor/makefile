@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = factor.c factimpl.c
 LIBBASE   = libpetscksp
 DIRS      = lu ilu icc cholesky qr
 MANSEC    = KSP

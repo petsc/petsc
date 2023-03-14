@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = zvecregf.c zvectorf.c
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 

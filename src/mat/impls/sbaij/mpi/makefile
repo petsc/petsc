@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC	 = mpisbaij.c mmsbaij.c sbaijov.c mpiaijsbaij.c
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

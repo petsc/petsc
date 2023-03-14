@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = zsysf90.c
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

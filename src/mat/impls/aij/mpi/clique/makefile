@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_ELEMENTAL'
 
-SOURCECXX= clique.cxx
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

@@ -6,7 +6,6 @@
 # compare against C versions of the same kernels.
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-SOURCEF90= fsolvebaij.F90
 LIBBASE  = libpetscmat
 MANSEC   = Sys
 

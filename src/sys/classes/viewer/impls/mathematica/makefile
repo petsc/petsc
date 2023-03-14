@@ -3,7 +3,6 @@
 #requiresscalar real
 
 CFLAGS     = ${MATHEMATICA_INCLUDE}
-SOURCEC    = mathematica.c
 MANSEC     = Sys
 SUBMANSEC  = Viewer
 LIBBASE    = libpetscsys

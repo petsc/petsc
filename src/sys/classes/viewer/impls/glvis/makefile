@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = glvis.c
 MANSEC    = Sys
 SUBMANSEC = Viewer
 LIBBASE   = libpetscsys

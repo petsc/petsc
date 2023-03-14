@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = sliced.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

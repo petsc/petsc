@@ -3,7 +3,6 @@
 #requiresprecision single
 #requiresscalar    complex
 
-SOURCECU  = cufft.cu
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 

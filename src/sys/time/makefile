@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC	  = cputime.c fdate.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

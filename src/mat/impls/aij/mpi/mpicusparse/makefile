@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
 
-SOURCECU = mpiaijcusparse.cu
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

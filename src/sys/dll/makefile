@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC	  = dlimpl.c dl.c   reg.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS      = cxx

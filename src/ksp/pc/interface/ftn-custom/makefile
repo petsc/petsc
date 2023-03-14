@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = zpcsetf.c  zpreconf.c
 LIBBASE  = libpetscksp
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

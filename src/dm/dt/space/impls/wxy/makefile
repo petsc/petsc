@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = spacewxy.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = SPACE

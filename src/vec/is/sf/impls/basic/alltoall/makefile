@@ -1,6 +1,5 @@
 -include ../../../../../../../petscdir.mk
 
-SOURCEC   = sfalltoall.c
 LIBBASE   = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = PetscSF

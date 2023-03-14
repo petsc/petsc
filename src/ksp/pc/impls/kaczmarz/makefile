@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CFLAGS    = ${GAMG_INCLUDE}
-SOURCEC   = kaczmarz.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

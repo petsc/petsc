@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = mg.c fmg.c smg.c mgfunc.c mgadapt.c gdsw.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

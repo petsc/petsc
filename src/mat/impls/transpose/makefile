@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = transm.c htransm.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

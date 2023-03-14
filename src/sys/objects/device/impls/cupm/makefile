@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUPM'
 
-SOURCECXX = cupminterface.cxx cupmblasinterface.cxx cupmsolverinterface.cxx cupmdevice.cxx
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = cuda hip

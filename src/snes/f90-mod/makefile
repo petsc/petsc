@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEF90  = petscsnesmod.F90
 LIBBASE	   = libpetscsnes
 MANSEC	   = SNES
 CLEANFILES = *.mod

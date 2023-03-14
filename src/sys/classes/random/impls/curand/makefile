@@ -1,8 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
 
-SOURCEC  = curand.c
-SOURCECU = curand2.cu
 LIBBASE  = libpetscsys
 MANSEC	 = Sys
 

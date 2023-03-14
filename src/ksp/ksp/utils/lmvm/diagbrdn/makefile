@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC  = diagbrdn.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

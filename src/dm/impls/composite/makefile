@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = pack.c packm.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 DIRS     = tests

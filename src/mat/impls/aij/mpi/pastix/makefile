@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_PASTIX'
 
 CFLAGS   = ${PASTIX_INCLUDE}
-SOURCEC	 = pastix.c
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

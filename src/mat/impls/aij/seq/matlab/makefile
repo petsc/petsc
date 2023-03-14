@@ -2,7 +2,6 @@
 #requiresdefine   'PETSC_HAVE_MATLAB'
 
 CFLAGS   = ${MATLAB_INCLUDE}
-SOURCEC  = aijmatlab.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

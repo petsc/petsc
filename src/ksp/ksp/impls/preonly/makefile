@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = preonly.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

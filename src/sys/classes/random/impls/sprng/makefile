@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_SPRNG'
 
 CFLAGS   = ${SPRNG_INCLUDE}
-SOURCEC  = sprng.c
 LIBBASE  = libpetscsys
 MANSEC	 = Sys
 

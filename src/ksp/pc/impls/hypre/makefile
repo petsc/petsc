@@ -2,7 +2,6 @@
 #requirespackage  'PETSC_HAVE_HYPRE'
 
 CFLAGS    = ${HYPRE_INCLUDE}
-SOURCEC   = hypre.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_FFTW'
 
 CFLAGS   = ${FFTW_INCLUDE}
-SOURCEC  = fftw.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

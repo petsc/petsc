@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC  = pipelcg.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

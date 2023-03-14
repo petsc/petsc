@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = mscatter.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

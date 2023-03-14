@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_SUPERLU'
 
 CFLAGS   = ${SUPERLU_INCLUDE}
-SOURCEC  = superlu.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

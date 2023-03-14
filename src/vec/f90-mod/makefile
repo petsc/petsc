@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEF90  = petscvecmod.F90
 LIBBASE	   = libpetscvec
 MANSEC	   = Vec
 CLEANFILES = *.mod

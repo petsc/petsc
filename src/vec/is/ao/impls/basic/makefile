@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = aobasic.c
 LIBBASE   = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = AO

@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = spacepoint.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = SPACE

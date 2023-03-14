@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_MKL_SPARSE_OPTIMIZE'
 
-SOURCEC  = baijmkl.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

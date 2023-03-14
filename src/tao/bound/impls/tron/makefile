@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = tron.c
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEF90  = mpiunimod.F90
 LIBBASE	   = libpetscsys
 MANSEC	   = Sys
 CLEANFILES = *.mod

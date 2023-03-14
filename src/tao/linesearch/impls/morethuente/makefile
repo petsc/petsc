@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = morethuente.c
 LIBBASE   = libpetsctao
 MANSEC    = Tao
 SUBMANSEC = TaoLineSearch

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC	  = bag.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = f2003-src

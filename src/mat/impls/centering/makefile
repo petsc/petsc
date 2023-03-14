@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = centering.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

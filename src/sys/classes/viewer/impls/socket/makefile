@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresdefine  'PETSC_USE_SOCKET_VIEWER'
 
-SOURCEC   = send.c
 MANSEC    = Sys
 SUBMANSEC = Viewer
 LIBBASE   = libpetscsys

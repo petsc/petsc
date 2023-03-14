@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = dspacelagrange.c
 LIBBASE   = libpetscdm
 DIRS      = tests tutorials
 MANSEC    = DM

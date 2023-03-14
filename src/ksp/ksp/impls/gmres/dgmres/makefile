@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresscalar real
 
-SOURCEC  = dgmres.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

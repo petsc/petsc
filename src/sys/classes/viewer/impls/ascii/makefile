@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = filev.c vcreatea.c
 MANSEC    = Sys
 SUBMANSEC = Viewer
 LIBBASE   = libpetscsys

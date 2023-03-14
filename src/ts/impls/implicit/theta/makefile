@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = theta.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

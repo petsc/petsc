@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC   = coarsen.c scoarsen.c
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

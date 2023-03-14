@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC  = dm.c dmregall.c dmget.c dmi.c dmglvis.c dlregisdmdm.c dmceed.c dmgenerate.c dmcoordinates.c dmperiodicity.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

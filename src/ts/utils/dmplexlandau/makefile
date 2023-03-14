@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = plexland.c
 DIRS     = tutorials cuda kokkos
 LIBBASE  = libpetscts
 MANSEC   = TS

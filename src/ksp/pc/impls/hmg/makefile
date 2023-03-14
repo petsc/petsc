@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CFLAGS    = ${HYPRE_INCLUDE}
-SOURCEC   = hmg.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

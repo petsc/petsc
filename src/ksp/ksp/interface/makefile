@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c xmon.c eige.c dlregisksp.c dmksp.c
 LIBBASE  = libpetscksp
 DIRS     = saws
 MANSEC   = KSP

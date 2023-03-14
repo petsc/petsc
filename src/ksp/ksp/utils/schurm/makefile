@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = schurm.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

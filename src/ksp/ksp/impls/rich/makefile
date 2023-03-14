@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = rich.c richscale.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

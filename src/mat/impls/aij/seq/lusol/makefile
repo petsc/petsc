@@ -3,7 +3,6 @@
 #requiresscalar    real
 #requiresprecision double
 
-SOURCEC  = lusol.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

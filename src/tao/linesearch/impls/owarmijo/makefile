@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = owarmijo.c
 LIBBASE   = libpetsctao
 MANSEC    = Tao
 SUBMANSEC = TaoLineSearch

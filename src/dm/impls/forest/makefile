@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = forest.c
 DIRS     = p4est tests tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC   = matcoloring.c matcoloringregi.c
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

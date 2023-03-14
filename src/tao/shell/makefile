@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC  = taoshell.c
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = kaij.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC	  = verboseinfo.c
 MANSEC	  = Sys
 SUBMANSEC = Profiling
 LIBBASE	  = libpetscsys

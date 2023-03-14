@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = spacetensor.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = SPACE

@@ -10,7 +10,6 @@
 # into the public domain. Thus it can be used for any purpose.
 # IT IS NOT THE VERSION OF SPARSEPACK THAT REQUIRES A LICENSE
 
-SOURCEC   = sp1wd.c spnd.c spqmd.c sprcm.c sorder.c spectral.c sregis.c degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c genrcm.c qmdrch.c rootls.c fndsep.c gennd.c qmdmrg.c qmdupd.c wbm.c
 LIBBASE   = libpetscmat
 DIRS      = amd metisnd
 MANSEC    = Mat

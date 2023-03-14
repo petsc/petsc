@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 DIRS     = cupm
-SOURCEC  = dense.c densehdf5.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

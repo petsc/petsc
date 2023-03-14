@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = ssp.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

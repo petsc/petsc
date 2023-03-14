@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = pythonksp.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

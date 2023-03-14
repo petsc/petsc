@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = mpiadj.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

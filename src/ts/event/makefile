@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC  = tsevent.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

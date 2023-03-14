@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_MUMPS'
 
 CFLAGS   = ${MUMPS_INCLUDE}
-SOURCEC	 = mumps.c
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

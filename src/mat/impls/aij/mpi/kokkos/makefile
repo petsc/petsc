@@ -1,7 +1,6 @@
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 -include ../../../../../../petscdir.mk
 
-SOURCEKOKKOS  = mpiaijkok.kokkos.cxx
 LIBBASE	      = libpetscmat
 MANSEC	      = Mat
 

@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_HPDDM'
 
 CXXFLAGS  = ${HPDDM_INCLUDE}
-SOURCECXX = hpddm.cxx
 LIBBASE   = libpetscksp
 DIRS      = cuda
 MANSEC    = KSP

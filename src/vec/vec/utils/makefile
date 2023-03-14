@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = vinv.c vecio.c comb.c vecstash.c vecs.c vsection.c projection.c vecglvis.c
 DIRS     = matlab tagger
 LIBBASE  = libpetscvec
 MANSEC   = Vec

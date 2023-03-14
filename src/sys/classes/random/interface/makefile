@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC	  = random.c randreg.c dlregisrand.c randomc.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

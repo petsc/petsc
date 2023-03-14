@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = spacepoly.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = SPACE

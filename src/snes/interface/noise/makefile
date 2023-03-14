@@ -2,7 +2,6 @@
 #requiresscalar real
 #requiresprecision double
 
-SOURCEC  = snesmfj2.c snesnoise.c snesdnest.c
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 

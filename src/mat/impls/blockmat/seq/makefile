@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = blockmat.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

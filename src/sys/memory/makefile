@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC = mal.c   mem.c   mtr.c  mhbw.c
 MANSEC  = Sys
 LIBBASE = libpetscsys
 DIRS    = cuda hip

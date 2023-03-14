@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEF90= bagenum.F90
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

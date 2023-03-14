@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = networkcreate.c network.c networkmonitor.c networkview.c
 DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM

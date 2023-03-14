@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = redundant.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

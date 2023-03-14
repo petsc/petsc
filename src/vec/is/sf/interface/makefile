@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = dlregissf.c sfregi.c sf.c sftype.c vscat.c
 LIBBASE	  = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = PetscSF

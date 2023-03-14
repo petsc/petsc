@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = f90_cwrap.c
 DIRS     = fsrc
 LIBBASE  = libpetscsys
 MANSEC   = Sys

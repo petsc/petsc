@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = owlqn.c
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

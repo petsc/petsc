@@ -2,7 +2,6 @@
 #requirespackage  'PETSC_HAVE_CGNS'
 
 CFLAGS   = ${CGNS_INCLUDE}
-SOURCEC  = plexcgns2.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

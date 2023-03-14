@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = zbddcf.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 

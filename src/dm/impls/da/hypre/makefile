@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HYPRE'
 
-SOURCEC  = mhyp.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMDA

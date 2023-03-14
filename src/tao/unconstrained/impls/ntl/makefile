@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = ntl.c
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 
