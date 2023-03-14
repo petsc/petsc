@@ -41,10 +41,8 @@
 @*/
 PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
 {
-  char      tmp3[PETSC_MAX_PATH_LEN];
-  PetscBool flg;
 #if !defined(PETSC_HAVE_REALPATH) && defined(PETSC_HAVE_READLINK)
-  char   tmp1[PETSC_MAX_PATH_LEN], tmp4[PETSC_MAX_PATH_LEN], *tmp2;
+  char tmp1[PETSC_MAX_PATH_LEN], char tmp3[PETSC_MAX_PATH_LEN], tmp4[PETSC_MAX_PATH_LEN], *tmp2;
   size_t N, len1, len2;
   int    n, m;
 #endif
@@ -53,7 +51,8 @@ PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_REALPATH)
   PetscCheck(realpath(path, rpath), PETSC_COMM_SELF, PETSC_ERR_LIB, "realpath()");
-#elif defined(PETSC_HAVE_READLINK)
+#else
+  #if defined(PETSC_HAVE_READLINK)
   /* Algorithm: we move through the path, replacing links with the real paths.   */
   PetscCall(PetscStrlen(path, &N));
   PetscCall(PetscStrncpy(rpath, path, N + 1)); /* assuming adequate buffer */
@@ -92,18 +91,26 @@ PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
       PetscCall(PetscStrlen(tmp1, &N));
     }
   }
-  PetscCall(PetscStrncpy(rpath, path, PETSC_MAX_PATH_LEN));
-#else /* Just punt */
-  PetscCall(PetscStrlen(path, &len));
-  PetscCall(PetscStrncpy(rpath, path, len + 1)); /* assuming adequate buffer */
+  #endif
+  PetscCall(PetscStrncpy(rpath, path, PETSC_MAX_PATH_LEN)); /* assuming adequate buffer */
 #endif
 
   /* remove garbage some automounters put at the beginning of the path */
-  PetscCall(PetscStrncmp("/tmp_mnt/", rpath, 9, &flg));
-  if (flg) {
-    PetscCall(PetscStrncpy(tmp3, rpath + 8, sizeof(tmp3)));
-    PetscCall(PetscStrlen(tmp3, &len));
-    PetscCall(PetscStrncpy(rpath, tmp3, len + 1));
+  {
+    const char   garbage[]   = "/tmp_mnt/";
+    const size_t garbage_len = sizeof(garbage) - 1; // 9
+    PetscBool    flg;
+
+    PetscCall(PetscStrncmp(garbage, rpath, garbage_len, &flg));
+    if (flg) {
+      const size_t no_slash_len = garbage_len - 1; // 8
+
+      PetscCall(PetscStrlen(rpath, &len));
+      // shift the array left by no_slash_len
+      PetscCall(PetscArraymove(rpath, rpath + no_slash_len, len - no_slash_len));
+      // zero out the end we just moved from
+      PetscCall(PetscArrayzero(rpath + len - no_slash_len, no_slash_len));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

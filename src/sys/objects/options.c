@@ -1658,30 +1658,27 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
     }
   }
 
-  { /* slow search */
-    int       c, i;
-    size_t    len;
-    PetscBool match;
+  /* slow search */
+  for (int c = -1; c < numCnt; ++c) {
+    char   opt[PETSC_MAX_OPTION_NAME + 2] = "";
+    size_t len;
 
-    for (c = -1; c < numCnt; ++c) {
-      char opt[PETSC_MAX_OPTION_NAME + 1] = "", tmp[PETSC_MAX_OPTION_NAME];
+    if (c < 0) {
+      PetscCall(PetscStrncpy(opt, name, sizeof(opt)));
+    } else {
+      PetscCall(PetscStrncpy(opt, name, PetscMin((size_t)(locs[c] + 1), sizeof(opt))));
+      PetscCall(PetscStrlcat(opt, name + loce[c], sizeof(opt) - 1));
+    }
+    PetscCall(PetscStrlen(opt, &len));
+    for (int i = 0; i < options->N; i++) {
+      PetscBool match;
 
-      if (c < 0) {
-        PetscCall(PetscStrncpy(opt, name, sizeof(opt)));
-      } else {
-        PetscCall(PetscStrncpy(tmp, name, PetscMin((size_t)(locs[c] + 1), sizeof(tmp))));
-        PetscCall(PetscStrlcat(opt, tmp, sizeof(opt)));
-        PetscCall(PetscStrlcat(opt, name + loce[c], sizeof(opt)));
-      }
-      PetscCall(PetscStrlen(opt, &len));
-      for (i = 0; i < options->N; i++) {
-        PetscCall(PetscStrncmp(options->names[i], opt, len, &match));
-        if (match) {
-          options->used[i] = PETSC_TRUE;
-          if (value) *value = options->values[i];
-          if (set) *set = PETSC_TRUE;
-          PetscFunctionReturn(PETSC_SUCCESS);
-        }
+      PetscCall(PetscStrncmp(options->names[i], opt, len, &match));
+      if (match) {
+        options->used[i] = PETSC_TRUE;
+        if (value) *value = options->values[i];
+        if (set) *set = PETSC_TRUE;
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
   }

@@ -199,6 +199,22 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+  #if __GNUC__ >= 8
+    #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN \
+      do { \
+        _Pragma("GCC diagnostic push"); \
+        _Pragma("GCC diagnostic ignored \"-Wstringop-truncation\""); \
+      } while (0)
+    #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_END _Pragma("GCC diagnostic pop")
+  #endif
+#endif
+
+#ifndef PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN
+  #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN (void)0
+  #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_END   (void)0
+#endif
+
 /*@C
   PetscStrncpy - Copies a string up to a certain length
 
@@ -232,22 +248,13 @@ static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
   if (s) PetscAssert(n, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Requires an output string of length at least 1 to hold the termination character");
   if (t) {
     PetscAssertPointer_Private(s, 1);
-#if defined(__GNUC__) && !defined(__clang__)
-  #if __GNUC__ >= 8
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-truncation"
-  #endif
-#endif
+    PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN;
 #if PetscHasBuiltin(__builtin_strncpy)
     __builtin_strncpy(s, t, n);
 #else
     strncpy(s, t, n);
 #endif
-#if defined(__GNUC__) && !defined(__clang__)
-  #if __GNUC__ >= 8
-    #pragma GCC diagnostic pop
-  #endif
-#endif
+    PETSC_SILENCE_WSTRINGOP_TRUNCATION_END;
     s[n - 1] = '\0';
   } else if (s) {
     s[0] = '\0';
@@ -282,14 +289,19 @@ static inline PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
   if (!t) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssert(n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "String buffer length must be positive");
   PetscCall(PetscStrlen(s, &len));
+  PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN;
 #if PetscHasBuiltin(__builtin_strncat)
   __builtin_strncat(s, t, n - len);
 #else
   strncat(s, t, n - len);
 #endif
+  PETSC_SILENCE_WSTRINGOP_TRUNCATION_END;
   s[n - 1] = '\0';
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#undef PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN
+#undef PETSC_SILENCE_WSTRINGOP_TRUNCATION_END
 
 /*@C
   PetscStrncmp - Compares two strings, up to a certain length
