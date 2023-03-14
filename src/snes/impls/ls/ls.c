@@ -12,33 +12,37 @@ static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F,
   PetscReal a1;
   PetscBool hastranspose;
   Vec       W;
+  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
 
   PetscFunctionBegin;
   *ismin = PETSC_FALSE;
-  PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, &hastranspose));
-  PetscCall(VecDuplicate(F, &W));
-  if (hastranspose) {
-    /* Compute || J^T F|| */
-    PetscCall(MatMultTranspose(A, F, W));
-    PetscCall(VecNorm(W, NORM_2, &a1));
-    PetscCall(PetscInfo(snes, "|| J^T F|| %14.12e near zero implies found a local minimum\n", (double)(a1 / fnorm)));
-    if (a1 / fnorm < 1.e-4) *ismin = PETSC_TRUE;
-  } else {
-    Vec         work;
-    PetscScalar result;
-    PetscReal   wnorm;
+  PetscCall(SNESGetObjective(snes, &objective, NULL));
+  if (!objective) {
+    PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, &hastranspose));
+    PetscCall(VecDuplicate(F, &W));
+    if (hastranspose) {
+      /* Compute || J^T F|| */
+      PetscCall(MatMultTranspose(A, F, W));
+      PetscCall(VecNorm(W, NORM_2, &a1));
+      PetscCall(PetscInfo(snes, "|| J^T F|| %14.12e near zero implies found a local minimum\n", (double)(a1 / fnorm)));
+      if (a1 / fnorm < 1.e-4) *ismin = PETSC_TRUE;
+    } else {
+      Vec         work;
+      PetscScalar result;
+      PetscReal   wnorm;
 
-    PetscCall(VecSetRandom(W, NULL));
-    PetscCall(VecNorm(W, NORM_2, &wnorm));
-    PetscCall(VecDuplicate(W, &work));
-    PetscCall(MatMult(A, W, work));
-    PetscCall(VecDot(F, work, &result));
-    PetscCall(VecDestroy(&work));
-    a1 = PetscAbsScalar(result) / (fnorm * wnorm);
-    PetscCall(PetscInfo(snes, "(F^T J random)/(|| F ||*||random|| %14.12e near zero implies found a local minimum\n", (double)a1));
-    if (a1 < 1.e-4) *ismin = PETSC_TRUE;
+      PetscCall(VecSetRandom(W, NULL));
+      PetscCall(VecNorm(W, NORM_2, &wnorm));
+      PetscCall(VecDuplicate(W, &work));
+      PetscCall(MatMult(A, W, work));
+      PetscCall(VecDot(F, work, &result));
+      PetscCall(VecDestroy(&work));
+      a1 = PetscAbsScalar(result) / (fnorm * wnorm);
+      PetscCall(PetscInfo(snes, "(F^T J random)/(|| F ||*||random|| %14.12e near zero implies found a local minimum\n", (double)a1));
+      if (a1 < 1.e-4) *ismin = PETSC_TRUE;
+    }
+    PetscCall(VecDestroy(&W));
   }
-  PetscCall(VecDestroy(&W));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
