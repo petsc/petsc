@@ -144,46 +144,6 @@ PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A, PetscInt N, const PetscInt row
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatPtAPNumeric_SeqDense_SeqDense(Mat A, Mat P, Mat C)
-{
-  Mat_SeqDense *c = (Mat_SeqDense *)(C->data);
-
-  PetscFunctionBegin;
-  if (c->ptapwork) {
-    PetscCall((*C->ops->matmultnumeric)(A, P, c->ptapwork));
-    PetscCall((*C->ops->transposematmultnumeric)(P, c->ptapwork, C));
-  } else SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "Must call MatPtAPSymbolic_SeqDense_SeqDense() first");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatPtAPSymbolic_SeqDense_SeqDense(Mat A, Mat P, PetscReal fill, Mat C)
-{
-  Mat_SeqDense *c;
-  PetscBool     cisdense = PETSC_FALSE;
-
-  PetscFunctionBegin;
-  PetscCall(MatSetSizes(C, P->cmap->n, P->cmap->n, P->cmap->N, P->cmap->N));
-#if defined(PETSC_HAVE_CUDA)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-#elif (PETSC_HAVE_HIP)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSEHIP, ""));
-#endif
-
-  if (!cisdense) {
-    PetscBool flg;
-
-    PetscCall(PetscObjectTypeCompare((PetscObject)P, ((PetscObject)A)->type_name, &flg));
-    PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
-  }
-  PetscCall(MatSetUp(C));
-  c = (Mat_SeqDense *)C->data;
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &c->ptapwork));
-  PetscCall(MatSetSizes(c->ptapwork, A->rmap->n, P->cmap->n, A->rmap->N, P->cmap->N));
-  PetscCall(MatSetType(c->ptapwork, ((PetscObject)C)->type_name));
-  PetscCall(MatSetUp(c->ptapwork));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat              B = NULL;
@@ -1732,7 +1692,6 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   PetscCall(PetscFree(l->tau));
   PetscCall(PetscFree(l->pivots));
   PetscCall(PetscFree(l->fwork));
-  PetscCall(MatDestroy(&l->ptapwork));
   if (!l->user_alloc) PetscCall(PetscFree(l->v));
   if (!l->unplaced_user_alloc) PetscCall(PetscFree(l->unplacedarray));
   PetscCheck(!l->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
@@ -1830,7 +1789,6 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A, MatReuse reuse, Mat *matout)
       PetscCall(MatDestroy(&mat->cmat));
       PetscCall(PetscFree(mat->pivots));
       PetscCall(PetscFree(mat->fwork));
-      PetscCall(MatDestroy(&mat->ptapwork));
       /* swap row/col layouts */
       mat->lda  = n;
       tmplayout = A->rmap;
@@ -3943,15 +3901,18 @@ PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
 
 PetscErrorCode MatSeqDenseInvert(Mat A)
 {
-  Mat_SeqDense   *a              = (Mat_SeqDense *)A->data;
-  PetscInt        bs             = A->rmap->n;
-  MatScalar      *values         = a->v;
-  const PetscReal shift          = 0.0;
-  PetscBool       allowzeropivot = PetscNot(A->erroriffailure), zeropivotdetected = PETSC_FALSE;
+  PetscInt        m;
+  const PetscReal shift = 0.0;
+  PetscBool       allowzeropivot, zeropivotdetected = PETSC_FALSE;
+  PetscScalar    *values;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCall(MatDenseGetArray(A, &values));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  allowzeropivot = PetscNot(A->erroriffailure);
   /* factor and invert each block */
-  switch (bs) {
+  switch (m) {
   case 1:
     values[0] = (PetscScalar)1.0 / (values[0] + shift);
     break;
@@ -3986,12 +3947,13 @@ PetscErrorCode MatSeqDenseInvert(Mat A)
     PetscInt    *v_pivots, *IJ, j;
     PetscScalar *v_work;
 
-    PetscCall(PetscMalloc3(bs, &v_work, bs, &v_pivots, bs, &IJ));
-    for (j = 0; j < bs; j++) IJ[j] = j;
-    PetscCall(PetscKernel_A_gets_inverse_A(bs, values, v_pivots, v_work, allowzeropivot, &zeropivotdetected));
+    PetscCall(PetscMalloc3(m, &v_work, m, &v_pivots, m, &IJ));
+    for (j = 0; j < m; j++) IJ[j] = j;
+    PetscCall(PetscKernel_A_gets_inverse_A(m, values, v_pivots, v_work, allowzeropivot, &zeropivotdetected));
     if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     PetscCall(PetscFree3(v_work, v_pivots, IJ));
   }
   }
+  PetscCall(MatDenseRestoreArray(A, &values));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

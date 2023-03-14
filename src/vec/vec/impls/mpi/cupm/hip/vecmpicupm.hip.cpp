@@ -1,8 +1,9 @@
 #include "../vecmpicupm.hpp" /*I <petscvec.h> I*/
 
-using namespace Petsc::vec::cupm::impl;
+using namespace Petsc::vec::cupm;
+using Petsc::device::cupm::DeviceType;
 
-static constexpr auto VecMPI_HIP = VecMPI_CUPM<::Petsc::device::cupm::DeviceType::HIP>{};
+static constexpr auto VecMPI_HIP = impl::VecMPI_CUPM<DeviceType::HIP>{};
 
 /*MC
   VECHIP - VECHIP = "hip" - A VECSEQHIP on a single-process communicator, and VECMPIHIP
@@ -39,7 +40,7 @@ PetscErrorCode VecCreate_HIP(Vec v)
 PetscErrorCode VecCreate_MPIHIP(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecMPI_HIP.create(v));
+  PetscCall(VecMPI_HIP.Create(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -83,7 +84,7 @@ PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 {
   PetscFunctionBegin;
   PetscValidPointer(v, 4);
-  PetscCall(VecMPI_HIP.creatempicupm(comm, 0, n, N, v, PETSC_TRUE));
+  PetscCall(VecCreateMPICUPMAsync<DeviceType::HIP>(comm, n, N, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -117,9 +118,7 @@ VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;
-  if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
-  PetscValidPointer(v, 7);
-  PetscCall(VecMPI_HIP.creatempicupmwitharrays(comm, bs, n, N, cpuarray, gpuarray, v));
+  PetscCall(VecCreateMPICUPMWithArrays<DeviceType::HIP>(comm, bs, n, N, cpuarray, gpuarray, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -151,6 +150,6 @@ VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;
-  PetscCall(VecCreateMPIHIPWithArrays(comm, bs, n, N, nullptr, gpuarray, v));
+  PetscCall(VecCreateMPICUPMWithArray<DeviceType::HIP>(comm, bs, n, N, gpuarray, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

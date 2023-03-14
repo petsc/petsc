@@ -114,6 +114,8 @@ struct InterfaceBase {
     return std::get<util::to_underlying(T)>(DeviceTypes);
   }
 
+  PETSC_NODISCARD static constexpr const char *cupmNAME() noexcept { return T == DeviceType::CUDA ? "CUDA" : "HIP"; }
+
   PETSC_NODISCARD static constexpr PetscDeviceType PETSC_DEVICE_CUPM() noexcept { return T == DeviceType::CUDA ? PETSC_DEVICE_CUDA : PETSC_DEVICE_HIP; }
 
   PETSC_NODISCARD static constexpr PetscMemType PETSC_MEMTYPE_CUPM() noexcept { return T == DeviceType::CUDA ? PETSC_MEMTYPE_CUDA : PETSC_MEMTYPE_HIP; }
@@ -123,12 +125,12 @@ struct InterfaceBase {
 template <DeviceType T>
 const DeviceType InterfaceBase<T>::type;
 
-  #define PETSC_CUPM_BASE_CLASS_HEADER(base_name, DEVICE_TYPE) \
-    using base_name = ::Petsc::device::cupm::impl::InterfaceBase<DEVICE_TYPE>; \
-    using base_name::type; \
-    using base_name::cupmName; \
-    using base_name::PETSC_DEVICE_CUPM; \
-    using base_name::PETSC_MEMTYPE_CUPM
+  #define PETSC_CUPM_BASE_CLASS_HEADER(T) \
+    using ::Petsc::device::cupm::impl::InterfaceBase<T>::type; \
+    using ::Petsc::device::cupm::impl::InterfaceBase<T>::cupmName; \
+    using ::Petsc::device::cupm::impl::InterfaceBase<T>::cupmNAME; \
+    using ::Petsc::device::cupm::impl::InterfaceBase<T>::PETSC_DEVICE_CUPM; \
+    using ::Petsc::device::cupm::impl::InterfaceBase<T>::PETSC_MEMTYPE_CUPM
 
 // A templated C++ struct that defines the entire CUPM interface. Use of templating vs
 // preprocessor macros allows us to use both interfaces simultaneously as well as easily
@@ -139,7 +141,7 @@ struct InterfaceImpl;
   #if PetscDefined(HAVE_CUDA)
 template <>
 struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
-  PETSC_CUPM_BASE_CLASS_HEADER(base_type, DeviceType::CUDA);
+  PETSC_CUPM_BASE_CLASS_HEADER(DeviceType::CUDA);
 
   // typedefs
   using cupmError_t             = cudaError_t;
@@ -260,6 +262,10 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
     #else
   PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemsetAsync, cudaMemset, 1)
     #endif
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2D, cudaMemcpy2D)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemcpy2DAsync, cudaMemcpy2DAsync, 1)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2D, cudaMemset2D)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemset2DAsync, cudaMemset2DAsync, 1)
 
   // launch control
   PETSC_CUPM_ALIAS_FUNCTION(cupmLaunchHostFunc, cudaLaunchHostFunc)
@@ -277,7 +283,7 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   #if PetscDefined(HAVE_HIP)
 template <>
 struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
-  PETSC_CUPM_BASE_CLASS_HEADER(base_type, DeviceType::HIP);
+  PETSC_CUPM_BASE_CLASS_HEADER(DeviceType::HIP);
 
   // typedefs
   using cupmError_t             = hipError_t;
@@ -394,6 +400,10 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   PETSC_CUPM_ALIAS_FUNCTION(cupmFreeHost, hipHostFree)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset, hipMemset)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemsetAsync, hipMemsetAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2D, hipMemcpy2D)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemcpy2DAsync, hipMemcpy2DAsync, 1)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2D, hipMemset2D)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemset2DAsync, hipMemset2DAsync, 1)
 
       // launch control
       // HIP appears to only have hipLaunchHostFunc from 5.2.0 onwards
@@ -422,89 +432,93 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
 
   // shorthand for bringing all of the typedefs from the base Interface class into your own,
   // it's annoying that c++ doesn't have a way to do this automatically
-  #define PETSC_CUPM_IMPL_CLASS_HEADER(base_name, T) \
-    PETSC_CUPM_BASE_CLASS_HEADER(PetscConcat(base_, base_name), T); \
-    using base_name = ::Petsc::device::cupm::impl::InterfaceImpl<T>; \
+  #define PETSC_CUPM_IMPL_CLASS_HEADER(T) \
+    PETSC_CUPM_BASE_CLASS_HEADER(T); \
     /* types */ \
-    using cupmComplex_t           = typename base_name::cupmComplex_t; \
-    using cupmError_t             = typename base_name::cupmError_t; \
-    using cupmEvent_t             = typename base_name::cupmEvent_t; \
-    using cupmStream_t            = typename base_name::cupmStream_t; \
-    using cupmDeviceProp_t        = typename base_name::cupmDeviceProp_t; \
-    using cupmMemcpyKind_t        = typename base_name::cupmMemcpyKind_t; \
-    using cupmPointerAttributes_t = typename base_name::cupmPointerAttributes_t; \
-    using cupmMemoryType_t        = typename base_name::cupmMemoryType_t; \
-    using cupmDim3                = typename base_name::cupmDim3; \
-    using cupmMemPool_t           = typename base_name::cupmMemPool_t; \
-    using cupmMemPoolAttr         = typename base_name::cupmMemPoolAttr; \
+    using cupmComplex_t           = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmComplex_t; \
+    using cupmError_t             = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmError_t; \
+    using cupmEvent_t             = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEvent_t; \
+    using cupmStream_t            = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStream_t; \
+    using cupmDeviceProp_t        = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmDeviceProp_t; \
+    using cupmMemcpyKind_t        = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpyKind_t; \
+    using cupmPointerAttributes_t = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmPointerAttributes_t; \
+    using cupmMemoryType_t        = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemoryType_t; \
+    using cupmDim3                = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmDim3; \
+    using cupmMemPool_t           = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemPool_t; \
+    using cupmMemPoolAttr         = typename ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemPoolAttr; \
     /* variables */ \
-    using base_name::cupmSuccess; \
-    using base_name::cupmErrorNotReady; \
-    using base_name::cupmErrorDeviceAlreadyInUse; \
-    using base_name::cupmErrorSetOnActiveProcess; \
-    using base_name::cupmErrorStubLibrary; \
-    using base_name::cupmErrorNoDevice; \
-    using base_name::cupmStreamDefault; \
-    using base_name::cupmStreamNonBlocking; \
-    using base_name::cupmDeviceMapHost; \
-    using base_name::cupmMemcpyHostToDevice; \
-    using base_name::cupmMemcpyDeviceToHost; \
-    using base_name::cupmMemcpyDeviceToDevice; \
-    using base_name::cupmMemcpyHostToHost; \
-    using base_name::cupmMemcpyDefault; \
-    using base_name::cupmMemoryTypeHost; \
-    using base_name::cupmMemoryTypeDevice; \
-    using base_name::cupmMemoryTypeManaged; \
-    using base_name::cupmEventDisableTiming; \
-    using base_name::cupmHostAllocDefault; \
-    using base_name::cupmHostAllocWriteCombined; \
-    using base_name::cupmMemPoolAttrReleaseThreshold; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmSuccess; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmErrorNotReady; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmErrorDeviceAlreadyInUse; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmErrorSetOnActiveProcess; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmErrorStubLibrary; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmErrorNoDevice; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamDefault; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamNonBlocking; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmDeviceMapHost; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpyHostToDevice; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpyDeviceToHost; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpyDeviceToDevice; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpyHostToHost; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpyDefault; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemoryTypeHost; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemoryTypeDevice; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemoryTypeManaged; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventDisableTiming; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmHostAllocDefault; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmHostAllocWriteCombined; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemPoolAttrReleaseThreshold; \
     /* functions */ \
-    using base_name::cupmGetErrorName; \
-    using base_name::cupmGetErrorString; \
-    using base_name::cupmGetLastError; \
-    using base_name::cupmGetDeviceCount; \
-    using base_name::cupmGetDeviceProperties; \
-    using base_name::cupmGetDevice; \
-    using base_name::cupmSetDevice; \
-    using base_name::cupmGetDeviceFlags; \
-    using base_name::cupmSetDeviceFlags; \
-    using base_name::cupmPointerGetAttributes; \
-    using base_name::cupmDeviceGetMemPool; \
-    using base_name::cupmMemPoolSetAttribute; \
-    using base_name::cupmInit; \
-    using base_name::cupmEventCreate; \
-    using base_name::cupmEventCreateWithFlags; \
-    using base_name::cupmEventDestroy; \
-    using base_name::cupmEventRecord; \
-    using base_name::cupmEventSynchronize; \
-    using base_name::cupmEventElapsedTime; \
-    using base_name::cupmEventQuery; \
-    using base_name::cupmStreamCreate; \
-    using base_name::cupmStreamCreateWithFlags; \
-    using base_name::cupmStreamGetFlags; \
-    using base_name::cupmStreamDestroy; \
-    using base_name::cupmStreamWaitEvent; \
-    using base_name::cupmStreamQuery; \
-    using base_name::cupmStreamSynchronize; \
-    using base_name::cupmDeviceSynchronize; \
-    using base_name::cupmGetSymbolAddress; \
-    using base_name::cupmMalloc; \
-    using base_name::cupmMallocAsync; \
-    using base_name::cupmMemcpy; \
-    using base_name::cupmMemcpyAsync; \
-    using base_name::cupmMallocHost; \
-    using base_name::cupmMemset; \
-    using base_name::cupmMemsetAsync; \
-    using base_name::cupmLaunchHostFunc
-
-template <DeviceType>
-struct Interface;
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetErrorName; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetErrorString; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetLastError; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetDeviceCount; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetDeviceProperties; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetDevice; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmSetDevice; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetDeviceFlags; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmSetDeviceFlags; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmPointerGetAttributes; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmDeviceGetMemPool; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemPoolSetAttribute; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmInit; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventCreate; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventCreateWithFlags; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventDestroy; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventRecord; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventSynchronize; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventElapsedTime; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmEventQuery; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamCreate; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamCreateWithFlags; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamGetFlags; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamDestroy; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamWaitEvent; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamQuery; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmStreamSynchronize; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmDeviceSynchronize; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetSymbolAddress; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMalloc; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMallocAsync; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpy; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpyAsync; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMallocHost; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemset; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemsetAsync; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpy2D; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemcpy2DAsync; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemset2D; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemset2DAsync; \
+    using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmLaunchHostFunc
 
 // The actual interface class
 template <DeviceType T>
 struct Interface : InterfaceImpl<T> {
-  PETSC_CUPM_IMPL_CLASS_HEADER(interface_type, T);
+private:
+  using interface_type = InterfaceImpl<T>;
+
+public:
+  PETSC_CUPM_IMPL_CLASS_HEADER(T);
 
   using cupmReal_t   = util::conditional_t<PetscDefined(USE_REAL_SINGLE), float, double>;
   using cupmScalar_t = util::conditional_t<PetscDefined(USE_COMPLEX), cupmComplex_t, cupmReal_t>;
@@ -660,14 +674,7 @@ struct Interface : InterfaceImpl<T> {
     } else {
       PetscCallCUPM(cupmMemcpy(dest, src, size, kind));
     }
-
-    // only the explicit HTOD or DTOH are handled, since we either don't log the other cases
-    // (yet) or don't know the direction
-    if (kind == cupmMemcpyDeviceToHost) {
-      PetscCall(PetscLogGpuToCpu(size));
-    } else if (kind == cupmMemcpyHostToDevice) {
-      PetscCall(PetscLogCpuToGpu(size));
-    }
+    PetscCall(PetscLogCUPMMemcpyTransfer(kind, size));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -676,6 +683,36 @@ struct Interface : InterfaceImpl<T> {
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMemcpyAsync(dest, src, n, kind));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  template <typename D>
+  static PetscErrorCode PetscCUPMMemcpy2DAsync(D *dest, std::size_t dest_pitch, const util::type_identity_t<D> *src, std::size_t src_pitch, std::size_t width, std::size_t height, cupmMemcpyKind_t kind, cupmStream_t stream = nullptr)
+  {
+    static_assert(!std::is_void<D>::value, "");
+    const auto dest_pitch_bytes = dest_pitch * sizeof(D);
+    const auto src_pitch_bytes  = src_pitch * sizeof(D);
+    const auto width_bytes      = width * sizeof(D);
+    const auto size             = height * width_bytes;
+
+    PetscFunctionBegin;
+    if (PetscUnlikely(!size)) PetscFunctionReturn(PETSC_SUCCESS);
+    PetscCheck(dest, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy to a NULL pointer");
+    PetscCheck(src, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy from a NULL pointer");
+    if (stream || (kind != cupmMemcpyDeviceToHost)) {
+      PetscCallCUPM(cupmMemcpy2DAsync(dest, dest_pitch_bytes, src, src_pitch_bytes, width_bytes, height, kind, stream));
+    } else {
+      PetscCallCUPM(cupmMemcpy2D(dest, dest_pitch_bytes, src, src_pitch_bytes, width_bytes, height, kind));
+    }
+    PetscCall(PetscLogCUPMMemcpyTransfer(kind, size));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  template <typename D>
+  static PetscErrorCode PetscCUPMMemcpy2D(D *dest, std::size_t dest_pitch, const util::type_identity_t<D> *src, std::size_t src_pitch, std::size_t width, std::size_t height, cupmMemcpyKind_t kind)
+  {
+    PetscFunctionBegin;
+    PetscCall(PetscCUPMMemcpy2DAsync(dest, dest_pitch, src, src_pitch, width, height, kind));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -703,6 +740,25 @@ struct Interface : InterfaceImpl<T> {
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMemsetAsync(ptr, value, n));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  template <typename D>
+  static PetscErrorCode PetscCUPMMemset2DAsync(D *ptr, std::size_t pitch, int value, std::size_t width, std::size_t height, cupmStream_t stream = nullptr)
+  {
+    static_assert(!std::is_void<D>::value, "");
+    const auto pitch_bytes = pitch * sizeof(D);
+    const auto width_bytes = width * sizeof(D);
+    const auto size        = width_bytes * height;
+
+    PetscFunctionBegin;
+    if (PetscUnlikely(!size)) PetscFunctionReturn(PETSC_SUCCESS);
+    PetscAssert(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to memset a NULL pointer with size %zu != 0", size);
+    if (stream) {
+      PetscCallCUPM(cupmMemset2DAsync(ptr, pitch_bytes, value, width_bytes, height, stream));
+    } else {
+      PetscCallCUPM(cupmMemset2D(ptr, pitch_bytes, value, width_bytes, height));
+    }
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -825,30 +881,43 @@ private:
     );
     // clang-format on
   }
+
+  static PetscErrorCode PetscLogCUPMMemcpyTransfer(cupmMemcpyKind_t kind, std::size_t size) noexcept
+  {
+    PetscFunctionBegin;
+    // only the explicit HTOD or DTOH are handled, since we either don't log the other cases
+    // (yet) or don't know the direction
+    if (kind == cupmMemcpyDeviceToHost) PetscCall(PetscLogGpuToCpu(static_cast<PetscLogDouble>(size)));
+    else if (kind == cupmMemcpyHostToDevice) PetscCall(PetscLogCpuToGpu(static_cast<PetscLogDouble>(size)));
+    else (void)size;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 };
 
-  #define PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(base_name, T) \
-    PETSC_CUPM_IMPL_CLASS_HEADER(PetscConcat(base_name, _impl), T); \
-    using base_name    = ::Petsc::device::cupm::impl::Interface<T>; \
-    using cupmReal_t   = typename base_name::cupmReal_t; \
-    using cupmScalar_t = typename base_name::cupmScalar_t; \
-    using base_name::cupmScalarCast; \
-    using base_name::cupmScalarPtrCast; \
-    using base_name::cupmRealPtrCast; \
-    using base_name::PetscCUPMGetMemType; \
-    using base_name::PetscCUPMMemset; \
-    using base_name::PetscCUPMMemsetAsync; \
-    using base_name::PetscCUPMMalloc; \
-    using base_name::PetscCUPMMallocAsync; \
-    using base_name::PetscCUPMMallocHost; \
-    using base_name::PetscCUPMMemcpy; \
-    using base_name::PetscCUPMMemcpyAsync; \
-    using base_name::cupmFree; \
-    using base_name::cupmFreeAsync; \
-    using base_name::cupmFreeHost; \
-    using base_name::cupmLaunchKernel; \
-    using base_name::PetscCUPMLaunchKernel1D; \
-    using base_name::PetscDeviceCopyModeToCUPMMemcpyKind
+  #define PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T) \
+    PETSC_CUPM_IMPL_CLASS_HEADER(T); \
+    using cupmReal_t   = typename ::Petsc::device::cupm::impl::Interface<T>::cupmReal_t; \
+    using cupmScalar_t = typename ::Petsc::device::cupm::impl::Interface<T>::cupmScalar_t; \
+    using ::Petsc::device::cupm::impl::Interface<T>::cupmScalarCast; \
+    using ::Petsc::device::cupm::impl::Interface<T>::cupmScalarPtrCast; \
+    using ::Petsc::device::cupm::impl::Interface<T>::cupmRealPtrCast; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMGetMemType; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMemset; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMemsetAsync; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMalloc; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMallocAsync; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMallocHost; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMemcpy; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMemcpyAsync; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMemcpy2D; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMemcpy2DAsync; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMMemset2DAsync; \
+    using ::Petsc::device::cupm::impl::Interface<T>::cupmFree; \
+    using ::Petsc::device::cupm::impl::Interface<T>::cupmFreeAsync; \
+    using ::Petsc::device::cupm::impl::Interface<T>::cupmFreeHost; \
+    using ::Petsc::device::cupm::impl::Interface<T>::cupmLaunchKernel; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscCUPMLaunchKernel1D; \
+    using ::Petsc::device::cupm::impl::Interface<T>::PetscDeviceCopyModeToCUPMMemcpyKind
 
 } // namespace impl
 

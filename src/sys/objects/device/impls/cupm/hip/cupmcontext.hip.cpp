@@ -9,7 +9,7 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
   PetscFunctionBegin;
   PetscCall(hip_context.initialize(dctx->device));
   dctx->data = new PetscDeviceContext_(HIP);
-  PetscCall(PetscMemcpy(dctx->ops, &hip_context.ops, sizeof(hip_context.ops)));
+  *dctx->ops = hip_context.ops;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

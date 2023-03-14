@@ -2349,8 +2349,6 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat, PetscScalar **);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseCUDA(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm, PetscInt, PetscInt, PetscScalar[], Mat *);
-PETSC_EXTERN PetscErrorCode MatMPIDenseCUDASetPreallocation(Mat, PetscScalar[]);
-PETSC_EXTERN PetscErrorCode MatSeqDenseCUDASetPreallocation(Mat, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAGetArrayWrite(Mat, PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAGetArrayRead(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAGetArray(Mat, PetscScalar **);
@@ -2360,7 +2358,6 @@ PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArray(Mat, PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAPlaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAReplaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAResetArray(Mat);
-
 #endif
 
 #ifdef PETSC_HAVE_HIP
@@ -2423,8 +2420,6 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat, PetscScalar **);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSeqDenseHIP(MPI_Comm, PetscInt, PetscInt, PetscScalar[], Mat *);
-PETSC_EXTERN PetscErrorCode MatMPIDenseHIPSetPreallocation(Mat, PetscScalar[]);
-PETSC_EXTERN PetscErrorCode MatSeqDenseHIPSetPreallocation(Mat, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatDenseHIPGetArrayWrite(Mat, PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatDenseHIPGetArrayRead(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatDenseHIPGetArray(Mat, PetscScalar **);
@@ -2434,7 +2429,6 @@ PETSC_EXTERN PetscErrorCode MatDenseHIPRestoreArray(Mat, PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatDenseHIPPlaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseHIPReplaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseHIPResetArray(Mat);
-
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)

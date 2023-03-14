@@ -9754,7 +9754,7 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
 
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 #if PetscDefined(HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat);
 #endif
 
 /* Schur status updated in the interface */
@@ -9777,9 +9777,10 @@ static PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
       PetscCall(MatSeqDenseInvertFactors_Private(S));
     } else if (isdensecuda) {
 #if defined(PETSC_HAVE_CUDA)
-      PetscCall(MatSeqDenseCUDAInvertFactors_Private(S));
+      PetscCall(MatSeqDenseCUDAInvertFactors_Internal(S));
 #endif
     }
+    // HIP??????????????
     PetscCall(PetscLogEventEnd(MAT_FactorInvS, F, 0, 0, 0));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

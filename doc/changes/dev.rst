@@ -146,6 +146,7 @@ Changes: Development
 - Improve efficiency of ``MatConvert()`` from ``MATNORMAL`` to ``MATHYPRE``
 - Add ``MatDenseGetArrayAndMemType()``, ``MatDenseRestoreArrayAndMemType()``, ``MatDenseGetArrayReadAndMemType()``, ``MatDenseRestoreArrayReadAndMemType()``, ``MatDenseGetArrayWriteAndMemType()`` and ``MatDenseRestoreArrayWriteAndMemType()`` to return the array and memory type of a dense matrix
 - Deprecate all MatPreallocate* routines. These are no longer needed since non-preallocated matrices will now be as fast as using them
+- Significantly improve performance of ``MatScale()`` and ``MatAXPY()`` for ``MATDENSECUDA`` and ``MATDENSEHIP`` in the case where the leading dimension is greater than the number of columns/rows. This situation arises when using e.g. sub-matrices. These routines should be between 3x and 4x faster
 
 .. rubric:: MatCoarsen:
 

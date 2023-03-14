@@ -1176,7 +1176,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectCompose(PetscObject, const char[], PetscO
 PETSC_EXTERN PetscErrorCode PetscObjectRemoveReference(PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject, const char[], void (*)(void));
-#define PetscObjectComposeFunction(a, b, d) PetscObjectComposeFunction_Private((a), (b), (PetscVoidFunction)(d))
+#define PetscObjectComposeFunction(a, b, ...) PetscObjectComposeFunction_Private((a), (b), (PetscVoidFunction)(__VA_ARGS__))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
@@ -1875,10 +1875,10 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
   PetscInt64 r = PetscInt64Mult(a, b);
 
   PetscFunctionBegin;
+  if (result) *result = (PetscInt)r;
   if (!PetscDefined(USE_64BIT_INDICES)) {
     PetscCheck(r <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Product of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }
-  if (result) *result = (PetscInt)r;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1909,10 +1909,10 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
   PetscInt64 r = ((PetscInt64)a) + ((PetscInt64)b);
 
   PetscFunctionBegin;
+  if (result) *result = (PetscInt)r;
   if (!PetscDefined(USE_64BIT_INDICES)) {
     PetscCheck(r <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Sum of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }
-  if (result) *result = (PetscInt)r;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

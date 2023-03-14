@@ -7,6 +7,9 @@
   #include "../segmentedmempool.hpp"
   #include "cupmthrustutility.hpp"
 
+  #include <thrust/device_ptr.h>
+  #include <thrust/fill.h>
+
   #include <limits> // std::numeric_limits
 
 namespace Petsc
@@ -29,7 +32,7 @@ class HostAllocator;
 template <DeviceType T, typename PetscType>
 class HostAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
   using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
   using real_value_type = typename base_type::real_value_type;
   using size_type       = typename base_type::size_type;
@@ -80,7 +83,7 @@ class DeviceAllocator;
 template <DeviceType T, typename PetscType>
 class DeviceAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
   using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
   using real_value_type = typename base_type::real_value_type;
   using size_type       = typename base_type::size_type;
@@ -140,9 +143,10 @@ inline PetscErrorCode DeviceAllocator<T, P>::set_canary(value_type *ptr, size_ty
 {
   using limit_t           = std::numeric_limits<real_value_type>;
   const value_type canary = limit_t::has_signaling_NaN ? limit_t::signaling_NaN() : limit_t::max();
+  const auto       xptr   = thrust::device_pointer_cast(ptr);
 
   PetscFunctionBegin;
-  PetscCall(impl::ThrustSet<T>(stream->get_stream(), n, ptr, &canary));
+  PetscCallThrust(THRUST_CALL(thrust::fill, stream->get_stream(), xptr, xptr + n, canary));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
