@@ -24,7 +24,7 @@ typedef struct {
     PetscCheck(!_cgns_ier, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS error %d %s", _cgns_ier, cg_get_error()); \
   } while (0)
 
-PETSC_INTERN PetscErrorCode PetscViewerCGNSCheckBatch_Internal(PetscViewer);
-PETSC_INTERN PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerCGNSCheckBatch_Internal(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer, PetscInt);
 
 #endif
