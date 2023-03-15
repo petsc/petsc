@@ -1149,4 +1149,26 @@ M*/
 #define PETSC_REST_HELPER(qty, ...)  PETSC_REST_HELPER2(qty, __VA_ARGS__)
 #define PETSC_REST_ARG(...)          PETSC_REST_HELPER(PETSC_NUM(__VA_ARGS__), __VA_ARGS__)
 
+#define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN_(name, ...) \
+  _Pragma(PetscStringize(name diagnostic push)) \
+  _Pragma(PetscStringize(name diagnostic ignored __VA_ARGS__))
+
+#define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_(name) _Pragma(PetscStringize(name diagnostic pop))
+
+#if defined(__clang__)
+  #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN(...) PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN_(clang, __VA_ARGS__)
+  #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_(clang)
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN(...) PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN_(GCC, __VA_ARGS__)
+  #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()      PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_(GCC)
+#endif
+
+#ifndef PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN
+  #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN(...)
+  #define PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END(...)
+  // only undefine these if they are not used
+  #undef PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN_
+  #undef PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_
+#endif
+
 #endif /* PETSC_PREPROCESSOR_MACROS_H */
