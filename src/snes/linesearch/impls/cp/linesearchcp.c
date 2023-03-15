@@ -98,7 +98,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   /* postcheck */
   PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
-  if (changed_y) {
+  if (changed_y && !changed_w) {
     PetscCall(VecAXPY(X, -lambda, Y));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, X));
   } else {

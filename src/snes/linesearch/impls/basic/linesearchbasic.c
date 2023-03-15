@@ -25,7 +25,7 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
   /* postcheck */
   PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
-  if (changed_y) {
+  if (changed_y && !changed_w) {
     PetscCall(VecWAXPY(W, -lambda, Y, X));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   }
