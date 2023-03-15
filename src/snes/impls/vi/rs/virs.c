@@ -749,7 +749,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
    and produces a step direction by solving the linear system arising from the Jacobian with the inactive variables removed. In other
    words on a reduced space of the solution space. Based on the Newton update it then adjusts the inactive sep for the next iteration.
 
-.seealso: `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONSSLS`, `SNESNEWTONTRDC`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESVIGetInactiveSet()`, `DMSetVI()`, `SNESVISetRedundancyCheck()`
+.seealso: `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONSSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESVIGetInactiveSet()`, `DMSetVI()`, `SNESVISetRedundancyCheck()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 {

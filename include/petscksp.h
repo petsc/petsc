@@ -595,7 +595,9 @@ PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType, PCSide, Pe
 PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 
-#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
+#define KSP_CONVERGED_CG_NEG_CURVE_DEPRECATED   KSP_CONVERGED_CG_NEG_CURVE PETSC_DEPRECATED_ENUM("Use KSP_CONVERGED_NEG_CURVE (since version 3.19)")
+#define KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED KSP_CONVERGED_CG_CONSTRAINED PETSC_DEPRECATED_ENUM("Use KSP_CONVERGED_STEP_LENGTH (since version 3.19)")
+#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED  KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
 /*E
     KSPConvergedReason - reason a Krylov method was determined to have converged or diverged
 
@@ -607,8 +609,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_CONVERGED_RTOL` - requested decrease in the residual
 .  `KSP_CONVERGED_ATOL` - requested absolute value in the residual
 .  `KSP_CONVERGED_ITS` - requested number of iterations
-.  `KSP_CONVERGED_CG_NEG_CURVE` - see note below
-.  `KSP_CONVERGED_CG_CONSTRAINED` - see note below
+.  `KSP_CONVERGED_NEG_CURVE` - see note below
 .  `KSP_CONVERGED_STEP_LENGTH` - see note below
 .  `KSP_CONVERGED_HAPPY_BREAKDOWN` - happy breakdown (meaning early convergence of the `KSPType` occurred.
 .  `KSP_DIVERGED_NULL` - breakdown when solving the Hessenberg system within GMRES
@@ -623,7 +624,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 -  `KSP_DIVERGED_PC_FAILED` - the action of the preconditioner failed for some reason
 
    Note:
-   The values  `KSP_CONVERGED_CG_NEG_CURVE`, `KSP_CONVERGED_CG_CONSTRAINED`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by the special `KSPNASH`,
+   The values  `KSP_CONVERGED_NEG_CURVE`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by the special `KSPNASH`,
    `KSPSTCG`, and `KSPGLTR` solvers which are used by the `SNESNEWTONTR` (trust region) solver.
 
    Developer Notes:
@@ -635,15 +636,16 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .seealso: [](chapter_ksp), `KSP`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetTolerances()`, `KSPConvergedReasonView()`
 E*/
 typedef enum { /* converged */
-  KSP_CONVERGED_RTOL_NORMAL     = 1,
-  KSP_CONVERGED_ATOL_NORMAL     = 9,
-  KSP_CONVERGED_RTOL            = 2,
-  KSP_CONVERGED_ATOL            = 3,
-  KSP_CONVERGED_ITS             = 4,
-  KSP_CONVERGED_CG_NEG_CURVE    = 5,
-  KSP_CONVERGED_CG_CONSTRAINED  = 6,
-  KSP_CONVERGED_STEP_LENGTH     = 7,
-  KSP_CONVERGED_HAPPY_BREAKDOWN = 8,
+  KSP_CONVERGED_RTOL_NORMAL               = 1,
+  KSP_CONVERGED_ATOL_NORMAL               = 9,
+  KSP_CONVERGED_RTOL                      = 2,
+  KSP_CONVERGED_ATOL                      = 3,
+  KSP_CONVERGED_ITS                       = 4,
+  KSP_CONVERGED_NEG_CURVE                 = 5,
+  KSP_CONVERGED_CG_NEG_CURVE_DEPRECATED   = 5,
+  KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED = 6,
+  KSP_CONVERGED_STEP_LENGTH               = 6,
+  KSP_CONVERGED_HAPPY_BREAKDOWN           = 7,
   /* diverged */
   KSP_DIVERGED_NULL                      = -2,
   KSP_DIVERGED_ITS                       = -3,

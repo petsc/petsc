@@ -325,9 +325,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ++nlsP->ksp_atol;
     } else if (KSP_CONVERGED_RTOL == ksp_reason) {
       ++nlsP->ksp_rtol;
-    } else if (KSP_CONVERGED_CG_CONSTRAINED == ksp_reason) {
+    } else if (KSP_CONVERGED_STEP_LENGTH == ksp_reason) {
       ++nlsP->ksp_ctol;
-    } else if (KSP_CONVERGED_CG_NEG_CURVE == ksp_reason) {
+    } else if (KSP_CONVERGED_NEG_CURVE == ksp_reason) {
       ++nlsP->ksp_negc;
     } else if (KSP_DIVERGED_DTOL == ksp_reason) {
       ++nlsP->ksp_dtol;
@@ -402,7 +402,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       case KSP_DIVERGED_BREAKDOWN:
       case KSP_DIVERGED_INDEFINITE_MAT:
       case KSP_DIVERGED_INDEFINITE_PC:
-      case KSP_CONVERGED_CG_NEG_CURVE:
+      case KSP_CONVERGED_NEG_CURVE:
         /* Matrix or preconditioner is indefinite; increase perturbation */
         if (pert <= 0.0) {
           /* Initialize the perturbation */

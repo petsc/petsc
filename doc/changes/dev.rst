@@ -160,6 +160,8 @@ Changes: Development
 - Add ``KSPMonitorDynamicToleranceCreate()`` and ``KSPMonitorDynamicToleranceSetCoefficient()``
 - Change ``-sub_ksp_dynamic_tolerance_param`` to ``-sub_ksp_dynamic_tolerance``
 - Add support for ``MATAIJCUSPARSE`` and ``VECCUDA`` to ``KSPHPDDM``
+- Deprecate ``KSP_CONVERGED_CG_NEG_CURVE`` in favor of ``KSP_CONVERGED_NEG_CURVE``
+- Deprecate ``KSP_CONVERGED_CG_CONSTRAINED`` in favor of ``KSP_CONVERGED_STEP_LENGTH``
 
 .. rubric:: SNES:
 

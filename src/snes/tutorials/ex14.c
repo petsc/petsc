@@ -541,4 +541,10 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
       args: -fdcoloring_local -fdcoloring -ksp_monitor_short -da_refine 1 -snes_type newtontrdc
       requires: !single
 
+   test:
+      suffix: 6
+      nsize: 4
+      args: -fdcoloring_local -fdcoloring -da_refine 1 -snes_type newtontr -snes_tr_fallback_type dogleg
+      requires: !single
+
 TEST*/

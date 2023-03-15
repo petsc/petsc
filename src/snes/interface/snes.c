@@ -895,7 +895,7 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, MPI_Comm comm, cons
 .  -snes_lag_preconditioner_persists <true,false> - retains the -snes_lag_preconditioner information across multiple SNESSolve()
 .  -snes_lag_jacobian <lag> - how often Jacobian is rebuilt (use -1 to never rebuild)
 .  -snes_lag_jacobian_persists <true,false> - retains the -snes_lag_jacobian information across multiple SNESSolve()
-.  -snes_trtol <trtol> - trust region tolerance
+.  -snes_tr_tol <trtol> - trust region tolerance
 .  -snes_convergence_test - <default,skip,correct_pressure> convergence test in nonlinear solver.
                                default `SNESConvergedDefault()`. skip `SNESConvergedSkip()` means continue iterating until max_it or some other criterion is reached, saving expense
                                of convergence test. correct_pressure S`NESConvergedCorrectPressure()` has special handling of a pressure null space.
@@ -3846,11 +3846,11 @@ PetscErrorCode SNESGetDivergenceTolerance(SNES snes, PetscReal *divtol)
 -  tol - tolerance
 
    Options Database Key:
-.  -snes_trtol <tol> - Sets tol
+.  -snes_tr_tol <tol> - Sets tol
 
    Level: intermediate
 
-.seealso: [](chapter_snes), `SNES`, `SNESNEWTONTRDC`, `SNESSetTolerances()`
+.seealso: [](chapter_snes), `SNES`, `SNESNEWTONTR`, `SNESSetTolerances()`
 @*/
 PetscErrorCode SNESSetTrustRegionTolerance(SNES snes, PetscReal tol)
 {
@@ -4752,7 +4752,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
    See "petsc/include/petscsnes.h" for available methods (for instance)
 +    `SNESNEWTONLS` - Newton's method with line search
      (systems of nonlinear equations)
--    `SNESNEWTONTRDC` - Newton's method with trust region
+-    `SNESNEWTONTR` - Newton's method with trust region
      (systems of nonlinear equations)
 
   Normally, it is best to use the `SNESSetFromOptions()` command and then
