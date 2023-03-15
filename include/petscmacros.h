@@ -1171,4 +1171,36 @@ M*/
   #undef PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_
 #endif
 
+/* OpenMP support */
+#if defined(_OPENMP)
+  #if defined(_MSC_VER)
+    #define PetscPragmaOMP(...) __pragma(__VA_ARGS__)
+  #else
+    #define PetscPragmaOMP(...) _Pragma(PetscStringize(omp __VA_ARGS__))
+  #endif
+#endif
+
+#ifndef PetscPragmaOMP
+  #define PetscPragmaOMP(...)
+#endif
+
+/* PetscPragmaSIMD - from CeedPragmaSIMD */
+#if defined(__NEC__)
+  #define PetscPragmaSIMD _Pragma("_NEC ivdep")
+#elif defined(__INTEL_COMPILER) && !defined(_WIN32)
+  #define PetscPragmaSIMD _Pragma("vector")
+#elif defined(__GNUC__)
+  #if __GNUC__ >= 5 && !defined(__PGI)
+    #define PetscPragmaSIMD _Pragma("GCC ivdep")
+  #endif
+#elif defined(_OPENMP) && _OPENMP >= 201307
+  #define PetscPragmaSIMD PetscPragmaOMP(simd)
+#elif defined(PETSC_HAVE_CRAY_VECTOR)
+  #define PetscPragmaSIMD _Pragma("_CRI ivdep")
+#endif
+
+#ifndef PetscPragmaSIMD
+  #define PetscPragmaSIMD
+#endif
+
 #endif /* PETSC_PREPROCESSOR_MACROS_H */
