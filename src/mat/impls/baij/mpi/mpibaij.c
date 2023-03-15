@@ -1139,9 +1139,11 @@ PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
   Mat_SeqBAIJ    *A      = (Mat_SeqBAIJ *)aij->A->data;
   Mat_SeqBAIJ    *B      = (Mat_SeqBAIJ *)aij->B->data;
   const PetscInt *garray = aij->garray;
-  PetscInt        header[4], M, N, m, rs, cs, bs, nz, cnt, i, j, ja, jb, k, l;
+  PetscInt        header[4], M, N, m, rs, cs, bs, cnt, i, j, ja, jb, k, l;
+  PetscInt64      nz, hnz;
   PetscInt       *rowlens, *colidxs;
   PetscScalar    *matvals;
+  PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerSetUp(viewer));
@@ -1158,8 +1160,9 @@ PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
   header[0] = MAT_FILE_CLASSID;
   header[1] = M;
   header[2] = N;
-  header[3] = nz;
-  PetscCallMPI(MPI_Reduce(&nz, &header[3], 1, MPIU_INT, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPI_Reduce(&nz, &hnz, 1, MPIU_INT64, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat), &rank));
+  if (rank == 0) PetscCall(PetscIntCast(hnz, &header[3]));
   PetscCall(PetscViewerBinaryWrite(viewer, header, 4, PETSC_INT));
 
   /* fill in and store row lengths */
@@ -1183,7 +1186,7 @@ PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
         for (l = 0; l < bs; l++) colidxs[cnt++] = bs * garray[B->j[jb]] + l;
     }
   }
-  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_LIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt_FMT, cnt, nz);
+  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_LIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt64_FMT, cnt, nz);
   PetscCall(PetscViewerBinaryWriteAll(viewer, colidxs, nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_INT));
   PetscCall(PetscFree(colidxs));
 

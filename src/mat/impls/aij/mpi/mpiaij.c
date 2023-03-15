@@ -1210,10 +1210,12 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat, PetscViewer viewer)
   Mat_SeqAIJ        *B      = (Mat_SeqAIJ *)aij->B->data;
   const PetscInt    *garray = aij->garray;
   const PetscScalar *aa, *ba;
-  PetscInt           header[4], M, N, m, rs, cs, nz, cnt, i, ja, jb;
+  PetscInt           header[4], M, N, m, rs, cs, cnt, i, ja, jb;
+  PetscInt64         nz, hnz;
   PetscInt          *rowlens;
   PetscInt          *colidxs;
   PetscScalar       *matvals;
+  PetscMPIInt        rank;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerSetUp(viewer));
@@ -1229,8 +1231,9 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat, PetscViewer viewer)
   header[0] = MAT_FILE_CLASSID;
   header[1] = M;
   header[2] = N;
-  header[3] = nz;
-  PetscCallMPI(MPI_Reduce(&nz, &header[3], 1, MPIU_INT, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPI_Reduce(&nz, &hnz, 1, MPIU_INT64, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat), &rank));
+  if (rank == 0) PetscCall(PetscIntCast(hnz, &header[3]));
   PetscCall(PetscViewerBinaryWrite(viewer, header, 4, PETSC_INT));
 
   /* fill in and store row lengths  */
@@ -1249,7 +1252,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat, PetscViewer viewer)
     for (ja = A->i[i]; ja < A->i[i + 1]; ja++) colidxs[cnt++] = A->j[ja] + cs;
     for (; jb < B->i[i + 1]; jb++) colidxs[cnt++] = garray[B->j[jb]];
   }
-  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt_FMT, cnt, nz);
+  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt64_FMT, cnt, nz);
   PetscCall(PetscViewerBinaryWriteAll(viewer, colidxs, nz, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_INT));
   PetscCall(PetscFree(colidxs));
 
@@ -1267,7 +1270,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat, PetscViewer viewer)
   }
   PetscCall(MatSeqAIJRestoreArrayRead(aij->A, &aa));
   PetscCall(MatSeqAIJRestoreArrayRead(aij->B, &ba));
-  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_LIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt_FMT, cnt, nz);
+  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_LIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt64_FMT, cnt, nz);
   PetscCall(PetscViewerBinaryWriteAll(viewer, matvals, nz, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_SCALAR));
   PetscCall(PetscFree(matvals));
 
