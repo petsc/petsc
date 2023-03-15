@@ -19,6 +19,7 @@ import build_classic_docs
 import fix_man_page_edit_links
 import make_links_relative
 import update_htmlmap_links
+import fix_pydata_margins
 
 
 if not os.path.isdir("images"):
@@ -192,6 +193,7 @@ def build_finished_handler(app, exception):
         _copy_classic_docs(app, exception, app.outdir, 'post')
         _fix_links(app, exception)
         _fix_man_page_edit_links(app, exception)
+        fix_pydata_margins.fix_pydata_margins(app.outdir)
         if app.builder.name == 'dirhtml':
             _add_man_page_redirects(app, exception)
         if app.builder.name == 'html':
