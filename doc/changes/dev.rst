@@ -199,6 +199,7 @@ Changes: Development
 - Add ``DMPlexSetIsoperiodicFaceSF()`` to wrap a non-periodic mesh into periodic while preserving the local point representation for both donor and image sheet. This is supported with ``zbox`` above, and allows single-element periodicity.
 
 .. rubric:: FE/FV:
+  - Add ``DMPlexGetLocalOffsetsSupport()`` for interaction with libCEED for FV
 
 .. rubric:: DMNetwork:
   - Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork

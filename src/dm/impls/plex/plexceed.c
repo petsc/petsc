@@ -1,7 +1,36 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"          I*/
 
+static PetscErrorCode DMGetPoints_Private(DM dm, DMLabel domainLabel, PetscInt labelVal, PetscInt height, IS *pointIS)
+{
+  PetscInt depth;
+  DMLabel  depthLabel;
+  IS       depthIS;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
+  PetscCall(DMLabelGetStratumIS(depthLabel, depth - height, &depthIS));
+  if (domainLabel) {
+    IS domainIS;
+
+    PetscCall(DMLabelGetStratumIS(domainLabel, labelVal, &domainIS));
+    if (domainIS) { // domainIS is non-empty
+      PetscCall(ISIntersect(depthIS, domainIS, pointIS));
+      PetscCall(ISDestroy(&domainIS));
+    } else { // domainIS is NULL (empty)
+      *pointIS = NULL;
+    }
+    PetscCall(ISDestroy(&depthIS));
+  } else {
+    *pointIS = depthIS;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
-  DMPlexGetLocalOffsets - Allocate and populate array of local offsets.
+  DMPlexGetLocalOffsets - Allocate and populate array of local offsets for each cell closure.
+
+  Not collective
 
   Input Parameters:
 +  dm - The `DMPLEX` object
@@ -24,7 +53,7 @@
 
    Caller is responsible for freeing the offsets array using `PetscFree()`.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMLabel`, `DMPlexGetClosureIndices()`, `DMPlexSetClosurePermutationTensor()`, `DMPlexGetCeedRestriction()`
+.seealso: [](chapter_unstructured), `DMPlexGetLocalOffsetsSupport()`, `DM`, `DMPLEX`, `DMLabel`, `DMPlexGetClosureIndices()`, `DMPlexSetClosurePermutationTensor()`, `DMPlexGetCeedRestriction()`
 @*/
 PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label_value, PetscInt height, PetscInt dm_field, PetscInt *num_cells, PetscInt *cell_size, PetscInt *num_comp, PetscInt *l_size, PetscInt **offsets)
 {
@@ -59,35 +88,13 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   }
   PetscCheck(ds_field != -1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Could not find dm_field %" PetscInt_FMT " in DS", dm_field);
 
-  {
-    PetscInt depth;
-    DMLabel  depth_label;
-    IS       depth_is;
-
-    PetscCall(DMPlexGetDepth(dm, &depth));
-    PetscCall(DMPlexGetDepthLabel(dm, &depth_label));
-    PetscCall(DMLabelGetStratumIS(depth_label, depth - height, &depth_is));
-    if (domain_label) {
-      IS domain_is;
-
-      PetscCall(DMLabelGetStratumIS(domain_label, label_value, &domain_is));
-      if (domain_is) { // domainIS is non-empty
-        PetscCall(ISIntersect(depth_is, domain_is, &iter_is));
-        PetscCall(ISDestroy(&domain_is));
-      } else { // domainIS is NULL (empty)
-        iter_is = NULL;
-      }
-      PetscCall(ISDestroy(&depth_is));
-    } else {
-      iter_is = depth_is;
-    }
-    if (iter_is) {
-      PetscCall(ISGetLocalSize(iter_is, num_cells));
-      PetscCall(ISGetIndices(iter_is, &iter_indices));
-    } else {
-      *num_cells   = 0;
-      iter_indices = NULL;
-    }
+  PetscCall(DMGetPoints_Private(dm, domain_label, label_value, height, &iter_is));
+  if (iter_is) {
+    PetscCall(ISGetLocalSize(iter_is, num_cells));
+    PetscCall(ISGetIndices(iter_is, &iter_indices));
+  } else {
+    *num_cells   = 0;
+    iter_indices = NULL;
   }
 
   {
@@ -107,7 +114,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   PetscCall(PetscMalloc1(restr_size, &restr_indices));
   PetscInt cell_offset = 0;
 
-  PetscInt P = (PetscInt)pow(*cell_size, 1.0 / (dim - height));
+  PetscInt P = (PetscInt)PetscPowReal(*cell_size, 1.0 / (dim - height));
   for (PetscInt p = 0; p < *num_cells; p++) {
     PetscBool flip = PETSC_FALSE;
     PetscInt  c    = iter_indices[p];
@@ -150,6 +157,108 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   PetscCall(ISDestroy(&iter_is));
 
   *offsets = restr_indices;
+  PetscCall(PetscSectionGetStorageSize(section, l_size));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMPlexGetLocalOffsetsSupport - Allocate and populate arrays of local offsets for each face support.
+
+  Not collective
+
+  Input Parameters:
++  dm - The `DMPLEX` object
+.  domain_label - label for `DMPLEX` domain, or NULL for whole domain
+-  label_value - Stratum value
+
+  Output Parameters:
++  num_faces - Number of local, non-boundary faces
+.  num_comp - Number of components per dof
+.  l_size - Size of local vector
+.  offsetsNeg - Allocated offsets array for cells on the inward normal side of each face
+-  offsetsPos - Allocated offsets array for cells on the outward normal side of each face
+
+  Level: developer
+
+  Notes:
+  Allocate and populate array of shape [num_cells, num_comp] defining offsets for each cell for local vector of the `DMPLEX` field. All offsets are in the range [0, l_size - 1].
+
+   Caller is responsible for freeing the offsets array using `PetscFree()`.
+
+.seealso: [](chapter_unstructured), `DMPlexGetLocalOffsets()`, `DM`, `DMPLEX`, `DMLabel`, `DMPlexGetClosureIndices()`, `DMPlexSetClosurePermutationTensor()`, `DMPlexGetCeedRestriction()`
+@*/
+PetscErrorCode DMPlexGetLocalOffsetsSupport(DM dm, DMLabel domain_label, PetscInt label_value, PetscInt *num_faces, PetscInt *num_comp, PetscInt *l_size, PetscInt **offsetsNeg, PetscInt **offsetsPos)
+{
+  PetscDS         ds = NULL;
+  PetscFV         fv;
+  PetscSection    section;
+  PetscInt        dim, height = 1, dm_field = 0, ds_field = 0, Nf, NfInt = 0, cell_size, restr_size;
+  PetscInt       *restr_indices_neg, *restr_indices_pos;
+  const PetscInt *iter_indices;
+  IS              iter_is;
+
+  PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetLocalSection(dm, &section));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetRegionDS(dm, domain_label, NULL, &ds));
+
+  PetscCall(DMGetPoints_Private(dm, domain_label, label_value, height, &iter_is));
+  if (iter_is) {
+    PetscCall(ISGetIndices(iter_is, &iter_indices));
+    PetscCall(ISGetLocalSize(iter_is, &Nf));
+    for (PetscInt p = 0, Ns; p < Nf; ++p) {
+      PetscCall(DMPlexGetSupportSize(dm, iter_indices[p], &Ns));
+      if (Ns == 2) ++NfInt;
+    }
+    *num_faces = NfInt;
+  } else {
+    *num_faces   = 0;
+    iter_indices = NULL;
+  }
+
+  PetscCall(PetscDSGetDiscretization(ds, ds_field, (PetscObject *)&fv));
+  PetscCall(PetscFVGetNumComponents(fv, num_comp));
+  cell_size  = *num_comp;
+  restr_size = (*num_faces) * cell_size;
+  PetscCall(PetscMalloc1(restr_size, &restr_indices_neg));
+  PetscCall(PetscMalloc1(restr_size, &restr_indices_pos));
+  PetscInt face_offset_neg = 0, face_offset_pos = 0;
+
+  for (PetscInt p = 0; p < Nf; ++p) {
+    const PetscInt  face = iter_indices[p];
+    PetscInt        num_indices, *indices;
+    PetscInt        field_offsets[17]; // max number of fields plus 1
+    const PetscInt *supp;
+    PetscInt        Ns;
+
+    PetscCall(DMPlexGetSupport(dm, face, &supp));
+    PetscCall(DMPlexGetSupportSize(dm, face, &Ns));
+    // Ignore boundary faces
+    //   TODO check for face on parallel boundary
+    if (Ns == 2) {
+      // Essential boundary conditions are encoded as -(loc+1), but we don't care so we decode.
+      PetscCall(DMPlexGetClosureIndices(dm, section, section, supp[0], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
+      for (PetscInt i = 0; i < cell_size; i++) {
+        const PetscInt loc                   = indices[field_offsets[dm_field] + i * (*num_comp)];
+        restr_indices_neg[face_offset_neg++] = loc >= 0 ? loc : -(loc + 1);
+      }
+      PetscCall(DMPlexRestoreClosureIndices(dm, section, section, supp[0], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
+      PetscCall(DMPlexGetClosureIndices(dm, section, section, supp[1], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
+      for (PetscInt i = 0; i < cell_size; i++) {
+        const PetscInt loc                   = indices[field_offsets[dm_field] + i * (*num_comp)];
+        restr_indices_pos[face_offset_pos++] = loc >= 0 ? loc : -(loc + 1);
+      }
+      PetscCall(DMPlexRestoreClosureIndices(dm, section, section, supp[1], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
+    }
+  }
+  PetscCheck(face_offset_neg == restr_size, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, neg offsets array of shape (%" PetscInt_FMT ", %" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", *num_faces, cell_size, face_offset_neg);
+  PetscCheck(face_offset_pos == restr_size, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, pos offsets array of shape (%" PetscInt_FMT ", %" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", *num_faces, cell_size, face_offset_pos);
+  if (iter_is) PetscCall(ISRestoreIndices(iter_is, &iter_indices));
+  PetscCall(ISDestroy(&iter_is));
+
+  *offsetsNeg = restr_indices_neg;
+  *offsetsPos = restr_indices_pos;
   PetscCall(PetscSectionGetStorageSize(section, l_size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1,6 +1,6 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = fv.c
+SOURCEC   = fv.c fvceed.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = FV

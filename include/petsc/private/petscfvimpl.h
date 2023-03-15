@@ -2,7 +2,11 @@
 #define PETSCFVIMPL_H
 
 #include <petscfv.h>
+#ifdef PETSC_HAVE_LIBCEED
+  #include <petscfvceed.h>
+#endif
 #include <petsc/private/petscimpl.h>
+#include <petsc/private/dmimpl.h>
 
 PETSC_EXTERN PetscBool      PetscLimiterRegisterAllCalled;
 PETSC_EXTERN PetscBool      PetscFVRegisterAllCalled;
@@ -77,6 +81,10 @@ struct _p_PetscFV {
   PetscQuadrature quadrature;       /* Suitable quadrature on the volume */
   PetscTabulation T;                /* Tabulation of pseudo-basis and derivatives at quadrature points */
   char          **componentNames;   /* Names of the component fields */
+#ifdef PETSC_HAVE_LIBCEED
+  Ceed      ceed;      /* The LibCEED context, usually set by the DM */
+  CeedBasis ceedBasis; /* Basis for libCEED matching this element */
+#endif
 };
 
 typedef struct {
