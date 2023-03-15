@@ -330,7 +330,7 @@ int main(int argc, char **argv)
 /*TEST
 
    build:
-      requires: !complex double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
+      requires: !complex double defined(PETSC_HAVE_ATTRIBUTEALIGNED) 64bitptr
 
    test:
       args: -ksp_converged_reason

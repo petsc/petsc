@@ -362,7 +362,7 @@ int main(int argc, char **argv)
 /*TEST
 
    build:
-      requires: !single double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
+      requires: !single double defined(PETSC_HAVE_ATTRIBUTEALIGNED) 64bitptr
 
    test:
       args: -ksp_converged_reason
