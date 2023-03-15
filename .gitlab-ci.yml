@@ -76,7 +76,7 @@ check-ci-settings:
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
+    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native' CXXOPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}"
     - if [ ! -z ${ENABLE_CHECK+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" check; fi
     - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
