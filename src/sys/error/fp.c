@@ -55,7 +55,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
   PetscFunctionBegin;
   PetscCall(PetscNew(&link));
 #if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-  #pragma omp critical
+  PetscPragmaOMP(critical)
 #endif
   {
     link->trapmode = _trapmode;
@@ -82,7 +82,7 @@ PetscErrorCode PetscFPTrapPop(void)
   PetscFunctionBegin;
   if (_trapstack->trapmode != _trapmode) PetscCall(PetscSetFPTrap(_trapstack->trapmode));
 #if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-  #pragma omp critical
+  PetscPragmaOMP(critical)
 #endif
   {
     link       = _trapstack;

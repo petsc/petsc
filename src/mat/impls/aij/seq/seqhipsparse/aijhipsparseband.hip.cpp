@@ -365,6 +365,7 @@ template <typename T>
 __forceinline__ __device__ T wreduce(T a)
 {
   T b;
+
 #pragma unroll
   for (int i = WARP_SIZE / 2; i >= 1; i = i >> 1) {
     b = __shfl_down(0xffffffff, a, i);
