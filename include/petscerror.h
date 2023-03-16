@@ -1187,7 +1187,7 @@ PETSC_EXTERN PetscStack petscstack;
   #define PetscRegister__FUNCT__()
 #endif
 
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#if defined(PETSC_CLANG_STATIC_ANALYZER) || defined(__clang_analyzer__)
   #define PetscStackPushNoCheck(funct, petsc_routine, hot)
   #define PetscStackUpdateLine
   #define PetscStackPushExternal(funct)

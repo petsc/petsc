@@ -76,10 +76,10 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
 
 static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
-  PC_PATCH       *patch = (PC_PATCH *)vpatch;
-  DMLabel         ghost = NULL;
-  const PetscInt *leaves;
-  PetscInt        nleaves, pStart, pEnd, loc;
+  PC_PATCH       *patch   = (PC_PATCH *)vpatch;
+  DMLabel         ghost   = NULL;
+  const PetscInt *leaves  = NULL;
+  PetscInt        nleaves = 0, pStart, pEnd, loc;
   PetscBool       isFiredrake;
   PetscBool       flg;
   PetscInt        starSize;

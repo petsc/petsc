@@ -346,6 +346,9 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "C89 does not support va_copy() hence cannot print long strings with PETSc printing routines");
 #endif
   }
+#if defined(PETSC_HAVE_VA_COPY)
+  va_end(Argpcopy);
+#endif
   {
     const int err = fprintf(fd, "%s", buff);
     // cannot use PetscCallExternal() for fprintf since the return value is "number of
@@ -382,6 +385,7 @@ PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
   PetscFunctionBegin;
   va_start(Argp, format);
   PetscCall(PetscVSNPrintf(str, len, format, &fullLength, Argp));
+  va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -411,6 +415,7 @@ PetscErrorCode PetscSNPrintfCount(char *str, size_t len, const char format[], si
   PetscFunctionBegin;
   va_start(Argp, countused);
   PetscCall(PetscVSNPrintf(str, len, format, countused, Argp));
+  va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -418,6 +423,65 @@ PetscErrorCode PetscSNPrintfCount(char *str, size_t len, const char format[], si
 
 PrintfQueue petsc_printfqueue = NULL, petsc_printfqueuebase = NULL;
 int         petsc_printfqueuelength = 0;
+
+static inline PetscErrorCode PetscVFPrintf_Private(MPI_Comm comm, FILE *fd, const char format[], va_list Argp)
+{
+  const PetscBool tee = (PetscBool)(petsc_history && (fd != petsc_history));
+  PetscMPIInt     rank;
+  va_list         cpy;
+
+  PetscFunctionBegin;
+  PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  if (PetscLikely(rank != 0)) PetscFunctionReturn(PETSC_SUCCESS);
+  // must do this before we possibly consume Argp
+  if (tee) va_copy(cpy, Argp);
+  PetscCall((*PetscVFPrintf)(fd, format, Argp));
+  if (tee) {
+    PetscCall((*PetscVFPrintf)(petsc_history, format, cpy));
+    va_end(cpy);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscErrorCode PetscSynchronizedFPrintf_Private(MPI_Comm comm, FILE *fp, const char format[], va_list Argp)
+{
+  PetscMPIInt rank;
+  va_list     cpy;
+
+  PetscFunctionBegin;
+  PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  /* First processor prints immediately to fp */
+  if (rank == 0) {
+    va_copy(cpy, Argp);
+    PetscCall(PetscVFPrintf_Private(comm, fp, format, cpy));
+    va_end(cpy);
+  } else { /* other processors add to local queue */
+    PrintfQueue next;
+    size_t      fullLength = PETSCDEFAULTBUFFERSIZE;
+
+    PetscCall(PetscNew(&next));
+    if (petsc_printfqueue) {
+      petsc_printfqueue->next = next;
+      petsc_printfqueue       = next;
+      petsc_printfqueue->next = NULL;
+    } else petsc_printfqueuebase = petsc_printfqueue = next;
+    petsc_printfqueuelength++;
+    next->size   = 0;
+    next->string = NULL;
+    while (fullLength >= next->size) {
+      next->size = fullLength + 1;
+      PetscCall(PetscFree(next->string));
+      PetscCall(PetscMalloc1(next->size, &next->string));
+      PetscCall(PetscArrayzero(next->string, next->size));
+      va_copy(cpy, Argp);
+      PetscCall(PetscVSNPrintf(next->string, next->size, format, &fullLength, cpy));
+      va_end(cpy);
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*@C
     PetscSynchronizedPrintf - Prints synchronized output from several processors.
@@ -445,46 +509,12 @@ int         petsc_printfqueuelength = 0;
 @*/
 PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
 {
-  PetscMPIInt rank;
+  va_list Argp;
 
   PetscFunctionBegin;
-  PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-
-  /* First processor prints immediately to stdout */
-  if (rank == 0) {
-    va_list Argp;
-    va_start(Argp, format);
-    PetscCall((*PetscVFPrintf)(PETSC_STDOUT, format, Argp));
-    if (petsc_history) {
-      va_start(Argp, format);
-      PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-    }
-    va_end(Argp);
-  } else { /* other processors add to local queue */
-    va_list     Argp;
-    PrintfQueue next;
-    size_t      fullLength = PETSCDEFAULTBUFFERSIZE;
-
-    PetscCall(PetscNew(&next));
-    if (petsc_printfqueue) {
-      petsc_printfqueue->next = next;
-      petsc_printfqueue       = next;
-      petsc_printfqueue->next = NULL;
-    } else petsc_printfqueuebase = petsc_printfqueue = next;
-    petsc_printfqueuelength++;
-    next->size   = 0;
-    next->string = NULL;
-    while (fullLength >= next->size) {
-      next->size = fullLength + 1;
-      PetscCall(PetscFree(next->string));
-      PetscCall(PetscMalloc1(next->size, &next->string));
-      va_start(Argp, format);
-      PetscCall(PetscArrayzero(next->string, next->size));
-      PetscCall(PetscVSNPrintf(next->string, next->size, format, &fullLength, Argp));
-      va_end(Argp);
-    }
-  }
+  va_start(Argp, format);
+  PetscCall(PetscSynchronizedFPrintf_Private(comm, PETSC_STDOUT, format, Argp));
+  va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -512,46 +542,12 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
 @*/
 PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char format[], ...)
 {
-  PetscMPIInt rank;
+  va_list Argp;
 
   PetscFunctionBegin;
-  PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-
-  /* First processor prints immediately to fp */
-  if (rank == 0) {
-    va_list Argp;
-    va_start(Argp, format);
-    PetscCall((*PetscVFPrintf)(fp, format, Argp));
-    if (petsc_history && (fp != petsc_history)) {
-      va_start(Argp, format);
-      PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-    }
-    va_end(Argp);
-  } else { /* other processors add to local queue */
-    va_list     Argp;
-    PrintfQueue next;
-    size_t      fullLength = PETSCDEFAULTBUFFERSIZE;
-
-    PetscCall(PetscNew(&next));
-    if (petsc_printfqueue) {
-      petsc_printfqueue->next = next;
-      petsc_printfqueue       = next;
-      petsc_printfqueue->next = NULL;
-    } else petsc_printfqueuebase = petsc_printfqueue = next;
-    petsc_printfqueuelength++;
-    next->size   = 0;
-    next->string = NULL;
-    while (fullLength >= next->size) {
-      next->size = fullLength + 1;
-      PetscCall(PetscFree(next->string));
-      PetscCall(PetscMalloc1(next->size, &next->string));
-      va_start(Argp, format);
-      PetscCall(PetscArrayzero(next->string, next->size));
-      PetscCall(PetscVSNPrintf(next->string, next->size, format, &fullLength, Argp));
-      va_end(Argp);
-    }
-  }
+  va_start(Argp, format);
+  PetscCall(PetscSynchronizedFPrintf_Private(comm, fp, format, Argp));
+  va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -649,21 +645,12 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
 @*/
 PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
 {
-  PetscMPIInt rank;
+  va_list Argp;
 
   PetscFunctionBegin;
-  PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
-  PetscCheck(MPI_SUCCESS == MPI_Comm_rank(comm, &rank), comm, PETSC_ERR_MPI, "Error inside MPI_Comm_rank() in PetscFPrintf");
-  if (rank == 0) {
-    va_list Argp;
-    va_start(Argp, format);
-    PetscCall((*PetscVFPrintf)(fd, format, Argp));
-    if (petsc_history && (fd != petsc_history)) {
-      va_start(Argp, format);
-      PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-    }
-    va_end(Argp);
-  }
+  va_start(Argp, format);
+  PetscCall(PetscVFPrintf_Private(comm, fd, format, Argp));
+  va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -691,41 +678,23 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
 @*/
 PetscErrorCode PetscPrintf(MPI_Comm comm, const char format[], ...)
 {
-  PetscMPIInt rank;
+  va_list Argp;
 
   PetscFunctionBegin;
-  PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) {
-    va_list Argp;
-    va_start(Argp, format);
-    PetscCall((*PetscVFPrintf)(PETSC_STDOUT, format, Argp));
-    if (petsc_history) {
-      va_start(Argp, format);
-      PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-    }
-    va_end(Argp);
-  }
+  va_start(Argp, format);
+  PetscCall(PetscVFPrintf_Private(comm, PETSC_STDOUT, format, Argp));
+  va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
 {
-  PetscMPIInt rank;
+  va_list Argp;
 
   PetscFunctionBegin;
-  PetscCheck(comm != MPI_COMM_NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) {
-    va_list Argp;
-    va_start(Argp, format);
-    PetscCall((*PetscVFPrintf)(PETSC_STDOUT, format, Argp));
-    if (petsc_history) {
-      va_start(Argp, format);
-      PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-    }
-    va_end(Argp);
-  }
+  va_start(Argp, format);
+  PetscCall(PetscVFPrintf_Private(comm, PETSC_STDOUT, format, Argp));
+  va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -755,14 +724,10 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-
-  if (rank == 0) {
-    char *ptr = fgets(string, len, fp);
-
-    if (!ptr) {
-      string[0] = 0;
-      PetscCheck(feof(fp), PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
-    }
+  if (rank != 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!fgets(string, len, fp)) {
+    string[0] = 0;
+    PetscCheck(feof(fp), PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
   }
   PetscCallMPI(MPI_Bcast(string, len, MPI_BYTE, 0, comm));
   PetscFunctionReturn(PETSC_SUCCESS);

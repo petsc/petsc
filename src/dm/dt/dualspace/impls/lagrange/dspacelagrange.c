@@ -1667,7 +1667,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
   if (useMoments) {
     Mat              allMat;
     PetscInt         momentOrder, i;
-    PetscBool        tensor;
+    PetscBool        tensor = PETSC_FALSE;
     const PetscReal *weights;
     PetscScalar     *array;
 
