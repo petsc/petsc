@@ -4,6 +4,7 @@ static char help[] = "Tests dof numberings for external integrators such as LibC
 #include <petscds.h>
 
 typedef struct {
+  PetscBool useFE;
   PetscInt  check_face;
   PetscBool closure_tensor;
 } AppCtx;
@@ -11,9 +12,11 @@ typedef struct {
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscFunctionBeginUser;
+  options->useFE          = PETSC_TRUE;
   options->check_face     = 1;
   options->closure_tensor = PETSC_FALSE;
   PetscOptionsBegin(comm, "", "Dof Ordering Options", "DMPLEX");
+  PetscCall(PetscOptionsBool("-use_fe", "Use FE or FV discretization", "ex49.c", options->useFE, &options->useFE, NULL));
   PetscCall(PetscOptionsInt("-check_face", "Face set to report on", "ex49.c", options->check_face, &options->check_face, NULL));
   PetscCall(PetscOptionsBool("-closure_tensor", "Use DMPlexSetClosurePermutationTensor()", "ex49.c", options->closure_tensor, &options->closure_tensor, NULL));
   PetscOptionsEnd();
@@ -34,16 +37,32 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM       cdm = dm;
-  PetscFE  fe;
   PetscInt dim;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
-  PetscCall(PetscObjectSetName((PetscObject)fe, "scalar"));
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
-  PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe));
-  PetscCall(PetscFEDestroy(&fe));
+  if (user->useFE) {
+    PetscFE fe;
+
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
+    PetscCall(PetscObjectSetName((PetscObject)fe, "scalar"));
+    PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
+    PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe));
+    PetscCall(PetscFEDestroy(&fe));
+  } else {
+    PetscFV fv;
+
+    PetscCall(PetscFVCreate(PETSC_COMM_SELF, &fv));
+    PetscCall(PetscFVSetType(fv, PETSCFVLEASTSQUARES));
+    PetscCall(PetscFVSetNumComponents(fv, dim));
+    PetscCall(PetscFVSetSpatialDimension(fv, dim));
+    PetscCall(PetscFVSetFromOptions(fv));
+    PetscCall(PetscFVSetUp(fv));
+    PetscCall(PetscObjectSetName((PetscObject)fv, "vector"));
+    PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fv));
+    PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fv));
+    PetscCall(PetscFVDestroy(&fv));
+  }
   PetscCall(DMCreateDS(dm));
   while (cdm) {
     PetscCall(DMCopyDisc(dm, cdm));
@@ -57,8 +76,6 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
   const char            *height_name[] = {"cells", "faces"};
   DMLabel                domain_label  = NULL;
   DM                     cdm;
-  IS                     offIS;
-  PetscInt              *offsets, Ncell, Ncl, Nc, n;
   PetscInt               Nf, f;
   ISLocalToGlobalMapping ltog;
 
@@ -70,14 +87,40 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
   // Offsets for cell closures
   PetscCall(DMGetNumFields(dm, &Nf));
   for (f = 0; f < Nf; ++f) {
-    char name[PETSC_MAX_PATH_LEN];
+    PetscObject  obj;
+    PetscClassId id;
+    char         name[PETSC_MAX_PATH_LEN];
 
-    PetscCall(DMPlexGetLocalOffsets(dm, domain_label, label_value, height, f, &Ncell, &Ncl, &Nc, &n, &offsets));
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Ncell * Ncl, offsets, PETSC_OWN_POINTER, &offIS));
-    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Field %" PetscInt_FMT " Offsets", f));
-    PetscCall(PetscObjectSetName((PetscObject)offIS, name));
-    PetscCall(ISViewFromOptions(offIS, NULL, "-offsets_view"));
-    PetscCall(ISDestroy(&offIS));
+    PetscCall(DMGetField(dm, f, NULL, &obj));
+    PetscCall(PetscObjectGetClassId(obj, &id));
+    if (id == PETSCFE_CLASSID) {
+      IS        offIS;
+      PetscInt *offsets, Ncell, Ncl, Nc, n;
+
+      PetscCall(DMPlexGetLocalOffsets(dm, domain_label, label_value, height, f, &Ncell, &Ncl, &Nc, &n, &offsets));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Ncell * Ncl, offsets, PETSC_OWN_POINTER, &offIS));
+      PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Field %" PetscInt_FMT " Offsets", f));
+      PetscCall(PetscObjectSetName((PetscObject)offIS, name));
+      PetscCall(ISViewFromOptions(offIS, NULL, "-offsets_view"));
+      PetscCall(ISDestroy(&offIS));
+    } else if (id == PETSCFV_CLASSID) {
+      IS        offIS;
+      PetscInt *offsets, *offsetsNeg, *offsetsPos, Nface, Nc, n;
+
+      PetscCall(DMPlexGetLocalOffsetsSupport(dm, domain_label, label_value, &Nface, &Nc, &n, &offsetsNeg, &offsetsPos));
+      PetscCall(PetscMalloc1(Nface * Nc * 2, &offsets));
+      for (PetscInt f = 0, i = 0; f < Nface; ++f) {
+        for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsNeg[f * Nc + c];
+        for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsPos[f * Nc + c];
+      }
+      PetscCall(PetscFree(offsetsNeg));
+      PetscCall(PetscFree(offsetsPos));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Nface * Nc * 2, offsets, PETSC_OWN_POINTER, &offIS));
+      PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Field %" PetscInt_FMT " Offsets", f));
+      PetscCall(PetscObjectSetName((PetscObject)offIS, name));
+      PetscCall(ISViewFromOptions(offIS, NULL, "-offsets_view"));
+      PetscCall(ISDestroy(&offIS));
+    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unrecognized type for DM field %" PetscInt_FMT, f);
   }
   PetscCall(DMGetLocalToGlobalMapping(dm, &ltog));
   PetscCall(ISLocalToGlobalMappingViewFromOptions(ltog, NULL, "-ltog_view"));
@@ -88,7 +131,7 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
     PetscSection       s;
     const PetscScalar *x;
     const char        *cname;
-    PetscInt           cdim;
+    PetscInt           cdim, *offsets, Ncell, Ncl, Nc, n;
     PetscBool          isDG = PETSC_FALSE;
 
     PetscCall(DMGetCellCoordinateDM(dm, &cdm));
@@ -199,5 +242,10 @@ int main(int argc, char **argv)
     test:
       suffix: 2d_sfc_periodic_stranded_dist
       args: -dm_distribute 1 -petscpartitioner_type simple
+
+  test:
+    suffix: fv_0
+    requires: triangle
+    args: -dm_refine 1 -use_fe 0 -dm_view -offsets_view
 
 TEST*/
