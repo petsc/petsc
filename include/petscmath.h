@@ -876,7 +876,7 @@ static inline PetscInt PetscPowInt(PetscInt base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }
@@ -887,7 +887,7 @@ static inline PetscInt64 PetscPowInt64(PetscInt base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }
@@ -902,7 +902,7 @@ static inline PetscReal PetscPowRealInt(PetscReal base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }
@@ -917,7 +917,7 @@ static inline PetscScalar PetscPowScalarInt(PetscScalar base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }

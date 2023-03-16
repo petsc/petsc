@@ -1,5 +1,5 @@
 
-static char help[] = "Tests TSLINESEARCHL2 handing of Inf/Nan.\n\n";
+static char help[] = "Tests SNESLinesearch handling of Inf/Nan.\n\n";
 
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -11,7 +11,7 @@ static char help[] = "Tests TSLINESEARCHL2 handing of Inf/Nan.\n\n";
      petscksp.h   - linear solvers
 */
 /*F
-This examples solves either
+This examples solves
 \begin{equation}
   F\genfrac{(}{)}{0pt}{}{x_0}{x_1} = \genfrac{(}{)}{0pt}{}{\sin(3 x_0) + x_0}{x_1}
 \end{equation}
@@ -143,8 +143,10 @@ PetscErrorCode FormObjective(SNES snes, Vec x, PetscReal *f, void *dummy)
 {
   Vec             F;
   static PetscInt cnt = 0;
+  const PetscReal one = 1.0, zero = 0.0, inf = one / zero;
 
-  if (cnt++ == infatcount) *f = INFINITY;
+  PetscFunctionBeginUser;
+  if (cnt++ == infatcount) *f = inf;
   else {
     PetscCall(VecDuplicate(x, &F));
     PetscCall(FormFunction2(snes, x, F, dummy));
@@ -152,7 +154,7 @@ PetscErrorCode FormObjective(SNES snes, Vec x, PetscReal *f, void *dummy)
     PetscCall(VecDestroy(&F));
     *f = (*f) * (*f);
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
@@ -160,6 +162,7 @@ PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
   const PetscScalar *xx;
   PetscScalar       *ff;
 
+  PetscFunctionBeginUser;
   /*
      Get pointers to vector data.
        - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -181,7 +184,7 @@ PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
   */
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(f, &ff));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
@@ -190,6 +193,7 @@ PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};
 
+  PetscFunctionBeginUser;
   /*
      Get pointer to vector data
   */
@@ -220,13 +224,10 @@ PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
     PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST
-
-   build:
-      requires: infinity
 
    test:
       args: -snes_converged_reason -snes_linesearch_monitor -snes_linesearch_type l2

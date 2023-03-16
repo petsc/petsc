@@ -5451,6 +5451,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char  extGenesis[]   = ".gen";
   const char  extFluent[]    = ".cas";
   const char  extHDF5[]      = ".h5";
+  const char  extXDMFHDF5[]  = ".xdmf.h5";
   const char  extMed[]       = ".med";
   const char  extPLY[]       = ".ply";
   const char  extEGADSLite[] = ".egadslite";
@@ -5459,7 +5460,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char  extSTEP[]      = ".stp";
   const char  extCV[]        = ".dat";
   size_t      len;
-  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isEGADSLite, isEGADS, isIGES, isSTEP, isCV;
+  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isEGADSLite, isEGADS, isIGES, isSTEP, isCV, isXDMFHDF5;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -5500,6 +5501,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   CheckExtension(extIGES, isIGES);
   CheckExtension(extSTEP, isSTEP);
   CheckExtension(extCV, isCV);
+  CheckExtension(extXDMFHDF5, isXDMFHDF5);
 
 #undef CheckExtension
 
@@ -5512,12 +5514,10 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   } else if (isFluent) {
     PetscCall(DMPlexCreateFluentFromFile(comm, filename, interpolate, dm));
   } else if (isHDF5) {
-    PetscBool   load_hdf5_xdmf = PETSC_FALSE;
     PetscViewer viewer;
 
     /* PETSC_VIEWER_HDF5_XDMF is used if the filename ends with .xdmf.h5, or if -dm_plex_create_from_hdf5_xdmf option is present */
-    PetscCall(PetscStrncmp(&filename[PetscMax(0, len - 8)], ".xdmf", 5, &load_hdf5_xdmf));
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_create_from_hdf5_xdmf", &load_hdf5_xdmf, NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_create_from_hdf5_xdmf", &isXDMFHDF5, NULL));
     PetscCall(PetscViewerCreate(comm, &viewer));
     PetscCall(PetscViewerSetType(viewer, PETSCVIEWERHDF5));
     PetscCall(PetscViewerSetOptionsPrefix(viewer, "dm_plex_create_"));
@@ -5528,9 +5528,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     PetscCall(DMCreate(comm, dm));
     PetscCall(PetscObjectSetName((PetscObject)(*dm), plexname));
     PetscCall(DMSetType(*dm, DMPLEX));
-    if (load_hdf5_xdmf) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_XDMF));
+    if (isXDMFHDF5) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_XDMF));
     PetscCall(DMLoad(*dm, viewer));
-    if (load_hdf5_xdmf) PetscCall(PetscViewerPopFormat(viewer));
+    if (isXDMFHDF5) PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
 
     if (interpolate) {

@@ -550,7 +550,7 @@ methods, we use a statement such as
 
 .. code-block::
 
-   PetscInfo(snes,"Cubically determined step, lambda %g\n",lambda);
+   PetscInfo(snes,"Cubic step, lambda %g\n",lambda);
 
 One can selectively turn off informative messages about any of the basic
 PETSc objects (e.g., ``Mat``, ``SNES``) with the command

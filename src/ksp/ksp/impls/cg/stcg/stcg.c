@@ -248,7 +248,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
     /* during the first step, we must follow a direction.                    */
     /*************************************************************************/
 
-    ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
+    ksp->reason = KSP_CONVERGED_NEG_CURVE;
     PetscCall(PetscInfo(ksp, "KSPCGSolve_STCG: negative curvature: kappa=%g\n", (double)kappa));
 
     if (cg->radius != 0.0 && norm_p > 0.0) {
@@ -323,7 +323,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       /* However, the full step goes beyond the trust region.                */
       /***********************************************************************/
 
-      ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
+      ksp->reason = KSP_CONVERGED_STEP_LENGTH;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_STCG: constrained step: radius=%g\n", (double)cg->radius));
 
       if (norm_p > 0.0) {
@@ -489,7 +489,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       /* boundary of the trust region.                                       */
       /***********************************************************************/
 
-      ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
+      ksp->reason = KSP_CONVERGED_NEG_CURVE;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_STCG: negative curvature: kappa=%g\n", (double)kappa));
 
       if (cg->radius != 0.0 && norm_p > 0.0) {
@@ -615,8 +615,8 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
 
    `KSPConvergedReason` may be
 .vb
-   KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-   KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+   KSP_CONVERGED_NEG_CURVE if convergence is reached along a negative curvature direction,
+   KSP_CONVERGED_STEP_LENGTH if convergence is reached along a constrained step,
 .ve
    other `KSP` converged/diverged reasons
 

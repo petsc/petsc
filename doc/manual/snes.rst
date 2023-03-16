@@ -645,7 +645,7 @@ A related routine is ``SNESGetTolerances()``.
 
 Convergence tests for trust regions methods often use an additional
 parameter that indicates the minimum allowable trust region radius. The
-user can set this parameter with the option ``-snes_trtol <trtol>`` or
+user can set this parameter with the option ``-snes_tr_tol <trtol>`` or
 with the routine
 
 .. code-block::

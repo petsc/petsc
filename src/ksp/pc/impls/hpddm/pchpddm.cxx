@@ -823,7 +823,7 @@ static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, cons
   PetscCall(PetscObjectQuery((PetscObject)mat, "_PCHPDDM_SubMatrices", (PetscObject *)&A));
   PetscCheck(A, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SubMatrices not found in Mat");
   if (scall == MAT_INITIAL_MATRIX) {
-    PetscCall(PetscCalloc1(1, submat));
+    PetscCall(PetscCalloc1(2, submat)); /* allocate an extra Mat to avoid errors in MatDestroySubMatrices_Dummy() */
     PetscCall(MatDuplicate(A, MAT_COPY_VALUES, *submat));
   } else PetscCall(MatCopy(A, (*submat)[0], SAME_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);

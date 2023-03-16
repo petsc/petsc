@@ -624,12 +624,12 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[8], 0, 0, 0, 0));
     // Jacobian
-    int         maximum_shared_mem_size = 64000;
+    size_t      maximum_shared_mem_size = 64000;
     PetscDevice device;
 
     PetscCall(PetscDeviceGetDefault_Internal(&device));
     PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
-    const int jac_scr_bytes    = 2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
+    size_t    jac_scr_bytes    = (size_t)2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
     const int jac_shared_level = (jac_scr_bytes > maximum_shared_mem_size) ? 1 : KOKKOS_SHARED_LEVEL;
     // device function/lambda
     auto jac_lambda = KOKKOS_LAMBDA(const team_member team)
@@ -769,7 +769,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     };
     PetscCall(PetscLogEventBegin(events[4], 0, 0, 0, 0));
     PetscCall(PetscLogGpuTimeBegin());
-    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %s (max shared=%d), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", jac_scr_bytes, jac_shared_level == 0 ? "local" : "global", maximum_shared_mem_size, num_cells_batch * batch_sz, team_size, vector_size, nfaces, Nf_max));
+    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %zu bytes in level %s (max shared=%zu), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", jac_scr_bytes, jac_shared_level == 0 ? "local" : "global", maximum_shared_mem_size, num_cells_batch * batch_sz, team_size, vector_size, nfaces, Nf_max));
     Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, vector_size).set_scratch_size(jac_shared_level, Kokkos::PerTeam(jac_scr_bytes)), jac_lambda); // Kokkos::LaunchBounds<512,2>
     Kokkos::fence();
     PetscCall(PetscLogGpuTimeEnd());

@@ -181,6 +181,7 @@ native    SNESQNScaleType
 native    SNESNCGType
 native    SNESNGMRESRestartType
 native    SNESNGMRESSelectType
+native    SNESNewtonTRFallbackType
 
 # petscsnesfas.h
 native    SNESFASType

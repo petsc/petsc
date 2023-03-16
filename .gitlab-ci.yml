@@ -987,6 +987,7 @@ osx-dbg:
     - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-dbg
+    ASAN_OPTIONS: log_path=stdout
 
 osx-xsdk-opt:
   extends:

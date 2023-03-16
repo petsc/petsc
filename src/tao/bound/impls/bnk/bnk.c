@@ -505,9 +505,9 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     ++bnk->ksp_atol;
   } else if (KSP_CONVERGED_RTOL == *ksp_reason) {
     ++bnk->ksp_rtol;
-  } else if (KSP_CONVERGED_CG_CONSTRAINED == *ksp_reason) {
+  } else if (KSP_CONVERGED_STEP_LENGTH == *ksp_reason) {
     ++bnk->ksp_ctol;
-  } else if (KSP_CONVERGED_CG_NEG_CURVE == *ksp_reason) {
+  } else if (KSP_CONVERGED_NEG_CURVE == *ksp_reason) {
     ++bnk->ksp_negc;
   } else if (KSP_DIVERGED_DTOL == *ksp_reason) {
     ++bnk->ksp_dtol;
@@ -643,7 +643,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       case KSP_DIVERGED_BREAKDOWN:
       case KSP_DIVERGED_INDEFINITE_MAT:
       case KSP_DIVERGED_INDEFINITE_PC:
-      case KSP_CONVERGED_CG_NEG_CURVE:
+      case KSP_CONVERGED_NEG_CURVE:
         /* Matrix or preconditioner is indefinite; increase perturbation */
         if (bnk->pert <= 0.0) {
           PetscBool is_gltr;

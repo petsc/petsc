@@ -29,10 +29,9 @@
       PetscEnum, parameter :: KSP_CONVERGED_RTOL            = 2
       PetscEnum, parameter :: KSP_CONVERGED_ATOL            = 3
       PetscEnum, parameter :: KSP_CONVERGED_ITS             = 4
-      PetscEnum, parameter :: KSP_CONVERGED_CG_NEG_CURVE    = 5
-      PetscEnum, parameter :: KSP_CONVERGED_CG_CONSTRAINED  = 6
-      PetscEnum, parameter :: KSP_CONVERGED_STEP_LENGTH     = 7
-      PetscEnum, parameter :: KSP_CONVERGED_HAPPY_BREAKDOWN = 8
+      PetscEnum, parameter :: KSP_CONVERGED_NEG_CURVE       = 5
+      PetscEnum, parameter :: KSP_CONVERGED_STEP_LENGTH     = 6
+      PetscEnum, parameter :: KSP_CONVERGED_HAPPY_BREAKDOWN = 7
 
       PetscEnum, parameter :: KSP_DIVERGED_NULL           = -2
       PetscEnum, parameter :: KSP_DIVERGED_ITS            = -3

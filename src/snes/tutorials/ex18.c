@@ -648,4 +648,9 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat jac, Mat B, void *ptr)
       args: -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin pmat -snes_view -snes_type newtontrdc
       requires: !single
 
+   test:
+      suffix: 3
+      args: -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin pmat -snes_view -snes_type newtontr -snes_tr_fallback_type dogleg
+      requires: !single
+
 TEST*/

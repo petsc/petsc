@@ -279,8 +279,9 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
     j[0] = i - 1;
     j[1] = i;
     j[2] = i + 1;
-    A[0] = A[2] = d;
-    A[1]        = -2.0 * d + 2.0 * xx[i];
+    A[0] = d;
+    A[1] = -2.0 * d + 2.0 * xx[i];
+    A[2] = d;
     PetscCall(MatSetValues(B, 1, &i, 3, j, A, INSERT_VALUES));
   }
 
