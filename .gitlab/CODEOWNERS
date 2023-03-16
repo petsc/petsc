@@ -32,7 +32,7 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 
 /config/*                 @krugers @knepley @sbalay @BarrySmith
 gmakefile*                @krugers @jedbrown @BarrySmith
-.gitlab*.yml              @sbalay @jedbrown
+.gitlab*.yml              @sbalay @jedbrown @Jfaibussowitsch
 /lib/petsc                @krugers @sbalay
 
 **/*.kokkos.cxx           @jczhang07 @jedbrown @stefanozampini @markadams4

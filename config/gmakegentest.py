@@ -721,6 +721,16 @@ class generateExamples(Petsc):
         isNull=False
         if requirement.startswith("!"):
           requirement=requirement[1:]; isNull=True
+        # 32bit vs 64bit pointers
+        if requirement == "64bitptr":
+          if self.conf['PETSC_SIZEOF_VOID_P']==8:
+            if isNull:
+              testDict['SKIP'].append("not 64bit-ptr required")
+              continue
+            continue  # Success
+          elif not isNull:
+            testDict['SKIP'].append("64bit-ptr required")
+            continue
         # Precision requirement for reals
         if requirement in self.precision_types:
           if self.conf['PETSC_PRECISION']==requirement:

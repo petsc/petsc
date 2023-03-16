@@ -866,7 +866,9 @@ static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, Pet
 }
 
 // adapt a level once. Forest in/out
-static const char    *s_refine_names[] = {"RE", "Z1", "Origin", "Z2", "Uniform"};
+#if defined(PETSC_USE_INFO)
+static const char *s_refine_names[] = {"RE", "Z1", "Origin", "Z2", "Uniform"};
+#endif
 static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, PetscInt grid, LandauCtx *ctx, DM *newForest)
 {
   DM              forest, plex, adaptedDM = NULL;

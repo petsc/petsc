@@ -503,17 +503,19 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat *Gmat2)
 */
 PetscErrorCode PCSetUp_GAMG(PC pc)
 {
-  PC_MG         *mg      = (PC_MG *)pc->data;
-  PC_GAMG       *pc_gamg = (PC_GAMG *)mg->innerctx;
-  Mat            Pmat    = pc->pmat;
-  PetscInt       fine_level, level, level1, bs, M, N, qq, lidx, nASMBlocksArr[PETSC_MG_MAXLEVELS];
-  MPI_Comm       comm;
-  PetscMPIInt    rank, size, nactivepe;
-  Mat            Aarr[PETSC_MG_MAXLEVELS], Parr[PETSC_MG_MAXLEVELS];
-  IS            *ASMLocalIDsArr[PETSC_MG_MAXLEVELS];
+  PC_MG      *mg      = (PC_MG *)pc->data;
+  PC_GAMG    *pc_gamg = (PC_GAMG *)mg->innerctx;
+  Mat         Pmat    = pc->pmat;
+  PetscInt    fine_level, level, level1, bs, M, N, qq, lidx, nASMBlocksArr[PETSC_MG_MAXLEVELS];
+  MPI_Comm    comm;
+  PetscMPIInt rank, size, nactivepe;
+  Mat         Aarr[PETSC_MG_MAXLEVELS], Parr[PETSC_MG_MAXLEVELS];
+  IS         *ASMLocalIDsArr[PETSC_MG_MAXLEVELS];
+  PetscBool   is_last = PETSC_FALSE;
+#if defined(PETSC_USE_INFO)
   PetscLogDouble nnz0 = 0., nnztot = 0.;
   MatInfo        info;
-  PetscBool      is_last = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
@@ -599,9 +601,11 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PetscCall(MatGetBlockSize(Pmat, &bs));
   PetscCall(MatGetSize(Pmat, &M, &N));
 
+#if defined(PETSC_USE_INFO)
   PetscCall(MatGetInfo(Pmat, MAT_GLOBAL_SUM, &info)); /* global reduction */
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
+#endif
   PetscCall(PetscInfo(pc, "%s: level %d) N=%" PetscInt_FMT ", n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", np=%d\n", ((PetscObject)pc)->prefix, 0, M, pc_gamg->data_cell_rows, pc_gamg->data_cell_cols, (PetscInt)(nnz0 / (PetscReal)M + 0.5), size));
 
   /* Get A_i and R_i */
@@ -676,8 +680,10 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_LEVEL], 0, 0, 0, 0));
 
     PetscCall(MatGetSize(Aarr[level1], &M, &N)); /* M is loop test variables */
+#if defined(PETSC_USE_INFO)
     PetscCall(MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info));
     nnztot += info.nz_used;
+#endif
     PetscCall(PetscInfo(pc, "%s: %d) N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n", ((PetscObject)pc)->prefix, (int)level1, M, pc_gamg->data_cell_cols, (PetscInt)(info.nz_used / (PetscReal)M), nactivepe));
 
 #if defined(GAMG_STAGES)

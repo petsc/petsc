@@ -427,10 +427,15 @@ PetscErrorCode PetscStripAllZeros(char *buf)
 /*
     Removes trailing zeros
 */
+#if (PETSC_SIZEOF_SIZE_T == 8)
+  #define MAX_SIZE_T PETSC_INT64_MAX
+#else
+  #define MAX_SIZE_T INT_MAX
+#endif
 PetscErrorCode PetscStripTrailingZeros(char *buf)
 {
   char  *found = NULL;
-  size_t i, n, m = PETSC_MAX_INT;
+  size_t i, n, m = MAX_SIZE_T;
 
   PetscFunctionBegin;
   /* if there is an e in string DO NOT strip trailing zeros */
@@ -446,7 +451,7 @@ PetscErrorCode PetscStripTrailingZeros(char *buf)
     }
   }
   /* if not decimal point then no zeros to remove */
-  if (m == PETSC_MAX_INT) PetscFunctionReturn(PETSC_SUCCESS);
+  if (m == MAX_SIZE_T) PetscFunctionReturn(PETSC_SUCCESS);
   /* start at right end of string removing 0s */
   for (i = n - 1; i > m; i++) {
     if (buf[i] != '0') PetscFunctionReturn(PETSC_SUCCESS);

@@ -271,6 +271,7 @@ PetscErrorCode go()
         hp[i] = (hi[i] - lo[i]) / Np[i];
         vol *= (hi[i] - lo[i]);
         PetscCall(PetscInfo(dm_t[tid], " lo = %g hi = %g n = %" PetscInt_FMT " h = %g hp = %g\n", (double)lo[i], (double)hi[i], faces[i], (double)h[i], (double)hp[i]));
+        (void)h[i];
       }
     }
   }
