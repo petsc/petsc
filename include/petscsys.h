@@ -160,26 +160,6 @@ PETSC_EXTERN FILE *PETSC_STDOUT;
 */
 PETSC_EXTERN FILE *PETSC_STDERR;
 
-/* PetscPragmaSIMD - from CeedPragmaSIMD */
-
-#if defined(__NEC__)
-  #define PetscPragmaSIMD _Pragma("_NEC ivdep")
-#elif defined(__INTEL_COMPILER) && !defined(_WIN32)
-  #define PetscPragmaSIMD _Pragma("vector")
-#elif defined(__GNUC__) && __GNUC__ >= 5 && !defined(__PGI)
-  #define PetscPragmaSIMD _Pragma("GCC ivdep")
-#elif defined(_OPENMP) && _OPENMP >= 201307
-  #if defined(_MSC_VER)
-    #define PetscPragmaSIMD __pragma(omp simd)
-  #else
-    #define PetscPragmaSIMD _Pragma("omp simd")
-  #endif
-#elif defined(PETSC_HAVE_CRAY_VECTOR)
-  #define PetscPragmaSIMD _Pragma("_CRI ivdep")
-#else
-  #define PetscPragmaSIMD
-#endif
-
 /*
   Handle inclusion when using clang compiler with CUDA support
   __float128 is not available for the device
@@ -2339,15 +2319,6 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win, PetscMPIInt, MPI_Aint
     List of external packages and queries on it
 */
 PETSC_EXTERN PetscErrorCode PetscHasExternalPackage(const char[], PetscBool *);
-
-/*
- OpenMP support
-*/
-#if defined(_OPENMP)
-  #define PetscPragmaOMP(...) _Pragma(PetscStringize(omp __VA_ARGS__))
-#else // no OpenMP so no threads
-  #define PetscPragmaOMP(...)
-#endif
 
 /* this cannot go here because it may be in a different shared library */
 PETSC_EXTERN PetscErrorCode PCMPIServerBegin(void);

@@ -130,10 +130,6 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy)
   #endif
     for (j = 0; j < m; j++) y[j] = y[j] + acols[ii + j] * x[icols[ii + j]];
   }
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
-    #pragma _CRI ivdep
-  #endif
-
 #endif
   PetscCall(PetscLogFlops(2.0 * aijcrl->nz - m));
   PetscCall(VecRestoreArrayRead(xx, &x));

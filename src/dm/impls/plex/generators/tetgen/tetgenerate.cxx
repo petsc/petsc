@@ -10,19 +10,9 @@ extern "C" int EGlite_inTopology(const ego, const double *);
 #if defined(PETSC_HAVE_TETGEN_TETLIBRARY_NEEDED)
   #define TETLIBRARY
 #endif
-#if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wunused-parameter"
-#elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wunused-parameter")
 #include <tetgen.h>
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic pop
-#endif
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 
 /* This is to fix the tetrahedron orientation from TetGen */
 static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCorners, PetscInt cells[])

@@ -1,7 +1,6 @@
 
 #include <petscwebclient.h>
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma gcc diagnostic   ignored "-Wdeprecated-declarations"
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 
 static BIO *bio_err = NULL;
 
