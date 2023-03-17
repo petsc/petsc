@@ -55,3 +55,14 @@
         end subroutine
       end Interface
 
+      Interface
+         subroutine PCBDDCCreateFETIDPOperators(a,b,c,d,e,z)
+         import tMat,tPC
+         PC a
+         PetscBool b
+         character(*) c
+         Mat d
+         PC e
+         PetscErrorCode z
+       end subroutine
+      end Interface
