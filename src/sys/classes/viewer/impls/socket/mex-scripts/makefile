@@ -3,10 +3,10 @@
 #requiresscalar real
 #requiresprecision  double
 #
-#   matlabcodes makes the MATLAB mex files for receiving PETSc objects
+#   mex-scripts makes the MATLAB mex files for receiving PETSc objects
 # in MATLAB. You cannot use a complex numbers.
 #
-matlabcodes: sread sopen sclose swrite
+mex-scripts: sread sopen sclose swrite
 
 MANSEC    = Sys
 SUBMANSEC = Viewer

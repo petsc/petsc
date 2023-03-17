@@ -8,8 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from collections import defaultdict
 
 AUTODIRS = set('ftn-auto ftn-custom f90-custom ftn-auto-interfaces'.split()) # Automatically recurse into these, if they exist
-SKIPDIRS = set('benchmarks build'.split())               # Skip these during the build
-NOWARNDIRS = set('tests tutorials'.split())              # Do not warn about mismatch in these
+SKIPDIRS = set('benchmarks build mex-scripts tests tutorials'.split())       # Skip these during the build
 
 def pathsplit(path):
     """Recursively split a path, returns a tuple"""
@@ -41,7 +40,7 @@ class Mistakes(object):
         self.log = log
 
     def compareDirLists(self,root, mdirs, dirs):
-        if NOWARNDIRS.intersection(pathsplit(root)):
+        if SKIPDIRS.intersection(pathsplit(root)):
             return
         smdirs = set(mdirs)
         sdirs  = set(dirs).difference(AUTODIRS)
@@ -181,7 +180,7 @@ class Petsc(object):
         for lang in LANGS:
             pkgsrcs[lang] = []
         for root, dirs, files in os.walk(os.path.join(self.pkg_dir, 'src', pkg)):
-            if NOWARNDIRS.intersection(pathsplit(root)): continue
+            if SKIPDIRS.intersection(pathsplit(root)): continue
             dirs.sort()
             files.sort()
             makefile = os.path.join(root,'makefile')
