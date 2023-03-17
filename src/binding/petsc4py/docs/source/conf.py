@@ -235,21 +235,9 @@ def setup(app):
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = (
-    'sphinx_rtd_theme' if 'sphinx_rtd_theme' in extensions else 'default'
-)
-
-if html_theme == 'default':
-    html_copy_source = False
-
-#html_static_path = ['_static']
-
-#if html_theme == 'sphinx_rtd_theme':
-#    html_css_files = [
-#        'css/custom.css',
-#    ]
-
-
+# The theme to use for HTML and HTML Help pages.  See the documentation for
+# a list of builtin themes.
+html_theme = 'pydata_sphinx_theme'
 
 # -- Options for HTMLHelp output ------------------------------------------
 
