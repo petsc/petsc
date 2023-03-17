@@ -774,7 +774,8 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
   PetscCall(KSPNormSupportTableReset_Private(ksp));
-  ksp->setupnewmatrix = PETSC_FALSE; // restore default (setup not called in case of new matrix)
+  ksp->converged_neg_curve = PETSC_FALSE; // restore default
+  ksp->setupnewmatrix      = PETSC_FALSE; // restore default (setup not called in case of new matrix)
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;
   PetscCall((*r)(ksp));

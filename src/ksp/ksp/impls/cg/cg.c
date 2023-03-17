@@ -239,6 +239,8 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
           a = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
         }
         PetscCall(VecAXPY(X, a, P)); /*     x <- x + ap                      */
+      }
+      if (ksp->converged_neg_curve) {
         PetscCall(PetscInfo(ksp, "converged due to negative curvature: %g\n", (double)(PetscRealPart(dpi))));
         ksp->reason = KSP_CONVERGED_NEG_CURVE;
       } else {

@@ -181,6 +181,9 @@ struct _p_KSP {
   Vec       diagonal;   /* 1/sqrt(diag of matrix) */
   Vec       truediagonal;
 
+  /* Allow declaring convergence when negative curvature is detected */
+  PetscBool converged_neg_curve;
+
   PetscInt  setfromoptionscalled;
   PetscBool skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
 
