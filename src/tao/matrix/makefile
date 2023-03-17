@@ -1,7 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC  = adamat.c submatfree.c
-SOURCEH  = submatfree.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

@@ -3,7 +3,6 @@
 #requiresprecision double
 
 CFLAGS   = ${SUITESPARSE_INCLUDE}
-SOURCEC  = klu.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

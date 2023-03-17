@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = zsnesf.c
 LIBBASE  = libpetscsnes
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

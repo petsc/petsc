@@ -278,7 +278,7 @@ PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
   ierr = PetscCommDuplicate(comm, &ncomm, NULL);
   if (ierr) {
     PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_MATLAB_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(PETSC_SUCCESS);
+    PetscFunctionReturn(NULL);
   }
   if (Petsc_Viewer_Matlab_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Matlab_keyval, 0);

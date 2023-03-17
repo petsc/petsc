@@ -1,7 +1,6 @@
 -include ../../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_HIP'
 
-SOURCEHIP = matseqdensehip.hip.cpp
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 

@@ -8,6 +8,7 @@ import shutil
 import argparse
 
 
+rawhtml = ['include', 'src']
 CLASSIC_DOCS_LOC = os.path.join(os.getcwd(), '_build_classic')
 CLASSIC_DOCS_ARCH = 'arch-classic-docs'
 HTMLMAP_DEFAULT_LOCATION = os.path.join(CLASSIC_DOCS_LOC, "manualpages", "htmlmap")
@@ -102,6 +103,7 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch, stage):
         except:
             print('Skipping petsc4py documentation build since python2 is not available in PATH')
             return
+        rawhtml.append('petsc4py')
         command = ['make', 'all',
                    'PETSC_DIR=%s' % petsc_dir,
                    'PETSC_ARCH=%s' % petsc_arch]
@@ -125,7 +127,7 @@ def classic_docs_subdirs(stage):
     if stage == 'pre':   # generated .rst files that Sphinx will use to create website
         return ['manualpages']
     if stage == 'post':  # raw .html files that get copied directly to the website (not processed by Sphinx)
-        return ['include', 'src', 'petsc4py']
+        return rawhtml
     raise Exception('Unrecognized stage %s' % stage)
 
 

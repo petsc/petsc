@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = arkimex.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

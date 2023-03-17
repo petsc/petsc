@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_OPENCL'
 
-SOURCEC   = feopencl.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = FE

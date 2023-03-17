@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEH   = ../../../../include/petscfv.h ../../../../include/petscfvtypes.h
 DIRS      = interface
 MANSEC    = DM
 SUBMANSEC = FV

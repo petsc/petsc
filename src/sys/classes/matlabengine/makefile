@@ -2,8 +2,6 @@
 #requiresdefine  'PETSC_HAVE_MATLAB'
 
 CFLAGS    = ${MATLAB_INCLUDE}
-SOURCEC	  = matlab.c
-SOURCEH	  = ../../../../include/petscmatlab.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

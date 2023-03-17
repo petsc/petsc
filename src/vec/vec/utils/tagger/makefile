@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEH = ../../../../../include/petsc/private/vecimpl.h ../../../../../include/petscvec.h
 DIRS    = interface impls tutorials
 MANSEC  = Vec
 

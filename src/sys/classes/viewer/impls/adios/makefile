@@ -2,7 +2,6 @@
 #requirespackage  'PETSC_HAVE_ADIOS'
 
 CFLAGS    = ${ADIOS_INCLUDE}
-SOURCEC   = adios.c
 MANSEC    = Sys
 SUBMANSEC = Viewer
 LIBBASE   = libpetscsys

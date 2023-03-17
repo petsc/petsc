@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = section.c sectionhdf5.c
 LIBBASE	  = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = PetscSection

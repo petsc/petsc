@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_PRAGMATIC'
 
-SOURCEC  = pragmaticadapt.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

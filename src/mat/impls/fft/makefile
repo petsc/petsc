@@ -1,7 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = fft.c
-SOURCEH  = fft.h
 LIBBASE  = libpetscmat
 DIRS     = fftw
 MANSEC   = Mat

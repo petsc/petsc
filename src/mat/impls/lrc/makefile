@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = lrc.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

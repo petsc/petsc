@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
 
-SOURCECU  = pbjacobi_cuda.cu
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

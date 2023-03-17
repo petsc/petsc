@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = pcmpi.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

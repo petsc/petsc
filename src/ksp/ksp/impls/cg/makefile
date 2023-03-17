@@ -1,7 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = cg.c cgeig.c cgtype.c cgls.c
-SOURCEH  = cgimpl.h
 LIBBASE  = libpetscksp
 DIRS     = cgne gltr nash stcg pipecg pipecgrr groppcg pipelcg pipeprcg pipecg2
 MANSEC   = KSP

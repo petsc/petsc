@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_SCALAPACK'
 
-SOURCEC  = matscalapack.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

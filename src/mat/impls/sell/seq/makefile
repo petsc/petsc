@@ -1,7 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = sell.c fdsell.c
-SOURCEH  = sell.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

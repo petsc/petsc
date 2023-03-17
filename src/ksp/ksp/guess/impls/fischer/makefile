@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC  = fischer.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

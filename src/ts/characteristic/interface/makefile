@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC   = characteristic.c mocregis.c slregis.c
 LIBBASE   = libpetscts
 MANSEC    = TS
 SUBMANSEC = Characteristic

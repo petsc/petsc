@@ -1,7 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = dmredundant.c
-SOURCEH  = ../../../../include/petscdmredundant.h
 LIBBASE  = libpetscdm
 MANSEC   = DM
 

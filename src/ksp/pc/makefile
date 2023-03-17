@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEH   = ../../../include/petsc/private/pcimpl.h ../../../include/petscpc.h ../../../include/petsc/private/pcgamgimpl.h ../../../include/petscpctypes.h
 DIRS      = interface impls tests tutorials
 MANSEC    = KSP
 SUBMANSEC = PC

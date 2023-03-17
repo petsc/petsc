@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_KOKKOS'
 
-SOURCEKOKKOS = kinit.kokkos.cxx
 MANSEC   = Sys
 LIBBASE  = libpetscsys
 

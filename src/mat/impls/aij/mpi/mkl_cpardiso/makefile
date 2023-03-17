@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_MKL_CPARDISO'
 
 CFLAGS   = ${MKL_CPARDISO_INCLUDE}
-SOURCEC	 = mkl_cpardiso.c
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

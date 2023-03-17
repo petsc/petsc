@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC	  = zrandomf.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HTOOL'
 
-SOURCECXX = htool.cxx
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 

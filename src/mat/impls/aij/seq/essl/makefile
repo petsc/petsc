@@ -3,7 +3,6 @@
 #requiresscalar    real
 #requiresprecision double
 
-SOURCEC  = essl.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

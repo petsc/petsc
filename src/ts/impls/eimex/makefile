@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = eimex.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

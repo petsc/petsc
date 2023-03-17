@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-SOURCEF90= fcopy.F90
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

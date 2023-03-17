@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_CHACO'
 
 CPPFLAGS  = ${CHACO_INCLUDE}
-SOURCEC   = chaco.c
 LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatOrderings

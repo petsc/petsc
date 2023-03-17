@@ -1,8 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresdefine 'PETSC_USE_WINDOWS_GRAPHICS'
 
-SOURCEC   = win32draw.c
-SOURCEH   = win32draw.h
 MANSEC    = Sys
 SUBMANSEC = Draw
 LIBBASE   = libpetscsys

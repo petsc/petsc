@@ -1,7 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = virs.c
-SOURCEH  = virsimpl.h
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 

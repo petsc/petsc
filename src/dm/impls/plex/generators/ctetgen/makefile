@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_CTETGEN'
 
-SOURCEC  = ctetgenerate.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

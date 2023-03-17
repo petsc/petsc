@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_STRUMPACK'
 
 CFLAGS   = ${STRUMPACK_INCLUDE}
-SOURCEC	 = strumpack.c
 LIBBASE	 = libpetscmat
 MANSEC	 = Mat
 

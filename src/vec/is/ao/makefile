@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEH	  = aoimpl.h ../../../../include/petscao.h
 DIRS	  = interface impls  tests
 MANSEC    = Vec
 SUBMANSEC = AO

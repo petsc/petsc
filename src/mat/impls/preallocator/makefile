@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = matpreallocator.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

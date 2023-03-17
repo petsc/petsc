@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC	  = luasrc.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

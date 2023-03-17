@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC   = precon.c pcset.c pcregis.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

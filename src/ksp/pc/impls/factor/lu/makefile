@@ -1,7 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = lu.c
-SOURCEH   = lu.h
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

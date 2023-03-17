@@ -1,7 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = snesncg.c
-SOURCEH  = snesncgimpl.h
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 

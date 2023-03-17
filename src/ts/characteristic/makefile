@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresscalar    real
 
-SOURCEH   = ../../../include/petsc/private/characteristicimpl.h ../../../include/petsccharacteristic.h
 DIRS      = interface impls
 MANSEC    = TS
 SUBMANSEC = Characteristic

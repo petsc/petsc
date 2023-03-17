@@ -2,8 +2,6 @@
 #requirespackage  'PETSC_HAVE_SAWS'
 
 CFLAGS    = -DSAWS_HOME='"${SAWS_HOME}"'
-SOURCEC   = ams.c amsopen.c
-SOURCEH   = ../../../../../../include/petscviewersaws.h
 MANSEC    = Sys
 SUBMANSEC = Viewer
 LIBBASE   = libpetscsys

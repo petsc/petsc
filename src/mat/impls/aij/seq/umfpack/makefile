@@ -3,7 +3,6 @@
 #requiresprecision double
 
 CFLAGS   = ${SUITESPARSE_INCLUDE}
-SOURCEC  = umfpack.c
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

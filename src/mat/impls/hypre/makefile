@@ -2,8 +2,6 @@
 #requirespackage   'PETSC_HAVE_HYPRE'
 
 CFLAGS   = ${HYPRE_INCLUDE}
-SOURCEC  = mhypre.c
-SOURCEH  = mhypre.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 

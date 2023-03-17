@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = partgather.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 

@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEF90= optionenum.F90
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

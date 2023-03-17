@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_CUPM'
 
 DIRS    = cuda hip
-SOURCEH = matseqdensecupm.hpp
 LIBBASE = libpetscmat
 MANSEC  = Mat
 

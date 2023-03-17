@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = posindep.c
 LIBBASE  = libpetscts
 MANSEC   = TS
 

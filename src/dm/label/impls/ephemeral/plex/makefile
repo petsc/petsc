@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC        = dmlabelephplex.c
 LIBBASE        = libpetscdm
 MANSEC         = DM
 SUBMANSEC      = DMLabel

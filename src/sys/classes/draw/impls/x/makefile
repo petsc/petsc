@@ -2,8 +2,6 @@
 #requirespackage 'PETSC_HAVE_X'
 
 CPPFLAGS  = ${X_INCLUDE}
-SOURCEC   = xinit.c ximage.c xcolor.c xops.c xioerr.c xtext.c xtone.c drawopenx.c
-SOURCEH   = ximpl.h
 MANSEC    = Sys
 SUBMANSEC = Draw
 LIBBASE   = libpetscsys

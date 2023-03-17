@@ -1,7 +1,6 @@
 -include ../../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HIP'
 
-SOURCEHIP = sfhip.hip.cpp
 LIBBASE  = libpetscvec
 MANSEC   = PetscSF
 

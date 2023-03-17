@@ -4,7 +4,6 @@
 #requiresdefine  'PETSC_USE_SHARED_LIBRARIES'
 
 CXXFLAGS  = ${HPDDM_INCLUDE}
-SOURCECXX = pchpddm.cxx
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

@@ -1,7 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC  = nash.c
-SOURCEH  = nashimpl.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

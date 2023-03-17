@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine 'PETSC_HAVE_CXX'
 
-SOURCECXX = demangle.cxx
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

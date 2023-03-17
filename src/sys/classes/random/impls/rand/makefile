@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresfunction 'PETSC_HAVE_RAND'
 
-SOURCEC  = rand.c
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

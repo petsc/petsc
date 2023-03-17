@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CPPFLAGS  = ${PARMETIS_INCLUDE}
-SOURCEC   = partparmetis.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 

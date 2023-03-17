@@ -1,7 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = drawv.c
-SOURCEH   = vdraw.h
 MANSEC    = Sys
 SUBMANSEC = Viewer
 LIBBASE   = libpetscsys

@@ -1,7 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = qr.c
-SOURCEH   = qr.h
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC  = pythonsys.c
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 

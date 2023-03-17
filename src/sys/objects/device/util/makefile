@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = devicereg.c memory.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_TRIANGLE'
 
-SOURCEC  = trigenerate.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex

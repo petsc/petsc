@@ -1,8 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEF90  = petscmatmod.F90
-SOURCEH	   = petscmat.h petscmat.h90 petscmatfactorinfosize.h petscmatinfosize.h
 LIBBASE	   = libpetscmat
 MANSEC	   = Mat
 CLEANFILES = *.mod

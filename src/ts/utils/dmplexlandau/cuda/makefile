@@ -1,7 +1,6 @@
 #requirespackage 'PETSC_HAVE_CUDA'
 -include ../../../../../petscdir.mk
 
-SOURCECU = landaucu.cu
 LIBBASE  = libpetscts
 MANSEC   = TS
 SUBMANSEC= LANDAU

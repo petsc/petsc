@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_MOAB'
 
-SOURCECXX= dmmoab.cxx dmmbvec.cxx dmmbmat.cxx dmmbfield.cxx dmmbmg.cxx dmmbfem.cxx dmmbio.cxx dmmbutil.cxx
 DIRS     = tests
 LIBBASE  = libpetscdm
 MANSEC   = DM

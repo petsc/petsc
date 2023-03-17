@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-SOURCEC   = plexreftobox.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = DMPlex

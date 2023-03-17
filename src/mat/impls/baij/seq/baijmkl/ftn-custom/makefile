@@ -2,7 +2,6 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 #requirespackage 'PETSC_HAVE_MKL_SPARSE_OPTIMIZE'
 
-SOURCEC  = zbaijmklf.c
 LIBBASE  = libpetscmat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

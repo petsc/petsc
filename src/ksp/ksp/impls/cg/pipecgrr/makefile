@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC  = pipecgrr.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

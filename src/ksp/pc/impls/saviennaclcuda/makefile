@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_VIENNACL'
 #requiresdefine 'PETSC_HAVE_CUDA'
 
-SOURCECU  = saviennacl.cu
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

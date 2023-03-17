@@ -3,7 +3,6 @@
 #requiresprecision double
 
 # Set CFLAGS="-DPETSC_DEBUG_USFFT" to turn on debugging output
-SOURCEC  = matusfft.c
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMDA

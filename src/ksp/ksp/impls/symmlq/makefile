@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = symmlq.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

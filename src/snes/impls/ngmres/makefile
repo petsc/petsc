@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-SOURCEC  = snesngmres.c ngmresfunc.c anderson.c
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 

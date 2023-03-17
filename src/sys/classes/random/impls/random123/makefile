@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_RANDOM123'
 
 CFLAGS   = ${RANDOM123_INCLUDE}
-SOURCEC  = random123.c
 LIBBASE  = libpetscsys
 MANSEC	 = Sys
 

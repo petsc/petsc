@@ -1,7 +1,6 @@
 -include ../../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HIP'
 
-SOURCEHIP = cupmcontext.hip.cpp
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 

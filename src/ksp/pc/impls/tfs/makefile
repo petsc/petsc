@@ -1,8 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresscalar real
 
-SOURCEC   = bitmask.c comm.c gs.c ivec.c  xxt.c xyt.c tfs.c
-SOURCEH   = tfs.h
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

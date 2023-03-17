@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CPPFLAGS  = ${CHACO_INCLUDE}
-SOURCEC   = partchaco.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 

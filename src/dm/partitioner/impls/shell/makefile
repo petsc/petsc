@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = partshell.c
 LIBBASE   = libpetscdm
 MANSEC    = DM
 

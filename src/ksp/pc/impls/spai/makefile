@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_SPAI'
 
 CPPFLAGS  = ${SPAI_INCLUDE}
-SOURCEC   = ispai.c dspai.c
 LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC

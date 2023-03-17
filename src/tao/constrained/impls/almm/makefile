@@ -1,7 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = almm.c almmutils.c
-SOURCEH  = almm.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 

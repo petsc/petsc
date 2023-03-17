@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEC  = zdmdasnesf.c zdmlocalsnesf.c zdmsnesf.c
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 

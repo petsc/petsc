@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC  = minres.c
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

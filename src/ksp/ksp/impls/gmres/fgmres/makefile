@@ -1,7 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC  = fgmres.c modpcf.c
-SOURCEH  = fgmresimpl.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 

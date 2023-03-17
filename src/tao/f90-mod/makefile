@@ -1,8 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-SOURCEF90  = petsctaomod.F90
-SOURCEH	   = petsctao.h petsctao.h90
 LIBBASE	   = libpetsctao
 MANSEC	   = Tao
 CLEANFILES = *.mod

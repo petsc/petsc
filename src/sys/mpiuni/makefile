@@ -1,8 +1,6 @@
 -include ../../../petscdir.mk
 #requirespackage    'PETSC_HAVE_MPIUNI'
 
-SOURCEC	 = mpi.c mpitime.c
-SOURCEH	 = ../../../include/petsc/mpiuni/mpi.h ../../../include/petsc/mpiuni/mpif.h
 SCRIPTS  = ../../../../lib/petsc/bin/petsc-mpiexec.uni
 LIBBASE	 = libpetscsys
 MANSEC   = Sys
