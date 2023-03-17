@@ -14,4 +14,3 @@ Additional Information
    other
    advanced
    tests
-   acknowledgements

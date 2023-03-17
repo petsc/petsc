@@ -15,7 +15,7 @@ you to :any:`use Git <sec_git>`.
 
 Once you have gained experience with developing PETSc source code and submitted merge requests, you
 can become an active member of our development and push changes directly
-to the petsc repository. Send mail to petsc-maint@mcs.anl.gov to
+to the `PETSc repository <https://gitlab.com/petsc/petsc.git>`__. Send mail to petsc-maint@mcs.anl.gov to
 arrange it.
 
 How-tos
@@ -34,7 +34,7 @@ Documentation fixes
 ===================
 We welcome corrections for our :doc:`documentation </developers/documentation>`.
 
-You can supply corrections to many web pages directly by clicking "Edit this page", on the lower right corner of the page, and
+You can supply corrections to many web pages directly by clicking "Edit this page", on the upper right corner of the page, and
 making your edits, following the instructions to make a merge request, and following the :doc:`integration process </developers/integration>`.
 Add the label "docs-only".
 
@@ -78,8 +78,6 @@ This is a shorthand version of
 .. code-block:: console
 
   $ $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py && make all
-
-If you absolutely cannot use Git then you can access tarballs directly, as indicated in :ref:`other_ways_to_obtain`.
 
 .. _sec_git:
 
@@ -243,8 +241,6 @@ You can use ``git log`` to see the recent changes to your branch and help determ
 You may also find it helpful to use an additional tool such as
 `git-gui <https://git-scm.com/docs/git-gui/>`__, `lazygit <https://github.com/jesseduffield/lazygit>`__, or `various GUI tools <https://git-scm.com/downloads/guis>`__.
 
-
-
 .. _sec_rebasing:
 
 Rebasing your branch
@@ -258,40 +254,6 @@ You may also want to `rebase <https://git-scm.com/book/en/v2/Git-Branching-Rebas
   $ git checkout myname/component-feature
   $ git branch myname/component-feature-backup-1  # optional
   $ git rebase origin/main                        # or origin/release
-
-.. _other_ways_to_obtain:
-
-Other ways to obtain PETSc
-==========================
-
-Getting a tarball of the git main branch of PETSc
----------------------------------------------------
-Use the following URL: https://gitlab.com/petsc/petsc/get/main.tar.gz
-
-This mode is useful if you are on a machine where you cannot install
-Git or if it has a firewall blocking http downloads.
-
-After the tarballs is obtained - do the following:
-
-.. code-block:: console
-
-   $ tar zxf petsc-petsc-CHANGESET.tar.gz
-   $ mv petsc-petsc-CHANGESET petsc
-
-To update this copy of petsc, re-download the above tarball.
-The URL above gets the latest changes immediately when they are pushed to the repository.
-
-Getting the nightly tarball of the git main branch of PETSc
--------------------------------------------------------------
-
-The nightly tarball will be equivalent to the release
-tarball - with all the documentation built. Use the following URL:
-
-http://ftp.mcs.anl.gov/pub/petsc/petsc-main.tar.gz
-
-To update your copy of petsc simply get a new copy of the tar file.
-The tar file at the ftp site is updated once each night [around midnight
-Chicago time] with the latest changes to the development version of PETSc.
 
 .. rubric:: Footnotes
 

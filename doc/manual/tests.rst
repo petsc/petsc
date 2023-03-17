@@ -6,29 +6,7 @@ Running PETSc Tests
 Quick start with the tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For testing builds, the general invocation from the ``$PETSC_DIR`` is:
-
-.. code-block:: console
-
-   $ make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
-
-For testing ``configure`` that used the ``--prefix`` option, the
-general invocation from the installation (prefix) directory is:
-
-.. code-block:: console
-
-   $ make [-j <n>] -f share/petsc/examples/gmakefile test
-
-For a full list of options, use
-
-.. code-block:: console
-
-   $ make -f gmakefile help-test
-
-Understanding test output and more information
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-As discussed in :any:`sec_runningtests`, users should set
+Users should set
 ``$PETSC_DIR`` and ``$PETSC_ARCH`` before running the tests, or can
 provide them on the command line as below.
 
@@ -36,9 +14,9 @@ To check if the libraries are working do:
 
 .. code-block:: console
 
-   $ make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> test
+   $ make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> check
 
-A comprehensive set of tests can be run with
+For comprehensive testing of builds, the general invocation from the ``$PETSC_DIR`` is:
 
 .. code-block:: console
 
@@ -48,7 +26,26 @@ or
 
 .. code-block:: console
 
-   $ make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
+   $ make [-j <n>] test PETSC_ARCH=<PETSC_ARCH>
+
+For testing ``configure`` that used the ``--prefix`` option, the
+general invocation from the installation (prefix) directory is:
+
+.. code-block:: console
+
+   $ make [-j <n>] -f share/petsc/examples/gmakefile.test test
+
+which will create/use the directories ``tests/*`` in the current directory for generated test files.
+You may pass an additional argument ``TESTDIR=mytests`` to place these generated files elsewhere.
+
+For a full list of options, use
+
+.. code-block:: console
+
+   $ make help-test
+
+Understanding test output and more information
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Depending on your machine’s configuration running the full test suite
 (above) can take from a few minutes to a couple hours. Note that
@@ -82,7 +79,7 @@ For example, test ``vec_vec_tutorials-ex6``, which can be run e.g. with
 
 .. code-block:: console
 
-   $ make -f gmakefile test search='vec_vec_tutorials-ex6'
+   $ make test search='vec_vec_tutorials-ex6'
 
 (see the discussion of ``search`` below), denotes the shell script:
 
@@ -108,35 +105,26 @@ Some examples are:
 
 .. code-block:: console
 
-   $ make -f gmakefile test search='ts%'                      # Run all TS examples
-   $ make -f gmakefile test searchin='tutorials'              # Run all tutorials
-   $ make -f gmakefile test search='ts%' searchin='tutorials' # Run all TS tutorials
-   $ make -f gmakefile test argsearch='cuda'                  # Run examples with cuda in arguments
-   $ make -f gmakefile test test-fail='1'
-   $ make -f gmakefile test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'
+   $ make test search='ts%'                      # Run all TS examples
+   $ make test searchin='tutorials'              # Run all tutorials
+   $ make test search='ts%' searchin='tutorials' # Run all TS tutorials
+   $ make test argsearch='cuda'                  # Run examples with cuda in arguments
+   $ make test test-fail='1'
+   $ make test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'
 
 It is useful before invoking the tests to see what targets will be run.
 The ``print-test`` target helps with this:
 
 .. code-block:: console
 
-   $ make -f gmakefile print-test argsearch='cuda'
+   $ make print-test argsearch='cuda'
 
 To see all of the test targets which would be run, this command can be
 used:
 
 .. code-block:: console
 
-   $ make -f gmakefile print-test
-
-For testing of installed PETSc, use
-
-.. code-block:: console
-
-   $ make -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test test
-
-which will create/use ``tests/*`` in the current directory for generated test files.
-You may pass an additional argument ``TESTDIR=mytests`` to place these generated files somewhere else.
+   $ make print-test
 
 To learn more about the test system details, one can look at the
 :doc:`the PETSc developers documentation </developers/testing>`.

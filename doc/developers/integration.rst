@@ -74,6 +74,7 @@ Before filing an MR
    .. code-block:: console
 
       $ make checkbadSource
+      $ make clangformat
       $ make lint
 
 -  :any:`Create a clean commit history <sec_clean_commit_history>`, ensuring that the commits on your branch present a logical picture of your new development.
