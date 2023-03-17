@@ -613,7 +613,17 @@ PetscErrorCode VecAXPBYPCZ_SeqKokkos(Vec zin, PetscScalar alpha, PetscScalar bet
   PetscCall(VecGetKokkosView(zin, &zv));
   PetscCall(VecGetKokkosView(xin, &xv));
   PetscCall(VecGetKokkosView(yin, &yv));
-  KokkosBlas::update(alpha, xv, beta, yv, gamma, zv);
+  if (gamma == (PetscScalar)0.0) { // a common case
+    if (alpha == -beta) {
+      PetscCallCXX(Kokkos::parallel_for( // a common case
+        zin->map->n, KOKKOS_LAMBDA(const PetscInt i) { zv(i) = alpha * (xv(i) - yv(i)); }));
+    } else {
+      PetscCallCXX(Kokkos::parallel_for(
+        zin->map->n, KOKKOS_LAMBDA(const PetscInt i) { zv(i) = alpha * xv(i) + beta * yv(i); }));
+    }
+  } else {
+    PetscCallCXX(KokkosBlas::update(alpha, xv, beta, yv, gamma, zv));
+  }
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(VecRestoreKokkosView(yin, &yv));
   PetscCall(VecRestoreKokkosView(zin, &zv));
