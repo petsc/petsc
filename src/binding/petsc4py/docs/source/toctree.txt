@@ -3,8 +3,10 @@
 
    overview
    install
+   petsc4py
    tutorial
    citing
+
 
 .. Local Variables:
 .. mode: rst
