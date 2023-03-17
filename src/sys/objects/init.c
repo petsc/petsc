@@ -559,7 +559,8 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 #endif
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-saws_options", &PetscOptionsPublish, NULL));
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_gpu_aware_mpi", &use_gpu_aware_mpi, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_gpu_aware_mpi", &use_gpu_aware_mpi, &flg1));
+  if (!flg1) PetscCall(PetscOptionsGetBool(NULL, NULL, "-sf_use_gpu_aware_mpi", &use_gpu_aware_mpi, &flg1)); // an alias option
 
   /*
        Print basic help message
