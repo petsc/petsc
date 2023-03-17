@@ -1,4 +1,10 @@
+#include <petscconf.h>
+// We need to define this ahead of any other includes to make sure mkstemp is actually defined
+#if defined(PETSC_HAVE_MKSTEMP)
+  #define _XOPEN_SOURCE 600
+#endif
 #include <petsc/private/dmnetworkimpl.h> /*I  "petscdmnetwork.h"  I*/
+#include <petscdraw.h>
 
 static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
 {
@@ -64,16 +70,18 @@ static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#include <petscdraw.h>
 static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
 {
-  PetscMPIInt rank, size, rank2;
+  PetscMPIInt rank, size;
   MPI_Comm    comm;
   char        filename[PETSC_MAX_PATH_LEN + 1], proccall[PETSC_MAX_PATH_LEN + 500], scriptFile[PETSC_MAX_PATH_LEN + 1], streamBuffer[256];
   PetscViewer csvViewer;
   FILE       *processFile = NULL;
   PetscBool   isnull;
   PetscDraw   draw;
+#if defined(PETSC_HAVE_MKSTEMP)
+  PetscBool isSharedTmp;
+#endif
 
   PetscFunctionBegin;
   // Deal with the PetscDraw we are given
@@ -89,18 +97,30 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
+#if defined(PETSC_HAVE_MKSTEMP)
+  // Get if the temporary directory is shared
+  // Note: This must be done collectively on every rank, it cannot be done on a single rank
+  PetscCall(PetscSharedTmp(comm, &isSharedTmp));
+#endif
+
   // Generate and broadcast the temporary file name from rank 0
   if (rank == 0) {
 #if defined(PETSC_HAVE_TMPNAM_S)
     // Acquire a temporary file to write to and open an ASCII/CSV viewer
     PetscCheck(tmpnam_s(filename, sizeof(filename)) == 0, comm, PETSC_ERR_SYS, "Could not acquire temporary file");
-#elif defined(PETSC_HAVE_MKSTEMP) && __STDC_VERSION__ > 199901L
-    size_t numChars;
+#elif defined(PETSC_HAVE_MKSTEMP)
+    PetscBool isTmpOverridden;
+    size_t    numChars;
     // Same thing, but for POSIX systems on which tmpnam is deprecated
     // Note: Configure may detect mkstemp but it will not be defined if compiling for C99, so check additional defines to see if we can use it
-    PetscCall(PetscStrncpy(filename, "/tmp/", sizeof(filename)));
     // Mkstemp requires us to explicitly specify part of the path, but some systems may not like putting files in /tmp/ so have an option for it
-    PetscCall(PetscOptionsGetString(NULL, NULL, "-dmnetwork_view_tmpdir", filename, sizeof(filename), NULL));
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-dmnetwork_view_tmpdir", filename, sizeof(filename), &isTmpOverridden));
+    // If not specified by option try using a shared tmp on the system
+    if (!isTmpOverridden) {
+      // Validate that if tmp is not overridden it is at least shared
+      PetscCheck(isSharedTmp, comm, PETSC_ERR_SUP_SYS, "Temporary file directory is not shared between ranks, try using -dmnetwork_view_tmpdir to specify a shared directory");
+      PetscCall(PetscGetTmp(PETSC_COMM_SELF, filename, sizeof(filename)));
+    }
     // Make sure the filename ends with a '/'
     PetscCall(PetscStrlen(filename, &numChars));
     if (filename[numChars - 1] != '/') {
@@ -114,12 +134,10 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
     // Same thing, but for older C versions which don't have the safe form
     PetscCheck(tmpnam(filename) != NULL, comm, PETSC_ERR_SYS, "Could not acquire temporary file");
 #endif
-    // Broadcast the filename to all other MPI ranks
-    for (rank2 = 1; rank2 < size; rank2++) PetscCallMPI(MPI_Send(filename, PETSC_MAX_PATH_LEN, MPI_BYTE, rank2, 0, comm));
-  } else {
-    // Receive the file name
-    PetscCallMPI(MPI_Recv(filename, PETSC_MAX_PATH_LEN, MPI_BYTE, 0, 0, comm, MPI_STATUS_IGNORE));
   }
+
+  // Broadcast the filename to all other MPI ranks
+  PetscCallMPI(MPI_Bcast(filename, PETSC_MAX_PATH_LEN, MPI_BYTE, 0, comm));
 
   PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &csvViewer));
   PetscCall(PetscViewerPushFormat(csvViewer, PETSC_VIEWER_ASCII_CSV));
