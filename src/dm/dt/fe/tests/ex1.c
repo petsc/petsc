@@ -205,7 +205,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMGetStratumIS(dm, "depth", depth, &cellIS));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMGetCellDS(dm, cStart, &ds));
+  PetscCall(DMGetCellDS(dm, cStart, &ds, NULL));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
   PetscCall(CreateFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms));

@@ -372,10 +372,10 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 @*/
 PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
-  const PetscInt Nf   = prob->Nf;
-  PetscBool      hasH = PETSC_FALSE;
+  const PetscInt Nf          = prob->Nf;
+  PetscBool      hasH        = PETSC_FALSE;
+  PetscInt       maxOrder[4] = {-1, -1, -1, -1};
   PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
-  PetscInt       gorder = -1, fgorder = -1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -389,14 +389,15 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   PetscCall(PetscCalloc6(Nf + 1, &prob->offCohesive[0], Nf + 1, &prob->offCohesive[1], Nf + 1, &prob->offCohesive[2], Nf + 1, &prob->offDerCohesive[0], Nf + 1, &prob->offDerCohesive[1], Nf + 1, &prob->offDerCohesive[2]));
   PetscCall(PetscMalloc2(Nf, &prob->T, Nf, &prob->Tf));
   if (prob->forceQuad) {
-    PetscQuadrature mq = NULL, mfq = NULL;
-    PetscInt        maxOrder = -1, maxFOrder = -1;
+    // Note: This assumes we have one kind of cell at each dimension.
+    //       We can fix this by having quadrature hold the celltype
+    PetscQuadrature maxQuad[4] = {NULL, NULL, NULL, NULL};
 
     for (f = 0; f < Nf; ++f) {
       PetscObject     obj;
       PetscClassId    id;
       PetscQuadrature q = NULL, fq = NULL;
-      PetscInt        order = -1, forder = -1;
+      PetscInt        dim = -1, order = -1, forder = -1;
 
       PetscCall(PetscDSGetDiscretization(prob, f, &obj));
       if (!obj) continue;
@@ -411,20 +412,28 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
 
         PetscCall(PetscFVGetQuadrature(fv, &q));
       }
-      if (q) PetscCall(PetscQuadratureGetOrder(q, &order));
-      if (fq) PetscCall(PetscQuadratureGetOrder(fq, &forder));
-      if (order > maxOrder) {
-        maxOrder = order;
-        mq       = q;
+      if (q) {
+        PetscCall(PetscQuadratureGetData(q, &dim, NULL, NULL, NULL, NULL));
+        PetscCall(PetscQuadratureGetOrder(q, &order));
+        if (order > maxOrder[dim]) {
+          maxOrder[dim] = order;
+          maxQuad[dim]  = q;
+        }
       }
-      if (forder > maxFOrder) {
-        maxFOrder = forder;
-        mfq       = fq;
+      if (fq) {
+        PetscCall(PetscQuadratureGetData(fq, &dim, NULL, NULL, NULL, NULL));
+        PetscCall(PetscQuadratureGetOrder(fq, &forder));
+        if (forder > maxOrder[dim]) {
+          maxOrder[dim] = forder;
+          maxQuad[dim]  = fq;
+        }
       }
     }
     for (f = 0; f < Nf; ++f) {
-      PetscObject  obj;
-      PetscClassId id;
+      PetscObject     obj;
+      PetscClassId    id;
+      PetscQuadrature q;
+      PetscInt        dim;
 
       PetscCall(PetscDSGetDiscretization(prob, f, &obj));
       if (!obj) continue;
@@ -432,12 +441,16 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       if (id == PETSCFE_CLASSID) {
         PetscFE fe = (PetscFE)obj;
 
-        PetscCall(PetscFESetQuadrature(fe, mq));
-        PetscCall(PetscFESetFaceQuadrature(fe, mfq));
+        PetscCall(PetscFEGetQuadrature(fe, &q));
+        PetscCall(PetscQuadratureGetData(q, &dim, NULL, NULL, NULL, NULL));
+        PetscCall(PetscFESetQuadrature(fe, maxQuad[dim]));
+        PetscCall(PetscFESetFaceQuadrature(fe, maxQuad[dim - 1]));
       } else if (id == PETSCFV_CLASSID) {
         PetscFV fv = (PetscFV)obj;
 
-        PetscCall(PetscFVSetQuadrature(fv, mq));
+        PetscCall(PetscFVGetQuadrature(fv, &q));
+        PetscCall(PetscQuadratureGetData(q, &dim, NULL, NULL, NULL, NULL));
+        PetscCall(PetscFVSetQuadrature(fv, maxQuad[dim]));
       }
     }
   }
@@ -461,16 +474,18 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
         PetscCall(PetscFEGetQuadrature(fe, &q));
         {
           PetscQuadrature fq;
-          PetscInt        order, forder;
+          PetscInt        dim, order;
 
+          PetscCall(PetscQuadratureGetData(q, &dim, NULL, NULL, NULL, NULL));
           PetscCall(PetscQuadratureGetOrder(q, &order));
-          if (gorder < 0) gorder = order;
-          PetscCheck(order == gorder, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " cell quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS cell quadrature order", f, order, gorder);
+          if (maxOrder[dim] < 0) maxOrder[dim] = order;
+          PetscCheck(order == maxOrder[dim], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " cell quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS cell quadrature order", f, order, maxOrder[dim]);
           PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
           if (fq) {
-            PetscCall(PetscQuadratureGetOrder(fq, &forder));
-            if (fgorder < 0) fgorder = forder;
-            PetscCheck(forder == fgorder, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " face quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS face quadrature order", f, forder, fgorder);
+            PetscCall(PetscQuadratureGetData(fq, &dim, NULL, NULL, NULL, NULL));
+            PetscCall(PetscQuadratureGetOrder(fq, &order));
+            if (maxOrder[dim] < 0) maxOrder[dim] = order;
+            PetscCheck(order == maxOrder[dim], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " face quadrature order %" PetscInt_FMT " != %" PetscInt_FMT " DS face quadrature order", f, order, maxOrder[dim]);
           }
         }
         PetscCall(PetscFEGetDimension(fe, &Nb));
@@ -4005,6 +4020,40 @@ PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
     PetscCall(PetscDSSetExactSolution(newds, f, sol, ctx));
     PetscCall(PetscDSGetExactSolutionTimeDerivative(ds, f, &sol, &ctx));
     PetscCall(PetscDSSetExactSolutionTimeDerivative(newds, f, sol, ctx));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscDSCopy(PetscDS ds, DM dmNew, PetscDS dsNew)
+{
+  DSBoundary b;
+  PetscInt   cdim, Nf, f, d;
+  PetscBool  isCohesive;
+  void      *ctx;
+
+  PetscFunctionBegin;
+  PetscCall(PetscDSCopyConstants(ds, dsNew));
+  PetscCall(PetscDSCopyExactSolutions(ds, dsNew));
+  PetscCall(PetscDSSelectDiscretizations(ds, PETSC_DETERMINE, NULL, dsNew));
+  PetscCall(PetscDSCopyEquations(ds, dsNew));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  for (f = 0; f < Nf; ++f) {
+    PetscCall(PetscDSGetContext(ds, f, &ctx));
+    PetscCall(PetscDSSetContext(dsNew, f, ctx));
+    PetscCall(PetscDSGetCohesive(ds, f, &isCohesive));
+    PetscCall(PetscDSSetCohesive(dsNew, f, isCohesive));
+    PetscCall(PetscDSGetJetDegree(ds, f, &d));
+    PetscCall(PetscDSSetJetDegree(dsNew, f, d));
+  }
+  if (Nf) {
+    PetscCall(PetscDSGetCoordinateDimension(ds, &cdim));
+    PetscCall(PetscDSSetCoordinateDimension(dsNew, cdim));
+  }
+  PetscCall(PetscDSCopyBoundary(ds, PETSC_DETERMINE, NULL, dsNew));
+  for (b = dsNew->boundary; b; b = b->next) {
+    PetscCall(DMGetLabel(dmNew, b->lname, &b->label));
+    /* Do not check if label exists here, since p4est calls this for the reference tree which does not have the labels */
+    //PetscCheck(b->label,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s missing in new DM", name);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

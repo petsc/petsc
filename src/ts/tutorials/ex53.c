@@ -2043,7 +2043,7 @@ static PetscErrorCode SolutionMonitor(TS ts, PetscInt steps, PetscReal time, Vec
         const PetscInt *fields;
         PetscInt        dsNf, f;
 
-        PetscCall(DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds));
+        PetscCall(DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds, NULL));
         PetscCall(PetscDSGetNumFields(ds, &dsNf));
         PetscCall(ISGetIndices(fieldIS, &fields));
         for (f = 0; f < dsNf; ++f) {

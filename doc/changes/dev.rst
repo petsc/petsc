@@ -188,6 +188,7 @@ Changes: Development
 
 - Add ``DMLabelGetType()``, ``DMLabelSetType()``, ``DMLabelSetUp()``, ``DMLabelRegister()``, ``DMLabelRegisterAll()``, ``DMLabelRegisterDestroy()``
 - Add ``DMLabelEphemeralGetLabel()``, ``DMLabelEphemeralSetLabel()``, ``DMLabelEphemeralGetTransform()``, ``DMLabelEphemeralSetTransform()``
+- Now ``DMGetCellDS()``, ``DMGetRegionDS()``, ``DMSetRegionDS()``, ``DMGetRegionNumDS()``, ``DMSetRegionNumDS()`` can also set and return an input DS
 
 .. rubric:: DMSwarm:
 
@@ -206,19 +207,26 @@ Changes: Development
 - Add ``DMPlexCreateHypercubicMesh()`` to create hypercubic meshes needed for QCD
 - Add ``-dm_plex_shape zbox`` option to ``DMSetFromOptions()`` to generated born-parallel meshes in Z-ordering (a space-filling curve). This may be used as-is with ``-petscpartitioner_type simple`` or redistributed using ``-petscpartitioner_type parmetis`` (or ``ptscotch``, etc.), which is more scalable than creating a serial mesh to partition and distribute.
 - Add ``DMPlexSetIsoperiodicFaceSF()`` to wrap a non-periodic mesh into periodic while preserving the local point representation for both donor and image sheet. This is supported with ``zbox`` above, and allows single-element periodicity.
+- Now ``DMPlexGetCompressedClosure()`` also takes the point orientation
 
 .. rubric:: FE/FV:
-  - Add ``DMPlexGetLocalOffsetsSupport()`` for interaction with libCEED for FV
+
+- Add ``DMPlexGetLocalOffsetsSupport()`` for interaction with libCEED for FV
+- Now ``PetscFEIntegrateHybridResidual()`` and ``PetscFEIntegrateHybridJacobian()`` also take the input DS
 
 .. rubric:: DMNetwork:
-  - Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork
-  - Add DMNetworkGetNumEdges to retrieve the local and global number of edges in DMNetwork
-  - Add the ability to use ``DMView()`` on a DMNetwork with a PetscViewer with format ``PETSC_VIEWER_ASCII_CSV``
-  - Add the ability to use ``-dmnetwork_view draw`` and ``-dmnetwork_view_distributed draw`` to visualize a DMNetwork with an associated coordinate DM. This currently requires the configured Python environment to have ``matplotlib`` and ``pandas`` installed
+
+- Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork
+- Add DMNetworkGetNumEdges to retrieve the local and global number of edges in DMNetwork
+- Add the ability to use ``DMView()`` on a DMNetwork with a PetscViewer with format ``PETSC_VIEWER_ASCII_CSV``
+- Add the ability to use ``-dmnetwork_view draw`` and ``-dmnetwork_view_distributed draw`` to visualize a DMNetwork with an associated coordinate DM. This currently requires the configured Python environment to have ``matplotlib`` and ``pandas`` installed
 
 .. rubric:: DMStag:
 
 .. rubric:: DT:
+
+- Add ``PetscDTComputeFaceQuadPermutation()`` to compute the quadrature permutation corresponding to a k-cell orientation
+- Add ``PetscDSCopy()``
 
 .. rubric:: Fortran:
 

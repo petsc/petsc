@@ -145,7 +145,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
     IS           cellIS;
     PetscFormKey key;
 
-    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds, NULL));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
@@ -203,7 +203,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
     IS           cellIS;
     PetscFormKey key;
 
-    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds, NULL));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
@@ -263,7 +263,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
     IS           cellIS;
     PetscFormKey key;
 
-    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds, NULL));
     key.value = 0;
     key.field = 0;
     key.part  = 100;

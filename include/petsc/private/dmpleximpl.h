@@ -785,6 +785,7 @@ PETSC_INTERN PetscErrorCode DMPlexGetPointDualSpaceFEM(DM, PetscInt, PetscInt, P
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection, PetscBool, PetscInt, PetscInt, PetscInt *, PetscBool, const PetscInt[], const PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection, PetscBool, PetscInt, PetscInt, PetscInt[], PetscBool, const PetscInt ***, PetscInt, const PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM, PetscInt, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
+PETSC_INTERN PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetAllCells_Internal(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMSNESGetFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
