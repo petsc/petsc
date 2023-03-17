@@ -291,6 +291,8 @@ prepend-path PATH "%s"
       self.addMakeMacro('CXX_LINKER',cxx_linker)
       self.addMakeMacro('CXX_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
+    else:
+      self.addMakeMacro('CXX','')
 
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
