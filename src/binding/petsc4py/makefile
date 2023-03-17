@@ -79,9 +79,11 @@ rst2html: checkdocutils
 
 SPHINXBUILD = sphinx-build
 SPHINXOPTS  =
-.PHONY: sphinx sphinx-html sphinx-pdf sphinx-man sphinx-info
+.PHONY: sphinx sphinx-html sphinx-pdf sphinx-man sphinx-info sphinx-apidoc
 sphinx: sphinx-html sphinx-pdf sphinx-man sphinx-info
-sphinx-html:
+sphinx-apidoc:
+	sphinx-apidoc src/petsc4py/ -o docs/source/ -f -T
+sphinx-html: sphinx-apidoc
 	mkdir -p build/doctrees docs/usrman
 	${SPHINXBUILD} -b html -d build/doctrees ${SPHINXOPTS} \
 	docs/source docs/usrman
