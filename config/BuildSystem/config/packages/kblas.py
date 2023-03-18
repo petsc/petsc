@@ -67,7 +67,13 @@ class Configure(config.package.Package):
       g.write('_MAGMA_ROOT_ = '+self.magma.directory+'\n')
       g.write('_CUDA_ROOT_ = '+cudaDir+'\n')
       if self.cuda.cudaArch:
-        gencodestr = '-DTARGET_SM='+self.cuda.cudaArch+' -arch sm_'+self.cuda.cudaArch
+        # TARGET_SM is just used to check min version compatibility, so we pass
+        # it the smallest version (or 35 if "all" etc are specified)
+        if self.cuda.cudaArchIsVersionList():
+          gencodestr = '-DTARGET_SM='+str(min(int(v) for v in self.cuda.cudaArchList()))
+        else:
+          gencodestr = '-DTARGET_SM=35'
+        gencodestr += self.cuda.nvccArchFlags()
       else:
         # kblas as of v4.0.0 uses __ldg intrinsics, available starting from 35
         gencodestr = '-DTARGET_SM=35 -arch sm_35'
