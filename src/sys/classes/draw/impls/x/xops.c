@@ -708,12 +708,12 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
     if (sizes[0] > 1.0) w = (int)sizes[0];
     else if (sizes[0] == 1.0) w = PETSC_DRAW_FULL_SIZE;
     else if (sizes[0] == .5) w = PETSC_DRAW_HALF_SIZE;
-    else if (sizes[0] == .3) w = PETSC_DRAW_THIRD_SIZE;
+    else if (PetscEqualReal(sizes[0], .3)) w = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
     else if (sizes[0] == .25) w = PETSC_DRAW_QUARTER_SIZE;
     if (sizes[1] > 1.0) h = (int)sizes[1];
     else if (sizes[1] == 1.0) h = PETSC_DRAW_FULL_SIZE;
     else if (sizes[1] == .5) h = PETSC_DRAW_HALF_SIZE;
-    else if (sizes[1] == .3) h = PETSC_DRAW_THIRD_SIZE;
+    else if (PetscEqualReal(sizes[1], .3)) h = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
     else if (sizes[1] == .25) h = PETSC_DRAW_QUARTER_SIZE;
   }
   if (w == PETSC_DECIDE || w == PETSC_DEFAULT) w = draw->w = 300;

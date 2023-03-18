@@ -403,7 +403,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* boundary of the trust region.                                       */
       /***********************************************************************/
 
-      ksp->reason = KSP_CONVERGED_NEG_CURVE;
+      ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: negative curvature: kappa=%g\n", (double)kappa));
 
       if (cg->radius && norm_p > 0.0) {
@@ -619,7 +619,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* were indefinite.                                                    */
       /***********************************************************************/
 
-      ksp->reason = KSP_CONVERGED_NEG_CURVE;
+      ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: cg breakdown: kappa=%g\n", (double)kappa));
 
       if (cg->radius && norm_p > 0.0) {
@@ -837,7 +837,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvalue.\n"));
-    ksp->reason = KSP_CONVERGED_NEG_CURVE;
+    ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -884,7 +884,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
-    ksp->reason = KSP_CONVERGED_NEG_CURVE;
+    ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -918,7 +918,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /*********************************************************************/
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvector.\n"));
-        ksp->reason = KSP_CONVERGED_NEG_CURVE;
+        ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
 
@@ -998,7 +998,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /*********************************************************************/
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
-        ksp->reason = KSP_CONVERGED_NEG_CURVE;
+        ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
 
@@ -1029,7 +1029,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /*********************************************************************/
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: factorization failed.\n"));
-        ksp->reason = KSP_CONVERGED_NEG_CURVE;
+        ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
 
@@ -1049,7 +1049,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /*********************************************************************/
 
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
-        ksp->reason = KSP_CONVERGED_NEG_CURVE;
+        ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
 
@@ -1068,7 +1068,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to converge.\n"));
-      ksp->reason = KSP_CONVERGED_NEG_CURVE;
+      ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
@@ -1158,7 +1158,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   /* Set the termination reason.                                             */
   /***************************************************************************/
 
-  ksp->reason = KSP_CONVERGED_NEG_CURVE;
+  ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -1356,6 +1356,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
+  PetscCall(KSPSetConvergedNegativeCurvature(ksp, PETSC_TRUE));
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */

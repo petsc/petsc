@@ -802,7 +802,7 @@ PetscErrorCode PetscDSGetForceQuad(PetscDS ds, PetscBool *forceQuad)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidIntPointer(forceQuad, 2);
+  PetscValidBoolPointer(forceQuad, 2);
   *forceQuad = ds->forceQuad;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

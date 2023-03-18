@@ -251,7 +251,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
     /* during the first step, we must follow a direction.                    */
     /*************************************************************************/
 
-    ksp->reason = KSP_CONVERGED_NEG_CURVE;
+    ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
     PetscCall(PetscInfo(ksp, "KSPCGSolve_NASH: negative curvature: kappa=%g\n", (double)kappa));
 
     if (cg->radius && norm_p > 0.0) {
@@ -490,7 +490,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
       /* a direction of negative curvature.  Stop at the base.               */
       /***********************************************************************/
 
-      ksp->reason = KSP_CONVERGED_NEG_CURVE;
+      ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_NASH: negative curvature: kappa=%g\n", (double)kappa));
       break;
     }
@@ -627,6 +627,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
+  PetscCall(KSPSetConvergedNegativeCurvature(ksp, PETSC_TRUE));
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */

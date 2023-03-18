@@ -187,8 +187,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
           PetscCall(VecAXPY(X, step2, P));
         }
       }
-      pcgP->ltsnrm = pcgP->delta;             /* convergence in direction of */
-      ksp->reason  = KSP_CONVERGED_NEG_CURVE; /* negative curvature */
+      pcgP->ltsnrm = pcgP->delta; /* convergence in direction of */
+      ksp->reason  = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       if (!i) {
         PetscCall(PetscInfo(ksp, "negative curvature: delta=%g\n", (double)pcgP->delta));
       } else {
@@ -381,6 +381,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_SYMMETRIC, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_SYMMETRIC, 1));
+  PetscCall(KSPSetConvergedNegativeCurvature(ksp, PETSC_TRUE));
   PetscCall(PetscNew(&cgP));
 
   ksp->data                = (void *)cgP;

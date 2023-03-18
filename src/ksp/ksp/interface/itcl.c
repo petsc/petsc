@@ -408,6 +408,9 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   if (set && flag) PetscCall(KSPConvergedDefaultSetUMIRNorm(ksp));
   PetscCall(PetscOptionsBool("-ksp_converged_maxits", "Declare convergence if the maximum number of iterations is reached", "KSPConvergedDefaultSetConvergedMaxits", PETSC_FALSE, &flag, &set));
   if (set) PetscCall(KSPConvergedDefaultSetConvergedMaxits(ksp, flag));
+  PetscCall(KSPGetConvergedNegativeCurvature(ksp, &flag));
+  PetscCall(PetscOptionsBool("-ksp_converged_neg_curve", "Declare convergence if negative curvature is detected", "KSPConvergedNegativeCurvature", flag, &flag, &set));
+  if (set) PetscCall(KSPSetConvergedNegativeCurvature(ksp, flag));
   PetscCall(KSPGetReusePreconditioner(ksp, &reuse));
   PetscCall(PetscOptionsBool("-ksp_reuse_preconditioner", "Use initial preconditioner and don't ever compute a new one", "KSPReusePreconditioner", reuse, &reuse, NULL));
   PetscCall(KSPSetReusePreconditioner(ksp, reuse));

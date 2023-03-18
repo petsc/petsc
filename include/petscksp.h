@@ -264,6 +264,10 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP, PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void *));
 
+PETSC_EXTERN PetscErrorCode KSPMINRESSetRadius(KSP, PetscReal);
+PETSC_EXTERN PetscErrorCode KSPMINRESGetUseQLP(KSP, PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPMINRESSetUseQLP(KSP, PetscBool);
+
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP, PC *);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP, PC);
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP, KSP *);
@@ -815,6 +819,8 @@ PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP, PetscInt, PetscReal, KSPConver
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP, KSPConvergedReason *);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReasonString(KSP, const char **);
 PETSC_EXTERN PetscErrorCode KSPComputeConvergenceRate(KSP, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPSetConvergedNegativeCurvature(KSP, PetscBool);
+PETSC_EXTERN PetscErrorCode KSPGetConvergedNegativeCurvature(KSP, PetscBool *);
 
 PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefault() (since version 3.5)") static inline void KSPDefaultConverged(void)
 { /* never called */

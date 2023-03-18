@@ -104,6 +104,7 @@ Changes: Development
 
 - Add ``PetscFFlush()``
 - Soft-deprecate ``PetscStrcpy()`` and ``PetscStrcat()``. No diagnostics will be emitted if these routines are used, but users are highly encouraged to switch to the more secure (and possibly performant) ``PetscStrncpy()`` and ``PetscStrlcat()``
+- Add ``PETSC_REAL_MIN`` for smallest normalized floating point number
 
 .. rubric:: Event Logging:
 
@@ -162,6 +163,9 @@ Changes: Development
 - Add support for ``MATAIJCUSPARSE`` and ``VECCUDA`` to ``KSPHPDDM``
 - Deprecate ``KSP_CONVERGED_CG_NEG_CURVE`` in favor of ``KSP_CONVERGED_NEG_CURVE``
 - Deprecate ``KSP_CONVERGED_CG_CONSTRAINED`` in favor of ``KSP_CONVERGED_STEP_LENGTH``
+- Add ``KSPSetConvergedNegativeCurvature()`` to declare convergence if negative curvature is detected by the Krylov solver
+- Add MINRES-QLP, available via ``KSPMINRESSetUseQLP()`` or the command line ``-ksp_minres_qlp``.
+- Replaced old MINRES implementation.
 
 .. rubric:: SNES:
 
