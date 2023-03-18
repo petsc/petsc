@@ -558,12 +558,6 @@ manimplementations:
 #
 #   Rules for generating html code from C and Fortran
 #
-checkmakefilelist:
-	-@ls makefile ${SOURCEALL} ${EXAMPLESALL} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
-	ls makefile *.{c,cxx,cpp,cu,F,F90,h,h90,m} 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
-	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
-	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
-
 html: chk_c2html
 	-@export htmlmap_tmp=$$(mktemp) ;\
           petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
