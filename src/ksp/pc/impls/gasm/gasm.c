@@ -1239,7 +1239,7 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
 
    To set the options on the solvers separate for each block call `PCGASMGetSubKSP()`
    and set the options directly on the resulting `KSP` object (you can access its `PC`
-   with `KSPGetPC())`
+   with `KSPGetPC()`)
 
    Level: beginner
 

@@ -958,8 +958,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
     meshes in a single HDF5 file. This in turn requires one to name the `DMPLEX` object with `PetscObjectSetName()`
     before saving it with `DMView()` and before loading it with `DMLoad()` for identification of the mesh object.
 
-.seealso: `PetscViewer`, `PetscViewerFormat`, `PetscViewerSetFormat`(), `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMLoad()`, `PetscObjectSetName()`
-
+.seealso: `PetscViewer`, `PetscViewerFormat`, `PetscViewerSetFormat()`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMLoad()`, `PetscObjectSetName()`
 @*/
 PetscErrorCode DMView(DM dm, PetscViewer v)
 {
@@ -3205,7 +3204,7 @@ PetscErrorCode DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g)
 
    Level: intermediate
 
-.seealso: `DMLocalToLocalEnd(), `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMLocalToLocalEnd()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
+.seealso: `DMLocalToLocalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMLocalToLocalEnd()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
 PetscErrorCode DMLocalToLocalBegin(DM dm, Vec g, InsertMode mode, Vec l)
 {
@@ -3876,7 +3875,7 @@ PetscBool         DMRegisterAllCalled = PETSC_FALSE;
   Level: intermediate
 
   Note:
-  Of the `DM` is constructed by directly calling a function to construct a particular `DM`, for example, `DMDACreate2d()` or `DMPLEXCreateBoxMesh()`
+  Of the `DM` is constructed by directly calling a function to construct a particular `DM`, for example, `DMDACreate2d()` or `DMPlexCreateBoxMesh()`
 
 .seealso: `DMType`, `DMDA`, `DMPLEX`, `DMGetType()`, `DMCreate()`, `DMDACreate2d()`
 @*/

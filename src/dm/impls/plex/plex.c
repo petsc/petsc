@@ -9084,7 +9084,7 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
 
   Currently does not include `DMPlexCheckCellShape()`.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, DMCreate(), DMSetFromOptions()
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMPlexCheck(DM dm)
 {

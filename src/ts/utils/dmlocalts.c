@@ -233,7 +233,7 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
   Level: beginner
 
-.seealso: [](chapter_ts), `DM`, `DMTSSetIFunctionLocal(()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
+.seealso: [](chapter_ts), `DM`, `DMTSSetIFunctionLocal()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, Vec, void *), void **ctx)
 {
