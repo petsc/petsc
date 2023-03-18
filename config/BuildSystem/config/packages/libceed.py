@@ -45,7 +45,7 @@ class Configure(config.package.Package):
           'CUDA_DIR=' + self.cuda.cudaDir,
           'NVCC=' + self.getCompiler(),
           'NVCCFLAGS=' + self.getCompilerFlags(),
-          'CUDA_ARCH=sm_' + self.cuda.cudaArch,
+          'CUDA_ARCH=sm_' + self.cuda.cudaArchSingle()
         ]
     if self.hip.found:
       with self.Language('HIP'):

@@ -119,7 +119,7 @@ class Configure(config.package.Package):
         g.write('NVCC = '+nvcc+'\n')
         g.write('NVCCFLAGS = '+nvopts+' --expt-relaxed-constexpr\n')
         if self.cuda.cudaArch:
-          g.write('GENCODE_FLAGS = -gencode arch=compute_'+self.cuda.cudaArch+',code=sm_'+self.cuda.cudaArch+'\n')
+          g.write('GENCODE_FLAGS = '+self.cuda.nvccArchFlags()+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.cuda.include)+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.magma.include)+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.kblas.include)+'\n')

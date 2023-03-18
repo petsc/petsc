@@ -112,7 +112,7 @@ class Configure(config.package.GNUPackage):
       if not hasharch:
         if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
           if hasattr(self.cuda,'cudaArch'):
-            args.append('--with-gpu-arch=' + self.cuda.cudaArch)
+            args.append('--with-gpu-arch="' + ' '.join(self.cuda.cudaArchList()) + '"')
           else:
             args.append('--with-gpu-arch=70') # default
         else:
