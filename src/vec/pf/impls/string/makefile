@@ -5,7 +5,6 @@ MANSEC   = Vec
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 
 #
 #  This rule is called by the function PFStringCreateFunction() and creates a dynamic

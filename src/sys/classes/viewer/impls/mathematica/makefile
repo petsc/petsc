@@ -14,7 +14,6 @@ runtime: runtime.o
 	${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
 	${RM} -f $@.o
 
-include ${PETSC_DIR}/lib/petsc/conf/test
 
 run: runtime
 	./runtime

@@ -7,4 +7,3 @@ DIRS     = jacobi none sor shell bjacobi mg eisens asm ksp composite redundant s
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test

@@ -14,7 +14,6 @@ LIBBASE   = libpetscsys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 
 sread:
 	-@${MATLAB_MEX}  -g GCC='${CC}' CC='${PCC}' CFLAGS='${COPTFLAGS} ${CC_FLAGS} ${CCPPFLAGS}' LDFLAGS='${PETSC_EXTERNAL_LIB_BASIC}' sread.c bread.c

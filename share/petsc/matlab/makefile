@@ -4,4 +4,3 @@ EXAMPLESMATLAB = generatePetscTestFiles.m laplacian.m launch.m PetscBagRead.m Pe
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test

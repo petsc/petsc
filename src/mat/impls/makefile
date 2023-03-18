@@ -4,4 +4,3 @@ DIRS     = dense aij shell baij adj maij kaij is sbaij normal lrc scatter blockm
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test

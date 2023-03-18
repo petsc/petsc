@@ -5,4 +5,3 @@ DIRS     = cr bcgs bcgsl cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bi
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
