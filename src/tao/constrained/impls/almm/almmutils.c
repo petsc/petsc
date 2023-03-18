@@ -38,7 +38,7 @@ PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type)
    TaoALMMSetType - Determine the augmented Lagrangian formulation type for the subproblem.
 
    Input Parameters:
-+  tao - the Tao context for the `TAOALMM` solver
++  tao - the `Tao` context for the `TAOALMM` solver
 -  type - augmented Lagragrangian type
 
    Level: advanced
@@ -183,12 +183,7 @@ PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
 }
 
 /*@
-   TaoALMMSetMultipliers - Set user-defined Lagrange multipliers. The vector type and
-                             parallel structure of the given vectormust match equality and
-                             inequality constraints. The vector must have a local size equal
-                             to the sum of the local sizes for the constraint vectors, and a
-                             global size equal to the sum of the global sizes of the constraint
-                             vectors.
+   TaoALMMSetMultipliers - Set user-defined Lagrange multipliers.
 
    Input Parameters:
 +  tao - the `Tao` context for the `TAOALMM` solver
@@ -197,11 +192,16 @@ PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
    Level: advanced
 
    Notes:
+   The vector type and parallel layout must match the equality and inequality constraints.
+
+   The vector must have a local size equal to the sum of the local sizes for the constraint vectors, and a
+   global size equal to the sum of the global sizes of the constraint vectors.
+
    This routine is only useful if the user wants to change the
    parallel distribution of the combined dual vector in problems that
    feature both equality and inequality constraints. For other tasks,
    it is strongly recommended that the user retrieve the dual vector
-   created by the solver using TaoALMMGetMultipliers().
+   created by the solver using `TaoALMMGetMultipliers()`.
 
 .seealso: `TAOALMM`, `Tao`, `TaoALMMGetMultipliers()`
 @*/
@@ -275,16 +275,15 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
 }
 
 /*@
-   TaoALMMGetPrimalIS - Retrieve a pointer to the index set that identifies optimization
+   TaoALMMGetPrimalIS - Retrieve the index set that identifies optimization
                         and slack variable components of the subsolver's solution vector.
-                        Not valid for problems with only equality constraints.
 
    Input Parameter:
 .  tao - the `Tao` context for the `TAOALMM` solver
 
    Output Parameters:
-+  opt_is - index set associated with the optimization variables (NULL if not needed)
--  slack_is - index set associated with the slack variables (NULL if not needed)
++  opt_is - index set associated with the optimization variables (`NULL` if not needed)
+-  slack_is - index set associated with the slack variables (`NULL` if not needed)
 
    Level: advanced
 
@@ -311,17 +310,16 @@ PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
 }
 
 /*@
-   TaoALMMGetDualIS - Retrieve a pointer to the index set that identifies equality
+   TaoALMMGetDualIS - Retrieve the index set that identifies equality
                       and inequality constraint components of the dual vector returned
-                      by `TaoALMMGetMultipliers()`. Not valid for problems with only one
-                      type of constraint.
+                      by `TaoALMMGetMultipliers()`.
 
    Input Parameter:
 .  tao - the Tao context for the `TAOALMM` solver
 
    Output Parameters:
-+  eq_is - index set associated with the equality constraints (NULL if not needed)
--  ineq_is - index set associated with the inequality constraints (NULL if not needed)
++  eq_is - index set associated with the equality constraints (`NULL` if not needed)
+-  ineq_is - index set associated with the inequality constraints (`NULL` if not needed)
 
    Level: advanced
 

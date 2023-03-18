@@ -173,7 +173,7 @@ PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *va
    PetscRandomGetInterval - Gets the interval over which the random numbers
    will be distributed.  By default, this interval is [0,1).
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  r  - the random number generator context
@@ -205,7 +205,7 @@ PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScal
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be distributed.  By default, this interval is [0,1).
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  r  - the random number generator context

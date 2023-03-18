@@ -235,7 +235,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 /*@C
   PetscFECompositeGetMapping - Returns the mappings from the reference element to each subelement
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object

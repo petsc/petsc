@@ -422,15 +422,9 @@ static PetscErrorCode PCShellGetName_Shell(PC pc, const char *name[])
 +  pc - the preconditioner context
 -  destroy - the application-provided destroy routine
 
-   Calling sequence of destroy:
-.vb
-   PetscErrorCode destroy (PC)
-.ve
-
-.  ptr - the application context
-
-   Note:
-    the function MUST return an error code of 0 on success and nonzero on failure.
+   Calling sequence of `destroy`:
+$  PetscErrorCode destroy(PC pc)
+.  pc - the preconditioner, get the application context with `PCShellGetContext()`
 
    Level: intermediate
 
@@ -454,12 +448,9 @@ PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC))
 +  pc - the preconditioner context
 -  setup - the application-provided setup routine
 
-   Calling sequence of setup:
-.vb
-   PetscErrorCode setup (PC pc)
-.ve
-
-.  pc - the preconditioner, get the application context with PCShellGetContext()
+   Calling sequence of `setup`:
+$   PetscErrorCode setup(PC pc)
+.  pc - the preconditioner, get the application context with `PCShellGetContext()`
 
    Note:
     the function MUST return an error code of 0 on success and nonzero on failure.
@@ -485,16 +476,12 @@ PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC))
 +  pc - the preconditioner context
 -  view - the application-provided view routine
 
-   Calling sequence of view:
+   Calling sequence of `view`:
 .vb
-   PetscErrorCode view(PC pc,PetscViewer v)
+   PetscErrorCode view(PC pc, PetscViewer v)
 .ve
-
-+  pc - the preconditioner, get the application context with PCShellGetContext()
++  pc - the preconditioner, get the application context with `PCShellGetContext()`
 -  v   - viewer
-
-   Note:
-    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -517,17 +504,13 @@ PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC, PetscViewer))
 +  pc - the preconditioner context
 -  apply - the application-provided preconditioning routine
 
-   Calling sequence of apply:
+   Calling sequence of `apply`:
 .vb
-   PetscErrorCode apply (PC pc,Vec xin,Vec xout)
+   PetscErrorCode apply(PC pc, Vec xin, Vec xout)
 .ve
-
-+  pc - the preconditioner, get the application context with PCShellGetContext()
++  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  xin - input vector
 -  xout - output vector
-
-   Note:
-    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: intermediate
 
@@ -550,17 +533,13 @@ PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec))
 +  pc - the preconditioner context
 -  apply - the application-provided preconditioning routine
 
-   Calling sequence of apply:
+   Calling sequence of `apply`:
 .vb
-   PetscErrorCode apply (PC pc,Mat Xin,Mat Xout)
+   PetscErrorCode apply(PC pc, Mat Xin, Mat Xout)
 .ve
-
-+  pc - the preconditioner, get the application context with PCShellGetContext()
++  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  Xin - input block of vectors
 -  Xout - output block of vectors
-
-   Note:
-   The function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -583,17 +562,13 @@ PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC, Mat, Mat
 +  pc - the preconditioner context
 -  apply - the application-provided left preconditioning routine
 
-   Calling sequence of apply:
+   Calling sequence of `apply`:
 .vb
-   PetscErrorCode apply (PC pc,Vec xin,Vec xout)
+   PetscErrorCode apply(PC pc, Vec xin, Vec xout)
 .ve
-
 +  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  xin - input vector
 -  xout - output vector
-
-   Note:
-  The function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -616,17 +591,13 @@ PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC, V
 +  pc - the preconditioner context
 -  apply - the application-provided right preconditioning routine
 
-   Calling sequence of apply:
+   Calling sequence of `apply`:
 .vb
-   PetscErrorCode apply (PC pc,Vec xin,Vec xout)
+   PetscErrorCode apply(PC pc, Vec xin, Vec xout)
 .ve
-
 +  pc - the preconditioner, get the application context with PCShellGetContext()
 .  xin - input vector
 -  xout - output vector
-
-   Note:
-   The function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -649,17 +620,13 @@ PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC, 
 +  pc - the preconditioner context
 -  applyBA - the application-provided BA routine
 
-   Calling sequence of applyBA:
+   Calling sequence of `applyBA`:
 .vb
-   PetscErrorCode applyBA (PC pc,Vec xin,Vec xout)
+   PetscErrorCode applyBA(PC pc, Vec xin, Vec xout)
 .ve
-
-+  pc - the preconditioner, get the application context with PCShellGetContext()
++  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  xin - input vector
 -  xout - output vector
-
-   Note:
-   The function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: intermediate
 
@@ -680,19 +647,15 @@ PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC, PCSide, Ve
 
    Input Parameters:
 +  pc - the preconditioner context
--  apply - the application-provided preconditioning transpose routine
+-  applytranspose - the application-provided preconditioning transpose routine
 
-   Calling sequence of apply:
+   Calling sequence of `applytranspose`:
 .vb
-   PetscErrorCode applytranspose (PC pc,Vec xin,Vec xout)
+   PetscErrorCode applytranspose(PC pc, Vec xin, Vec xout)
 .ve
-
-+  pc - the preconditioner, get the application context with PCShellGetContext()
++  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  xin - input vector
 -  xout - output vector
-
-   Note:
-    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: intermediate
 
@@ -720,17 +683,13 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(
 +  pc - the preconditioner context
 -  presolve - the application-provided presolve routine
 
-   Calling sequence of presolve:
+   Calling sequence of `presolve`:
 .vb
-   PetscErrorCode presolve (PC,KSP ksp,Vec b,Vec x)
+   PetscErrorCode presolve(PC pc, KSP ksp, Vec b, Vec x)
 .ve
-
-+  pc - the preconditioner, get the application context with PCShellGetContext()
++  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  xin - input vector
 -  xout - output vector
-
-   Note:
-   The function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -755,17 +714,13 @@ PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP, Vec
 +  pc - the preconditioner context
 -  postsolve - the application-provided presolve routine
 
-   Calling sequence of postsolve:
+   Calling sequence of `postsolve`:
 .vb
-   PetscErrorCode postsolve(PC,KSP ksp,Vec b,Vec x)
+   PetscErrorCode postsolve(PC pc, KSP ksp, Vec b, Vec x)
 .ve
-
 +  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  xin - input vector
 -  xout - output vector
-
-   Note:
-    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -836,12 +791,11 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
 +  pc - the preconditioner context
 -  apply - the application-provided preconditioning routine
 
-   Calling sequence of apply:
+   Calling sequence of `apply`:
 .vb
-   PetscErrorCode apply (PC pc,Vec b,Vec x,Vec r,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
+   PetscErrorCode apply(PC pc, Vec b, Vec x, Vec r, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits)
 .ve
-
-+  pc - the preconditioner, get the application context with PCShellGetContext()
++  pc - the preconditioner, get the application context with `PCShellGetContext()`
 .  b - right-hand-side
 .  x - current iterate
 .  r - work space
@@ -849,9 +803,6 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
 .  abstol - absolute tolerance of residual norm to stop at
 .  dtol - if residual norm increases by this factor than return
 -  maxits - number of iterations to run
-
-   Note:
-    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 

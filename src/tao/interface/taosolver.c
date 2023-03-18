@@ -1383,10 +1383,10 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 + tao - The tao solver context
 - func - The function
 
-  Calling sequence of func:
-$ func (Tao tao, PetscInt step);
-
-. step - The current step of the iteration
+  Calling sequence of `func`:
+$   PetscErrorCode func(Tao tao, PetscInt step);
++ tao - the optimizer context
+- step - The current step of the iteration
 
   Level: advanced
 
@@ -1414,9 +1414,8 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void 
 - ctx - [optional] context for private data for the convergence routine
         (may be `NULL`)
 
-  Calling sequence of conv:
+  Calling sequence of `conv`:
 $   PetscErrorCode conv(Tao tao, void *ctx)
-
 + tao - the `Tao` object
 - ctx - [optional] convergence context
 
@@ -1449,11 +1448,10 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 -  mctx - [optional] user-defined context for private data for the
           monitor routine (may be `NULL`)
 
-   Calling sequence of mymonitor:
+   Calling sequence of `mymonitor`:
 .vb
-     PetscErrorCode mymonitor(Tao tao,void *mctx)
+     PetscErrorCode mymonitor(Tao tao, void *mctx)
 .ve
-
 +    tao - the `Tao` solver context
 -    mctx - [optional] monitoring context
 
@@ -2134,7 +2132,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
    Synopsis:
    TaoRegister(char *name_solver,char *path,char *name_Create,PetscErrorCode (*routine_Create)(Tao))
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  sname - name of a new user-defined solver
@@ -2279,7 +2277,7 @@ PetscErrorCode TaoSetIterationNumber(Tao tao, PetscInt iter)
 
    Level: intermediate
 
-   Notes:
+   Note:
    The total iteration count is updated after each solve, if there is a current
    `TaoSolve()` in progress then those iterations are not included in the count
 

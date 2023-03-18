@@ -17,11 +17,11 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
   Collective
 
   Input Parameter:
-. ce - The PetscConvEst object
+. ce - The `PetscConvEst` object
 
   Level: beginner
 
-.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
+.seealso: `PetscConvEst`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 {
@@ -39,16 +39,16 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 }
 
 /*@
-  PetscConvEstSetFromOptions - Sets a PetscConvEst object from options
+  PetscConvEstSetFromOptions - Sets a `PetscConvEst` object based on values in the options database
 
   Collective
 
   Input Parameters:
-. ce - The PetscConvEst object
+. ce - The `PetscConvEst` object
 
   Level: beginner
 
-.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
+.seealso: `PetscConvEst`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 {
@@ -63,17 +63,17 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 }
 
 /*@
-  PetscConvEstView - Views a PetscConvEst object
+  PetscConvEstView - Views a `PetscConvEst` object
 
   Collective
 
   Input Parameters:
-+ ce     - The PetscConvEst object
-- viewer - The PetscViewer object
++ ce     - The `PetscConvEst` object
+- viewer - The `PetscViewer` object
 
   Level: beginner
 
-.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
+.seealso: `PetscConvEst`, `PetscViewer`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 {
@@ -86,17 +86,17 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 /*@
   PetscConvEstGetSolver - Gets the solver used to produce discrete solutions
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. ce     - The PetscConvEst object
+. ce     - The `PetscConvEst` object
 
   Output Parameter:
 . solver - The solver
 
   Level: intermediate
 
-.seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
+.seealso: `PetscConvEst`, `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
 {
@@ -110,17 +110,18 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
 /*@
   PetscConvEstSetSolver - Sets the solver used to produce discrete solutions
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ ce     - The PetscConvEst object
++ ce     - The `PetscConvEst` object
 - solver - The solver
 
   Level: intermediate
 
-  Note: The solver MUST have an attached DM/DS, so that we know the exact solution
+  Note:
+  The solver MUST have an attached `DM`/`DS`, so that we know the exact solution
 
-.seealso: `PetscConvEstGetSNES()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
+.seealso: `PetscConvEst`, `PetscConvEstGetSNES()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 {
@@ -133,16 +134,16 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 }
 
 /*@
-  PetscConvEstSetUp - After the solver is specified, we create structures for estimating convergence
+  PetscConvEstSetUp - After the solver is specified, create structures for estimating convergence
 
   Collective
 
   Input Parameters:
-. ce - The PetscConvEst object
+. ce - The `PetscConvEst` object
 
   Level: beginner
 
-.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
+.seealso: `PetscConvEst`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
 {
@@ -432,7 +433,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
 /*@
   PetscConvEstGetConvRate - Returns an estimate of the convergence rate for the discretization
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . ce   - The `PetscConvEst` object
@@ -440,9 +441,11 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   Output Parameter:
 . alpha - The convergence rate for each field
 
-  Options database keys:
+  Options Database Keys:
 + -snes_convergence_estimate - Execute convergence estimation inside `SNESSolve()` and print out the rate
 - -ts_convergence_estimate - Execute convergence estimation inside `TSSolve()` and print out the rate
+
+  Level: intermediate
 
   Notes:
   The convergence rate alpha is defined by
@@ -451,9 +454,7 @@ $ || u_\Delta - u_exact || < C \Delta^alpha
   spatial resolution and \Delta t for the temporal resolution.
 
   We solve a series of problems using increasing resolution (refined meshes or decreased timesteps), calculate an error
-  based upon the exact solution in the DS, and then fit the result to our model above using linear regression.
-
-  Level: intermediate
+  based upon the exact solution in the `PetscDS`, and then fit the result to our model above using linear regression.
 
 .seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`, `SNESSolve()`, `TSSolve()`
 @*/
@@ -478,7 +479,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 .  alpha - the convergence rate for each field
 -  viewer - the viewer to display the reason
 
-   Options Database Keys:
+   Options Database Key:
 .  -snes_convergence_estimate - print the convergence rate
 
    Level: developer

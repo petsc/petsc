@@ -18,7 +18,7 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 
    Input Parameters:
 +  pc - the preconditioning context
--  use - whether or not pcis use matrix diagonal to build partition of unity.
+-  use - whether or not it should use matrix diagonal to build partition of unity.
 
    Level: intermediate
 
@@ -100,7 +100,7 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
 /*@
  PCISSetSubdomainScalingFactor - Set scaling factor for `PCIS`.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  pc - the preconditioning context

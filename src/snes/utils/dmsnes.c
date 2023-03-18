@@ -626,7 +626,7 @@ PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM dm)
 .  dm - `DM` to be used with `SNES`
 
    Output Parameters:
-+  J - Jacobian evaluation function; see `SNESJacobianFunction` for all calling sequence
++  J - Jacobian evaluation function; for all calling sequence see `SNESJacobianFunction`
 -  ctx - context for residual evaluation
 
    Level: advanced

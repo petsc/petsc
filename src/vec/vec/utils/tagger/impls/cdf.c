@@ -419,7 +419,7 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger, PetscOptionI
 /*@C
   VecTaggerCDFSetMethod - Set the method used to compute absolute boxes from CDF boxes
 
-  Logically Collective on tagger
+  Logically Collective
 
   Level: advanced
 
@@ -443,15 +443,15 @@ PetscErrorCode VecTaggerCDFSetMethod(VecTagger tagger, VecTaggerCDFMethod method
 /*@C
   VecTaggerCDFGetMethod - Get the method used to compute absolute boxes from CDF boxes
 
-  Logically Collective on tagger
+  Logically Collective
 
-  Level: advanced
-
-  Input Parameters:
+  Input Parameter:
 . tagger - the `VecTagger` context
 
-  Output Parameters:
+  Output Parameter:
 . method - the method
+
+  Level: advanced
 
 .seealso: `Vec`, `VecTagger`, `VecTaggerCDFMethod`
 @*/
@@ -469,7 +469,7 @@ PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *metho
 /*@C
   VecTaggerCDFIterativeSetTolerances - Set the tolerances for iterative computation of absolute boxes from CDF boxes.
 
-  Logically Collective on VecTagger
+  Logically Collective
 
   Input Parameters:
 + tagger - the VecTagger context
@@ -479,7 +479,7 @@ PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *metho
 
   Level: advanced
 
-.seealso: `VecTaggerCDFSetMethod()`
+.seealso: `VecTagger`, `VecTaggerCDFSetMethod()`
 @*/
 PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt maxit, PetscReal rtol, PetscReal atol)
 {
@@ -499,7 +499,7 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 /*@C
   VecTaggerCDFIterativeGetTolerances - Get the tolerances for iterative computation of absolute boxes from CDF boxes.
 
-  Logically Collective on VecTagger
+  Logically Collective
 
   Input Parameter:
 . tagger - the VecTagger context
@@ -511,7 +511,7 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 
   Level: advanced
 
-.seealso: `VecTaggerCDFSetMethod()`
+.seealso: `VecTagger`, `VecTaggerCDFSetMethod()`
 @*/
 PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *maxit, PetscReal *rtol, PetscReal *atol)
 {
@@ -531,12 +531,12 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
   Logically Collective
 
   Input Parameters:
-+ tagger - the VecTagger context
-- boxes - a blocksize array of VecTaggerBox boxes
++ tagger - the `VecTagger` context
+- boxes - a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 
-.seealso: `VecTaggerCDFGetBox()`
+.seealso: `VecTagger`, `VecTaggerCDFGetBox()`, `VecTaggerBox`
 @*/
 PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox *box)
 {
@@ -551,14 +551,14 @@ PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox *box)
   Logically Collective
 
   Input Parameter:
-. tagger - the VecTagger context
+. tagger - the `VecTagger` context
 
   Output Parameter:
-. boxes - a blocksize array of VecTaggerBox boxes
+. boxes - a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 
-.seealso: `VecTaggerCDFSetBox()`
+.seealso: `VecTagger`, `VecTaggerCDFSetBox()`, `VecTaggerBox`
 @*/
 PetscErrorCode VecTaggerCDFGetBox(VecTagger tagger, const VecTaggerBox **box)
 {

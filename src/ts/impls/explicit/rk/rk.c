@@ -1242,7 +1242,7 @@ static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer)
 /*@
   TSRKGetOrder - Get the order of the `TSRK` scheme
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 .  ts - timestepping context
@@ -1266,7 +1266,7 @@ PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
 /*@C
   TSRKSetType - Set the type of the `TSRK` scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -1291,7 +1291,7 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
 /*@C
   TSRKGetType - Get the type of `TSRK` scheme
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 .  ts - timestepping context
@@ -1421,7 +1421,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
 /*@C
   TSRKSetMultirate - Use the interpolation-based multirate `TSRK` method
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -1447,7 +1447,7 @@ PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
 /*@C
   TSRKGetMultirate - Gets whether to use the interpolation-based multirate `TSRK` method
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 .  ts - timestepping context

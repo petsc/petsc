@@ -10,7 +10,8 @@ static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 }
 
 /*
-  SNESCorrectDiscretePressure_Private - Add a vector in the nullspace to make the continuum integral of the pressure field equal to zero. This is normally used only to evaluate convergence rates for the pressure accurately.
+  SNESCorrectDiscretePressure_Private - Add a vector in the nullspace to make the continuum integral of the pressure field equal to zero.
+  This is normally used only to evaluate convergence rates for the pressure accurately.
 
   Collective
 
@@ -81,16 +82,16 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
    Output Parameter:
 .  reason  - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FNORM_NAN`
 
+   Options Database Key:
+.  -snes_convergence_test correct_pressure - see `SNESSetFromOptions()`
+
+   Level: advanced
+
    Notes:
    In order to use this convergence test, you must set up several PETSc structures. First fields must be added to the `DM`, and a `PetscDS`
    must be created with discretizations of those fields. We currently assume that the pressure field has index 1.
    The pressure field must have a nullspace, likely created using the `DMSetNullSpaceConstructor()` interface.
    Last we must be able to integrate the pressure over the domain, so the `DM` attached to the SNES `must` be a `DMPLEX` at this time.
-
-   Options Database Key:
-.  -snes_convergence_test correct_pressure - see `SNESSetFromOptions()`
-
-   Level: advanced
 
 .seealso: `SNES`, `DM`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `DMSetNullSpaceConstructor()`, `DMSetNullSpaceConstructor()`
 @*/
@@ -189,7 +190,7 @@ PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 /*@C
   DMInterpolationSetDim - Sets the spatial dimension for the interpolation context
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + ctx - the context
@@ -210,7 +211,7 @@ PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 /*@C
   DMInterpolationGetDim - Gets the spatial dimension for the interpolation context
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . ctx - the context
@@ -233,7 +234,7 @@ PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 /*@C
   DMInterpolationSetDof - Sets the number of fields interpolated at a point for the interpolation context
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + ctx - the context
@@ -254,7 +255,7 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 /*@C
   DMInterpolationGetDof - Gets the number of fields interpolated at a point for the interpolation context
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . ctx - the context
@@ -277,7 +278,7 @@ PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 /*@C
   DMInterpolationAddPoints - Add points at which we will interpolate the fields
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + ctx    - the context
@@ -441,11 +442,11 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   Output Parameter:
 . coordinates  - the coordinates of interpolation points
 
+  Level: intermediate
+
   Note:
   The local vector entries correspond to interpolation points lying on this process, according to the associated `DM`.
   This is a borrowed vector that the user should not destroy.
-
-  Level: intermediate
 
 .seealso: `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/

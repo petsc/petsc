@@ -1138,7 +1138,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
 /*@C
   TSMPRKSetType - Set the type of `TSMPRK` scheme
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -1163,7 +1163,7 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 /*@C
   TSMPRKGetType - Get the type of `TSMPRK` scheme
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 .  ts - timestepping context

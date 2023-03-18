@@ -276,7 +276,7 @@ struct _n_PetscLayout {
 /*@C
      PetscLayoutFindOwner - Find the owning rank for a global index
 
-    Not Collective
+    Not Collective; No Fortran Support
 
    Input Parameters:
 +    map - the layout
@@ -286,9 +286,6 @@ struct _n_PetscLayout {
 .    owner - the owning rank
 
    Level: developer
-
-    Fortran Note:
-      Not available from Fortran
 
 .seealso: `PetscLayoutFindOwnerIndex()`
 @*/
@@ -315,7 +312,7 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 /*@C
      PetscLayoutFindOwnerIndex - Find the owning rank and the local index for a global index
 
-    Not Collective
+    Not Collective; No Fortran Support
 
    Input Parameters:
 +    map   - the layout
@@ -326,9 +323,6 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 -    lidx  - local index used by the owner for idx
 
    Level: developer
-
-    Fortran Note:
-      Not available from Fortran
 
 .seealso: `PetscLayoutFindOwner()`
 

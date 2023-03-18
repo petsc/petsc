@@ -110,7 +110,7 @@ PetscErrorCode TSAdaptInitializePackage(void)
 /*@C
   TSAdaptSetType - sets the approach used for the error adapter
 
-  Logicially Collective onadapt
+  Logicially Collective
 
   Input Parameters:
 + adapt - the `TS` adapter, most likely obtained with `TSGetAdapt()`
@@ -547,7 +547,7 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
 /*@
    TSAdaptSetScaleSolveFailed - Scale step size by this factor if solve fails
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -598,7 +598,7 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
 /*@
    TSAdaptSetStepLimits - Set the minimum and maximum step sizes to be considered by the time step controller
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - time step adaptivity context, usually gotten with `TSGetAdapt()`
@@ -743,7 +743,7 @@ PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptio
 /*@
    TSAdaptCandidatesClear - clear any previously set candidate schemes
 
-   Logically collective
+   Logically Collective
 
    Input Parameter:
 .  adapt - adaptive controller
@@ -763,7 +763,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 /*@C
    TSAdaptCandidateAdd - add a candidate scheme for the adaptive controller to select from
 
-   Logically collective
+   Logically Collective; No Fortran Support
 
    Input Parameters:
 +  adapt - time step adaptivity context, obtained with `TSGetAdapt()` or `TSAdaptCreate()`
@@ -775,9 +775,6 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 -  inuse - indicates that this scheme is the one currently in use, this flag can only be set for one scheme
 
    Level: developer
-
-   Fortran Note:
-   This routine is not available in Fortran.
 
 .seealso: [](chapter_ts), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptChoose()`
 @*/

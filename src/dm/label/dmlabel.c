@@ -8,24 +8,24 @@ PetscFunctionList DMLabelList              = NULL;
 PetscBool         DMLabelRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-  DMLabelCreate - Create a DMLabel object, which is a multimap
+  DMLabelCreate - Create a `DMLabel` object, which is a multimap
 
   Collective
 
   Input parameters:
-+ comm - The communicator, usually PETSC_COMM_SELF
++ comm - The communicator, usually `PETSC_COMM_SELF`
 - name - The label name
 
   Output parameter:
-. label - The DMLabel
+. label - The `DMLabel`
 
   Level: beginner
 
   Notes:
-  The label name is actually usual PetscObject name.
-  One can get/set it with PetscObjectGetName()/PetscObjectSetName().
+  The label name is actually usually the `PetscObject` name.
+  One can get/set it with `PetscObjectGetName()`/`PetscObjectSetName()`.
 
-.seealso: `DMLabelDestroy()`
+.seealso: `DMLabel`, `DM`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
 {
@@ -61,7 +61,7 @@ PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelSetUp(DMLabel label)
 {
@@ -77,15 +77,15 @@ PetscErrorCode DMLabelSetUp(DMLabel label)
   Not collective
 
   Input parameter:
-+ label - The DMLabel
++ label - The `DMLabel`
 - v - The stratum value
 
   Output parameter:
-. label - The DMLabel with stratum in sorted list format
+. label - The `DMLabel` with stratum in sorted list format
 
   Level: developer
 
-.seealso: `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`
 */
 static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 {
@@ -123,17 +123,17 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 /*
   DMLabelMakeAllValid_Private - Transfer all strata from the hash format to the sorted list format
 
-  Not collective
+  Not Collective
 
   Input parameter:
-. label - The DMLabel
+. label - The `DMLabel`
 
   Output parameter:
-. label - The DMLabel with all strata in sorted list format
+. label - The `DMLabel` with all strata in sorted list format
 
   Level: developer
 
-.seealso: `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`
 */
 static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 {
@@ -147,18 +147,18 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 /*
   DMLabelMakeInvalid_Private - Transfer stratum data from the sorted list format to the hash format
 
-  Not collective
+  Not Collective
 
   Input parameter:
-+ label - The DMLabel
++ label - The `DMLabel`
 - v - The stratum value
 
   Output parameter:
-. label - The DMLabel with stratum in hash format
+. label - The `DMLabel` with stratum in hash format
 
   Level: developer
 
-.seealso: `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`
 */
 static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 {
@@ -304,15 +304,15 @@ PetscErrorCode DMLabelGetStratumSize_Private(DMLabel label, PetscInt v, PetscInt
 }
 
 /*@
-  DMLabelAddStratum - Adds a new stratum value in a DMLabel
+  DMLabelAddStratum - Adds a new stratum value in a `DMLabel`
 
   Input Parameters:
-+ label - The DMLabel
++ label - The `DMLabel`
 - value - The stratum value
 
   Level: beginner
 
-.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 {
@@ -326,18 +326,18 @@ PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 }
 
 /*@
-  DMLabelAddStrata - Adds new stratum values in a DMLabel
+  DMLabelAddStrata - Adds new stratum values in a `DMLabel`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - The DMLabel
++ label - The `DMLabel`
 . numStrata - The number of stratum values
 - stratumValues - The stratum values
 
   Level: beginner
 
-.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscInt stratumValues[])
 {
@@ -388,17 +388,17 @@ PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscIn
 }
 
 /*@
-  DMLabelAddStrataIS - Adds new stratum values in a DMLabel
+  DMLabelAddStrataIS - Adds new stratum values in a `DMLabel`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - The DMLabel
++ label - The `DMLabel`
 - valueIS - Index set with stratum values
 
   Level: beginner
 
-.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelAddStrataIS(DMLabel label, IS valueIS)
 {
@@ -457,15 +457,15 @@ PetscErrorCode DMLabelView_Concrete(DMLabel label, PetscViewer viewer)
 /*@C
   DMLabelView - View the label
 
-  Collective on viewer
+  Collective
 
   Input Parameters:
-+ label - The DMLabel
-- viewer - The PetscViewer
++ label - The `DMLabel`
+- viewer - The `PetscViewer`
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
+.seealso: `DMLabel`, `PetscViewer`, `DM`, `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 {
@@ -479,16 +479,16 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 }
 
 /*@
-  DMLabelReset - Destroys internal data structures in a DMLabel
+  DMLabelReset - Destroys internal data structures in a `DMLabel`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - The DMLabel
+. label - The `DMLabel`
 
   Level: beginner
 
-.seealso: `DMLabelDestroy()`, `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelDestroy()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelReset(DMLabel label)
 {
@@ -519,16 +519,16 @@ PetscErrorCode DMLabelReset(DMLabel label)
 }
 
 /*@
-  DMLabelDestroy - Destroys a DMLabel
+  DMLabelDestroy - Destroys a `DMLabel`
 
-  Collective on label
+  Collective
 
   Input Parameter:
-. label - The DMLabel
+. label - The `DMLabel`
 
   Level: beginner
 
-.seealso: `DMLabelReset()`, `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelReset()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelDestroy(DMLabel *label)
 {
@@ -559,19 +559,19 @@ PetscErrorCode DMLabelDuplicate_Concrete(DMLabel label, DMLabel *labelnew)
 }
 
 /*@
-  DMLabelDuplicate - Duplicates a DMLabel
+  DMLabelDuplicate - Duplicates a `DMLabel`
 
-  Collective on label
+  Collective
 
   Input Parameter:
-. label - The DMLabel
+. label - The `DMLabel`
 
   Output Parameter:
-. labelnew - location to put new vector
+. labelnew - new label
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 {
@@ -603,14 +603,14 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 }
 
 /*@C
-  DMLabelCompare - Compare two DMLabel objects
+  DMLabelCompare - Compare two `DMLabel` objects
 
-  Collective on comm
+  Collective; No Fortran Support
 
   Input Parameters:
 + comm - Comm over which to compare labels
-. l0 - First DMLabel
-- l1 - Second DMLabel
+. l0 - First `DMLabel`
+- l1 - Second `DMLabel`
 
   Output Parameters
 + equal   - (Optional) Flag whether the two labels are equal
@@ -620,22 +620,19 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 
   Notes:
   The output flag equal is the same on all processes.
-  If it is passed as NULL and difference is found, an error is thrown on all processes.
-  Make sure to pass NULL on all processes.
+  If it is passed as `NULL` and difference is found, an error is thrown on all processes.
+  Make sure to pass `NULL` on all processes.
 
   The output message is set independently on each rank.
-  It is set to NULL if no difference was found on the current rank. It must be freed by user.
-  If message is passed as NULL and difference is found, the difference description is printed to stderr in synchronized manner.
-  Make sure to pass NULL on all processes.
+  It is set to `NULL` if no difference was found on the current rank. It must be freed by user.
+  If message is passed as `NULL` and difference is found, the difference description is printed to stderr in synchronized manner.
+  Make sure to pass `NULL` on all processes.
 
   For the comparison, we ignore the order of stratum values, and strata with no points.
 
-  The communicator needs to be specified because currently DMLabel can live on PETSC_COMM_SELF even if the underlying DM is parallel.
+  The communicator needs to be specified because currently `DMLabel` can live on `PETSC_COMM_SELF` even if the underlying `DM` is parallel.
 
-  Fortran Notes:
-  This function is currently not available from Fortran.
-
-.seealso: `DMCompareLabels()`, `DMLabelGetNumValues()`, `DMLabelGetDefaultValue()`, `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelGetStratumIS()`
+.seealso: `DMLabel`, `DM`, `DMCompareLabels()`, `DMLabelGetNumValues()`, `DMLabelGetDefaultValue()`, `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelGetStratumIS()`
 @*/
 PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *equal, char **message)
 {
@@ -715,14 +712,14 @@ finish:
 /*@
   DMLabelComputeIndex - Create an index structure for membership determination, automatically determining the bounds
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label  - The DMLabel
+. label  - The `DMLabel`
 
   Level: intermediate
 
-.seealso: `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelDestroyIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelDestroyIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelComputeIndex(DMLabel label)
 {
@@ -753,16 +750,16 @@ PetscErrorCode DMLabelComputeIndex(DMLabel label)
 /*@
   DMLabelCreateIndex - Create an index structure for membership determination
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label  - The DMLabel
++ label  - The `DMLabel`
 . pStart - The smallest point
 - pEnd   - The largest point + 1
 
   Level: intermediate
 
-.seealso: `DMLabelHasPoint()`, `DMLabelComputeIndex()`, `DMLabelDestroyIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelHasPoint()`, `DMLabelComputeIndex()`, `DMLabelDestroyIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
 {
@@ -798,14 +795,14 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
 /*@
   DMLabelDestroyIndex - Destroy the index structure
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Level: intermediate
 
-.seealso: `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelDestroyIndex(DMLabel label)
 {
@@ -820,20 +817,21 @@ PetscErrorCode DMLabelDestroyIndex(DMLabel label)
 /*@
   DMLabelGetBounds - Return the smallest and largest point in the label
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Output Parameters:
 + pStart - The smallest point
 - pEnd   - The largest point + 1
 
-  Note: This will compute an index for the label if one does not exist.
-
   Level: intermediate
 
-.seealso: `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+  Note:
+  This will compute an index for the label if one does not exist.
+
+.seealso: `DMLabel`, `DM`, `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
 {
@@ -854,10 +852,10 @@ PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
 /*@
   DMLabelHasValue - Determine whether a label assigns the value to any point
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - value - the value
 
   Output Parameter:
@@ -865,7 +863,7 @@ PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
 
   Level: developer
 
-.seealso: `DMLabelHasPoint()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelHasPoint()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contains)
 {
@@ -882,20 +880,21 @@ PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contain
 /*@
   DMLabelHasPoint - Determine whether a label assigns a value to a point
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - point - the point
 
   Output Parameter:
 . contains - Flag indicating whether the label maps this point to a value
 
-  Note: The user must call DMLabelCreateIndex() before this function.
-
   Level: developer
 
-.seealso: `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+  Note:
+  The user must call `DMLabelCreateIndex()` before this function.
+
+.seealso: `DMLabel`, `DM`, `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contains)
 {
@@ -914,10 +913,10 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 /*@
   DMLabelStratumHasPoint - Return true if the stratum contains a point
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 . value - the stratum value
 - point - the point
 
@@ -926,7 +925,7 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt point, PetscBool *contains)
 {
@@ -962,20 +961,20 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
 }
 
 /*@
-  DMLabelGetDefaultValue - Get the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
+  DMLabelGetDefaultValue - Get the default value returned by `DMLabelGetValue()` if a point has not been explicitly given a value.
   When a label is created, it is initialized to -1.
 
-  Not collective
+  Not Collective
 
   Input parameter:
-. label - a DMLabel object
+. label - a `DMLabel` object
 
   Output parameter:
 . defaultValue - the default value
 
   Level: beginner
 
-.seealso: `DMLabelSetDefaultValue()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelSetDefaultValue()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
 {
@@ -986,20 +985,20 @@ PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
 }
 
 /*@
-  DMLabelSetDefaultValue - Set the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
+  DMLabelSetDefaultValue - Set the default value returned by `DMLabelGetValue()` if a point has not been explicitly given a value.
   When a label is created, it is initialized to -1.
 
-  Not collective
+  Not Collective
 
   Input parameter:
-. label - a DMLabel object
+. label - a `DMLabel` object
 
   Output parameter:
 . defaultValue - the default value
 
   Level: beginner
 
-.seealso: `DMLabelGetDefaultValue()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelGetDefaultValue()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
 {
@@ -1010,22 +1009,25 @@ PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
 }
 
 /*@
-  DMLabelGetValue - Return the value a label assigns to a point, or the label's default value (which is initially -1, and can be changed with DMLabelSetDefaultValue())
+  DMLabelGetValue - Return the value a label assigns to a point, or the label's default value (which is initially -1, and can be changed with
+                    `DMLabelSetDefaultValue()`)
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - point - the point
 
   Output Parameter:
 . value - The point value, or the default value (-1 by default)
 
-  Note: a label may assign multiple values to a point.  No guarantees are made about which value is returned in that case.  Use `DMLabelStratumHasPoint()` to check for inclusion in a specific value stratum.
-
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelSetValue()`, `DMLabelClearValue()`, `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`
+  Note:
+  A label may assign multiple values to a point.  No guarantees are made about which value is returned in that case.
+  Use `DMLabelStratumHasPoint()` to check for inclusion in a specific value stratum.
+
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelSetValue()`, `DMLabelClearValue()`, `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`
 @*/
 PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 {
@@ -1061,18 +1063,19 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 }
 
 /*@
-  DMLabelSetValue - Set the value a label assigns to a point.  If the value is the same as the label's default value (which is initially -1, and can be changed with DMLabelSetDefaultValue() to something different), then this function will do nothing.
+  DMLabelSetValue - Set the value a label assigns to a point.  If the value is the same as the label's default value (which is initially -1, and can
+  be changed with `DMLabelSetDefaultValue()` to something different), then this function will do nothing.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 . point - the point
 - value - The point value
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelClearValue()`, `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelClearValue()`, `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`
 @*/
 PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 {
@@ -1093,16 +1096,16 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 /*@
   DMLabelClearValue - Clear the value a label assigns to a point
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 . point - the point
 - value - The point value
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 {
@@ -1127,18 +1130,18 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 }
 
 /*@
-  DMLabelInsertIS - Set all points in the IS to a value
+  DMLabelInsertIS - Set all points in the `IS` to a value
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 . is    - the point IS
 - value - The point value
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
 {
@@ -1162,19 +1165,19 @@ PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
 }
 
 /*@
-  DMLabelGetNumValues - Get the number of values that the DMLabel takes
+  DMLabelGetNumValues - Get the number of values that the `DMLabel` takes
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Output Parameter:
 . numValues - the number of values
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 {
@@ -1186,24 +1189,24 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 }
 
 /*@
-  DMLabelGetValueIS - Get an IS of all values that the DMlabel takes
+  DMLabelGetValueIS - Get an `IS` of all values that the `DMlabel` takes
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Output Parameter:
-. is    - the value IS
+. is    - the value `IS`
 
   Level: intermediate
 
   Notes:
-  The output IS should be destroyed when no longer needed.
-  Strata which are allocated but empty [DMLabelGetStratumSize() yields 0] are counted.
-  If you need to count only nonempty strata, use DMLabelGetNonEmptyStratumValuesIS().
+  The output `IS` should be destroyed when no longer needed.
+  Strata which are allocated but empty [`DMLabelGetStratumSize()` yields 0] are counted.
+  If you need to count only nonempty strata, use `DMLabelGetNonEmptyStratumValuesIS()`.
 
-.seealso: `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 {
@@ -1215,23 +1218,23 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 }
 
 /*@
-  DMLabelGetNonEmptyStratumValuesIS - Get an IS of all values that the DMlabel takes
+  DMLabelGetNonEmptyStratumValuesIS - Get an `IS` of all values that the `DMlabel` takes
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Output Parameter:
-. is    - the value IS
+. is    - the value `IS`
 
   Level: intermediate
 
   Notes:
-  The output IS should be destroyed when no longer needed.
-  This is similar to DMLabelGetValueIS() but counts only nonempty strata.
+  The output `IS` should be destroyed when no longer needed.
+  This is similar to `DMLabelGetValueIS()` but counts only nonempty strata.
 
-.seealso: `DMLabelGetValueIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelGetValueIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
 {
@@ -1258,12 +1261,12 @@ PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
 }
 
 /*@
-  DMLabelGetValueIndex - Get the index of a given value in the list of values for the DMlabel, or -1 if it is not present
+  DMLabelGetValueIndex - Get the index of a given value in the list of values for the `DMlabel`, or -1 if it is not present
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - value - the value
 
   Output Parameter:
@@ -1271,7 +1274,7 @@ PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
 
   Level: intermediate
 
-.seealso: `DMLabelGetValueIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelGetValueIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *index)
 {
@@ -1291,10 +1294,10 @@ PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *ind
 /*@
   DMLabelHasStratum - Determine whether points exist with the given value
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - value - the stratum value
 
   Output Parameter:
@@ -1302,7 +1305,7 @@ PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *ind
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
 {
@@ -1319,10 +1322,10 @@ PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exist
 /*@
   DMLabelGetStratumSize - Get the size of a stratum
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - value - the stratum value
 
   Output Parameter:
@@ -1330,7 +1333,7 @@ PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exist
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *size)
 {
@@ -1347,10 +1350,10 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
 /*@
   DMLabelGetStratumBounds - Get the largest and smallest point of a stratum
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - value - the stratum value
 
   Output Parameters:
@@ -1359,7 +1362,7 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *start, PetscInt *end)
 {
@@ -1397,12 +1400,12 @@ PetscErrorCode DMLabelGetStratumIS_Concrete(DMLabel label, PetscInt v, IS *point
 }
 
 /*@
-  DMLabelGetStratumIS - Get an IS with the stratum points
+  DMLabelGetStratumIS - Get an `IS` with the stratum points
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - value - the stratum value
 
   Output Parameter:
@@ -1411,10 +1414,10 @@ PetscErrorCode DMLabelGetStratumIS_Concrete(DMLabel label, PetscInt v, IS *point
   Level: intermediate
 
   Notes:
-  The output IS should be destroyed when no longer needed.
-  Returns NULL if the stratum is empty.
+  The output `IS` should be destroyed when no longer needed.
+  Returns `NULL` if the stratum is empty.
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 {
@@ -1432,18 +1435,18 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 }
 
 /*@
-  DMLabelSetStratumIS - Set the stratum points using an IS
+  DMLabelSetStratumIS - Set the stratum points using an `IS`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 . value - the stratum value
 - points - The stratum points
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
 {
@@ -1480,15 +1483,15 @@ PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
 /*@
   DMLabelClearStratum - Remove a stratum
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - value - the stratum value
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 {
@@ -1527,19 +1530,20 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 /*@
   DMLabelSetStratumBounds - Efficiently give a contiguous set of points a given label value
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label  - The DMLabel
++ label  - The `DMLabel`
 . value  - The label value for all points
 . pStart - The first point
 - pEnd   - A point beyond all marked points
 
-  Note: The marks points are [pStart, pEnd), and only the bounds are stored.
-
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelSetStratumIS()`, `DMLabelGetStratumIS()`
+  Note:
+  The marks points are [`pStart`, `pEnd`), and only the bounds are stored.
+
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelSetStratumIS()`, `DMLabelGetStratumIS()`
 @*/
 PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt pStart, PetscInt pEnd)
 {
@@ -1555,10 +1559,10 @@ PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt p
 /*@
   DMLabelGetStratumPointIndex - Get the index of a point in a given stratum
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label  - The DMLabel
++ label  - The `DMLabel`
 . value  - The label value
 - p      - A point with this value
 
@@ -1567,7 +1571,7 @@ PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt p
 
   Level: intermediate
 
-.seealso: `DMLabelGetValueIndex()`, `DMLabelGetStratumIS()`, `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelGetValueIndex()`, `DMLabelGetStratumIS()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscInt p, PetscInt *index)
 {
@@ -1591,18 +1595,18 @@ PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscI
 }
 
 /*@
-  DMLabelFilter - Remove all points outside of [start, end)
+  DMLabelFilter - Remove all points outside of [`start`, `end`)
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 . start - the first point kept
 - end - one more than the last point kept
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
 {
@@ -1624,10 +1628,10 @@ PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
 /*@
   DMLabelPermute - Create a new label with permuted points
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - permutation - the point permutation
 
   Output Parameter:
@@ -1635,7 +1639,7 @@ PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 {
@@ -1745,12 +1749,12 @@ PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSectio
 }
 
 /*@
-  DMLabelDistribute - Create a new label pushed forward over the PetscSF
+  DMLabelDistribute - Create a new label pushed forward over the `PetscSF`
 
-  Collective on sf
+  Collective
 
   Input Parameters:
-+ label - the DMLabel
++ label - the `DMLabel`
 - sf    - the map from old to new distribution
 
   Output Parameter:
@@ -1758,7 +1762,7 @@ PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSectio
 
   Level: intermediate
 
-.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+.seealso: `DMLabel`, `DM`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
@@ -1862,20 +1866,21 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 /*@
   DMLabelGather - Gather all label values from leafs into roots
 
-  Collective on sf
+  Collective
 
   Input Parameters:
-+ label - the DMLabel
-- sf - the Star Forest point communication map
++ label - the `DMLabel`
+- sf - the `PetscSF` communication map
 
   Output Parameters:
-. labelNew - the new DMLabel with localised leaf values
+. labelNew - the new `DMLabel` with localised leaf values
 
   Level: developer
 
-  Note: This is the inverse operation to DMLabelDistribute.
+  Note:
+  This is the inverse operation to `DMLabelDistribute()`.
 
-.seealso: `DMLabelDistribute()`
+.seealso: `DMLabel`, `DM`, `DMLabelDistribute()`
 @*/
 PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
@@ -2019,15 +2024,15 @@ static PetscErrorCode DMLabelPropagateFini_Internal(DMLabel label, PetscSF point
 /*@
   DMLabelPropagateBegin - Setup a cycle of label propagation
 
-  Collective on sf
+  Collective
 
   Input Parameters:
-+ label - The DMLabel to propagate across processes
-- sf    - The SF describing parallel layout of the label points
++ label - The `DMLabel` to propagate across processes
+- sf    - The `PetscSF` describing parallel layout of the label points
 
   Level: intermediate
 
-.seealso: `DMLabelPropagateEnd()`, `DMLabelPropagatePush()`
+.seealso: `DMLabel`, `DM`, `DMLabelPropagateEnd()`, `DMLabelPropagatePush()`
 @*/
 PetscErrorCode DMLabelPropagateBegin(DMLabel label, PetscSF sf)
 {
@@ -2049,15 +2054,15 @@ PetscErrorCode DMLabelPropagateBegin(DMLabel label, PetscSF sf)
 /*@
   DMLabelPropagateEnd - Tear down a cycle of label propagation
 
-  Collective on sf
+  Collective
 
   Input Parameters:
-+ label - The DMLabel to propagate across processes
-- sf    - The SF describing parallel layout of the label points
++ label - The `DMLabel` to propagate across processes
+- sf    - The `PetscSF` describing parallel layout of the label points
 
   Level: intermediate
 
-.seealso: `DMLabelPropagateBegin()`, `DMLabelPropagatePush()`
+.seealso: `DMLabel`, `DM`, `DMLabelPropagateBegin()`, `DMLabelPropagatePush()`
 @*/
 PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 {
@@ -2071,25 +2076,24 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 /*@C
   DMLabelPropagatePush - Tear down a cycle of label propagation
 
-  Collective on sf
+  Collective
 
   Input Parameters:
-+ label     - The DMLabel to propagate across processes
-. sf        - The SF describing parallel layout of the label points
-. markPoint - An optional callback that is called when a point is marked, or NULL
-- ctx       - An optional user context for the callback, or NULL
++ label     - The `DMLabel` to propagate across processes
+. sf        - The `PetscSF` describing parallel layout of the label points
+. markPoint - An optional callback that is called when a point is marked, or `NULL`
+- ctx       - An optional user context for the callback, or `NULL`
 
-  Calling sequence of markPoint:
-$ markPoint(DMLabel label, PetscInt p, PetscInt val, void *ctx);
-
-+ label - The DMLabel
+  Calling sequence of `markPoint`:
+$ PetscErrorCode markPoint(DMLabel label, PetscInt p, PetscInt val, void *ctx);
++ label - The `DMLabel`
 . p     - The point being marked
-. val   - The label value for p
+. val   - The label value for `p`
 - ctx   - An optional user context
 
   Level: intermediate
 
-.seealso: `DMLabelPropagateBegin()`, `DMLabelPropagateEnd()`
+.seealso: `DMLabel`, `DM`, `DMLabelPropagateBegin()`, `DMLabelPropagateEnd()`
 @*/
 PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel, PetscInt, PetscInt, void *), void *ctx)
 {
@@ -2124,20 +2128,20 @@ PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCo
 }
 
 /*@
-  DMLabelConvertToSection - Make a PetscSection/IS pair that encodes the label
+  DMLabelConvertToSection - Make a `PetscSection`/`IS` pair that encodes the label
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. label - the DMLabel
+. label - the `DMLabel`
 
   Output Parameters:
 + section - the section giving offsets for each stratum
-- is - An IS containing all the label points
+- is - An `IS` containing all the label points
 
   Level: developer
 
-.seealso: `DMLabelDistribute()`
+.seealso: `DMLabel`, `DM`, `DMLabelDistribute()`
 @*/
 PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS *is)
 {
@@ -2218,7 +2222,7 @@ PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS 
 
   Level: advanced
 
-.seealso: `DMLabel`, `DMLabelType`, `DMLabelRegisterAll()`, `DMLabelRegisterDestroy()`
+.seealso: `DMLabel`, `DM`, `DMLabel`, `DMLabelType`, `DMLabelRegisterAll()`, `DMLabelRegisterDestroy()`
 @*/
 PetscErrorCode DMLabelRegister(const char name[], PetscErrorCode (*create_func)(DMLabel))
 {
@@ -2238,7 +2242,7 @@ PETSC_EXTERN PetscErrorCode DMLabelCreate_Ephemeral(DMLabel);
 
   Level: advanced
 
-.seealso: `DMRegisterAll()`, `DMLabelRegisterDestroy()`
+.seealso: `DMLabel`, `DM`, `DMRegisterAll()`, `DMLabelRegisterDestroy()`
 @*/
 PetscErrorCode DMLabelRegisterAll(void)
 {
@@ -2256,7 +2260,7 @@ PetscErrorCode DMLabelRegisterAll(void)
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: `DMLabel`, `DM`, `PetscInitialize()`
 @*/
 PetscErrorCode DMLabelRegisterDestroy(void)
 {
@@ -2269,21 +2273,18 @@ PetscErrorCode DMLabelRegisterDestroy(void)
 /*@C
   DMLabelSetType - Sets the particular implementation for a label.
 
-  Collective on tr
+  Collective
 
   Input Parameters:
 + label  - The label
 - method - The name of the label type
 
   Options Database Key:
-. -dm_label_type <type> - Sets the label type; use -help for a list of available types
-
-  Notes:
-  See "petsc/include/petscdmlabel.h" for available label types
+. -dm_label_type <type> - Sets the label type; use -help for a list of available types or see `DMLabelType`
 
   Level: intermediate
 
-.seealso: `DMLabelGetType()`, `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelGetType()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelSetType(DMLabel label, DMLabelType method)
 {
@@ -2312,14 +2313,14 @@ PetscErrorCode DMLabelSetType(DMLabel label, DMLabelType method)
   Not Collective
 
   Input Parameter:
-. label  - The DMLabel
+. label  - The `DMLabel`
 
   Output Parameter:
-. type - The DMLabel type name
+. type - The `DMLabel` type name
 
   Level: intermediate
 
-.seealso: `DMLabelSetType()`, `DMLabelCreate()`
+.seealso: `DMLabel`, `DM`, `DMLabelSetType()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelGetType(DMLabel label, DMLabelType *type)
 {
@@ -2351,25 +2352,26 @@ PETSC_EXTERN PetscErrorCode DMLabelCreate_Concrete(DMLabel label)
 
 /*@
   PetscSectionCreateGlobalSectionLabel - Create a section describing the global field layout using
-  the local section and an SF describing the section point overlap.
+  the local section and an `PetscSF` describing the section point overlap.
 
-  Collective on sf
+  Collective
 
   Input Parameters:
-+ s - The PetscSection for the local field layout
-. sf - The SF describing parallel layout of the section points
-. includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
++ s - The `PetscSection` for the local field layout
+. sf - The `PetscSF` describing parallel layout of the section points
+. includeConstraints - By default this is `PETSC_FALSE`, meaning that the global field vector will not possess constrained dofs
 . label - The label specifying the points
 - labelValue - The label stratum specifying the points
 
   Output Parameter:
-. gsection - The PetscSection for the global field layout
-
-  Note: This gives negative sizes and offsets to points not owned by this process
+. gsection - The `PetscSection` for the global field layout
 
   Level: developer
 
-.seealso: `PetscSectionCreate()`
+  Note:
+  This gives negative sizes and offsets to points not owned by this process
+
+.seealso: `DMLabel`, `DM`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, PetscBool includeConstraints, DMLabel label, PetscInt labelValue, PetscSection *gsection)
 {
@@ -2572,15 +2574,15 @@ static PetscErrorCode PetscSectionSymView_Label(PetscSectionSym sym, PetscViewer
 /*@
   PetscSectionSymLabelSetLabel - set the label whose strata will define the points that receive symmetries
 
-  Logically collective on sym
+  Logically
 
   Input parameters:
 + sym - the section symmetries
-- label - the DMLabel describing the types of points
+- label - the `DMLabel` describing the types of points
 
   Level: developer:
 
-.seealso: `PetscSectionSymLabelSetStratum()`, `PetscSectionSymCreateLabel()`, `PetscSectionGetPointSyms()`
+.seealso: `DMLabel`, `DM`, `PetscSectionSymLabelSetStratum()`, `PetscSectionSymCreateLabel()`, `PetscSectionGetPointSyms()`
 @*/
 PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 {
@@ -2607,22 +2609,22 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 /*@C
   PetscSectionSymLabelGetStratum - get the symmetries for the orientations of a stratum
 
-  Logically collective on sym
+  Logically Collective
 
   Input Parameters:
 + sym       - the section symmetries
 - stratum   - the stratum value in the label that we are assigning symmetries for
 
   Output Parameters:
-+ size      - the number of dofs for points in the stratum of the label
-. minOrient - the smallest orientation for a point in this stratum
-. maxOrient - one greater than the largest orientation for a ppoint in this stratum (i.e., orientations are in the range [minOrient, maxOrient))
-. perms     - NULL if there are no permutations, or (maxOrient - minOrient) permutations, one for each orientation.  A NULL permutation is the identity
-- rots      - NULL if there are no rotations, or (maxOrient - minOrient) sets of rotations, one for each orientation.  A NULL set of orientations is the identity
++ size      - the number of dofs for points in the `stratum` of the label
+. minOrient - the smallest orientation for a point in this `stratum`
+. maxOrient - one greater than the largest orientation for a ppoint in this `stratum` (i.e., orientations are in the range [`minOrient`, `maxOrient`))
+. perms     - `NULL` if there are no permutations, or (`maxOrient` - `minOrient`) permutations, one for each orientation.  A `NULL` permutation is the identity
+- rots      - `NULL` if there are no rotations, or (`maxOrient` - `minOrient`) sets of rotations, one for each orientation.  A `NULL` set of orientations is the identity
 
   Level: developer
 
-.seealso: `PetscSectionSymLabelSetStratum()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreateLabel()`
+.seealso: `DMLabel`, `DM`, `PetscSectionSymLabelSetStratum()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreateLabel()`
 @*/
 PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stratum, PetscInt *size, PetscInt *minOrient, PetscInt *maxOrient, const PetscInt ***perms, const PetscScalar ***rots)
 {
@@ -2667,21 +2669,21 @@ PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stra
 /*@C
   PetscSectionSymLabelSetStratum - set the symmetries for the orientations of a stratum
 
-  Logically collective on sym
+  Logically
 
   InputParameters:
 + sym       - the section symmetries
 . stratum   - the stratum value in the label that we are assigning symmetries for
-. size      - the number of dofs for points in the stratum of the label
-. minOrient - the smallest orientation for a point in this stratum
-. maxOrient - one greater than the largest orientation for a ppoint in this stratum (i.e., orientations are in the range [minOrient, maxOrient))
-. mode      - how sym should copy the perms and rots arrays
-. perms     - NULL if there are no permutations, or (maxOrient - minOrient) permutations, one for each orientation.  A NULL permutation is the identity
-- rots      - NULL if there are no rotations, or (maxOrient - minOrient) sets of rotations, one for each orientation.  A NULL set of orientations is the identity
+. size      - the number of dofs for points in the `stratum` of the label
+. minOrient - the smallest orientation for a point in this `stratum`
+. maxOrient - one greater than the largest orientation for a point in this `stratum` (i.e., orientations are in the range [`minOrient`, `maxOrient`))
+. mode      - how `sym` should copy the `perms` and `rots` arrays
+. perms     - `NULL` if there are no permutations, or (`maxOrient` - `minOrient`) permutations, one for each orientation.  A `NULL` permutation is the identity
+- rots      - `NULL` if there are no rotations, or (`maxOrient` - `minOrient`) sets of rotations, one for each orientation.  A `NULL` set of orientations is the identity
 
   Level: developer
 
-.seealso: `PetscSectionSymLabelGetStratum()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreateLabel()`
+.seealso: `DMLabel`, `DM`, `PetscSectionSymLabelGetStratum()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreateLabel()`
 @*/
 PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stratum, PetscInt size, PetscInt minOrient, PetscInt maxOrient, PetscCopyMode mode, const PetscInt **perms, const PetscScalar **rots)
 {
@@ -2837,7 +2839,7 @@ PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym)
 
   Level: developer
 
-.seealso: `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
+.seealso: `DMLabel`, `DM`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
 @*/
 PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm comm, DMLabel label, PetscSectionSym *sym)
 {

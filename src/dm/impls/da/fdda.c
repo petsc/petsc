@@ -86,7 +86,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by `DMCreateMatrix()`.
 
-    Logically Collective on da
+    Logically Collective
 
     Input Parameters:
 +   da - the distributed array
@@ -136,11 +136,11 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
     of the matrix returned by `DMCreateMatrix()`, using sparse representations
     of fill patterns.
 
-    Logically Collective on da
+    Logically Collective
 
     Input Parameters:
 +   da - the distributed array
-.   dfill - the sparse fill pattern in the diagonal block (may be NULL, means use dense block)
+.   dfill - the sparse fill pattern in the diagonal block (may be `NULL`, means use dense block)
 -   ofill - the sparse fill pattern in the off-diagonal blocks
 
     Level: developer
@@ -149,7 +149,7 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
     This only makes sense when you are doing multicomponent problems but using the
        `MATMPIAIJ` matrix format
 
-           The format for dfill and ofill is a sparse representation of a
+           The format for `dfill` and `ofill` is a sparse representation of a
            dof-by-dof matrix with 1 entries representing coupling and 0 entries
            for missing coupling.  The sparse representation is a 1 dimensional
            array of length nz + dof + 1, where nz is the number of non-zeros in
@@ -164,7 +164,7 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
            function from a dense 2D matrix representation.
 
      `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
-     can be represented in the dfill, ofill format
+     can be represented in the `dfill`, `ofill` format
 
    Contributed by Philip C. Roth
 
@@ -260,8 +260,6 @@ PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *colo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------*/
-
 PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da, ISColoringType ctype, ISColoring *coloring)
 {
   PetscInt         xs, ys, nx, ny, i, j, ii, gxs, gys, gnx, gny, m, n, M, N, dim, s, k, nc, col;
@@ -325,8 +323,6 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   PetscCall(ISColoringReference(*coloring));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------------------------*/
 
 PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColoring *coloring)
 {
@@ -395,8 +391,6 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   PetscCall(ISColoringReference(*coloring));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------------------------*/
 
 PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColoring *coloring)
 {
@@ -535,7 +529,7 @@ extern PetscErrorCode DMCreateMatrix_DA_IS(DM, Mat);
 /*@C
    MatSetupDM - Sets the `DMDA` that is to be used by the HYPRE_StructMatrix PETSc matrix
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -543,7 +537,7 @@ extern PetscErrorCode DMCreateMatrix_DA_IS(DM, Mat);
 
    Level: intermediate
 
-.seealso: `Mat`, `MatSetUp()`
+.seealso: `DMDA`, `Mat`, `MatSetUp()`
 @*/
 PetscErrorCode MatSetupDM(Mat mat, DM da)
 {

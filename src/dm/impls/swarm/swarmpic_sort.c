@@ -109,19 +109,19 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
 /*@C
    DMSwarmSortGetNumberOfPointsPerCell - Returns the number of points in a cell
 
-   Not collective
+   Not Collective
 
    Input parameters:
-+  dm - a DMSwarm objects
++  dm - a `DMSWARM` objects
 .  e - the index of the cell
 -  npoints - the number of points in the cell
 
    Level: advanced
 
    Notes:
-   You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetNumberOfPointsPerCell()
+   You must call `DMSwarmSortGetAccess()` before you can call `DMSwarmSortGetNumberOfPointsPerCell()`
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetPointsPerCell()`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetPointsPerCell()`
 @*/
 PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *npoints)
 {
@@ -143,10 +143,10 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *
 /*@C
    DMSwarmSortGetPointsPerCell - Creates an array of point indices for all points in a cell
 
-   Not collective
+   Not Collective
 
    Input parameters:
-+  dm - a DMSwarm object
++  dm - a `DMSWARM` object
 .  e - the index of the cell
 .  npoints - the number of points in the cell
 -  pidlist - array of the indices identifying all points in cell e
@@ -154,11 +154,11 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *
    Level: advanced
 
    Notes:
-     You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetPointsPerCell()
+     You must call `DMSwarmSortGetAccess()` before you can call `DMSwarmSortGetPointsPerCell()`
 
-     The array pidlist is internally created and must be free'd by the user
+     The array `pidlist` is internally created and must be free'd by the user
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, PetscInt *npoints, PetscInt **pidlist)
 {
@@ -185,43 +185,43 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, Petsc
 }
 
 /*@C
-   DMSwarmSortGetAccess - Setups up a DMSwarm point sort context for efficient traversal of points within a cell
+   DMSwarmSortGetAccess - Setups up a `DMSWARM` point sort context for efficient traversal of points within a cell
 
-   Not collective
+   Not Collective
 
    Input parameter:
-.  dm - a DMSwarm object
-
-   Calling DMSwarmSortGetAccess() creates a list which enables easy identification of all points contained in a
-   given cell. This method does not explicitly sort the data within the DMSwarm based on the cell index associated
-   with a DMSwarm point.
-
-   The sort context is valid only for the DMSwarm points defined at the time when DMSwarmSortGetAccess() was called.
-   For example, suppose the swarm contained NP points when DMSwarmSortGetAccess() was called. If the user subsequently
-   adds 10 additional points to the swarm, the sort context is still valid, but only for the first NP points.
-   The indices associated with the 10 new additional points will not be contained within the sort context.
-   This means that the user can still safely perform queries via DMSwarmSortGetPointsPerCell() and
-   DMSwarmSortGetPointsPerCell(), however the results return will be based on the first NP points.
-
-   If any DMSwam re-sizing method is called after DMSwarmSortGetAccess() which modifies any of the first NP entries
-   in the DMSwarm, the sort context will become invalid. Currently there are no guards to prevent the user from
-   invalidating the sort context. For this reason, we highly recommend you do not use DMSwarmRemovePointAtIndex() in
-   between calls to DMSwarmSortGetAccess() and DMSwarmSortRestoreAccess().
-
-   To facilitate safe removal of points using the sort context, we suggest a "two pass" strategy in which the
-   first pass "marks" points for removal, and the second pass actually removes the points from the DMSwarm.
-
-   Notes:
-     You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetPointsPerCell() or DMSwarmSortGetNumberOfPointsPerCell()
-
-     The sort context may become invalid if any re-sizing methods are applied which alter the first NP points
-     within swarm at the time DMSwarmSortGetAccess() was called.
-
-     You must call DMSwarmSortRestoreAccess() when you no longer need access to the sort context
+.  dm - a `DMSWARM` object
 
    Level: advanced
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSortRestoreAccess()`
+   Notes:
+   Calling `DMSwarmSortGetAccess()` creates a list which enables easy identification of all points contained in a
+   given cell. This method does not explicitly sort the data within the `DMSWARM` based on the cell index associated
+   with a `DMSWARM` point.
+
+   The sort context is valid only for the `DMSWARM` points defined at the time when `DMSwarmSortGetAccess()` was called.
+   For example, suppose the swarm contained NP points when `DMSwarmSortGetAccess()` was called. If the user subsequently
+   adds 10 additional points to the swarm, the sort context is still valid, but only for the first NP points.
+   The indices associated with the 10 new additional points will not be contained within the sort context.
+   This means that the user can still safely perform queries via `DMSwarmSortGetPointsPerCell()` and
+   `DMSwarmSortGetPointsPerCell()`, however the results return will be based on the first NP points.
+
+   If any` DMSWARM` re-sizing method is called after `DMSwarmSortGetAccess()` which modifies any of the first NP entries
+   in the `DMSWARM`, the sort context will become invalid. Currently there are no guards to prevent the user from
+   invalidating the sort context. For this reason, we highly recommend you do not use `DMSwarmRemovePointAtIndex()` in
+   between calls to `DMSwarmSortGetAccess()` and `DMSwarmSortRestoreAccess()`.
+
+   To facilitate safe removal of points using the sort context, we suggest a "two pass" strategy in which the
+   first pass "marks" points for removal, and the second pass actually removes the points from the `DMSWARM`
+
+     You must call `DMSwarmSortGetAccess()` before you can call `DMSwarmSortGetPointsPerCell()` or `DMSwarmSortGetNumberOfPointsPerCell()`
+
+     The sort context may become invalid if any re-sizing methods are applied which alter the first NP points
+     within swarm at the time `DMSwarmSortGetAccess()` was called.
+
+     You must call `DMSwarmSortRestoreAccess()` when you no longer need access to the sort context
+
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortRestoreAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 {
@@ -267,19 +267,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 }
 
 /*@C
-   DMSwarmSortRestoreAccess - Invalidates the DMSwarm point sorting context
+   DMSwarmSortRestoreAccess - Invalidates the `DMSWARM` point sorting context
 
-   Not collective
+   Not Collective
 
    Input parameter:
-.  dm - a DMSwarm object
+.  dm - a `DMSWARM` object
 
    Level: advanced
 
    Note:
-   You must call DMSwarmSortGetAccess() before calling DMSwarmSortRestoreAccess()
+   You must call `DMSwarmSortGetAccess()` before calling `DMSwarmSortRestoreAccess()`
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 {
@@ -293,19 +293,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 }
 
 /*@C
-   DMSwarmSortGetIsValid - Gets the isvalid flag associated with a DMSwarm point sorting context
+   DMSwarmSortGetIsValid - Gets the isvalid flag associated with a `DMSWARM` point sorting context
 
-   Not collective
+   Not Collective
 
    Input parameter:
-.  dm - a DMSwarm object
+.  dm - a `DMSWARM` object
 
    Output parameter:
 .  isvalid - flag indicating whether the sort context is up-to-date
 
  Level: advanced
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid)
 {
@@ -321,20 +321,20 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid)
 }
 
 /*@C
-   DMSwarmSortGetSizes - Gets the sizes associated with a DMSwarm point sorting context
+   DMSwarmSortGetSizes - Gets the sizes associated with a `DMSWARM` point sorting context
 
-   Not collective
+   Not Collective
 
    Input parameter:
-.  dm - a DMSwarm object
+.  dm - a `DMSWARM` object
 
    Output parameters:
-+  ncells - number of cells within the sort context (pass NULL to ignore)
--  npoints - number of points used to create the sort context (pass NULL to ignore)
++  ncells - number of cells within the sort context (pass `NULL` to ignore)
+-  npoints - number of points used to create the sort context (pass `NULL` to ignore)
 
    Level: advanced
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm, PetscInt *ncells, PetscInt *npoints)
 {

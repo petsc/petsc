@@ -212,8 +212,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
-   Calling sequence:
-   For PetscErrorCode (*func)(DMDALocalInfo *info,void *x, void *f, void *ctx),
+   Calling sequence of `func`:
+$   PetscErrorCode func(DMDALocalInfo *info, void *x, void *f, void *ctx)
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  x - dimensional pointer to state at which to evaluate residual (e.g. PetscScalar *x or **x or ***x)
 .  f - dimensional pointer to residual, write the residual here (e.g. PetscScalar *f or **f or ***f)
@@ -255,8 +255,8 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode 
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
-   Calling sequence:
-   For PetscErrorCode (*func)(DMDALocalInfo *info,Vec x, Vec f, void *ctx),
+   Calling sequence of `func`:
+$   PetscErrorCode func(DMDALocalInfo *info, Vec x, Vec f, void *ctx),
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  x - state vector at which to evaluate residual
 .  f - residual vector
@@ -297,12 +297,12 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
 .  func - local Jacobian evaluation
 -  ctx - optional context for local Jacobian evaluation
 
-   Calling sequence:
-   For PetscErrorCode (*func)(DMDALocalInfo *info,void *x,Mat J,Mat M,void *ctx),
+   Calling sequence of `func`:
+$  PetscErrorCode func(DMDALocalInfo *info, void *x, Mat J, Mat M, void *ctx),
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
 .  x - dimensional pointer to state at which to evaluate Jacobian (e.g. PetscScalar *x or **x or ***x)
 .  J - Mat object for the Jacobian
-.  M - Mat object for the Jacobian preconditioner matrix
+.  M - Mat object for the Jacobian preconditioner matrix, often `J`
 -  ctx - optional context passed above
 
    Level: beginner
@@ -336,12 +336,12 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalI
 .  func - local Jacobian evaluation
 -  ctx - optional context for local Jacobian evaluation
 
-   Calling sequence:
-   For PetscErrorCode (*func)(DMDALocalInfo *info,Vec x,Mat J,Mat M,void *ctx),
+   Calling sequence of `func`:
+$  PetscErrorCode (*func)(DMDALocalInfo *info, Vec x, Mat J, Mat M, void *ctx),
 +  info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
 .  x - state vector at which to evaluate Jacobian
 .  J - Mat object for the Jacobian
-.  M - Mat object for the Jacobian preconditioner matrix
+.  M - Mat object for the Jacobian preconditioner matrix, often `J`
 -  ctx - optional context passed above
 
    Level: beginner
@@ -375,8 +375,9 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
 .  func - local objective evaluation
 -  ctx - optional context for local residual evaluation
 
-   Calling sequence for func:
-+  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
+   Calling sequence of `func`:
+$  PetscErrorCode func(DMDALocalInfo *info, void *x, PetscReal obj, void *ctx);
++  info - defines the subdomain to evaluate the residual on
 .  x - dimensional pointer to state at which to evaluate residual
 .  ob - eventual objective value
 -  ctx - optional context passed above
@@ -412,9 +413,9 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ct
 .  func - local objective evaluation
 -  ctx - optional context for local residual evaluation
 
-   Calling sequence
-   For PetscErrorCode (*func)(DMDALocalInfo *info,Vec x,PetscReal *ob,void *ctx);
-+  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
+   Calling sequence of `func`:
+$  PetscErrorCode func(DMDALocalInfo *info, Vec x, PetscReal *ob, void *ctx);
++  info - defines the subdomain to evaluate the residual on
 .  x - state vector at which to evaluate residual
 .  ob - eventual objective value
 -  ctx - optional context passed above
@@ -523,17 +524,18 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
-   Calling sequence for func:
-+  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
+   Calling sequence of `func`:
+$  PetscErrorCode func(DMDALocalInfo *info, void *x, void *f, void *ctx);
++  info - defines the subdomain to evaluate the residual on
 .  x - dimensional pointer to state at which to evaluate residual
 .  f - dimensional pointer to residual, write the residual here
 -  ctx - optional context passed above
 
-   Note:
-    The user must use `SNESSetFunction`(snes,NULL,`SNESPicardComputeFunction`,&user));
-    in their code before calling this routine.
-
    Level: beginner
+
+   Note:
+    The user must use `SNESSetFunction`(snes,`NULL`,`SNESPicardComputeFunction`,&user));
+    in their code before calling this routine.
 
 .seealso: `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/

@@ -72,14 +72,11 @@ PetscErrorCode DMGenerateRegisterAll(void)
    Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined grid generator
++  sname - name of a new user-defined grid generator
 .  fnc - generator function
 .  rfnc - refinement function
 .  alfnc - adapt by label function
 -  dim - dimension of boundary of domain
-
-   Notes:
-   DMGenerateRegister() may be called multiple times to add several user-defined solvers.
 
    Sample usage:
 .vb
@@ -93,8 +90,10 @@ $     -dm_generator my_generator
 
    Level: advanced
 
-.seealso: `DMGenerateRegisterAll()`, `DMPlexGenerate()`, `DMGenerateRegisterDestroy()`
+   Note:
+   `DMGenerateRegister()` may be called multiple times to add several user-defined generators
 
+.seealso: `DM`, `DMGenerateRegisterAll()`, `DMPlexGenerate()`, `DMGenerateRegisterDestroy()`
 @*/
 PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM *), PetscErrorCode (*rfnc)(DM, PetscReal *, DM *), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DMLabel, DM *), PetscInt dim)
 {
@@ -137,21 +136,22 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
 }
 
 /*@C
-  DMAdaptLabel - Adapt a dm based on a label with values interpreted as coarsening and refining flags.  Specific implementations of DM maybe have
-                 specialized flags, but all implementations should accept flag values DM_ADAPT_DETERMINE, DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN.
+  DMAdaptLabel - Adapt a `DM` based on a `DMLabel` with values interpreted as coarsening and refining flags.  Specific implementations of `DM` maybe have
+                 specialized flags, but all implementations should accept flag values `DM_ADAPT_DETERMINE`, `DM_ADAPT_KEEP`, `DM_ADAPT_REFINE`, and,
+                 `DM_ADAPT_COARSEN`.
 
-  Collective on dm
+  Collective
 
   Input parameters:
-+ dm - the pre-adaptation DM object
++ dm - the pre-adaptation `DM` object
 - label - label with the flags
 
   Output parameters:
-. dmAdapt - the adapted DM object: may be NULL if an adapted DM could not be produced.
+. dmAdapt - the adapted `DM` object: may be `NULL` if an adapted `DM` could not be produced.
 
   Level: intermediate
 
-.seealso: `DMAdaptMetric()`, `DMCoarsen()`, `DMRefine()`
+.seealso: `DM`, `DMAdaptMetric()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 {

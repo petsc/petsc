@@ -30,7 +30,7 @@ PETSC_EXTERN void petscsetcomm_(MPI_Fint*,MPI_Fint*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
-   the call to PetscInitialize() if one is using a C main program
+   the call to `PetscInitialize()` if one is using a C main program
    that calls Fortran routines that in turn call PETSc routines.
 
    Collective on `PETSC_COMM_WORLD`

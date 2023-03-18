@@ -4,7 +4,7 @@
 /*@C
      PetscTextBelt - Sends an SMS to an American/Canadian phone number
 
-   Not collective, only the first process in `MPI_Comm` does anything
+   Not Collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator

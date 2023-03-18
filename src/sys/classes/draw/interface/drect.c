@@ -1,13 +1,9 @@
-
-/*
-       Provides the calling sequences for all the basic PetscDraw routines.
-*/
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@C
    PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a `PetscDraw`
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - a `PetscDraw`
@@ -50,7 +46,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
 /*@C
    PetscDrawCoordinateToPixel - given a coordinate in a `PetscDraw` returns the pixel location
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the draw where the coordinates are defined
@@ -76,7 +72,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal
 /*@C
    PetscDrawPixelToCoordinate - given a pixel in a `PetscDraw` returns the coordinate
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the draw where the coordinates are defined

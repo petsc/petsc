@@ -1374,7 +1374,7 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
 /*@C
   TSARKIMEXSetType - Set the type of `TSARKIMEX` scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -1400,7 +1400,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
 /*@C
   TSARKIMEXGetType - Get the type of `TSARKIMEX` scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  ts - timestepping context
@@ -1423,7 +1423,7 @@ PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 /*@
   TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly, including the part that is normally solved explicitly
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -1445,7 +1445,7 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
 /*@
   TSARKIMEXGetFullyImplicit - Inquires if both parts of the equation are solved implicitly
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  ts - timestepping context

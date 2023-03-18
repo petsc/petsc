@@ -71,7 +71,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
 /*@
   TSTrajectoryGetNumSteps - Return the number of steps registered in the `TSTrajectory` via `TSTrajectorySet()`.
 
-  Not collective.
+  Not Collective.
 
   Input Parameters:
 . tj - the trajectory object
@@ -916,7 +916,7 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj, PetscBool solution_o
 /*@
    TSTrajectoryGetSolutionOnly - Gets the value set with `TSTrajectorySetSolutionOnly()`.
 
-   Logically collective
+   Logically Collective
 
    Input Parameter:
 .  tj  - the `TSTrajectory` context

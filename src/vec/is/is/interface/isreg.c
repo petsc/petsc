@@ -46,7 +46,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
 - method - The name of the index set type
 
   Options Database Key:
-. -is_type <type> - Sets the index set type; use -help for a list of available types
+. -is_type <type> - Sets the index set type; use `-help` for a list of available types
 
   Level: intermediate
 
@@ -113,8 +113,8 @@ PetscErrorCode ISGetType(IS is, ISType *type)
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname        - The name of a new user-defined creation routine
+- function - The creation routine itself
 
   Sample usage:
 .vb

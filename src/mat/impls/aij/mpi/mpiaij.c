@@ -4012,8 +4012,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
    MatMPIAIJSetPreallocation - Preallocates memory for a sparse parallel matrix in `MATMPIAIJ` format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters
-   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
-   performance can be increased by more than a factor of 50.
+   `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
 
    Collective
 
@@ -4075,25 +4074,25 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
    part as `MATSEQAIJ` matrices. For example, proc1 will store [E] as a `MATSEQAIJ`
    matrix, ans [DF] as another `MATSEQAIJ` matrix.
 
-   When d_nz, o_nz parameters are specified, d_nz storage elements are
-   allocated for every row of the local diagonal submatrix, and o_nz
+   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
+   allocated for every row of the local diagonal submatrix, and `o_nz`
    storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_nz and o_nz is to use the max nonzerors per local
+   One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
    rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_nz,o_nz are
+   In this case, the values of `d_nz`, `o_nz` are
 .vb
      proc0  dnz = 2, o_nz = 2
      proc1  dnz = 3, o_nz = 2
      proc2  dnz = 1, o_nz = 4
 .ve
-   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
+   We are allocating `m`*(`d_nz`+`o_nz`) storage locations for every proc. This
    translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
    for proc3. i.e we are using 12+15+10=37 storage locations to store
    34 values.
 
-   When d_nnz, o_nnz parameters are specified, the storage is specified
+   When `d_nnz`, `o_nnz` parameters are specified, the storage is specified
    for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are
+   In the above case the values for `d_nnz`, `o_nnz` are
 .vb
      proc0 d_nnz = [2,2,2] and o_nnz = [2,2,2]
      proc1 d_nnz = [3,3,2] and o_nnz = [2,1,1]
@@ -5139,15 +5138,14 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, P
 }
 
 /*@
-     MatAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATAIJ` matrix by taking all its local rows and putting them into a sequential matrix with
-          mlocal rows and n columns. Where mlocal is the row count obtained with `MatGetLocalSize()` and n is the global column count obtained
+     MatAIJGetLocalMat - Creates a `MATSEQAIJ` from a `MATAIJ` matrix by taking its local rows and putting them into a sequential matrix with
+          mlocal rows and n columns. Where mlocal is obtained with `MatGetLocalSize()` and n is the global column count obtained
           with `MatGetSize()`
 
     Not Collective
 
    Input Parameters:
-+    A - the matrix
--    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
+.    A - the matrix
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated
@@ -5434,7 +5432,8 @@ PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A, MatReuse scall, IS *glob, Mat *A
    Input Parameters:
 +    A - the matrix
 .    scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
--    row, col - index sets of rows and columns to extract (or `NULL`)
+.    row - index set of rows to extract (or `NULL`)
+-    col - index set of columns to extract (or `NULL`)
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated
@@ -5748,7 +5747,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
 }
 
 /*@C
-  MatGetBrowsOfAcols - Returns `IS` that contain rows of B that equal to nonzero columns of local A
+  MatGetBrowsOfAcols - Returns `IS` that contain rows of `B` that equal to nonzero columns of local `A`
 
   Collective
 
@@ -5764,6 +5763,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
 
   Level: developer
 
+.seealso: `Mat`, `MATMPIAIJ`, `IS`, `MatReuse`
 @*/
 PetscErrorCode MatGetBrowsOfAcols(Mat A, Mat B, MatReuse scall, IS *rowb, IS *colb, Mat *B_seq)
 {
@@ -5773,9 +5773,8 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A, Mat B, MatReuse scall, IS *rowb, IS *co
   Mat        *bseq = NULL;
 
   PetscFunctionBegin;
-  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->cmap->rstart, A->cmap->rend, B->rmap->rstart, B->rmap->rend);
-  }
+  PetscCheck(A->cmap->rstart == B->rmap->rstart && A->cmap->rend == B->rmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",
+             A->cmap->rstart, A->cmap->rend, B->rmap->rstart, B->rmap->rend);
   PetscCall(PetscLogEventBegin(MAT_GetBrowsOfAcols, A, B, 0, 0));
 
   if (scall == MAT_INITIAL_MATRIX) {
@@ -5859,9 +5858,8 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  if (PetscUnlikely(A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend)) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->cmap->rstart, A->cmap->rend, B->rmap->rstart, B->rmap->rend);
-  }
+  PetscCheck(A->cmap->rstart == B->rmap->rstart && A->cmap->rend == B->rmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",
+             A->cmap->rstart, A->cmap->rend, B->rmap->rstart, B->rmap->rend);
   PetscCall(PetscLogEventBegin(MAT_GetBrowsOfAocols, A, B, 0, 0));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
@@ -6119,9 +6117,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ_AB(Mat C)
   Mat          A = product->A, B = product->B;
 
   PetscFunctionBegin;
-  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend)
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->cmap->rstart, A->cmap->rend, B->rmap->rstart, B->rmap->rend);
-
+  PetscCheck(A->cmap->rstart == B->rmap->rstart && A->cmap->rend == B->rmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",
+             A->cmap->rstart, A->cmap->rend, B->rmap->rstart, B->rmap->rend);
   C->ops->matmultsymbolic = MatMatMultSymbolic_MPIDense_MPIAIJ;
   C->ops->productsymbolic = MatProductSymbolic_AB;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -7772,7 +7769,7 @@ static PetscErrorCode MatFilter_AIJ(Mat Gmat, PetscReal vfilter, Mat *filteredG)
  Output Parameter:
  . a_Gmat - output scalar graph >= 0
 
- */
+*/
 PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmetrize, PetscBool scale, PetscReal filter, Mat *a_Gmat)
 {
   PetscInt  Istart, Iend, Ii, jj, kk, ncols, nloc, NN, MM, bs;

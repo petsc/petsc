@@ -3,7 +3,7 @@
 /*@C
    TaoSetHessian - Sets the function to compute the Hessian as well as the location to store the matrix.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao  - the `Tao` context
@@ -13,9 +13,8 @@
 -  ctx  - [optional] user-defined context for private data for the
          Hessian evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx);
 +  tao  - the Tao  context
 .  x    - input vector
 .  H    - Hessian matrix
@@ -56,7 +55,7 @@ PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Ta
 /*@C
    TaoGetHessian - Gets the function to compute the Hessian as well as the location to store the matrix.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  tao  - the `Tao` context
@@ -67,9 +66,8 @@ PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Ta
 .  func - Hessian evaluation routine
 -  ctx  - user-defined context for private data for the Hessian evaluation routine
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx);
 +  tao  - the Tao  context
 .  x    - input vector
 .  H    - Hessian matrix
@@ -429,7 +427,7 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 /*@C
    TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao  - the `Tao` context
@@ -439,9 +437,8 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 -  ctx  - [optional] user-defined context for private data for the
           Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx);
 +  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix
@@ -483,7 +480,7 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
    TaoSetJacobianResidualRoutine - Sets the function to compute the least-squares residual Jacobian as well as the
    location to store the matrix.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao  - the `Tao` context
@@ -493,9 +490,8 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
 -  ctx  - [optional] user-defined context for private data for the
           Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx);
 +  tao  - the `Tao`  context
 .  x    - input vector
 .  J    - Jacobian matrix
@@ -538,7 +534,7 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
    (and its inverse) of the constraint function with respect to the state variables.
    Used only for PDE-constrained optimization.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao  - the `Tao` context
@@ -549,14 +545,13 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
 -  ctx  - [optional] user-defined context for private data for the
           Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat J,Mat Jpre,Mat Jinv,void *ctx);
-
+   Calling sequence of `func`:
+$   PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, Mat Jinv, void *ctx);
 +  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix
 .  Jpre - matrix used to construct the preconditioner, usually the same as `J`
-.  Jinv - inverse of J
+.  Jinv - inverse of `J`
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
@@ -604,7 +599,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
    the constraint function with respect to the design variables.  Used only for
    PDE-constrained optimization.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao  - the `Tao` context
@@ -613,9 +608,8 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
 -  ctx  - [optional] user-defined context for private data for the
           Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat J,void *ctx);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(Tao tao, Vec x, Mat J, void *ctx);
 +  tao - the `Tao` context
 .  x   - input vector
 .  J   - Jacobian matrix
@@ -750,7 +744,7 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
    (and its inverse) of the constraint function with respect to the equality variables.
    Used only for PDE-constrained optimization.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao  - the `Tao` context
@@ -760,9 +754,8 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
 -  ctx  - [optional] user-defined context for private data for the
           Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx)
 +  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix
@@ -805,7 +798,7 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
    (and its inverse) of the constraint function with respect to the inequality variables.
    Used only for PDE-constrained optimization.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  tao  - the `Tao` context
@@ -815,9 +808,8 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
 -  ctx  - [optional] user-defined context for private data for the
           Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of func:
-$    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
-
+   Calling sequence of `func`:
+$  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx);
 +  tao  - the `Tao` context
 .  x    - input vector
 .  J    - Jacobian matrix

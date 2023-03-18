@@ -60,7 +60,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx)
 /*@
   DMGetCoordinateDM - Gets the `DM` that prescribes coordinate layout and scatters between global and local coordinates
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -95,7 +95,7 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 /*@
   DMSetCoordinateDM - Sets the `DM` that prescribes coordinate layout and scatters between global and local coordinates
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm - the `DM`
@@ -120,7 +120,7 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 /*@
   DMGetCellCoordinateDM - Gets the `DM` that prescribes cellwise coordinate layout and scatters between global and local cellwise coordinates
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -148,7 +148,7 @@ PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm)
 /*@
   DMSetCellCoordinateDM - Sets the `DM` that prescribes cellwise coordinate layout and scatters between global and local cellwise coordinates
 
-  Logically Collective on dm
+  Logically Collective
 
   Input Parameters:
 + dm - the `DM`
@@ -238,7 +238,7 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 /*@
   DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - The `DM` object
@@ -315,13 +315,13 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 /*@
   DMGetCellCoordinateSection - Retrieve the layout of cellwise coordinate values over the mesh.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - The `DM` object
 
   Output Parameter:
-. section - The `PetscSection` object, or NULL if no cellwise coordinates are defined
+. section - The `PetscSection` object, or `NULL` if no cellwise coordinates are defined
 
   Level: intermediate
 
@@ -394,7 +394,7 @@ PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection sect
 /*@
   DMGetCoordinates - Gets a global vector with the coordinates associated with the `DM`.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -436,7 +436,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 /*@
   DMSetCoordinates - Sets into the `DM` a global vector that holds the coordinates
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - the `DM`
@@ -447,7 +447,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
   Notes:
   The coordinates do not include those for ghost points, which are in the local vector.
 
-  The vector c can be destroyed after the call
+  The vector `c` can be destroyed after the call
 
 .seealso: `DM`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMDASetUniformCoordinates()`
 @*/
@@ -468,7 +468,7 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 /*@
   DMGetCellCoordinates - Gets a global vector with the cellwise coordinates associated with the `DM`.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -507,7 +507,7 @@ PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c)
 /*@
   DMSetCellCoordinates - Sets into the `DM` a global vector that holds the cellwise coordinates
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - the `DM`
@@ -518,7 +518,7 @@ PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c)
   Notes:
   The coordinates do not include those for ghost points, which are in the local vector.
 
-  The vector c should be destroyed by the caller.
+  The vector `c` should be destroyed by the caller.
 
 .seealso: `DM`, `DMGetCoordinates()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`, `DMGetCellCoordinateDM()`
 @*/
@@ -537,7 +537,7 @@ PetscErrorCode DMSetCellCoordinates(DM dm, Vec c)
 /*@
   DMGetCoordinatesLocalSetUp - Prepares a local vector of coordinates, so that `DMGetCoordinatesLocalNoncollective()` can be used as non-collective afterwards.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -569,7 +569,7 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
 /*@
   DMGetCoordinatesLocal - Gets a local vector with the coordinates associated with the `DM`.
 
-  Collective on dm the first time it is called
+  Collective the first time it is called
 
   Input Parameter:
 . dm - the `DM`
@@ -602,7 +602,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
 /*@
   DMGetCoordinatesLocalNoncollective - Non-collective version of `DMGetCoordinatesLocal()`. Fails if global coordinates have been set and `DMGetCoordinatesLocalSetUp()` not called.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -630,7 +630,7 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
 /*@
   DMGetCoordinatesLocalTuple - Gets a local vector with the coordinates of specified points and the section describing its layout.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dm - the `DM`
@@ -693,7 +693,7 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
 /*@
   DMSetCoordinatesLocal - Sets into the `DM` a local vector, including ghost points, that holds the coordinates
 
-  Not collective
+  Not Collective
 
    Input Parameters:
 +  dm - the `DM`
@@ -725,7 +725,7 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
 /*@
   DMGetCellCoordinatesLocalSetUp - Prepares a local vector of cellwise coordinates, so that `DMGetCellCoordinatesLocalNoncollective()` can be used as non-collective afterwards.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -753,7 +753,7 @@ PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm)
 /*@
   DMGetCellCoordinatesLocal - Gets a local vector with the cellwise coordinates associated with the `DM`.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -783,7 +783,7 @@ PetscErrorCode DMGetCellCoordinatesLocal(DM dm, Vec *c)
 /*@
   DMGetCellCoordinatesLocalNoncollective - Non-collective version of `DMGetCellCoordinatesLocal()`. Fails if global cellwise coordinates have been set and `DMGetCellCoordinatesLocalSetUp()` not called.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -808,7 +808,7 @@ PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c)
 /*@
   DMSetCellCoordinatesLocal - Sets into the `DM` a local vector including ghost points that holds the cellwise coordinates
 
-  Not collective
+  Not Collective
 
    Input Parameters:
 +  dm - the `DM`
@@ -863,7 +863,7 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
 /*@
   DMGetLocalBoundingBox - Returns the bounding box for the piece of the `DM` on this process.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . dm - the `DM`
@@ -1086,7 +1086,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
 /*@
   DMLocatePoints - Locate the points in v in the mesh and return a `PetscSF` of the containing cells
 
-  Collective on v (see explanation below)
+  Collective
 
   Input Parameters:
 + dm - The `DM`
@@ -1094,19 +1094,19 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
 
   Input/Output Parameters:
 + v - The `Vec` of points, on output contains the nearest mesh points to the given points if `DM_POINTLOCATION_NEAREST` is used
-- cellSF - Points to either NULL, or a `PetscSF` with guesses for which cells contain each point;
+- cellSF - Points to either `NULL`, or a `PetscSF` with guesses for which cells contain each point;
            on output, the `PetscSF` containing the ranks and local indices of the containing points
 
   Level: developer
 
   Notes:
   To do a search of the local cells of the mesh, v should have `PETSC_COMM_SELF` as its communicator.
-  To do a search of all the cells in the distributed mesh, v should have the same communicator as dm.
+  To do a search of all the cells in the distributed mesh, `v` should have the same communicator as `dm`.
 
   Points will only be located in owned cells, not overlap cells arising from `DMPlexDistribute()` or other overlapping distributions.
 
-  If *cellSF is NULL on input, a `PetscSF` will be created.
-  If *cellSF is not NULL on input, it should point to an existing `PetscSF`, whose graph will be used as initial guesses.
+  If *cellSF is `NULL` on input, a `PetscSF` will be created.
+  If *cellSF is not `NULL` on input, it should point to an existing `PetscSF`, whose graph will be used as initial guesses.
 
   An array that maps each point to its containing cell can be obtained with
 .vb
@@ -1118,7 +1118,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
 .ve
 
   Where cells[i].rank is the rank of the process owning the cell containing point found[i] (or i if found == NULL), and cells[i].index is
-  the index of the cell in its rank's local numbering. Note that this rank is in the communicator for v, so if v is on `PETSC_COMM_SELF` then the rank will always be 0.
+  the index of the cell in its rank's local numbering. This rank is in the communicator for `v`, so if `v` is on `PETSC_COMM_SELF` then the rank will always be 0.
 
 .seealso: `DM`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMPointLocationType`
 @*/

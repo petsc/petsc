@@ -817,7 +817,7 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf, PetscInt *minleaf, PetscInt *maxl
 /*@C
    PetscSFViewFromOptions - View a `PetscSF` based on arguments in the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the star forest

@@ -87,14 +87,13 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 -  ctx - optional handler context that contains information needed by the handler (for
          example file pointers for error messages etc.)
 
-   Calling sequence of handler:
-$    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,int p,char *mess,void *ctx);
-
+   Calling sequence of `handler`:
+$  PetscErrorCode handler(MPI_Comm comm, int line, char *func, char *file, PetscErrorCode n, int p, char *mess, void *ctx);
 +  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  n - the generic error number (see list defined in include/petscerror.h)
-.  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
+.  p - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
 .  mess - an error text string, usually just printed to the screen
 -  ctx - the error handler context
 

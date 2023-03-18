@@ -215,7 +215,7 @@ PetscErrorCode MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 .  obj - Optional object that provides the prefix for the option name
 -  name - command line option (usually `-mat_coarsen_view`)
 
-  Options Database:
+  Options Database Key:
 .  -mat_coarsen_view [viewertype]:... - the viewer and its options
 
   Note:

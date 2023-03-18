@@ -60,7 +60,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 /*@C
   PetscSubcommSetOptionsPrefix - Sets the prefix used for searching for options in the options database for this object
 
-  Logically collective
+  Logically Collective
 
   Level: Intermediate
 

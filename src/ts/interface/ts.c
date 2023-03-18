@@ -1021,9 +1021,8 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
 .   f - routine for evaluating the right-hand-side function
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-    Calling sequence of f:
-$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
-
+    Calling sequence of `f`:
+$     PetscErrorCode f(TS ts, PetscReal t, Vec u, Vec F, void *ctx)
 +   ts - timestep context
 .   t - current timestep
 .   u - input vector
@@ -1070,10 +1069,10 @@ PetscErrorCode TSSetRHSFunction(TS ts, Vec r, PetscErrorCode (*f)(TS, PetscReal,
 -   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be `NULL`)
 
-    Calling sequence of f:
-$     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
-
-+   t - current timestep
+    Calling sequence of `f`:
+$   PetscErrorCode f(TS ts, PetscReal t, Vec u, void *ctx)
++   ts - the integrator context
+.   t - current timestep
 .   u - output vector
 -   ctx - [optional] user-defined function context
 
@@ -1115,9 +1114,9 @@ PetscErrorCode TSSetSolutionFunction(TS ts, PetscErrorCode (*f)(TS, PetscReal, V
           function evaluation routine (may be `NULL`)
 
     Calling sequence of func:
-$     PetscErrorCode func (TS ts,PetscReal t,Vec f,void *ctx);
-
-+   t - current timestep
+$   PetscErrorCode func(TS ts, PetscReal t, Vec f, void *ctx)
++   ts - the integrator context
+.   t - current timestep
 .   f - output vector
 -   ctx - [optional] user-defined function context
 
@@ -1161,10 +1160,10 @@ PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
 .  f   - the Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of f:
-$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
-
-+  t - current timestep
+   Calling sequence of `f`:
+$  PetscErrorCode f(TS ts, PetscReal t, Vec u, Mat A, Mat B, void *ctx)
++  ts  - the `TS` context obtained from `TSCreate()`
+.  t - current timestep
 .  u - input vector
 .  Amat - (approximate) Jacobian matrix
 .  Pmat - matrix from which preconditioner is to be constructed (usually the same as `Amat`)
@@ -1222,10 +1221,10 @@ PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void
 .  f   - the function evaluation routine
 -  ctx - user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Calling sequence of f:
-$     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
-
-+  t   - time at step/stage being solved
+   Calling sequence of `f`:
+$   PetscErrorCode f(TS ts, PetscReal t, Vec u, Vec u_t, Vec F, void *ctx)
++  ts  - the `TS` context obtained from `TSCreate()`
+.  t   - time at step/stage being solved
 .  u   - state vector
 .  u_t - time derivative of state vector
 .  F   - function vector
@@ -1336,10 +1335,10 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
 .  f   - the Jacobian evaluation routine
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of f:
-$    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
-
-+  t    - time at step/stage being solved
+   Calling sequence of `f`:
+$    PetscErrorCode f(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat, Mat Pmat, void *ctx)
++  ts  - the `TS` context obtained from `TSCreate()`
+.  t    - time at step/stage being solved
 .  U    - state vector
 .  U_t  - time derivative of state vector
 .  a    - shift
@@ -1423,10 +1422,10 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
 .  fun - the function evaluation routine
 -  ctx - user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-   Calling sequence of fun:
-$     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
-
-+  t    - time at step/stage being solved
+   Calling sequence of `fun`:
+$   PetscErrorCode fun(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, Vec F,void *ctx);
++  ts  - the `TS` context obtained from `TSCreate()`
+.  t    - time at step/stage being solved
 .  U    - state vector
 .  U_t  - time derivative of state vector
 .  U_tt - second time derivative of state vector
@@ -1494,10 +1493,10 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
 .  jac - the Jacobian evaluation routine
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
-   Calling sequence of jac:
-$    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat J,Mat P,void *ctx);
-
-+  t    - time at step/stage being solved
+   Calling sequence of `jac`:
+$    PetscErrorCode jac(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal v, PetscReal a, Mat J, Mat P, void *ctx)
++  ts  - the `TS` context obtained from `TSCreate()`
+.  t    - time at step/stage being solved
 .  U    - state vector
 .  U_t  - time derivative of state vector
 .  U_tt - second time derivative of state vector
@@ -1707,9 +1706,8 @@ PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, Pets
 .  tvar - a function that transforms to transient variables
 -  ctx - a context for tvar
 
-    Calling sequence of tvar:
-$     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
-
+    Calling sequence of `tvar`:
+$   PetscErrorCode tvar(TS ts, Vec p, Vec c, void *ctx)
 +   ts - timestep context
 .   p - input vector (primitive form)
 .   c - output vector, transient variables (conservative form)
@@ -3066,9 +3064,9 @@ PetscErrorCode TSSetSolution(TS ts, Vec u)
 + ts   - The `TS` context obtained from `TSCreate()`
 - func - The function
 
-  Calling sequence of func:
+  Calling sequence of `func`:
 .vb
-  PetscErrorCode func (TS ts);
+  PetscErrorCode func (TS ts)
 .ve
 
   Level: intermediate
@@ -3131,9 +3129,9 @@ PetscErrorCode TSPreStep(TS ts)
 + ts   - The `TS` context obtained from `TSCreate()`
 - func - The function
 
-  Calling sequence of func:
+  Calling sequence of `func`:
 .vb
-  PetscErrorCode func(TS ts, PetscReal stagetime);
+  PetscErrorCode func(TS ts, PetscReal stagetime)
 .ve
 
   Level: intermediate
@@ -3163,9 +3161,9 @@ PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal))
 + ts   - The `TS` context obtained from `TSCreate()`
 - func - The function
 
-  Calling sequence of func:
+  Calling sequence of `func`:
 .vb
-  PetscErrorCode func(TS ts, PetscReal stagetime, PetscInt stageindex, Vec* Y);
+  PetscErrorCode func(TS ts, PetscReal stagetime, PetscInt stageindex, Vec* Y)
 .ve
 
   Level: intermediate
@@ -3195,9 +3193,9 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, Petsc
 + ts   - The `TS` context obtained from `TSCreate()`
 - func - The function
 
-  Calling sequence of func:
+  Calling sequence of `func`:
 .vb
-  PetscErrorCode func(TS ts);
+  PetscErrorCode func(TS ts)
 .ve
 
   Level: intermediate
@@ -3315,8 +3313,8 @@ PetscErrorCode TSPostEvaluate(TS ts)
 + ts   - The `TS` context obtained from `TSCreate()`
 - func - The function
 
-  Calling sequence of func:
-$ func (TS ts);
+  Calling sequence of `func`:
+$ PetscErrorCode func(TS ts)
 
   Level: intermediate
 
@@ -3558,12 +3556,12 @@ PetscErrorCode TSEvaluateStep(TS ts, PetscInt order, Vec U, PetscBool *done)
   Output Parameter:
 . initConditions - The function which computes an initial condition
 
-  The calling sequence for the function is
+  Calling sequence of `initCondition`:
 .vb
- initCondition(TS ts, Vec u)
- ts - The timestepping context
- u  - The input vector in which the initial condition is stored
+  PetscErrorCode initCondition(TS ts, Vec u)
 .ve
++ ts - The timestepping context
+- u  - The input vector in which the initial condition is stored
 
    Level: advanced
 
@@ -3587,7 +3585,7 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 + ts  - time stepping context
 - initCondition - The function which computes an initial condition
 
-  Calling sequence for initCondition:
+  Calling sequence of `initCondition`:
 $ PetscErrorCode initCondition(TS ts, Vec u)
 + ts - The timestepping context
 - u  - The input vector in which the initial condition is to be stored
@@ -3638,11 +3636,11 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
   Output Parameter:
 . exactError - The function which computes the solution error
 
-  Calling sequence for exactError:
-$ PetscErrorCode exactError(TS ts, Vec u)
+  Calling sequence of `exactError`:
+$ PetscErrorCode exactError(TS ts, Vec u, Vec e)
 + ts - The timestepping context
 . u  - The approximate solution vector
-- e  - The input vector in which the error is stored
+- e  - The vector in which the error is stored
 
   Level: advanced
 
@@ -3666,11 +3664,11 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 + ts - time stepping context
 - exactError - The function which computes the solution error
 
-  Calling sequence for exactError:
+  Calling sequence of `exactError`:
 $ PetscErrorCode exactError(TS ts, Vec u)
 + ts - The timestepping context
 . u  - The approximate solution vector
-- e  - The input vector in which the error is stored
+- e  - The  vector in which the error is stored
 
   Level: advanced
 
@@ -5775,13 +5773,12 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
 +    ts - the `TS` context
 -    func - function called within `TSFunctionDomainError()`
 
-    Calling sequence of func:
-$     PetscErrorCode func(TS ts,PetscReal time,Vec state,PetscBool reject)
-
+    Calling sequence of `func`:
+$   PetscErrorCode func(TS ts, PetscReal time, Vec state, PetscBool reject)
 +   ts - the TS context
 .   time - the current time (of the stage)
 .   state - the state to check if it is valid
--   reject - (output parameter) PETSC_FALSE if the state is acceptable, PETSC_TRUE if not acceptable
+-   reject - (output parameter) `PETSC_FALSE` if the state is acceptable, `PETSC_TRUE` if not acceptable
 
     Level: intermediate
 
@@ -6013,7 +6010,7 @@ PetscErrorCode TSRHSJacobianTestTranspose(TS ts, PetscBool *flg)
 /*@
   TSSetUseSplitRHSFunction - Use the split RHSFunction when a multirate method is used.
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -6040,7 +6037,7 @@ PetscErrorCode TSSetUseSplitRHSFunction(TS ts, PetscBool use_splitrhsfunction)
 /*@
   TSGetUseSplitRHSFunction - Gets whether to use the split RHSFunction when a multirate method is used.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 .  ts - timestepping context

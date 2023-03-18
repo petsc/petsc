@@ -54,8 +54,10 @@ typedef enum {
   Fortran Notes - This should be declared as
 $    `DMDALocalInfo` :: info(DMDA_LOCAL_INFO_SIZE)
      and the entries accessed via
-$    info(DMDA_LOCAL_INFO_DIM)
-$    info(DMDA_LOCAL_INFO_DOF) etc.
+.vb
+    info(DMDA_LOCAL_INFO_DIM)
+    info(DMDA_LOCAL_INFO_DOF) etc.
+.ve
    The entries bx,by,bz, st, and da are not accessible from Fortran.
 
 .seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DM`, `DMDAGetLocalInfo()`, `DMDAGetInfo()`

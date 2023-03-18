@@ -2644,7 +2644,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs, const P
    Input Parameters:
 +  B - the matrix
 .  bs - the block size
-.  i - the indices into j for the start of each local row (starts with zero)
+.  i - the indices into `j` for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
 
@@ -3014,9 +3014,7 @@ M*/
    Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
    and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
-   or you will get TERRIBLE performance; see the users' manual chapter on
-   matrices.
+   one expects `d_nz` >> `o_nz`.
 
    You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
@@ -3126,9 +3124,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
    Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
    and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
-   or you will get TERRIBLE performance; see the users' manual chapter on
-   matrices.
+   one expects `d_nz` >> `o_nz`.
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
@@ -3407,10 +3403,10 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 . v - numerical values input
 - addvin - `INSERT_VALUES` or `ADD_VALUES`
 
+  Level: advanced
+
   Developer Note:
     This has a complete copy of `MatSetValuesBlocked_MPIBAIJ()` which is terrible code un-reuse.
-
-  Level: advanced
 
 .seealso: `Mat`, `MatSetValuesBlocked()`
 @*/

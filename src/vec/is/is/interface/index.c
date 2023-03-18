@@ -282,7 +282,7 @@ PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis)
 /*@
    ISClearInfoCache - clear the cache of computed index set properties
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  is - the index set
@@ -438,9 +438,9 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
    Level: advanced
 
    Notes:
-   If type is IS_GLOBAL, all processes that share the index set must pass the same value in flg
+   If type is `IS_GLOBAL`, all processes that share the index set must pass the same value in flg
 
-   It is possible to set a property with ISSetInfo() that contradicts what would be previously computed with ISGetInfo()
+   It is possible to set a property with `ISSetInfo()` that contradicts what would be previously computed with `ISGetInfo()`
 
 .seealso: `ISInfo`, `ISInfoType`, `IS`
 @*/
@@ -746,7 +746,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 /*@
    ISGetInfo - Determine whether an index set satisfies a given property
 
-   Collective or logically collective on `is` if the type is `IS_GLOBAL` (logically collective if the value of the property has been permanently set with `ISSetInfo()`)
+   Collective or Logically Collective if the type is `IS_GLOBAL` (logically collective if the value of the property has been permanently set with `ISSetInfo()`)
 
    Input Parameters:
 +  is - the index set
@@ -2015,7 +2015,7 @@ M*/
     Synopsis:
     ISRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameters:
 +   x - index set
@@ -2046,7 +2046,7 @@ M*/
     Synopsis:
     ISBlockGetIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   x - index set

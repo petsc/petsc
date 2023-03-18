@@ -14,11 +14,10 @@ typedef struct {
 +  snes - the `SNES` nonlinear solver context
 -  apply - the application-provided solver routine
 
-   Calling sequence of solve:
+   Calling sequence of `apply`:
 .vb
-   PetscErrorCode apply (SNES snes,Vec xout)
+   PetscErrorCode apply(SNES snes, Vec xout)
 .ve
-
 +  snes - the preconditioner, get the application context with `SNESShellGetContext()` provided with `SNESShelletContext()`
 -  xout - solution vector
 

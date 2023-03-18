@@ -412,7 +412,7 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
 /*@C
    PetscObjectsGetObject - Get a pointer to a named object
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  name - the name of an object
@@ -452,7 +452,7 @@ PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **
 /*@
    PetscObjectSetPrintedOptions - indicate to an object that it should behave as if it has already printed the help for its options so it will not display the help message
 
-   Input Parameters:
+   Input Parameter:
 .  obj  - the `PetscObject`
 
    Level: developer
@@ -632,10 +632,10 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
 .  obj - the PETSc object; this must be cast with (`PetscObject`), for example,
          `PetscObjectDereference`((`PetscObject`)mat);
 
+   Level: advanced
+
    Note:
     `PetscObjectDestroy()` sets the obj pointer to null after the call, this routine does not.
-
-   Level: advanced
 
 .seealso: `PetscObjectCompose()`, `PetscObjectReference()`, `PetscObjectDestroy()`
 @*/
@@ -958,10 +958,10 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
 +  obj - an object that was created with `PetscContainerCreate()`
 -  des - name of the user destroy function
 
+   Level: advanced
+
    Note:
    Use `PetscContainerUserDestroyDefault()` if the memory was obtained by calling `PetscMalloc()` or one of its variants for single memory allocation.
-
-   Level: advanced
 
 .seealso: `PetscContainerDestroy()`, `PetscContainerUserDestroyDefault()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc()`, `PetscCalloc1()`
 @*/
@@ -983,10 +983,10 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI communicator that shares the object
 
-   Output Parameters:
+   Output Parameter:
 .  container - the container created
 
    Level: advanced
@@ -1011,10 +1011,10 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
    Input Parameter:
 .  obj - the `PetscObject`
 
+   Level: beginner
+
    Note:
    We have no generic options at present, so this does nothing
-
-   Level: beginner
 
 .seealso: `PetscObjectSetOptionsPrefix()`, `PetscObjectGetOptionsPrefix()`
 @*/
@@ -1030,13 +1030,13 @@ PetscErrorCode PetscObjectSetFromOptions(PetscObject obj)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  obj - the `PetscObject`
+
+   Level: advanced
 
    Note:
    This does nothing at present.
-
-   Level: advanced
 
 .seealso: `PetscObjectDestroy()`
 @*/

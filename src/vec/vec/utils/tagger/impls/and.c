@@ -3,20 +3,20 @@
 #include "../src/vec/vec/utils/tagger/impls/andor.h"
 
 /*@C
-  VecTaggerAndGetSubs - Get the sub VecTaggers whose intersection defines the outer VecTagger
+  VecTaggerAndGetSubs - Get the sub `VecTagger`s whose intersection defines the outer `VecTagger`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. tagger - the VecTagger context
+. tagger - the `VecTagger` context
 
   Output Parameters:
-+ nsubs - the number of sub VecTaggers
-- subs - the sub VecTaggers
++ nsubs - the number of sub `VecTagger`s
+- subs - the sub `VecTagger`s
 
   Level: advanced
 
-.seealso: `VecTaggerAndSetSubs()`
+.seealso: `VecTagger`, `VecTaggerAndSetSubs()`
 @*/
 PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger **subs)
 {
@@ -26,18 +26,18 @@ PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger 
 }
 
 /*@C
-  VecTaggerAndSetSubs - Set the sub VecTaggers whose intersection defines the outer VecTagger
+  VecTaggerAndSetSubs - Set the sub `VecTagger`s whose intersection defines the outer `VecTagger`
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
-+ tagger - the VecTagger context
-. nsubs - the number of sub VecTaggers
-- subs - the sub VecTaggers
++ tagger - the `VecTagger` context
+. nsubs - the number of sub `VecTagger`s
+- subs - the sub `VecTagger`s
 
   Level: advanced
 
-.seealso: `VecTaggerAndSetSubs()`
+.seealso: `VecTagger`, `VecTaggerAndSetSubs()`
 @*/
 PetscErrorCode VecTaggerAndSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *subs, PetscCopyMode mode)
 {

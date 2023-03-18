@@ -12,7 +12,7 @@
 /*@C
   PETSC_VIEWER_EXODUSII_ - Creates an `PETSCVIEWEREXODUSII` `PetscViewer` shared by all processors in a communicator.
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameter:
 . comm - the MPI communicator to share the `PETSCVIEWEREXODUSII` `PetscViewer`
@@ -20,12 +20,9 @@
   Level: intermediate
 
   Note:
-  Unlike almost all other PETSc routines, PETSC_VIEWER_EXODUSII_ does not return
+  Unlike almost all other PETSc routines, `PETSC_VIEWER_EXODUSII_()` does not return
   an error code.  The GLVIS PetscViewer is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_EXODUSII_(comm));
-
-  Fortran Note:
-  No support in Fortran
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewer`, `PetscViewerExodusIIOpen()`, `PetscViewerType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/
@@ -195,10 +192,10 @@ static PetscErrorCode PetscViewerExodusIISetOrder_ExodusII(PetscViewer viewer, P
 /*MC
    PETSCVIEWEREXODUSII - A viewer that writes to an Exodus II file
 
+  Level: beginner
+
 .seealso: `PetscViewerExodusIIOpen()`, `PetscViewerCreate()`, `PETSCVIEWERBINARY`, `PETSCVIEWERHDF5`, `DMView()`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
-
-  Level: beginner
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
@@ -241,13 +238,13 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
   Output Parameters:
 . varIndex - the location in the exodus file of the result
 
+  Level: beginner
+
   Notes:
   The exodus variable index is obtained by comparing name and the
   names of zonal variables declared in the exodus file. For instance if name is "V"
   the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
   amongst all variables of type obj_type.
-
-  Level: beginner
 
 .seealso: `EXOGetVarIndex()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadNodal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 */
@@ -281,30 +278,31 @@ PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const
 }
 
 /*
-  DMView_PlexExodusII - Write a DM to disk in exodus format
+  DMView_PlexExodusII - Write a `DM` to disk in exodus format
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm  - The dm to be written
 . viewer - an exodusII viewer
 
+  Level: beginner
+
   Notes:
   Not all DM can be written to disk this way. For instance, exodus assume that element blocks (mapped to "Cell sets" labels)
   consists of sequentially numbered cells. If this is not the case, the exodus file will be corrupted.
 
-  If the dm has been distributed, only the part of the DM on MPI rank 0 (including "ghost" cells and vertices)
+  If `dm` has been distributed, only the part of the `DM` on MPI rank 0 (including "ghost" cells and vertices)
   will be written.
 
-  DMPlex only represents geometry while most post-processing software expect that a mesh also provides information
+  `DMPLEX` only represents geometry while most post-processing software expect that a mesh also provides information
   on the discretization space. This function assumes that the file represents Lagrange finite elements of order 1 or 2.
-  The order of the mesh shall be set using PetscViewerExodusIISetOrder
-  It should be extended to use PetscFE objects.
+  The order of the mesh shall be set using `PetscViewerExodusIISetOrder()`
+  It should be extended to use `PetscFE` objects.
 
   This function will only handle TRI, TET, QUAD, and HEX cells.
-  Level: beginner
 
-.seealso:
+.seealso: `DMPLEX`
 */
 PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
 {
@@ -801,11 +799,13 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
 /*
   VecView_PlexExodusII_Internal - Write a Vec corresponding in an exodus file
 
-  Collective on v
+  Collective
 
   Input Parameters:
 + v  - The vector to be written
 - viewer - The PetscViewerExodusII viewer associate to an exodus file
+
+  Level: beginner
 
   Notes:
   The exodus result variable index is obtained by comparing the Vec name and the
@@ -814,8 +814,6 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   amongst all variables.
   In the event where a nodal and zonal variable both match, the function will return an error instead of
   possibly corrupting the file
-
-  Level: beginner
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII()`, `VecView_PlexExodusII()`
 @*/
@@ -851,11 +849,13 @@ PetscErrorCode VecView_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 /*
   VecLoad_PlexExodusII_Internal - Write a Vec corresponding in an exodus file
 
-  Collective on v
+  Collective
 
   Input Parameters:
 + v  - The vector to be written
 - viewer - The PetscViewerExodusII viewer associate to an exodus file
+
+  Level: beginner
 
   Notes:
   The exodus result variable index is obtained by comparing the Vec name and the
@@ -864,8 +864,6 @@ PetscErrorCode VecView_PlexExodusII_Internal(Vec v, PetscViewer viewer)
   amongst all variables.
   In the event where a nodal and zonal variable both match, the function will return an error instead of
   possibly corrupting the file
-
-  Level: beginner
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII()`, `VecView_PlexExodusII()`
 @*/
@@ -899,7 +897,7 @@ PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 /*
   VecViewPlex_ExodusII_Nodal_Internal - Write a Vec corresponding to a nodal field to an exodus file
 
-  Collective on v
+  Collective
 
   Input Parameters:
 + v  - The vector to be written
@@ -907,13 +905,13 @@ PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 . step - the time step to write at (exodus steps are numbered starting from 1)
 - offset - the location of the variable in the file
 
+  Level: beginner
+
   Notes:
   The exodus result nodal variable index is obtained by comparing the Vec name and the
   names of nodal variables declared in the exodus file. For instance for a Vec named "V"
   the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
   amongst all nodal variables.
-
-  Level: beginner
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecLoadNodal_PlexEXO()`, `VecViewZonal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 @*/
@@ -972,7 +970,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 /*
   VecLoadPlex_ExodusII_Nodal_Internal - Read a Vec corresponding to a nodal field from an exodus file
 
-  Collective on v
+  Collective
 
   Input Parameters:
 + v  - The vector to be written
@@ -980,13 +978,13 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 . step - the time step to read at (exodus steps are numbered starting from 1)
 - offset - the location of the variable in the file
 
+  Level: beginner
+
   Notes:
   The exodus result nodal variable index is obtained by comparing the Vec name and the
   names of nodal variables declared in the exodus file. For instance for a Vec named "V"
   the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
   amongst all nodal variables.
-
-  Level: beginner
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecViewZonal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 */
@@ -1042,7 +1040,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 /*
   VecViewPlex_ExodusII_Zonal_Internal - Write a Vec corresponding to a zonal (cell based) field to an exodus file
 
-  Collective on v
+  Collective
 
   Input Parameters:
 + v  - The vector to be written
@@ -1050,13 +1048,13 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 . step - the time step to write at (exodus steps are numbered starting from 1)
 - offset - the location of the variable in the file
 
+  Level: beginner
+
   Notes:
   The exodus result zonal variable index is obtained by comparing the Vec name and the
   names of zonal variables declared in the exodus file. For instance for a Vec named "V"
   the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
   amongst all zonal variables.
-
-  Level: beginner
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Zonal_Internal()`
 */
@@ -1139,7 +1137,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
 /*
   VecLoadPlex_ExodusII_Zonal_Internal - Read a Vec corresponding to a zonal (cell based) field from an exodus file
 
-  Collective on v
+  Collective
 
   Input Parameters:
 + v  - The vector to be written
@@ -1147,13 +1145,13 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
 . step - the time step to read at (exodus steps are numbered starting from 1)
 - offset - the location of the variable in the file
 
+  Level: beginner
+
   Notes:
   The exodus result zonal variable index is obtained by comparing the Vec name and the
   names of zonal variables declared in the exodus file. For instance for a Vec named "V"
   the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
   amongst all zonal variables.
-
-  Level: beginner
 
 .seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Zonal_Internal()`
 */
@@ -1236,7 +1234,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
 /*@
   PetscViewerExodusIIGetId - Get the file id of the `PETSCVIEWEREXODUSII` file
 
-  Logically Collective on viewer
+  Logically Collective
 
   Input Parameter:
 .  viewer - the `PetscViewer`

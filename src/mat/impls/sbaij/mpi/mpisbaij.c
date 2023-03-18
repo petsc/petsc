@@ -2288,23 +2288,22 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
    MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format, `MATSBAIJ`,
    (block compressed row).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters
-   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
-   performance can be increased by more than a factor of 50.
+   `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
 
    Collective
 
    Input Parameters:
 +  comm - MPI communicator
 .  bs   - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
-.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
            This value should be the same as the local size used in creating the
            y vector for the matrix-vector product y = Ax.
-.  n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
+.  n - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
            This value should be the same as the local size used in creating the
            x vector for the matrix-vector product y = Ax.
-.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
-.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
+.  M - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+.  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows

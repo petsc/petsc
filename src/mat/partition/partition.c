@@ -198,7 +198,7 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
    MatPartitioningGetType - Gets the Partitioning method type and name (as a string)
         from the partitioning context.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  partitioning - the partitioning context
@@ -625,7 +625,7 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
 .  obj - Optional object that provides the prefix used in the options database check
 -  name - command line option
 
-  Options Database:
+  Options Database Key:
 .  -mat_partitioning_view [viewertype]:... - the viewer and its options
 
    Level: intermediate
@@ -806,7 +806,7 @@ PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part)
 /*@C
    MatPartitioningSetNumberVertexWeights - Sets the number of weights per vertex
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  partitioning - the partitioning context

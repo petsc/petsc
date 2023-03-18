@@ -9,9 +9,8 @@
 +  snes - the `SNES` context
 -  compute - function that computes the bounds
 
- Calling Sequence of function:
-  PetscErrorCode compute(SNES snes,Vec lower,Vec higher, void *ctx)
-
+Calling Sequence of `compute`:
+ $ PetscErrorCode compute(SNES snes, Vec lower, Vec higher)
 + snes - the `SNES` context
 . lower - vector to hold lower bounds
 - higher - vector to hold upper bounds

@@ -84,7 +84,7 @@ PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugtermina
 /*@C
     PetscSetDefaultDebugger - Causes PETSc to use its default debugger and output terminal
 
-   Not collective
+   Not Collective
 
     Level: developer
 
@@ -124,7 +124,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
     PetscSetDebuggerFromString - Set the complete path for the
        debugger for PETSc to use.
 
-   Not collective
+   Not Collective
 
    Level: developer
 
@@ -482,10 +482,12 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,message)
    Notes for experienced users:
    Use `PetscPushErrorHandler()` to set the desired error handler.  The
    currently available PETSc error handlers are
-$    PetscTraceBackErrorHandler()
-$    PetscAttachDebuggerErrorHandler()
-$    PetscAbortErrorHandler()
-   or you may write your own.
+.vb
+    PetscTraceBackErrorHandler()
+    PetscAttachDebuggerErrorHandler()
+    PetscAbortErrorHandler()
+.ve
+  or you may write your own.
 
    Developer Note:
      This routine calls abort instead of returning because if it returned then `MPI_Abort()` would get called which can generate an exception

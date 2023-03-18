@@ -3,7 +3,7 @@
 /*@
    SNESFASGetGalerkin - Gets if the coarse problems are formed by projection to the fine problem
 
-   Not collective but the result would be the same on all MPI ranks
+   Not Collective but the result would be the same on all MPI ranks
 
    Input Parameter:
 .  snes - the `SNESFAS` nonlinear solver context
@@ -64,11 +64,11 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
    Output Parameter:
 .  F - output vector
 
+   Level: developer
+
    Note:
    The Galerkin FAS function evaluation is defined as
 $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
-
-   Level: developer
 
 .seealso: `SNESFAS`, `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`
 @*/

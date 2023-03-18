@@ -11,7 +11,7 @@ PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
 /*@C
     PetscGetDate - Gets the current date.
 
-   Not collective
+   Not Collective
 
   Input Parameter:
 .  len - length of string to hold date

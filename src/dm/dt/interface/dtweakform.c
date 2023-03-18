@@ -83,7 +83,7 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
 
   Input Parameters:
 + n - number of values
-- X - array of PetscFormKey
+- X - array of `PetscFormKey`
 
   Level: intermediate
 
@@ -877,7 +877,7 @@ PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm wf, DMLabel labe
 /*@
   PetscWeakFormGetNumFields - Returns the number of fields in a `PetscWeakForm`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . wf - The `PetscWeakForm` object
@@ -901,7 +901,7 @@ PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
 /*@
   PetscWeakFormSetNumFields - Sets the number of fields
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + wf - The `PetscWeakForm` object
@@ -922,7 +922,7 @@ PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm wf, PetscInt Nf)
 /*@
   PetscWeakFormDestroy - Destroys a `PetscWeakForm` object
 
-  Collective on wf
+  Collective
 
   Input Parameter:
 . wf - the `PetscWeakForm` object to destroy
@@ -1058,7 +1058,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 /*@C
   PetscWeakFormView - Views a `PetscWeakForm`
 
-  Collective on wf
+  Collective
 
   Input Parameters:
 + wf - the `PetscWeakForm` object to view

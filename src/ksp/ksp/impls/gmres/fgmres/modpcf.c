@@ -12,13 +12,16 @@
 .  ctx - optional context
 -  d - optional context destroy routine
 
-   Calling Sequence of function:
-    PetscErrorCode fcn(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void*ctx);
+   Calling Sequence of `function`:
+$    PetscErrorCode fcn(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *ctx);
 +    ksp - the ksp context being used.
 .    total_its     - the total number of FGMRES iterations that have occurred.
 .    loc_its       - the number of FGMRES iterations since last restart.
 .    res_norm      - the current residual norm.
 -    ctx           - optional context variable
+
+   Calling Sequence of `d`:
+$ PetscErrorCode d(void *ctx)
 
    Options Database Keys:
 +   -ksp_fgmres_modifypcnochange - do not change the `PC`

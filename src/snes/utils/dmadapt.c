@@ -147,7 +147,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 /*@
   DMAdaptorGetSolver - Gets the solver used to produce discrete solutions
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . adaptor   - The `DMAdaptor` object
@@ -171,7 +171,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 /*@
   DMAdaptorSetSolver - Sets the solver used to produce discrete solutions
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + adaptor   - The `DMAdaptor` object
@@ -180,7 +180,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
   Level: intermediate
 
   Note:
-  The solver MUST have an attached `DM`/`DS`, so that we know the exact solution
+  The solver MUST have an attached `DM`/`PetscDS`, so that we know the exact solution
 
 .seealso: `DMAdaptor`, `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
@@ -197,7 +197,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 /*@
   DMAdaptorGetSequenceLength - Gets the number of sequential adaptations used by an adapter
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . adaptor - The `DMAdaptor` object
@@ -221,7 +221,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 /*@
   DMAdaptorSetSequenceLength - Sets the number of sequential adaptations
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + adaptor - The `DMAdaptor` object
@@ -772,7 +772,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 /*@
   DMAdaptorAdapt - Creates a new `DM` that is adapted to the problem
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + adaptor  - The `DMAdaptor` object
@@ -789,12 +789,13 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 . -adapt_hessian_view - View the Clement interpolant of the solution Hessian
 - -adapt_metric_view - View the metric tensor for adaptive mesh refinement
 
-  Note: The available adaptation strategies are:
+  Level: intermediate
+
+  Note:
+  The available adaptation strategies are:
 + * - Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
 . * - Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
 - * - Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
-
-  Level: intermediate
 
 .seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/

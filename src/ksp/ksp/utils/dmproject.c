@@ -46,7 +46,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
   a least-squares solution.  It is also assumed that `DMLocalToGlobalBegin()`/`DMLocalToGlobalEnd()` with mode = `ADD_VALUES` is the adjoint of the
   global-to-local map, so that the least-squares solution may be found by the normal equations.
 
-  collective
+  Collective
 
   Input Parameters:
 + dm - The `DM` object
@@ -153,7 +153,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 /*@C
   DMProjectField - This projects the given function of the input fields into the function space provided, putting the coefficients in a global vector.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm      - The `DM`
@@ -165,26 +165,25 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   Output Parameter:
 . X       - The output vector
 
-   Calling sequence of func:
+   Calling sequence of `func`:
 .vb
-    func(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+   void funcs(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
 .ve
-
 +  dim          - The spatial dimension
 .  Nf           - The number of input fields
 .  NfAux        - The number of input auxiliary fields
 .  uOff         - The offset of each field in u[]
 .  uOff_x       - The offset of each field in u_x[]
 .  u            - The field values at this point in space
-.  u_t          - The field time derivative at this point in space (or NULL)
+.  u_t          - The field time derivative at this point in space (or `NULL`)
 .  u_x          - The field derivatives at this point in space
 .  aOff         - The offset of each auxiliary field in u[]
 .  aOff_x       - The offset of each auxiliary field in u_x[]
 .  a            - The auxiliary field values at this point in space
-.  a_t          - The auxiliary field time derivative at this point in space (or NULL)
+.  a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
 .  a_x          - The auxiliary field derivatives at this point in space
 .  t            - The current time
 .  x            - The coordinates of this point

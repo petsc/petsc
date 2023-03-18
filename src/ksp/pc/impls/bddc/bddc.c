@@ -310,9 +310,9 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
    Level: advanced
 
    Note:
-    The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
+    The discrete gradient matrix `G` is used to analyze the subdomain edges, and it should not contain any zero entry.
           For variable order spaces, the order should be set to zero.
-          If global is true, the rows of G should be given in global ordering for the whole dofs;
+          If global is true, the rows of `G` should be given in global ordering for the whole dofs;
           if false, the ordering should be global for the Nedelec field.
           In the latter case, it should hold gid[i] < gid[j] iff geid[i] < geid[j], with gid the global orderding for all the dofs
           and geid the one for the Nedelec field.
@@ -368,7 +368,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
    Notes:
    This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
 
-   If vl2l is NULL, the local ordering for velocities in divudotp should match that of the preconditioning matrix
+   If `vl2l` is `NULL`, the local ordering for velocities in divudotp should match that of the preconditioning matrix
 
 .seealso: `PCBDDC`, `PCBDDCSetDiscreteGradient()`
 @*/
@@ -494,7 +494,7 @@ static PetscErrorCode PCBDDCGetPrimalVerticesIS_BDDC(PC pc, IS *is)
 .  pc - the preconditioning context
 
    Output Parameter:
-.  is - index set of primal vertices in global numbering (NULL if not set)
+.  is - index set of primal vertices in global numbering (`NULL` if not set)
 
    Level: intermediate
 
@@ -565,7 +565,7 @@ static PetscErrorCode PCBDDCGetPrimalVerticesLocalIS_BDDC(PC pc, IS *is)
 .  pc - the preconditioning context
 
    Output Parameter:
-.  is - index set of primal vertices in local numbering (NULL if not set)
+.  is - index set of primal vertices in local numbering (`NULL` if not set)
 
    Level: intermediate
 
@@ -592,7 +592,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
 /*@
   PCBDDCSetCoarseningRatio - Set coarsening ratio used in multilevel version
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -604,7 +604,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
    Level: intermediate
 
    Note:
-   Approximately k subdomains at the finer level will be aggregated into a single subdomain at the coarser level
+   Approximately `k` subdomains at the finer level will be aggregated into a single subdomain at the coarser level
 
 .seealso: `PCBDDC`, `PCBDDCSetLevels()`
 @*/
@@ -667,7 +667,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc, PetscInt levels)
 /*@
  PCBDDCSetLevels - Sets the maximum number of additional levels allowed for multilevel `PCBDDC`
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -715,7 +715,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc, IS DirichletBound
 
    Input Parameters:
 +  pc - the preconditioning context
--  DirichletBoundaries - parallel IS defining the Dirichlet boundaries
+-  DirichletBoundaries - parallel `IS` defining the Dirichlet boundaries
 
    Level: intermediate
 
@@ -757,7 +757,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc, IS Dirichlet
 
    Input Parameters:
 +  pc - the preconditioning context
--  DirichletBoundaries - parallel IS defining the Dirichlet boundaries (in local ordering)
+-  DirichletBoundaries - parallel `IS` defining the Dirichlet boundaries (in local ordering)
 
    Level: intermediate
 
@@ -796,7 +796,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc, IS NeumannBoundarie
 
    Input Parameters:
 +  pc - the preconditioning context
--  NeumannBoundaries - parallel IS defining the Neumann boundaries
+-  NeumannBoundaries - parallel `IS` defining the Neumann boundaries
 
    Level: intermediate
 
@@ -838,7 +838,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc, IS NeumannBoun
 
    Input Parameters:
 +  pc - the preconditioning context
--  NeumannBoundaries - parallel IS defining the subdomain part of Neumann boundaries (in local ordering)
+-  NeumannBoundaries - parallel `IS` defining the subdomain part of Neumann boundaries (in local ordering)
 
    Level: intermediate
 
@@ -2448,7 +2448,7 @@ static PetscErrorCode PCDestroy_BDDCIPC(PC pc)
    Collective
 
    Input Parameters:
-+  fetidp_mat      - the FETI-DP matrix obtained by a call to PCBDDCCreateFETIDPOperators()`
++  fetidp_mat      - the FETI-DP matrix obtained by a call to `PCBDDCCreateFETIDPOperators()`
 -  fetidp_flux_sol - the solution of the FETI-DP linear system`
 
    Output Parameter:
@@ -2708,7 +2708,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
    Input Parameters:
 +  pc - the BDDC preconditioning context (setup should have been called before)
 .  fully_redundant - true for a fully redundant set of Lagrange multipliers
--  prefix - optional options database prefix for the objects to be created (can be NULL)
+-  prefix - optional options database prefix for the objects to be created (can be `NULL`)
 
    Output Parameters:
 +  fetidp_mat - shell FETI-DP matrix object

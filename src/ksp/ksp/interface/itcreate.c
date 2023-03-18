@@ -79,6 +79,8 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
    Options Database Key:
 .  -ksp_view - print the `KSP` data structure at the end of each `KSPSolve()` call
 
+   Level: beginner
+
    Notes:
    The available visualization contexts include
 +     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
@@ -95,8 +97,6 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
    `PetscViewerASCIIOpen()` - output to a specified file.
 
   In the debugger you can do call `KSPView(ksp,0)` to display the `KSP`. (The same holds for any PETSc object viewer).
-
-   Level: beginner
 
 .seealso: `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`
 @*/
@@ -548,7 +548,7 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
    KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
    possibly a different one associated with the preconditioner have been set in the `KSP`.
 
-   Not collective, though the results on all processes should be the same
+   Not Collective, though the results on all processes should be the same
 
    Input Parameter:
 .  pc - the `KSP` context
@@ -584,9 +584,8 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 .   presolve - the function to call before the solve
 -   prectx - any context needed by the function
 
-   Calling sequence of presolve:
-$  func(KSP ksp,Vec rhs,Vec x,void *ctx)
-
+   Calling sequence of `presolve`:
+$  PetscErrorCode func(KSP ksp, Vec rhs, Vec x, void *ctx)
 +  ksp - the `KSP` context
 .  rhs - the right-hand side vector
 .  x - the solution vector
@@ -615,9 +614,8 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec,
 .   postsolve - the function to call after the solve
 -   postctx - any context needed by the function
 
-   Calling sequence of postsolve:
-$  func(KSP ksp,Vec rhs,Vec x,void *ctx)
-
+   Calling sequence of `postsolve`:
+$  PetscErrorCode func(KSP ksp, Vec rhs, Vec x, void *ctx)
 +  ksp - the `KSP` context
 .  rhs - the right-hand side vector
 .  x - the solution vector
@@ -647,10 +645,10 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Ve
    Output Parameter:
 .  ksp - location to put the `KSP` context
 
+   Level: beginner
+
    Note:
    The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
-
-   Level: beginner
 
 .seealso: [](chapter_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`
 @*/

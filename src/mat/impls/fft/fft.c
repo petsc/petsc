@@ -33,9 +33,10 @@ PetscErrorCode MatDestroy_FFT(Mat A)
    Options Database Key:
 .   -mat_fft_type - set FFT type fft or seqcufft
 
-   Note: this serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
-
    Level: intermediate
+
+   Note:
+   This serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
 
 .seealso: [](chapter_matrices), `Mat`, `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
 @*/

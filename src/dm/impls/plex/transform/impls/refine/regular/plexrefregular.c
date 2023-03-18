@@ -1,6 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
-/* Regular Refinement of Hybrid Meshes
+/*
+   Regular Refinement of Hybrid Meshes
 
    We would like to express regular refinement as a small set of rules that can be applied on every point of the Plex
    to automatically generate a refined Plex. In fact, we would like these rules to be general enough to encompass other
@@ -20,7 +21,7 @@
   DMPlexRefineRegularGetAffineFaceTransforms - Gets the affine map from the reference face cell to each face in the given cell
 
   Input Parameters:
-+ cr - The DMPlexCellRefiner object
++ cr - The `DMPlexTransform` object
 - ct - The cell type
 
   Output Parameters:
@@ -30,13 +31,16 @@
 . invJ - The inverse Jacobian for each face
 - detJ - The determinant of the Jacobian for each face
 
-  Note: The Jacobian and inverse Jacboian will be rectangular, and the inverse is really a generalized inverse.
-$         v0 + j x_face = x_cell
-$    invj (x_cell - v0) = x_face
-
   Level: developer
 
-.seealso: `DMPlexCellRefinerGetAffineTransforms()`, `Create()`
+  Note:
+  The Jacobian and inverse Jacobian will be rectangular, and the inverse is really a generalized inverse.
+.vb
+    v0 + j x_face = x_cell
+    invj (x_cell - v0) = x_face
+.ve
+
+.seealso: `DMPLEX`, `DM`, DMPlexTransform`, `DMPolytopeType`, `DMPlexCellRefinerGetAffineTransforms()`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nf, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[], PetscReal *detJ[])
 {
@@ -110,7 +114,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
   DMPlexRefineRegularGetAffineTransforms - Gets the affine map from the reference cell to each subcell
 
   Input Parameters:
-+ cr - The DMPlexCellRefiner object
++ cr - The `DMPlexTransform` object
 - ct - The cell type
 
   Output Parameters:
@@ -121,7 +125,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
 
   Level: developer
 
-.seealso: `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
+.seealso: `DMPLEX`, `DM`, DMPlexTransform`, `DMPolytopeType`, `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nc, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[])
 {

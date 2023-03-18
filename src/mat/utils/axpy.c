@@ -447,9 +447,6 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 + A   - The matrix
 - tol - The zero tolerance
 
-  Output Parameters:
-. A - The chopped matrix
-
   Level: intermediate
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`

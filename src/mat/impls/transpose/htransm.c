@@ -205,7 +205,7 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 /*@
       MatHermitianTransposeGetMat - Gets the `Mat` object stored inside a `MATHERMITIANTRANSPOSEVIRTUAL`
 
-   Logically collective
+   Logically Collective
 
    Input Parameter:
 .   A  - the `MATHERMITIANTRANSPOSEVIRTUAL` matrix

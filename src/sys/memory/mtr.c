@@ -95,12 +95,13 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 
     You should generally use `CHKMEMQ` as a short cut for calling this  routine.
 
-    The Fortran calling sequence is simply `PetscMallocValidate(ierr)`
-
    No output is generated if there are no problems detected.
 
+   Fortran Note:
+    The Fortran calling sequence is simply `PetscMallocValidate(ierr)`
+
    Developers Note:
-     Uses the flg TRdebugLevel (set as the first argument to `PetscMallocSetDebug()`) to determine if it should run
+     Uses the flg `TRdebugLevel` (set as the first argument to `PetscMallocSetDebug()`) to determine if it should run
 
 .seealso: `CHKMEMQ`
 @*/
@@ -683,16 +684,17 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 
    Level: intermediate
 
-   Fortran Note:
-   The calling sequence in Fortran is PetscMallocDump(integer ierr)
-   The fp defaults to stdout.
-
    Notes:
      Uses `MPI_COMM_WORLD` to display rank, because this may be called in `PetscFinalize()` after `PETSC_COMM_WORLD` has been freed.
 
      When called in `PetscFinalize()` dumps only the allocations that have not been properly freed
 
      `PetscMallocView()` prints a list of all memory ever allocated
+
+   Fortran Notes:
+   The calling sequence in Fortran is PetscMallocDump(integer ierr)
+
+   The `fp` defaults to stdout.
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocValidate()`
 @*/
@@ -849,14 +851,15 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 
     Level: advanced
 
-   Fortran Note:
-   The calling sequence in Fortran is PetscMallocView(integer ierr)
-   The fp defaults to stdout.
-
    Notes:
      `PetscMallocDump()` dumps only the currently unfreed memory, this dumps all memory ever allocated
 
      `PetscMemoryView()` gives a brief summary of current memory usage
+
+   Fortran Notes:
+   The calling sequence in Fortran is PetscMallocView(integer ierr)
+
+   The `fp` defaults to stdout.
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`
 @*/

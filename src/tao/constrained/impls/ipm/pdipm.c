@@ -58,7 +58,6 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x)
 
   PetscFunctionBegin;
   PetscCall(VecGetOwnershipRange(x, &xstart, NULL));
-
   PetscCall(VecGetArrayRead(x, &xarr));
   PetscCall(VecGetArrayRead(tao->XU, &xuarr));
   PetscCall(VecGetArrayRead(tao->XL, &xlarr));
@@ -790,15 +789,6 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   TaoSolve_PDIPM
-
-   Input Parameter:
-   tao - TAO context
-
-   Output Parameter:
-   tao - TAO context
-*/
 PetscErrorCode TaoSolve_PDIPM(Tao tao)
 {
   TAO_PDIPM     *pdipm = (TAO_PDIPM *)tao->data;
@@ -1472,7 +1462,10 @@ PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsOb
 -   -tao_pdipm_kkt_shift_pd - Add shifts to make KKT matrix positive definite
 
   Level: beginner
+
+.seealso: `Tao`, `TaoType`
 M*/
+
 PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
 {
   TAO_PDIPM *pdipm;

@@ -1546,7 +1546,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
     PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32 bits in size), generates an
          error if the `PetscInt` is not large enough to hold the number.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .     a - the `PetscInt64` value
@@ -1558,8 +1558,6 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 
    Notes:
    If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make `PetscInt` use 64 bit ints
-
-   Not available from Fortran
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
 @*/
@@ -1719,7 +1717,7 @@ static inline PetscErrorCode PetscMPIIntCast(PetscInt a, PetscMPIInt *b)
   PetscRealIntMultTruncate - Computes the product of a positive `PetscReal` and a positive
   `PetscInt` and truncates the value to slightly less than the maximal possible value.
 
-  Not Collective, Not available from Fortran
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + a - The `PetscReal` value

@@ -1201,8 +1201,8 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
    Not Collective
 
    Input Parameters:
-+  name_scheme - name of user-defined general linear scheme
--  routine_create - routine to create method context
++  sname - name of user-defined general linear scheme
+-  function - routine to create method context
 
    Level: advanced
 
@@ -1235,8 +1235,8 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
    Not Collective
 
    Input Parameters:
-+  name_scheme - name of user-defined acceptance scheme
--  routine_create - routine to create method context
++  sname - name of user-defined acceptance scheme
+-  function - routine to create method context
 
    Level: advanced
 

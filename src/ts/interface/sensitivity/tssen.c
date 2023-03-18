@@ -18,8 +18,8 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
 . func - function
 - ctx - [optional] user-defined function context
 
-  Calling sequence of func:
-$ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
+  Calling sequence of `func`:
+$ PetscErrorCode func(TS ts, PetscReal t, Vec y, Mat A, void *ctx)
 +   t - current timestep
 .   U - input vector (current ODE solution)
 .   A - output matrix
@@ -61,8 +61,8 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Pet
 . func - function
 - ctx - [optional] user-defined function context
 
-  Calling sequence of func:
-$ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
+  Calling sequence of `func`:
+$ PetscErrorCode func(TS ts, PetscReal t, Vec y, Mat A, void *ctx)
 +   t - current timestep
 .   U - input vector (current ODE solution)
 .   A - output matrix
@@ -127,8 +127,8 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 . func - function
 - ctx - [optional] user-defined function context
 
-  Calling sequence of func:
-$ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
+  Calling sequence of `func`:
+$ PetscErrorCode func(TS ts, PetscReal t, Vec y, Mat A, void *ctx)
 +   t - current timestep
 .   U - input vector (current ODE solution)
 .   Udot - time derivative of state vector
@@ -230,14 +230,14 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
 .   fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
-    Calling sequence of rf:
-$   PetscErrorCode rf(TS ts,PetscReal t,Vec U,Vec F,void *ctx);
+    Calling sequence of `rf`:
+$   PetscErrorCode rf(TS ts, PetscReal t, Vec U, Vec F, oid *ctx)
 
-    Calling sequence of drduf:
-$   PetscErroCode drduf(TS ts,PetscReal t,Vec U,Vec *dRdU,void *ctx);
+    Calling sequence of `drduf`:
+$   PetscErroCode drduf(TS ts, PetscReal t, Vec U, Vec *dRdU, void *ctx)
 
-    Calling sequence of drdpf:
-$   PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *dRdP,void *ctx);
+    Calling sequence of `drdpf`:
+$   PetscErroCode drdpf(TS ts, PetscReal t, Vec U, Vec *dRdP, void *ctx)
 
     Level: deprecated
 
@@ -389,8 +389,8 @@ PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 . ihp4 - an array of vectors storing the result of vector-Hessian-vector product for F_PP
 - hessianproductfunc4 - vector-Hessian-vector product function for F_PP
 
-  Calling sequence of ihessianproductfunc:
-$ ihessianproductfunc (TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV,void *ctx);
+  Calling sequence of `ihessianproductfunc`:
+$ PetscErrorCode ihessianproductfunc(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx);
 +   t - current timestep
 .   U - input vector (current ODE solution)
 .   Vl - an array of input vectors to be left-multiplied with the Hessian
@@ -583,8 +583,8 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 . rhshp4 - an array of vectors storing the result of vector-Hessian-vector product for G_PP
 - hessianproductfunc4 - vector-Hessian-vector product function for G_PP
 
-  Calling sequence of ihessianproductfunc:
-$ rhshessianproductfunc (TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV,void *ctx);
+  Calling sequence of `ihessianproductfunc`:
+$ PetscErrorCode rhshessianproductfunc(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx);
 +   t - current timestep
 .   U - input vector (current ODE solution)
 .   Vl - an array of input vectors to be left-multiplied with the Hessian
@@ -1182,9 +1182,8 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
 -  adjointmonitordestroy - [optional] routine that frees monitor context
           (may be NULL)
 
-   Calling sequence of monitor:
-$    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numcost,Vec *lambda, Vec *mu,void *adjointmctx)
-
+   Calling sequence of `adjointmonitor`:
+$    PetscErrorCode adjointmonitor(TS ts, PetscInt steps, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *adjointmctx)
 +    ts - the `TS` context
 .    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have
                                been interpolated to)
@@ -1202,7 +1201,7 @@ $    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numco
    already has been loaded.
 
    Fortran Note:
-   Only a single monitor function can be set for each TS object
+   Only a single monitor function can be set for each `TS` object
 
 .seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorCancel()`
 @*/

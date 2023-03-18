@@ -1913,7 +1913,7 @@ PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj, TSTrajectoryMemoryType
 /*@C
   TSTrajectorySetMaxCpsRAM - Set maximum number of checkpoints in RAM
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  tj - tstrajectory context
@@ -1935,7 +1935,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj, PetscInt max_cps_ram)
 /*@C
   TSTrajectorySetMaxCpsDisk - Set maximum number of checkpoints on disk
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  tj - tstrajectory context
@@ -1957,7 +1957,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj, PetscInt max_cps_disk)
 /*@C
   TSTrajectorySetMaxUnitsRAM - Set maximum number of checkpointing units in RAM
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  tj - tstrajectory context
@@ -1979,7 +1979,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj, PetscInt max_units_ra
 /*@C
   TSTrajectorySetMaxUnitsDisk - Set maximum number of checkpointing units on disk
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  tj - tstrajectory context

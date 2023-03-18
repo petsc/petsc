@@ -1,25 +1,27 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
 /*@C
-  PetscPartitionerSetType - Builds a particular PetscPartitioner
+  PetscPartitionerSetType - Builds a particular `PetscPartitioner`
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameters:
-+ part - The PetscPartitioner object
++ part - The `PetscPartitioner` object
 - name - The kind of partitioner
 
   Options Database Key:
-. -petscpartitioner_type <type> - Sets the PetscPartitioner type; use -help for a list of available types
-
-  Note:
-$ PETSCPARTITIONERCHACO    - The Chaco partitioner (--download-chaco)
-$ PETSCPARTITIONERPARMETIS - The ParMetis partitioner (--download-parmetis)
-$ PETSCPARTITIONERSHELL    - A shell partitioner implemented by the user
-$ PETSCPARTITIONERSIMPLE   - A simple partitioner that divides cells into equal, contiguous chunks
-$ PETSCPARTITIONERGATHER   - Gathers all cells onto process 0
+. -petscpartitioner_type <type> - Sets the `PetscPartitioner` type
 
   Level: intermediate
+
+  Note:
+.vb
+ PETSCPARTITIONERCHACO    - The Chaco partitioner (--download-chaco)
+ PETSCPARTITIONERPARMETIS - The ParMetis partitioner (--download-parmetis)
+ PETSCPARTITIONERSHELL    - A shell partitioner implemented by the user
+ PETSCPARTITIONERSIMPLE   - A simple partitioner that divides cells into equal, contiguous chunks
+ PETSCPARTITIONERGATHER   - Gathers all cells onto process 0
+.ve
 
 .seealso: `PetscPartitionerGetType()`, `PetscPartitionerCreate()`
 @*/
@@ -70,16 +72,20 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 }
 
 /*@C
-   PetscPartitionerViewFromOptions - View from Options
+   PetscPartitionerViewFromOptions - View a `PetscPartitioner` object based on options in the options database
 
-   Collective on PetscPartitioner
+   Collective
 
    Input Parameters:
-+  A - the PetscPartitioner object
-.  obj - Optional object
++  A - the `PetscPartitioner` object
+.  obj - Optional `PetscObject` that provides the options prefix
 -  name - command line option
 
    Level: intermediate
+
+   Note:
+   See `PetscObjectViewFromOptions()` for the various forms of viewers that may be used
+
 .seealso: `PetscPartitionerView()`, `PetscObjectViewFromOptions()`
 @*/
 PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A, PetscObject obj, const char name[])
@@ -91,12 +97,12 @@ PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A, PetscObject o
 }
 
 /*@
-  PetscPartitionerView - Views a PetscPartitioner
+  PetscPartitionerView - Views a `PetscPartitioner`
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameters:
-+ part - the PetscPartitioner object to view
++ part - the `PetscPartitioner` object to view
 - v    - the viewer
 
   Level: developer
@@ -147,17 +153,17 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 }
 
 /*@
-  PetscPartitionerSetFromOptions - sets parameters in a PetscPartitioner from the options database
+  PetscPartitionerSetFromOptions - sets parameters in a `PetscPartitioner` from the options database
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameter:
-. part - the PetscPartitioner object to set options for
+. part - the `PetscPartitioner` object to set options for
 
   Options Database Keys:
-+  -petscpartitioner_type <type> - Sets the PetscPartitioner type; use -help for a list of available types
++  -petscpartitioner_type <type> - Sets the `PetscPartitioner` type; use -help for a list of available types
 .  -petscpartitioner_use_vertex_weights - Uses weights associated with the graph vertices
--  -petscpartitioner_view_graph - View the graph each time PetscPartitionerPartition is called. Viewer can be customized, see PetscOptionsGetViewer()
+-  -petscpartitioner_view_graph - View the graph each time PetscPartitionerPartition is called. Viewer can be customized, see `PetscOptionsGetViewer()`
 
   Level: developer
 
@@ -188,12 +194,12 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 }
 
 /*@
-  PetscPartitionerSetUp - Construct data structures for the PetscPartitioner
+  PetscPartitionerSetUp - Construct data structures for the `PetscPartitioner`
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameter:
-. part - the PetscPartitioner object to setup
+. part - the `PetscPartitioner` object to setup
 
   Level: developer
 
@@ -208,12 +214,12 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
 }
 
 /*@
-  PetscPartitionerReset - Resets data structures for the PetscPartitioner
+  PetscPartitionerReset - Resets data structures for the `PetscPartitioner`
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameter:
-. part - the PetscPartitioner object to reset
+. part - the `PetscPartitioner` object to reset
 
   Level: developer
 
@@ -228,12 +234,12 @@ PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
 }
 
 /*@
-  PetscPartitionerDestroy - Destroys a PetscPartitioner object
+  PetscPartitionerDestroy - Destroys a `PetscPartitioner` object
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameter:
-. part - the PetscPartitioner object to destroy
+. part - the `PetscPartitioner` object to destroy
 
   Level: developer
 
@@ -263,10 +269,10 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 /*@
   PetscPartitionerPartition - Partition a graph
 
-  Collective on PetscPartitioner
+  Collective
 
   Input Parameters:
-+ part    - The PetscPartitioner
++ part    - The `PetscPartitioner`
 . nparts  - Number of partitions
 . numVertices - Number of vertices in the local part of the graph
 . start - row pointers for the local part of the graph (CSR style)
@@ -275,18 +281,18 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 - targetSection - PetscSection describing the absolute weight of each partition (can be NULL)
 
   Output Parameters:
-+ partSection     - The PetscSection giving the division of points by partition
++ partSection     - The `PetscSection` giving the division of points by partition
 - partition       - The list of points by partition
 
-  Options Database:
+  Options Databasen Keys:
 + -petscpartitioner_view - View the partitioner information
 - -petscpartitioner_view_graph - View the graph we are partitioning
+
+  Level: developer
 
   Notes:
     The chart of the vertexSection (if present) must contain [0,numVertices), with the number of dofs in the section specifying the absolute weight for each vertex.
     The chart of the targetSection (if present) must contain [0,nparts), with the number of dofs in the section specifying the absolute weight for each partition. This information must be the same across processes, PETSc does not check it.
-
-  Level: developer
 
 .seealso `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
 @*/
@@ -354,15 +360,15 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 }
 
 /*@
-  PetscPartitionerCreate - Creates an empty PetscPartitioner object. The type can then be set with PetscPartitionerSetType().
+  PetscPartitionerCreate - Creates an empty `PetscPartitioner` object. The type can then be set with `PetscPartitionerSetType()`.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the PetscPartitioner object
+. comm - The communicator for the `PetscPartitioner` object
 
   Output Parameter:
-. part - The PetscPartitioner object
+. part - The `PetscPartitioner` object
 
   Level: beginner
 

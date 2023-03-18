@@ -48,7 +48,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
 /*@C
    DMDASetAOType - Sets the type of application ordering for a distributed array.
 
-   Collective on da
+   Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -90,7 +90,7 @@ PetscErrorCode DMDASetAOType(DM da, AOType aotype)
 /*@
    DMDAGetAO - Gets the application ordering context for a distributed array.
 
-   Collective on da
+   Collective
 
    Input Parameter:
 .  da - the distributed array

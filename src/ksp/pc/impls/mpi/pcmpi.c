@@ -362,11 +362,13 @@ static PetscErrorCode PCMPIDestroy(PC pc)
      PCMPIServerBegin - starts a server that runs on the rank != 0 MPI processes waiting to process requests for
      parallel `KSP` solves and management of parallel `KSP` objects.
 
-     Logically collective on all MPI ranks except 0
+     Logically Collective on all MPI ranks except 0
 
    Options Database Keys:
 +   -mpi_linear_solver_server - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
 -   -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
+
+     Level: developer
 
      Note:
       This is normally started automatically in `PetscInitialize()` when the option is provided
@@ -377,8 +379,6 @@ static PetscErrorCode PCMPIDestroy(PC pc)
        (that would normally be sharing `PETSC_COMM_WORLD`) to run the solver server.
 
        Can this be integrated into the `PetscDevice` abstraction that is currently being developed?
-
-     Level: developer
 
 .seealso: `PCMPIServerEnd()`, `PCMPI`
 @*/
@@ -442,12 +442,12 @@ PetscErrorCode PCMPIServerBegin(void)
      PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
      parallel KSP solves and management of parallel `KSP` objects.
 
-     Logically collective on all MPI ranks except 0
+     Logically Collective on all MPI ranks except 0
+
+     Level: developer
 
      Note:
       This is normally ended automatically in `PetscFinalize()` when the option is provided
-
-     Level: developer
 
 .seealso: `PCMPIServerBegin()`, `PCMPI`
 @*/
@@ -670,13 +670,13 @@ PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 /*MC
      PCMPI - Calls an MPI parallel `KSP` to solve a linear system from user code running on one process
 
-   Level: beginner
-
    Options Database Keys:
 +  -mpi_linear_solver_server - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
 .  -mpi_linear_solver_server_view - displays information about the linear systems solved by the MPI linear solver server
 .  -pc_mpi_minimum_count_per_rank - sets the minimum size of the linear system per MPI rank that the solver will strive for
 -  -pc_mpi_always_use_server - use the server solver code even if the particular system is only solved on the process, this option is only for debugging and testing purposes
+
+   Level: beginner
 
    Notes:
    The options database prefix for the MPI parallel `KSP` and `PC` is -mpi_

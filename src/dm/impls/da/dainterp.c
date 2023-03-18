@@ -1341,7 +1341,7 @@ PetscErrorCode DMCreateAggregates(DM dac, DM daf, Mat *mat)
    DMDACreateAggregates - Gets the aggregates that map between
    grids associated with two `DMDA`
 
-   Collective on dmc
+   Collective
 
    Input Parameters:
 +  dmc - the coarse grid `DMDA`

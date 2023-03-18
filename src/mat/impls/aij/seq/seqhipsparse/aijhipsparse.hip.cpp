@@ -3201,8 +3201,6 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJHIPSPARSE(Mat A, MatAssemblyType mode
 /*@
    MatCreateSeqAIJHIPSPARSE - Creates a sparse matrix in `MATAIJHIPSPARSE` (compressed row) format.
    This matrix will ultimately pushed down to AMD GPUs and use the HIPSPARSE library for calculations.
-   For good matrix assembly performance the user should preallocate the matrix storage by setting
-   the parameter `nz` (or the array `nnz`).
 
    Collective
 
@@ -3210,9 +3208,8 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJHIPSPARSE(Mat A, MatAssemblyType mode
 +  comm - MPI communicator, set to `PETSC_COMM_SELF`
 .  m - number of rows
 .  n - number of columns
-.  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or `NULL`
+.  nz - number of nonzeros per row (same for all rows), ignored if `nnz` is set
+-  nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
@@ -3224,8 +3221,6 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJHIPSPARSE(Mat A, MatAssemblyType mode
    `MatXXXXSetPreallocation()` paradgm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation`]
 
-   If `nnz` is given then `nz` is ignored
-
    The AIJ format (compressed row storage), is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.
@@ -3233,11 +3228,6 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJHIPSPARSE(Mat A, MatAssemblyType mode
    Specify the preallocated storage with either `nz` or `nnz` (not both).
    Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
    allocation.
-
-   By default, this format uses inodes (identical nodes) when possible, to
-   improve numerical efficiency of matrix-vector products and solves. We
-   search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATSEQAIJHIPSPARSE`, `MATAIJHIPSPARSE`
 @*/
@@ -3537,7 +3527,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*MC
    MATSEQAIJHIPSPARSE - MATAIJHIPSPARSE = "(seq)aijhipsparse" - A matrix type to be used for sparse matrices on AMD GPUs
 
    A matrix type type whose data resides on AMD GPUs. These matrices can be in either
@@ -3545,16 +3535,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat B)
    All matrix calculations are performed on AMD/NVIDIA GPUs using the HIPSPARSE library.
 
    Options Database Keys:
-+  -mat_type aijhipsparse - sets the matrix type to "seqaijhipsparse" during a call to MatSetFromOptions()
++  -mat_type aijhipsparse - sets the matrix type to `MATSEQAIJHIPSPARSE`
 .  -mat_hipsparse_storage_format csr - sets the storage format of matrices (for `MatMult()` and factors in `MatSolve()`).
                                        Other options include ell (ellpack) or hyb (hybrid).
 . -mat_hipsparse_mult_storage_format csr - sets the storage format of matrices (for `MatMult()`). Other options include ell (ellpack) or hyb (hybrid).
-+  -mat_hipsparse_use_cpu_solve - Do `MatSolve()` on the CPU
+-  -mat_hipsparse_use_cpu_solve - Do `MatSolve()` on the CPU
 
   Level: beginner
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJHIPSPARSE()`, `MATAIJHIPSPARSE`, `MatCreateAIJHIPSPARSE()`, `MatHIPSPARSESetFormat()`, `MatHIPSPARSEStorageFormat`, `MatHIPSPARSEFormatOperation`
-*/
+M*/
+
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void)
 {
   PetscFunctionBegin;
@@ -4071,8 +4062,8 @@ PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE(Mat A, const PetscScalar v[], Ins
 -   compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
 
     Output Parameters:
-+   ia - the CSR row pointers
--   ja - the CSR column indices
++   i - the CSR row pointers
+-   j - the CSR column indices
 
     Level: developer
 
@@ -4117,8 +4108,8 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat A, PetscBool compressed, const int **
     Input Parameters:
 +   A - the matrix
 .   compressed - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be always returned in compressed form
-.   ia - the CSR row pointers
--   ja - the CSR column indices
+.   i - the CSR row pointers
+-   j - the CSR column indices
 
     Level: developer
 

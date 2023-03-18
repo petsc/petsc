@@ -16,31 +16,34 @@ typedef struct {
 .  func - function implementing the linesearch shell.
 -  ctx - context for func
 
-   Calling sequence of func:
+   Calling sequence of `func`:
+$  PetscErrorCode func(SNESLinesearch, void *ctx)
 +  linesearch - the linesearch instance
 -  ctx - the above mentioned context
 
    Usage:
-$  PetscErrorCode shellfunc(SNESLineSearch linesearch,void * ctx)
-$  {
-$     Vec  X,Y,F,W,G;
-$     SNES snes;
-$     PetscFunctionBegin;
-$     PetscCall(SNESLineSearchGetSNES(linesearch,&snes));
-$     PetscCall(SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED));
-$     PetscCall(SNESLineSearchGetVecs(linesearch,&X,&F,&Y,&W,&G));
-$     .. determine lambda using W and G as work vecs..
-$     PetscCall(VecAXPY(X,-lambda,Y));
-$     PetscCall(SNESComputeFunction(snes,X,F));
-$     PetscCall(SNESLineSearchComputeNorms(linesearch));
-$     PetscFunctionReturn(PETSC_SUCCESS);
-$  }
-$
-$  ...
-$
-$  PetscCall(SNESGetLineSearch(snes, &linesearch));
-$  PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL));
-$  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
+.vb
+  PetscErrorCode shellfunc(SNESLineSearch linesearch,void * ctx)
+  {
+     Vec  X,Y,F,W,G;
+     SNES snes;
+     PetscFunctionBegin;
+     PetscCall(SNESLineSearchGetSNES(linesearch,&snes));
+     PetscCall(SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED));
+     PetscCall(SNESLineSearchGetVecs(linesearch,&X,&F,&Y,&W,&G));
+     .. determine lambda using W and G as work vecs..
+     PetscCall(VecAXPY(X,-lambda,Y));
+     PetscCall(SNESComputeFunction(snes,X,F));
+     PetscCall(SNESLineSearchComputeNorms(linesearch));
+     PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  ...
+
+  PetscCall(SNESGetLineSearch(snes, &linesearch));
+  PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL));
+  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
+.ve
 
    Level: advanced
 

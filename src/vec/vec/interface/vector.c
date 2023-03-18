@@ -21,7 +21,7 @@ PetscLogEvent VEC_HIPCopyFromGPU, VEC_HIPCopyToGPU;
    VecStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
        to be communicated to other processors during the `VecAssemblyBegin()`/`VecAssemblyEnd()` process
 
-    Not collective
+    Not Collective
 
    Input Parameter:
 .   vec - the vector
@@ -454,7 +454,8 @@ PetscErrorCode VecPointwiseDivide(Vec w, Vec x, Vec y)
    Logically Collective
 
    Input Parameters:
-.  x, y  - the vectors
++  x - the first vector
+-  y - the second vector
 
    Output Parameter:
 .  w - the result
@@ -488,7 +489,7 @@ PetscErrorCode VecPointwiseMult(Vec w, Vec x, Vec y)
    Level: beginner
 
    Notes:
-   VecDuplicate() DOES NOT COPY the vector entries, but rather allocates storage
+   `VecDuplicate()` DOES NOT COPY the vector entries, but rather allocates storage
    for the new vector.  Use `VecCopy()` to copy a vector.
 
    Use `VecDestroy()` to free the space. Use `VecDuplicateVecs()` to get several
@@ -828,7 +829,7 @@ PetscErrorCode VecViewNative(Vec vec, PetscViewer viewer)
    Input Parameter:
 .  x - the vector
 
-   Output Parameters:
+   Output Parameter:
 .  size - the global length of the vector
 
    Level: beginner
@@ -921,7 +922,7 @@ PetscErrorCode VecGetOwnershipRange(Vec x, PetscInt *low, PetscInt *high)
    Input Parameter:
 .  x - the vector
 
-   Output Parameters:
+   Output Parameter:
 .  range - array of length size+1 with the start and end+1 for each process
 
    Level: beginner
@@ -1017,7 +1018,7 @@ PetscErrorCode VecDestroyVecs_Default(PetscInt m, Vec v[])
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  vec - the vector
 
    Level: developer
@@ -1258,7 +1259,7 @@ PetscErrorCode VecStashSetInitialSize(Vec vec, PetscInt size, PetscInt bsize)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  x - the vector
 
    Level: intermediate
@@ -1609,7 +1610,7 @@ PetscErrorCode VecGetOptionsPrefix(Vec v, const char *prefix[])
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  v - the `Vec` context
 
    Level: advanced
@@ -1739,7 +1740,8 @@ PetscErrorCode VecCopy(Vec x, Vec y)
    Logically Collective
 
    Input Parameters:
-.  x, y  - the vectors
++  x  - the first vector
+-  y  - the second vector
 
    Level: advanced
 
@@ -2121,10 +2123,10 @@ PetscErrorCode VecSetPinnedMemoryMin(Vec v, size_t mbytes)
 
   Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
-  Output Parameters:
+  Output Parameter:
 .  mbytes - minimum data size in bytes
 
   Level: developer
@@ -2147,10 +2149,10 @@ PetscErrorCode VecGetPinnedMemoryMin(Vec v, size_t *mbytes)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 .   v - the vector
 
-  Output Parameters:
+  Output Parameter:
 .   mask - corresponding `PetscOffloadMask` enum value.
 
    Level: intermediate

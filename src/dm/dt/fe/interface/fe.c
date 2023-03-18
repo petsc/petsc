@@ -96,14 +96,14 @@ PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(Pe
 /*@C
   PetscFESetType - Builds a particular `PetscFE`
 
-  Collective on fem
+  Collective
 
   Input Parameters:
 + fem  - The `PetscFE` object
 - name - The kind of FEM space
 
   Options Database Key:
-. -petscfe_type <type> - Sets the PetscFE type; use -help for a list of available types
+. -petscfe_type <type> - Sets the `PetscFE` type; use -help for a list of available types
 
   Level: intermediate
 
@@ -159,7 +159,7 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 /*@C
    PetscFEViewFromOptions - View from a `PetscFE` based on values in the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the `PetscFE` object
@@ -181,7 +181,7 @@ PetscErrorCode PetscFEViewFromOptions(PetscFE A, PetscObject obj, const char nam
 /*@C
   PetscFEView - Views a `PetscFE`
 
-  Collective on fem
+  Collective
 
   Input Parameters:
 + fem - the `PetscFE` object to view
@@ -208,7 +208,7 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
 /*@
   PetscFESetFromOptions - sets parameters in a `PetscFE` from the options database
 
-  Collective on fem
+  Collective
 
   Input Parameter:
 . fem - the `PetscFE` object to set options for
@@ -256,7 +256,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
 /*@C
   PetscFESetUp - Construct data structures for the `PetscFE` after the `PetscFEType` has been set
 
-  Collective on fem
+  Collective
 
   Input Parameter:
 . fem - the `PetscFE` object to setup
@@ -280,7 +280,7 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
 /*@
   PetscFEDestroy - Destroys a `PetscFE` object
 
-  Collective on fem
+  Collective
 
   Input Parameter:
 . fem - the `PetscFE` object to destroy
@@ -375,7 +375,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 /*@
   PetscFEGetSpatialDimension - Returns the spatial dimension of the element
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -402,7 +402,7 @@ PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
 /*@
   PetscFESetNumComponents - Sets the number of field components in the element
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -423,7 +423,7 @@ PetscErrorCode PetscFESetNumComponents(PetscFE fem, PetscInt comp)
 /*@
   PetscFEGetNumComponents - Returns the number of components in the element
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -447,7 +447,7 @@ PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
 /*@
   PetscFESetTileSizes - Sets the tile sizes for evaluation
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -474,7 +474,7 @@ PetscErrorCode PetscFESetTileSizes(PetscFE fem, PetscInt blockSize, PetscInt num
 /*@
   PetscFEGetTileSizes - Returns the tile sizes for evaluation
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -507,7 +507,7 @@ PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *n
 /*@
   PetscFEGetBasisSpace - Returns the `PetscSpace` used for the approximation of the solution for the `PetscFE`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -531,7 +531,7 @@ PetscErrorCode PetscFEGetBasisSpace(PetscFE fem, PetscSpace *sp)
 /*@
   PetscFESetBasisSpace - Sets the `PetscSpace` used for the approximation of the solution
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -558,7 +558,7 @@ PetscErrorCode PetscFESetBasisSpace(PetscFE fem, PetscSpace sp)
 /*@
   PetscFEGetDualSpace - Returns the `PetscDualSpace` used to define the inner product for a `PetscFE`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -582,7 +582,7 @@ PetscErrorCode PetscFEGetDualSpace(PetscFE fem, PetscDualSpace *sp)
 /*@
   PetscFESetDualSpace - Sets the `PetscDualSpace` used to define the inner product
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -606,7 +606,7 @@ PetscErrorCode PetscFESetDualSpace(PetscFE fem, PetscDualSpace sp)
 /*@
   PetscFEGetQuadrature - Returns the `PetscQuadrature` used to calculate inner products
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -630,7 +630,7 @@ PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
 /*@
   PetscFESetQuadrature - Sets the `PetscQuadrature` used to calculate inner products
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -661,7 +661,7 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
 /*@
   PetscFEGetFaceQuadrature - Returns the `PetscQuadrature` used to calculate inner products on faces
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -688,7 +688,7 @@ PetscErrorCode PetscFEGetFaceQuadrature(PetscFE fem, PetscQuadrature *q)
 /*@
   PetscFESetFaceQuadrature - Sets the `PetscQuadrature` used to calculate inner products on faces
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -718,7 +718,7 @@ PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
 /*@
   PetscFECopyQuadrature - Copy both volumetric and surface quadrature to a new `PetscFE`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sfe - The `PetscFE` source for the quadratures
@@ -745,7 +745,7 @@ PetscErrorCode PetscFECopyQuadrature(PetscFE sfe, PetscFE tfe)
 /*@C
   PetscFEGetNumDof - Returns the number of dofs (dual basis vectors) associated to mesh points on the reference cell of a given dimension
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -769,7 +769,7 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 /*@C
   PetscFEGetCellTabulation - Returns the tabulation of the basis functions at the quadrature points on the reference cell
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -807,7 +807,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
 /*@C
   PetscFEGetFaceTabulation - Returns the tabulation of the basis functions at the face quadrature points for each face of the reference cell
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem - The `PetscFE` object
@@ -868,7 +868,7 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscInt k, PetscTabulation
 /*@C
   PetscFEGetFaceCentroidTabulation - Returns the tabulation of the basis functions at the face centroid points
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fem - The `PetscFE` object
@@ -914,7 +914,7 @@ PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscTabulation *Tc
 /*@C
   PetscFECreateTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem     - The `PetscFE` object
@@ -974,7 +974,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
 /*@C
   PetscFEComputeTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + fem     - The `PetscFE` object
@@ -1030,7 +1030,7 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
 /*@C
   PetscTabulationDestroy - Frees memory from the associated tabulation.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . T - The tabulation
@@ -1131,7 +1131,7 @@ PetscErrorCode PetscFECreateHeightTrace(PetscFE fe, PetscInt height, PetscFE *tr
 /*@
   PetscFEGetDimension - Get the dimension of the finite element space on a cell
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . fe - The `PetscFE`
@@ -1330,7 +1330,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
 /*@C
   PetscFEIntegrate - Produce the integral for the given field for a chunk of elements by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + prob         - The `PetscDS` specifying the discretizations and continuum functions
@@ -1365,7 +1365,7 @@ PetscErrorCode PetscFEIntegrate(PetscDS prob, PetscInt field, PetscInt Ne, Petsc
 /*@C
   PetscFEIntegrateBd - Produce the integral for the given field for a chunk of elements by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + prob         - The `PetscDS` specifying the discretizations and continuum functions
@@ -1401,16 +1401,16 @@ PetscErrorCode PetscFEIntegrateBd(PetscDS prob, PetscInt field, void (*obj_func)
 /*@C
   PetscFEIntegrateResidual - Produce the element residual vector for a chunk of elements by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ ds           - The PetscDS specifying the discretizations and continuum functions
++ ds           - The `PetscDS` specifying the discretizations and continuum functions
 . key          - The (label+value, field) being integrated
 . Ne           - The number of elements in the chunk
 . cgeom        - The cell geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
-. probAux      - The PetscDS specifying the auxiliary discretizations
+. probAux      - The `PetscDS` specifying the auxiliary discretizations
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t            - The time
 
@@ -1445,17 +1445,17 @@ PetscErrorCode PetscFEIntegrateResidual(PetscDS ds, PetscFormKey key, PetscInt N
 /*@C
   PetscFEIntegrateBdResidual - Produce the element residual vector for a chunk of elements by quadrature integration over a boundary
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ ds           - The PetscDS specifying the discretizations and continuum functions
++ ds           - The `PetscDS` specifying the discretizations and continuum functions
 . wf           - The PetscWeakForm object holding the pointwise functions
 . key          - The (label+value, field) being integrated
 . Ne           - The number of elements in the chunk
 . fgeom        - The face geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
-. probAux      - The PetscDS specifying the auxiliary discretizations
+. probAux      - The `PetscDS` specifying the auxiliary discretizations
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t            - The time
 
@@ -1480,17 +1480,17 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS ds, PetscWeakForm wf, PetscFor
 /*@C
   PetscFEIntegrateHybridResidual - Produce the element residual vector for a chunk of hybrid element faces by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ prob         - The PetscDS specifying the discretizations and continuum functions
++ prob         - The `PetscDS` specifying the discretizations and continuum functions
 . key          - The (label+value, field) being integrated
 . s            - The side of the cell being integrated, 0 for negative and 1 for positive
 . Ne           - The number of elements in the chunk
 . fgeom        - The face geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
-. probAux      - The PetscDS specifying the auxiliary discretizations
+. probAux      - The `PetscDS` specifying the auxiliary discretizations
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 - t            - The time
 
@@ -1515,10 +1515,10 @@ PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS prob, PetscFormKey key, Pe
 /*@C
   PetscFEIntegrateJacobian - Produce the element Jacobian for a chunk of elements by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ ds           - The PetscDS specifying the discretizations and continuum functions
++ ds           - The `PetscDS` specifying the discretizations and continuum functions
 . jtype        - The type of matrix pointwise functions that should be used
 . key          - The (label+value, fieldI*Nf + fieldJ) being integrated
 . s            - The side of the cell being integrated, 0 for negative and 1 for positive
@@ -1526,7 +1526,7 @@ PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS prob, PetscFormKey key, Pe
 . cgeom        - The cell geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
-. probAux      - The PetscDS specifying the auxiliary discretizations
+. probAux      - The `PetscDS` specifying the auxiliary discretizations
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 . t            - The time
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
@@ -1566,17 +1566,17 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS ds, PetscFEJacobianType jtype, P
 /*@C
   PetscFEIntegrateBdJacobian - Produce the boundary element Jacobian for a chunk of elements by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ ds           - The PetscDS specifying the discretizations and continuum functions
++ ds           - The `PetscDS` specifying the discretizations and continuum functions
 . wf           - The PetscWeakForm holding the pointwise functions
 . key          - The (label+value, fieldI*Nf + fieldJ) being integrated
 . Ne           - The number of elements in the chunk
 . fgeom        - The face geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
-. probAux      - The PetscDS specifying the auxiliary discretizations
+. probAux      - The `PetscDS` specifying the auxiliary discretizations
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 . t            - The time
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
@@ -1616,10 +1616,10 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFor
 /*@C
   PetscFEIntegrateHybridJacobian - Produce the boundary element Jacobian for a chunk of hybrid elements by quadrature integration
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ ds           - The PetscDS specifying the discretizations and continuum functions
++ ds           - The `PetscDS` specifying the discretizations and continuum functions
 . jtype        - The type of matrix pointwise functions that should be used
 . key          - The (label+value, fieldI*Nf + fieldJ) being integrated
 . s            - The side of the cell being integrated, 0 for negative and 1 for positive
@@ -1627,7 +1627,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFor
 . fgeom        - The face geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
-. probAux      - The PetscDS specifying the auxiliary discretizations
+. probAux      - The `PetscDS` specifying the auxiliary discretizations
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 . t            - The time
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
@@ -1669,10 +1669,10 @@ PetscErrorCode PetscFEIntegrateHybridJacobian(PetscDS ds, PetscFEJacobianType jt
 
   Input Parameters:
 + fe     - The finite element space
-- height - The height of the Plex point
+- height - The height of the `DMPLEX` point
 
   Output Parameter:
-. subfe  - The subspace of this FE space
+. subfe  - The subspace of this `PetscFE` space
 
   Level: advanced
 
@@ -1732,17 +1732,17 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
 }
 
 /*@
-  PetscFERefine - Create a "refined" PetscFE object that refines the reference cell into smaller copies. This is typically used
+  PetscFERefine - Create a "refined" `PetscFE` object that refines the reference cell into smaller copies. This is typically used
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
   sparsity). It is also used to create an interpolation between regularly refined meshes.
 
-  Collective on fem
+  Collective
 
   Input Parameter:
-. fe - The initial PetscFE
+. fe - The initial `PetscFE`
 
   Output Parameter:
-. feRef - The refined PetscFE
+. feRef - The refined `PetscFE`
 
   Level: advanced
 
@@ -1887,7 +1887,7 @@ static PetscErrorCode PetscFECreateDefaultQuadrature_Private(PetscInt dim, DMPol
 - fq - The face quadrature
 
   Output Parameter:
-. fem    - The PetscFE object
+. fem    - The `PetscFE` object
 
   Level: beginner
 
@@ -2010,7 +2010,7 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
 }
 
 /*@C
-  PetscFECreateDefault - Create a PetscFE for basic FEM computation
+  PetscFECreateDefault - Create a `PetscFE` for basic FEM computation
 
   Collective
 
@@ -2019,11 +2019,11 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
 . dim       - The spatial dimension
 . Nc        - The number of components
 . isSimplex - Flag for simplex reference cell, otherwise its a tensor product
-. prefix    - The options prefix, or NULL
-- qorder    - The quadrature order or PETSC_DETERMINE to use PetscSpace polynomial degree
+. prefix    - The options prefix, or `NULL`
+- qorder    - The quadrature order or `PETSC_DETERMINE` to use `PetscSpace` polynomial degree
 
   Output Parameter:
-. fem - The PetscFE object
+. fem - The `PetscFE` object
 
   Level: beginner
 
@@ -2040,7 +2040,7 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
 }
 
 /*@C
-  PetscFECreateByCell - Create a PetscFE for basic FEM computation
+  PetscFECreateByCell - Create a `PetscFE` for basic FEM computation
 
   Collective
 
@@ -2049,11 +2049,11 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
 . dim    - The spatial dimension
 . Nc     - The number of components
 . ct     - The celltype of the reference cell
-. prefix - The options prefix, or NULL
-- qorder - The quadrature order or PETSC_DETERMINE to use PetscSpace polynomial degree
+. prefix - The options prefix, or `NULL`
+- qorder - The quadrature order or `PETSC_DETERMINE` to use `PetscSpace` polynomial degree
 
   Output Parameter:
-. fem - The PetscFE object
+. fem - The `PetscFE` object
 
   Level: beginner
 
@@ -2070,7 +2070,7 @@ PetscErrorCode PetscFECreateByCell(MPI_Comm comm, PetscInt dim, PetscInt Nc, DMP
 }
 
 /*@
-  PetscFECreateLagrange - Create a PetscFE for the basic Lagrange space of degree k
+  PetscFECreateLagrange - Create a `PetscFE` for the basic Lagrange space of degree k
 
   Collective
 
@@ -2080,10 +2080,10 @@ PetscErrorCode PetscFECreateByCell(MPI_Comm comm, PetscInt dim, PetscInt Nc, DMP
 . Nc        - The number of components
 . isSimplex - Flag for simplex reference cell, otherwise its a tensor product
 . k         - The degree k of the space
-- qorder    - The quadrature order or PETSC_DETERMINE to use PetscSpace polynomial degree
+- qorder    - The quadrature order or `PETSC_DETERMINE` to use `PetscSpace` polynomial degree
 
   Output Parameter:
-. fem       - The PetscFE object
+. fem       - The `PetscFE` object
 
   Level: beginner
 
@@ -2100,7 +2100,7 @@ PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, P
 }
 
 /*@
-  PetscFECreateLagrangeByCell - Create a PetscFE for the basic Lagrange space of degree k
+  PetscFECreateLagrangeByCell - Create a `PetscFE` for the basic Lagrange space of degree k
 
   Collective
 
@@ -2110,10 +2110,10 @@ PetscErrorCode PetscFECreateLagrange(MPI_Comm comm, PetscInt dim, PetscInt Nc, P
 . Nc        - The number of components
 . ct        - The celltype of the reference cell
 . k         - The degree k of the space
-- qorder    - The quadrature order or PETSC_DETERMINE to use PetscSpace polynomial degree
+- qorder    - The quadrature order or `PETSC_DETERMINE` to use `PetscSpace` polynomial degree
 
   Output Parameter:
-. fem       - The PetscFE object
+. fem       - The `PetscFE` object
 
   Level: beginner
 
@@ -2130,12 +2130,12 @@ PetscErrorCode PetscFECreateLagrangeByCell(MPI_Comm comm, PetscInt dim, PetscInt
 }
 
 /*@C
-  PetscFESetName - Names the FE and its subobjects
+  PetscFESetName - Names the `PetscFE` and its subobjects
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ fe   - The PetscFE
++ fe   - The `PetscFE`
 - name - The name
 
   Level: intermediate

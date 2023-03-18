@@ -8,7 +8,7 @@ const char *const PetscDrawMarkerTypes[] = {"CROSS", "POINT", "PLUS", "CIRCLE", 
 /*@
    PetscDrawMarker - draws a marker onto a drawable.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -59,7 +59,7 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 /*@
    PetscDrawSetMarkerType - sets the type of marker to display with `PetscDrawMarker()`
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -83,7 +83,7 @@ PetscErrorCode PetscDrawSetMarkerType(PetscDraw draw, PetscDrawMarkerType mtype)
 /*@
    PetscDrawGetMarkerType - gets the type of marker to display with `PetscDrawMarker()`
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context

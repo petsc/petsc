@@ -3739,9 +3739,8 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
 }
 
 /*@
-    MatStoreValues - Stashes a copy of the matrix values; this allows, for
-       example, reuse of the linear part of a Jacobian, while recomputing the
-       nonlinear portion.
+    MatStoreValues - Stashes a copy of the matrix values; this allows reusing of the linear part of a Jacobian, while recomputing only the
+    nonlinear portion.
 
    Logically Collect
 
@@ -3811,9 +3810,7 @@ PetscErrorCode MatRetrieveValues_SeqAIJ(Mat mat)
 }
 
 /*@
-    MatRetrieveValues - Retrieves the copy of the matrix values; this allows, for
-       example, reuse of the linear part of a Jacobian, while recomputing the
-       nonlinear portion.
+    MatRetrieveValues - Retrieves the copy of the matrix values that was stored with `MatStoreValues()`
 
    Logically Collect
 
@@ -3837,9 +3834,8 @@ PetscErrorCode MatRetrieveValues(Mat mat)
 /*@C
    MatCreateSeqAIJ - Creates a sparse matrix in `MATSEQAIJ` (compressed row) format
    (the default parallel PETSc format).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameter nz
-   (or the array nnz).  By setting these parameters accurately, performance
-   during matrix assembly can be increased by more than a factor of 50.
+   the user should preallocate the matrix storage by setting the parameter `nz`
+   (or the array `nnz`).
 
    Collective
 
@@ -3868,10 +3864,9 @@ PetscErrorCode MatRetrieveValues(Mat mat)
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.
 
-   Specify the preallocated storage with either nz or nnz (not both).
+   Specify the preallocated storage with either `nz` or `nnz` (not both).
    Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
-   allocation.  For large problems you MUST preallocate memory or you
-   will get TERRIBLE performance, see the users' manual chapter on matrices.
+   allocation.
 
    By default, this format uses inodes (identical nodes) when possible, to
    improve numerical efficiency of matrix-vector products and solves. We

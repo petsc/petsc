@@ -1359,15 +1359,17 @@ static PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatRe
 }
 
 /*@C
-  MatCreateKAIJ - Creates a matrix of type `MATKAIJ` to be used for matrices of the following form:
-
+  MatCreateKAIJ - Creates a matrix of type `MATKAIJ` to be used for matrices of the following form
+.vb
     [I \otimes S + A \otimes T]
-
+.ve
   where
+.vb
     S is a dense (p \times q) matrix
     T is a dense (p \times q) matrix
-    A is an `MATAIJ`  (n \times n) matrix
+    A is a `MATAIJ`  (n \times n) matrix
     I is the identity matrix
+.ve
   The resulting matrix is (np \times nq)
 
   `S` and `T` are always stored independently on all processes as `PetscScalar` arrays in column-major format.

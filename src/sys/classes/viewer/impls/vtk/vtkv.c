@@ -25,7 +25,7 @@ M*/
 +  viewer - `PETSCVIEWERVTK`
 .  dm - `DM` on which `Vec` lives
 .  PetscViewerVTKWriteFunction - function to write this `Vec`
-.  fieldnum - which field of the DM to write (`PETSC_DEFAULT` if the while vector should be written)
+.  fieldnum - which field of the `DM` to write (`PETSC_DEFAULT` if the while vector should be written)
 .  fieldtype - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
 .  checkdm - whether to check for identical dm arguments as fields are added
 -  vec - `Vec` from which to write
@@ -269,7 +269,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
 /*@C
    PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  viewer - logically collective viewer, data written from rank 0

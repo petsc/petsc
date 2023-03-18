@@ -391,28 +391,28 @@ PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)
 . bar - a bar
 - baz - a baz
 
-  Calling sequence of foo:
+  Calling sequence of `foo`:
 + foo_parm1 - an int
 . foo_parm2 - a double
 - foo_parm3 - a float
 
-  Calling sequence of bar:
+  Calling sequence of `bar`:
 + bar_parm1 - an int
 . bar_parm2 - a double
 - bar_parm3 - a float
 
-  Calling sequence of baz:
+  Calling sequence of `baz`:
 + bop       - a bop
 . blitz     - a blitz
 . baz_parm1 - an int
 . baz_parm2 - a double
 - baz_parm3 - a float
 
+  Level: developer
+
   Notes:
   But bars arguments should correctly match! Additionally, this function requires a 'C'
   interface marker!
-
-  Level: developer
 
 .seealso: `testPredeclarationCursorIgnored()`
 */

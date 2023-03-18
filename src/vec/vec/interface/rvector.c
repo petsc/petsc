@@ -448,7 +448,7 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
 /*@
    VecScale - Scales a vector.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  x - the vector
@@ -1620,7 +1620,7 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y)
    VecCreateLocalVector - Creates a vector object suitable for use with `VecGetLocalVector()` and friends. You must call `VecDestroy()` when the
    vector is no longer needed.
 
-   Not collective.
+   Not Collective.
 
    Input parameter:
 .  v - The vector for which the local vector is desired.
@@ -1661,7 +1661,7 @@ PetscErrorCode VecCreateLocalVector(Vec v, Vec *w)
    VecGetLocalVectorRead - Maps the local portion of a vector into a
    vector.
 
-   Not collective.
+   Not Collective.
 
    Input parameter:
 .  v - The vector for which the local vector is desired.
@@ -1714,7 +1714,7 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w)
    VecRestoreLocalVectorRead - Unmaps the local portion of a vector
    previously mapped into a vector using `VecGetLocalVectorRead()`.
 
-   Not collective.
+   Not Collective.
 
    Input parameter:
 +  v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVectorRead()`.
@@ -1796,7 +1796,7 @@ PetscErrorCode VecGetLocalVector(Vec v, Vec w)
    VecRestoreLocalVector - Unmaps the local portion of a vector
    previously mapped into a vector using `VecGetLocalVector()`.
 
-   Logically collective.
+   Logically Collective.
 
    Input parameter:
 +  v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVector()`.

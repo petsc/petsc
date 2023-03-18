@@ -4,7 +4,7 @@
 /*@C
      PetscTellMyCell - Sends an SMS to an American/Canadian phone number
 
-   Not collective, only the first process in `MPI_Comm` does anything
+   Not Collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -24,7 +24,7 @@
    Notes:
     You must register for an account at tellmycell.com (you get 10 free texts with registration)
 
-   You must provide -tellmycell_user <Username> and -tellmycell_password <Password> in the options database
+   You must provide `-tellmycell_user <Username>` and `-tellmycell_password <Password>` in the options database
 
    It would be nice to provide this as a free service but that would require making the PETSc TellMyCell password public.
 

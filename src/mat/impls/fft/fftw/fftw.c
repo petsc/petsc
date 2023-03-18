@@ -37,15 +37,6 @@ extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat, Vec, Vec);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
 #endif
 
-/*
-   MatMult_SeqFFTW performs forward DFT
-   Input parameter:
-     A - the matrix
-     x - the vector on which FDFT will be performed
-
-   Output parameter:
-     y - vector that stores result of FDFT
-*/
 PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
@@ -139,15 +130,6 @@ PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* MatMultTranspose_SeqFFTW performs serial backward DFT
-   Input parameter:
-     A - the matrix
-     x - the vector on which BDFT will be performed
-
-   Output parameter:
-     y - vector that stores result of BDFT
-*/
-
 PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
@@ -221,14 +203,6 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
 }
 
 #if !PetscDefined(HAVE_MPIUNI)
-/* MatMult_MPIFFTW performs forward DFT in parallel
-   Input parameter:
-     A - the matrix
-     x - the vector on which FDFT will be performed
-
-   Output parameter:
-   y   - vector that stores result of FDFT
-*/
 PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
@@ -290,15 +264,6 @@ PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   MatMultTranspose_MPIFFTW performs parallel backward DFT
-   Input parameter:
-     A - the matrix
-     x - the vector on which BDFT will be performed
-
-   Output parameter:
-     y - vector that stores result of BDFT
-*/
 PetscErrorCode MatMultTranspose_MPIFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;

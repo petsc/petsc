@@ -15,15 +15,15 @@
 .  start - starting point of the subvector (defined by a stride)
 -  s - value to set for each entry in that subvector
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    This will only work if the desire subvector is a stride subvector
 
-   Level: advanced
-
-.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
+.seealso: `Vec`, `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
 @*/
 PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
 {
@@ -53,15 +53,15 @@ PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
 .  start - starting point of the subvector (defined by a stride)
 -  scale - value to multiply each subvector entry by
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    This will only work if the desire subvector is a stride subvector
 
-   Level: advanced
-
-.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
+.seealso: `Vec`, `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
 @*/
 PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
 {
@@ -89,14 +89,16 @@ PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
    Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
--  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
+-  ntype - type of norm, one of `NORM_1`, `NORM_2`, `NORM_INFINITY`
 
    Output Parameter:
 .  norm - the norm
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If x is the array representing the vector x then this computes the norm
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -106,9 +108,7 @@ PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
 
    This will only work if the desire subvector is a stride subvector
 
-   Level: advanced
-
-.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
+.seealso: `Vec`, `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *nrm)
 {
@@ -157,12 +157,14 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameters:
-+  idex - the location where the maximum occurred  (pass NULL if not required)
++  idex - the location where the maximum occurred  (pass `NULL` if not required)
 -  nrm - the maximum value in the subvector
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If xa is the array representing the vector x, then this computes the max
    of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
@@ -171,9 +173,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
 
-   Level: advanced
-
-.seealso: `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
+.seealso: `Vec`, `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
 PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
 {
@@ -231,14 +231,14 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameters:
-+  idex - the location where the minimum occurred. (pass NULL if not required)
++  idex - the location where the minimum occurred. (pass `NULL` if not required)
 -  nrm - the minimum value in the subvector
 
    Level: advanced
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If xa is the array representing the vector x, then this computes the min
    of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
@@ -247,7 +247,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
 
-.seealso: `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
+.seealso: `Vec`, `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
 {
@@ -307,6 +307,8 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
    Output Parameter:
 .  sum - the sum
 
+   Level: advanced
+
    Notes:
    One must call `VecSetBlockSize()` before this routine to set the stride
    information, or use a vector created from a multicomponent `DMDA`.
@@ -314,9 +316,7 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
    If x is the array representing the vector x then this computes the sum
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
 
-   Level: advanced
-
-.seealso: `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
+.seealso: `Vec`, `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
 {
@@ -348,15 +348,15 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
 +  v - the vector
 -  scales - values to multiply each subvector entry by
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    The dimension of scales must be the same as the vector block size
 
-   Level: advanced
-
-.seealso: `VecNorm()`, `VecStrideScale()`, `VecScale()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
+.seealso: `Vec`, `VecNorm()`, `VecStrideScale()`, `VecScale()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales)
 {
@@ -385,14 +385,16 @@ PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales)
 
    Input Parameters:
 +  v - the vector
--  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
+-  ntype - type of norm, one of `NORM_1`, `NORM_2`, `NORM_INFINITY`
 
    Output Parameter:
 .  nrm - the norms
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If x is the array representing the vector x then this computes the norm
    of the array (x[start],x[start+stride],x[start+2*stride], ....) for each start < stride
@@ -401,9 +403,7 @@ PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales)
 
    This will only work if the desire subvector is a stride subvector
 
-   Level: advanced
-
-.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
+.seealso: `Vec`, `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
 {
@@ -471,19 +471,19 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
 .  v - the vector
 
    Output Parameters:
-+  index - the location where the maximum occurred (not supported, pass NULL,
++  index - the location where the maximum occurred (not supported, pass `NULL`,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the maximum values of each subvector
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    The dimension of nrm must be the same as the vector block size
 
-   Level: advanced
-
-.seealso: `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
+.seealso: `Vec`, `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
 PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
 {
@@ -530,19 +530,19 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
 .  v - the vector
 
    Output Parameters:
-+  idex - the location where the minimum occurred (not supported, pass NULL,
++  idex - the location where the minimum occurred (not supported, pass `NULL`,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the minimums of each subvector
 
    Level: advanced
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
-   The dimension of nrm must be the same as the vector block size
+   The dimension of `nrm` must be the same as the vector block size
 
-.seealso: `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
+.seealso: `Vec`, `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
 {
@@ -590,6 +590,8 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
    Output Parameter:
 .  sums - the sums
 
+   Level: advanced
+
    Notes:
    One must call `VecSetBlockSize()` before this routine to set the stride
    information, or use a vector created from a multicomponent `DMDA`.
@@ -597,9 +599,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
    If x is the array representing the vector x then this computes the sum
    of the array (x[start],x[start+stride],x[start+2*stride], ....) for each start < stride
 
-   Level: advanced
-
-.seealso: `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
+.seealso: `Vec`, `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
 {
@@ -637,14 +637,16 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
 
    Input Parameters:
 +  v - the vector
--  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+-  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
    Output Parameter:
 .  s - the location where the subvectors are stored
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If x is the array representing the vector x then this gathers
    the arrays (x[start],x[start+stride],x[start+2*stride], ....)
@@ -655,9 +657,7 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
 
    Not optimized; could be easily
 
-   Level: advanced
-
-.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
+.seealso: `Vec`, `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
           `VecStrideScatterAll()`
 @*/
 PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
@@ -732,23 +732,23 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
 
    Input Parameters:
 +  s - the location where the subvectors are stored
--  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+-  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
    Output Parameter:
 .  v - the multicomponent vector
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s)
 
    Not optimized; could be easily
 
-   Level: advanced
-
-.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
+.seealso: `Vec`, `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
           `VecStrideScatterAll()`
 @*/
 PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
@@ -823,14 +823,16 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
    Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
--  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+-  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
    Output Parameter:
 .  s - the location where the subvector is stored
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    If x is the array representing the vector x then this gathers
    the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -840,9 +842,7 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
 
    Not optimized; could be easily
 
-   Level: advanced
-
-.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+.seealso: `Vec`, `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`
 @*/
 PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv)
@@ -865,23 +865,23 @@ PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv)
    Input Parameters:
 +  s - the single-component vector
 .  start - starting point of the subvector (defined by a stride)
--  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+-  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
    Output Parameter:
 .  v - the location where the subvector is scattered (the multi-component vector)
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() on the multi-component vector before this
-   routine to set the stride  information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` on the multi-component vector before this
+   routine to set the stride  information, or use a vector created from a multicomponent `DMDA`.
 
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s)
 
    Not optimized; could be easily
 
-   Level: advanced
-
-.seealso: `VecStrideNorm()`, `VecStrideGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+.seealso: `Vec`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`, `VecStrideSubSetScatter()`, `VecStrideSubSetGather()`
 @*/
 PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
@@ -907,22 +907,22 @@ PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
 .  nidx - the number of indices
 .  idxv - the indices of the components 0 <= idxv[0] ...idxv[nidx-1] < bs(v), they need not be sorted
 .  idxs - the indices of the components 0 <= idxs[0] ...idxs[nidx-1] < bs(s), they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
--  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+-  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
    Output Parameter:
 .  s - the location where the subvector is stored
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() on both vectors before this routine to set the stride
-   information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` on both vectors before this routine to set the stride
+   information, or use a vector created from a multicomponent `DMDA`.
 
    The parallel layout of the vector and the subvector must be the same;
 
    Not optimized; could be easily
 
-   Level: advanced
-
-.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideGather()`, `VecStrideSubSetScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+.seealso: `Vec`, `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideGather()`, `VecStrideSubSetScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`
 @*/
 PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[], const PetscInt idxs[], Vec s, InsertMode addv)
@@ -945,22 +945,22 @@ PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[]
 .  nidx - the number of indices in idx
 .  idxs - the indices of the components in the smaller-component vector, 0 <= idxs[0] ...idxs[nidx-1] < bs(s) they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
 .  idxv - the indices of the components in the larger-component vector, 0 <= idx[0] ...idx[nidx-1] < bs(v) they need not be sorted
--  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+-  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
    Output Parameter:
 .  v - the location where the subvector is into scattered (the multi-component vector)
 
+   Level: advanced
+
    Notes:
-   One must call VecSetBlockSize() on the vectors before this
-   routine to set the stride  information, or use a vector created from a multicomponent DMDA.
+   One must call `VecSetBlockSize()` on the vectors before this
+   routine to set the stride  information, or use a vector created from a multicomponent `DMDA`.
 
    The parallel layout of the vector and the subvector must be the same;
 
    Not optimized; could be easily
 
-   Level: advanced
-
-.seealso: `VecStrideNorm()`, `VecStrideGather()`, `VecStrideGather()`, `VecStrideSubSetGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+.seealso: `Vec`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideGather()`, `VecStrideSubSetGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`
 @*/
 PetscErrorCode VecStrideSubSetScatter(Vec s, PetscInt nidx, const PetscInt idxs[], const PetscInt idxv[], Vec v, InsertMode addv)
@@ -1210,7 +1210,7 @@ static PetscScalar ScalarExp_Fn(PetscScalar x)
 /*@
   VecExp - Replaces each component of a vector by e^x_i
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . v - The vector
@@ -1220,7 +1220,7 @@ static PetscScalar ScalarExp_Fn(PetscScalar x)
 
   Level: beginner
 
-.seealso: `VecLog()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
+.seealso: `Vec`, `VecLog()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
 
 @*/
 PetscErrorCode VecExp(Vec v)
@@ -1239,7 +1239,7 @@ static PetscScalar ScalarLog_Fn(PetscScalar x)
 /*@
   VecLog - Replaces each component of a vector by log(x_i), the natural logarithm
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . v - The vector
@@ -1249,7 +1249,7 @@ static PetscScalar ScalarLog_Fn(PetscScalar x)
 
   Level: beginner
 
-.seealso: `VecExp()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
+.seealso: `Vec`, `VecExp()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
 
 @*/
 PetscErrorCode VecLog(Vec v)
@@ -1292,19 +1292,17 @@ static PetscScalar ScalarSqrtAbs_Fn(PetscScalar x)
 /*@
   VecSqrtAbs - Replaces each component of a vector by the square root of its magnitude.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . v - The vector
 
-  Output Parameter:
-. v - The vector square root
-
   Level: beginner
 
-  Note: The actual function is sqrt(|x_i|)
+  Note:
+  The actual function is sqrt(|x_i|)
 
-.seealso: `VecLog()`, `VecExp()`, `VecReciprocal()`, `VecAbs()`
+.seealso: `Vec`, `VecLog()`, `VecExp()`, `VecReciprocal()`, `VecAbs()`
 
 @*/
 PetscErrorCode VecSqrtAbs(Vec v)
@@ -1336,7 +1334,7 @@ static PetscScalar ScalarImaginaryPart_Fn(PetscScalar x)
 
    Level: beginner
 
-.seealso: `VecNorm()`, `VecRealPart()`
+.seealso: `Vec`, `VecNorm()`, `VecRealPart()`
 @*/
 PetscErrorCode VecImaginaryPart(Vec v)
 {
@@ -1360,14 +1358,14 @@ static PetscScalar ScalarRealPart_Fn(PetscScalar x)
 /*@
    VecRealPart - Replaces a complex vector with its real part
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
 
    Level: beginner
 
-.seealso: `VecNorm()`, `VecImaginaryPart()`
+.seealso: `Vec`, `VecNorm()`, `VecImaginaryPart()`
 @*/
 PetscErrorCode VecRealPart(Vec v)
 {
@@ -1392,10 +1390,10 @@ PetscErrorCode VecRealPart(Vec v)
 
   Level: advanced
 
-  Notes:
+  Note:
     conj(x) is the complex conjugate of x when x is complex
 
-.seealso: `VecDot()`, `VecNorm()`, `VecDotBegin()`, `VecNormBegin()`, `VecDotEnd()`, `VecNormEnd()`
+.seealso: `Vec`, `VecDot()`, `VecNorm()`, `VecDotBegin()`, `VecNormBegin()`, `VecDotEnd()`, `VecNormEnd()`
 
 @*/
 PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
@@ -1453,7 +1451,7 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
 
    Level: beginner
 
-.seealso: `VecMean()`, `VecNorm()`
+.seealso: `Vec`, `VecMean()`, `VecNorm()`
 @*/
 PetscErrorCode VecSum(Vec v, PetscScalar *sum)
 {
@@ -1491,7 +1489,7 @@ PetscErrorCode VecSum(Vec v, PetscScalar *sum)
 
    Level: beginner
 
-.seealso: `VecSum()`, `VecNorm()`
+.seealso: `Vec`, `VecSum()`, `VecNorm()`
 @*/
 PetscErrorCode VecMean(Vec v, PetscScalar *mean)
 {
@@ -1518,6 +1516,7 @@ PetscErrorCode VecMean(Vec v, PetscScalar *mean)
 
    Level: intermediate
 
+.seealso: `Vec`
 @*/
 PetscErrorCode VecShift(Vec v, PetscScalar shift)
 {
@@ -1551,9 +1550,10 @@ PetscErrorCode VecShift(Vec v, PetscScalar shift)
 
   Level: beginner
 
-  Note: This function does not yet support parallel Index Sets with non-local permutations
+  Note:
+  This function does not yet support parallel Index Sets with non-local permutations
 
-.seealso: `MatPermute()`
+.seealso: `Vec`, `MatPermute()`
 @*/
 PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
 {
@@ -1596,9 +1596,11 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
 -  vec2 - the second vector
 
    Output Parameter:
-.  flg - PETSC_TRUE if the vectors are equal; PETSC_FALSE otherwise.
+.  flg - `PETSC_TRUE` if the vectors are equal; `PETSC_FALSE` otherwise.
 
    Level: intermediate
+
+.seealso: `Vec`
 @*/
 PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
 {
@@ -1647,6 +1649,7 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
 
    Level: intermediate
 
+.seealso: `Vec`
 @*/
 PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
 {

@@ -16,7 +16,7 @@ PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 /*@C
      PetscGoogleDriveRefresh - Get a new authorization token for accessing Google drive from PETSc from a refresh token
 
-   Not collective, only the first process in the `MPI_Comm` does anything
+   Not Collective, only the first process in the `MPI_Comm` does anything
 
    Input Parameters:
 +   comm - MPI communicator
@@ -83,11 +83,11 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
 /*@C
      PetscGoogleDriveUpload - Loads a file to the Google Drive
 
-     Not collective, only the first process in the `MPI_Comm` uploads the file
+     Not Collective, only the first process in the `MPI_Comm` uploads the file
 
   Input Parameters:
 +   comm - MPI communicator
-.   access_token - obtained with PetscGoogleDriveRefresh(), pass NULL to have PETSc generate one
+.   access_token - obtained with PetscGoogleDriveRefresh(), pass `NULL` to have PETSc generate one
 -   filename - file to upload; if you upload multiple times it will have different names each time on Google Drive
 
   Options Database Key:
@@ -186,7 +186,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
 /*@C
      PetscGoogleDriveAuthorize - Get authorization and refresh token for accessing Google drive from PETSc
 
-   Not collective, only the first process in `MPI_Comm` does anything
+   Not Collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -197,13 +197,13 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
 -  refresh_token - can be used for ever to obtain new access_tokens with `PetscGoogleDriveRefresh()`, guard this like a password
                    it gives access to your Google Drive
 
+   Level: intermediate
+
    Notes:
-    This call requires stdout and stdin access from process 0 on the MPI communicator
+    This call requires `stdout` and `stdin` access from process 0 on the MPI communicator
 
    You can run src/sys/webclient/tutorials/googleobtainrefreshtoken to get a refresh token and then in the future pass it to
-   PETSc programs with -google_refresh_token XXX
-
-   Level: intermediate
+   PETSc programs with `-google_refresh_token XXX`
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`
 @*/
