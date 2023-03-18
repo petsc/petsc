@@ -7,5 +7,4 @@ EXAMPLESMATLAB   = TestingInitialize.m TestingFinalize.m ProblemInitialize.m Pro
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 

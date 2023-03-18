@@ -11,4 +11,3 @@ water: $(OBJECTS_WATER)
 	-${CLINKER} -o water $(OBJECTS_WATER) ${PETSC_SNES_LIB}
 	${RM} $(OBJECTS_WATER)
 
-include ${PETSC_DIR}/lib/petsc/conf/test

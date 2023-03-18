@@ -7,4 +7,3 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 
 pipes: pipes.o $(OBJECTS_PIPE)
 
-include ${PETSC_DIR}/lib/petsc/conf/test

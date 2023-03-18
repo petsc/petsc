@@ -128,4 +128,3 @@ runex3k_kokkos: ex3k.PETSc
         fi; \
 	${RM} -f ex3k_1.tmp
 
-include ${PETSC_DIR}/lib/petsc/conf/test

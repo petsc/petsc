@@ -20,4 +20,3 @@ testex100: ex100.PETSc
          fi; \
          ${RM} -f ex100_1.tmp
 
-include ${PETSC_DIR}/lib/petsc/conf/test
