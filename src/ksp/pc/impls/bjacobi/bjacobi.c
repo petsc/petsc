@@ -500,7 +500,7 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 
      To set the options on the solvers separate for each block call `PCBJacobiGetSubKSP()`
          and set the options directly on the resulting `KSP` object (you can access its `PC`
-         `KSPGetPC())`
+         `KSPGetPC()`)
 
      For GPU-based vectors (`VECCUDA`, `VECViennaCL`) it is recommended to use exactly one block per MPI process for best
          performance.  Different block partitioning may lead to additional data transfers

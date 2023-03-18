@@ -1212,7 +1212,7 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
 .  list - the possible choices (one of these must be selected, anything else is invalid)
 .  ntext - number of choices
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
-$                 PetscOptionsElist(..., obj->value,&value,&flg);
+$                 PetscOptionsEList(..., obj->value,&value,&flg);
 $                 if (flg) {
 
    Output Parameters:

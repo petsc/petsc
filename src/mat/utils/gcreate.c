@@ -198,7 +198,7 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJ(()`, `MatCreateAIJ()`,
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,
           `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
