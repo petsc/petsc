@@ -8,7 +8,7 @@ SUBMANSEC  = Viewer
 LIBBASE    = libpetscsys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/rules.doc
 
 runtime: runtime.o
 	${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}

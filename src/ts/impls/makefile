@@ -4,6 +4,6 @@ DIRS     = explicit implicit pseudo python arkimex rosw eimex mimex bdf glee sym
 MANSEC   = TS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/rules.doc
 
 
