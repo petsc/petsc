@@ -21,11 +21,11 @@ Earlier contributors to PETSc that are not captured in the repository system inc
 
 * Chad Carroll, the Win32 graphics.
 
-* Ethan Coon, the PetscBag and many bug fixes.
+* Ethan Coon, `PetscBag` and many bug fixes.
 
-* Cameron Cooper, portions of the VecScatter routines.
+* Cameron Cooper, portions of ``VecScatter`` routines.
 
-* Patrick Farrell, ``PCPATCH`` and ``SNESPATCH``.
+* Patrick Farrell and Florian Wechsung, ``PCPATCH`` and ``SNESPATCH``.
 
 * Paulo Goldfeld, early versions of the balancing Neumann-Neumann preconditioner ``PCNN``.
 
@@ -33,11 +33,11 @@ Earlier contributors to PETSc that are not captured in the repository system inc
 
 * Joel Malard, ``KSPBCGS``.
 
-* Paul Mullowney, improvement enhancements to portions of the original CUDA GPU interface.
+* Paul Mullowney, enhancements to portions of the original CUDA GPU interface.
 
 * Dave May, ``KSPGCR``.
 
-* Peter Mell, portions of the ``DMDA`` routines.
+* Peter Mell, portions of ``DMDA`` routines.
 
 * Richard Mills, the ``MATAIJPERM`` matrix format for the Cray X1; universal F90 array
   interface; enhancements to ``KSPIBCGS``; the ``MATAIJMKL`` matrix subclass.
@@ -52,8 +52,6 @@ Earlier contributors to PETSc that are not captured in the repository system inc
 * Karen Toonen, designed and implemented most of the original PETSc web pages.
 
 * Desire Nuentsa Wakam, ``KSPDGMRES``.
-
-* Florian Wechsung, ``PCPATCH`` and ``SNESPATCH``.
 
 * Liyang Xu, the interface to PVODE (now Sundials/CVODE) ``TSSUNDIALS``.
 
