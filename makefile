@@ -4,12 +4,13 @@
 # See also conf for additional commands.
 #
 ALL: all
-DIRS	 = src include tutorials interfaces share/petsc/matlab
+DIRS	 = src include interfaces share/petsc/matlab
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
+#include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/rules.doc
 include ${PETSC_DIR}/lib/petsc/conf/test.common
 
 # This makefile contains a lot of PHONY targets with improperly specified prerequisites
@@ -47,6 +48,20 @@ all:
 	@if [ "`cat ${PETSC_ARCH}/lib/petsc/conf/error.log 2> /dev/null`" != "0" ]; then exit 1; fi
 
 all-local: info libs matlabbin petsc4py-build libmesh-build mfem-build slepc-build hpddm-build amrex-build bamg-build
+
+${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files:
+	@touch -t 197102020000 ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files
+
+${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles:
+	@${MKDIR} -p ${PETSC_DIR}/${PETSC_ARCH}/tests && touch -t 197102020000 ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
+
+libs: ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
+	+@r=`echo "${MAKEFLAGS}" | grep ' -j'`; \
+        if [ "$$?" = 0 ]; then make_j=""; else make_j="-j${MAKE_NP}"; fi; \
+	r=`echo "${MAKEFLAGS}" | grep ' -l'`; \
+        if [ "$$?" = 0 ]; then make_l=""; else make_l="-l${MAKE_LOAD}"; fi; \
+        cmd="${OMAKE_PRINTDIR} -f gmakefile $${make_j} $${make_l} ${MAKE_PAR_OUT_FLG} V=${V} libs"; \
+        cd ${PETSC_DIR} && echo $${cmd} && exec $${cmd}
 
 #
 # Prints information about the system and version of PETSc being compiled
@@ -398,8 +413,41 @@ allfortranstubs:
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
-# Build just manual pages + prerequisites
-# Also builds citations
+# rules for building the "classic" documentation; uses rules also in lib/petsc/conf/petscrules.doc
+
+chk_petscdir:
+	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
+        newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
+        haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
+        if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
+          printf ${PETSC_TEXT_HILIGHT}"*********************W-a-r-n-i-n-g*************************\n" ; \
+          echo "Your PETSC_DIR may not match the directory you are in";\
+          echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
+          echo "Ignore this if you are running make check             ";\
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
+        fi
+
+chk_in_petscdir:
+	@if [ ! -f include/petscversion.h ]; then \
+	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
+	  echo " This target should be invoked in top level PETSc source dir!"; \
+	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
+
+chk_loc:
+	@if [ ${LOC}foo = foo ] ; then \
+	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
+	  echo " Please specify LOC variable for eg: make allmanpages LOC=/sandbox/petsc "; \
+	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
+	@${MKDIR} ${LOC}/manualpages
+
+chk_c2html:
+	@if [ ${C2HTML}foo = foo ] ; then \
+          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
+          echo "Require c2html for html docs. Please reconfigure with --download-c2html=1"; \
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
+
+
+# the ACTION=manualpages cannot run in parallel because they all write to the same manualpages.cit file
 hloc=include/petsc/private
 allmanpages: chk_loc deletemanualpages
 	-echo " /* SUBMANSEC = PetscH */ " > ${hloc}/generated_khash.h
@@ -417,23 +465,62 @@ allmanpages: chk_loc deletemanualpages
 	cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
-# Build just manual examples + prerequisites
 allmanexamples: chk_loc allmanpages
-	-${OMAKE_SELF} ACTION=manexamples tree_basic LOC=${LOC}
+	-${OMAKE_SELF} ACTION=manexamples tree LOC=${LOC}
+
+#
+#    Goes through all manual pages adding links to implementations of the method
+# or class, at the end of the file.
+#
+# To find functions implementing methods, we use git grep to look for
+# well-formed PETSc functions
+# - with names containing a single underscore
+# - in files of appropriate types (.cu .c .cxx .h),
+# - in paths including "/impls/",
+# - excluding any line with a semicolon (to avoid matching prototypes), and
+# - excluding any line including "_Private",
+# storing potential matches in implsFuncAll.txt.
+#
+# For each man page we then grep in this file for the item's name followed by
+# a single underscore and process the resulting implsFunc.txt to generate HTML.
+#
+# To find class implementations, we populate implsClassAll.txt with candidates
+# - of the form "struct _p_itemName {",  and
+# - not containing a semicolon
+# and then grep for particular values of itemName, generating implsClass.txt,
+# which is processed to generate HTML.
+#
+# Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
+manimplementations:
+	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cpp *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
+  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cpp' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
+  for i in ${LOC}/manualpages/*/*.md foo; do \
+       if [ "$$i" != "foo" ] ; then \
+          itemName=`basename $$i .md`;\
+          grep "\s$${itemName}_" implsFuncAll.txt > implsFunc.txt ; \
+          grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
+          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
+            printf "\n## Implementations\n\n" >> $$i; \
+          fi ; \
+          if [ -s implsFunc.txt ] ; then \
+            sed "s?\(.*\.[ch]x*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
+          fi ; \
+          if [ -s implsClass.txt ] ; then \
+            sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
+          fi ; \
+          ${RM} implsFunc.txt implsClass.txt; \
+       fi ; \
+  done ; \
+  ${RM} implsClassAll.txt implsFuncAll.txt
 
 # Build all classic docs except html sources
-alldoc1: chk_loc allmanpages allmanexamples
-	-${OMAKE_SELF} manimplementations LOC=${LOC}
+alldoc_pre: chk_loc allmanpages allmanexamples
+	-${OMAKE_SELF} LOC=${LOC} manimplementations
 	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 
-# Builds .html versions of the source
-# html overwrites some stuff - hence this is done later.
-alldoc2: chk_loc allmanpages
-	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
-
-# A version which presumes allmanpages has already been run
+# Run after alldoc_pre
 alldoc_post: chk_loc
-	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
+	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} tree LOC=${LOC}
 
 alldocclean: deletemanualpages allcleanhtml
 
@@ -445,7 +532,7 @@ deletemanualpages: chk_loc
         fi
 
 allcleanhtml:
-	-${OMAKE_SELF} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
+	-${OMAKE_SELF} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} tree
 
 ###########################################################
 # targets to build distribution and update docs

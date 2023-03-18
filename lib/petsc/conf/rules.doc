@@ -1,146 +1,28 @@
 # -*- mode: makefile -*-
 #
-#    Contains the rules for
-#       *  generating .md files for manual pages from comments in the source code using Sowing
-#       *  finding the use of PETSc routines, for example KSPSolve(), in tutorials and saves their source
-#       *  finding the implementations of methods, for example KSPSolve_GMRES(), in the source code and saves their locations
-#       *  converting PETSc source code to HTML and
-
-chk_petscdir:
-	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
-        newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
-        haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
-        if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
-          printf ${PETSC_TEXT_HILIGHT}"*********************W-a-r-n-i-n-g*************************\n" ; \
-          echo "Your PETSC_DIR may not match the directory you are in";\
-          echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
-          echo "Ignore this if you are running make check             ";\
-          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
-        fi
-
-chk_in_petscdir:
-	@if [ ! -f include/petscversion.h ]; then \
-	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
-	  echo " This target should be invoked in top level PETSc source dir!"; \
-	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
-
-chk_loc:
-	@if [ ${LOC}foo = foo ] ; then \
-	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
-	  echo " Please specify LOC variable for eg: make allmanpages LOC=/sandbox/petsc "; \
-	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
-	@${MKDIR} ${LOC}/manualpages
-
-chk_c2html:
-	@if [ ${C2HTML}foo = foo ] ; then \
-          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
-          echo "Require c2html for html docs. Please reconfigure with --download-c2html=1"; \
-          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
+#    Contains rules that work on a single directory (called from $PETSC_DIR/makefile) to
+#       *  generate .md files for manual pages from comments in the source code using Sowing
+#       *  find the use of PETSc routines, for example KSPSolve(), in tutorials and saves their source
+#       *  find the implementations of methods, for example KSPSolve_GMRES(), in the source code and saves their locations
+#       *  convert PETSc source code to HTML and
 
 # Does nothing; needed for some rules that require actions.
 foo:
 
-#
-#  Checks if directory requires particular package or language
-# The makefile may contain
-#    #requirespackage  'PETSC_HAVE_XXX'
-#    #requiresfunction 'PETSC_XXX'
-#    #requiresdefine   'PETSC_XXX'
-#    #requireslanguage  CONLY (or CPP)
-#    #requiresscalar    real (or complex)
-#    #requiresprecision double (or single)
-#
+# Performs the specified action on all directories
 tree: ${ACTION}
-	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
-            if [ -d $$dir ]; then \
-	      r=`grep -E '#(requirespackage|requiresfunction|requiresdefine)' $$dir/makefile | cut -d \' -f2`; \
-              if [ "$$?" = 0 ]; then \
-                flg=0; \
-                for PKGFLG in $$r; do \
-                  grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                  if [ "$$?" = 1 ]; then flg=1; break; fi; \
-                done; \
-                if [ "$$flg" = 1 ]; then continue; fi; \
-              fi; \
-              r=`grep -w requireslanguage $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-                echo $$r | grep -w ${PETSC_LANGUAGE} > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-              r=`grep -w requiresscalar $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-                echo $$r |  grep -w ${PETSC_SCALAR} > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-              r=`grep -w requiresprecision $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-                echo $$r |  grep -w ${PETSC_PRECISION} > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-            else \
-              continue; \
-            fi; \
-            (cd $$dir ; \
-            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR}});\
-	  done
+	-@for dir in `ls -d ${DIRS} | grep -v "\."` ; do (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} tree);  done
 
-printdot:
-	-@if [ ${PRINT_PROGRESS}foo = dotfoo ] ; then printf "."; fi;
+foo:
+	-@echo Foo
 
-# Performs the specified action throughout the directory tree
-tree_basic: ${ACTION}
-	-@for dir in ${DIRS} ftn-custom ; do if [ -d $$dir ]; then \
-	(cd $$dir ; \
-	${OMAKE}  tree_basic ACTION=${ACTION}  \
-	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
-	done
-
-# Skips all tutorial and test directories and their children
+# Performs the specified action on all source/include directories except tutorial and test
 tree_src: ${ACTION}
-	-@for dir in ${DIRS} ftn-custom ; do DIR=`basename $$dir`; if [[ -d $$dir && $$DIR != "tests" && $$DIR != "tutorials" && $$DIR != "doc" ]]; then \
-	(cd $$dir ; \
-	${OMAKE}  tree_src ACTION=${ACTION}  \
-	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
-	done
-
-#This target goes through all the source directories that contains a makefile
-alltree_src: ${ACTION}
-	-@DIRS=`ls | sed -e s'?tutorials??'g -e s'?tests??g'  -e s'?docs??'g -e s'?include??'g`; \
-	for dir in $$DIRS foo ; do if [ -f $$dir/makefile ]; then \
-	(cd $$dir ;  \
-	${OMAKE}  alltree_src ACTION=${ACTION}  \
-	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
-	done
-
-#This target goes through all the dirs that contains a makefile
-alltree_makefile: ${ACTION}
-	-@DIRS=`ls`; \
-	for dir in $$DIRS foo ; do if [ -f $$dir/makefile ]; then \
-	(cd $$dir ;  \
-	${OMAKE}  alltree_makefile ACTION=${ACTION}  \
-	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
-	done
-
-# This target goes through all dirs specified by DIRS and
-# excludes dirs specified by $XDIRS
-alltree: ${ACTION}
-	@-if [ "${DIRS}" != "" ]; then \
-	NDIRS="${DIRS}" ;\
-	if [ "${XDIRS}" != "" ]; then \
-	for XDIR in ${XDIRS} qwertyuiop ; do \
-	NDIRS=`echo $$NDIRS | sed s/$$XDIR//g`; \
-	done; fi ; \
-	for dir in $$NDIRS foo ; do if [ -d $$dir ]; then \
-	(cd $$dir ;\
-	${OMAKE}  alltree ACTION="${ACTION}"  \
-	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
-	done ; fi
+	-@for dir in `ls -d ${DIRS} | grep -v "\."` ;  do \
+           if [[ $$dir != "tests" && $$dir != "tutorials" && $$dir != "doc" ]]; then \
+	      (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC} tree_src) ; \
+           fi; \
+	 done
 
 #
 #  If this produces an error such as Could not open output file /Users/barrysmith/Src/petsc/manualpages/MissingSUBMANSEC/*
@@ -205,63 +87,12 @@ manexamples:
         fi
 
 #
-#    Goes through all manual pages adding links to implementations of the method
-# or class, at the end of the file.
+#   Rule for generating html code from C and Fortran
 #
-# To find functions implementing methods, we use git grep to look for
-# well-formed PETSc functions
-# - with names containing a single underscore
-# - in files of appropriate types (.cu .c .cxx .h),
-# - in paths including "/impls/",
-# - excluding any line with a semicolon (to avoid matching prototypes), and
-# - excluding any line including "_Private",
-# storing potential matches in implsFuncAll.txt.
-#
-# For each man page we then grep in this file for the item's name followed by
-# a single underscore and process the resulting implsFunc.txt to generate HTML.
-#
-# To find class implementations, we populate implsClassAll.txt with candidates
-# - of the form "struct _p_itemName {",  and
-# - not containing a semicolon
-# and then grep for particular values of itemName, generating implsClass.txt,
-# which is processed to generate HTML.
-#
-# Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
-manimplementations:
-	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cpp *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
-  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cpp' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
-  for i in ${LOC}/manualpages/*/*.md foo; do \
-       if [ "$$i" != "foo" ] ; then \
-          itemName=`basename $$i .md`; \
-          grep "\s$${itemName}_" implsFuncAll.txt > implsFunc.txt ; \
-          grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
-          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
-            printf "\n## Implementations\n\n" >> $$i; \
-          fi ; \
-          if [ -s implsFunc.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
-          fi ; \
-          if [ -s implsClass.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
-          fi ; \
-          ${RM} implsFunc.txt implsClass.txt; \
-       fi ; \
-  done ; \
-  ${RM} implsClassAll.txt implsFuncAll.txt
-
-#
-#   Rules for generating html code from C and Fortran
-#
-checkmakefilelist:
-	-@ls makefile ${SOURCEALL} ${EXAMPLESALL} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
-	ls makefile *.{c,cxx,cpp,cu,F,F90,h,h90,m} 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
-	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
-	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
-
-html: chk_c2html
+html:
 	-@export htmlmap_tmp=$$(mktemp) ;\
           petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
-          sed -e s?man+manualpages/?man+ROOT/manualpages/? ${LOC}/manualpages/htmlmap_modified > $$htmlmap_tmp ;\
+          sed -e s?man+manualpages/?man+ROOT/manualpages/? ${LOC}/manualpages/htmlmap > $$htmlmap_tmp ;\
           cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo $${LOCDIR} | sed -e s?/[-a-z_0-9]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \

@@ -74,7 +74,7 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
 def _build_classic_docs_subset(petsc_dir, petsc_arch, stage):
     if stage == "pre":
         sentinel_filename = HTMLMAP_DEFAULT_LOCATION
-        target = "alldoc1"
+        target = "alldoc_pre"
     elif stage == "post":
         sentinel_filename = os.path.join(CLASSIC_DOCS_LOC, "include", "petscversion.h.html")
         target = "alldoc_post"

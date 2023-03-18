@@ -153,7 +153,7 @@ def createtable(dirname,levels,secname):
       mdfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.md')]
       mdfiles.sort()
       if mdfiles == []:
-            print('Error! Cannot create table for empty directory:',dirname)
+            print('Cannot create table for empty directory:',dirname)
             return None
 
       table = []
