@@ -53,10 +53,12 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
 {
   PetscReal a1, a2;
   PetscBool hastranspose;
+  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
 
   PetscFunctionBegin;
   PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, &hastranspose));
-  if (hastranspose) {
+  PetscCall(SNESGetObjective(snes, &objective, NULL));
+  if (hastranspose && !objective) {
     Vec W1, W2;
 
     PetscCall(VecDuplicate(F, &W1));
