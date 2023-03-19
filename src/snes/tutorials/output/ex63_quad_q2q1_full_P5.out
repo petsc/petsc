@@ -103,6 +103,7 @@ SNES Object: 5 MPI processes
           Down solver (pre-smoother) on level 1 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_1_) 5 MPI processes
               type: chebyshev
+                Chebyshev polynomial of first kind
                 eigenvalue estimates used:  min = 0.0999934, max = 1.09993
                 eigenvalues estimate via gmres min 0.477752, max 0.999934
                 eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
@@ -133,6 +134,7 @@ SNES Object: 5 MPI processes
           Down solver (pre-smoother) on level 2 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_2_) 5 MPI processes
               type: chebyshev
+                Chebyshev polynomial of first kind
                 eigenvalue estimates used:  min = 0.139266, max = 1.53192
                 eigenvalues estimate via gmres min 0.0208652, max 1.39266
                 eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
@@ -268,6 +270,7 @@ SNES Object: 5 MPI processes
                   Down solver (pre-smoother) on level 1 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_1_) 5 MPI processes
                       type: chebyshev
+                        Chebyshev polynomial of first kind
                         eigenvalue estimates used:  min = 0.0999934, max = 1.09993
                         eigenvalues estimate via gmres min 0.477752, max 0.999934
                         eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]

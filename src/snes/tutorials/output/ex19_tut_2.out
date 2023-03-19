@@ -106,6 +106,7 @@ SNES Object: 4 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 4 MPI processes
         type: chebyshev
+          Chebyshev polynomial of first kind
           eigenvalue targets used: min 0.148269, max 1.63095
           eigenvalues estimated via gmres: min 0.144902, max 1.48269
           eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
@@ -135,6 +136,7 @@ SNES Object: 4 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 4 MPI processes
         type: chebyshev
+          Chebyshev polynomial of first kind
           eigenvalue targets used: min 0.149178, max 1.64096
           eigenvalues estimated via gmres: min 0.0843938, max 1.49178
           eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
@@ -164,6 +166,7 @@ SNES Object: 4 MPI processes
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 4 MPI processes
         type: chebyshev
+          Chebyshev polynomial of first kind
           eigenvalue targets used: min 0.146454, max 1.61099
           eigenvalues estimated via gmres: min 0.0659153, max 1.46454
           eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
@@ -193,6 +196,7 @@ SNES Object: 4 MPI processes
     Down solver (pre-smoother) on level 4 -------------------------------
       KSP Object: (mg_levels_4_) 4 MPI processes
         type: chebyshev
+          Chebyshev polynomial of first kind
           eigenvalue targets used: min 0.141089, max 1.55197
           eigenvalues estimated via gmres: min 0.044097, max 1.41089
           eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
@@ -222,6 +226,7 @@ SNES Object: 4 MPI processes
     Down solver (pre-smoother) on level 5 -------------------------------
       KSP Object: (mg_levels_5_) 4 MPI processes
         type: chebyshev
+          Chebyshev polynomial of first kind
           eigenvalue targets used: min 0.127956, max 1.40751
           eigenvalues estimated via gmres: min 0.0380398, max 1.27956
           eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]

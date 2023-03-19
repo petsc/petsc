@@ -192,11 +192,30 @@ PETSC_EXTERN PetscErrorCode    PCMGGetCoarseSpaceConstructor(const char[], Petsc
 PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP, Vec, Vec, Vec *);
 
+/*E
+  KSPChebyshevKind - Which Chebyshev polynomial to use
+
+  Values:
++ `KSP_CHEBYSHEV_FIRST`      - "classic" first-kind Chebyshev polynomial
+. `KSP_CHEBYSHEV_FOURTH`     - fourth-kind Chebyshev polynomial
+- `KSP_CHEBYSHEV_OPT_FOURTH` - optimized fourth-kind Chebyshev polynomial
+
+  Level: intermediate
+
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevSetKind`
+E*/
+typedef enum {
+  KSP_CHEBYSHEV_FIRST,
+  KSP_CHEBYSHEV_FOURTH,
+  KSP_CHEBYSHEV_OPT_FOURTH
+} KSPChebyshevKind;
+
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP, PetscBool);
+PETSC_EXTERN PetscErrorCode KSPChebyshevSetKind(KSP, KSPChebyshevKind);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP, KSP *);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP, PetscInt, PetscReal[], PetscReal[], PetscInt *);

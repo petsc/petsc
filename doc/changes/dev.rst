@@ -163,6 +163,7 @@ Changes: Development
 - Add support for ``MATAIJCUSPARSE`` and ``VECCUDA`` to ``KSPHPDDM``
 - Deprecate ``KSP_CONVERGED_CG_NEG_CURVE`` in favor of ``KSP_CONVERGED_NEG_CURVE``
 - Deprecate ``KSP_CONVERGED_CG_CONSTRAINED`` in favor of ``KSP_CONVERGED_STEP_LENGTH``
+- Add fourth kind Chebyshev polynomials; see ``KSPChebyshevKind`` and ``KSPChebyshevSetKind()``
 - Add ``KSPSetConvergedNegativeCurvature()`` to declare convergence if negative curvature is detected by the Krylov solver
 - Add MINRES-QLP, available via ``KSPMINRESSetUseQLP()`` or the command line ``-ksp_minres_qlp``
 - Replace old MINRES implementation
