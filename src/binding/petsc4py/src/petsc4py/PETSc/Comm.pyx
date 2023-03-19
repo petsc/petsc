@@ -37,7 +37,7 @@ cdef class Comm:
             if eq: return (comm1 == comm2)
             else:  return (comm1 != comm2)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.comm != MPI_COMM_NULL
 
     #

@@ -57,7 +57,7 @@ cdef class Device:
     self.destroy()
 
   @classmethod
-  def create(cls, dtype = None, device_id = PETSC_DECIDE):
+  def create(cls, dtype = None, device_id = DECIDE):
     cdef PetscInt        cdevice_id   = asInt(device_id)
     cdef PetscDeviceType cdevice_type = asDeviceType(dtype if dtype is not None else cls.Type.DEFAULT)
     cdef Device          device       = cls()

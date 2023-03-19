@@ -1236,8 +1236,9 @@ cdef class Vec(Object):
     # --- methods for vectors with ghost values ---
 
     def localForm(self):
-        """
-        Intended for use in context manager::
+        """Intended for use in context manager.
+
+        Usage::
 
             with vec.localForm() as lf:
                 use(lf)
@@ -1343,17 +1344,14 @@ cdef class Vec(Object):
             return self.getOwnershipRanges()
 
     property buffer_w:
-        "Vec buffer (writable)"
         def __get__(self):
             return self.getBuffer()
 
     property buffer_r:
-        "Vec buffer (read-only)"
         def __get__(self):
             return self.getBuffer(True)
 
     property array_w:
-        "Vec array (writable)"
         def __get__(self):
             return self.getArray()
         def __set__(self, value):
@@ -1361,7 +1359,6 @@ cdef class Vec(Object):
             with buf as array: array[:] = value
 
     property array_r:
-        "Vec array (read-only)"
         def __get__(self):
             return self.getArray(True)
 

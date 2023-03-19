@@ -1,6 +1,9 @@
 # --------------------------------------------------------------------
+
+cdef object functools = None
 import functools
 
+# --------------------------------------------------------------------
 
 cdef class Log:
 
@@ -88,20 +91,21 @@ cdef class Log:
         CHKERR( PetscGetCPUTime(&cputime) )
         return cputime
 
-    @classmethod    
+    @classmethod
     def EventDecorator(cls, name=None, klass=None):
         """Decorate a function with a PETSc event.
 
         If no event name is specified it will default to the name of the function.
-        
-        Usage:
-            @EventDecorator("My Function")
+
+        Usage::
+
+            @Log.EventDecorator("My Function")
             def myfunc():
                 ...
 
-            or
+        or::
 
-            @EventDecorator()
+            @Log.EventDecorator()
             def myfunc():
                 ...
         """
@@ -119,7 +123,7 @@ cdef class Log:
 
     @classmethod
     def isActive(cls):
-        """Return ``True`` if logging is switched on and ``False`` otherwise."""
+        """Return whether logging is turned on."""
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( PetscLogIsActive(&flag) )
         return toBool(flag)

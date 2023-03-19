@@ -6,7 +6,7 @@ import sys
 appdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, appdir)
 
-# import cyautodoc  # noqa: F401,E402
+import cyautodoc  # noqa: F401,E402
 from Cython.Compiler.Main import main as cython_main  # noqa: E402
 
 

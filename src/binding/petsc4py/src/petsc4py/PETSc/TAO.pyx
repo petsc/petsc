@@ -65,10 +65,6 @@ class TAOConvergedReason:
 
 cdef class TAO(Object):
 
-    """
-    TAO Solver
-    """
-
     Type   = TAOType
     Reason = TAOConvergedReason
 

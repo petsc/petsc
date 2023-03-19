@@ -70,3 +70,9 @@ cdef class Partitioner(Object):
             points = iarray_i(points, NULL, &cpoints)
         CHKERR( PetscPartitionerShellSetPartition(self.part, cnumProcs,
                                                   csizes, cpoints) )
+
+# --------------------------------------------------------------------
+
+del PartitionerType
+
+# --------------------------------------------------------------------
