@@ -210,6 +210,7 @@ cdef extern from * nogil:
     PetscErrorCode PCHYPRESetBetaPoissonMatrix(PetscPC,PetscMat);
     PetscErrorCode PCHYPRESetEdgeConstantVectors(PetscPC,PetscVec,PetscVec,PetscVec);
     PetscErrorCode PCHYPRESetInterpolations(PetscPC, PetscInt, PetscMat, PetscMat[], PetscMat, PetscMat[]);
+    PetscErrorCode PCHYPREAMSSetInteriorNodes(PetscPC, PetscVec);
 
     PetscErrorCode PCFactorGetMatrix(PetscPC,PetscMat*)
     PetscErrorCode PCFactorSetZeroPivot(PetscPC,PetscReal)
