@@ -121,6 +121,7 @@ Changes: Development
 .. rubric:: IS:
 
 - Change ``ISDuplicate()`` to preserve the block size of the input in the output
+- Deprecate ``ISCompressIndicesSorted()``
 
 .. rubric:: VecScatter / PetscSF:
 
