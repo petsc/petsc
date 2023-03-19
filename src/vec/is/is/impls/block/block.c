@@ -36,7 +36,7 @@ static PetscErrorCode ISLocate_Block(IS is, PetscInt key, PetscInt *location)
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
-  PetscCall(PetscLayoutGetSize(is->map, &numIdx));
+  PetscCall(PetscLayoutGetLocalSize(is->map, &numIdx));
   numIdx /= bs;
   bkey = key / bs;
   mkey = key % bs;
