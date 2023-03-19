@@ -9,7 +9,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     # disable version check
-    self.version          = '2.6.1'
+    self.version          = '2.7.1'
     #self.minversion       = '2.6.0'
     #self.versionname      = ???
     self.gitcommit        = 'v'+self.version

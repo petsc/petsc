@@ -4,7 +4,8 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.version                = '4.0.0'
-    self.gitcommit              = 'v'+self.version
+    #self.gitcommit              = 'v'+self.version
+    self.gitcommit              = '8af76dc862c74cbe880569ff2ccf6e5e54245430' # mar-27,2023 master
     self.download               = ['git://https://github.com/ecrc/kblas-gpu.git']
     self.buildLanguages         = ['CUDA'] # uses nvcc to compile everything
     self.functionsCxx           = [1,'struct KBlasHandle; typedef struct KBlasHandle *kblasHandle_t;extern "C" int kblasCreate(kblasHandle_t*);','kblasHandle_t h; kblasCreate(&h)']
