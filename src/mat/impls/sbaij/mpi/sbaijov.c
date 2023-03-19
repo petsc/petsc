@@ -123,11 +123,13 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
       PetscCall(PetscFree(nidx));
     }
   }
-
-  for (i = 0; i < is_max; i++) PetscCall(ISDestroy(&is[i]));
-  PetscCall(ISExpandIndicesGeneral(N, N, bs, is_max, is_new, is));
-
-  for (i = 0; i < is_max; i++) PetscCall(ISDestroy(&is_new[i]));
+  for (i = 0; i < is_max; i++) {
+    PetscCall(ISDestroy(&is[i]));
+    PetscCall(ISGetLocalSize(is_new[i], &nis));
+    PetscCall(ISGetIndices(is_new[i], &idx));
+    PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)is_new[i]), bs, nis, idx, PETSC_COPY_VALUES, &is[i]));
+    PetscCall(ISDestroy(&is_new[i]));
+  }
   PetscCall(PetscFree(is_new));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
