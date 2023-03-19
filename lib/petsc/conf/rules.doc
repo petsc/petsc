@@ -1,10 +1,11 @@
 # -*- mode: makefile -*-
 #
-#    Contains rules that work on a single directory (called from $PETSC_DIR/makefile) to
+#    Contains rules that work on a single directory (which are called from $PETSC_DIR/makefile) to
 #       *  generate .md files for manual pages from comments in the source code using Sowing
 #       *  find the use of PETSc routines, for example KSPSolve(), in tutorials and saves their source
 #       *  find the implementations of methods, for example KSPSolve_GMRES(), in the source code and saves their locations
-#       *  convert PETSc source code to HTML and
+#       *  convert PETSc source code to HTML
+#       These are called the classic documentation but they are integral to the PETSc documentation
 
 # Does nothing; needed for some rules that require actions.
 foo:
@@ -24,9 +25,9 @@ tree_src: ${ACTION}
            fi; \
 	 done
 
-#
 #  If this produces an error such as Could not open output file /Users/barrysmith/Src/petsc/manualpages/MissingSUBMANSEC/*
 #  this indicates the makefile is missing a MANSEC definition or the include file is missing a SUBMANSEC definition
+#  Cannot run in parallel because of writes to ${LOC}/manualpages/manualpages.cit
 manualpages:
 	-@doctext_common_def="${PETSC_DIR}/doc/classic/doctext/doctextcommon.txt"; \
         petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
@@ -58,9 +59,10 @@ manualpages:
               -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir $${LOCDIR} -Wargdesc $${doctext_common_def} ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
           if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
         fi;
-#
+
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.
+# Cannot run in parallel because writes to random manual pages
 #
 # Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
 manexamples:
@@ -86,9 +88,8 @@ manexamples:
 	  done; \
         fi
 
-#
 #   Rule for generating html code from C and Fortran
-#
+#   Can run (and is) in parallel
 html:
 	-@export htmlmap_tmp=$$(mktemp) ;\
           petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \

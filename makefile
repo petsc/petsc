@@ -1,10 +1,23 @@
 #
-# This is the makefile for compiling PETSc. See
-# http://www.mcs.anl.gov/petsc/documentation/installation.html for directions on installing PETSc.
-# See also conf for additional commands.
+# See https://petsc.org/release/install/ for instructions on installing PETSc
 #
+# This is the top level makefile for compiling PETSc.
+#   * make help - useful messages on functionality
+#   * make all  - compile the PETSc libraries and utilities
+#   * make check - runs a quick test that the libraries are built correctly and PETSc applications can run
+#
+#   * make install - for use with ./configure is run with the --prefix=directory option
+#   * make test - runs a comprehensive test suite (requires gnumake)
+#   * make docs - build the entire PETSc website of documentation (locally)
+#   * a variety of rules that print library properties useful for building applications (use make help)
+#   * a variety of rules for PETSc developers
+#
+# gmakefile - manages the compiling PETSc in parallel
+# gmakefile.test - manages running the comprehensive test suite
+#
+# This makefile does not require GNUmake
 ALL: all
-DIRS	 = src include interfaces share/petsc/matlab
+DIRS = src include interfaces share/petsc/matlab
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
@@ -15,16 +28,14 @@ include ${PETSC_DIR}/lib/petsc/conf/test.common
 
 # This makefile contains a lot of PHONY targets with improperly specified prerequisites
 # where correct execution instead depends on the targets being processed in the correct
-# order.  This is gross, but this makefile doesn't really do any work.  Sub-makes still
-# benefit from parallelism.
+# order.
 .NOTPARALLEL:
 
 OMAKE_SELF = $(OMAKE) -f makefile
 OMAKE_SELF_PRINTDIR = $(OMAKE_PRINTDIR) -f makefile
 
-#
-# Basic targets to build PETSc libraries.
-#
+#********* Rules for make all **********************************************************************************************************************************
+
 all:
 	+@${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@ln -sf ${PETSC_ARCH}/lib/petsc/conf/make.log make.log
@@ -63,86 +74,13 @@ libs: ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files ${PETSC_DIR}/${PETSC_ARCH}
         cmd="${OMAKE_PRINTDIR} -f gmakefile $${make_j} $${make_l} ${MAKE_PAR_OUT_FLG} V=${V} libs"; \
         cd ${PETSC_DIR} && echo $${cmd} && exec $${cmd}
 
-#
-# Prints information about the system and version of PETSc being compiled
-#
-info:
-	-@echo "=========================================="
-	-@echo " "
-	-@echo "See documentation/faq.html and documentation/bugreporting.html"
-	-@echo "for help with installation problems.  Please send EVERYTHING"
-	-@echo "printed out below when reporting problems.  Please check the"
-	-@echo "mailing list archives and consider subscribing."
-	-@echo " "
-	-@echo "  https://petsc.org/release/community/mailing/"
-	-@echo " "
-	-@echo "=========================================="
-	-@echo Starting make run on `hostname` at `date +'%a, %d %b %Y %H:%M:%S %z'`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc directory: ${PETSC_DIR}"
-	-@echo "Using PETSc arch: ${PETSC_ARCH}"
-	-@echo "-----------------------------------------"
-	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//" | head -n 7
-	-@echo "-----------------------------------------"
-	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
-	-@echo "Using configuration flags:"
-	-@grep "\#define " ${PETSCCONF_H} | tail -n +2
-	-@echo "-----------------------------------------"
-	-@echo "Using C compile: ${PETSC_CCOMPILE_SINGLE}"
-	-@if [  "${MPICC_SHOW}" != "" ]; then \
-             printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
-          fi; \
-        printf  "C compiler version: %b\n" "${C_VERSION}"; \
-        if [ "${CXX}" != "" ]; then \
-        echo "Using C++ compile: ${PETSC_CXXCOMPILE_SINGLE}";\
-        if [ "${MPICXX_SHOW}" != "" ]; then \
-               printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
-            fi;\
-            printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
-          fi
-	-@if [ "${FC}" != "" ]; then \
-	   echo "Using Fortran compile: ${PETSC_FCOMPILE_SINGLE}";\
-           if [ "${MPIFC_SHOW}" != "" ]; then \
-             printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
-           fi; \
-             printf  "Fortran compiler version: %b\n" "${FC_VERSION}"; \
-         fi
-	-@if [ "${CUDAC}" != "" ]; then \
-	   echo "Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}";\
-         fi
-	-@if [ "${CLANGUAGE}" = "CXX" ]; then \
-           echo "Using C++ compiler to compile PETSc";\
-        fi
-	-@echo "-----------------------------------------"
-	-@echo "Using C/C++ linker: ${PCC_LINKER}"
-	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
-	-@if [ "${FC}" != "" ]; then \
-	   echo "Using Fortran linker: ${FC_LINKER}";\
-	   echo "Using Fortran flags: ${FC_LINKER_FLAGS}";\
-         fi
-	-@echo "-----------------------------------------"
-	-@echo "Using system modules: ${LOADEDMODULES}"
-	-@if [ "${MPI_IS_MPIUNI}" = "1" ]; then \
-           echo Using mpi.h: mpiuni; \
-        else \
-           TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
-           echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
-           BUF=`${CPP} ${PETSC_CPPFLAGS} ${PETSC_CC_INCLUDES} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
-           echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
-        fi
-	-@echo "-----------------------------------------"
-	-@echo "Using libraries: ${PETSC_LIB}"
-	-@echo "------------------------------------------"
-	-@echo "Using mpiexec: ${MPIEXEC}"
-	-@echo "------------------------------------------"
-	-@echo "Using MAKE: ${MAKE}"
-	-@echo "Default MAKEFLAGS: MAKE_NP:${MAKE_NP} MAKE_LOAD:${MAKE_LOAD} MAKEFLAGS:${MAKEFLAGS}"
-	-@echo "=========================================="
+chk_upgrade:
+	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/petscnagupgrade.py
 
-#
-# Build MatLab binaries
-#
+chklib_dir:
+	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
+	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
+
 matlabbin:
 	-@if [ "${MATLAB_MEX}" != "" -a "${MATLAB_SOCKET}" != "" -a "${PETSC_SCALAR}" = "real" -a "${PETSC_PRECISION}" = "double" ]; then \
           echo "BEGINNING TO COMPILE MATLAB INTERFACE"; \
@@ -151,9 +89,43 @@ matlabbin:
             cd src/sys/classes/viewer/impls/socket/mex-scripts && ${OMAKE_SELF} mex-scripts PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}; \
             echo "========================================="; \
         fi
-#
-# Builds PETSc check examples for a given architecture
-#
+
+allfortranstubs:
+	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
+	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
+	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
+	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
+
+deleteshared:
+	@for LIBNAME in ${SHLIBS}; \
+	do \
+	   if [ -d ${INSTALL_LIB_DIR}/$${LIBNAME}.dylib.dSYM ]; then \
+             echo ${RM} -rf ${INSTALL_LIB_DIR}/$${LIBNAME}.dylib.dSYM; \
+	     ${RM} -rf ${INSTALL_LIB_DIR}/$${LIBNAME}.dylib.dSYM; \
+	   fi; \
+           echo ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
+           ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
+	done
+	@if [ -f ${INSTALL_LIB_DIR}/so_locations ]; then \
+          echo ${RM} ${INSTALL_LIB_DIR}/so_locations; \
+          ${RM} ${INSTALL_LIB_DIR}/so_locations; \
+	fi
+
+deletefortranstubs:
+	-@find . -type d -name ftn-auto | xargs rm -rf
+
+reconfigure: allclean
+	@unset MAKEFLAGS && ${PYTHON} ${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py
+
+chkopts:
+	-@echo "Warning: chkopts target is deprecated and can be removed from user makefiles"
+
+gnumake:
+	+@echo "make gnumake is deprecated, use make libs"
+	+@make libs
+
+# ********  Rules for make check ****************************************************************************************************************************
+
 RUN_TEST = ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff
 
 check_install: check
@@ -251,6 +223,159 @@ check_build:
           fi; ${RM} .ftn.log;
 	-@echo "Completed test examples"
 
+# ********* Rules for make install *******************************************************************************************************************
+
+install:
+	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
+	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=$@ install-builtafterpetsc
+
+# A smaller install with fewer extras
+install-lib:
+	@${PYTHON} ./config/install.py -destDir=${DESTDIR} -no-examples
+	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=$@ install-builtafterpetsc
+
+install-builtafterpetsc:
+	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=${PETSC_INSTALL} petsc4py-install libmesh-install mfem-install slepc-install hpddm-install amrex-install bamg-install
+
+# Creates ${HOME}/petsc.tar.gz [and petsc-with-docs.tar.gz]
+dist:
+	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} main
+
+#********* Rules for cleaning ***************************************************************************************************************************
+
+deletelibs:
+	-${RM} -rf ${PETSC_LIB_DIR}/libpetsc*.*
+deletemods:
+	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
+
+allclean:
+	-@${OMAKE} -f gmakefile clean
+
+clean:: allclean
+
+distclean: chk_petscdir
+	@if [ -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ]; then \
+	  echo "*** Preserving ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py in ${PETSC_DIR} ***"; \
+          mv -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; fi
+	@echo "*** Deleting all build files in ${PETSC_DIR}/${PETSC_ARCH} ***"
+	-${RM} -rf ${PETSC_DIR}/${PETSC_ARCH}/
+
+#********* Rules for printing library properties useful for building applications  ***********************************************************
+
+getmpilinklibs:
+	-@echo  ${MPI_LIB}
+
+getmpiincludedirs:
+	-@echo  ${MPI_INCLUDE}
+
+getmpiexec:
+	-@echo  ${MPIEXEC}
+
+getccompiler:
+	-@echo ${CC}
+
+getfortrancompiler:
+	-@echo ${FC}
+
+getcxxcompiler:
+	-@echo ${CXX}
+
+getlinklibs:
+	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
+
+getincludedirs:
+	-@echo  ${PETSC_CC_INCLUDES}
+
+getcflags:
+	-@echo ${CC_FLAGS}
+
+getcxxflags:
+	-@echo ${CXX_FLAGS}
+
+getfortranflags:
+	-@echo ${FC_FLAGS}
+
+getblaslapacklibs:
+	-@echo ${BLASLAPACK_LIB}
+
+getautoconfargs:
+	-@echo CC='"${CC}"' CXX='"${CXX}"'  FC='"${FC}"' CFLAGS='"${CC_FLAGS}"' CXXFLAGS='"${CXX_FLAGS}"' FCFLAGS='"${FC_FLAGS}"' LIBS='"${C_SH_LIB_PATH} ${PETSC_TS_LIB}"'
+
+info:
+	-@echo "=========================================="
+	-@echo " "
+	-@echo "See documentation/faq.html and documentation/bugreporting.html"
+	-@echo "for help with installation problems.  Please send EVERYTHING"
+	-@echo "printed out below when reporting problems.  Please check the"
+	-@echo "mailing list archives and consider subscribing."
+	-@echo " "
+	-@echo "  https://petsc.org/release/community/mailing/"
+	-@echo " "
+	-@echo "=========================================="
+	-@echo Starting make run on `hostname` at `date +'%a, %d %b %Y %H:%M:%S %z'`
+	-@echo Machine characteristics: `uname -a`
+	-@echo "-----------------------------------------"
+	-@echo "Using PETSc directory: ${PETSC_DIR}"
+	-@echo "Using PETSc arch: ${PETSC_ARCH}"
+	-@echo "-----------------------------------------"
+	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//" | head -n 7
+	-@echo "-----------------------------------------"
+	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
+	-@echo "Using configuration flags:"
+	-@grep "\#define " ${PETSCCONF_H} | tail -n +2
+	-@echo "-----------------------------------------"
+	-@echo "Using C compile: ${PETSC_CCOMPILE_SINGLE}"
+	-@if [  "${MPICC_SHOW}" != "" ]; then \
+             printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
+          fi; \
+        printf  "C compiler version: %b\n" "${C_VERSION}"; \
+        if [ "${CXX}" != "" ]; then \
+        echo "Using C++ compile: ${PETSC_CXXCOMPILE_SINGLE}";\
+        if [ "${MPICXX_SHOW}" != "" ]; then \
+               printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
+            fi;\
+            printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
+          fi
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran compile: ${PETSC_FCOMPILE_SINGLE}";\
+           if [ "${MPIFC_SHOW}" != "" ]; then \
+             printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
+           fi; \
+             printf  "Fortran compiler version: %b\n" "${FC_VERSION}"; \
+         fi
+	-@if [ "${CUDAC}" != "" ]; then \
+	   echo "Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}";\
+         fi
+	-@if [ "${CLANGUAGE}" = "CXX" ]; then \
+           echo "Using C++ compiler to compile PETSc";\
+        fi
+	-@echo "-----------------------------------------"
+	-@echo "Using C/C++ linker: ${PCC_LINKER}"
+	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran linker: ${FC_LINKER}";\
+	   echo "Using Fortran flags: ${FC_LINKER_FLAGS}";\
+         fi
+	-@echo "-----------------------------------------"
+	-@echo "Using system modules: ${LOADEDMODULES}"
+	-@if [ "${MPI_IS_MPIUNI}" = "1" ]; then \
+           echo Using mpi.h: mpiuni; \
+        else \
+           TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
+           echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
+           BUF=`${CPP} ${PETSC_CPPFLAGS} ${PETSC_CC_INCLUDES} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
+        fi
+	-@echo "-----------------------------------------"
+	-@echo "Using libraries: ${PETSC_LIB}"
+	-@echo "------------------------------------------"
+	-@echo "Using mpiexec: ${MPIEXEC}"
+	-@echo "------------------------------------------"
+	-@echo "Using MAKE: ${MAKE}"
+	-@echo "Default MAKEFLAGS: MAKE_NP:${MAKE_NP} MAKE_LOAD:${MAKE_LOAD} MAKEFLAGS:${MAKEFLAGS}"
+	-@echo "=========================================="
+
+
 check_usermakefile:
 	-@echo "Testing compile with user makefile"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
@@ -262,6 +387,8 @@ check_usermakefile:
          fi; ${RM} .ftn.log;
 	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	-@echo "Completed compile with user makefile"
+
+#********* Rules for running clangformat ************************************************************************************************************
 
 checkgitclean:
 	@if ! git diff --quiet; then \
@@ -338,40 +465,7 @@ echo $${OPTIONS} ;\
         make all test ; \
         PETSC_DIR_ABI_OLD=$${PETSC_DIR_OLD} PETSC_ARCH_ABI_OLD=arch-branch-`git rev-parse ${branch}` make abitest
 
-# Deletes PETSc libraries
-deletelibs:
-	-${RM} -rf ${PETSC_LIB_DIR}/libpetsc*.*
-deletemods:
-	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
-
-allclean:
-	-@${OMAKE} -f gmakefile clean
-
-clean:: allclean
-
-distclean: chk_petscdir
-	@if [ -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ]; then \
-	  echo "*** Preserving ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py in ${PETSC_DIR} ***"; \
-          mv -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; fi
-	@echo "*** Deleting all build files in ${PETSC_DIR}/${PETSC_ARCH} ***"
-	-${RM} -rf ${PETSC_DIR}/${PETSC_ARCH}/
-
-
-#
-reconfigure: allclean
-	@unset MAKEFLAGS && ${PYTHON} ${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py
-
-install:
-	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
-	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=$@ install-builtafterpetsc
-
-# A smaller install with fewer extras
-install-lib:
-	@${PYTHON} ./config/install.py -destDir=${DESTDIR} -no-examples
-	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=$@ install-builtafterpetsc
-
-install-builtafterpetsc:
-	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=${PETSC_INSTALL} petsc4py-install libmesh-install mfem-install slepc-install hpddm-install amrex-install bamg-install
+# ******** Rules for running Streams benchmark ****************************************************************************************************
 
 mpistreams:
 	+@cd src/benchmarks/streams; ${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} mpistreams
@@ -385,18 +479,12 @@ openmpstreams:
 openmpstream:
 	+@cd src/benchmarks/streams; ${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} openmpstream
 
-# for legacy reasons
 stream: mpistream
 
 streams: mpistreams
 
-# ------------------------------------------------------------------
-#
-# All remaining actions are intended for PETSc developers only.
-# PETSc users should not generally need to use these commands.
-#
-#  See the users manual for how the tags files may be used from Emacs and Vi/Vim
-#
+# ********  Rules for generating tag files for Emacs/VIM *******************************************************************************************
+
 alletags:
 	-@${PYTHON} lib/petsc/bin/maint/generateetags.py
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
@@ -405,15 +493,10 @@ alletags:
 allgtags:
 	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|cxx\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
 
-allfortranstubs:
-	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
-	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
-	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
-deletefortranstubs:
-	-@find . -type d -name ftn-auto | xargs rm -rf
+# ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/petscrules.doc **************************************************
 
-# rules for building the "classic" documentation; uses rules also in lib/petsc/conf/petscrules.doc
+docs:
+	cd doc; ${OMAKE_SELF} sphinxhtml
 
 chk_petscdir:
 	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
@@ -538,18 +621,8 @@ deletemanualpages: chk_loc
 allcleanhtml:
 	-${OMAKE_SELF} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} tree
 
-###########################################################
-# targets to build distribution and update docs
-###########################################################
+# ********* Rules for checking code coverage *********************************************************************************************
 
-# Creates ${HOME}/petsc.tar.gz [and petsc-with-docs.tar.gz]
-dist:
-	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} main
-
-###########################################################
-#
-#  See script for details
-#
 gcov:
 	output_file_base_name=${PETSC_ARCH}-gcovr-report.json; \
 	petsc_arch_dir=${PETSC_DIR}/${PETSC_ARCH}; \
@@ -563,11 +636,115 @@ gcov:
 mergegcov:
 	$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --merge-branch `lib/petsc/bin/maint/check-merge-branch.sh` --html --xml ${PETSC_GCOV_OPTIONS}
 
-#
-# -------------------------------------------------------------------------------
-#
-# Some macros to check if the fortran interface is up-to-date.
-#
+#********* Rules for make clangformat and checking violation of coding standards **************************************************************
+
+# Format all the source code in the given directory and down according to the file .clang_format
+clangformat:
+	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P $(MAKE_NP) -L 10 clang-format -i
+
+GITSRC = '*.[chF]' '*.F90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
+GITSRCEXCL = \
+':!*khash/*' \
+':!*valgrind/*' \
+':!*yaml/*' \
+':!*perfstubs/*'
+GITCFSRC = '*.[ch]' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL} ${GITCFSRCEXCL}
+GITCFSRCEXCL = \
+':!*petscversion.h' \
+':!*mpif.h' \
+':!*mpiunifdef.h' \
+':!*finclude/*' \
+':!systems/*' \
+':!*benchmarks/*' \
+':!*binding/*' \
+':!*-custom/*' \
+':!*f90-mod/*'
+
+checkbadSource:
+	@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
+	-@${RM} -f checkbadSource.out
+	-@echo "------Double blank lines in file -----------------------------------" > checkbadSource.out
+	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} > doublelinecheck.out
+	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/doublelinecheck.py doublelinecheck.out >> checkbadSource.out
+	-@${RM} -f doublelinecheck.out
+	-@echo "------Tabs in file -------------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '\t' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------White space at end of line -----------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Two ;; -------------------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
+	-@echo "------PetscCall for an MPI error code ------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*PetscCall' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
+	-@echo "------Missing if (ierr) return ierr; -------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | grep -E "(test|tutorial)" >> checkbadSource.out;true
+	-@echo "------DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '\r' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------{ before SETERRQ ---------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------PetscCall following SETERRQ ----------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";PetscCall" >> checkbadSource.out;true
+	-@echo "------SETERRQ() without defined error code -------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v flow.c >> checkbadSource.out;true
+	-@echo "------SETERRQ() with trailing newline ------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P "SETERRQ[1-9]?.*\\\n\"" -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Define keyword used in test definition -----------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e 'requires:.*define\(' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------No new line at end of file -----------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '[^\n]\z' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Using if (condition) SETERRQ(...) instead of PetscCheck() ----" >> checkbadSource.out
+	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' >> checkbadSource.out;true
+	-@echo "------Using if (PetscUnlikelyDebug(condition)) SETERRQ(...) instead of PetscAssert()" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E ' if +\(PetscUnlikelyDebug.*\) *SETERRQ' -- ${GITSRC} | grep -v petscerror.h >> checkbadSource.out;true
+	-@echo "------Using PetscFunctionReturn(ierr) ------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'PetscFunctionReturn(ierr)' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Defining a returning macro without PetscMacroReturns() -------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
+	-@echo "------Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'define\s+CHKERR\w*\(.*\)\s*do\s+{' -- ${GITSRC} >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 18` ;\
+         if [ $$l -gt 0 ] ; then \
+           echo $$l " files with errors detected in source code formatting" ;\
+           cat checkbadSource.out ;\
+         else \
+	   ${RM} -f checkbadSource.out;\
+         fi;\
+         test ! $$l -gt 0
+	-@git --no-pager grep -P -n "[\x00-\x08\x0E-\x1F\x80-\xFF]" -- ${GITSRC} > badSourceChar.out;true
+	-@w=`cat badSourceChar.out | wc -l`;\
+         if [ $$w -gt 0 ] ; then \
+           echo "Source files with non-ASCII characters ----------------" ;\
+           cat badSourceChar.out ;\
+         else \
+	   ${RM} -f badSourceChar.out;\
+         fi
+	@test ! -s badSourceChar.out
+
+checkbadFileChange:
+	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/src src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
+
+vermin:
+	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
+
+lint:
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS)
+
+help-lint:
+	@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
+	-@echo "Basic usage:"
+	-@echo "   make lint      <options>"
+	-@echo "   make test-lint <options> <test only options>"
+	-@echo
+	-@echo "Options:"
+	-@echo "  V=[1,0]                                Enable or disable verbose output"
+	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"     See above for available options"
+	-@echo
+	-@echo "Test Only Options:"
+	-@echo "  REPLACE=[1,0]                          Enable or disable replacing test output"
+	-@echo
+
+test-lint:
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+
 countfortranfunctions:
 	-@cd ${PETSC_DIR}/src/fortran; grep -E '^void' custom/*.c auto/*.c | \
 	cut -d'(' -f1 | tr -s  ' ' | cut -d' ' -f2 | uniq | grep -E -v "(^$$|Petsc)" | \
@@ -613,6 +790,90 @@ checkpackagetests:
 	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`ls *.py | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; grep -E "(with-$${j}|download-$${j})" configexamples | grep -v "=0" | wc -l ; done
 	-@echo "Missing download package tests"
 	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`grep -l "download " *.py  | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; grep -E "(download-$${j})" configexamples | grep -v "=0" | wc -l ; done
+
+check_petsc4py_rst:
+	@${RM} -f petsc4py_rst.log
+	@echo "Checking src/binding/petsc4py/DESCRIPTION.rst"
+	@rst2html src/binding/petsc4py/DESCRIPTION.rst > /dev/null 2> petsc4py_rst.log
+	@if test -s petsc4py_rst.log; then cat petsc4py_rst.log; exit 1; fi
+
+# TODO: checkTestCoverage: that makes sure every tutorial test has at least one test listed in the file, perhaps handled by gmakegentest.py
+# TODO: check for PetscBeginFunctionUser in non-example source
+# TODO: check for __ at start of #define or symbol
+# TODO: checking for missing manual pages
+# TODO: check for incorrect %d
+# TODO: check for double blank lines
+# TODO: check for ill-formed manual pages
+# TODO: check for { on line after for
+# TODO: check for } then else on following line
+# TODO: check for } else { with SETERRQ on following line or if () { with SETERRQ on following line
+
+#  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
+#  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository
+#  This code is fragile; always check the changes after a use of REPLACE=1 before committing the changes
+#
+#  Notes:
+#    The first tr in the line is split lines for the cases where multiple URLs are in the same line
+#    The first sed handles the case (http[s]*://xxx)
+#    The list is sorted by length so that if REPLACE is used the longer apply before the shorter
+#    The code recursively follows the permanently moved (301) redirections until it reaches the final URL
+#    For DropBox we need to check the validity of the new URL but do not want to return to user the internal "raw" URL
+checkbadURLS:
+	-@x=`git grep "http[s]*://" -- '*.[chF]' '*.html' '*.cpp' '*.cxx' '*.cu' '*.F90' '*.py' '*.tex' | grep -E -v "(config/packages|HandsOnExercises)" | tr '[[:blank:]]' '\n' | grep 'http[s]*://' | sed 's!.*(\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\))!\1!g' | sed 's!.*\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\).*!\1!g' | sed 's/\.$$//g' | sort | uniq| awk '{ print length, $$0 }' | sort -r -n -s | cut -d" " -f2` ; \
+        for i in $$x; do \
+          url=$$i; \
+          msg=''; \
+          while [[ "$${msg}D" == "D" ]] ; do \
+            y1=`curl --connect-timeout 5 --head --silent $${url} | head -n 1`; \
+            y2=`echo $${y1} | grep ' 4[0-9]* '`; \
+            y3=`echo $${y1} | grep ' 301 '`; \
+            if [[ "$${y1}D" == "D" ]] ; then \
+              msg="Unable to reach site" ; \
+            elif [[ "$${y2}D" != "D" ]] ; then \
+              msg=$${y1} ; \
+            elif [[ "$${y3}D" != "D" ]] ; then \
+              l=`curl --connect-timeout 5 --head --silent $${url} | grep ocation | sed 's/.*ocation:[[:blank:]]\(.*\)/\1/g' | tr -d '\r'` ; \
+              w=`echo $$l | grep 'http'` ; \
+              if [[ "$${w}D" != "D" ]] ; then \
+                url=$$l ; \
+              else \
+                ws=`echo $${url} | sed 's!\(http[s]*://[-a-zA-Z0-9_.]*\)/.*!\1!g'` ; \
+                dp=`echo $${ws}$${l} | grep "dropbox.com/s/raw"` ; \
+                if [[ "$${dp}D" != "D" ]] ; then \
+                  b=`curl --connect-timeout 5 --head --silent $${ws}$$l | head -n 1` ; \
+                  c=`echo $${b} | grep -E "( 2[0-9]* | 302 )"` ; \
+                  if [[ "$${c}D" == "D" ]] ; then \
+                    msg=`echo "dropbox file doesn't exist" $${c}` ; \
+                  else \
+                    break ; \
+                  fi; \
+                else \
+                  url="$${ws}$$l" ; \
+                fi; \
+              fi; \
+            else \
+              break; \
+            fi; \
+          done;\
+          if [[ "$${msg}D" == "D" && "$${url}" != "$$i" ]] ; then \
+            echo "URL" $$i "has moved to valid final location:" $${url} ; \
+            if [[ "$${REPLACE}D" != "D" ]] ; then \
+              git psed $$i $$l ;\
+            fi; \
+          elif [[ "$${msg}D" != "D" && "$${url}" != "$$i" ]] ; then \
+            echo "ERROR: URL" $$i "has moved to invalid final location:" $${url} $${msg} ; \
+          elif [[ "$${msg}D" != "D" ]] ; then \
+            echo "ERROR: URL" $$i "invalid:" $${msg} ; \
+          fi; \
+        done
+
+checkbadSpelling:
+	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ;
+
+updatedatafiles:
+	-@if [ -d "${HOME}/datafiles" ]; then \
+            echo " ** Updating datafiles at ${HOME}/datafiles **"; \
+            cd "${HOME}/datafiles" && git pull -q; fi
 
 .PHONY: info info_h all deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanpages \
