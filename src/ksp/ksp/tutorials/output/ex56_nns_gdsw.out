@@ -65,6 +65,7 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
+        Chebyshev polynomial of first kind
         eigenvalue targets used: min 0.200629, max 2.20692
         eigenvalues estimated via cg: min 0.0707696, max 2.00629
         eigenvalues estimated using cg with transform: [0. 0.1; 0. 1.1]
