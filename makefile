@@ -518,9 +518,13 @@ alldoc_pre: chk_loc allmanpages allmanexamples
 	-${OMAKE_SELF} LOC=${LOC} manimplementations
 	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 
-# Run after alldoc_pre
-alldoc_post: chk_loc
-	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} tree LOC=${LOC}
+# Run after alldoc_pre to build html sources
+alldoc_post: chk_loc  chk_c2html
+	-@if command -v parallel &> /dev/null; then \
+           ls include/makefile src/*/makefile | xargs dirname | parallel -j ${MAKE_TEST_NP} --load ${MAKE_LOAD} 'cd {}; ${OMAKE_SELF} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree' ; \
+         else \
+           ${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} tree LOC=${LOC}; \
+        fi
 
 alldocclean: deletemanualpages allcleanhtml
 
