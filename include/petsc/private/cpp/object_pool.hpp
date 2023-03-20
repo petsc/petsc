@@ -687,11 +687,11 @@ public:
   using align_type     = typename allocator_type::align_type;
 
   PETSC_NODISCARD static void *operator new(size_type) noexcept;
-  static void                  operator delete(void *) noexcept;
+  static void operator delete(void *) noexcept;
 
   #if PETSC_CPP_VERSION >= 17
   PETSC_NODISCARD static void *operator new(size_type, std::align_val_t) noexcept;
-  static void                  operator delete(void *, std::align_val_t) noexcept;
+  static void operator delete(void *, std::align_val_t) noexcept;
   #endif
 
 protected:

@@ -1065,26 +1065,26 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTranspose(Mat A)
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MAT_CUSPARSE_ELL and MAT_CUSPARSE_HYB are not supported since CUDA-11.0");
 #else
-      CsrMatrix *temp = new CsrMatrix;
+      CsrMatrix *temp  = new CsrMatrix;
       CsrMatrix *tempT = new CsrMatrix;
       /* First convert HYB to CSR */
-      temp->num_rows = A->rmap->n;
-      temp->num_cols = A->cmap->n;
-      temp->num_entries = a->nz;
-      temp->row_offsets = new THRUSTINTARRAY32(A->rmap->n + 1);
+      temp->num_rows       = A->rmap->n;
+      temp->num_cols       = A->cmap->n;
+      temp->num_entries    = a->nz;
+      temp->row_offsets    = new THRUSTINTARRAY32(A->rmap->n + 1);
       temp->column_indices = new THRUSTINTARRAY32(a->nz);
-      temp->values = new THRUSTARRAY(a->nz);
+      temp->values         = new THRUSTARRAY(a->nz);
 
       stat = cusparse_hyb2csr(cusparsestruct->handle, matstruct->descr, (cusparseHybMat_t)matstruct->mat, temp->values->data().get(), temp->row_offsets->data().get(), temp->column_indices->data().get());
       PetscCallCUSPARSE(stat);
 
       /* Next, convert CSR to CSC (i.e. the matrix transpose) */
-      tempT->num_rows = A->rmap->n;
-      tempT->num_cols = A->cmap->n;
-      tempT->num_entries = a->nz;
-      tempT->row_offsets = new THRUSTINTARRAY32(A->rmap->n + 1);
+      tempT->num_rows       = A->rmap->n;
+      tempT->num_cols       = A->cmap->n;
+      tempT->num_entries    = a->nz;
+      tempT->row_offsets    = new THRUSTINTARRAY32(A->rmap->n + 1);
       tempT->column_indices = new THRUSTINTARRAY32(a->nz);
-      tempT->values = new THRUSTARRAY(a->nz);
+      tempT->values         = new THRUSTARRAY(a->nz);
 
       stat = cusparse_csr2csc(cusparsestruct->handle, temp->num_rows, temp->num_cols, temp->num_entries, temp->values->data().get(), temp->row_offsets->data().get(), temp->column_indices->data().get(), tempT->values->data().get(),
                               tempT->column_indices->data().get(), tempT->row_offsets->data().get(), CUSPARSE_ACTION_NUMERIC, indexBase);
@@ -1094,7 +1094,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTranspose(Mat A)
       cusparseHybMat_t hybMat;
       PetscCallCUSPARSE(cusparseCreateHybMat(&hybMat));
       cusparseHybPartition_t partition = cusparsestruct->format == MAT_CUSPARSE_ELL ? CUSPARSE_HYB_PARTITION_MAX : CUSPARSE_HYB_PARTITION_AUTO;
-      stat = cusparse_csr2hyb(cusparsestruct->handle, A->rmap->n, A->cmap->n, matstructT->descr, tempT->values->data().get(), tempT->row_offsets->data().get(), tempT->column_indices->data().get(), hybMat, 0, partition);
+      stat                             = cusparse_csr2hyb(cusparsestruct->handle, A->rmap->n, A->cmap->n, matstructT->descr, tempT->values->data().get(), tempT->row_offsets->data().get(), tempT->column_indices->data().get(), hybMat, 0, partition);
       PetscCallCUSPARSE(stat);
 
       /* assign the pointer */
@@ -2204,9 +2204,9 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MAT_CUSPARSE_ELL and MAT_CUSPARSE_HYB are not supported since CUDA-11.0");
 #else
-          CsrMatrix *mat = new CsrMatrix;
-          mat->num_rows = m;
-          mat->num_cols = A->cmap->n;
+          CsrMatrix *mat   = new CsrMatrix;
+          mat->num_rows    = m;
+          mat->num_cols    = A->cmap->n;
           mat->num_entries = nnz;
           mat->row_offsets = new THRUSTINTARRAY32(m + 1);
           mat->row_offsets->assign(ii, ii + m + 1);
@@ -2220,7 +2220,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
           cusparseHybMat_t hybMat;
           PetscCallCUSPARSE(cusparseCreateHybMat(&hybMat));
           cusparseHybPartition_t partition = cusparsestruct->format == MAT_CUSPARSE_ELL ? CUSPARSE_HYB_PARTITION_MAX : CUSPARSE_HYB_PARTITION_AUTO;
-          stat = cusparse_csr2hyb(cusparsestruct->handle, mat->num_rows, mat->num_cols, matstruct->descr, mat->values->data().get(), mat->row_offsets->data().get(), mat->column_indices->data().get(), hybMat, 0, partition);
+          stat                             = cusparse_csr2hyb(cusparsestruct->handle, mat->num_rows, mat->num_cols, matstruct->descr, mat->values->data().get(), mat->row_offsets->data().get(), mat->column_indices->data().get(), hybMat, 0, partition);
           PetscCallCUSPARSE(stat);
           /* assign the pointer */
           matstruct->mat = hybMat;
@@ -2468,7 +2468,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
     cerr = cublasXgeam(cublasv2handle, CUBLAS_OP_T, CUBLAS_OP_T, B->cmap->n, B->rmap->n, &PETSC_CUSPARSE_ONE, barray, blda, &PETSC_CUSPARSE_ZERO, barray, blda, mmdata->Bt, B->cmap->n);
     PetscCallCUBLAS(cerr);
     blda = B->cmap->n;
-    k = B->cmap->n;
+    k    = B->cmap->n;
   } else {
     k = B->rmap->n;
   }
@@ -2977,7 +2977,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   stat = cusparseXcsrgemmNnz(Ccusp->handle, opA, opB, Acsr->num_rows, Bcsr->num_cols, Acsr->num_cols, Amat->descr, Acsr->num_entries, Acsr->row_offsets->data().get(), Acsr->column_indices->data().get(), Bmat->descr, Bcsr->num_entries,
                              Bcsr->row_offsets->data().get(), Bcsr->column_indices->data().get(), Cmat->descr, Ccsr->row_offsets->data().get(), &cnz);
   PetscCallCUSPARSE(stat);
-  c->nz = cnz;
+  c->nz                = cnz;
   Ccsr->column_indices = new THRUSTINTARRAY32(c->nz);
   PetscCallCUDA(cudaPeekAtLastError()); /* catch out of memory errors */
   Ccsr->values = new THRUSTARRAY(c->nz);

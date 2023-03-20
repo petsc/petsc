@@ -1293,7 +1293,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
   PetscCall(VecViennaCLGetArrayRead(v, &v_vcl));
   try {
     viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
-    const cl_context ocl_ctx = vcl_ctx.handle().get();
+    const cl_context       ocl_ctx = vcl_ctx.handle().get();
     clRetainContext(ocl_ctx);
     *ctx = (PETSC_UINTPTR_T)(ocl_ctx);
   } catch (std::exception const &ex) {
@@ -1331,9 +1331,9 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
   const ViennaCLVector *v_vcl;
   PetscCall(VecViennaCLGetArrayRead(v, &v_vcl));
   try {
-    viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
+    viennacl::ocl::context              vcl_ctx   = v_vcl->handle().opencl_handle().context();
     const viennacl::ocl::command_queue &vcl_queue = vcl_ctx.current_queue();
-    const cl_command_queue ocl_queue = vcl_queue.handle().get();
+    const cl_command_queue              ocl_queue = vcl_queue.handle().get();
     clRetainCommandQueue(ocl_queue);
     *queue = (PETSC_UINTPTR_T)(ocl_queue);
   } catch (std::exception const &ex) {

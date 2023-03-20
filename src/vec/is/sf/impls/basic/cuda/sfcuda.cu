@@ -438,10 +438,10 @@ __device__ static double atomicMult(double *address, double val)
 __device__ static float atomicMult(float *address, float val)
 {
   int *address_as_int = (int *)(address);
-  int old = *address_as_int, assumed;
+  int  old            = *address_as_int, assumed;
   do {
     assumed = old;
-    old = atomicCAS(address_as_int, assumed, __float_as_int(val * __int_as_float(assumed)));
+    old     = atomicCAS(address_as_int, assumed, __float_as_int(val * __int_as_float(assumed)));
   } while (assumed != old);
   return __int_as_float(old);
 }
@@ -518,10 +518,10 @@ __device__ static double atomicMax(double *address, double val)
 __device__ static float atomicMin(float *address, float val)
 {
   int *address_as_int = (int *)(address);
-  int old = *address_as_int, assumed;
+  int  old            = *address_as_int, assumed;
   do {
     assumed = old;
-    old = atomicCAS(address_as_int, assumed, __float_as_int(PetscMin(val, __int_as_float(assumed))));
+    old     = atomicCAS(address_as_int, assumed, __float_as_int(PetscMin(val, __int_as_float(assumed))));
   } while (assumed != old);
   return __int_as_float(old);
 }
@@ -529,10 +529,10 @@ __device__ static float atomicMin(float *address, float val)
 __device__ static float atomicMax(float *address, float val)
 {
   int *address_as_int = (int *)(address);
-  int old = *address_as_int, assumed;
+  int  old            = *address_as_int, assumed;
   do {
     assumed = old;
-    old = atomicCAS(address_as_int, assumed, __float_as_int(PetscMax(val, __int_as_float(assumed))));
+    old     = atomicCAS(address_as_int, assumed, __float_as_int(PetscMax(val, __int_as_float(assumed))));
   } while (assumed != old);
   return __int_as_float(old);
 }

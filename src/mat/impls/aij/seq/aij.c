@@ -1425,16 +1425,16 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A, Vec xx, Vec zz, Vec yy)
   fortranmulttransposeaddaij_(&m, x, a->i, a->j, aa, y);
 #else
   if (usecprow) {
-    m = cprow.nrows;
-    ii = cprow.i;
+    m    = cprow.nrows;
+    ii   = cprow.i;
     ridx = cprow.rindex;
   } else {
     ii = a->i;
   }
   for (i = 0; i < m; i++) {
     idx = a->j + ii[i];
-    v = aa + ii[i];
-    n = ii[i + 1] - ii[i];
+    v   = aa + ii[i];
+    n   = ii[i + 1] - ii[i];
     if (usecprow) {
       alpha = x[ridx[i]];
     } else {
@@ -1506,9 +1506,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A, Vec xx, Vec yy)
     fortranmultaij_(&m, x, ii, aj, aa, y);
 #else
     for (i = 0; i < m; i++) {
-      n = ii[i + 1] - ii[i];
-      aj = a->j + ii[i];
-      aa = a_a + ii[i];
+      n   = ii[i + 1] - ii[i];
+      aj  = a->j + ii[i];
+      aa  = a_a + ii[i];
       sum = 0.0;
       PetscSparseDensePlusDot(sum, x, aa, aj, n);
       y[i] = sum;
@@ -1662,9 +1662,9 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz)
     fortranmultaddaij_(&m, x, ii, aj, aa, y, z);
 #else
     for (i = 0; i < m; i++) {
-      n = ii[i + 1] - ii[i];
-      aj = a->j + ii[i];
-      aa = a_a + ii[i];
+      n   = ii[i + 1] - ii[i];
+      aj  = a->j + ii[i];
+      aa  = a_a + ii[i];
       sum = y[i];
       PetscSparseDensePlusDot(sum, x, aa, aj, n);
       z[i] = sum;

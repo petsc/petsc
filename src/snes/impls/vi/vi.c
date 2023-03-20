@@ -32,7 +32,7 @@ Calling Sequence of `compute`:
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES, Vec, Vec))
 {
-  PetscErrorCode (*f)(SNES, PetscErrorCode(*)(SNES, Vec, Vec));
+  PetscErrorCode (*f)(SNES, PetscErrorCode (*)(SNES, Vec, Vec));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);

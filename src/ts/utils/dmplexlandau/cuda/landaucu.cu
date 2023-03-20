@@ -271,7 +271,7 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
   constexpr int   dim   = 2;
   #else
   const PetscReal vj[3] = {xx[jpidx], yy[jpidx], zz[jpidx]};
-  constexpr int dim = 3;
+  constexpr int   dim   = 3;
   #endif
   const PetscInt  f_off = d_species_offset[grid], Nb = Nq;
   // create g2 & g3

@@ -2517,7 +2517,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m, PetscInt mstride, Petsc
     mstride = m;
   }
 #else
-  A = A_in;
+  A    = A_in;
   Ainv = Ainv_out;
 #endif
 

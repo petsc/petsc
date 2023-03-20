@@ -1093,9 +1093,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 
   PetscCall(PetscObjectTypeCompare((PetscObject)P, MATIS, &ismatis));
   if (!data->is && !ismatis) {
-    PetscErrorCode (*create)(DM, IS *, Mat *, PetscErrorCode(**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **) = NULL;
-    PetscErrorCode (*usetup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *)                                               = NULL;
-    void *uctx                                                                                                              = NULL;
+    PetscErrorCode (*create)(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **) = NULL;
+    PetscErrorCode (*usetup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *)                                                = NULL;
+    void *uctx                                                                                                               = NULL;
 
     /* first see if we can get the data from the DM */
     PetscCall(MatGetDM(P, &dm));

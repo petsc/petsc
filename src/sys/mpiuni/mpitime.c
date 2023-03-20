@@ -41,7 +41,7 @@ double MPI_Wtime(void)
   dwCurHigh   = (DWORD)CurTime.u.HighPart;
   dwStartHigh = (DWORD)StartTime.u.HighPart;
   #else
-  dwCurHigh = (DWORD)CurTime.HighPart;
+  dwCurHigh   = (DWORD)CurTime.HighPart;
   dwStartHigh = (DWORD)StartTime.HighPart;
   #endif
   dHigh = (signed)(dwCurHigh - dwStartHigh);
