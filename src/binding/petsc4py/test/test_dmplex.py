@@ -187,9 +187,9 @@ class BaseTestPlex(object):
         assert np.allclose(metric.array, metric1.array)
         self.plex.metricIntersection2(metric1, metric2, metric)
         assert np.allclose(metric.array, metric2.array)
-        self.plex.metricEnforceSPD(metric, metric1, det)
+        self.plex.metricEnforceSPD(metric, metric1, det[0])
         assert np.allclose(metric.array, metric1.array)
-        self.plex.metricNormalize(metric, metric1, det, restrictSizes=False, restrictAnisotropy=False)
+        self.plex.metricNormalize(metric, metric1, det[0], restrictSizes=False, restrictAnisotropy=False)
         metric2.scale(pow(target, 2.0/self.DIM))
         assert np.allclose(metric1.array, metric2.array)
 

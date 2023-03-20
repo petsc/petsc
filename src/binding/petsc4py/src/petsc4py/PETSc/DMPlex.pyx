@@ -754,162 +754,187 @@ cdef class DMPlex(DM):
     def metricSetFromOptions(self):
         CHKERR( DMPlexMetricSetFromOptions(self.dm) )
 
-    def metricSetUniform(self, PetscBool uniform):
-        CHKERR( DMPlexMetricSetUniform(self.dm, uniform) )
+    def metricSetUniform(self, uniform):
+        cdef PetscBool bval = asBool(uniform)
+        CHKERR( DMPlexMetricSetUniform(self.dm, bval) )
 
     def metricIsUniform(self):
         cdef PetscBool uniform = PETSC_FALSE
         CHKERR( DMPlexMetricIsUniform(self.dm, &uniform) )
         return toBool(uniform)
 
-    def metricSetIsotropic(self, PetscBool isotropic):
-        CHKERR( DMPlexMetricSetIsotropic(self.dm, isotropic) )
+    def metricSetIsotropic(self, isotropic):
+        cdef PetscBool bval = asBool(isotropic)
+        CHKERR( DMPlexMetricSetIsotropic(self.dm, bval) )
 
     def metricIsIsotropic(self):
         cdef PetscBool isotropic = PETSC_FALSE
         CHKERR( DMPlexMetricIsIsotropic(self.dm, &isotropic) )
         return toBool(isotropic)
 
-    def metricSetRestrictAnisotropyFirst(self, PetscBool restrictAnisotropyFirst):
-        CHKERR( DMPlexMetricSetRestrictAnisotropyFirst(self.dm, restrictAnisotropyFirst) )
+    def metricSetRestrictAnisotropyFirst(self, restrictAnisotropyFirst):
+        cdef PetscBool bval = asBool(restrictAnisotropyFirst)
+        CHKERR( DMPlexMetricSetRestrictAnisotropyFirst(self.dm, bval) )
 
     def metricRestrictAnisotropyFirst(self):
         cdef PetscBool restrictAnisotropyFirst = PETSC_FALSE
         CHKERR( DMPlexMetricRestrictAnisotropyFirst(self.dm, &restrictAnisotropyFirst) )
         return toBool(restrictAnisotropyFirst)
 
-    def metricSetNoInsertion(self, PetscBool noInsert):
-        CHKERR( DMPlexMetricSetNoInsertion(self.dm, noInsert) )
+    def metricSetNoInsertion(self, noInsert):
+        cdef PetscBool bval = asBool(noInsert)
+        CHKERR( DMPlexMetricSetNoInsertion(self.dm, bval) )
 
     def metricNoInsertion(self):
         cdef PetscBool noInsert = PETSC_FALSE
         CHKERR( DMPlexMetricNoInsertion(self.dm, &noInsert) )
         return toBool(noInsert)
 
-    def metricSetNoSwapping(self, PetscBool noSwap):
-        CHKERR( DMPlexMetricSetNoSwapping(self.dm, noSwap) )
+    def metricSetNoSwapping(self, noSwap):
+        cdef PetscBool bval = asBool(noSwap)
+        CHKERR( DMPlexMetricSetNoSwapping(self.dm, bval) )
 
     def metricNoSwapping(self):
         cdef PetscBool noSwap = PETSC_FALSE
         CHKERR( DMPlexMetricNoSwapping(self.dm, &noSwap) )
         return toBool(noSwap)
 
-    def metricSetNoMovement(self, PetscBool noMove):
-        CHKERR( DMPlexMetricSetNoMovement(self.dm, noMove) )
+    def metricSetNoMovement(self, noMove):
+        cdef PetscBool bval = asBool(noMove)
+        CHKERR( DMPlexMetricSetNoMovement(self.dm, bval) )
 
     def metricNoMovement(self):
         cdef PetscBool noMove = PETSC_FALSE
         CHKERR( DMPlexMetricNoMovement(self.dm, &noMove) )
         return toBool(noMove)
 
-    def metricSetNoSurf(self, PetscBool noSurf):
-        CHKERR( DMPlexMetricSetNoSurf(self.dm, noSurf) )
+    def metricSetNoSurf(self, noSurf):
+        cdef PetscBool bval = asBool(noSurf)
+        CHKERR( DMPlexMetricSetNoSurf(self.dm, bval) )
 
     def metricNoSurf(self):
         cdef PetscBool noSurf = PETSC_FALSE
         CHKERR( DMPlexMetricNoSurf(self.dm, &noSurf) )
         return toBool(noSurf)
 
-    def metricSetVerbosity(self, PetscInt verbosity):
-        CHKERR( DMPlexMetricSetVerbosity(self.dm, verbosity) )
+    def metricSetVerbosity(self, verbosity):
+        cdef PetscInt ival = asInt(verbosity)
+        CHKERR( DMPlexMetricSetVerbosity(self.dm, ival) )
 
     def metricGetVerbosity(self):
-        cdef PetscInt verbosity
+        cdef PetscInt verbosity = 0
         CHKERR( DMPlexMetricGetVerbosity(self.dm, &verbosity) )
-        return verbosity
+        return toInt(verbosity)
 
-    def metricSetNumIterations(self, PetscInt numIter):
-        CHKERR( DMPlexMetricSetNumIterations(self.dm, numIter) )
+    def metricSetNumIterations(self, numIter):
+        cdef PetscInt ival = asInt(numIter)
+        CHKERR( DMPlexMetricSetNumIterations(self.dm, ival) )
 
     def metricGetNumIterations(self):
-        cdef PetscInt numIter
+        cdef PetscInt numIter = 0
         CHKERR( DMPlexMetricGetNumIterations(self.dm, &numIter) )
-        return numIter
+        return toInt(numIter)
 
-    def metricSetMinimumMagnitude(self, PetscReal h_min):
-        CHKERR( DMPlexMetricSetMinimumMagnitude(self.dm, h_min) )
+    def metricSetMinimumMagnitude(self, h_min):
+        cdef PetscReal rval = asReal(h_min)
+        CHKERR( DMPlexMetricSetMinimumMagnitude(self.dm, rval) )
 
     def metricGetMinimumMagnitude(self):
-        cdef PetscReal h_min
+        cdef PetscReal h_min = 0
         CHKERR( DMPlexMetricGetMinimumMagnitude(self.dm, &h_min) )
-        return h_min
+        return toReal(h_min)
 
-    def metricSetMaximumMagnitude(self, PetscReal h_max):
-        CHKERR( DMPlexMetricSetMaximumMagnitude(self.dm, h_max) )
+    def metricSetMaximumMagnitude(self, h_max):
+        cdef PetscReal rval = asReal(h_max)
+        CHKERR( DMPlexMetricSetMaximumMagnitude(self.dm, rval) )
 
     def metricGetMaximumMagnitude(self):
-        cdef PetscReal h_max
+        cdef PetscReal h_max = 0
         CHKERR( DMPlexMetricGetMaximumMagnitude(self.dm, &h_max) )
-        return h_max
+        return toReal(h_max)
 
-    def metricSetMaximumAnisotropy(self, PetscReal a_max):
-        CHKERR( DMPlexMetricSetMaximumAnisotropy(self.dm, a_max) )
+    def metricSetMaximumAnisotropy(self, a_max):
+        cdef PetscReal rval = asReal(a_max)
+        CHKERR( DMPlexMetricSetMaximumAnisotropy(self.dm, rval) )
 
     def metricGetMaximumAnisotropy(self):
-        cdef PetscReal a_max
+        cdef PetscReal a_max = 0
         CHKERR( DMPlexMetricGetMaximumAnisotropy(self.dm, &a_max) )
-        return a_max
+        return toReal(a_max)
 
-    def metricSetTargetComplexity(self, PetscReal targetComplexity):
-        CHKERR( DMPlexMetricSetTargetComplexity(self.dm, targetComplexity) )
+    def metricSetTargetComplexity(self, targetComplexity):
+        cdef PetscReal rval = asReal(targetComplexity)
+        CHKERR( DMPlexMetricSetTargetComplexity(self.dm, rval) )
 
     def metricGetTargetComplexity(self):
-        cdef PetscReal targetComplexity
+        cdef PetscReal targetComplexity = 0
         CHKERR( DMPlexMetricGetTargetComplexity(self.dm, &targetComplexity) )
-        return targetComplexity
+        return toReal(targetComplexity)
 
-    def metricSetNormalizationOrder(self, PetscReal p):
-        CHKERR( DMPlexMetricSetNormalizationOrder(self.dm, p) )
+    def metricSetNormalizationOrder(self, p):
+        cdef PetscReal rval = asReal(p)
+        CHKERR( DMPlexMetricSetNormalizationOrder(self.dm, rval) )
 
     def metricGetNormalizationOrder(self):
-        cdef PetscReal p
+        cdef PetscReal p = 0
         CHKERR( DMPlexMetricGetNormalizationOrder(self.dm, &p) )
-        return p
+        return toReal(p)
 
-    def metricSetGradationFactor(self, PetscReal beta):
-        CHKERR( DMPlexMetricSetGradationFactor(self.dm, beta) )
+    def metricSetGradationFactor(self, beta):
+        cdef PetscReal rval = asReal(beta)
+        CHKERR( DMPlexMetricSetGradationFactor(self.dm, rval) )
 
     def metricGetGradationFactor(self):
-        cdef PetscReal beta
+        cdef PetscReal beta = 0
         CHKERR( DMPlexMetricGetGradationFactor(self.dm, &beta) )
-        return beta
+        return toReal(beta)
 
-    def metricSetHausdorffNumber(self, PetscReal hausd):
-        CHKERR( DMPlexMetricSetHausdorffNumber(self.dm, hausd) )
+    def metricSetHausdorffNumber(self, hausd):
+        cdef PetscReal rval = asReal(hausd)
+        CHKERR( DMPlexMetricSetHausdorffNumber(self.dm, rval) )
 
     def metricGetHausdorffNumber(self):
-        cdef PetscReal hausd
+        cdef PetscReal hausd = 0
         CHKERR( DMPlexMetricGetHausdorffNumber(self.dm, &hausd) )
-        return hausd
+        return toReal(hausd)
 
     def metricCreate(self, field=0):
+        cdef PetscInt ival = asInt(field)
         cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricCreate(self.dm, field, &metric.vec) )
+        CHKERR( DMPlexMetricCreate(self.dm, ival, &metric.vec) )
         return metric
 
-    def metricCreateUniform(self, PetscReal alpha, field=0):
+    def metricCreateUniform(self, alpha, field=0):
+        cdef PetscInt  ival = asInt(field)
+        cdef PetscReal rval = asReal(alpha)
         cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricCreateUniform(self.dm, field, alpha, &metric.vec) )
+        CHKERR( DMPlexMetricCreateUniform(self.dm, ival, rval, &metric.vec) )
         return metric
 
     def metricCreateIsotropic(self, Vec indicator, field=0):
+        cdef PetscInt  ival = asInt(field)
         cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricCreateIsotropic(self.dm, field, indicator.vec, &metric.vec) )
+        CHKERR( DMPlexMetricCreateIsotropic(self.dm, ival, indicator.vec, &metric.vec) )
         return metric
 
     def metricDeterminantCreate(self, field=0):
+        cdef PetscInt  ival = asInt(field)
         cdef Vec determinant = Vec()
         cdef DM dmDet = DM()
-        CHKERR( DMPlexMetricDeterminantCreate(self.dm, field, &determinant.vec, &dmDet.dm) )
-        return determinant
+        CHKERR( DMPlexMetricDeterminantCreate(self.dm, ival, &determinant.vec, &dmDet.dm) )
+        return (determinant, dmDet)
 
     def metricEnforceSPD(self, Vec metric, Vec ometric, Vec determinant, restrictSizes=False, restrictAnisotropy=False):
+        cdef PetscBool bval_rs = asBool(restrictSizes)
+        cdef PetscBool bval_ra = asBool(restrictAnisotropy)
         cdef DM dmDet = DM()
-        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, restrictSizes, restrictAnisotropy, ometric.vec, determinant.vec) )
+        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, bval_rs, bval_ra, ometric.vec, determinant.vec) )
         return (ometric, determinant)
 
     def metricNormalize(self, Vec metric, Vec ometric, Vec determinant, restrictSizes=True, restrictAnisotropy=True):
-        CHKERR( DMPlexMetricNormalize(self.dm, metric.vec, restrictSizes, restrictAnisotropy, ometric.vec, determinant.vec) )
+        cdef PetscBool bval_rs = asBool(restrictSizes)
+        cdef PetscBool bval_ra = asBool(restrictAnisotropy)
+        CHKERR( DMPlexMetricNormalize(self.dm, metric.vec, bval_rs, bval_ra, ometric.vec, determinant.vec) )
         return (ometric, determinant)
 
     def metricAverage2(self, Vec metric1, Vec metric2, Vec metricAvg):

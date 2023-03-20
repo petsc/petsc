@@ -183,18 +183,17 @@ cdef class DeviceContext(Object):
       cother = PyPetscDeviceContext_Get(other)
     CHKERR(PetscDeviceContextWaitForContext(self.dctx, cother))
 
-  def fork(self, PetscInt n, stream_type = None):
+  def fork(self, n, stream_type = None):
     cdef PetscDeviceContext *subctx       = NULL
     cdef PetscStreamType     cstream_type = PETSC_STREAM_DEFAULT_BLOCKING
-
+    cdef PetscInt cn = asInt(n)
     try:
       if stream_type is None:
-        CHKERR(PetscDeviceContextFork(self.dctx, n, &subctx))
+        CHKERR(PetscDeviceContextFork(self.dctx, cn, &subctx))
       else:
         cstream_type = asStreamType(stream_type)
-        CHKERR(PetscDeviceContextForkWithStreamType(self.dctx, cstream_type, n, &subctx))
-
-      return [PyPetscDeviceContext_New(subctx[i]) for i in range(n)]
+        CHKERR(PetscDeviceContextForkWithStreamType(self.dctx, cstream_type, cn, &subctx))
+        return [PyPetscDeviceContext_New(subctx[i]) for i in range(cn)]
     finally:
       CHKERR(PetscFree(subctx))
 
