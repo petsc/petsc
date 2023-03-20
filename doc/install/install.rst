@@ -677,7 +677,7 @@ Applications may be compiled with, for example,
 
    $  make ex19.html
 
-The rule for linking may be found in `lib/petsc/conf/test <PETSC_DOC_OUT_ROOT_PLACEHOLDER/lib/petsc/conf/test>`__
+The rule for linking may be found in `lib/petsc/conf/rules <PETSC_DOC_OUT_ROOT_PLACEHOLDER/lib/petsc/conf/rules>`__
 
 .. _doc_config_hpc:
 

@@ -882,7 +882,6 @@ To develop an application program that uses PETSc, we suggest the following:
 
               include ${PETSC_DIR}/lib/petsc/conf/variables
               include ${PETSC_DIR}/lib/petsc/conf/rules
-              include ${PETSC_DIR}/lib/petsc/conf/tests
 
            to the bottom of your makefile. See the comments in the file $PETSC_DIR/share/petsc/Makefile.basic.user for details on the usage.
            Since PETSc's rules now control the build process you will likely need to simplify and remove much of your makefile.

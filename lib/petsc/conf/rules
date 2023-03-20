@@ -1,10 +1,15 @@
 # -*- mode: makefile -*-
 #
-#    Contains rules for building PETSc application codes (not PETSc libraries)
+#    Contains rules for building PETSc application codes (not PETSc libraries).
 #      * for example, make ex1
-#      * included only in makefiles in directories that have examples /tutorials, /tests, and their subdirectores
+#      * included only in makefiles in directories that can build executables such as /tutorials, /tests, and their subdirectores
 #      * requires GNUmake
 #
+# It may be included in users makefiles (with include ${PETSC_DIR}/lib/petsc/conf/rules)
+# The makefile will then compile executables that link against the PETSc libraries
+# See https://petsc.org/release/docs/manual/getting_started/#writing-c-c-or-fortran-applications
+
+.SUFFIXES: .F .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .F95 .f95 .fiat .cu .hip.cpp .kokkos.cxx .raja.cxx *.sycl.cxx
 
 clean-legacy:
 	@-${RM} ${CLEANFILES} ${TESTS} *.o *.lo *~ \
@@ -29,45 +34,113 @@ clean-legacy:
               *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
 	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
-clean:: clean-legacy
+#
+#  These rules are for compiling the test examples.
+#
+.cpp.rm .cxx.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm .cu.rm:
+	-@${RM} $* *.o $*.mon.* gmon.out mon.out
+	-@${RM} *.exe *.ilk *.pdb *.tds
+.cu.PETSc .hip.cpp.PETSc .kokkos.cxx.PETSc .c.PETSc .cxx.PETSc:
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-@grep -v clog trashz | grep -v "information sections" | \
+          grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
+          grep -v "(aka 'long \*') doesn't match specified 'MPI' type tag that requires 'long long \*'" | \
+          grep -v "note: expanded from macro" |\
+          grep -v "MPI_" | \
+          grep -v "warnings generated" | \
+          grep -v "WARNING: TOC" | \
+          grep -v "D4024 : unrecognized" | \
+          grep -v "tentative definition of size" | \
+          grep -v "Extra instructions" | \
+          grep -v "Unused external reference" | \
+          grep -v "Warning: attribute unused is unsupported and will be skipped" | \
+          grep -v "f90 continuing despite warning messages" | \
+          grep -v "symbol if the" | \
+          grep -v "ignoring symbol version info" | \
+          grep -v "warning: initializer element is not computable at load time" | \
+          grep -v "warning: ISO C90 forbids mixed declarations and code" | \
+          grep -v "warning: ISO C90 does not support 'static' or type qualifiers in parameter array declarators" | \
+          grep -v "warning, duplicate dylib" | \
+          grep -v "warning: duplicate dylib" | \
+          grep -v "preempts that definition" | \
+          grep -v "is an array from" | \
+         grep -v "At least one PA 2.0" | \
+          grep -v "Cannot cast" | \
+          grep -v "WARNING 134: weak definition of" | \
+          grep -v "Warning(s) detected" | \
+          grep -v "object file assumed" | \
+          grep -v "consider using mkstemp"  |\
+          grep -v EXTERNAL  |\
+          grep -v "warning prebinding disabled"  |\
+          grep -v volatile  |\
+          grep -v -i inconsistent |\
+          grep -v Anachronism | \
+          grep -v "/opt/ibmcmp/xlsmp/1.3/lib" | \
+          grep -v "add line info to anonymous symbol" | \
+          grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
+          grep -v "IPO Error: unresolved" | \
+         grep -v "is being replaced by a real definition" | \
+          grep -v "may result in errors or" | \
+          grep -v "is deprecated" | \
+          grep -v "Werror=format-security" | \
+          grep -v " -Werror " | \
+          grep -v " was built for newer macOS version " | \
+          grep -v "only the last is used because nvcc can only accept a single optimization setting" | \
+         grep -E -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
+         if [ "$$?" != 1 ]; then \
+          printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
+          echo "See https://petsc.org/release/faq/";\
+          echo ${PWD} $* ;\
+          printf "*********************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
+         cat trashz ; fi; ${RM} trashz
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .hip.cpp .kokkos.cxx .raja.cxx *.sycl.cxx
-
-# garabage that likely can be removed below
-
-.fig.pdf:
-	fig2dev -L pdf $< $*.pdf
-.fig.eps:
-	fig2dev -L eps $< $*.eps
-.fig.jpg:
-	fig2dev -L jpeg $< $*.jpg
-.pdf.jpg:
-	convert $< $*.jpg
-.eps.pdf:
-	epstopdf $< -o=$*.pdf
-.ps.pdf:
-	ps2pdf $< $*.pdf
-.dvi.ps:
-	dvips -o $*.ps $<
-.svg.png:
-	inkscape --export-png=$*.png $<
-.svg.pdf:
-	inkscape --export-pdf=$*.pdf $<
-# Need to define PYTHON
-.fiat.h:
-	@if [ "${ELEMENT}" != "" ]; then \
-	  if [ "${ORDER}" != "" ]; then \
-	    python $< $*.h --element_family=${ELEMENT} --element_order=${ORDER}; \
-	  else \
-	    python $< $*.h --element_family=${ELEMENT}; \
-	  fi; \
-	else \
-	  if [ "${ORDER}" != "" ]; then \
-	    python $< $*.h --element_order=${ORDER}; \
-	  else \
-	    python $< $*.h; \
-	  fi; \
-	fi
+.F.PETSc .F90.PETSc:
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-@grep -v EXTERNAL trashz | grep -v Wall | \
+          grep -v "warning: In-place macro substitution leaves line truncated" | \
+          grep -v "Warning: Same actual argument associated with INTENT(IN) argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)" | \
+          grep -v "Unused external reference" | \
+          grep -v "D4024 : unrecognized" | \
+          grep -v "WARNING: TOC overflow." | \
+          grep -v "Extra instructions are being" | \
+          grep -v "tentative definition of size" | \
+          grep -v "symbol if the symbol" | \
+          grep -v -i inconsistent | \
+          grep -v -i "unused dummy" | \
+          grep -v "alignment lost in merging tentative definition" | \
+         grep -v "WARNING:  -cpp is ignored" | \
+          grep -v "ignoring symbol version info" | \
+         grep -v "At least one PA 2.0" | \
+         grep -v "Inconsistent structure" | \
+          grep -v "object file assumed" | \
+         grep -v "ex20.F:30:" | \
+         grep -v "ex20f.F:31: warning" | \
+         grep -v "f90 continuing despite warning messages" | \
+          grep -v "is an array from" | \
+          grep -v "warning, duplicate dylib" | \
+          grep -v "warning: duplicate dylib" | \
+          grep -v "consider using mkstemp"  |\
+          grep -v "Nonconforming tab character"  |\
+         grep -v "Unused external reference" | \
+          grep -v "WARNING 134: weak definition of" | \
+          grep -v 'continuing despite warning messages' | \
+          grep -v "add line info to anonymous symbol" | \
+          grep -v "warning prebinding disabled"  |\
+          grep -v "ex20f.F:34: warning:" | \
+         grep -v "Unused dummy argument" | \
+         grep -v "is being replaced by a real definition" | \
+          grep -v "IPO Error: unresolved" | \
+          grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
+          grep -v "Werror=format-security" | \
+          grep -v " -Werror " | \
+          grep -v " was built for newer macOS version " | \
+         grep -E -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
+         if [ "$$?" != 1 ]; then \
+          printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
+          echo "See https://petsc.org/release/faq/";\
+          echo ${PWD} $* ;\
+          printf "*********************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
+         cat trashz ; fi; ${RM} trashz;
 
 .c.o:
 	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/tutorials+DUMMY+g"`;\
@@ -104,113 +177,6 @@ clean:: clean-legacy
 
 .f.o .f90.o .f95.o:
 	${FC} -c ${FC_FLAGS} ${FFLAGS} -o $@ $<
-#
-#  These rules are for compiling the test examples.
-#
-.cpp.rm .cxx.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm .cu.rm:
-	-@${RM} $* *.o $*.mon.* gmon.out mon.out
-	-@${RM} *.exe *.ilk *.pdb *.tds
-.cu.PETSc .hip.cpp.PETSc .kokkos.cxx.PETSc .c.PETSc .cxx.PETSc:
-	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
-	-@grep -v clog trashz | grep -v "information sections" | \
-          grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
-          grep -v "(aka 'long \*') doesn't match specified 'MPI' type tag that requires 'long long \*'" | \
-          grep -v "note: expanded from macro" |\
-          grep -v "MPI_" | \
-          grep -v "warnings generated" | \
-          grep -v "WARNING: TOC" | \
-          grep -v "D4024 : unrecognized" | \
-          grep -v "tentative definition of size" | \
-          grep -v "Extra instructions" | \
-          grep -v "Unused external reference" | \
-          grep -v "Warning: attribute unused is unsupported and will be skipped" | \
-          grep -v "f90 continuing despite warning messages" | \
-          grep -v "symbol if the" | \
-          grep -v "ignoring symbol version info" | \
-          grep -v "warning: initializer element is not computable at load time" | \
-          grep -v "warning: ISO C90 forbids mixed declarations and code" | \
-          grep -v "warning: ISO C90 does not support 'static' or type qualifiers in parameter array declarators" | \
-          grep -v "warning, duplicate dylib" | \
-          grep -v "warning: duplicate dylib" | \
-          grep -v "preempts that definition" | \
-          grep -v "is an array from" | \
-	  grep -v "At least one PA 2.0" | \
-          grep -v "Cannot cast" | \
-          grep -v "WARNING 134: weak definition of" | \
-          grep -v "Warning(s) detected" | \
-          grep -v "object file assumed" | \
-          grep -v "consider using mkstemp"  |\
-          grep -v EXTERNAL  |\
-          grep -v "warning prebinding disabled"  |\
-          grep -v volatile  |\
-          grep -v -i inconsistent |\
-          grep -v Anachronism | \
-          grep -v "/opt/ibmcmp/xlsmp/1.3/lib" | \
-          grep -v "add line info to anonymous symbol" | \
-          grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
-          grep -v "IPO Error: unresolved" | \
-	  grep -v "is being replaced by a real definition" | \
-          grep -v "may result in errors or" | \
-          grep -v "is deprecated" | \
-          grep -v "Werror=format-security" | \
-          grep -v " -Werror " | \
-          grep -v " was built for newer macOS version " | \
-          grep -v "only the last is used because nvcc can only accept a single optimization setting" | \
-	  grep -E -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
-	  if [ "$$?" != 1 ]; then \
-          printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
-          echo "See https://petsc.org/release/faq/";\
-          echo ${PWD} $* ;\
-          printf "*********************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
-	  cat trashz ; fi; ${RM} trashz
-
-.F.PETSc .F90.PETSc:
-	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
-	-@grep -v EXTERNAL trashz | grep -v Wall | \
-          grep -v "warning: In-place macro substitution leaves line truncated" | \
-          grep -v "Warning: Same actual argument associated with INTENT(IN) argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)" | \
-          grep -v "Unused external reference" | \
-          grep -v "D4024 : unrecognized" | \
-          grep -v "WARNING: TOC overflow." | \
-          grep -v "Extra instructions are being" | \
-          grep -v "tentative definition of size" | \
-          grep -v "symbol if the symbol" | \
-          grep -v -i inconsistent | \
-          grep -v -i "unused dummy" | \
-          grep -v "alignment lost in merging tentative definition" | \
-	  grep -v "WARNING:  -cpp is ignored" | \
-          grep -v "ignoring symbol version info" | \
-	  grep -v "At least one PA 2.0" | \
-	  grep -v "Inconsistent structure" | \
-          grep -v "object file assumed" | \
-	  grep -v "ex20.F:30:" | \
-	  grep -v "ex20f.F:31: warning" | \
-	  grep -v "f90 continuing despite warning messages" | \
-          grep -v "is an array from" | \
-          grep -v "warning, duplicate dylib" | \
-          grep -v "warning: duplicate dylib" | \
-          grep -v "consider using mkstemp"  |\
-          grep -v "Nonconforming tab character"  |\
-	  grep -v "Unused external reference" | \
-          grep -v "WARNING 134: weak definition of" | \
-          grep -v 'continuing despite warning messages' | \
-          grep -v "add line info to anonymous symbol" | \
-          grep -v "warning prebinding disabled"  |\
-          grep -v "ex20f.F:34: warning:" | \
-	  grep -v "Unused dummy argument" | \
-	  grep -v "is being replaced by a real definition" | \
-          grep -v "IPO Error: unresolved" | \
-          grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
-          grep -v "Werror=format-security" | \
-          grep -v " -Werror " | \
-          grep -v " was built for newer macOS version " | \
-	  grep -E -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
-	  if [ "$$?" != 1 ]; then \
-          printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
-          echo "See https://petsc.org/release/faq/";\
-          echo ${PWD} $* ;\
-          printf "*********************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
-	  cat trashz ; fi; ${RM} trashz;
 
 ifeq ($(RM),true)
 .SECONDARY: $(%.o) $(%f.o) $(%f90.o)

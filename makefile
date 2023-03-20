@@ -21,7 +21,7 @@ DIRS = src include interfaces share/petsc/matlab
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
-#include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
+include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules.doc
 
@@ -527,7 +527,7 @@ alletags:
 allgtags:
 	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|cxx\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
 
-# ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/petscrules.doc **************************************************
+# ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/rules.doc **************************************************
 
 docs:
 	cd doc; ${OMAKE_SELF} sphinxhtml

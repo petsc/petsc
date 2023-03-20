@@ -456,7 +456,7 @@ help-nontest:
 	-@echo "   test - use \"make help-test\" for help on running the extensive tests"
 	-@echo
 	-@echo "Developer rules:"
-	-@echo "   doc s- build all the PETSc documentation locally as a website"
+	-@echo "   docs - build all the PETSc documentation locally as a website"
 	-@echo "   clean - delete libraries and Fortran module files"
 	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
 	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"

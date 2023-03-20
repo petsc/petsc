@@ -40,5 +40,4 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 #  manage the build rules yourself (rarely needed) comment out the next lines
 #
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 
