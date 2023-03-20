@@ -24,7 +24,6 @@ include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
 #include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules.doc
-include ${PETSC_DIR}/lib/petsc/conf/test.common
 
 # This makefile contains a lot of PHONY targets with improperly specified prerequisites
 # where correct execution instead depends on the targets being processed in the correct
@@ -240,6 +239,41 @@ install-builtafterpetsc:
 # Creates ${HOME}/petsc.tar.gz [and petsc-with-docs.tar.gz]
 dist:
 	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} main
+
+# ******** Rules for running the full test suite ********************************************************************************************************
+
+TESTMODE = testexamples
+ALLTESTS_CHECK_FAILURES = no
+ALLTESTS_MAKEFILE = ${PETSC_DIR}/gmakefile.test
+VALGRIND=0
+alltests: chk_in_petscdir ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
+	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	+@if [ -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test ] ; then \
+            ALLTESTS_MAKEFILE=${PETSC_DIR}/share/petsc/examples/gmakefile.test ; \
+            ALLTESTSLOG=alltests.log ;\
+          else \
+            ALLTESTS_MAKEFILE=${PETSC_DIR}/gmakefile.test; \
+            ALLTESTSLOG=${PETSC_ARCH}/lib/petsc/conf/alltests.log ;\
+            ln -s $${ALLTESTSLOG} alltests.log ;\
+          fi; \
+          ${OMAKE} allgtest ALLTESTS_MAKEFILE=$${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} VALGRIND=${VALGRIND} 2>&1 | tee $${ALLTESTSLOG};\
+          if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
+            cat $${ALLTESTSLOG} | grep -E '(^not ok|not remade because of errors|^# No tests run)' | wc -l | grep '^[ ]*0$$' > /dev/null; \
+          fi;
+
+allgtests-tap: allgtest-tap
+	+@${OMAKE} -f ${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} check-test-errors
+
+allgtest-tap: ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -f ${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test OUTPUT=1
+
+allgtest: ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -k -f ${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test V=0 2>&1 | grep -E -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)'
+
+test:
+	+${OMAKE} -f ${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test
+cleantest:
+	+${OMAKE} -f ${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleantest
 
 #********* Rules for cleaning ***************************************************************************************************************************
 
