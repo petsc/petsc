@@ -1709,37 +1709,21 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
 
   PetscCall(PetscHeaderCreate(snes, SNES_CLASSID, "SNES", "Nonlinear solver", "SNES", comm, SNESDestroy, SNESView));
 
-  snes->ops->converged = SNESConvergedDefault;
-  snes->usesksp        = PETSC_TRUE;
-  snes->tolerancesset  = PETSC_FALSE;
-  snes->max_its        = 50;
-  snes->max_funcs      = 10000;
-  snes->norm           = 0.0;
-  snes->xnorm          = 0.0;
-  snes->ynorm          = 0.0;
-  snes->normschedule   = SNES_NORM_ALWAYS;
-  snes->functype       = SNES_FUNCTION_DEFAULT;
-#if defined(PETSC_USE_REAL_SINGLE)
-  snes->rtol = 1.e-5;
-#else
-  snes->rtol = 1.e-8;
-#endif
-  snes->ttol = 0.0;
-#if defined(PETSC_USE_REAL_SINGLE)
-  snes->abstol = 1.e-25;
-#else
-  snes->abstol = 1.e-50;
-#endif
-#if defined(PETSC_USE_REAL_SINGLE)
-  snes->stol = 1.e-5;
-#else
-  snes->stol = 1.e-8;
-#endif
-#if defined(PETSC_USE_REAL_SINGLE)
-  snes->deltatol = 1.e-6;
-#else
-  snes->deltatol = 1.e-12;
-#endif
+  snes->ops->converged       = SNESConvergedDefault;
+  snes->usesksp              = PETSC_TRUE;
+  snes->tolerancesset        = PETSC_FALSE;
+  snes->max_its              = 50;
+  snes->max_funcs            = 10000;
+  snes->norm                 = 0.0;
+  snes->xnorm                = 0.0;
+  snes->ynorm                = 0.0;
+  snes->normschedule         = SNES_NORM_ALWAYS;
+  snes->functype             = SNES_FUNCTION_DEFAULT;
+  snes->rtol                 = PetscDefined(USE_REAL_SINGLE) ? 1.e-5 : 1.e-8;
+  snes->ttol                 = 0.0;
+  snes->abstol               = PetscDefined(USE_REAL_SINGLE) ? 1.e-25 : 1.e-50;
+  snes->stol                 = PetscDefined(USE_REAL_SINGLE) ? 1.e-5 : 1.e-8;
+  snes->deltatol             = PetscDefined(USE_REAL_SINGLE) ? 1.e-6 : 1.e-12;
   snes->divtol               = 1.e4;
   snes->rnorm0               = 0;
   snes->nfuncs               = 0;

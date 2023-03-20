@@ -490,27 +490,24 @@ static inline PetscErrorCode PetscStrchr(const char a[], char b, char *c[])
 - b - character
 
   Output Parameter:
-. tmp - one past location of `b` in `a`, or `a` if `b` was not found
+. c - one past location of `b` in `a`, or `a` if `b` was not found
 
   Level: intermediate
 
 .seealso: `PetscStrchr()`, `PetscTokenCreate()`, `PetscStrendswith()`, `PetscStrbeginsswith()`
 @*/
-static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *tmp[])
+static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *c[])
 {
   PetscFunctionBegin;
   PetscAssertPointer_Private(a, 1);
-  PetscAssertPointer_Private(tmp, 3);
+  PetscAssertPointer_Private(c, 3);
 #if PetscHasBuiltin(__builtin_strrchr)
-  *tmp = (char *)__builtin_strrchr(a, b);
+  *c = (char *)__builtin_strrchr(a, b);
 #else
-  *tmp = (char *)strrchr(a, b);
+  *c = (char *)strrchr(a, b);
 #endif
-  if (!*tmp) {
-    *tmp = (char *)a;
-  } else {
-    *tmp = *tmp + 1;
-  }
+  if (!*c) *c = (char *)a;
+  else *c = *c + 1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
