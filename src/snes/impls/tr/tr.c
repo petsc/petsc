@@ -319,7 +319,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscInt                  maxits, lits;
   PetscReal                 rho, fnorm, gnorm, xnorm = 0, delta, ynorm;
   PetscReal                 deltaM, fk, fkp1, deltaqm, gTy, yTHy;
-  PetscReal                 auk, gfnorm, ycnorm, gTBg;
+  PetscReal                 auk, gfnorm, ycnorm, gTBg, objmin = 0.0;
   KSP                       ksp;
   PetscBool                 already_done = PETSC_FALSE;
   PetscBool                 clear_converged_test, rho_satisfied, has_objective;
@@ -417,6 +417,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
     /* solve trust-region subproblem (don't specify radius if not looking for Newton step only) */
     PetscCall(KSPCGSetRadius(snes->ksp, neP->fallback == SNES_TR_FALLBACK_NEWTON ? delta : 0.0));
+    PetscCall(KSPCGSetObjectiveTarget(snes->ksp, objmin));
     PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
     PetscCall(KSPSolve(snes->ksp, F, Y));
     SNESCheckKSPSolve(snes);
@@ -536,6 +537,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       already_done = PETSC_FALSE;
       fnorm        = gnorm;
       fk           = fkp1;
+      /* objmin       = -rho * deltaqm; */
 
       /* New residual and linearization point */
       PetscCall(VecCopy(G, F));
