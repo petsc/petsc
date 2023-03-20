@@ -391,10 +391,24 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     PetscBool changed_y;
     PetscBool changed_w;
 
-    /* calculating GradF of minimization function only once */
+    /* calculating Jacobian and GradF of minimization function only once */
     if (!already_done) {
+      /* Call general purpose update function */
+      PetscTryTypeMethod(snes, update, snes->iter);
+
+      /* if update is present, recompute objective function and function norm */
+      if (snes->ops->update) {
+        PetscCall(SNESComputeFunction(snes, X, F));
+        PetscCall(VecNorm(F, NORM_2, &fnorm));
+        if (has_objective) PetscCall(SNESComputeObjective(snes, X, &fk));
+        else fk = 0.5 * PetscSqr(fnorm); /* obj(x) = 0.5 * ||F(x)||^2 */
+      }
+
+      /* Jacobian */
       PetscCall(SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre));
       SNESCheckJacobianDomainerror(snes);
+
+      /* GradF */
       if (has_objective) gfnorm = fnorm;
       else {
         PetscCall(MatMultTranspose(snes->jacobian, F, GradF)); /* grad f = J^T F */
