@@ -77,11 +77,11 @@ Discrete System with 1 fields
         type: lagrange
         Dual space with 3 components, size 24
         Continuous tensor Lagrange dual space
-        Quadrature of order 3 on 8 points (dim 3)
+        Quadrature on a hexahedron of order 3 on 8 points (dim 3)
   Weak Form System with 1 fields
     boundary_residual_f0
-      (0, 0)
-      (0, 0)
+(0, 0) 
+(0, 0) 
     boundary_jacobian_g0
-      (1, 0)
-      (1, 0)
+(1, 0) 
+(1, 0) 

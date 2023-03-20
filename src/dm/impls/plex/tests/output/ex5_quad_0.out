@@ -42,7 +42,7 @@ Discrete System with 2 fields
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
-        Quadrature of order 3 on 2 points (dim 1)
+        Quadrature on a segment of order 3 on 2 points (dim 1)
   Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI process
       type: basic
@@ -59,13 +59,13 @@ Discrete System with 2 fields
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
-        Quadrature of order 3 on 2 points (dim 1)
+        Quadrature on a segment of order 3 on 2 points (dim 1)
   Weak Form System with 2 fields
     boundary_residual_f0
-      (cohesive, 1) (0, 1)
-      (material, 1) (0, 0)
-      (material, 2) (0, 0)
+      (cohesive, 1) (0, 1) 
+      (material, 1) (0, 0) 
+      (material, 2) (0, 0) 
     boundary_jacobian_g0
-      (cohesive, 1) (1, 0)
-      (material, 1) (0, 1)
-      (material, 2) (0, 1)
+      (cohesive, 1) (1, 0) 
+      (material, 1) (0, 1) 
+      (material, 2) (0, 1) 

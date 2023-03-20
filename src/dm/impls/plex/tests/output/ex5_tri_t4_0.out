@@ -60,7 +60,7 @@ Discrete System with 1 fields
         type: lagrange
         Dual space with 2 components, size 6
         Continuous Lagrange dual space
-        Quadrature of order 2 on 3 points (dim 2)
+        Quadrature on a triangle of order 2 on 3 points (dim 2)
   Weak Form System with 1 fields
     boundary_residual_f0
       (material, 1) (0, 0) 

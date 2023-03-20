@@ -64,8 +64,8 @@ Vec Object: Local Solution 1 MPI process
   type: seq
 -0.5
 0.5
-0.
-0.
+-2.77556e-17
+2.77556e-17
 0.
 1.
 0.5
@@ -97,7 +97,7 @@ Discrete System with 2 fields
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
-        Quadrature of order 3 on 2 points (dim 1)
+        Quadrature on a segment of order 3 on 2 points (dim 1)
   Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI process
       type: basic
@@ -114,7 +114,7 @@ Discrete System with 2 fields
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
-        Quadrature of order 3 on 2 points (dim 1)
+        Quadrature on a segment of order 3 on 2 points (dim 1)
   Weak Form System with 2 fields
     boundary_residual_f0
       (cohesive, 1) (0, 1) 
@@ -138,9 +138,9 @@ Vec Object: Local Residual 1 MPI process
 0.
 0.
 0.
-0.
+-9.25186e-18
 0.666667
-0.
+-4.62593e-18
 0.833333
 Mat Object: Jacobian 1 MPI process
   type: seqaij
