@@ -1,9 +1,0 @@
-petsc/lib
-petsc/docs/www
-petsc/docs/manual.ps
-petsc/docs/manual
-petsc/docs/manual.html
-petsc/docs/tex/rsum
-petsc/src/mat/examples/matrices
-petsc/include/foldinclude
-petsc/maint/nightlylogs
