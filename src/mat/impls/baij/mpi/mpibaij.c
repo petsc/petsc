@@ -1941,7 +1941,10 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
   /* The compression and expansion should be avoided. Doesn't point
      out errors, might change the indices, hence buggey */
   PetscCall(ISCompressIndicesGeneral(mat->rmap->N, mat->rmap->n, mat->rmap->bs, 1, &isrow, &isrow_new));
-  PetscCall(ISCompressIndicesGeneral(mat->cmap->N, mat->cmap->n, mat->cmap->bs, 1, &iscol, &iscol_new));
+  if (isrow == iscol) {
+    iscol_new = isrow_new;
+    PetscCall(PetscObjectReference((PetscObject)iscol_new));
+  } else PetscCall(ISCompressIndicesGeneral(mat->cmap->N, mat->cmap->n, mat->cmap->bs, 1, &iscol, &iscol_new));
 
   if (call == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*newmat, "SubMatrix", (PetscObject *)&Mreuse));

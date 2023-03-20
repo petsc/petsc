@@ -159,7 +159,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   Level: intermediate
 
 .seealso: `PetscHasBuiltin()`, `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`,
-`PETSC_ATTRIBUTE_FORMAT`
+`PETSC_ATTRIBUTE_FORMAT`, `PETSC_ATTRIBUTE_MAY_ALIAS`
 M*/
 #if !defined(__has_attribute)
   #define __has_attribute(x) 0
@@ -332,6 +332,29 @@ M*/
   #define PETSC_ATTRIBUTE_COLD __attribute__((cold))
 #else
   #define PETSC_ATTRIBUTE_COLD
+#endif
+
+/*MC
+  PETSC_ATTRIBUTE_MAY_ALIAS - Indicate to the compiler that a type is not
+  subjected to type-based alias analysis, but is instead assumed to be able to
+  alias any other type of objects
+
+  Example Usage:
+.vb
+  typedef PetscScalar PetscScalarAlias PETSC_ATTRIBUTE_MAY_ALIAS;
+
+  PetscReal        *pointer;
+  PetscScalarAlias *other_pointer = reinterpret_cast<PetscScalarAlias *>(pointer);
+.ve
+
+  Level: advanced
+
+.seealso: `PetscHasAttribute()`
+M*/
+#if PetscHasAttribute(may_alias) && !defined(PETSC_SKIP_ATTRIBUTE_MAY_ALIAS)
+  #define PETSC_ATTRIBUTE_MAY_ALIAS __attribute__((may_alias))
+#else
+  #define PETSC_ATTRIBUTE_MAY_ALIAS
 #endif
 
 /*MC

@@ -252,7 +252,10 @@ PETSC_EXTERN PetscErrorCode ISPartitioningToNumbering(IS, IS *);
 PETSC_EXTERN PetscErrorCode ISPartitioningCount(IS, PetscInt, PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode ISCompressIndicesGeneral(PetscInt, PetscInt, PetscInt, PetscInt, const IS[], IS[]);
-PETSC_EXTERN PetscErrorCode ISCompressIndicesSorted(PetscInt, PetscInt, PetscInt, const IS[], IS[]);
+PETSC_DEPRECATED_FUNCTION("Use ISCompressIndicesGeneral() (since version 3.19)") static inline PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
+{
+  return ISCompressIndicesGeneral(n, bs, n, imax, is_in, is_out);
+}
 PETSC_EXTERN PetscErrorCode ISExpandIndicesGeneral(PetscInt, PetscInt, PetscInt, PetscInt, const IS[], IS[]);
 
 struct _n_PetscLayout {

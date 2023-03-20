@@ -105,6 +105,7 @@ Changes: Development
 - Add ``PetscFFlush()``
 - Soft-deprecate ``PetscStrcpy()`` and ``PetscStrcat()``. No diagnostics will be emitted if these routines are used, but users are highly encouraged to switch to the more secure (and possibly performant) ``PetscStrncpy()`` and ``PetscStrlcat()``
 - Add ``PETSC_REAL_MIN`` for smallest normalized floating point number
+- Add ``PETSC_ATTRIBUTE_MAY_ALIAS`` to inform compilers that a type is not subjected to type-based alias analysis
 
 .. rubric:: Event Logging:
 
@@ -121,6 +122,7 @@ Changes: Development
 .. rubric:: IS:
 
 - Change ``ISDuplicate()`` to preserve the block size of the input in the output
+- Deprecate ``ISCompressIndicesSorted()``
 
 .. rubric:: VecScatter / PetscSF:
 
