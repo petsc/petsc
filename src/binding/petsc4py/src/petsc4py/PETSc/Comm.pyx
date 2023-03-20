@@ -37,12 +37,12 @@ cdef class Comm:
             if eq: return (comm1 == comm2)
             else:  return (comm1 != comm2)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return self.comm != MPI_COMM_NULL
 
     #
 
-    def destroy(self):
+    def destroy(self) -> None:
         if self.comm == MPI_COMM_NULL: return
         if not self.isdup:
             raise ValueError("communicator not owned")
@@ -51,7 +51,7 @@ cdef class Comm:
         self.isdup = 0
         self.base = None
 
-    def duplicate(self):
+    def duplicate(self: Self) -> Self:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef MPI_Comm newcomm = MPI_COMM_NULL
@@ -62,21 +62,21 @@ cdef class Comm:
         comm.base = self.base
         return comm
 
-    def getSize(self):
+    def getSize(self) -> int:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef int size=0
         MPI_Comm_size(self.comm, &size)
         return size
 
-    def getRank(self):
+    def getRank(self) -> int:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef int rank=0
         MPI_Comm_rank(self.comm, &rank)
         return rank
 
-    def barrier(self):
+    def barrier(self) -> None:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         MPI_Barrier(self.comm)
@@ -84,17 +84,17 @@ cdef class Comm:
     # --- properties ---
 
     property size:
-        def __get__(self):
+        def __get__(self) -> int:
             return self.getSize()
 
     property rank:
-        def __get__(self):
+        def __get__(self) -> int:
             return self.getRank()
 
     # --- Fortran support ---
 
     property fortran:
-        def __get__(self):
+        def __get__(self) -> int:
             cdef MPI_Comm comm = self.comm
             return MPI_Comm_c2f(comm)
 

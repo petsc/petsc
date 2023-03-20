@@ -3,7 +3,12 @@
 cdef class Sys:
 
     @classmethod
-    def getVersion(cls, devel=False, date=False, author=False):
+    def getVersion(
+        cls,
+        devel: bool = False,
+        date: bool = False,
+        author: bool = False,
+    ) -> tuple[int, int, int]:
         cdef char cversion[256]
         cdef PetscInt major=0, minor=0, micro=0, release=0
         CHKERR( PetscGetVersion(cversion, sizeof(cversion)) )
@@ -27,7 +32,7 @@ cdef class Sys:
         return tuple(out)
 
     @classmethod
-    def getVersionInfo(cls):
+    def getVersionInfo(cls) -> dict[str, int | str]:
         version, dev, date, author = cls.getVersion(True, True, True)
         return dict(major      = version[0],
                     minor      = version[1],
@@ -39,23 +44,23 @@ cdef class Sys:
     # --- xxx ---
 
     @classmethod
-    def isInitialized(cls):
+    def isInitialized(cls) -> bool:
         return toBool(PetscInitializeCalled)
 
     @classmethod
-    def isFinalized(cls):
+    def isFinalized(cls) -> bool:
         return toBool(PetscFinalizeCalled)
 
     # --- xxx ---
 
     @classmethod
-    def getDefaultComm(cls):
+    def getDefaultComm(cls) -> Comm:
         cdef Comm comm = Comm()
         comm.comm = PETSC_COMM_DEFAULT
         return comm
 
     @classmethod
-    def setDefaultComm(cls, comm):
+    def setDefaultComm(cls, comm: Comm | None) -> None:
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         if ccomm == MPI_COMM_NULL:
             raise ValueError("null communicator")
@@ -65,7 +70,7 @@ cdef class Sys:
     # --- xxx ---
 
     @classmethod
-    def Print(cls, *args, **kargs):
+    def Print(cls, *args: Any, **kargs: Any) -> None:
         cdef object comm = kargs.get('comm', None)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef object sep = kargs.get('sep', ' ')
@@ -82,7 +87,7 @@ cdef class Sys:
         CHKERR( PetscPrintf(ccomm, '%s', m) )
 
     @classmethod
-    def syncPrint(cls, *args, **kargs):
+    def syncPrint(cls, *args: Any, **kargs: Any) -> None:
         cdef object comm = kargs.get('comm', None)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef object sep = kargs.get('sep', ' ')
@@ -98,14 +103,18 @@ cdef class Sys:
         if flush: CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
 
     @classmethod
-    def syncFlush(cls, comm=None):
+    def syncFlush(cls, comm: Comm | None = None) -> None:
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
 
     # --- xxx ---
 
     @classmethod
-    def splitOwnership(cls, size, bsize=None, comm=None):
+    def splitOwnership(
+        cls,
+        size: int | tuple[int, int],
+        bsize: int |None = None,
+        comm: Comm | None = None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, n=0, N=0
         Sys_Sizes(size, bsize, &bs, &n, &N)
@@ -118,14 +127,14 @@ cdef class Sys:
         return (toInt(n), toInt(N))
 
     @classmethod
-    def sleep(cls, seconds=1):
-        cdef int s = seconds
+    def sleep(cls, seconds: float = 1):
+        cdef PetscReal s = asReal(seconds)
         CHKERR( PetscSleep(s) )
 
     # --- xxx ---
 
     @classmethod
-    def pushErrorHandler(cls, errhandler):
+    def pushErrorHandler(cls, errhandler: str) -> None:
         cdef PetscErrorHandlerFunction handler = NULL
         if errhandler == "python":
             handler = <PetscErrorHandlerFunction> \
@@ -149,15 +158,20 @@ cdef class Sys:
 
 
     @classmethod
-    def popErrorHandler(cls):
+    def popErrorHandler(cls) -> None:
         CHKERR( PetscPopErrorHandler() )
 
     @classmethod
-    def popSignalHandler(cls):
+    def popSignalHandler(cls) -> None:
         CHKERR( PetscPopSignalHandler() )
 
     @classmethod
-    def infoAllow(cls, flag, filename=None, mode="w"):
+    def infoAllow(
+        cls,
+        flag: bool,
+        filename: str | None = None,
+        mode: str = "w",
+    ) -> None:
         cdef PetscBool tval = PETSC_FALSE
         cdef const char *cfilename = NULL
         cdef const char *cmode = NULL
@@ -169,7 +183,7 @@ cdef class Sys:
             CHKERR( PetscInfoSetFile(cfilename, cmode) )
 
     @classmethod
-    def registerCitation(cls, citation):
+    def registerCitation(cls, citation: str) -> None:
         if not citation: raise ValueError("empty citation")
         cdef const char *cit = NULL
         citation = str2bytes(citation, &cit)
@@ -178,7 +192,7 @@ cdef class Sys:
         set_citation(citation, toBool(flag))
 
     @classmethod
-    def hasExternalPackage(cls, package):
+    def hasExternalPackage(cls, package: str) -> bool:
         cdef const char *cpackage = NULL
         package = str2bytes(package, &cpackage)
         cdef PetscBool has = PETSC_FALSE

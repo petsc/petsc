@@ -154,6 +154,7 @@ include "dlpack.pxi"
 
 # --------------------------------------------------------------------
 
+include "typing.pxi"
 include "petscdef.pxi"
 include "petscmem.pxi"
 include "petscopt.pxi"
