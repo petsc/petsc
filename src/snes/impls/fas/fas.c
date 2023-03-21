@@ -431,9 +431,9 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes, Vec *Xcoarse)
   fas = (SNES_FAS *)snes->data;
   if (fas->rscale) {
     PetscCall(VecDuplicate(fas->rscale, Xcoarse));
-  } else if (fas->inject) {
-    PetscCall(MatCreateVecs(fas->inject, Xcoarse, NULL));
-  } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must set restriction or injection");
+  } else if (fas->interpolate) {
+    PetscCall(MatCreateVecs(fas->interpolate, Xcoarse, NULL));
+  } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must set rscale or interpolation");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
