@@ -108,6 +108,7 @@ cdef class Log:
             @Log.EventDecorator()
             def myfunc():
                 ...
+
         """
         def decorator(func):
             @functools.wraps(func)

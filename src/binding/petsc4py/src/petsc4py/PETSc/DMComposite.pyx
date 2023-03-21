@@ -10,7 +10,7 @@ cdef class DMComposite(DM):
         return self
 
     def addDM(self, DM dm, *args):
-        """Add DM to composite"""
+        """Add DM to composite."""
         CHKERR( DMCompositeAddDM(self.dm, dm.dm) )
         cdef object item
         for item in args:
@@ -18,14 +18,14 @@ cdef class DMComposite(DM):
             CHKERR( DMCompositeAddDM(self.dm, dm.dm) )
 
     def getNumber(self):
-        """Get number of sub-DMs contained in the DMComposite"""
+        """Get number of sub-DMs contained in the `DMComposite`."""
         cdef PetscInt n = 0
         CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
         return toInt(n)
     getNumberDM = getNumber
 
     def getEntries(self):
-        """Get tuple of sub-DMs contained in the DMComposite"""
+        """Get tuple of sub-DMs contained in the `DMComposite`."""
         cdef PetscInt i, n = 0
         cdef PetscDM *cdms = NULL
         CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
@@ -41,7 +41,7 @@ cdef class DMComposite(DM):
         return tuple(entries)
 
     def scatter(self, Vec gvec, lvecs):
-        """Scatter coupled global vector into split local vectors"""
+        """Scatter coupled global vector into split local vectors."""
         cdef PetscInt i, n = 0
         CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
         cdef PetscVec *clvecs = NULL
@@ -51,7 +51,7 @@ cdef class DMComposite(DM):
         CHKERR( DMCompositeScatterArray(self.dm, gvec.vec, clvecs) )
 
     def gather(self, Vec gvec, imode, lvecs):
-        """Gather split local vectors into coupled global vector"""
+        """Gather split local vectors into coupled global vector."""
         cdef PetscInsertMode cimode = insertmode(imode)
         cdef PetscInt i, n = 0
         CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
@@ -97,6 +97,7 @@ cdef class DMComposite(DM):
     def getAccess(self, Vec gvec, locs=None):
         """Get access to specified parts of global vector.
 
-        Use via 'with' context manager (PEP 343).
+        Use via `with` context manager (PEP 343).
+
         """
         return _DMComposite_access(self, gvec, locs)

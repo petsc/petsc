@@ -62,7 +62,10 @@ cdef class SF(Object):
     #
 
     def getGraph(self):
-        """nleaves can be determined from the size of local"""
+        """Get graph.
+
+        *nleaves* can be determined from the size of local
+        """
         cdef PetscInt nroots = 0, nleaves = 0
         cdef const PetscInt *ilocal = NULL
         cdef const PetscSFNode *iremote = NULL
@@ -76,10 +79,11 @@ cdef class SF(Object):
         return toInt(nroots), local, remote
 
     def setGraph(self, nroots, local, remote):
-        """
-        The nleaves argument is determined from the size of local and/or remote.
-        local may be None, meaning contiguous storage.
-        remote should be 2*nleaves long as (rank, index) pairs.
+        """Set graph.
+
+        The *nleaves* argument is determined from the size of local and/or remote.
+        *local* may be `None`, meaning contiguous storage.
+        remote should be ``2*nleaves`` long as (rank, index) pairs.
         """
         cdef PetscInt cnroots = asInt(nroots)
         cdef PetscInt nleaves = 0
