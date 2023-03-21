@@ -323,7 +323,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   KSP                       ksp;
   PetscBool                 already_done = PETSC_FALSE;
   PetscBool                 clear_converged_test, rho_satisfied, has_objective;
-  PetscVoidFunction         ksp_has_radius;
   SNES_TR_KSPConverged_Ctx *ctx;
   void                     *convctx;
   PetscErrorCode (*convtest)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), (*convdestroy)(void *);
@@ -352,8 +351,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   clear_converged_test = PETSC_FALSE;
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPGetConvergenceTest(ksp, &convtest, &convctx, &convdestroy));
-  PetscCall(PetscObjectQueryFunction((PetscObject)ksp, "KSPCGSetRadius_C", &ksp_has_radius));
-  if (convtest != SNESTR_KSPConverged_Private && !ksp_has_radius) {
+  if (convtest != SNESTR_KSPConverged_Private) {
     clear_converged_test = PETSC_TRUE;
     PetscCall(PetscNew(&ctx));
     ctx->snes = snes;
@@ -417,8 +415,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     }
     already_done = PETSC_TRUE;
 
-    /* solve trust-region subproblem */
-    PetscCall(KSPCGSetRadius(snes->ksp, delta));
+    /* solve trust-region subproblem (don't specify radius if not looking for Newton step only) */
+    PetscCall(KSPCGSetRadius(snes->ksp, neP->fallback == SNES_TR_FALLBACK_NEWTON ? delta : 0.0));
     PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
     PetscCall(KSPSolve(snes->ksp, F, Y));
     SNESCheckKSPSolve(snes);
