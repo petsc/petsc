@@ -1,31 +1,31 @@
+
+.. _test_harness:
+
 PETSc Testing System
 ====================
 
 The PETSc test system consists of
 
-* A language contained within the example source files that describes the tests to be run
-* The *test generator* (``config/gmakegentest.py``) that at the ``make`` step parses the example source files and generates the makefiles and shell scripts
-* The *PETSc test harness* that consists of makefile and shell scripts that runs the executables with several logging and reporting features
+* A language at the bottom of the tutorials and test source files that describes the tests to be run.
+* The *test generator* (``config/gmakegentest.py``) that parses the example source files and generates the makefiles and shell scripts. This is run
+  automatically by the make system and rarely is run directly.
+* The *PETSc test harness* that consists of makefile and shell scripts that runs the executables with several logging and reporting features.
 
-Details on using the harness may be found in the :ref:`user's manual <sec_runningtests>`.
+Details on using the harness may be found in the :ref:`user's manual <sec_runningtests>`. The testing system is used by :doc:`pipelines`.
 
-
-In the examples below, we make use of the following alias for a commonly-used command:
-
-.. code-block:: console
-
-   $ alias ptmake='make -f gmakefile.test'
-
-where ``ptmake`` stands for "PETSc test make".
-
-Getting help
-------------
-
-To find help for the test harness options and available targets, use
+The make rules for running tests are contained in ``gmakefile.test`` in the PETSc root directory. They can usually be accessed by
+simply using commands such as
 
 .. code-block:: console
 
-   $ ptmake help
+   $ make test
+
+or, for a list of test options,
+
+.. code-block:: console
+
+   $ make help-test
+
 
 Determining the failed jobs of a given run
 ------------------------------------------
@@ -38,25 +38,25 @@ examining the errors is with this command:
 
    $ $EDITOR $PETSC_DIR/$PETSC_ARCH/tests/test*err.log
 
-This method can also be used for pipeline jobs. Failed jobs can have all of the
-log files downloaded from the artifacts download tab on the right side:
+This method can also be used for the PETSc continuous integration (CI) pipeline jobs. For failed jobs you can download the
+log files from the **artifacts download** tab on the right side:
 
 .. figure:: /images/developers/test-artifacts.png
    :alt: Test Artifacts at Gitlab
 
-   Test artifacts can be downloaded from gitlab.
+   Test artifacts can be downloaded from GitLab.
 
 To see the list of all tests that failed from the last run, you can also run this command:
 
 .. code-block:: console
 
-    $ ptmake print-test test-fail=1
+    $ make print-test test-fail=1
 
 To print it out in a column format:
 
 .. code-block:: console
 
-    $ ptmake print-test test-fail=1 | tr ' ' '\n' | sort
+    $ make print-test test-fail=1 | tr ' ' '\n' | sort
 
 Once you know which tests failed, the question is how to debug them.
 
@@ -153,14 +153,14 @@ First recall how to find help for the options:
 
 .. code-block:: console
 
-   $ ptmake help-test
+   $ make help-test
 
 
 To compile the test and run it:
 
 .. code-block:: console
 
-   $ ptmake test search=vec_is_sf_tests-ex1_basic_1
+   $ make test search=vec_is_sf_tests-ex1_basic_1
 
 This can consist of your basic workflow.  However,
 for the normal compile and edit, running the entire harness with search can be
@@ -168,10 +168,10 @@ cumbersome.  So first get the command:
 
 .. code-block:: console
 
-     $ ptmake vec_is_sf_tests-ex1_basic_1 PRINTONLY=1
+     $ make vec_is_sf_tests-ex1_basic_1 PRINTONLY=1
      <copy command>
      <edit>
-     $ ptmake $PETSC_ARCH/tests/vec/is/sf/tests/ex1
+     $ make $PETSC_ARCH/tests/vec/is/sf/tests/ex1
      $ /scratch/kruger/contrib/petsc-mpich-cxx/bin/mpiexec -n 1 arch-mpich-cxx-py3/tests/vec/is/sf/tests/ex1
      ...
      $ cd $PETSC_DIR
@@ -193,27 +193,27 @@ The three basic and recommended arguments are:
 
      .. code-block:: console
 
-        $ ptmake print-test search='vec_is*ex1*basic*1'
+        $ make print-test search='vec_is*ex1*basic*1'
 
      Equivalently:
 
      .. code-block:: console
 
-        $ ptmake print-test s='vec_is*ex1*basic*1'
+        $ make print-test s='vec_is*ex1*basic*1'
 
   -  It also takes full paths. Examples:
 
      .. code-block:: console
 
-        $ ptmake print-test s='src/vec/is/tests/ex1.c'
+        $ make print-test s='src/vec/is/tests/ex1.c'
 
      .. code-block:: console
 
-        $ ptmake print-test s='src/dm/impls/plex/tests/'
+        $ make print-test s='src/dm/impls/plex/tests/'
 
      .. code-block:: console
 
-        $ ptmake print-test s='src/dm/impls/plex/tests/ex1.c'
+        $ make print-test s='src/dm/impls/plex/tests/ex1.c'
 
 
 + ``query`` and ``queryval`` (or ``q`` and ``qv``)
@@ -222,7 +222,7 @@ The three basic and recommended arguments are:
 
      .. code-block:: console
 
-        $ ptmake print-test query='suffix' queryval='basic_1'
+        $ make print-test query='suffix' queryval='basic_1'
 
   -  Invokes ``config/query_tests.py`` to query the tests (see
      ``config/query_tests.py --help`` for more information).
@@ -234,7 +234,7 @@ The three basic and recommended arguments are:
 
      .. code-block:: console
 
-        $ ptmake print-test s='src/dm/impls/plex/tests/ex1.c' i='*refine_overlap_2d*'
+        $ make print-test s='src/dm/impls/plex/tests/ex1.c' i='*refine_overlap_2d*'
 
 Searching using gmake's native regexp functionality is kept for people who like it, but most developers will likely prefer the above methods:
 
@@ -247,7 +247,7 @@ Searching using gmake's native regexp functionality is kept for people who like 
 
      .. code-block:: console
 
-        $ ptmake test gmakesearch='vec_is%ex1_basic_1'
+        $ make test gmakesearch='vec_is%ex1_basic_1'
 
 + ``gmakesearchin``
 
@@ -255,7 +255,7 @@ Searching using gmake's native regexp functionality is kept for people who like 
 
      .. code-block:: console
 
-        $ ptmake test gmakesearch='vec_is%1' gmakesearchin='basic'
+        $ make test gmakesearch='vec_is%1' gmakesearchin='basic'
 
 + ``argsearch``
 
@@ -263,7 +263,7 @@ Searching using gmake's native regexp functionality is kept for people who like 
 
      .. code-block:: console
 
-        $ ptmake test argsearch='sf_type'
+        $ make test argsearch='sf_type'
 
   - Not very powerful
 
@@ -274,19 +274,19 @@ Basic examples.  Note the the use of glob style matching is also accepted in the
 
 .. code-block:: console
 
-   $ ptmake print-test query='suffix' queryval='basic_1'
+   $ make print-test query='suffix' queryval='basic_1'
 
 .. code-block:: console
 
-   $ ptmake print-test query='requires' queryval='cuda'
+   $ make print-test query='requires' queryval='cuda'
 
 .. code-block:: console
 
-   $ ptmake print-test query='requires' queryval='defined(PETSC_HAVE_MPI_GPU_AWARE)'
+   $ make print-test query='requires' queryval='defined(PETSC_HAVE_MPI_GPU_AWARE)'
 
 .. code-block:: console
 
-   $ ptmake print-test query='requires' queryval='*GPU_AWARE*'
+   $ make print-test query='requires' queryval='*GPU_AWARE*'
 
 Using the ``name`` field is equivalent to the search above:
 
@@ -294,7 +294,7 @@ Using the ``name`` field is equivalent to the search above:
 
    .. code-block:: console
 
-      $ ptmake print-test query='name' queryval='vec_is*ex1*basic*1'
+      $ make print-test query='name' queryval='vec_is*ex1*basic*1'
 
 -  Useful because this can be combined with union/intersect queries as discussed below
 
@@ -320,15 +320,15 @@ Examples of argument searching:
 
 .. code-block:: console
 
-   $ ptmake print-test query='args' queryval='ksp_monitor'
+   $ make print-test query='args' queryval='ksp_monitor'
 
 .. code-block:: console
 
-   $ ptmake print-test query='args' queryval='*monitor*'
+   $ make print-test query='args' queryval='*monitor*'
 
 .. code-block:: console
 
-   $ ptmake print-test query='args' queryval='pc_type ml'
+   $ make print-test query='args' queryval='pc_type ml'
 
 
 Multiple simultaneous queries can be performed with union (``,``), and intersection
@@ -341,46 +341,46 @@ one cannot avoid (possibly multiple) shell expansions that might otherwise inter
 
    .. code-block:: console
 
-      $ ptmake print-test query='requires,requires' queryval='cuda,hip'
+      $ make print-test query='requires,requires' queryval='cuda,hip'
       # equivalently
-      $ ptmake print-test query='requires%AND%requires' queryval='cuda%AND%hip'
+      $ make print-test query='requires%AND%requires' queryval='cuda%AND%hip'
 
 -  Examples that require both triangle and ctetgen (intersection of tests)
 
    .. code-block:: console
 
-      $ ptmake print-test query='requires|requires' queryval='ctetgen,triangle'
+      $ make print-test query='requires|requires' queryval='ctetgen,triangle'
       # equivalently
-      $ ptmake print-test query='requires%OR%requires' queryval='ctetgen%AND%triangle'
+      $ make print-test query='requires%OR%requires' queryval='ctetgen%AND%triangle'
 
 -  Tests that require either ``ctetgen`` or ``triangle``
 
    .. code-block:: console
 
-      $ ptmake print-test query='requires,requires' queryval='ctetgen,triangle'
+      $ make print-test query='requires,requires' queryval='ctetgen,triangle'
       # equivalently
-      $ ptmake print-test query='requires%AND%requires' queryval='ctetgen%AND%triangle'
+      $ make print-test query='requires%AND%requires' queryval='ctetgen%AND%triangle'
 
 -  Find ``cuda`` examples in the ``dm`` package.
 
    .. code-block:: console
 
-      $ ptmake print-test query='requires|name' queryval='cuda,dm*'
+      $ make print-test query='requires|name' queryval='cuda,dm*'
       # equivalently
-      $ ptmake print-test query='requires%OR%name' queryval='cuda%AND%dm*'
+      $ make print-test query='requires%OR%name' queryval='cuda%AND%dm*'
 
 
 Here is a way of getting a feel for how the union and intersect operators work:
 
 .. code-block:: console
 
-      $ ptmake print-test query='requires' queryval='ctetgen' | tr ' ' '\n' | wc -l
+      $ make print-test query='requires' queryval='ctetgen' | tr ' ' '\n' | wc -l
       170
-      $ ptmake print-test query='requires' queryval='triangle' | tr ' ' '\n' | wc -l
+      $ make print-test query='requires' queryval='triangle' | tr ' ' '\n' | wc -l
       330
-      $ ptmake print-test query='requires,requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
+      $ make print-test query='requires,requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
       478
-      $ ptmake print-test query='requires|requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
+      $ make print-test query='requires|requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
       22
 
 The total number of tests for running only ctetgen or triangle is 500.  They have 22 tests in common, and 478 that
@@ -431,7 +431,7 @@ For example:
 
 .. code-block:: console
 
-      $ ptmake test s='src/ksp/ksp/tests/ex9.c' i='*1'
+      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1'
       Using MAKEFLAGS: i=*1 s=src/ksp/ksp/tests/ex9.c
               TEST arch-osx-pkgs-opt-new/tests/counts/ksp_ksp_tests-ex9_1.counts
        ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive
@@ -444,7 +444,7 @@ In this case, the trick is to use the verbose option, ``V=1`` (or for the shell 
 
 .. code-block:: console
 
-      $ ptmake test s='src/ksp/ksp/tests/ex9.c' i='*1' V=1
+      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1' V=1
       Using MAKEFLAGS: V=1 i=*1 s=src/ksp/ksp/tests/ex9.c
       arch-osx-pkgs-opt-new/tests/ksp/ksp/tests/runex9_1.sh  -v
        ok ksp_ksp_tests-ex9_1+pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_diag_use_amat-0_pc_fieldsplit_type-additive # mpiexec  -n 1 ../ex9 -ksp_converged_reason -ksp_error_if_not_converged  -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_type additive > ex9_1.tmp 2> runex9_1.err
@@ -455,7 +455,7 @@ combined with the fact that ``#`` is the delimiter:
 
 .. code-block:: console
 
-      $ ptmake test s='src/ksp/ksp/tests/ex9.c' i='*1' v=1 | grep 'not ok' | cut -d# -f2
+      $ make test s='src/ksp/ksp/tests/ex9.c' i='*1' v=1 | grep 'not ok' | cut -d# -f2
       mpiexec  -n 1 ../ex9 -ksp_converged_reason -ksp_error_if_not_converged  -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_type multiplicative > ex9_1.tmp 2> runex9_1.err
 
 
@@ -645,8 +645,7 @@ With this background, these keywords are as follows.
 
    -  Tests are limited to a set time that is found at the top of
       ``"config/petsc_harness.sh"`` and can be overwritten by passing in
-      the ``TIMEOUT`` argument to ``gmakefile`` (see
-      ``ptmake help``.
+      the ``TIMEOUT`` argument to ``gmakefile``
 
 -  **env**: (*Optional*; *Default:* ``env=""``)
 

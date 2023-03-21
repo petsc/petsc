@@ -1,6 +1,8 @@
-======================
-Working with Pipelines
-======================
+.. _pipelines:
+
+===================
+GitLab CI Pipelines
+===================
 
 PETSc uses `GitLab Pipelines <https://docs.gitlab.com/ee/ci/pipelines/>`__ for testing during continuous integration.
 
@@ -41,7 +43,8 @@ You can see the failed jobs by clicking on the  X.
 
    Locating the exact failed job in a pipeline stage.
 
-A job consists of many "examples". Each test is a run of an example with a particular set of command line options
+A job is a run of the :any:`PETSc test harness<test_harness>` and consists of many "examples".
+Each test is a run of an example with a particular set of command line options
 
 A failure in running the job's tests will have ``FAILED`` and a list of the failed tests
 
@@ -66,7 +69,8 @@ Examples of pipeline failures
 =============================
 
 
-If your source code is not properly formatted you will see an error from ``make checkbadSource``. You should always run ``make checkbadSource`` before submitting a pipeline.
+If your source code is not properly formatted you will see an error from ``make checkbadSource``. You should always run ``make checkbadSource`` on your machine
+before submitting a pipeline.
 
 .. figure:: /images/developers/badsource.png
    :align: center
@@ -109,7 +113,7 @@ the pipeline on the pipeline page,
    :align: center
    :width: 90%
 
-   Cancelling a pipeline.
+   Canceling a pipeline.
 
 then retry the failed jobs by using the  "Retry"
 circular button to the right of job name.

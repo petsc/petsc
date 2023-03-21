@@ -2269,7 +2269,7 @@ you must provide the null space of the transposed matrix with ``MatSetTransposeN
 Using External Linear Solvers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PETSc interfaces to several external linear solvers (also see :any:`chapter_acknowledgements`).
+PETSc interfaces to several external linear solvers (also see :any:`acknowledgements`).
 To use these solvers, one may:
 
 #. Run ``configure`` with the additional options

@@ -8,6 +8,7 @@ applications modeled by partial differential equations. It has bindings for C, F
 PETSc also contains Tao, the Toolkit for Advanced Optimization, software library.
 It supports MPI, and GPUs through
 CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine.
+Immediately jump in and run PETSc code :any:`handson`.
 
 PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
 

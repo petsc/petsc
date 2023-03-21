@@ -42,22 +42,22 @@ Solvers
 
 * :any:`Optimization <chapter_tao>` with equality and inequality constraints, first and second order (Newton) methods (``Tao``).
 
-* The package `SLEPc <https://slepc.upv.es>`__ provides highly scalable and efficient eigenvalue and related algorithms for PETSc.
+* Eigenvalue/Eigenvectors and related algorithms in the package `SLEPc <https://slepc.upv.es>`__.
 
-DM: Model/Discretization Interface to Solvers
-=============================================
+Model/Discretization Interfaces to Solvers
+==========================================
 
-* ``DMDA`` - for simulations computed on simple structured grids
+* Simple structured grids, ``DMDA``.
 
-* :any:`chapter_stag` - for simulations computed on staggered grids, (``DMSTAG``)
+* Staggered grids, :any:`chapter_stag`, ``DMSTAG``.
 
-* :any:`chapter_unstructured` - for simulations computed on unstructured meshes, (``DMPLEX``)
+* Unstructured grids, :any:`chapter_unstructured`, ``DMPLEX``.
 
-* :any:`chapter_network` - for simulations on networks or graphs, for example the power grid, river networks, the nervous system, (``DMNETWORK``)
+* Networks/graphs, for example the power grid, river networks, the nervous system, :any:`chapter_network`, ``DMNETWORK``.
 
-* ``DMFOREST`` - for simulations on collections of quad or octree meshes
+* Quad or octree grids, ``DMFOREST``.
 
-* ``DMSWARM`` - for simulations on particles
+* Particles, ``DMSWARM``.
 
 .. seealso::
 
@@ -69,7 +69,7 @@ DM: Model/Discretization Interface to Solvers
    - :ref:`Nonlinear solvers table <doc_nonlinsolve>`
    - :ref:`ODE integrators table <sec_ts_basic>`
    - :ref:`Optimizers table <doc_taosolve>`
-   - :ref:`DM table <dm_table>`
+   - :ref:`Model/discretization interfaces to solvers table <dm_table>`
 
 Utilities for Simulations/Solvers
 =================================

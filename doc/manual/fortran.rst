@@ -79,6 +79,15 @@ identical to the C version, except for the error checking variable
 discussed in :any:`sec_fortran_errors` and a few routines
 listed in :any:`sec_fortran_exceptions`.
 
+When passing floating point numbers into PETSc Fortran subroutines, always
+make sure you have them marked as double precision (e.g., pass in ``10.d0``
+instead of ``10.0`` or declare them as PETSc variables, e.g.
+``PetscScalar one = 1.0``). Otherwise, the compiler interprets the input as a single
+precision number, which can cause crashes or other mysterious problems.
+Make sure to declare all variables (do not use the implicit feature of
+Fortran). In fact, we **highly** recommend using the **implicit none**
+option at the beginning of each Fortran subroutine you write.
+
 .. _sec_fortran_errors:
 
 Error Checking
