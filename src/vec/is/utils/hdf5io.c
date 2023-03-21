@@ -18,7 +18,7 @@ PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, con
   PetscBool         timestepping = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "timestepping", PETSC_BOOL, &timestepping, &timestepping));
+  PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "timestepping", PETSC_BOOL, &hdf5->defTimestepping, &timestepping));
   if (timestepping != hdf5->timestepping) {
     char *group;
 
