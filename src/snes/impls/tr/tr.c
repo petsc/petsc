@@ -424,8 +424,10 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
     /* decide what to do when the update is outside of trust region */
     PetscCall(VecNorm(Y, NORM_2, &ynorm));
-    if (ynorm > delta) {
-      switch (neP->fallback) {
+    if (ynorm > delta || ynorm == 0.0) {
+      SNESNewtonTRFallbackType fallback = ynorm > 0.0 ? neP->fallback : SNES_TR_FALLBACK_CAUCHY;
+
+      switch (fallback) {
       case SNES_TR_FALLBACK_NEWTON:
         auk = delta / ynorm;
         PetscCall(VecScale(Y, auk));
@@ -439,7 +441,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
         auk = delta / gfnorm;
         if (gTBg > 0.0) auk *= PetscMin(gfnorm * gfnorm * gfnorm / (delta * gTBg), 1);
         ycnorm = auk * gfnorm;
-        if (neP->fallback == SNES_TR_FALLBACK_CAUCHY || gTBg <= 0.0) {
+        if (fallback == SNES_TR_FALLBACK_CAUCHY || gTBg <= 0.0) {
           /* Cauchy solution */
           PetscCall(VecAXPBY(Y, auk, 0.0, GradF));
           PetscCall(PetscInfo(snes, "CP evaluated. delta: %g, ynorm: %g, ycnorm: %g, gTBg: %g\n", (double)delta, (double)ynorm, (double)ycnorm, (double)gTBg));
