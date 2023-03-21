@@ -1132,7 +1132,10 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::RestoreArray(Mat m, PetscScalar **ar
     m->offloadmask = PetscMemTypeHost(mtype) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
     PetscCall(PetscObjectStateIncrease(PetscObjectCast(m)));
   }
-  *array = nullptr;
+  if (array) {
+    PetscCall(CheckPointerMatchesMemType_(*array, mtype));
+    *array = nullptr;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
