@@ -36,7 +36,7 @@ OMAKE_SELF_PRINTDIR = $(OMAKE_PRINTDIR) -f makefile
 #********* Rules for make all **********************************************************************************************************************************
 
 all:
-	+@${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
+	+@${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@ln -sf ${PETSC_ARCH}/lib/petsc/conf/make.log make.log
 	+@(${OMAKE_SELF_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-local; echo "$$?" > ${PETSC_ARCH}/lib/petsc/conf/error.log) 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log
 	+@if [ "`cat ${PETSC_ARCH}/lib/petsc/conf/error.log 2> /dev/null`" != "0" ]; then \
@@ -287,7 +287,7 @@ allclean:
 
 clean:: allclean
 
-distclean: chk_petscdir
+distclean:
 	@if [ -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ]; then \
 	  echo "*** Preserving ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py in ${PETSC_DIR} ***"; \
           mv -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; fi
@@ -531,18 +531,6 @@ allgtags:
 
 docs:
 	cd doc; ${OMAKE_SELF} sphinxhtml
-
-chk_petscdir:
-	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
-        newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
-        haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
-        if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
-          printf ${PETSC_TEXT_HILIGHT}"*********************W-a-r-n-i-n-g*************************\n" ; \
-          echo "Your PETSC_DIR may not match the directory you are in";\
-          echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
-          echo "Ignore this if you are running make check             ";\
-          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
-        fi
 
 chk_in_petscdir:
 	@if [ ! -f include/petscversion.h ]; then \
