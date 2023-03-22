@@ -852,7 +852,7 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
 {
   IS                           perm;
   const PetscInt              *ptr;
-  PetscInt                    *concatenate, size, n;
+  PetscInt                    *concatenate, size, n, bs;
   std::map<PetscInt, PetscInt> order;
   PetscBool                    sorted;
 
@@ -861,14 +861,16 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
   if (!sorted) {
     PetscCall(ISGetLocalSize(is, &size));
     PetscCall(ISGetIndices(is, &ptr));
+    PetscCall(ISGetBlockSize(is, &bs));
     /* MatCreateSubMatrices(), called by PCASM, follows the global numbering of Pmat */
-    for (n = 0; n < size; ++n) order.insert(std::make_pair(ptr[n], n));
+    for (n = 0; n < size; n += bs) order.insert(std::make_pair(ptr[n] / bs, n / bs));
     PetscCall(ISRestoreIndices(is, &ptr));
+    size /= bs;
     if (out_C) {
       PetscCall(PetscMalloc1(size, &concatenate));
       for (const std::pair<const PetscInt, PetscInt> &i : order) *concatenate++ = i.second;
       concatenate -= size;
-      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)in_C), size, concatenate, PETSC_OWN_POINTER, &perm));
+      PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_C), bs, size, concatenate, PETSC_OWN_POINTER, &perm));
       PetscCall(ISSetPermutation(perm));
       /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
       PetscCall(MatPermute(in_C, perm, perm, out_C));
@@ -880,7 +882,7 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
       for (const std::pair<const PetscInt, PetscInt> &i : order) *concatenate++ = i.first;
       concatenate -= size;
       /* permute user-provided IS so that it matches with MatCreateSubMatrices() numbering */
-      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)in_is), size, concatenate, PETSC_OWN_POINTER, out_is));
+      PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_is), bs, size, concatenate, PETSC_OWN_POINTER, out_is));
     }
   } else { /* input IS is sorted, nothing to permute, simply duplicate inputs when needed */
     if (out_C) PetscCall(MatDuplicate(in_C, MAT_COPY_VALUES, out_C));
@@ -934,16 +936,13 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
   PetscCall(ISSetBlockSize(irow[0], bs));
   PetscCall(ISSetIdentity(irow[0]));
   if (!block) {
-    PetscCall(PetscMalloc2(P->cmap->N, &ptr, P->cmap->N, &idx));
+    PetscCall(PetscMalloc2(P->cmap->N, &ptr, P->cmap->N / bs, &idx));
     PetscCall(MatGetColumnNorms(M[0], NORM_INFINITY, ptr));
     /* check for nonzero columns so that M[0] may be expressed in compact form */
-    for (n = 0; n < P->cmap->N; n += bs)
-      if (std::find_if(ptr + n, ptr + n + bs, [](PetscReal v) { return v > PETSC_MACHINE_EPSILON; }) != ptr + n + bs) {
-        std::iota(idx + p, idx + p + bs, n);
-        p += bs;
-      }
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, p, idx, PETSC_USE_POINTER, icol + 1));
-    PetscCall(ISSetBlockSize(icol[1], bs));
+    for (n = 0; n < P->cmap->N; n += bs) {
+      if (std::find_if(ptr + n, ptr + n + bs, [](PetscReal v) { return v > PETSC_MACHINE_EPSILON; }) != ptr + n + bs) idx[p++] = n / bs;
+    }
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, p, idx, PETSC_USE_POINTER, icol + 1));
     PetscCall(ISSetInfo(icol[1], IS_SORTED, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
     PetscCall(ISEmbed(*is, icol[1], PETSC_FALSE, icol + 2));
     irow[1] = irow[0];
@@ -1227,7 +1226,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), NULL));
           PetscCall(PetscStrcmp(type, PCMAT, &algebraic));
           PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL));
-          PetscCheck(!algebraic || !block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
+          PetscCheck(!algebraic || !block, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
           if (block) algebraic = PETSC_TRUE;
           if (algebraic) {
             PetscCall(ISCreateStride(PETSC_COMM_SELF, P->rmap->n, P->rmap->rstart, 1, &data->is));
@@ -1277,8 +1276,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       if (algebraic) subdomains = PETSC_TRUE;
       PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_define_subdomains", &subdomains, NULL));
       if (PetscBool3ToBool(data->Neumann)) {
-        PetscCheck(!block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
-        PetscCheck(!algebraic, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_has_neumann");
+        PetscCheck(!block, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
+        PetscCheck(!algebraic, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_has_neumann");
       }
       if (PetscBool3ToBool(data->Neumann) || block) structure = SAME_NONZERO_PATTERN;
       PetscCall(ISCreateStride(PetscObjectComm((PetscObject)data->is), P->rmap->n, P->rmap->rstart, 1, &loc));
@@ -1290,12 +1289,12 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       PetscCall(PetscOptionsSetValue(NULL, prefix, MatStructures[structure]));
     }
     flg = PETSC_FALSE;
-    if (data->share && !algebraic) {
+    if (data->share) {
       data->share = PETSC_FALSE; /* will be reset to PETSC_TRUE if none of the conditions below are true */
       if (!subdomains) PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_define_subdomains is not true\n", pcpre ? pcpre : ""));
       else if (data->deflation) PetscCall(PetscInfo(pc, "Nothing to share since PCHPDDMSetDeflationMat() has been called\n"));
       else if (ismatis) PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc with a Pmat of type MATIS\n"));
-      else if (structure != SAME_NONZERO_PATTERN)
+      else if (!algebraic && structure != SAME_NONZERO_PATTERN)
         PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_levels_1_st_matstructure %s (!= %s)\n", pcpre ? pcpre : "", MatStructures[structure], MatStructures[SAME_NONZERO_PATTERN]));
       else data->share = PETSC_TRUE;
     }
