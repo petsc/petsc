@@ -445,7 +445,7 @@ inline PetscErrorCode MatDenseCUPMRestoreArray_Private(Mat A, PetscScalar **arra
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  if (array) PetscValidPointer(array, 2);
   switch (access) {
   case PETSC_MEMORY_ACCESS_READ:
     PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMRestoreArrayRead_C(), (Mat, PetscScalar **), (A, array));
@@ -461,7 +461,7 @@ inline PetscErrorCode MatDenseCUPMRestoreArray_Private(Mat A, PetscScalar **arra
     PetscCall(PetscObjectStateIncrease(PetscObjectCast(A)));
     A->offloadmask = PETSC_OFFLOAD_GPU;
   }
-  *array = nullptr;
+  if (array) *array = nullptr;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
