@@ -286,7 +286,7 @@ class Installer(script.Script):
 
   def fixConf(self):
     import shutil
-    for file in ['rules', 'variables','petscrules', 'petscvariables']:
+    for file in ['rules', 'rules.doc', 'variables', 'petscrules', 'petscvariables']:
       self.fixConfFile(os.path.join(self.destConfDir,file))
     return
 
