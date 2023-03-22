@@ -202,6 +202,7 @@ cdef extern from * nogil:
     PetscErrorCode MatView(PetscMat,PetscViewer)
     PetscErrorCode MatDestroy(PetscMat*)
     PetscErrorCode MatCreate(MPI_Comm,PetscMat*)
+    PetscErrorCode MatCreateDenseCUDA(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscMat*)
 
     PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscLGMap,PetscMat*)
     PetscErrorCode MatISGetLocalMat(PetscMat,PetscMat*)

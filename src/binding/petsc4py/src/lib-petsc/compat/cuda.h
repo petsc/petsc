@@ -14,6 +14,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **gpuarray) {PetscCU
 PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **gpuarray) {PetscCUDAError;}
 PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **gpuarray) {PetscCUDAError;}
 PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **gpuarray) {PetscCUDAError;}
+PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar gpuarray[], Mat *A) {PetscCUDAError;}
 
 #undef PetscCUDAError
 

@@ -466,14 +466,43 @@ cdef class Mat(Object):
             self.set_attr('__array__', array)
         return self
 
-    def createDenseCUDA(self, size, bsize=None, array=None, comm=None):
+    def createDenseCUDA(self, size, bsize=None, array=None, cudahandle=None, comm=None):
+        """
+        Returns an instance of :class:`Mat`, a MATDENSECUDA with user provided
+        memory spaces for CPU and GPU arrays.
+
+        :arg size: A list denoting the size of the Mat.
+        :arg bsize: A :class:`int` denoting the block size.
+        :arg array: A :class:`numpy.ndarray`. Will be lazily allocated if
+            *None*.
+        :arg cudahandle: Address of the array on the GPU. Will be lazily
+            allocated if *None*. If cudahandle is provided, array will be
+            ignored.
+        :arg comm: MPI communicator
+        """
         # create matrix
         cdef PetscMat newmat = NULL
-        Mat_Create(MATDENSECUDA, comm, size, bsize, &newmat)
+        # communicator
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        # sizes and block sizes
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+
+        if cudahandle is not None:
+            Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+            if rbs == PETSC_DECIDE: rbs = 1
+            if cbs == PETSC_DECIDE: cbs = rbs
+            Sys_Layout(ccomm, rbs, &m, &M)
+            Sys_Layout(ccomm, cbs, &n, &N)
+            # create matrix and set sizes
+            CHKERR( MatCreateDenseCUDA(ccomm, m, n, M, N, <PetscScalar*>(<Py_uintptr_t>cudahandle), &newmat) )
+            # Does block size make sense for MATDENSE?
+            CHKERR( MatSetBlockSizes(newmat, rbs, cbs) )
+        else:
+            Mat_Create(MATDENSECUDA, comm, size, bsize, &newmat)
+            if array is not None:
+                array = Mat_AllocDense(self.mat, array)
+                self.set_attr('__array__', array)
         PetscCLEAR(self.obj); self.mat = newmat
-        # preallocate matrix
-        if array is not None:
-            raise RuntimeError('passing GPU data not yet supported. Report it if you need this feature')
         return self
 
     def setPreallocationDense(self, array):
