@@ -362,7 +362,7 @@ static PetscErrorCode PetscGridHashInitialize_Internal(PetscGridHash box, PetscI
 
   PetscFunctionBegin;
   box->dim = dim;
-  for (d = 0; d < dim; ++d) box->lower[d] = box->upper[d] = PetscRealPart(point[d]);
+  for (d = 0; d < dim; ++d) box->lower[d] = box->upper[d] = point ? PetscRealPart(point[d]) : 0.;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
