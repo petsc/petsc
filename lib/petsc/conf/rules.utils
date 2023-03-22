@@ -1,0 +1,214 @@
+# -*- mode: makefile -*-
+#
+#    Contains rules that are shared between SLEPc and PETSc
+#
+#    This file is not included by rules, or rules.doc. In PETSc it is only included by the toplevel makefile
+
+# ********* Rules for printing PETSc library properties useful for building applications  ***********************************************************
+
+getmpilinklibs:
+	-@echo  ${MPI_LIB}
+
+getmpiincludedirs:
+	-@echo  ${MPI_INCLUDE}
+
+getmpiexec:
+	-@echo  ${MPIEXEC}
+
+getccompiler:
+	-@echo ${CC}
+
+getfortrancompiler:
+	-@echo ${FC}
+
+getcxxcompiler:
+	-@echo ${CXX}
+
+getlinklibs:
+	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
+
+getincludedirs:
+	-@echo  ${PETSC_CC_INCLUDES}
+
+getcflags:
+	-@echo ${CC_FLAGS}
+
+getcxxflags:
+	-@echo ${CXX_FLAGS}
+
+getfortranflags:
+	-@echo ${FC_FLAGS}
+
+getblaslapacklibs:
+	-@echo ${BLASLAPACK_LIB}
+
+getautoconfargs:
+	-@echo CC='"${CC}"' CXX='"${CXX}"'  FC='"${FC}"' CFLAGS='"${CC_FLAGS}"' CXXFLAGS='"${CXX_FLAGS}"' FCFLAGS='"${FC_FLAGS}"' LIBS='"${C_SH_LIB_PATH} ${PETSC_TS_LIB}"'
+
+#********* Rules for make clangformat and checking violation of coding standards **************************************************************
+
+# Format all the source code in the given directory and down according to the file .clang_format
+clangformat:
+	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P $(MAKE_NP) -L 10 clang-format -i
+
+GITSRC = '*.[chF]' '*.F90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
+GITSRCEXCL = \
+':!*khash/*' \
+':!*valgrind/*' \
+':!*yaml/*' \
+':!*perfstubs/*'
+GITCFSRC = '*.[ch]' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL} ${GITCFSRCEXCL}
+GITCFSRCEXCL = \
+':!*petscversion.h' \
+':!*mpif.h' \
+':!*mpiunifdef.h' \
+':!*finclude/*' \
+':!systems/*' \
+':!*benchmarks/*' \
+':!*binding/*' \
+':!*-custom/*' \
+':!*f90-mod/*'
+
+checkbadFileChange:
+	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/src src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
+
+vermin:
+	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
+
+lint:
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS)
+
+help-lint:
+	@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
+	-@echo "Basic usage:"
+	-@echo "   make lint      <options>"
+	-@echo "   make test-lint <options> <test only options>"
+	-@echo
+	-@echo "Options:"
+	-@echo "  V=[1,0]                                Enable or disable verbose output"
+	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"     See above for available options"
+	-@echo
+	-@echo "Test Only Options:"
+	-@echo "  REPLACE=[1,0]                          Enable or disable replacing test output"
+	-@echo
+
+test-lint:
+	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+
+checkbadSource:
+	@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
+	-@${RM} -f checkbadSource.out
+	-@echo "------Double blank lines in file -----------------------------------" > checkbadSource.out
+	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} > doublelinecheck.out
+	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/doublelinecheck.py doublelinecheck.out >> checkbadSource.out
+	-@${RM} -f doublelinecheck.out
+	-@echo "------Tabs in file -------------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '\t' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------White space at end of line -----------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Two ;; -------------------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
+	-@echo "------PetscCall for an MPI error code ------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*PetscCall' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
+	-@echo "------Missing if (ierr) return ierr; -------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | grep -E "(test|tutorial)" >> checkbadSource.out;true
+	-@echo "------DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '\r' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------{ before SETERRQ ---------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------PetscCall following SETERRQ ----------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";PetscCall" >> checkbadSource.out;true
+	-@echo "------SETERRQ() without defined error code -------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v flow.c >> checkbadSource.out;true
+	-@echo "------SETERRQ() with trailing newline ------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P "SETERRQ[1-9]?.*\\\n\"" -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Define keyword used in test definition -----------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e 'requires:.*define\(' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------No new line at end of file -----------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '[^\n]\z' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Using if (condition) SETERRQ(...) instead of PetscCheck() ----" >> checkbadSource.out
+	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' >> checkbadSource.out;true
+	-@echo "------Using if (PetscUnlikelyDebug(condition)) SETERRQ(...) instead of PetscAssert()" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E ' if +\(PetscUnlikelyDebug.*\) *SETERRQ' -- ${GITSRC} | grep -v petscerror.h >> checkbadSource.out;true
+	-@echo "------Using PetscFunctionReturn(ierr) ------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'PetscFunctionReturn(ierr)' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Defining a returning macro without PetscMacroReturns() -------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
+	-@echo "------Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'define\s+CHKERR\w*\(.*\)\s*do\s+{' -- ${GITSRC} >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 18` ;\
+         if [ $$l -gt 0 ] ; then \
+           echo $$l " files with errors detected in source code formatting" ;\
+           cat checkbadSource.out ;\
+         else \
+	   ${RM} -f checkbadSource.out;\
+         fi;\
+         test ! $$l -gt 0
+	-@git --no-pager grep -P -n "[\x00-\x08\x0E-\x1F\x80-\xFF]" -- ${GITSRC} > badSourceChar.out;true
+	-@w=`cat badSourceChar.out | wc -l`;\
+         if [ $$w -gt 0 ] ; then \
+           echo "Source files with non-ASCII characters ----------------" ;\
+           cat badSourceChar.out ;\
+         else \
+	   ${RM} -f badSourceChar.out;\
+         fi
+	@test ! -s badSourceChar.out
+
+#  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
+#  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository
+#  This code is fragile; always check the changes after a use of REPLACE=1 before committing the changes
+#
+#  Notes:
+#    The first tr in the line is split lines for the cases where multiple URLs are in the same line
+#    The first sed handles the case (http[s]*://xxx)
+#    The list is sorted by length so that if REPLACE is used the longer apply before the shorter
+#    The code recursively follows the permanently moved (301) redirections until it reaches the final URL
+#    For DropBox we need to check the validity of the new URL but do not want to return to user the internal "raw" URL
+checkbadURLS:
+	-@x=`git grep "http[s]*://" -- '*.[chF]' '*.html' '*.cpp' '*.cxx' '*.cu' '*.F90' '*.py' '*.tex' | grep -E -v "(config/packages|HandsOnExercises)" | tr '[[:blank:]]' '\n' | grep 'http[s]*://' | sed 's!.*(\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\))!\1!g' | sed 's!.*\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\).*!\1!g' | sed 's/\.$$//g' | sort | uniq| awk '{ print length, $$0 }' | sort -r -n -s | cut -d" " -f2` ; \
+        for i in $$x; do \
+          url=$$i; \
+          msg=''; \
+          while [[ "$${msg}D" == "D" ]] ; do \
+            y1=`curl --connect-timeout 5 --head --silent $${url} | head -n 1`; \
+            y2=`echo $${y1} | grep ' 4[0-9]* '`; \
+            y3=`echo $${y1} | grep ' 301 '`; \
+            if [[ "$${y1}D" == "D" ]] ; then \
+              msg="Unable to reach site" ; \
+            elif [[ "$${y2}D" != "D" ]] ; then \
+              msg=$${y1} ; \
+            elif [[ "$${y3}D" != "D" ]] ; then \
+              l=`curl --connect-timeout 5 --head --silent $${url} | grep ocation | sed 's/.*ocation:[[:blank:]]\(.*\)/\1/g' | tr -d '\r'` ; \
+              w=`echo $$l | grep 'http'` ; \
+              if [[ "$${w}D" != "D" ]] ; then \
+                url=$$l ; \
+              else \
+                ws=`echo $${url} | sed 's!\(http[s]*://[-a-zA-Z0-9_.]*\)/.*!\1!g'` ; \
+                dp=`echo $${ws}$${l} | grep "dropbox.com/s/raw"` ; \
+                if [[ "$${dp}D" != "D" ]] ; then \
+                  b=`curl --connect-timeout 5 --head --silent $${ws}$$l | head -n 1` ; \
+                  c=`echo $${b} | grep -E "( 2[0-9]* | 302 )"` ; \
+                  if [[ "$${c}D" == "D" ]] ; then \
+                    msg=`echo "dropbox file doesn't exist" $${c}` ; \
+                  else \
+                    break ; \
+                  fi; \
+                else \
+                  url="$${ws}$$l" ; \
+                fi; \
+              fi; \
+            else \
+              break; \
+            fi; \
+          done;\
+          if [[ "$${msg}D" == "D" && "$${url}" != "$$i" ]] ; then \
+            echo "URL" $$i "has moved to valid final location:" $${url} ; \
+            if [[ "$${REPLACE}D" != "D" ]] ; then \
+              git psed $$i $$l ;\
+            fi; \
+          elif [[ "$${msg}D" != "D" && "$${url}" != "$$i" ]] ; then \
+            echo "ERROR: URL" $$i "has moved to invalid final location:" $${url} $${msg} ; \
+          elif [[ "$${msg}D" != "D" ]] ; then \
+            echo "ERROR: URL" $$i "invalid:" $${msg} ; \
+          fi; \
+        done
