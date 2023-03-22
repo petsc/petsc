@@ -313,7 +313,11 @@ prepend-path PATH "%s"
     self.setCompilers.pushLanguage(self.languages.clanguage)
     pcc_linker = self.setCompilers.getLinker()
     self.addMakeMacro('PCC_LINKER',pcc_linker)
-    self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    # We need to add sycl flags when linking petsc. See more in sycl.py.
+    if hasattr(self.compilers, 'SYCLC'):
+      self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags()+' '+self.setCompilers.SYCLFLAGS+' '+self.setCompilers.SYCLC_LINKER_FLAGS)
+    else:
+      self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
@@ -364,6 +368,7 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'SYCLC'):
       self.setCompilers.pushLanguage('SYCL')
       self.addMakeMacro('SYCLC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('SYCLC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.addMakeMacro('SYCLPP_FLAGS',self.setCompilers.SYCLPPFLAGS)
       self.setCompilers.popLanguage()
 
