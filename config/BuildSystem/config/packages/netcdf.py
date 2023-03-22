@@ -36,5 +36,7 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-pnetcdf')
     args.append('--disable-dap')
     args.append('--disable-dynamic-loading') #This was disabled in v4.3.2 - but enabled in subsequent versions - giving config errors on freebsd (wrt -ldl)
+    args.append('--disable-libxml2')
+    args.append('--disable-byterange') # curl/curl.h required for byte range support
     args.append('--disable-hdf4')
     return args
