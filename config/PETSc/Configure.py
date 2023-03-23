@@ -372,6 +372,21 @@ prepend-path PATH "%s"
       self.addMakeMacro('SYCLPP_FLAGS',self.setCompilers.SYCLPPFLAGS)
       self.setCompilers.popLanguage()
 
+    # Avoid picking CFLAGS etc from env - but support 'make CFLAGS=-Werror' etc..
+    self.addMakeMacro('CFLAGS','')
+    self.addMakeMacro('CPPFLAGS','')
+    self.addMakeMacro('CXXFLAGS','')
+    self.addMakeMacro('CXXPPFLAGS','')
+    self.addMakeMacro('FFLAGS','')
+    self.addMakeMacro('FPPFLAGS','')
+    self.addMakeMacro('CUDAFLAGS','')
+    self.addMakeMacro('CUDAPPFLAGS','')
+    self.addMakeMacro('HIPFLAGS','')
+    self.addMakeMacro('HIPPPFLAGS','')
+    self.addMakeMacro('SYCLFLAGS','')
+    self.addMakeMacro('SYCLPPFLAGS','')
+    self.addMakeMacro('LDFLAGS','')
+
     # shared library linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
     # need to fix BuildSystem to collect these separately
