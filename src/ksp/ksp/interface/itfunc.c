@@ -840,7 +840,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 
   PetscCall(VecSetErrorIfLocked(ksp->vec_sol, 3));
 
-  PetscCall(PetscLogEventBegin(KSP_Solve, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+  PetscCall(PetscLogEventBegin(!ksp->transpose_solve ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
   PetscCall(PCGetOperators(ksp->pc, &mat, &pmat));
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
@@ -933,7 +933,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
-  PetscCall(PetscLogEventEnd(KSP_Solve, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+  PetscCall(PetscLogEventEnd(!ksp->transpose_solve ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
   if (ksp->guess) PetscCall(KSPGuessUpdate(ksp->guess, ksp->vec_rhs, ksp->vec_sol));
   if (ksp->postsolve) PetscCall((*ksp->postsolve)(ksp, ksp->vec_rhs, ksp->vec_sol, ksp->postctx));
 
