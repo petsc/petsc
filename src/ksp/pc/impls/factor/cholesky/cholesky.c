@@ -37,21 +37,25 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
 
   PetscCall(MatSetErrorIfFailure(pc->pmat, pc->erroriffailure));
   if (dir->hdr.inplace) {
-    if (dir->row && dir->col && (dir->row != dir->col)) PetscCall(ISDestroy(&dir->row));
-    PetscCall(ISDestroy(&dir->col));
-    /* should only get reordering if the factor matrix uses it but cannot determine because MatGetFactor() not called */
-    PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
-    PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
-    if (dir->col && (dir->row != dir->col)) { /* only use row ordering for SBAIJ */
-      PetscCall(ISDestroy(&dir->col));
-    }
-    PetscCall(MatCholeskyFactor(pc->pmat, dir->row, &((PC_Factor *)dir)->info));
-    PetscCall(MatFactorGetError(pc->pmat, &err));
-    if (err) { /* Factor() fails */
-      pc->failedreason = (PCFailedReason)err;
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
+    MatFactorType ftype;
 
+    PetscCall(MatGetFactorType(pc->pmat, &ftype));
+    if (ftype == MAT_FACTOR_NONE) {
+      if (dir->row && dir->col && (dir->row != dir->col)) PetscCall(ISDestroy(&dir->row));
+      PetscCall(ISDestroy(&dir->col));
+      /* This should only get the ordering if needed, but since MatGetFactor() is not called we can't know if it is needed */
+      PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+      PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor *)dir)->ordering, &dir->row, &dir->col));
+      if (dir->col && (dir->row != dir->col)) { /* only use row ordering for SBAIJ */
+        PetscCall(ISDestroy(&dir->col));
+      }
+      PetscCall(MatCholeskyFactor(pc->pmat, dir->row, &((PC_Factor *)dir)->info));
+      PetscCall(MatFactorGetError(pc->pmat, &err));
+      if (err) { /* Factor() fails */
+        pc->failedreason = (PCFailedReason)err;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+    }
     ((PC_Factor *)dir)->fact = pc->pmat;
   } else {
     MatInfo info;
