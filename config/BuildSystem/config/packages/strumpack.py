@@ -67,11 +67,6 @@ class Configure(config.package.CMakePackage):
     # https://portal.nersc.gov/project/sparse/strumpack/master/GPU_Support.html
     if self.cuda.found:
       args.append('-DSTRUMPACK_USE_CUDA=ON')
-      with self.Language('CUDA'):
-        petscNvcc = self.getCompiler()
-      args.append('-DCMAKE_CUDA_COMPILER="'+petscNvcc+'"')
-      if hasattr(self.setCompilers,'CUDA_CXX'): # CUDA_CXX is set in cuda.py and might be mpicxx. It's useful in compiling CUDA+MPI files
-        args.append('-DCMAKE_CUDA_HOST_COMPILER="'+self.setCompilers.CUDA_CXX+'"')
       args.append('-D'+self.cuda.cmakeArchProperty())
     elif self.hip.found:
       args.append('-DSTRUMPACK_USE_HIP=ON')
