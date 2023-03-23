@@ -176,6 +176,7 @@ PetscErrorCode KSPInitializePackage(void)
   PetscCall(PetscLogEventRegister("KSPGMRESOrthog", KSP_CLASSID, &KSP_GMRESOrthogonalization));
   PetscCall(PetscLogEventRegister("KSPSolveTranspos", KSP_CLASSID, &KSP_SolveTranspose));
   PetscCall(PetscLogEventRegister("KSPMatSolve", KSP_CLASSID, &KSP_MatSolve));
+  PetscCall(PetscLogEventRegister("KSPMatSolveTrans", KSP_CLASSID, &KSP_MatSolveTranspose));
   /* Process Info */
   {
     PetscClassId classids[3];
