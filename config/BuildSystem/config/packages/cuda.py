@@ -11,7 +11,7 @@ class Configure(config.package.Package):
     self.requiresversion   = 1
     self.functions         = ['cublasInit','cufftDestroy']
     self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h']
-    self.basicliblist      = [['libcudart.a','libnvToolsExt.a'],
+    self.basicliblist      = [['libcudart.a','libnvToolsExt.a'],['libcudart.a','libnvToolsExt.a','-lstdc++'],
                               ['cudart.lib','nvToolsExt.lib']]
     self.mathliblist       = [['libcufft.a', 'libcublas.a','libcusparse.a','libcusolver.a','libcurand.a'],
                               ['cufft.lib','cublas.lib','cusparse.lib','cusolver.lib','curand.lib']]
