@@ -317,7 +317,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   SNES_NEWTONTR            *neP = (SNES_NEWTONTR *)snes->data;
   Vec                       X, F, Y, G, W, GradF, YU;
   PetscInt                  maxits, lits;
-  PetscReal                 rho, fnorm, gnorm, xnorm = 0, delta, ynorm;
+  PetscReal                 rho, fnorm, gnorm = 0.0, xnorm = 0.0, delta, ynorm;
   PetscReal                 deltaM, fk, fkp1, deltaqm, gTy, yTHy;
   PetscReal                 auk, gfnorm, ycnorm, gTBg, objmin = 0.0;
   KSP                       ksp;
@@ -394,8 +394,25 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       /* Call general purpose update function */
       PetscTryTypeMethod(snes, update, snes->iter);
 
-      /* if update is present, recompute objective function and function norm */
-      if (snes->ops->update) {
+      /* apply the nonlinear preconditioner */
+      if (snes->npc && snes->npcside == PC_RIGHT) {
+        SNESConvergedReason reason;
+
+        PetscCall(SNESSetInitialFunction(snes->npc, F));
+        PetscCall(PetscLogEventBegin(SNES_NPCSolve, snes->npc, X, snes->vec_rhs, 0));
+        PetscCall(SNESSolve(snes->npc, snes->vec_rhs, X));
+        PetscCall(PetscLogEventEnd(SNES_NPCSolve, snes->npc, X, snes->vec_rhs, 0));
+        PetscCall(SNESGetConvergedReason(snes->npc, &reason));
+        if (reason < 0 && reason != SNES_DIVERGED_MAX_IT && reason != SNES_DIVERGED_TR_DELTA) {
+          snes->reason = SNES_DIVERGED_INNER;
+          PetscFunctionReturn(PETSC_SUCCESS);
+        }
+        // XXX
+        PetscCall(SNESGetNPCFunction(snes, F, &fnorm));
+        if (has_objective) PetscCall(SNESComputeObjective(snes, X, &fk));
+        else fk = 0.5 * PetscSqr(fnorm); /* obj(x) = 0.5 * ||F(x)||^2 */
+        // XXX
+      } else if (snes->ops->update) { /* if update is present, recompute objective function and function norm */
         PetscCall(SNESComputeFunction(snes, X, F));
         PetscCall(VecNorm(F, NORM_2, &fnorm));
         if (has_objective) PetscCall(SNESComputeObjective(snes, X, &fk));
@@ -415,13 +432,22 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     }
     already_done = PETSC_TRUE;
 
-    /* solve trust-region subproblem (don't specify radius if not looking for Newton step only) */
-    PetscCall(KSPCGSetRadius(snes->ksp, neP->fallback == SNES_TR_FALLBACK_NEWTON ? delta : 0.0));
+    /* solve trust-region subproblem */
+
+    /* sufficient decrease (see 6.3.27 in Conn, Gould, Toint "Trust Region Methods")
+       This is actually more relaxed, since they use include gnorm/beta_k, with
+       beta_k the largest eigenvalue of the Hessian */
+    objmin = -neP->kmdc * gnorm * PetscMin(gnorm, delta);
     PetscCall(KSPCGSetObjectiveTarget(snes->ksp, objmin));
+
+    /* don't specify radius if not looking for Newton step only */
+    PetscCall(KSPCGSetRadius(snes->ksp, neP->fallback == SNES_TR_FALLBACK_NEWTON ? delta : 0.0));
+
     PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
     PetscCall(KSPSolve(snes->ksp, F, Y));
     SNESCheckKSPSolve(snes);
     PetscCall(KSPGetIterationNumber(snes->ksp, &lits));
+    PetscCall(PetscInfo(snes, "iter=%" PetscInt_FMT ", linear solve iterations=%" PetscInt_FMT "\n", snes->iter, lits));
 
     /* decide what to do when the update is outside of trust region */
     PetscCall(VecNorm(Y, NORM_2, &ynorm));
@@ -432,6 +458,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       case SNES_TR_FALLBACK_NEWTON:
         auk = delta / ynorm;
         PetscCall(VecScale(Y, auk));
+        PetscCall(PetscInfo(snes, "SN evaluated. delta: %g, ynorm: %g\n", (double)delta, (double)ynorm));
         break;
       case SNES_TR_FALLBACK_CAUCHY:
       case SNES_TR_FALLBACK_DOGLEG:
@@ -527,7 +554,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       /* check to see if progress is hopeless */
       PetscCall(SNESTR_Converged_Private(snes, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP));
       if (!snes->reason) PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
-      if (snes->reason == SNES_CONVERGED_SNORM_RELATIVE) snes->reason = SNES_DIVERGED_INNER;
+      if (snes->reason == SNES_CONVERGED_SNORM_RELATIVE) snes->reason = SNES_DIVERGED_TR_DELTA;
       snes->numFailures++;
       /* We're not progressing, so return with the current iterate */
       if (snes->reason) break;
@@ -537,7 +564,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       already_done = PETSC_FALSE;
       fnorm        = gnorm;
       fk           = fkp1;
-      /* objmin       = -rho * deltaqm; */
 
       /* New residual and linearization point */
       PetscCall(VecCopy(G, F));
@@ -601,6 +627,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes, PetscOptionItems *P
   PetscCall(PetscOptionsReal("-snes_tr_t2", "t2", "None", ctx->t2, &ctx->t2, NULL));
   PetscCall(PetscOptionsReal("-snes_tr_deltaM", "deltaM", "None", ctx->deltaM, &ctx->deltaM, NULL));
   PetscCall(PetscOptionsReal("-snes_tr_delta0", "delta0", "None", ctx->delta0, &ctx->delta0, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_kmdc", "sufficient decrease parameter", "None", ctx->kmdc, &ctx->kmdc, NULL));
   PetscCall(PetscOptionsEnum("-snes_tr_fallback_type", "Type of fallback if subproblem solution is outside of the trust region", "SNESNewtonTRSetFallbackType", SNESNewtonTRFallbackTypes, (PetscEnum)ctx->fallback, (PetscEnum *)&ctx->fallback, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -617,6 +644,7 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Trust region tolerance %g\n", (double)snes->deltatol));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  eta1=%g, eta2=%g, eta3=%g\n", (double)tr->eta1, (double)tr->eta2, (double)tr->eta3));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  delta0=%g, t1=%g, t2=%g, deltaM=%g\n", (double)tr->delta0, (double)tr->t1, (double)tr->t2, (double)tr->deltaM));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  kmdc=%g\n", (double)tr->kmdc));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  fallback=%s\n", SNESNewtonTRFallbackTypes[tr->fallback]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -657,7 +685,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->ops->view           = SNESView_NEWTONTR;
 
   snes->usesksp = PETSC_TRUE;
-  snes->usesnpc = PETSC_FALSE;
+  snes->npcside = PC_RIGHT;
+  snes->usesnpc = PETSC_TRUE;
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
@@ -672,5 +701,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   neP->t2       = 2.0;
   neP->deltaM   = 1.e10;
   neP->fallback = SNES_TR_FALLBACK_NEWTON;
+  neP->kmdc     = 0.0; /* by default do not use sufficient decrease */
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -11,6 +11,7 @@ typedef struct {
   PetscReal delta;  /* trust region parameter */
   PetscReal delta0; /* initial radius for trust region */
   PetscReal deltaM; /* maximum radius for trust region */
+  PetscReal kmdc;   /* sufficient decrease parameter */
 
   /*
     Given rho = (fk - fkp1) / (m(0) - m(pk))

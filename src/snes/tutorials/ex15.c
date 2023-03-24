@@ -847,6 +847,11 @@ x     Restore vector
       requires: !single
 
    test:
+      suffix: 5
+      args: -snes_monitor_short -snes_type newtontr -npc_snes_type ngs -snes_npc_side right -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_converged_reason -pc_type ilu
+      requires: !single
+
+   test:
       suffix: lag_jac
       nsize: 4
       args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_jacobian 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_jacobian_persists
