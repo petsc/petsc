@@ -774,9 +774,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_PARDISO(Mat F, Mat A, IS r, cons
 {
   PetscFunctionBegin;
   PetscCall(MatFactorSymbolic_AIJMKL_PARDISO_Private(F, A, info));
-#if defined(PETSC_USE_COMPLEX)
   F->ops->getinertia = NULL;
-#else
+#if !defined(PETSC_USE_COMPLEX)
   F->ops->getinertia = MatGetInertia_MKL_PARDISO;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

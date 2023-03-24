@@ -108,7 +108,7 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t); /* PETSC
     #if defined(__HIP_PLATFORM_NVCC__)
       #include <cusolverDn.h>
 typedef cusolverDnHandle_t hipsolverHandle_t;
-typedef cusolverStatus_t hipsolverStatus_t;
+typedef cusolverStatus_t   hipsolverStatus_t;
 
 /* Alias hipsolverDestroy to cusolverDnDestroy */
 static inline hipsolverStatus_t hipsolverDestroy(hipsolverHandle_t *hipsolverhandle)

@@ -2234,7 +2234,7 @@ static PetscErrorCode gamma_n_f(PetscInt dim, PetscReal time, const PetscReal x[
 #else
     {
       PetscReal xx = tmp1 / c02;
-      u[s] = xx / (PetscSqrtReal(1. + xx) + 1.); // better conditioned = xx/(PetscSqrtReal(1. + xx) + 1.)
+      u[s]         = xx / (PetscSqrtReal(1. + xx) + 1.); // better conditioned = xx/(PetscSqrtReal(1. + xx) + 1.)
     }
 #endif
   }

@@ -128,10 +128,10 @@ PetscErrorCode PetscRMTree(const char dir[])
 PetscErrorCode PetscRMTree(const char dir[])
 {
   struct dirent *data;
-  char loc[PETSC_MAX_PATH_LEN];
-  PetscBool flg1, flg2;
-  DIR *dirp;
-  struct stat statbuf;
+  char           loc[PETSC_MAX_PATH_LEN];
+  PetscBool      flg1, flg2;
+  DIR           *dirp;
+  struct stat    statbuf;
 
   PetscFunctionBegin;
   dirp = opendir(dir);
