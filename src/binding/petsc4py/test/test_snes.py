@@ -355,6 +355,11 @@ class BaseTestSNES(object):
         self.assertAlmostEqual(abs(x[0]), 1.0, places=4)
         self.assertAlmostEqual(abs(x[1]), 2.0, places=4)
 
+    def testNPC(self):
+        self.snes.appctx = (1,2,3)
+        npc = self.snes.getNPC()
+        self.assertEqual(npc.appctx, (1,2,3))
+
 # --------------------------------------------------------------------
 
 class TestSNESLS(BaseTestSNES, unittest.TestCase):

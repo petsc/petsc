@@ -1,0 +1,44 @@
+SNES Object: 1 MPI process
+  type: python
+    Python: ex1.py:MySNES
+    My context: None
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=8
+  total number of function evaluations=5
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI process
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=1
+  KSP Object: 1 MPI process
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI process
+    type: ilu
+      out-of-place factorization
+      0 levels of fill
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: natural
+      factor fill ratio given 1., needed 1.
+        Factored matrix follows:
+          Mat Object: 1 MPI process
+            type: seqaij
+            rows=16, cols=16
+            package used to perform factorization: petsc
+            total: nonzeros=32, allocated nonzeros=32
+              not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=16, cols=16
+      total: nonzeros=32, allocated nonzeros=80
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+Number of SNES iterations = 4

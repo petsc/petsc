@@ -98,6 +98,8 @@ cdef extern from * nogil:
     PetscErrorCode SNESAppendOptionsPrefix(PetscSNES,char[])
     PetscErrorCode SNESGetOptionsPrefix(PetscSNES,char*[])
     PetscErrorCode SNESSetFromOptions(PetscSNES)
+    PetscErrorCode SNESSetApplicationContext(PetscSNES,void*)
+    PetscErrorCode SNESGetApplicationContext(PetscSNES,void*)
 
     PetscErrorCode SNESGetKSP(PetscSNES,PetscKSP*)
     PetscErrorCode SNESSetKSP(PetscSNES,PetscKSP)

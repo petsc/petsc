@@ -122,11 +122,25 @@ cdef class SNES(Object):
 
     # --- application context ---
 
-    def setAppCtx(self, appctx):
+    def setApplicationContext(self, appctx):
         self.set_attr('__appctx__', appctx)
+        if appctx is not None:
+            registerAppCtx(<void*>appctx)
+            CHKERR( SNESSetApplicationContext(self.snes, <void*>appctx) )
+        else:
+            CHKERR( SNESSetApplicationContext(self.snes, NULL) )
 
-    def getAppCtx(self):
-        return self.get_attr('__appctx__')
+    def getApplicationContext(self):
+        cdef void *ctx
+        appctx = self.get_attr('__appctx__')
+        if appctx is None:
+            CHKERR( SNESGetApplicationContext(self.snes, &ctx) )
+            appctx = toAppCtx(ctx)
+        return appctx
+
+    # backward compatibility
+    setAppCtx = setApplicationContext
+    getAppCtx = getApplicationContext
 
     # --- discretization space ---
 

@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   PetscMPIInt   size;
   PetscReal     bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
   MatFDColoring fdcoloring;
-  PetscBool     matrix_free = PETSC_FALSE, flg, fd_coloring = PETSC_FALSE, use_convergence_test = PETSC_FALSE, pc = PETSC_FALSE, prunejacobian = PETSC_FALSE;
+  PetscBool     matrix_free = PETSC_FALSE, flg, fd_coloring = PETSC_FALSE, use_convergence_test = PETSC_FALSE, pc = PETSC_FALSE, prunejacobian = PETSC_FALSE, null_appctx = PETSC_TRUE;
   KSP           ksp;
   PetscInt     *testarray;
 
@@ -91,6 +91,7 @@ int main(int argc, char **argv)
   N = user.mx * user.my;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_convergence_test", &use_convergence_test, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-prune_jacobian", &prunejacobian, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-null_appctx", &null_appctx, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -102,6 +103,9 @@ int main(int argc, char **argv)
     PetscCall(SNESSetType(snes, SNESNEWTONTR));
     PetscCall(SNESNewtonTRSetPostCheck(snes, postcheck, NULL));
   }
+
+  /* Test application context handling from Python */
+  if (!null_appctx) { PetscCall(SNESSetApplicationContext(snes, (void *)&user)); }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -542,5 +546,11 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
    test:
       suffix: 6
       args: -snes_monitor draw:image:testfile -viewer_view
+
+   test:
+      suffix: python
+      requires: petsc4py
+      args: -python -snes_type python -snes_python_type ex1.py:MySNES -snes_view -null_appctx {{0 1}separate output}
+      localrunfiles: ex1.py
 
 TEST*/

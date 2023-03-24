@@ -192,6 +192,7 @@ include "petscdmswarm.pxi"
 include "petscpartitioner.pxi"
 include "petscspace.pxi"
 include "petscdmutils.pxi"
+include "petscpyappctx.pxi"
 
 # --------------------------------------------------------------------
 
