@@ -245,6 +245,7 @@ cdef extern from * nogil: # custom.h
     PetscErrorCode SNESGetLineSearch(PetscSNES,PetscSNESLineSearch*)
     PetscErrorCode SNESLineSearchSetFromOptions(PetscSNESLineSearch)
     PetscErrorCode SNESLineSearchApply(PetscSNESLineSearch,PetscVec,PetscVec,PetscReal*,PetscVec)
+    PetscErrorCode SNESLineSearchGetNorms(PetscSNESLineSearch,PetscReal*,PetscReal*,PetscReal*)
     PetscErrorCode SNESLineSearchDestroy(PetscSNESLineSearch*)
 
     ctypedef PetscErrorCode (*PetscSNESPreCheckFunction)(PetscSNESLineSearch,
