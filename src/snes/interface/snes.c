@@ -5562,11 +5562,15 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(pc, 2);
   if (!snes->npc) {
+    void *ctx;
+
     PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &snes->npc));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->npc, (PetscObject)snes, 1));
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(SNESSetOptionsPrefix(snes->npc, optionsprefix));
     PetscCall(SNESAppendOptionsPrefix(snes->npc, "npc_"));
+    PetscCall(SNESGetApplicationContext(snes, &ctx));
+    PetscCall(SNESSetApplicationContext(snes->npc, ctx));
     PetscCall(SNESSetCountersReset(snes->npc, PETSC_FALSE));
   }
   *pc = snes->npc;
