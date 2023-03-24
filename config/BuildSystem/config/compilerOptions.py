@@ -351,6 +351,9 @@ class CompilerOptions(config.base.Configure):
           #PGI/Windows writes an empty '\r\n' on the first line of output
           if output.count('\n') > 1 and output.split('\n')[0] == '\r':
             version = output.split('\r\n')[1]
+          #NVCC
+          elif output.find('Cuda compiler driver') >= 0:
+            version = output.split('\n')[3]
           else:
             version = output.split('\n')[0]
 
