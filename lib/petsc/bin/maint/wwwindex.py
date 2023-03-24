@@ -18,9 +18,9 @@ import subprocess
 
 HLIST_COLUMNS = 3
 
-# Now use the level info, and print a html formatted index
-# table. Can also provide a header file, whose contents are
-# first copied over.
+# Read an optional header file, whose contents are first copied over
+# Use the level info, and print a formatted index table of all the manual pages
+#
 def printindex(outfilename, headfilename, levels, titles, tables):
       # Read in the header file
       headbuf = ''
@@ -33,14 +33,18 @@ def printindex(outfilename, headfilename, levels, titles, tables):
             print('Likley you introduced a new set of manual pages but did not add the header file that describes them')
 
       with open(outfilename, "w") as fd:
+          # Since it uses three columns we must remove right sidebar so all columns are displayed completely
+          # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/page-toc.html
+          fd.write(':html_theme.sidebar_secondary.remove: true\n')
           fd.write(headbuf)
+          fd.write('\n')
           fd.write('[Manual Pages Table of Contents](/manualpages/index.md)\n')
           all_names = []
           fd.write('\n## Manual Pages by Level\n')
           for i, level in enumerate(levels):
                 title = titles[i]
                 if not tables[i]:
-                      if level != 'none':
+                      if level != 'none' and level != 'deprecated':
                           fd.write('\n### No %s routines\n' % level)
                       continue
 
@@ -58,12 +62,12 @@ def printindex(outfilename, headfilename, levels, titles, tables):
                 fd.write('```\n\n\n')
 
           fd.write('\n## Single list of manual pages\n')
-          fd.write('```{toctree}\n')
+          fd.write('```{hlist}\n')
           fd.write("---\n")
-          fd.write("maxdepth: 1\n")
+          fd.write("columns: %d\n" % HLIST_COLUMNS)
           fd.write("---\n")
           for name in sorted(all_names):
-              fd.write('%s\n' % name)
+              fd.write('- [](%s)\n' % name)
           fd.write('```\n\n\n')
 
 
@@ -143,7 +147,7 @@ def modifylevel(filename,secname):
 
       # write the modified manpage
       with open(filename, "w") as fd:
-          fd.write(outbuf)
+          fd.write(':orphan:"\n'+outbuf)
 
       return level
 
@@ -231,8 +235,8 @@ def main():
       titles = ['Beginner - Basic usage',
                 'Intermediate - Setting options for algorithms and data structures',
                 'Advanced - Setting more advanced options and customization',
-                'Developer - Interfaces intended primarily for library developers, not for typical applications programmers',
-                'Deprecated - Functionality scheduled for removal in future versions',
+                'Developer - Interfaces rarely needed by applications programmers',
+                'Deprecated - Functionality scheduled for removal in the future',
                 'None: Not yet cataloged']
 
       singlelist = []
