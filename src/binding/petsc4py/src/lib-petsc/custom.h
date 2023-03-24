@@ -209,7 +209,7 @@ PetscErrorCode VecGetCurrentMemType(Vec v, PetscMemType *m)
   PetscCall(VecBoundToCPU(v,&bound));
   if (!bound) {
     VecType rtype;
-    char *iscuda, *iship, *iskok;
+    char *iscuda = NULL, *iship = NULL, *iskok = NULL;
 
     PetscCall(VecGetRootType_Private(v,&rtype));
     PetscCall(PetscStrstr(rtype,"cuda",&iscuda));
@@ -273,7 +273,7 @@ PetscErrorCode MatGetCurrentMemType(Mat A, PetscMemType *m)
   PetscCall(MatBoundToCPU(A,&bound));
   if (!bound) {
     VecType rtype;
-    char *iscuda, *iship, *iskok;
+    char *iscuda = NULL, *iship = NULL, *iskok = NULL;
 
     PetscCall(MatGetRootType_Private(A,&rtype));
     PetscCall(PetscStrstr(rtype,"cuda",&iscuda));
