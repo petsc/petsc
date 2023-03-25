@@ -51,7 +51,7 @@ PETSC_NODISCARD inline constexpr detail::array_return_type<D, T...> make_array(T
 }
 
 template <typename T, std::size_t NL, std::size_t NR>
-PETSC_NODISCARD inline constexpr auto concat_array(const std::array<T, NL> &l, const std::array<T, NR> &r) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(detail::concat_array_impl(l, r, make_index_sequence<NL>{}, make_index_sequence<NR>{}));
+PETSC_NODISCARD inline constexpr auto concat_array(const std::array<T, NL> &l, const std::array<T, NR> &r) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(detail::concat_array_impl(l, r, make_index_sequence<NL>{}, make_index_sequence<NR>{}))
 
 } // anonymous namespace
 
