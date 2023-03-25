@@ -169,6 +169,7 @@ Changes: Development
 - Add ``KSPSetConvergedNegativeCurvature()`` to declare convergence if negative curvature is detected by the Krylov solver
 - Add MINRES-QLP, available via ``KSPMINRESSetUseQLP()`` or the command line ``-ksp_minres_qlp``
 - Replace old MINRES implementation
+- Add ``KSPMatSolveTranspose()``
 
 .. rubric:: SNES:
 

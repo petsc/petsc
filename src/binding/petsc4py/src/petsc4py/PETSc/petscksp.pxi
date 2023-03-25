@@ -166,6 +166,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPSolve(PetscKSP,PetscVec,PetscVec)
     PetscErrorCode KSPSolveTranspose(PetscKSP,PetscVec,PetscVec)
     PetscErrorCode KSPMatSolve(PetscKSP,PetscMat,PetscMat)
+    PetscErrorCode KSPMatSolveTranspose(PetscKSP,PetscMat,PetscMat)
 
     PetscErrorCode KSPGetRhs(PetscKSP,PetscVec*)
     PetscErrorCode KSPGetSolution(PetscKSP,PetscVec*)
