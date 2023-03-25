@@ -160,7 +160,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   if (snes->npc && snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     PetscCall(SNESApplyNPC(snes, X, NULL, F));
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
-    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT && reason != SNES_DIVERGED_TR_DELTA) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(PETSC_SUCCESS);
     }
@@ -197,7 +197,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         PetscCall(SNESSolve(snes->npc, snes->vec_rhs, X));
         PetscCall(PetscLogEventEnd(SNES_NPCSolve, snes->npc, X, snes->vec_rhs, 0));
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
-        if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+        if (reason < 0 && reason != SNES_DIVERGED_MAX_IT && reason != SNES_DIVERGED_TR_DELTA) {
           snes->reason = SNES_DIVERGED_INNER;
           PetscFunctionReturn(PETSC_SUCCESS);
         }
@@ -205,7 +205,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
       } else if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
         PetscCall(SNESApplyNPC(snes, X, F, F));
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
-        if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+        if (reason < 0 && reason != SNES_DIVERGED_MAX_IT && reason != SNES_DIVERGED_TR_DELTA) {
           snes->reason = SNES_DIVERGED_INNER;
           PetscFunctionReturn(PETSC_SUCCESS);
         }
