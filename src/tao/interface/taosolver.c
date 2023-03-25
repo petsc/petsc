@@ -62,7 +62,7 @@ static PetscErrorCode TaoSetUpEW_Private(Tao tao)
 
     PetscCall(KSPGetOptionsPrefix(tao->ksp, &ewprefix));
     kctx = (SNESKSPEW *)tao->snes_ewdummy->kspconvctx;
-    PetscCall(SNESEWSetFromOptions_Private(kctx, PetscObjectComm((PetscObject)tao), ewprefix));
+    PetscCall(SNESEWSetFromOptions_Private(kctx, PETSC_FALSE, PetscObjectComm((PetscObject)tao), ewprefix));
   } else PetscCall(SNESDestroy(&tao->snes_ewdummy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

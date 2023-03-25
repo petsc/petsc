@@ -24,5 +24,11 @@ Norm of search step 3.8147e-07
 Norm of search step 9.53674e-08
 Norm of search step 2.38419e-08
 Norm of search step 5.96046e-09
-Nonlinear solve did not converge due to DIVERGED_INNER iterations 5
+Norm of search step 1.49012e-09
+Norm of search step 3.72529e-10
+Norm of search step 9.31322e-11
+Norm of search step 2.3283e-11
+Norm of search step 5.82079e-12
+Norm of search step 1.45519e-12
+Nonlinear solve did not converge due to DIVERGED_TR_DELTA iterations 5
 Number of SNES iterations = 5

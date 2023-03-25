@@ -849,17 +849,20 @@ PetscErrorCode SNESMonitorSetFromOptions(SNES snes, const char name[], const cha
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, MPI_Comm comm, const char *prefix)
+PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api, MPI_Comm comm, const char *prefix)
 {
+  const char *api = print_api ? "SNESKSPSetParametersEW" : NULL;
+
   PetscFunctionBegin;
   PetscOptionsBegin(comm, prefix, "Eisenstat and Walker type forcing options", "KSP");
-  PetscCall(PetscOptionsInt("-ksp_ew_version", "Version 1, 2 or 3", NULL, kctx->version, &kctx->version, NULL));
-  PetscCall(PetscOptionsReal("-ksp_ew_rtol0", "0 <= rtol0 < 1", NULL, kctx->rtol_0, &kctx->rtol_0, NULL));
-  PetscCall(PetscOptionsReal("-ksp_ew_rtolmax", "0 <= rtolmax < 1", NULL, kctx->rtol_max, &kctx->rtol_max, NULL));
-  PetscCall(PetscOptionsReal("-ksp_ew_gamma", "0 <= gamma <= 1", NULL, kctx->gamma, &kctx->gamma, NULL));
-  PetscCall(PetscOptionsReal("-ksp_ew_alpha", "1 < alpha <= 2", NULL, kctx->alpha, &kctx->alpha, NULL));
+  PetscCall(PetscOptionsInt("-ksp_ew_version", "Version 1, 2 or 3", api, kctx->version, &kctx->version, NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_rtol0", "0 <= rtol0 < 1", api, kctx->rtol_0, &kctx->rtol_0, NULL));
+  kctx->rtol_max = PetscMax(kctx->rtol_0, kctx->rtol_max);
+  PetscCall(PetscOptionsReal("-ksp_ew_rtolmax", "0 <= rtolmax < 1", api, kctx->rtol_max, &kctx->rtol_max, NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_gamma", "0 <= gamma <= 1", api, kctx->gamma, &kctx->gamma, NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_alpha", "1 < alpha <= 2", api, kctx->alpha, &kctx->alpha, NULL));
   PetscCall(PetscOptionsReal("-ksp_ew_alpha2", "alpha2", NULL, kctx->alpha2, &kctx->alpha2, NULL));
-  PetscCall(PetscOptionsReal("-ksp_ew_threshold", "0 < threshold < 1", NULL, kctx->threshold, &kctx->threshold, NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_threshold", "0 < threshold < 1", api, kctx->threshold, &kctx->threshold, NULL));
   PetscCall(PetscOptionsReal("-ksp_ew_v4_p1", "p1", NULL, kctx->v4_p1, &kctx->v4_p1, NULL));
   PetscCall(PetscOptionsReal("-ksp_ew_v4_p2", "p2", NULL, kctx->v4_p2, &kctx->v4_p2, NULL));
   PetscCall(PetscOptionsReal("-ksp_ew_v4_p3", "p3", NULL, kctx->v4_p3, &kctx->v4_p3, NULL));
@@ -1014,15 +1017,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
 
   PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
   PetscCall(PetscSNPrintf(ewprefix, sizeof(ewprefix), "%s%s", optionsprefix ? optionsprefix : "", "snes_"));
-  PetscCall(SNESEWSetFromOptions_Private(kctx, PetscObjectComm((PetscObject)snes), ewprefix));
-
-  PetscCall(PetscOptionsInt("-snes_ksp_ew_version", "Version 1, 2 or 3", "SNESKSPSetParametersEW", kctx->version, &kctx->version, NULL));
-  PetscCall(PetscOptionsReal("-snes_ksp_ew_rtol0", "0 <= rtol0 < 1", "SNESKSPSetParametersEW", kctx->rtol_0, &kctx->rtol_0, NULL));
-  PetscCall(PetscOptionsReal("-snes_ksp_ew_rtolmax", "0 <= rtolmax < 1", "SNESKSPSetParametersEW", kctx->rtol_max, &kctx->rtol_max, NULL));
-  PetscCall(PetscOptionsReal("-snes_ksp_ew_gamma", "0 <= gamma <= 1", "SNESKSPSetParametersEW", kctx->gamma, &kctx->gamma, NULL));
-  PetscCall(PetscOptionsReal("-snes_ksp_ew_alpha", "1 < alpha <= 2", "SNESKSPSetParametersEW", kctx->alpha, &kctx->alpha, NULL));
-  PetscCall(PetscOptionsReal("-snes_ksp_ew_alpha2", "alpha2", "SNESKSPSetParametersEW", kctx->alpha2, &kctx->alpha2, NULL));
-  PetscCall(PetscOptionsReal("-snes_ksp_ew_threshold", "0 < threshold < 1", "SNESKSPSetParametersEW", kctx->threshold, &kctx->threshold, NULL));
+  PetscCall(SNESEWSetFromOptions_Private(kctx, PETSC_TRUE, PetscObjectComm((PetscObject)snes), ewprefix));
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-snes_monitor_cancel", "Remove all monitors", "SNESMonitorCancel", flg, &flg, &set));
@@ -5332,12 +5327,7 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
       else if (rk < kctx->v4_p3) rtol = kctx->v4_m1 * kctx->rtol_last;
       else rtol = kctx->v4_m2 * kctx->rtol_last;
 
-      if (kctx->rtol_last_2 > kctx->v4_m3 && kctx->rtol_last > kctx->v4_m3 && kctx->rk_last_2 < kctx->v4_p1 && kctx->rk_last < kctx->v4_p1) {
-        rtol = kctx->v4_m4 * kctx->rtol_last;
-        //printf("iter %" PetscInt_FMT ", Eisenstat-Walker (version %" PetscInt_FMT ") KSP rtol=%g (rk %g ps %g %g %g) (AD)\n",snes->iter,kctx->version,(double)rtol,rk,kctx->v4_p1,kctx->v4_p2,kctx->v4_p3);
-      } else {
-        //printf("iter %" PetscInt_FMT ", Eisenstat-Walker (version %" PetscInt_FMT ") KSP rtol=%g (rk %g ps %g %g %g)\n",snes->iter,kctx->version,(double)rtol,rk,kctx->v4_p1,kctx->v4_p2,kctx->v4_p3);
-      }
+      if (kctx->rtol_last_2 > kctx->v4_m3 && kctx->rtol_last > kctx->v4_m3 && kctx->rk_last_2 < kctx->v4_p1 && kctx->rk_last < kctx->v4_p1) rtol = kctx->v4_m4 * kctx->rtol_last;
       kctx->rtol_last_2 = kctx->rtol_last;
       kctx->rk_last_2   = kctx->rk_last;
       kctx->rk_last     = rk;
@@ -5572,11 +5562,15 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(pc, 2);
   if (!snes->npc) {
+    void *ctx;
+
     PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &snes->npc));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes->npc, (PetscObject)snes, 1));
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(SNESSetOptionsPrefix(snes->npc, optionsprefix));
     PetscCall(SNESAppendOptionsPrefix(snes->npc, "npc_"));
+    PetscCall(SNESGetApplicationContext(snes, &ctx));
+    PetscCall(SNESSetApplicationContext(snes->npc, ctx));
     PetscCall(SNESSetCountersReset(snes->npc, PETSC_FALSE));
   }
   *pc = snes->npc;

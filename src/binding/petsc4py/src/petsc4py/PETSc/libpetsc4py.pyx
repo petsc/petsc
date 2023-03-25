@@ -2140,9 +2140,8 @@ cdef PetscErrorCode SNESSolve_Python_default(
         SNESStep_Python(snes, X, F, Y)
         lits += snes.linear_its
         #
-        CHKERR( SNESLineSearchApply(ls, X, F, &fnorm, Y) )
-        CHKERR( VecNorm(X, PETSC_NORM_2, &xnorm) )
-        CHKERR( VecNorm(Y, PETSC_NORM_2, &ynorm) )
+        CHKERR( SNESLineSearchApply(ls, X, F, NULL, Y) )
+        CHKERR( SNESLineSearchGetNorms(ls, &xnorm, &fnorm, &ynorm) )
         snes.iter += 1
         #
         SNESPostStep_Python(snes)

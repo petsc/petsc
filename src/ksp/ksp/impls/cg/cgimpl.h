@@ -35,6 +35,8 @@ typedef struct {
 
   /* Trust region support */
   PetscReal radius;
+  PetscReal obj;
+  PetscReal obj_min;
 
   PetscBool singlereduction; /* use variant of CG that combines both inner products */
 } KSP_CG;
