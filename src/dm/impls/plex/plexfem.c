@@ -5326,11 +5326,11 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   PetscBool       hasJac = PETSC_FALSE, hasPrec = PETSC_FALSE, hasDyn, hasFV = PETSC_FALSE, transform;
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM, dm, 0, 0, 0));
   if (!cellIS) goto end;
   PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(ISGetLocalSize(cellIS, &numCells));
   if (cStart >= cEnd) goto end;
-  PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM, dm, 0, 0, 0));
   PetscCall(DMHasBasisTransform(dm, &transform));
   PetscCall(DMGetBasisTransformDM_Internal(dm, &tdm));
   PetscCall(DMGetBasisTransformVec_Internal(dm, &tv));
