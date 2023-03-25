@@ -80,7 +80,6 @@ class Configure(config.package.CMakePackage):
       self.system = 'CUDA'
 
       with self.Language('CUDA'):
-        args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
         # Raja cmake adds the -ccbin and -std therefor remove them from provided options
         # to prevent error from double use
         cuda_flags = self.rmArgsStartsWith(self.rmArgsPair(self.getCompilerFlags().split(' '),['-ccbin']),['-std='])

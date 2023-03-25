@@ -1925,14 +1925,20 @@ class CMakePackage(Package):
 
     if 'MSYSTEM' in os.environ:
       args.append('-G "MSYS Makefiles"')
-    cuda_module = self.framework.findModule(self, config.packages.cuda)
-    if cuda_module and cuda_module.found:
-      with self.Language('CUDA'):
-        args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
-        cuda_flags = self.updatePackageCUDAFlags(self.getCompilerFlags())
-        args.append('-DCMAKE_CUDA_FLAGS:STRING="{}"'.format(cuda_flags))
-        args.append('-DCMAKE_CUDA_FLAGS_DEBUG:STRING="{}"'.format(cuda_flags))
-        args.append('-DCMAKE_CUDA_FLAGS_RELEASE:STRING="{}"'.format(cuda_flags))
+    for package in self.deps + self.odeps:
+      if package.found and package.name == 'cuda':
+        with self.Language('CUDA'):
+          args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
+          cuda_flags = self.updatePackageCUDAFlags(self.getCompilerFlags())
+          args.append('-DCMAKE_CUDA_FLAGS:STRING="{}"'.format(cuda_flags))
+          args.append('-DCMAKE_CUDA_FLAGS_DEBUG:STRING="{}"'.format(cuda_flags))
+          args.append('-DCMAKE_CUDA_FLAGS_RELEASE:STRING="{}"'.format(cuda_flags))
+          if hasattr(self.setCompilers,'CUDA_CXX'): # CUDA_CXX is set in cuda.py and might be mpicxx.
+            args.append('-DCMAKE_CUDA_HOST_COMPILER="{}"'.format(self.setCompilers.CUDA_CXX))
+          else:
+            with self.Language('C++'):
+              args.append('-DCMAKE_CUDA_HOST_COMPILER="{}"'.format(self.getCompiler()))
+        break
     return args
 
   def updateControlFiles(self):

@@ -52,13 +52,8 @@ class Configure(config.package.CMakePackage):
     GPUBackend = ''
     if self.cuda.found:
       GPUBackend = 'CUDA'
-      with self.Language('CUDA'):
-        petscNvcc = self.getCompiler()
-      args.append('-DCMAKE_CUDA_COMPILER="'+petscNvcc+'"')
-      if hasattr(self.setCompilers,'CUDA_CXX'): # CUDA_CXX is set in cuda.py and might be mpicxx. It's useful in compiling CUDA+MPI files in AMReX
-        args.append('-DCMAKE_CUDA_HOST_COMPILER="'+self.setCompilers.CUDA_CXX+'"')
-        # Prefer cmake options instead of -DAMReX_CUDA_ARCH
-        args.append('-D'+self.cuda.cmakeArchProperty())
+      # Prefer cmake options instead of -DAMReX_CUDA_ARCH
+      args.append('-D'+self.cuda.cmakeArchProperty())
     elif self.hip.found:
       GPUBackend = 'HIP'
       args.append('-DCMAKE_HIP_ARCHITECTURES="'+self.hip.hipArch+'"')
