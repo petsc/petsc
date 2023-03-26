@@ -800,10 +800,10 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
    `PetscObjectComposeFunction()` can be used with any PETSc object (such as
    `Mat`, `Vec`, `KSP`, `SNES`, etc.) or any user-provided object.
 
-   `PetscCallMethod()` is used to call a function that is stored in the objects `obj->ops` table.
+   `PetscUseTypeMethod()` and `PetscTryTypeMethod()` are used to call a function that is stored in the objects `obj->ops` table.
 
 .seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscTryMethod()`, `PetscUseMethod()`,
-          `PetscCallMethod()`
+          `PetscUseTypeMethod()`, `PetscTryTypeMethod()`
 M*/
 
 PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char name[], void (*fptr)(void))
