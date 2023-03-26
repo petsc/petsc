@@ -225,7 +225,9 @@ Changes: Development
 
 .. rubric:: DT:
 
-- Add ``PetscDTComputeFaceQuadPermutation()`` to compute the quadrature permutation corresponding to a k-cell orientation
+- Add ``PetscDTCreateDefaultQuadrature()``
+- Add ``PetscQuadratureComputePermutations()`` to compute the quadrature permutation corresponding to a k-cell orientation and ``PetscDSPermuteQuadPoint()``
+- Add ``PetscQuadratureGetCellType()`` and ``PetscQuadratureSetCellType()``
 - Add ``PetscDSCopy()``
 
 .. rubric:: Fortran:

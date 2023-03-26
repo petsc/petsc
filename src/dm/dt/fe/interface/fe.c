@@ -1840,44 +1840,6 @@ static PetscErrorCode PetscFESetDefaultName_Private(PetscFE fe)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscFECreateDefaultQuadrature_Private(PetscInt dim, DMPolytopeType ct, PetscInt qorder, PetscQuadrature *q, PetscQuadrature *fq)
-{
-  const PetscInt quadPointsPerEdge = PetscMax(qorder + 1, 1);
-
-  PetscFunctionBegin;
-  switch (ct) {
-  case DM_POLYTOPE_SEGMENT:
-  case DM_POLYTOPE_POINT_PRISM_TENSOR:
-  case DM_POLYTOPE_QUADRILATERAL:
-  case DM_POLYTOPE_SEG_PRISM_TENSOR:
-  case DM_POLYTOPE_HEXAHEDRON:
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-    PetscCall(PetscDTGaussTensorQuadrature(dim, 1, quadPointsPerEdge, -1.0, 1.0, q));
-    PetscCall(PetscDTGaussTensorQuadrature(dim - 1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
-    break;
-  case DM_POLYTOPE_TRIANGLE:
-  case DM_POLYTOPE_TETRAHEDRON:
-    PetscCall(PetscDTSimplexQuadrature(dim, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, q));
-    PetscCall(PetscDTSimplexQuadrature(dim - 1, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, fq));
-    break;
-  case DM_POLYTOPE_TRI_PRISM:
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: {
-    PetscQuadrature q1, q2;
-
-    // TODO: this should be able to use symmetric rules, but doing so causes tests to fail
-    PetscCall(PetscDTSimplexQuadrature(2, 2 * qorder, PETSCDTSIMPLEXQUAD_CONIC, &q1));
-    PetscCall(PetscDTGaussTensorQuadrature(1, 1, quadPointsPerEdge, -1.0, 1.0, &q2));
-    PetscCall(PetscDTTensorQuadratureCreate(q1, q2, q));
-    PetscCall(PetscQuadratureDestroy(&q2));
-    *fq = q1;
-    /* TODO Need separate quadratures for each face */
-  } break;
-  default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No quadrature for celltype %s", DMPolytopeTypes[PetscMin(ct, DM_POLYTOPE_UNKNOWN)]);
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   PetscFECreateFromSpaces - Create a `PetscFE` from the basis and dual spaces
 
@@ -2005,7 +1967,7 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
     PetscCall(PetscOptionsBoundedInt("-petscfe_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "PetscFECreateDefault", qorder, &qorder, NULL, 0));
     PetscOptionsEnd();
   }
-  PetscCall(PetscFECreateDefaultQuadrature_Private(dim, ct, qorder, &q, &fq));
+  PetscCall(PetscDTCreateDefaultQuadrature(ct, qorder, &q, &fq));
   /* Create finite element */
   PetscCall(PetscFECreateFromSpaces(P, Q, q, fq, fem));
   if (setFromOptions) PetscCall(PetscFESetFromOptions(*fem));

@@ -130,6 +130,7 @@ PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffsets(PetscDS, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS, PetscInt, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS, PetscInt, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscDSPermuteQuadPoint(PetscDS, PetscInt, PetscInt, PetscInt, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakForm(PetscDS, PetscWeakForm *);
 PETSC_EXTERN PetscErrorCode PetscDSSetWeakForm(PetscDS, PetscWeakForm);

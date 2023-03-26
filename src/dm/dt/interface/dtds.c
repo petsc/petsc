@@ -648,6 +648,13 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   PetscTryTypeMethod((*ds), destroy);
   PetscCall(PetscDSDestroyBoundary(*ds));
   PetscCall(PetscFree((*ds)->constants));
+  for (PetscInt c = 0; c < DM_NUM_POLYTOPES; ++c) {
+    const PetscInt Na = DMPolytopeTypeGetNumArrangments((DMPolytopeType)c);
+    if ((*ds)->quadPerm[c])
+      for (PetscInt o = 0; o < Na; ++o) PetscCall(ISDestroy(&(*ds)->quadPerm[c][o]));
+    PetscCall(PetscFree((*ds)->quadPerm[c]));
+    (*ds)->quadPerm[c] = NULL;
+  }
   PetscCall(PetscHeaderDestroy(ds));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -686,6 +693,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
   p->useJacPre    = PETSC_TRUE;
   p->forceQuad    = PETSC_TRUE;
   PetscCall(PetscWeakFormCreate(comm, &p->wf));
+  PetscCall(PetscArrayzero(p->quadPerm, DM_NUM_POLYTOPES));
 
   *ds = p;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4092,6 +4100,29 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
     }
   }
   *subprob = prob->subprobs[height - 1];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscDSPermuteQuadPoint(PetscDS ds, PetscInt ornt, PetscInt field, PetscInt q, PetscInt *qperm)
+{
+  IS              permIS;
+  PetscQuadrature quad;
+  DMPolytopeType  ct;
+  const PetscInt *perm;
+  PetscInt        Na, Nq;
+
+  PetscFunctionBeginHot;
+  PetscCall(PetscFEGetQuadrature((PetscFE)ds->disc[field], &quad));
+  PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL));
+  PetscCall(PetscQuadratureGetCellType(quad, &ct));
+  PetscCheck(q >= 0 && q < Nq, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Quadrature point %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", q, Nq);
+  Na = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  PetscCheck(ornt >= -Na && ornt < Na, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Orientation %" PetscInt_FMT " of %s is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", ornt, DMPolytopeTypes[ct], -Na, Na);
+  if (!ds->quadPerm[(PetscInt)ct]) PetscCall(PetscQuadratureComputePermutations(quad, NULL, &ds->quadPerm[(PetscInt)ct]));
+  permIS = ds->quadPerm[(PetscInt)ct][ornt + Na];
+  PetscCall(ISGetIndices(permIS, &perm));
+  *qperm = perm[q];
+  PetscCall(ISRestoreIndices(permIS, &perm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

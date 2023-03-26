@@ -5,6 +5,7 @@
 
 struct _p_PetscQuadrature {
   PETSCHEADER(int);
+  DMPolytopeType   ct;        /* The domain of integration */
   PetscInt         dim;       /* The spatial dimension */
   PetscInt         Nc;        /* The number of components */
   PetscInt         order;     /* The order, i.e. the highest degree polynomial that is exactly integrated */
