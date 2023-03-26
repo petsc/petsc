@@ -1,6 +1,7 @@
 static char help[] = "Tests MatCreateDenseCUDA(), MatDenseCUDAPlaceArray(), MatDenseCUDAReplaceArray(), MatDenseCUDAResetArray()\n";
 
 #include <petscmat.h>
+#include <petscpkg_version.h>
 
 static PetscErrorCode MatMult_S(Mat S, Vec x, Vec y)
 {
@@ -33,9 +34,17 @@ int main(int argc, char **argv)
   Mat          A, B, C, S;
   Vec          t, v;
   PetscScalar *vv, *aa;
-  PetscInt     n = 30, k = 6, l = 0, i, Istart, Iend, nloc, bs, test = 1;
-  PetscBool    flg, reset, use_shell = PETSC_FALSE;
-  VecType      vtype;
+  // We met a mysterious cudaErrorMisalignedAddress error on some systems with cuda-12.0,1 but not
+  // with prior cuda-11.2,3,7,8 versions. Making nloc an even number somehow 'fixes' the problem.
+  // See more at https://gitlab.com/petsc/petsc/-/merge_requests/6225
+#if PETSC_PKG_CUDA_VERSION_GE(12, 0, 0)
+  PetscInt n = 32;
+#else
+  PetscInt n = 30;
+#endif
+  PetscInt  k = 6, l = 0, i, Istart, Iend, nloc, bs, test = 1;
+  PetscBool flg, reset, use_shell = PETSC_FALSE;
+  VecType   vtype;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
