@@ -252,7 +252,7 @@ Downloaded package %s from: %s is not a tarball.
     try:
       # check if 'dirname' is set'
       if dirname:
-        config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
+        config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + r' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
       else:
         self.logPrintBox('WARNING: Could not determine dirname extracted by '+localFile+' to fix file permissions')
     except RuntimeError as e:

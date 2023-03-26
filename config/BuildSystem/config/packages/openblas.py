@@ -64,7 +64,7 @@ class Configure(config.package.Package):
   def versionToStandardForm(self,ver):
     '''Converts from " OpenBLAS 0.3.6<.dev> " to standard 0.3.6 format'''
     import re
-    ver = re.match("\s*OpenBLAS\s*([0-9\.]+)\s*",ver).group(1)
+    ver = re.match(r"\s*OpenBLAS\s*([0-9\.]+)\s*",ver).group(1)
     if ver.endswith('.'): ver = ver[0:-1]
     return ver
 

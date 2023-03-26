@@ -347,7 +347,7 @@ class Package(config.base.Configure):
       # -DCMAKE_CXX_STANDARD to set the std flag
       cmakeLists = os.path.join(self.packageDir,self.cmakelistsdir,'CMakeLists.txt')
       with open(cmakeLists,'r') as fd:
-        refcxxstd = re.compile('^\s*(?!#)(set\()(CMAKE_CXX_STANDARD\s[A-z0-9\s]*)')
+        refcxxstd = re.compile(r'^\s*(?!#)(set\()(CMAKE_CXX_STANDARD\s[A-z0-9\s]*)')
         for line in fd:
           match = refcxxstd.search(line)
           if match:
