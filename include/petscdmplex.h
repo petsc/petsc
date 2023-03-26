@@ -381,6 +381,7 @@ PETSC_EXTERN PetscErrorCode DMPlexSetClosurePermutationTensor(DM, PetscInt, Pets
 
 PETSC_EXTERN PetscErrorCode DMPlexConstructGhostCells(DM, const char[], PetscInt *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexConstructCohesiveCells(DM, DMLabel, DMLabel, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexReorderCohesiveSupports(DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetVTKCellHeight(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetVTKCellHeight(DM, PetscInt);

@@ -564,6 +564,7 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscDS d
   PetscInt           n0, n1, i;
   PetscBdPointFunc  *f0_func, *f1_func;
   PetscQuadrature    quad;
+  DMPolytopeType     ct;
   PetscTabulation   *Tf, *TfIn, *TfAux = NULL;
   PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal;
   const PetscScalar *constants;
@@ -611,21 +612,25 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscDS d
   NcI = Tf[field]->Nc;
   NcS = NcI;
   PetscCall(PetscQuadratureGetData(quad, &qdim, &qNc, &Nq, &quadPoints, &quadWeights));
+  PetscCall(PetscQuadratureGetCellType(quad, &ct));
   PetscCheck(qNc == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   dE = fgeom->dimEmbed;
   PetscCheck(fgeom->dim == qdim, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %" PetscInt_FMT " != %" PetscInt_FMT " quadrature dim", fgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom;
-    const PetscInt face[2] = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][1]};
+    const PetscInt face[2] = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][2]};
+    const PetscInt ornt[2] = {fgeom->face[e * 2 + 0][1], fgeom->face[e * 2 + 1][3]};
 
     fegeom.v = x; /* Workspace */
     PetscCall(PetscArrayzero(f0, Nq * NcS));
     PetscCall(PetscArrayzero(f1, Nq * NcS * dE));
     for (q = 0; q < Nq; ++q) {
-      const PetscInt qpt[2] = {q, Nq - q - 1};
-      PetscReal      w;
-      PetscInt       c, d;
+      PetscInt  qpt[2];
+      PetscReal w;
+      PetscInt  c, d;
 
+      PetscCall(PetscDSPermuteQuadPoint(ds, ornt[0], field, q, &qpt[0]));
+      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, ornt[1], 0), field, q, &qpt[1]));
       PetscCall(PetscFEGeomGetPoint(fgeom, e * 2, q, &quadPoints[q * fgeom->dim], &fegeom));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < fgeom->numPoints) {
@@ -974,6 +979,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscDS dsIn, Pe
   PetscInt           offsetI    = 0; /* Offset into an element vector for fieldI */
   PetscInt           offsetJ    = 0; /* Offset into an element vector for fieldJ */
   PetscQuadrature    quad;
+  DMPolytopeType     ct;
   PetscTabulation   *T, *TfIn, *TAux = NULL;
   PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal, *testReal, *testDerReal;
   const PetscScalar *constants;
@@ -1041,17 +1047,21 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscDS dsIn, Pe
   PetscCall(PetscArrayzero(g2, NcS * NcT * dE));
   PetscCall(PetscArrayzero(g3, NcS * NcT * dE * dE));
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
+  PetscCall(PetscQuadratureGetCellType(quad, &ct));
   PetscCheck(qNc == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom;
-    const PetscInt face[2] = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][1]};
+    const PetscInt face[2] = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][2]};
+    const PetscInt ornt[2] = {fgeom->face[e * 2 + 0][1], fgeom->face[e * 2 + 1][3]};
 
     fegeom.v = x; /* Workspace */
     for (q = 0; q < Nq; ++q) {
-      const PetscInt qpt[2] = {q, Nq - q - 1};
-      PetscReal      w;
-      PetscInt       c;
+      PetscInt  qpt[2];
+      PetscReal w;
+      PetscInt  c;
 
+      PetscCall(PetscDSPermuteQuadPoint(ds, ornt[0], fieldI, q, &qpt[0]));
+      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, ornt[1], 0), fieldI, q, &qpt[1]));
       PetscCall(PetscFEGeomGetPoint(fgeom, e * 2, q, &quadPoints[q * fgeom->dim], &fegeom));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < fgeom->numPoints) {

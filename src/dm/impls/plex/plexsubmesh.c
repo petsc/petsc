@@ -1777,6 +1777,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
     PetscCall(ISRestoreIndices(pIS, &points));
     PetscCall(ISDestroy(&pIS));
   }
+  PetscCall(DMPlexReorderCohesiveSupports(sdm));
   /* Step 7: Coordinates */
   PetscCall(DMPlexShiftCoordinates_Internal(dm, depthShift, sdm));
   PetscCall(DMGetCoordinateSection(sdm, &coordSection));
@@ -3891,6 +3892,57 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
     PetscCall(DMPlexCreateCohesiveSubmesh_Uninterpolated(dm, hasLagrange, label, value, *subdm));
   }
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexReorderCohesiveSupports - Ensure that face supports for cohesive end caps are ordered
+
+  Not Collective
+
+  Input Parameter:
+. dm - The `DM` containing cohesive cells
+
+  Level: developer
+
+  Note: For the negative size (first) face, the cohesive cell should be first in the support, and for the positive side (second) face, the cohesive cell should be second in the support.
+
+.seealso: `DMPlexConstructCohesiveCells()`, `DMPlexCreateCohesiveSubmesh()`
+@*/
+PetscErrorCode DMPlexReorderCohesiveSupports(DM dm)
+{
+  PetscInt dim, cStart, cEnd;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetTensorPrismBounds_Internal(dm, dim, &cStart, &cEnd));
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    const PetscInt *cone;
+    PetscInt        coneSize;
+
+    PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
+    PetscCall(DMPlexGetCone(dm, c, &cone));
+    PetscCheck(coneSize >= 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hybrid cell %" PetscInt_FMT " cone size %" PetscInt_FMT " must be >= 2", c, coneSize);
+    for (PetscInt s = 0; s < 2; ++s) {
+      const PetscInt *supp;
+      PetscInt        suppSize, newsupp[2];
+
+      PetscCall(DMPlexGetSupportSize(dm, cone[s], &suppSize));
+      PetscCall(DMPlexGetSupport(dm, cone[s], &supp));
+      if (suppSize == 2) {
+        /* Reorder hybrid end cap support */
+        if (supp[s] == c) {
+          newsupp[0] = supp[1];
+          newsupp[1] = supp[0];
+        } else {
+          newsupp[0] = supp[0];
+          newsupp[1] = supp[1];
+        }
+        PetscCheck(newsupp[1 - s] == c, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hybrid end cap %" PetscInt_FMT " support entry %" PetscInt_FMT " != %" PetscInt_FMT " hybrid cell", cone[s], newsupp[1 - s], c);
+        PetscCall(DMPlexSetSupport(dm, cone[s], newsupp));
+      }
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

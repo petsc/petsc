@@ -25,7 +25,7 @@ typedef struct _n_PetscFEGeom {
   PetscReal       *invJ;  /* invJ[Nc*Np*dE*dE]:     The inverse of the Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
   PetscReal       *detJ;  /* detJ[Nc*Np]:           The determinant of J, and if it is non-square its the volume change */
   PetscReal       *n;     /* n[Nc*Np*dE]:           For faces, the normal to the face in real coordinates, outward for the first supporting cell */
-  PetscInt (*face)[2];    /* face[Nc][s]:           For faces, the local face number (cone index) for this face in each supporting cell s */
+  PetscInt (*face)[4];    /* face[Nc][s*2]:         For faces, the local face number (cone index) and orientation for this face in each supporting cell s */
   PetscReal *suppJ[2];    /* sJ[s][Nc*Np*dE*dE]:    For faces, the Jacobian for each supporting cell s */
   PetscReal *suppInvJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the inverse Jacobian for each supporting cell s */
   PetscReal *suppDetJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the Jacobian determinant for each supporting cell s */

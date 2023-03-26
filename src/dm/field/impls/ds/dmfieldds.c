@@ -766,7 +766,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
   for (p = 0; p < numFaces; p++) {
     PetscInt        point = points[p];
     PetscInt        suppSize, s, coneSize, c, numChildren;
-    const PetscInt *supp, *cone, *ornt;
+    const PetscInt *supp;
 
     PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
     PetscCheck(!numChildren, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
@@ -775,15 +775,18 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     if (!suppSize) continue;
     PetscCall(DMPlexGetSupport(dm, point, &supp));
     for (s = 0; s < suppSize; ++s) {
+      const PetscInt *cone, *ornt;
+
       PetscCall(DMPlexGetConeSize(dm, supp[s], &coneSize));
-      PetscCall(DMPlexGetCone(dm, supp[s], &cone));
+      PetscCall(DMPlexGetOrientedCone(dm, supp[s], &cone, &ornt));
       for (c = 0; c < coneSize; ++c)
         if (cone[c] == point) break;
+      PetscCall(DMPlexRestoreOrientedCone(dm, supp[s], &cone, &ornt));
       PetscCheck(c != coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %" PetscInt_FMT " not found in cone of support point %" PetscInt_FMT, point, supp[s]);
-      geom->face[p][s] = c;
+      geom->face[p][s * 2 + 0] = c;
+      geom->face[p][s * 2 + 1] = ornt[c];
     }
-    PetscCall(DMPlexGetConeOrientation(dm, supp[0], &ornt));
-    if (ornt[geom->face[p][0]] < 0) {
+    if (geom->face[p][1] < 0) {
       PetscInt Np = geom->numPoints, q, dE = geom->dimEmbed, d;
 
       for (q = 0; q < Np; ++q)
