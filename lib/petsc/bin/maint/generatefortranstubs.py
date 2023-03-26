@@ -150,9 +150,6 @@ def FixDir(petscdir,dir,verbose):
     outbuf +=  "#requiresdefine   'PETSC_HAVE_FORTRAN'\n"
     outbuf +=   cppflags + '\n'
     outbuf +=  libbase + '\n'
-    outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/variables\n'
-    outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/rules\n'
-    outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/test\n'
 
     ff = open(os.path.join(dir, 'makefile'), 'w')
     ff.write(outbuf)

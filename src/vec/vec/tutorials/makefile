@@ -4,7 +4,6 @@ MANSEC           = Vec
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 
 ex7: ex7.o ex7f.o
 ex21f90: ex21f90.o ex21.o

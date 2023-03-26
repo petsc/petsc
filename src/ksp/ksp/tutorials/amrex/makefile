@@ -25,4 +25,3 @@ testamrex: amrex
            cat amrex_1.tmp; fi;  \
          ${RM} -f amrex_1.tmp
 
-include ${PETSC_DIR}/lib/petsc/conf/test

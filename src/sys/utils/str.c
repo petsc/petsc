@@ -527,7 +527,7 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
 
    Notes:
       Replaces ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
-      ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME}, ${HOSTNAME} with appropriate values
+      ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME}, ${HOSTNAME}, ${PETSC_MAKE} with appropriate values
       as well as any environmental variables.
 
       `PETSC_LIB_DIR` uses the environmental variable if it exists. `PETSC_ARCH` and `PETSC_DIR` use what
@@ -540,8 +540,8 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   int           i = 0;
   size_t        l, l1, l2, l3;
   char         *work, *par, *epar = NULL, env[1024], *tfree, *a = (char *)aa;
-  const char   *s[] = {"${PETSC_ARCH}", "${PETSC_DIR}", "${PETSC_LIB_DIR}", "${DISPLAY}", "${HOMEDIRECTORY}", "${WORKINGDIRECTORY}", "${USERNAME}", "${HOSTNAME}", NULL};
-  char         *r[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+  const char   *s[] = {"${PETSC_ARCH}", "${PETSC_DIR}", "${PETSC_LIB_DIR}", "${DISPLAY}", "${HOMEDIRECTORY}", "${WORKINGDIRECTORY}", "${USERNAME}", "${HOSTNAME}", "${PETSC_MAKE}", NULL};
+  char         *r[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
   PetscBool     flag;
   static size_t DISPLAY_LENGTH = 265, USER_LENGTH = 256, HOST_LENGTH = 256;
 
@@ -565,6 +565,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   PetscCall(PetscGetWorkingDirectory(r[5], PETSC_MAX_PATH_LEN));
   PetscCall(PetscGetUserName(r[6], USER_LENGTH));
   PetscCall(PetscGetHostName(r[7], HOST_LENGTH));
+  PetscCall(PetscStrallocpy(PETSC_OMAKE, &r[8]));
 
   /* replace that are in environment */
   PetscCall(PetscOptionsGetenv(comm, "PETSC_LIB_DIR", env, sizeof(env), &flag));

@@ -51,7 +51,7 @@ uninstall:
 # ----
 
 website:
-	virtualenv -p ${PYTHON2} petsc-doc-env && . petsc-doc-env/bin/activate  && ${PYTHON2} -m pip install -r docs/source/requirements.txt && make epydoc-website && deactivate
+	${RM} -rf petsc-doc-env; virtualenv -p ${PYTHON2} petsc-doc-env && . petsc-doc-env/bin/activate  && ${PYTHON2} -m pip install -r docs/source/requirements.txt && make epydoc-website && deactivate
 
 .PHONY: docs docs-html docs-pdf docs-misc
 docs: docs-html docs-pdf docs-misc

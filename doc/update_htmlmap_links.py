@@ -30,3 +30,4 @@ def update_htmlmap_links(builder,
                 if url.startswith("manualpages"):
                     line = os.path.splitext(line)[0] + postfix + "\n"
             htmlmap_modified_file.write(line)
+    os.rename(htmlmap_modified_filename,htmlmap_filename)

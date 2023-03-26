@@ -4,8 +4,6 @@ MANSEC          = Vec
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
--include ../petscdir.mk
 
 runex47: ex47.PETSc
 	-@H5OUT=`mktemp -t petsc.h5.XXXXXX`; ${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./ex47 -filename $${H5OUT} > ex47_1.tmp 2>&1; \

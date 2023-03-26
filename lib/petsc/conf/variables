@@ -1,10 +1,13 @@
 # -*- mode: makefile -*-
 #
-# The following variables specify PETSc related info, and can be picked up directly
-# by external packages or PETSc applications that do not use PETSc targets.
+# The following variables specify PETSc related compiler info
+#
+# It may be included in users makefiles (with include ${PETSC_DIR}/lib/petsc/conf/variables)
+# The makefile can then use the variable values for their own rules to build executables
+# See https://petsc.org/release/docs/manual/getting_started/#writing-c-c-or-fortran-applications
 #
 # PETSC_LIB_DIR          - (defined from $PETSC_DIR) determines where the PETSc libraries are built.
-# PETSC_CC_INCLUDES          - locations of include files
+# PETSC_CC_INCLUDES      - locations of include files
 # PETSC_[C,F]CPPFLAGS    -  preprocessor flags for *.c, *.F preprocessing
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
@@ -17,8 +20,7 @@ PETSC_FCPPFLAGS	    = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS
 PETSC_C_SH_LIB_PATH = ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 PETSC_F_SH_LIB_PATH = ${FC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 #
-# The following variables are used by PETSc build targets. External Packages can
-# redefine them appropriately.
+# The following variables are used by PETSc build targets.
 #
 # INSTALL_LIB_DIR   - the location where the libraries are built.
 # [C,F]CPPFLAGS     - preprocessor flags for *.c, *.F preprocessing
@@ -41,21 +43,6 @@ PETSC_CUCOMPILE_SINGLE  = ${CUDAC} -o $*.o $(MPICXX_INCLUDES) ${CUDAC_FLAGS} ${C
 PETSC_HIPCOMPILE_SINGLE = ${HIPC} -o $*.o $(MPICXX_INCLUDES) -c $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPFLAGS) $(HIPPPFLAGS) $(HIPOPTFLAGS) $(HIPC_DEPFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_SYCLCOMPILE_SINGLE = ${SYCLC} -o $*.o $(MPICXX_INCLUDES) -c $(SYCLC_FLAGS) $(SYCLPP_FLAGS) $(SYCLFLAGS) $(SYCLPPFLAGS) $(SYCLOPTFLAGS) $(SYCLC_DEPFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS)
 #
-# The following additional variables are used by PETSc targets and should not be redefined
-#
-# LIBNAME    - library name
-# SOURCE     - source files
-# SOURCEALL  - sources and includes
-# SOURCED    - sources/includes [but not fortran - for doc parsing]
-#
-# Note that EXAMPLESALL is only used in the tutorial directories and SOURCED only in the non-tutorials and tests directories
-#
-LIBNAME     = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
-SOURCE      = `ls *.c *.cxx *.F *.F90 *.cu *.cpp           2> /dev/null`
-SOURCEALL   = `ls *.c *.cxx *.F *.F90 *.cu *.cpp *.h *.hpp 2> /dev/null`
-SOURCED     = `ls *.c *.cxx           *.cu *.cpp *.h *.hpp 2> /dev/null`
-EXAMPLESALL = `ls *.c *.cxx *.F *.F90 *.cu *.cpp           2> /dev/null`
-
 CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${${CLANGUAGE}FLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
 CXXLINKER = ${CXX_LINKER} ${CXX_LINKER_FLAGS} ${CXXFLAGS}
@@ -100,7 +87,6 @@ PETSC_MAKE_STOP_ON_ERROR = -
 # Some variables used to build shared libraries
 SHLIBS   = libpetscsys libpetscmat libpetscvec libpetscdm libpetscksp libpetscsnes libpetscts libpetsctao
 #
-# The following include files set customized site, optimization, and version
-# options.
+# The following include file is created when running ./configure
 #
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables

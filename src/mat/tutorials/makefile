@@ -17,4 +17,3 @@ ifneq ($(KOKKOS_LIB),)
 endif
 ex18 : ${ex18objs}
 
-include ${PETSC_DIR}/lib/petsc/conf/test

@@ -23,7 +23,7 @@ checklinks_rule:
 	@echo "Check finished. Report is in $(LINKCHECKDIR)."
 
 checklinks:
-	cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; make checklinks_rule; deactivate
+	cd .. ; ${RM} -rf petsc-doc-env; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; make checklinks_rule; deactivate
 
 clean-classic-docs:
 	./build_classic_docs.py --clean
