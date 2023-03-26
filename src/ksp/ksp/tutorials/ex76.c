@@ -52,6 +52,7 @@ int main(int argc, char **args)
   PetscCall(PetscSNPrintf(name, sizeof(name), "%s/is_%d_%d.dat", dir, rank, size));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, &viewer));
   PetscCall(ISLoad(is, viewer));
+  PetscCall(ISSetBlockSize(is, 2));
   PetscCall(PetscViewerDestroy(&viewer));
   PetscCall(PetscSNPrintf(name, sizeof(name), "%s/Neumann_%d_%d.dat", dir, rank, size));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_READ, &viewer));
