@@ -51,7 +51,7 @@ cdef class Comm:
         self.isdup = 0
         self.base = None
 
-    def duplicate(self: Self) -> Self:
+    def duplicate(self) -> Comm:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef MPI_Comm newcomm = MPI_COMM_NULL
