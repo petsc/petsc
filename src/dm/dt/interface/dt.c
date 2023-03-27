@@ -3329,7 +3329,7 @@ PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coo
 + Np   - The number of domain orientations
 - perm - An array of `IS` permutations, one for ech orientation,
 
-  Level; developer
+  Level: developer
 
 .seealso: `PetscQuadratureSetCellType()`, `PetscQuadrature`
 @*/
