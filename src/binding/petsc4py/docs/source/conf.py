@@ -21,7 +21,7 @@ _today = datetime.datetime.now()
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-package = 'mpi4py'
+package = 'petsc4py'
 
 
 def pkg_version():
@@ -128,6 +128,18 @@ def _setup_numpy_typing():
             npt.__all__.append(attr)
 
 
+def _setup_mpi4py_typing():
+    try:
+        import mpi4py
+    except ImportError:
+        mod = type(sys)('mpi4py')
+        sys.modules[mod.__name__] = mod
+        mod.MPI = type(sys)('mpi4py.MPI')
+        sys.modules[mod.MPI.__name__] = mod.MPI
+        mod.MPI.Intracomm = type('Intracomm', (), {})
+        mod.MPI.Intracomm.__module__ = mod.MPI.__name__
+
+
 def _patch_domain_python():
     try:
         from numpy.typing import __all__ as numpy_types
@@ -177,6 +189,7 @@ def _setup_autodoc(app):
 
 def setup(app):
     _setup_numpy_typing()
+    _setup_mpi4py_typing()
     _patch_domain_python()
     _setup_autodoc(app)
 
