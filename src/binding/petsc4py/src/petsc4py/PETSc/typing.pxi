@@ -15,3 +15,23 @@ cdef Mapping
 cdef PathLike
 
 cdef Scalar
+
+# --- TAO ---
+
+cdef TAOObjectiveFunction
+cdef TAOGradientFunction
+cdef TAOObjectiveGradientFunction
+cdef TAOHessianFunction
+
+cdef TAOUpdateFunction
+
+cdef TAOMonitorFunction
+cdef TAOConvergedFunction
+
+cdef TAOJacobianFunction
+
+cdef TAOResidualFunction
+cdef TAOJacobianResidualFunction
+
+cdef TAOVariableBoundsFunction
+cdef TAOConstraintsFunction
