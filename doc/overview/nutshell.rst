@@ -61,13 +61,13 @@ Model/Discretization Interfaces to Solvers
 
 .. seealso::
 
-   For full feature list and prerequisites see:
+   For full feature list see:
 
    - :ref:`Vector table <doc_vector>`
    - :ref:`Matrix table <doc_matrix>`
    - :ref:`Linear solvers table <doc_linsolve>`
    - :ref:`Nonlinear solvers table <doc_nonlinsolve>`
-   - :ref:`ODE integrators table <sec_ts_basic>`
+   - :ref:`ODE integrators table <integrator_table>`
    - :ref:`Optimizers table <doc_taosolve>`
    - :ref:`Model/discretization interfaces to solvers table <dm_table>`
 

@@ -188,77 +188,7 @@ One can set the solution method with the routine
   Sundials package is installed), or the command line option
 | ``-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials,eimex,arkimex,rosw``.
 
-A list of available methods is given in the following table.
-
-.. list-table:: Time integration schemes
-   :name: tab_TSPET
-   :header-rows: 1
-
-   * - TS Name
-     - Reference
-     - Class
-     - Type
-     - Order
-   * - euler
-     - forward Euler
-     - one-step
-     - explicit
-     - :math:`1`
-   * - ssp
-     - multistage SSP :cite:`Ketcheson_2008`
-     - Runge-Kutta
-     - explicit
-     - :math:`\le 4`
-   * - rk*
-     - multiscale
-     - Runge-Kutta
-     - explicit
-     - :math:`\ge 1`
-   * - beuler
-     - backward Euler
-     - one-step
-     - implicit
-     - :math:`1`
-   * - cn
-     - Crank-Nicolson
-     - one-step
-     - implicit
-     - :math:`2`
-   * - theta*
-     - theta-method
-     - one-step
-     - implicit
-     - :math:`\le 2`
-   * - alpha
-     - alpha-method :cite:`Jansen_2000`
-     - one-step
-     - implicit
-     - :math:`2`
-   * - gl
-     - general linear :cite:`Butcher_2007`
-     - multistep-multistage
-     - implicit
-     - :math:`\le 3`
-   * - eimex
-     - extrapolated IMEX :cite:`Constantinescu_A2010a`
-     - one-step
-     - :math:`\ge 1`, adaptive
-     -
-   * - arkimex
-     - See :any:`tab_IMEX_RK_PETSc`
-     - IMEX Runge-Kutta
-     - IMEX
-     - :math:`1-5`
-   * - rosw
-     - See :any:`tab_IMEX_RosW_PETSc`
-     - Rosenbrock-W
-     - linearly implicit
-     - :math:`1-4`
-   * - glee
-     - See :any:`tab_IMEX_GLEE_PETSc`
-     - GL with global error
-     - explicit and implicit
-     - :math:`1-3`
+A list of available methods is given in :any:`integrator_table`.
 
 Set the initial time with the command
 
