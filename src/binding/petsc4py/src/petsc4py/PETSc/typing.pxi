@@ -13,3 +13,5 @@ cdef Sequence
 cdef Mapping
 
 cdef PathLike
+
+cdef Scalar
