@@ -70,11 +70,11 @@ cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_SUBMINOR .*/#define PETSC_VERSION_SUBMINOR   ${new_version_subminor}/" > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 
-# Update patchlevel in src/binding/petsc4py/src/__init__.py
-/bin/mv src/binding/petsc4py/src/__init__.py src/binding/petsc4py/src/__init__.py.bak
-cat src/binding/petsc4py/src/__init__.py.bak | \
-  sed -e "s/__version__   =.*/__version__   = '${newver}'/" > src/binding/petsc4py/src/__init__.py
-/bin/rm -f src/binding/petsc4py/src/__init__.py.bak
+# Update patchlevel in src/binding/petsc4py/src/petsc4py/__init__.py
+/bin/mv src/binding/petsc4py/src/petsc4py/__init__.py src/binding/petsc4py/src/petsc4py/__init__.py.bak
+cat src/binding/petsc4py/src/petsc4py/__init__.py.bak | \
+  sed -e "s/__version__ =.*/__version__ = '${newver}'/" > src/binding/petsc4py/src/petsc4py/__init__.py
+/bin/rm -f src/binding/petsc4py/src/petsc4py/__init__.py.bak
 
 # Update patchlevel in doc/install/download.rst
 /bin/mv doc/install/download.rst doc/install/download.rst.bak
@@ -83,7 +83,7 @@ cat doc/install/download.rst.bak | \
 /bin/rm -f doc/install/download.rst.bak
 
 # now create a changeset
-git commit -m"Increase patchlevel to ${newver}" include/petscversion.h doc/install/download.rst src/binding/petsc4py/src/__init__.py
+git commit -m"Increase patchlevel to ${newver}" include/petscversion.h doc/install/download.rst src/binding/petsc4py/src/petsc4py/__init__.py
 echo "#########################################################"
 echo "# Created patch for the following change                #"
 echo "#########################################################"
