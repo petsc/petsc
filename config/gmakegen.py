@@ -10,14 +10,14 @@ from collections import defaultdict
 AUTODIRS = set('ftn-auto ftn-custom f90-custom ftn-auto-interfaces'.split()) # Automatically recurse into these, if they exist
 SKIPDIRS = set('benchmarks build mex-scripts tests tutorials'.split())       # Skip these during the build
 
-def pathsplit(path):
+def pathsplit(petsc_dir, path):
     """Recursively split a path, returns a tuple"""
     stem, basename = os.path.split(path)
-    if stem == '':
+    if stem == '' or stem == petsc_dir:
         return (basename,)
-    if stem == path:            # fixed point, likely '/'
-        return (path,)
-    return pathsplit(stem) + (basename,)
+    if stem == path: # fixed point, likely '/'
+        return (None,)
+    return pathsplit(petsc_dir, stem) + (basename,)
 
 def getlangext(name):
     """Returns everything after the first . in the filename, including the ."""
@@ -40,7 +40,7 @@ class Mistakes(object):
         self.log = log
 
     def compareDirLists(self,root, mdirs, dirs):
-        if SKIPDIRS.intersection(pathsplit(root)):
+        if SKIPDIRS.intersection(pathsplit(None, root)):
             return
         smdirs = set(mdirs)
         sdirs  = set(dirs).difference(AUTODIRS)
@@ -180,7 +180,7 @@ class Petsc(object):
         for lang in LANGS:
             pkgsrcs[lang] = []
         for root, dirs, files in os.walk(os.path.join(self.pkg_dir, 'src', pkg)):
-            if SKIPDIRS.intersection(pathsplit(root)): continue
+            if SKIPDIRS.intersection(pathsplit(self.petsc_dir, root)): continue
             dirs.sort()
             files.sort()
             makefile = os.path.join(root,'makefile')
