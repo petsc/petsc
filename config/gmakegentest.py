@@ -181,7 +181,7 @@ class generateExamples(Petsc):
   def getLanguage(self,srcfile):
     """
     Based on the source, determine associated language as found in gmakegen.LANGS
-    Can we just return srcext[1:\] now?
+    Can we just return srcext[1:] now?
     """
     langReq=None
     srcext = getlangext(srcfile)
@@ -291,9 +291,9 @@ class generateExamples(Petsc):
     argStr=re.sub('{{(.*?)}}',"",argStr)
     argStr=re.sub('-'," ",argStr)
     for digit in string.digits: argStr=re.sub(digit," ",argStr)
-    argStr=re.sub("\.","",argStr)
+    argStr=re.sub(r"\.","",argStr)
     argStr=re.sub(",","",argStr)
-    argStr=re.sub('\+',' ',argStr)
+    argStr=re.sub(r'\+',' ',argStr)
     argStr=re.sub(' +',' ',argStr)  # Remove repeated white space
     return argStr.strip()
 

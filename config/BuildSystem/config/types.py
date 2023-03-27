@@ -180,7 +180,7 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
     if self.checkCompile(length):
       buf = self.outputPreprocess(length)
       try:
-        MaxPathLength = re.compile('\nchar petsc_max_path_len\s?\[\s?\] = '+HASHLINESPACE+'\"([0-9]+)\"'+HASHLINESPACE+';').search(buf).group(1)
+        MaxPathLength = re.compile('\n'+r'char petsc_max_path_len\s?\[\s?\] = '+HASHLINESPACE+'\"([0-9]+)\"'+HASHLINESPACE+';').search(buf).group(1)
       except:
         raise RuntimeError('Unable to determine PETSC_MAX_PATH_LEN')
     if MaxPathLength == 'unknown' or not MaxPathLength.isdigit():

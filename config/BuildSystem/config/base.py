@@ -216,7 +216,7 @@ class Configure(script.Script):
   def checkExecutable(self, dir, name):
     prog  = os.path.join(dir, name)
     # also strip any \ before spaces, braces, so that we can specify paths the way we want them in makefiles.
-    prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')')
+    prog  = prog.replace(r'\ ',' ').replace(r'\(','(').replace(r'\)',')')
     found = 0
     self.logWrite('    Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):

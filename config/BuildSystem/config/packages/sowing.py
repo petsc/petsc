@@ -56,7 +56,7 @@ class Configure(config.package.GNUPackage):
     try:
       import re
       (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)
-      ver = re.compile('bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
+      ver = re.compile(r'bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
       foundversion = tuple(map(int,ver.groups()))
       self.foundversion = ".".join(map(str,foundversion))
     except (RuntimeError,AttributeError) as e:

@@ -174,7 +174,7 @@ def get_inverse_dictionary(dataDict,fields,srcdir):
                         invDict[field][val] = [fname]
               else:
                 # Args are funky.  
-                for varset in re.split('(^|\W)-(?=[a-zA-Z])',values):
+                for varset in re.split(r'(^|\W)-(?=[a-zA-Z])',values):
                   val=get_value(varset)
                   if not val: continue
                   if val in invDict[field]:

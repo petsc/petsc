@@ -62,7 +62,7 @@ class Configure(config.package.Package):
       ldflags=''
     ldflags += ' '+self.setCompilers.LDFLAGS
     # SuiteSparse 5.6.0 makefile has a bug in how it treats LDFLAGS (not using the override directive)
-    ldflags+=" -L\$(INSTALL_LIB)"
+    ldflags+=r" -L\$(INSTALL_LIB)"
     self.popLanguage()
 
     # CHOLMOD may build the shared library with CXX

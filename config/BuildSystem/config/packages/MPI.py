@@ -251,7 +251,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
           raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
       # Support for spaces and () in executable names; also needs to handle optional arguments at the end
       # TODO: This support for spaces and () should be moved to core BuildSystem
-      self.mpiexec = self.mpiexec.replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
+      self.mpiexec = self.mpiexec.replace(' ', r'\\ ').replace('(', r'\\(').replace(')', r'\\)').replace(r'\ -',' -')
       if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
         (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
         if out.find('--oversubscribe') >=0:
@@ -727,7 +727,7 @@ Unable to run hostname to check the network')
     if self.checkCompile(mpich_test):
       buf = self.outputPreprocess(mpich_test)
       try:
-        mpich_numversion = re.compile('\nconst char *mpich_ver ='+HASHLINESPACE+'"([\.0-9]+)"'+HASHLINESPACE+';').search(buf).group(1)
+        mpich_numversion = re.compile('\nconst char *mpich_ver ='+HASHLINESPACE+r'"([\.0-9]+)"'+HASHLINESPACE+';').search(buf).group(1)
         self.addDefine('HAVE_'+MPICHPKG+'_VERSION',mpich_numversion)
         MPI_VER  = '  '+MPICHPKG+'_VERSION: '+mpich_numversion
       except:
@@ -788,7 +788,7 @@ Unable to run hostname to check the network')
       msmpi_version = 'unknown'
       self.addDefine('HAVE_MSMPI',1) # flag we have MSMPI since we need to disable broken components
       try:
-        msmpi_version = re.compile('\nchar msmpi_hex\[\] = '+HASHLINESPACE+'\"([a-zA-Z0-9_]*)\"'+HASHLINESPACE+';').search(buf).group(1)
+        msmpi_version = re.compile('\n'+r'char msmpi_hex\[\] = '+HASHLINESPACE+'\"([a-zA-Z0-9_]*)\"'+HASHLINESPACE+';').search(buf).group(1)
         MPI_VER = '  MSMPI_VERSION: '+msmpi_version
         self.addDefine('HAVE_MSMPI_VERSION',msmpi_version)
       except:
