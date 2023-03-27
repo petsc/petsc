@@ -25,6 +25,7 @@ petsc-dist/lib/petsc/conf/petscvariables
 petsc-dist/config/BuildSystem/.hg
 petsc-dist/config/BuildSystem/.hgignore
 petsc-dist/config/BuildSystem/.hgtags
+petsc-dist/systems
 petsc-dist/doc
 petsc-dist/docs/exampleconcepts
 petsc-dist/docs/.doctrees

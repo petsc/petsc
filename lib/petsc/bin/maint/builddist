@@ -124,11 +124,8 @@ cd $PETSC_DIR/src/binding/petsc4py
 
 # Cleanup
 cd $PETSC_DIR
-  make ACTION=clean tree_basic
-  rm -rf docs/doctrees
-cd $PETSC_DIR/doc
-  make clean
-  rm -rf images
+  git clean -q -f -d -x config doc
+  rm -rf docs/doctrees doc/images
 
 # now tar up the PETSc tree
 cd $PETSC_DIR/..
