@@ -30,9 +30,6 @@ foo:
 tree: ${ACTION}
 	-@for dir in `ls -d ${DIRS} | grep -v "\."` ; do (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} tree);  done
 
-foo:
-	-@echo Foo
-
 # Performs the specified action on all source/include directories except tutorial and test
 tree_src: ${ACTION}
 	-@for dir in `ls -d ${DIRS} | grep -v "\."` ;  do \
