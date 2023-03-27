@@ -335,7 +335,7 @@ class PetscConfig:
         ldshared = getenv('LDSHARED', ldshared)
         ldflags = getenv('LDFLAGS', cflags + ' ' + (ldflags or ''))
         ldcmd = split_quoted(ld) + split_quoted(ldflags)
-        ldshared = [flg for flg in split_quoted(ldshared) if flg not in ldcmd]
+        ldshared = [flg for flg in split_quoted(ldshared) if flg not in ldcmd and (flg.find('/lib/spack/env')<0)]
         ldshared = str.join(' ', ldshared)
         #
         def get_flags(cmd):
