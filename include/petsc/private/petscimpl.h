@@ -752,8 +752,6 @@ void PetscCheckSorted(PetscInt, T);
    Level: developer
 
    Notes:
-   The object is always the implicit first argument of the method and is not listed in arg_types or args
-
    This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
@@ -784,8 +782,6 @@ M*/
    Level: developer
 
    Notes:
-   The object is always the implicit first argument of the method and is not listed in arg_types or args
-
    This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
