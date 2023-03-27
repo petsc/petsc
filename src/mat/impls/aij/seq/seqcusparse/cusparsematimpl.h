@@ -199,7 +199,7 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
   cusparseMatDescr_t  descr;
   cusparseOperation_t solveOp;
   CsrMatrix          *csrMat;
-#if PETSC_PKG_CUDA_VERSION_LT(11, 3, 0)
+#if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
   csrsvInfo_t           solveInfo;
   cusparseSolvePolicy_t solvePolicy; /* whether level information is generated and used */
 #endif
@@ -212,7 +212,7 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and any indices used in a reordering */
 struct Mat_SeqAIJCUSPARSETriFactors {
-#if PETSC_PKG_CUDA_VERSION_LT(11, 3, 0)
+#if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
   Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactorPtr;          /* pointer for lower triangular (factored matrix) on GPU */
   Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactorPtr;          /* pointer for upper triangular (factored matrix) on GPU */
   Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactorPtrTranspose; /* pointer for lower triangular (factored matrix) on GPU for the transpose (useful for BiCG) */
@@ -230,7 +230,7 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   PetscBool        init_dev_prop;
 
   PetscBool factorizeOnDevice; /* Do factorization on device or not */
-#if PETSC_PKG_CUDA_VERSION_GE(11, 3, 0)
+#if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
   /* csrilu0/csric0 appeared in cusparse-8.0, but we use it along with cusparseSpSV,
      which first appeared in cusparse-11.5 with cuda-11.3.
   */
