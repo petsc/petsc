@@ -1260,7 +1260,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     IS           cellIS;
     PetscFormKey key;
 
-    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds, NULL));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
@@ -1298,7 +1298,7 @@ PetscErrorCode DMSNESComputeResidual(DM dm, Vec X, Vec F, void *user)
     DMLabel label;
     IS      cellIS;
 
-    PetscCall(DMGetRegionNumDS(dm, s, &label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &label, NULL, &ds, NULL));
     {
       PetscWeakFormKind resmap[2] = {PETSC_WF_F0, PETSC_WF_F1};
       PetscWeakForm     wf;
@@ -1408,7 +1408,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
     DMLabel label;
     IS      cellIS;
 
-    PetscCall(DMGetRegionNumDS(dm, s, &label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &label, NULL, &ds, NULL));
     {
       PetscWeakFormKind jacmap[4] = {PETSC_WF_G0, PETSC_WF_G1, PETSC_WF_G2, PETSC_WF_G3};
       PetscWeakForm     wf;
@@ -1494,7 +1494,7 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, voi
     IS           cellIS;
     PetscFormKey key;
 
-    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds, NULL));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
@@ -1729,7 +1729,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
       const PetscInt *fields;
       PetscInt        dsNf, f;
 
-      PetscCall(DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds));
+      PetscCall(DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds, NULL));
       PetscCall(PetscDSGetNumFields(ds, &dsNf));
       PetscCall(ISGetIndices(fieldIS, &fields));
       for (f = 0; f < dsNf; ++f) {

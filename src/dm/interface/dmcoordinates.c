@@ -228,7 +228,7 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
   if (dm->dim >= 0) {
     PetscCall(DMGetNumDS(dm, &Nds));
     for (n = 0; n < Nds; ++n) {
-      PetscCall(DMGetRegionNumDS(dm, n, NULL, NULL, &ds));
+      PetscCall(DMGetRegionNumDS(dm, n, NULL, NULL, &ds, NULL));
       PetscCall(PetscDSSetCoordinateDimension(ds, dim));
     }
   }

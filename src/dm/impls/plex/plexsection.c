@@ -104,7 +104,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const Petsc
     PetscDS   ds;
     PetscBool isCohesive;
 
-    PetscCall(DMGetRegionNumDS(dm, n, NULL, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, n, NULL, NULL, &ds, NULL));
     PetscCall(PetscDSIsCohesive(ds, &isCohesive));
     if (isCohesive) {
       hasCohesive = PETSC_TRUE;
@@ -481,7 +481,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     PetscDS  dsBC;
     PetscInt numBd, bd;
 
-    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
+    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC, NULL));
     PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
     PetscCheck(Nf || !numBd, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
     for (bd = 0; bd < numBd; ++bd) {
@@ -516,7 +516,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     PetscDS  dsBC;
     PetscInt numBd, bd;
 
-    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
+    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC, NULL));
     PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
     for (bd = 0; bd < numBd; ++bd) {
       DMLabel                 label;

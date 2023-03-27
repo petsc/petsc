@@ -1147,7 +1147,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, fault, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
   PetscCall(VecViewFromOptions(locX, NULL, "-local_solution_view"));
 
-  PetscCall(DMGetCellDS(dm, cMax, &probh));
+  PetscCall(DMGetCellDS(dm, cMax, &probh, NULL));
   PetscCall(PetscDSGetWeakForm(probh, &wf));
   PetscCall(PetscDSGetNumFields(probh, &Nf));
   PetscCall(PetscWeakFormSetIndexBdResidual(wf, material, 1, 0, 0, 0, f0_bd_u, 0, NULL));
@@ -1185,6 +1185,23 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscCall(DMRestoreLocalVector(dm, &locF));
   PetscCall(MatDestroy(&J));
   PetscCall(ISDestroy(&cohesiveCells));
+
+  if (cMax < cEnd) {
+    PetscDS         ds;
+    PetscFE         fe;
+    PetscQuadrature quad;
+    IS             *perm;
+    const PetscInt *cone;
+    PetscInt        Na, a;
+
+    PetscCall(DMPlexGetCone(dm, cMax, &cone));
+    PetscCall(DMGetCellDS(dm, cMax, &ds, NULL));
+    PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *)&fe));
+    PetscCall(PetscFEGetQuadrature(fe, &quad));
+    PetscCall(PetscQuadratureComputePermutations(quad, &Na, &perm));
+    for (a = 0; a < Na; ++a) PetscCall(ISDestroy(&perm[a]));
+    PetscCall(PetscFree(perm));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

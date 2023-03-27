@@ -74,7 +74,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
     const PetscInt *fields;
     PetscInt        num_fields;
 
-    PetscCall(DMGetRegionDS(dm, domain_label, &field_is, &ds));
+    PetscCall(DMGetRegionDS(dm, domain_label, &field_is, &ds, NULL));
     // Translate dm_field to ds_field
     PetscCall(ISGetIndices(field_is, &fields));
     PetscCall(ISGetSize(field_is, &num_fields));
@@ -201,7 +201,7 @@ PetscErrorCode DMPlexGetLocalOffsetsSupport(DM dm, DMLabel domain_label, PetscIn
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMGetRegionDS(dm, domain_label, NULL, &ds));
+  PetscCall(DMGetRegionDS(dm, domain_label, NULL, &ds, NULL));
 
   PetscCall(DMGetPoints_Private(dm, domain_label, label_value, height, &iter_is));
   if (iter_is) {

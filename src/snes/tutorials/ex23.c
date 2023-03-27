@@ -97,12 +97,12 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   const PetscInt id = 1;
 
   PetscFunctionBeginUser;
-  PetscCall(DMGetRegionNumDS(dm, 0, &label, NULL, &ds));
+  PetscCall(DMGetRegionNumDS(dm, 0, &label, NULL, &ds, NULL));
   PetscCall(PetscDSGetWeakForm(ds, &wf));
   PetscCall(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
   PetscCall(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));
   PetscCall(PetscDSSetExactSolution(ds, 0, quad_u, user));
-  PetscCall(DMGetRegionNumDS(dm, 1, &label, NULL, &ds));
+  PetscCall(DMGetRegionNumDS(dm, 1, &label, NULL, &ds, NULL));
   PetscCall(PetscDSGetWeakForm(ds, &wf));
   PetscCall(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
   PetscCall(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));

@@ -1697,12 +1697,12 @@ PetscErrorCode DMPlexTransformCreateDiscLabels(DMPlexTransform tr, DM rdm)
     DMLabel     label, labelNew;
     const char *lname;
 
-    PetscCall(DMGetRegionNumDS(rdm, s, &label, NULL, NULL));
+    PetscCall(DMGetRegionNumDS(rdm, s, &label, NULL, NULL, NULL));
     if (!label) continue;
     PetscCall(PetscObjectGetName((PetscObject)label, &lname));
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, lname, &labelNew));
     PetscCall(RefineLabel_Internal(tr, label, labelNew));
-    PetscCall(DMSetRegionNumDS(rdm, s, labelNew, NULL, NULL));
+    PetscCall(DMSetRegionNumDS(rdm, s, labelNew, NULL, NULL, NULL));
     PetscCall(DMLabelDestroy(&labelNew));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

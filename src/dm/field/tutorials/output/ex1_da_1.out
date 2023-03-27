@@ -1,4 +1,4 @@
-  Quadrature of order 3 on 2 points (dim 1)
+  Quadrature on a segment of order 3 on 2 points (dim 1)
 IS Object: FE Test Cells 1 MPI process
   type: general
 Number of indices in set 2

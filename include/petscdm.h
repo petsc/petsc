@@ -8,6 +8,7 @@
 #include <petscfetypes.h>
 #include <petscdstypes.h>
 #include <petscdmlabel.h>
+#include <petscdt.h>
 
 /* SUBMANSEC = DM */
 
@@ -300,11 +301,11 @@ PETSC_EXTERN PetscErrorCode DMSetBasicAdjacency(DM, PetscBool, PetscBool);
 
 PETSC_EXTERN PetscErrorCode DMGetNumDS(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);
-PETSC_EXTERN PetscErrorCode DMGetCellDS(DM, PetscInt, PetscDS *);
-PETSC_EXTERN PetscErrorCode DMGetRegionDS(DM, DMLabel, IS *, PetscDS *);
-PETSC_EXTERN PetscErrorCode DMSetRegionDS(DM, DMLabel, IS, PetscDS);
-PETSC_EXTERN PetscErrorCode DMGetRegionNumDS(DM, PetscInt, DMLabel *, IS *, PetscDS *);
-PETSC_EXTERN PetscErrorCode DMSetRegionNumDS(DM, PetscInt, DMLabel, IS, PetscDS);
+PETSC_EXTERN PetscErrorCode DMGetCellDS(DM, PetscInt, PetscDS *, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMGetRegionDS(DM, DMLabel, IS *, PetscDS *, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMSetRegionDS(DM, DMLabel, IS, PetscDS, PetscDS);
+PETSC_EXTERN PetscErrorCode DMGetRegionNumDS(DM, PetscInt, DMLabel *, IS *, PetscDS *, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMSetRegionNumDS(DM, PetscInt, DMLabel, IS, PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode DMFindRegionNum(DM, PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMCreateFEDefault(DM, PetscInt, const char[], PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode DMCreateDS(DM);
@@ -1093,5 +1094,7 @@ PETSC_EXTERN PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType, con
 PETSC_EXTERN PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType, const PetscInt[], const PetscInt[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType, const PetscInt[], const PetscInt[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPolytopeInCellTest(DMPolytopeType, const PetscReal[], PetscBool *);
+
+PETSC_EXTERN PetscErrorCode PetscDTComputeFaceQuadPermutation(DMPolytopeType, PetscQuadrature, PetscInt *, IS *[]);
 
 #endif

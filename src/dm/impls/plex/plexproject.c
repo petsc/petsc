@@ -493,7 +493,7 @@ PetscErrorCode DMGetFirstLabeledPoint(DM dm, DM odm, DMLabel label, PetscInt num
         PetscCall(DMGetEnclosurePoint(dm, odm, enc, points[i], &point));
         if (pStart <= point && point < pEnd) {
           ls = point;
-          if (ds) PetscCall(DMGetCellDS(dm, ls, ds));
+          if (ds) PetscCall(DMGetCellDS(dm, ls, ds, NULL));
         }
       }
       PetscCall(ISRestoreIndices(labelIS, &points));
@@ -646,7 +646,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   PetscCall(PetscDSGetNumFields(dsIn, &NfIn));
   PetscCall(DMGetNumFields(dm, &NfTot));
   PetscCall(DMFindRegionNum(dm, ds, &regionNum));
-  PetscCall(DMGetRegionNumDS(dm, regionNum, NULL, &fieldIS, NULL));
+  PetscCall(DMGetRegionNumDS(dm, regionNum, NULL, &fieldIS, NULL, NULL));
   PetscCall(PetscDSIsCohesive(ds, &isCohesive));
   PetscCall(DMGetCoordinateDim(dm, &dimEmbed));
   PetscCall(DMGetLocalSection(dm, &section));

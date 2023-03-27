@@ -1483,7 +1483,8 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS ds, PetscWeakForm wf, PetscFor
   Not Collective
 
   Input Parameters:
-+ prob         - The `PetscDS` specifying the discretizations and continuum functions
++ ds           - The `PetscDS` specifying the discretizations and continuum functions
+. dsIn         - The `PetscDS` specifying the discretizations and continuum functions for input
 . key          - The (label+value, field) being integrated
 . s            - The side of the cell being integrated, 0 for negative and 1 for positive
 . Ne           - The number of elements in the chunk
@@ -1501,14 +1502,15 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS ds, PetscWeakForm wf, PetscFor
 
 .seealso: `PetscFEIntegrateResidual()`
 @*/
-PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS prob, PetscFormKey key, PetscInt s, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
+PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS ds, PetscDS dsIn, PetscFormKey key, PetscInt s, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   PetscFE fe;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscCall(PetscDSGetDiscretization(prob, key.field, (PetscObject *)&fe));
-  if (fe->ops->integratehybridresidual) PetscCall((*fe->ops->integratehybridresidual)(prob, key, s, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec));
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(dsIn, PETSCDS_CLASSID, 2);
+  PetscCall(PetscDSGetDiscretization(ds, key.field, (PetscObject *)&fe));
+  if (fe->ops->integratehybridresidual) PetscCall((*fe->ops->integratehybridresidual)(ds, dsIn, key, s, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1619,7 +1621,8 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFor
   Not Collective
 
   Input Parameters:
-+ ds           - The `PetscDS` specifying the discretizations and continuum functions
++ ds           - The `PetscDS` specifying the discretizations and continuum functions for the output
+. dsIn         - The `PetscDS` specifying the discretizations and continuum functions for the input
 . jtype        - The type of matrix pointwise functions that should be used
 . key          - The (label+value, fieldI*Nf + fieldJ) being integrated
 . s            - The side of the cell being integrated, 0 for negative and 1 for positive
@@ -1633,7 +1636,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFor
 - u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
   Output Parameter
-. elemMat              - the element matrices for the Jacobian from each element
+. elemMat      - the element matrices for the Jacobian from each element
 
   Level: developer
 
@@ -1651,7 +1654,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFor
 
 .seealso: `PetscFEIntegrateJacobian()`, `PetscFEIntegrateResidual()`
 @*/
-PetscErrorCode PetscFEIntegrateHybridJacobian(PetscDS ds, PetscFEJacobianType jtype, PetscFormKey key, PetscInt s, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
+PetscErrorCode PetscFEIntegrateHybridJacobian(PetscDS ds, PetscDS dsIn, PetscFEJacobianType jtype, PetscFormKey key, PetscInt s, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   PetscFE  fe;
   PetscInt Nf;
@@ -1660,7 +1663,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian(PetscDS ds, PetscFEJacobianType jt
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetDiscretization(ds, key.field / Nf, (PetscObject *)&fe));
-  if (fe->ops->integratehybridjacobian) PetscCall((*fe->ops->integratehybridjacobian)(ds, jtype, key, s, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat));
+  if (fe->ops->integratehybridjacobian) PetscCall((*fe->ops->integratehybridjacobian)(ds, dsIn, jtype, key, s, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1837,44 +1840,6 @@ static PetscErrorCode PetscFESetDefaultName_Private(PetscFE fe)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscFECreateDefaultQuadrature_Private(PetscInt dim, DMPolytopeType ct, PetscInt qorder, PetscQuadrature *q, PetscQuadrature *fq)
-{
-  const PetscInt quadPointsPerEdge = PetscMax(qorder + 1, 1);
-
-  PetscFunctionBegin;
-  switch (ct) {
-  case DM_POLYTOPE_SEGMENT:
-  case DM_POLYTOPE_POINT_PRISM_TENSOR:
-  case DM_POLYTOPE_QUADRILATERAL:
-  case DM_POLYTOPE_SEG_PRISM_TENSOR:
-  case DM_POLYTOPE_HEXAHEDRON:
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-    PetscCall(PetscDTGaussTensorQuadrature(dim, 1, quadPointsPerEdge, -1.0, 1.0, q));
-    PetscCall(PetscDTGaussTensorQuadrature(dim - 1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
-    break;
-  case DM_POLYTOPE_TRIANGLE:
-  case DM_POLYTOPE_TETRAHEDRON:
-    PetscCall(PetscDTSimplexQuadrature(dim, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, q));
-    PetscCall(PetscDTSimplexQuadrature(dim - 1, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, fq));
-    break;
-  case DM_POLYTOPE_TRI_PRISM:
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: {
-    PetscQuadrature q1, q2;
-
-    // TODO: this should be able to use symmetric rules, but doing so causes tests to fail
-    PetscCall(PetscDTSimplexQuadrature(2, 2 * qorder, PETSCDTSIMPLEXQUAD_CONIC, &q1));
-    PetscCall(PetscDTGaussTensorQuadrature(1, 1, quadPointsPerEdge, -1.0, 1.0, &q2));
-    PetscCall(PetscDTTensorQuadratureCreate(q1, q2, q));
-    PetscCall(PetscQuadratureDestroy(&q2));
-    *fq = q1;
-    /* TODO Need separate quadratures for each face */
-  } break;
-  default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No quadrature for celltype %s", DMPolytopeTypes[PetscMin(ct, DM_POLYTOPE_UNKNOWN)]);
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   PetscFECreateFromSpaces - Create a `PetscFE` from the basis and dual spaces
 
@@ -2002,7 +1967,7 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
     PetscCall(PetscOptionsBoundedInt("-petscfe_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "PetscFECreateDefault", qorder, &qorder, NULL, 0));
     PetscOptionsEnd();
   }
-  PetscCall(PetscFECreateDefaultQuadrature_Private(dim, ct, qorder, &q, &fq));
+  PetscCall(PetscDTCreateDefaultQuadrature(ct, qorder, &q, &fq));
   /* Create finite element */
   PetscCall(PetscFECreateFromSpaces(P, Q, q, fq, fem));
   if (setFromOptions) PetscCall(PetscFESetFromOptions(*fem));
@@ -2216,54 +2181,62 @@ PetscErrorCode PetscFEEvaluateFieldJets_Internal(PetscDS ds, PetscInt Nf, PetscI
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf, PetscInt r, PetscInt q, PetscTabulation T[], PetscFEGeom *fegeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
+PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf, PetscInt rc, PetscInt qc, PetscTabulation Tab[], const PetscInt rf[], const PetscInt qf[], PetscTabulation Tabf[], PetscFEGeom *fegeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
 {
   PetscInt dOffset = 0, fOffset = 0, f, g;
 
   /* f is the field number in the DS, g is the field number in u[] */
   for (f = 0, g = 0; f < Nf; ++f) {
-    PetscFE          fe  = (PetscFE)ds->disc[f];
-    const PetscInt   dEt = T[f]->cdim;
-    const PetscInt   dE  = fegeom->dimEmbed;
-    const PetscInt   Nq  = T[f]->Np;
-    const PetscInt   Nbf = T[f]->Nb;
-    const PetscInt   Ncf = T[f]->Nc;
-    const PetscReal *Bq  = &T[f]->T[0][(r * Nq + q) * Nbf * Ncf];
-    const PetscReal *Dq  = &T[f]->T[1][(r * Nq + q) * Nbf * Ncf * dEt];
-    PetscBool        isCohesive;
-    PetscInt         Ns, s;
+    PetscBool isCohesive;
+    PetscInt  Ns, s;
 
-    if (!T[f]) continue;
+    if (!Tab[f]) continue;
     PetscCall(PetscDSGetCohesive(ds, f, &isCohesive));
     Ns = isCohesive ? 1 : 2;
-    for (s = 0; s < Ns; ++s, ++g) {
-      PetscInt b, c, d;
+    {
+      PetscTabulation T   = isCohesive ? Tab[f] : Tabf[f];
+      PetscFE         fe  = (PetscFE)ds->disc[f];
+      const PetscInt  dEt = T->cdim;
+      const PetscInt  dE  = fegeom->dimEmbed;
+      const PetscInt  Nq  = T->Np;
+      const PetscInt  Nbf = T->Nb;
+      const PetscInt  Ncf = T->Nc;
 
-      for (c = 0; c < Ncf; ++c) u[fOffset + c] = 0.0;
-      for (d = 0; d < dE * Ncf; ++d) u_x[fOffset * dE + d] = 0.0;
-      for (b = 0; b < Nbf; ++b) {
-        for (c = 0; c < Ncf; ++c) {
-          const PetscInt cidx = b * Ncf + c;
+      for (s = 0; s < Ns; ++s, ++g) {
+        const PetscInt   r  = isCohesive ? rc : rf[s];
+        const PetscInt   q  = isCohesive ? qc : qf[s];
+        const PetscReal *Bq = &T->T[0][(r * Nq + q) * Nbf * Ncf];
+        const PetscReal *Dq = &T->T[1][(r * Nq + q) * Nbf * Ncf * dEt];
+        PetscInt         b, c, d;
 
-          u[fOffset + c] += Bq[cidx] * coefficients[dOffset + b];
-          for (d = 0; d < dEt; ++d) u_x[(fOffset + c) * dE + d] += Dq[cidx * dEt + d] * coefficients[dOffset + b];
-        }
-      }
-      PetscCall(PetscFEPushforward(fe, fegeom, 1, &u[fOffset]));
-      PetscCall(PetscFEPushforwardGradient(fe, fegeom, 1, &u_x[fOffset * dE]));
-      if (u_t) {
-        for (c = 0; c < Ncf; ++c) u_t[fOffset + c] = 0.0;
+        PetscCheck(r < T->Nr, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT " Side %" PetscInt_FMT " Replica number %" PetscInt_FMT " should be in [0, %" PetscInt_FMT ")", f, s, r, T->Nr);
+        PetscCheck(q < T->Np, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT " Side %" PetscInt_FMT " Point number %" PetscInt_FMT " should be in [0, %" PetscInt_FMT ")", f, s, q, T->Np);
+        for (c = 0; c < Ncf; ++c) u[fOffset + c] = 0.0;
+        for (d = 0; d < dE * Ncf; ++d) u_x[fOffset * dE + d] = 0.0;
         for (b = 0; b < Nbf; ++b) {
           for (c = 0; c < Ncf; ++c) {
             const PetscInt cidx = b * Ncf + c;
 
-            u_t[fOffset + c] += Bq[cidx] * coefficients_t[dOffset + b];
+            u[fOffset + c] += Bq[cidx] * coefficients[dOffset + b];
+            for (d = 0; d < dEt; ++d) u_x[(fOffset + c) * dE + d] += Dq[cidx * dEt + d] * coefficients[dOffset + b];
           }
         }
-        PetscCall(PetscFEPushforward(fe, fegeom, 1, &u_t[fOffset]));
+        PetscCall(PetscFEPushforward(fe, fegeom, 1, &u[fOffset]));
+        PetscCall(PetscFEPushforwardGradient(fe, fegeom, 1, &u_x[fOffset * dE]));
+        if (u_t) {
+          for (c = 0; c < Ncf; ++c) u_t[fOffset + c] = 0.0;
+          for (b = 0; b < Nbf; ++b) {
+            for (c = 0; c < Ncf; ++c) {
+              const PetscInt cidx = b * Ncf + c;
+
+              u_t[fOffset + c] += Bq[cidx] * coefficients_t[dOffset + b];
+            }
+          }
+          PetscCall(PetscFEPushforward(fe, fegeom, 1, &u_t[fOffset]));
+        }
+        fOffset += Ncf;
+        dOffset += Nbf;
       }
-      fOffset += Ncf;
-      dOffset += Nbf;
     }
   }
   return PETSC_SUCCESS;

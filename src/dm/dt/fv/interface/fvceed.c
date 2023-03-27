@@ -20,9 +20,9 @@ PetscErrorCode PetscFVSetCeed(PetscFV fv, Ceed ceed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
-  if (fv->ceed == ceed) PetscFunctionReturn(0);
+  if (fv->ceed == ceed) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallCEED(CeedReferenceCopy(ceed, &fv->ceed));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -59,7 +59,7 @@ PetscErrorCode PetscFVGetCeedBasis(PetscFV fv, CeedBasis *basis)
     PetscCallCEED(CeedBasisCreateTensorH1Lagrange(fv->ceed, dim, Nc, 1, (ord + 1) / 2, CEED_GAUSS, &fv->ceedBasis));
   }
   *basis = fv->ceedBasis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

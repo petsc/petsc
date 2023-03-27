@@ -30,7 +30,7 @@ This divides the computational domain into subdomains, called *regions* in PETSc
 
 .. code-block::
 
-  DMGetCellDS(dm, cell, &ds);
+  DMGetCellDS(dm, cell, &ds, NULL);
 
 Each `PetscDS`` object has a set of fields, each with a ``PetscFE`` discretization. This allows it to calculate the size of the local discrete approximation, as well as allocate scratch space for all the associated computations. The final thing needed is specify the actual equations to be enforced on each region. The ``PetscDS`` contains a ``PetscWeakForm`` object that holds callback function pointers that define the equations. A simplified, top-level interface through ``PetscDS`` allows users to quickly define problems for a single region. For example, in `SNES Tutorial ex13 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex13.c.html>`__, we define the Poisson problem using
 
@@ -100,12 +100,12 @@ In `SNES Tutorial ex23 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex23.c
 
 .. code-block::
 
-  DMGetRegionNumDS(dm, 0, &label, NULL, &ds);
+  DMGetRegionNumDS(dm, 0, &label, NULL, &ds, NULL);
   PetscDSGetWeakForm(ds, &wf);
   PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u);
   PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
   PetscDSSetExactSolution(ds, 0, quad_u, user);
-  DMGetRegionNumDS(dm, 1, &label, NULL, &ds);
+  DMGetRegionNumDS(dm, 1, &label, NULL, &ds, NULL);
   PetscDSGetWeakForm(ds, &wf);
   PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u);
   PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);

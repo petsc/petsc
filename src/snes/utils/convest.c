@@ -163,7 +163,7 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
     const PetscInt *fields;
     PetscInt        dsNf;
 
-    PetscCall(DMGetRegionNumDS(ce->idm, s, &label, &fieldIS, &ds));
+    PetscCall(DMGetRegionNumDS(ce->idm, s, &label, &fieldIS, &ds, NULL));
     PetscCall(PetscDSGetNumFields(ds, &dsNf));
     if (fieldIS) PetscCall(ISGetIndices(fieldIS, &fields));
     for (f = 0; f < dsNf; ++f) {

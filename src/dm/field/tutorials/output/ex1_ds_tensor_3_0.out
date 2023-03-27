@@ -1,4 +1,4 @@
-  Quadrature of order 3 on 8 points (dim 3)
+  Quadrature on a hexahedron of order 3 on 8 points (dim 3)
 IS Object: FE Test Cells 1 MPI process
   type: general
 Number of indices in set 2

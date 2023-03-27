@@ -5,6 +5,8 @@
 #define PETSCDT_H
 
 #include <petscsys.h>
+#include <petscdmtypes.h>
+#include <petscistypes.h>
 
 /* SUBMANSEC = DT */
 
@@ -92,6 +94,8 @@ PETSC_EXTERN const char *const *const PetscDTSimplexQuadratureTypes;
 
 PETSC_EXTERN PetscErrorCode PetscQuadratureCreate(MPI_Comm, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscQuadratureGetCellType(PetscQuadrature, DMPolytopeType *);
+PETSC_EXTERN PetscErrorCode PetscQuadratureSetCellType(PetscQuadrature, DMPolytopeType);
 PETSC_EXTERN PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature, PetscInt *);
@@ -104,6 +108,7 @@ PETSC_EXTERN PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature, PetscQuadrature, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature, PetscInt *, IS *[]);
 
 PETSC_EXTERN PetscErrorCode PetscQuadraturePushForward(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, PetscQuadrature *);
 
@@ -122,6 +127,7 @@ PETSC_EXTERN PetscErrorCode PetscDTReconstructPoly(PetscInt, PetscInt, const Pet
 PETSC_EXTERN PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTSimplexQuadrature(PetscInt, PetscInt, PetscDTSimplexQuadratureType, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType, PetscInt, PetscQuadrature *, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
