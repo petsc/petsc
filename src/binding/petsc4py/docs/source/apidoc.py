@@ -91,7 +91,10 @@ def signature(obj):
 def docstring(obj):
     doc = obj.__doc__
     doc = doc or '' # FIXME
-    doc = doc.partition('\n')[2]
+    if is_class(obj):
+        doc = doc.strip()
+    else:
+        doc = doc.partition('\n')[2]
     summary, _, docbody = doc.partition('\n')
     summary = summary.strip()
     docbody = textwrap.dedent(docbody).strip()
