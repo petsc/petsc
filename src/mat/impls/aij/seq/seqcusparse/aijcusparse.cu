@@ -4224,6 +4224,8 @@ PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p 
 #if PETSC_PKG_CUDA_VERSION_GE(11, 3, 0)
     PetscCallCUDA(cudaFree(fs->csrRowPtr));
     PetscCallCUDA(cudaFree(fs->csrColIdx));
+    PetscCallCUDA(cudaFree(fs->csrRowPtr32));
+    PetscCallCUDA(cudaFree(fs->csrColIdx32));
     PetscCallCUDA(cudaFree(fs->csrVal));
     PetscCallCUDA(cudaFree(fs->diag));
     PetscCallCUDA(cudaFree(fs->X));
