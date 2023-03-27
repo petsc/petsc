@@ -94,7 +94,7 @@ intersphinx_mapping = {
     'mpi4py': ('https://mpi4py.readthedocs.io/en/stable/', None),
     'pyopencl': ('https://documen.tician.de/pyopencl/', None),
     'dlpack': ('https://dmlc.github.io/dlpack/latest/', None),
-    'petsc': ('https://petsc.org/release/', None),
+    'petsc': ('https://petsc.org/main/', None),
 }
 
 napoleon_preprocess_types = True
