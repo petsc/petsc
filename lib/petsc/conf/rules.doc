@@ -109,7 +109,7 @@ manexamples:
 html:
 	-@export htmlmap_tmp=$$(mktemp) ;\
           petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
-          sed -e s?man+manualpages/?man+ROOT/manualpages/? ${LOC}/manualpages/htmlmap > $$htmlmap_tmp ;\
+          sed -e s?man+manualpages/?man+ROOT/manualpages/? ${HTMLMAP} > $$htmlmap_tmp ;\
           cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo $${LOCDIR} | sed -e s?/[-a-z_0-9]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \

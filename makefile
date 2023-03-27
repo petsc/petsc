@@ -582,9 +582,9 @@ alldoc_pre: chk_loc allmanpages allmanexamples
 # Run after alldoc_pre to build html sources
 alldoc_post: chk_loc  chk_c2html
 	-@if command -v parallel &> /dev/null; then \
-           ls include/makefile src/*/makefile | xargs dirname | parallel -j ${MAKE_TEST_NP} --load ${MAKE_LOAD} 'cd {}; ${OMAKE_SELF} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree' ; \
+           ls include/makefile src/*/makefile | xargs dirname | parallel -j ${MAKE_TEST_NP} --load ${MAKE_LOAD} 'cd {}; ${OMAKE_SELF} HTMLMAP=${HTMLMAP} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree' ; \
          else \
-           ${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} tree LOC=${LOC}; \
+           ${OMAKE_SELF} HTMLMAP=${HTMLMAP} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree; \
         fi
 
 alldocclean: deletemanualpages allcleanhtml

@@ -89,7 +89,7 @@ class PETScHTMLTranslatorMixin:
     def _get_manpage_map(self) -> Dict[str,str]:
         """ Return the manpage strings to link, as a dict.  """
         if not self._manpage_map:
-            htmlmap_filename = os.path.join('_build_classic', 'manualpages', 'htmlmap')
+            htmlmap_filename = os.path.join('manualpages', 'htmlmap')
             if not os.path.isfile(htmlmap_filename):
                 raise Exception("Expected file %s not found. Run script to build classic docs subset." %  htmlmap_filename)
             manpage_map_raw = htmlmap_to_dict(htmlmap_filename)
