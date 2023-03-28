@@ -60,10 +60,10 @@ website:
 		&& deactivate
 
 .PHONY: docs docs-html docs-pdf docs-misc
-docs: build docs-html docs-pdf docs-misc
-docs-html: sphinx-html
-docs-pdf:  sphinx-pdf
-docs-misc: sphinx-man sphinx-info
+docs: docs-html docs-pdf docs-misc
+docs-html: build sphinx-html
+docs-pdf: build sphinx-pdf
+docs-misc: build sphinx-man sphinx-info
 
 RST2HTML = $(shell command -v rst2html || command -v rst2html.py || false)
 RST2HTMLOPTS  = --input-encoding=utf-8
@@ -102,11 +102,11 @@ sphinx-info:
 	${MAKE} -C build/texinfo info > /dev/null
 	mv build/texinfo/*.info docs/
 
-.PHONY: docsclean
-docsclean:
+.PHONY: docs-clean
+docs-clean:
 	-${RM} docs/*.info docs/*.[137]
 	-${RM} docs/*.html docs/*.pdf
-	-${RM} -r docs/usrman docs/apiref
+	-${RM} -r docs/usrman docs/apiref docs/source/reference
 
 # ----
 
