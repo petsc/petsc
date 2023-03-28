@@ -5,7 +5,7 @@ jobs:
   build:
     name: "Build Firedrake"
     # The type of runner that the job will run on
-    runs-on: firedrakeproject/firedrake-env:latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
