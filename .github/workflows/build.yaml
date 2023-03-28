@@ -11,9 +11,17 @@ jobs:
       - uses: actions/checkout@v3
       - name: install mpich
         run: sudo apt install -y mpich libmpich-dev
+      - name: set PETSc env vars
+        run: |
+          echo "PETSC_DIR=$PWD" >> $GITHUB_ENV
+        run:
+          echo "PETSC_ARCH=arch-default" >> $GITHUB_ENV
       - name: configure
         run: ./configure
-
+      - name: make
+        run: make
+      - name: build petsc4py
+        run: python3 -m pip install -e src/binding/petsc4py[doc]
 
 
 
