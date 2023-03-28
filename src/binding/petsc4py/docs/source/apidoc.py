@@ -397,6 +397,24 @@ from __future__ import annotations
 from numpy import dtype, ndarray
 import numpy
 
+from typing import (
+    Any,
+    Self,
+    Union,
+    Literal,
+    Optional,
+    NoReturn,
+    Final,
+)
+from typing import (
+    Callable,
+    Hashable,
+    Iterable,
+    Iterator,
+    Sequence,
+    Mapping,
+)
+
 IntType: dtype = ...
 RealType: dtype =  ...
 ComplexType: dtype = ...
@@ -436,23 +454,7 @@ OVERRIDE = {
 }
 
 TYPING = """
-from typing import (
-    Any,
-    Self,
-    Union,
-    Literal,
-    Optional,
-    NoReturn,
-    Final,
-)
-from typing import (
-    Callable,
-    Hashable,
-    Iterable,
-    Iterator,
-    Sequence,
-    Mapping,
-)
+from .typing import *
 """
 
 
