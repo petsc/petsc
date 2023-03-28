@@ -18,13 +18,7 @@ order of version numbers. (Note: One can determine the release number
 of any current PETSc installation by looking in the file
 include/petscversion.h) Many of the interface changes can be handled
 quickly and easily by using global replacement via your favorite text
-editor. See the file
-:doc:`/miscellaneous/codemanagement` for
-some tips that we find helpful in keeping our own code up to date and
-that should be generally useful for effective code management.
-
-Releases of PETSc
------------------
+editor.
 
 .. toctree::
   :maxdepth: 1
