@@ -15,6 +15,8 @@ import typing
 import datetime
 import importlib
 import sphobjinv
+import functools
+from sphinx.ext.napoleon.docstring import NumpyDocstring
 
 sys.path.insert(0, os.path.abspath('.'))
 _today = datetime.datetime.now()
@@ -216,6 +218,26 @@ def _setup_autodoc(app):
 
     app.add_autodocumenter(ClassDocumenter, override=True)
     app.add_autodocumenter(ExceptionDocumenter, override=True)
+
+
+def _monkey_patch_see_also():
+    """Rewrite the role of names in "see also" sections.
+
+    Napoleon uses :obj: for all names found in "see also" sections but we
+    need :all: so that references to labels work."""
+
+    _parse_numpydoc_see_also_section = \
+        NumpyDocstring._parse_numpydoc_see_also_section
+
+    @functools.wraps(NumpyDocstring._parse_numpydoc_see_also_section)
+    def wrapper(*args, **kwargs):
+        out = _parse_numpydoc_see_also_section(*args, **kwargs)
+        return [line.replace(":obj:", ":any:") for line in out]
+
+    NumpyDocstring._parse_numpydoc_see_also_section = wrapper
+
+
+_monkey_patch_see_also()
 
 
 def setup(app):

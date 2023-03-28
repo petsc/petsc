@@ -42,6 +42,7 @@ PETSc for Python
 
    overview
    tutorial
+   petsc_options
    reference
    citing
    install
