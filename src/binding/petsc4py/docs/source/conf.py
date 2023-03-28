@@ -98,9 +98,9 @@ def _mangle_petsc_intersphinx():
 
         manualpages/Vec/VecShift
 
-    instead of just:
+    instead of:
 
-        VecShift
+        petsc.VecShift
 
     This function downloads their object inventory and strips the leading path
     elements so that references to PETSc names actually resolve."""
