@@ -10,17 +10,23 @@ jobs:
       image: firedrakeproject/firedrake-env:latest
 
     steps:
+      - uses: mpi4py/setup-mpi@v1
       - uses: actions/checkout@v3
       - name: set PETSc env vars
         run: |
           echo "PETSC_DIR=$PWD" >> $GITHUB_ENV
           echo "PETSC_ARCH=arch-default" >> $GITHUB_ENV
       - name: configure
-        run: ./configure --download-mpich
+        run: ./configure
       - name: make
         run: make
       - name: build petsc4py
-        run: python3 -m pip install -e src/binding/petsc4py[doc]
-
+        run: python3 -m pip install src/binding/petsc4py[doc]
+        env: 
+          CFLAGS: "-O0"
+      - name: build docs
+        run: |
+          cd src/binding/petsc4py/docs/source
+          make html
 
 
