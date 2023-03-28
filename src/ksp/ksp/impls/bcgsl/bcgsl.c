@@ -402,7 +402,7 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 +  ksp - iterative context of type `KSPCBGSL`
 -  ell - number of search directions
 
-   Options Database Keys:
+   Options Database Key:
 .  -ksp_bcgsl_ell ell - Number of Krylov search directions
 
    Level: intermediate

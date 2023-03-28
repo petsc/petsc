@@ -85,7 +85,8 @@ PetscErrorCode PetscDrawInitializePackage(void)
 
    Input Parameters:
 +  draw - the window
--  w,h - the new width and height of the window
+.  w - the new width of the window
+-  h - the new height of the window
 
    Level: intermediate
 

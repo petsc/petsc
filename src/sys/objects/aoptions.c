@@ -626,10 +626,12 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
 .  man - manual page with additional information on option
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsEnum(..., obj->value,&object->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsEnum(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsEnum(..., obj->value,&object->value,...) or
+                 value = defaultvalue
+                 PetscOptionsEnum(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the  value to return
@@ -771,6 +773,8 @@ or
 +  value - the integer value to return
 -  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
+   Level: beginner
+
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
     you should ALWAYS initialize value if you access it without first checking if the set flag is true.
@@ -778,8 +782,6 @@ or
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsRangeInt()`
@@ -804,16 +806,20 @@ M*/
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsInt(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsInt(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsInt(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsInt(..., value,&value,&flg);
+                 if (flg) {
+.ve
 .  lb - the lower bound, provided value must be greater than or equal to this value or an error is generated
 -  ub - the upper bound, provided value must be less than or equal to this value or an error is generated
 
    Output Parameters:
 +  value - the integer value to return
 -  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+   Level: beginner
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -822,8 +828,6 @@ $                 if (flg) {
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsBoundedInt()`
@@ -848,10 +852,12 @@ M*/
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsInt(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsInt(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsInt(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsInt(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the integer value to return
@@ -976,10 +982,12 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsReal(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsReal(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsReal(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsReal(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the value to return
@@ -1038,10 +1046,12 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsScalar(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsScalar(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsScalar(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsScalar(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the value to return
@@ -1142,8 +1152,10 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
 .  man - manual page with additional information on option
 .  list - the possible choices
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
-$                 PetscOptionsFlist(..., obj->value,value,len,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsFlist(..., obj->value,value,len,&flg);
+                 if (flg) {
+.ve
 -  len - the length of the character array value
 
    Output Parameters:
@@ -1212,8 +1224,9 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
 .  list - the possible choices (one of these must be selected, anything else is invalid)
 .  ntext - number of choices
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
-$                 PetscOptionsEList(..., obj->value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsEList(..., obj->value,&value,&flg);
+.ve                 if (flg) {
 
    Output Parameters:
 +  value - the index of the value to return

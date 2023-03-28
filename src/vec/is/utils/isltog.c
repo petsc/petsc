@@ -545,7 +545,7 @@ PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping
 
     Not Collective
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - mapping data structure
 
     Output Parameter:
@@ -630,7 +630,7 @@ PetscFunctionList ISLocalToGlobalMappingList = NULL;
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mapping - mapping data structure
 
    Options Database Key:
@@ -664,7 +664,7 @@ PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mappi
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mapping - mapping data structure
 
    Level: advanced
@@ -900,7 +900,7 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlo
            `IS_GTOLM_DROP` - drops the indices with no local value from the output list
 -   is - index set in global numbering
 
-    Output Parameters:
+    Output Parameter:
 .   newis - index set in local numbering
 
     Level: advanced
@@ -1655,7 +1655,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping mapp
     Input Parameter:
 .   A - the matrix
 
-    Output Parameters:
+    Output Parameter:
 .   array - array of indices, the length of this array may be obtained with `ISLocalToGlobalMappingGetSize()`
 
     Level: advanced
@@ -1900,7 +1900,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
 
    Input Parameters:
 +  sname - name of a new method
--  routine_create - routine to create method context
+-  function - routine to create method context
 
    Sample usage:
 .vb

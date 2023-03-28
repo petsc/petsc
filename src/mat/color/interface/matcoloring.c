@@ -40,7 +40,7 @@ PetscErrorCode MatColoringRegister(const char sname[], PetscErrorCode (*function
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI communicator
 
    Output Parameter:
@@ -342,7 +342,7 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc, PetscInt *maxcolors)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mc - the `MatColoring` context
 
    Output Parameter:

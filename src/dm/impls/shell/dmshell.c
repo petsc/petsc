@@ -239,7 +239,8 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
    Collective
 
    Input Parameters:
-.  ctx - the context
++  dm - the `DM` to attach the `destroyctx()` function to
+-  destroyctx - the function that destroys the context
 
    Level: advanced
 
@@ -323,7 +324,7 @@ PetscErrorCode DMShellGetContext(DM dm, void *ctx)
 
    Level: advanced
 
-   Developer Notes:
+   Developer Note:
     To avoid circular references, if `J` is already associated to the same `DM`, then `MatDuplicate`(`SHARE_NONZERO_PATTERN`) is called, followed by removing the `DM` reference from the private template.
 
 .seealso: `DM`, `DMSHELL`, `DMCreateMatrix()`, `DMShellSetCreateMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
@@ -1147,7 +1148,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
     Input Parameter:
 .   comm - the processors that will share the global vector
 
-    Output Parameters:
+    Output Parameter:
 .   shell - the `DMSHELL`
 
     Level: advanced

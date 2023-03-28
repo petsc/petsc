@@ -340,10 +340,10 @@ PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
   DMPlexGetMaxProjectionHeight - Get the maximum height (w.r.t. DAG) of mesh points used to evaluate dual bases in
   DMPlexProjectXXXLocal() functions.
 
-  Input Parameters:
+  Input Parameter:
 . dm - the `DMPLEX` object
 
-  Output Parameters:
+  Output Parameter:
 . height - the maximum projection height
 
   Level: intermediate
@@ -670,7 +670,7 @@ static PetscErrorCode DMPlexBasisTransform_Internal(DM dm, Vec lv, PetscBool l2g
 + dm - The `DM`
 - lv - A local vector with values in the global basis
 
-  Output Parameters:
+  Output Parameter:
 . lv - A local vector with values in the local basis
 
   Level: developer
@@ -696,7 +696,7 @@ PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
 + dm - The `DM`
 - lv - A local vector with values in the local basis
 
-  Output Parameters:
+  Output Parameter:
 . lv - A local vector with values in the global basis
 
   Level: developer
@@ -1136,7 +1136,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
 . cellGeomFVM - Cell geometry data for FV discretizations
 - gradFVM - Gradient reconstruction data for FV discretizations
 
-  Output Parameters:
+  Output Parameter:
 . locX - Solution updated with boundary values
 
   Level: intermediate
@@ -1166,7 +1166,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
 . cellGeomFVM - Cell geometry data for FV discretizations
 - gradFVM - Gradient reconstruction data for FV discretizations
 
-  Output Parameters:
+  Output Parameter:
 . locX_t - Solution updated with boundary values
 
   Level: developer

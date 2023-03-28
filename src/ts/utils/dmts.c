@@ -943,7 +943,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFunction func, void *ctx
 
    Input Parameters:
 +  dm - `DM` to be used with `TS`
-.  f - forcing function evaluation routine
+.  func - forcing function evaluation routine
 -  ctx - context for solution evaluation
 
     Calling sequence of `func`:
@@ -962,14 +962,14 @@ $     PetscErrorCode func (TS ts, PetscReal t, Vec f,void *ctx)
 
 .seealso: [](chapter_ts), `DM`, `TS`, `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
-PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction f, void *ctx)
+PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction func, void *ctx)
 {
   DMTS tsdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tsdm));
-  if (f) tsdm->ops->forcing = f;
+  if (func) tsdm->ops->forcing = func;
   if (ctx) tsdm->forcingctx = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

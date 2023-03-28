@@ -529,10 +529,10 @@ PetscErrorCode DMAppendOptionsPrefix(DM dm, const char prefix[])
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  dm - the `DM` context
 
-   Output Parameters:
+   Output Parameter:
 .  prefix - pointer to the prefix string used is returned
 
    Level: advanced
@@ -1605,10 +1605,10 @@ PetscErrorCode DMSetBlockingType(DM dm, DMBlockingType btype)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the `DM`
 
-  Output Parameters:
+  Output Parameter:
 . btype - block by topological point or field node
 
   Level: advanced
@@ -4546,7 +4546,7 @@ PetscErrorCode DMGetGlobalSection(DM dm, PetscSection *section)
 
   Input Parameters:
 + dm - The `DM`
-- section - The PetscSection, or NULL
+- section - The PetscSection, or `NULL`
 
   Level: intermediate
 
@@ -8798,7 +8798,7 @@ PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  dm - The `DM`
 
    Level: developer
@@ -9137,7 +9137,7 @@ PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sour
 . sourceCone - The source arrangement of faces
 - targetCone - The target arrangement of faces
 
-  Output Parameters:
+  Output Parameter:
 . ornt  - The orientation (transformation) which will take the source arrangement to the target arrangement
 
   Level: advanced
@@ -9222,7 +9222,7 @@ PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscIn
 . sourceCone - The source arrangement of vertices
 - targetCone - The target arrangement of vertices
 
-  Output Parameters:
+  Output Parameter:
 . ornt  - The orientation (transformation) which will take the source arrangement to the target arrangement
 
   Level: advanced
@@ -9254,7 +9254,7 @@ PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType ct, const PetscInt 
 + ct    - The `DMPolytopeType`
 - point - Coordinates of the point
 
-  Output Parameters:
+  Output Parameter:
 . inside  - Flag indicating whether the point is inside the reference cell of given type
 
   Level: advanced

@@ -11,7 +11,7 @@ PetscLogEvent SNESLINESEARCH_Apply;
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ls - the `SNESLineSearch` context
 
    Options Database Key:
@@ -47,14 +47,14 @@ PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch ls)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ls - the linesearch object
+
+   Level: developer
 
    Note:
    This routine is called by the `SNES` implementations.
    It does not typically need to be called by the user.
-
-   Level: developer
 
 .seealso: `SNESLineSearch`, `SNESGetLineSearch()`, `SNESLineSearchMonitorSet()`
 @*/
@@ -148,10 +148,10 @@ PetscErrorCode SNESLineSearchMonitorSolutionUpdate(SNESLineSearch ls, PetscViewe
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI communicator for the line search (typically from the associated `SNES` context).
 
-   Output Parameters:
+   Output Parameter:
 .  outlinesearch - the new linesearch context
 
    Level: developer
@@ -207,7 +207,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - The `SNESLineSearch` instance.
 
    Level: advanced
@@ -242,7 +242,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - The `SNESLineSearch` instance.
 
    Level: developer
@@ -407,7 +407,7 @@ PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscErrorC
 .  X - The current solution
 -  Y - The step direction
 
-   Output Parameters:
+   Output Parameter:
 .  changed - Indicator that the precheck routine has changed anything
 
    Level: advanced
@@ -617,7 +617,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - The linesearch context
 
    Level: developer
@@ -834,7 +834,8 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
    Logically Collective
 
    Input Parameters:
-.  linesearch - linesearch context
++  linesearch - linesearch context
+-  viewer - the viewer to display the line search information
 
    Level: intermediate
 
@@ -876,11 +877,11 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
-   Output Parameters:
--  type - The type of line search, or `NULL` if not set
+   Output Parameter:
+.  type - The type of line search, or `NULL` if not set
 
    Level: intermediate
 
@@ -982,11 +983,11 @@ PetscErrorCode SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
-   Output Parameters:
-.  snes - The snes instance
+   Output Parameter:
+.  snes - The `SNES` instance
 
    Level: developer
 
@@ -1006,10 +1007,10 @@ PetscErrorCode SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
-   Output Parameters:
+   Output Parameter:
 .  lambda - The last steplength computed during `SNESLineSearchApply()`
 
    Level: advanced
@@ -1185,10 +1186,10 @@ PetscErrorCode SNESLineSearchSetTolerances(SNESLineSearch linesearch, PetscReal 
 /*@
    SNESLineSearchGetDamping - Gets the line search damping parameter.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
-   Output Parameters:
+   Output Parameter:
 .  damping - The damping parameter
 
    Level: advanced
@@ -1346,7 +1347,7 @@ PetscErrorCode SNESLineSearchSetNorms(SNESLineSearch linesearch, PetscReal xnorm
 /*@
    SNESLineSearchComputeNorms - Computes the norms of X, F, and Y.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Options Database Key:
@@ -1577,10 +1578,10 @@ PetscErrorCode SNESLineSearchSetWorkVecs(SNESLineSearch linesearch, PetscInt nwo
 /*@
    SNESLineSearchGetReason - Gets the success/failure status of the last line search application
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
-   Output Parameters:
+   Output Parameter:
 .  result - The success or failure status
 
    Level: developer

@@ -319,10 +319,11 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
 +   localname - name of local copy of file - valid on only process zero
 -   found - if found or retrieved the file - valid on all processes
 
+    Level: intermediate
+
     Note:
     if the file already exists local this function just returns without downloading it.
 
-    Level: intermediate
 @*/
 PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname[], size_t llen, PetscBool *found)
 {

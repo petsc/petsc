@@ -71,7 +71,7 @@ void SYByteSwapScalar(PetscScalar *buff, int n)
 .   n  - the number of items to read
 .   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
-  Output Parameters:
+  Output Parameter:
 .   p - the buffer
 
   Notes:

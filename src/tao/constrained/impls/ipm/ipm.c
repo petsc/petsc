@@ -1030,7 +1030,7 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 /*MC
   TAOIPM - Interior point algorithm for generally constrained optimization.
 
-  Option Database Keys:
+  Options Database Keys:
 +   -tao_ipm_pushnu - parameter to push initial dual variables away from bounds
 -   -tao_ipm_pushs - parameter to push initial slack variables away from bounds
 
@@ -1038,6 +1038,7 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
     This algorithm is more of a place-holder for future constrained optimization algorithms and should not yet be used for large problems or production code.
   Level: beginner
 
+.seealso: `Tao`, `TAOPDIPM`, `TaoType`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)

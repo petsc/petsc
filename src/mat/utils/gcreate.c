@@ -134,6 +134,8 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
 .  M - number of global rows (or `PETSC_DETERMINE`)
 -  N - number of global columns (or `PETSC_DETERMINE`)
 
+  Level: beginner
+
    Notes:
    `m` (`n`) and `M` (`N`) cannot be both `PETSC_DECIDE`
    If one processor calls this with `M` (`N`) of `PETSC_DECIDE` then all processors must, otherwise the program will hang.
@@ -149,8 +151,6 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
    You cannot change the sizes once they have been set.
 
    The sizes must be set before `MatSetUp()` or MatXXXSetPreallocation() is called.
-
-  Level: beginner
 
 .seealso: [](chapter_matrices), `Mat`, `MatGetSize()`, `PetscSplitOwnership()`
 @*/
@@ -280,7 +280,8 @@ PetscErrorCode MatSetFromOptions(Mat B)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`,
+.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`,
+          `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`,
           `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[], const PetscInt onnz[], const PetscInt dnnzu[], const PetscInt onnzu[])
@@ -723,11 +724,10 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
    Level: developer
 
    Notes:
-   If the value of flg is set to true, the following will occur:
+   If the value of flg is set to true, the following will occur
++   `MatCreateSubMatrices()` and `MatCreateRedundantMatrix()` - bind created matrices to CPU if the input matrix is bound to the CPU.
+-   `MatCreateVecs()` - bind created vectors to CPU if the input matrix is bound to the CPU.
 
-   `MatCreateSubMatrices()` and `MatCreateRedundantMatrix()` will bind created matrices to CPU if the input matrix is bound to the CPU.
-
-   `MatCreateVecs()` will bind created vectors to CPU if the input matrix is bound to the CPU.
    The bindingpropagates flag itself is also propagated by the above routines.
 
    Developer Note:

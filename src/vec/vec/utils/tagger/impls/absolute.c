@@ -27,12 +27,12 @@ static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger, Vec vec, 
   Logically Collective
 
   Input Parameters:
-+ tagger - the VecTagger context
-- box - the box: a blocksize array of VecTaggerBox boxes
++ tagger - the `VecTagger` context
+- box - the box: a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 
-.seealso: `VecTaggerAbsoluteGetBox()`
+.seealso: `VecTagger`, `VecTaggerBox`, `VecTaggerAbsoluteGetBox()`
 @*/
 PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger, VecTaggerBox *box)
 {
@@ -47,14 +47,14 @@ PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger, VecTaggerBox *box)
   Logically Collective
 
   Input Parameter:
-. tagger - the VecTagger context
+. tagger - the `VecTagger` context
 
   Output Parameter:
-. box - the box: a blocksize array of VecTaggerBox boxes
+. box - the box: a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 
-.seealso: `VecTaggerAbsoluteSetBox()`
+.seealso: `VecTagger`, `VecTaggerBox`, `VecTaggerAbsoluteSetBox()`
 @*/
 PetscErrorCode VecTaggerAbsoluteGetBox(VecTagger tagger, const VecTaggerBox **box)
 {

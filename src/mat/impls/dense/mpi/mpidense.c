@@ -1751,7 +1751,7 @@ PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: developer

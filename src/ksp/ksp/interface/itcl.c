@@ -144,10 +144,10 @@ PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - the Krylov context
 
-   Output Parameters:
+   Output Parameter:
 .   guess - the object
 
    Level: developer
@@ -177,10 +177,10 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - the Krylov context
 
-   Output Parameters:
+   Output Parameter:
 .  prefix - pointer to the prefix string used is returned
 
    Notes:

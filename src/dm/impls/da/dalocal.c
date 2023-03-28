@@ -116,7 +116,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
 + dm - The `DMDA` object
 - i,j,k - The global indices for the cell
 
-  Output Parameters:
+  Output Parameter:
 . point - The local `DM` point
 
   Level: developer
@@ -412,7 +412,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch
 
-    Output Parameters:
+    Output Parameter:
 .    vptr - array data structured
 
   Level: advanced

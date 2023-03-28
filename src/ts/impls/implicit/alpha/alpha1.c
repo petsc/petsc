@@ -525,9 +525,9 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
 
   Input Parameters:
 +  ts - timestepping context
-.  \alpha_m - algorithmic parameter
-.  \alpha_f - algorithmic parameter
--  \gamma   - algorithmic parameter
+.  alpha_m - algorithmic parameter
+.  alpha_f - algorithmic parameter
+-  gamma   - algorithmic parameter
 
    Options Database Keys:
 +  -ts_alpha_alpha_m <alpha_m> - set alpha_m
@@ -537,7 +537,7 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
   Level: advanced
 
   Note:
-  Use of this function is normally only required to hack TSALPHA to
+  Use of this function is normally only required to hack `TSALPHA` to
   use a modified integration scheme. Users should call
   `TSAlphaSetRadius()` to set the desired spectral radius of the methods
   (i.e. high-frequency damping) in order so select optimal values for
@@ -565,9 +565,9 @@ PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pet
 .  ts - timestepping context
 
   Output Parameters:
-+  \alpha_m - algorithmic parameter
-.  \alpha_f - algorithmic parameter
--  \gamma   - algorithmic parameter
++  alpha_m - algorithmic parameter
+.  alpha_f - algorithmic parameter
+-  gamma   - algorithmic parameter
 
   Level: advanced
 

@@ -53,7 +53,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
 . x - The local vector
 - y - The global vector: the input value of globalVec is used as an initial guess
 
-  Output Parameters:
+  Output Parameter:
 . y - The least-squares solution
 
   Level: advanced

@@ -95,13 +95,13 @@ PetscErrorCode DMFieldView(DMField field, PetscViewer viewer)
 +  field - the `DMField` context
 -  type - a known method
 
+  Level: advanced
+
    Notes:
    See "include/petscvec.h" for available methods (for instance)
 +    `DMFIELDDA`    - a field defined only by its values at the corners of a `DMDA`
 .    `DMFIELDDS`    - a field defined by a discretization over a mesh set with `DMSetField()`
 -    `DMFIELDSHELL` - a field defined by arbitrary callbacks
-
-  Level: advanced
 
 .seealso: `DMField`, `DMFieldGetType()`, `DMFieldType`,
 @*/

@@ -596,8 +596,8 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 .  name      - either the hostname where the GLVis server is running or the base filename for dumping the data for subsequent visualizations
 -  port      - socket port where the GLVis server is listening. Not referenced when type is `PETSC_VIEWER_GLVIS_DUMP`
 
-  Output Parameters:
--  viewer    - the `PetscViewer` object
+  Output Parameter:
+.  viewer    - the `PetscViewer` object
 
   Options Database Keys:
 +  -glvis_precision <precision> - Sets number of digits for floating point values

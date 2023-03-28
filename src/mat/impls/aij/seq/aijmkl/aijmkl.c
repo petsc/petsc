@@ -91,7 +91,7 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
   /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ()
    * to destroy everything that remains. */
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ));
-  /* Note that I don't call MatSetType().  I believe this is because that
+  /* I don't call MatSetType().  I believe this is because that
    * is only to be called when *building* a matrix.  I could be wrong, but
    * that is how things work for the SuperLU matrix class. */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaijmkl_seqaij_C", NULL));
@@ -839,7 +839,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A, Mat P, Ma
   descr_type_sym.mode = SPARSE_FILL_MODE_UPPER;
   descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
 
-  /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
+  /* the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
   PetscCallExternal(mkl_sparse_sypr, SPARSE_OPERATION_TRANSPOSE, csrP, csrA, descr_type_sym, &csrC, SPARSE_STAGE_FINALIZE_MULT);
 
   /* Update the PETSc AIJ representation for matrix C from contents of MKL handle.
@@ -885,7 +885,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat C)
   descr_type_sym.mode = SPARSE_FILL_MODE_UPPER;
   descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
 
-  /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
+  /* the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
   if (csrP && csrA) {
     PetscCallExternal(mkl_sparse_sypr, SPARSE_OPERATION_TRANSPOSE, csrP, csrA, descr_type_sym, &csrC, SPARSE_STAGE_FULL_MULT_NO_VAL);
   } else {
@@ -944,7 +944,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C)
     PetscCall(MatIsSymmetricKnown(A, &set, &flag));
     if (set && flag) C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
     else C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
-    /* Note that we don't set C->ops->productnumeric here, as this must happen in MatProductSymbolic_PtAP_XXX(),
+    /* we don't set C->ops->productnumeric here, as this must happen in MatProductSymbolic_PtAP_XXX(),
      * depending on whether the algorithm for the general case vs. the real symmetric one is used. */
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1082,13 +1082,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 
 /*@C
    MatCreateSeqAIJMKL - Creates a sparse matrix of type `MATSEQAIJMKL`.
-   This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
-   routines from Intel MKL whenever possible.
-   If the installed version of MKL supports the "SpMV2" sparse
-   inspector-executor routines, then those are used by default.
-   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatMatMult()`, `MatTransposeMatMult()`, and `MatPtAP()`
-   (for symmetric A) operations are currently supported.
-   Note that MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
 
    Collective
 
@@ -1110,8 +1103,18 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 
    Level: intermediate
 
-   Note:
+   Notes:
    If `nnz` is given then `nz` is ignored
+
+   This type inherits from `MATSEQAIJ` and is largely identical, but uses sparse BLAS
+   routines from Intel MKL whenever possible.
+
+  If the installed version of MKL supports the "SpMV2" sparse
+   inspector-executor routines, then those are used by default.
+
+  `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatMatMult()`, `MatTransposeMatMult()`, and `MatPtAP()`
+   (for symmetric A) operations are currently supported.
+   MKL version 18, update 2 or later is required for `MatPtAP()`, `MatPtAPNumeric()` and `MatMatMultNumeric()`.
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJMKL()`, `MatSetValues()`
 @*/

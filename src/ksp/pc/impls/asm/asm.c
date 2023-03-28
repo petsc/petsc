@@ -1010,7 +1010,7 @@ PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]
     The default algorithm used by PETSc to increase overlap is fast, but not scalable,
     use the option -mat_increase_overlap_scalable when the problem and number of processes is large.
 
-    Note that one can define initial index sets with any overlap via
+    One can define initial index sets with any overlap via
     `PCASMSetLocalSubdomains()`; the routine
     `PCASMSetOverlap()` merely allows PETSc to extend that overlap further
     if desired.
@@ -1075,7 +1075,6 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type)
 
     Output Parameter:
 .   type - variant of `PCASM`, one of
-
 .vb
       PC_ASM_BASIC       - full interpolation and restriction
       PC_ASM_RESTRICT    - full restriction, local processor interpolation
@@ -1318,7 +1317,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
 +  A - The global matrix operator
 -  n - the number of local blocks
 
-   Output Parameters:
+   Output Parameter:
 .  outis - the array of index sets defining the subdomains
 
    Level: advanced
@@ -1488,7 +1487,7 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[])
    Input Parameters:
 +  n - the number of index sets
 .  is - the array of index sets
--  is_local - the array of local index sets, can be NULL
+-  is_local - the array of local index sets, can be `NULL`
 
    Level: advanced
 
@@ -1785,7 +1784,7 @@ PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type)
    If you specify a base name like aijviennacl, the corresponding sequential type is assumed.
 
    Note:
-   See "${PETSC_DIR}/include/petscmat.h" for available types
+   See `MatType` for available types
 
   Level: advanced
 

@@ -210,7 +210,7 @@ PetscErrorCode PetscStageLogRegister(PetscStageLog stageLog, const char sname[],
 + stageLog   - The `PetscStageLog`
 - stage - The stage to log
 
-  Database Options:
+  Options Database Key:
 . -log_view - Activates logging
 
   Usage:
@@ -339,7 +339,7 @@ PetscErrorCode PetscStageLogPop(PetscStageLog stageLog)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . stageLog - The `PetscStageLog`
 
   Output Parameter:
@@ -362,7 +362,7 @@ PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassReg
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . stageLog - The `PetscStageLog`
 
   Output Parameter:
@@ -462,7 +462,7 @@ PetscErrorCode PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscBo
 . stage     - The stage to log
 - isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
-  Database Options:
+  Options Database Key:
 . -log_view - Activates log summary
 
   Level: developer
@@ -489,7 +489,7 @@ PetscErrorCode PetscStageLogSetVisible(PetscStageLog stageLog, int stage, PetscB
   Output Parameter:
 . isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
-  Database Options:
+  Options Database Key:
 . -log_view - Activates log summary
 
   Level: developer

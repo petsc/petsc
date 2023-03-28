@@ -37,10 +37,10 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The `DMPLEX` object
 
-  Output Parameters:
+  Output Parameter:
 . ref - The reference tree `DMPLEX` object
 
   Level: intermediate
@@ -426,7 +426,7 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 . dim     - the spatial dimension
 - simplex - Flag for simplex, otherwise use a tensor-product cell
 
-  Output Parameters:
+  Output Parameter:
 . ref     - the reference tree `DMPLEX` object
 
   Level: intermediate
@@ -4214,7 +4214,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 . useBCs      - `PETSC_TRUE` indicates that boundary values should be inserted into `vecIn` before transfer.
 - time        - Used if boundary values are time dependent.
 
-  Output Parameters:
+  Output Parameter:
 . vecOut      - Using interpolation and injection operators calculated on the reference tree, the transferred
                 projection of `vecIn` from `dmIn` to `dmOut`.  Note that any field discretized with a `PetscFV` finite volume
                 method that uses gradient reconstruction will use reconstructed gradients when interpolating from

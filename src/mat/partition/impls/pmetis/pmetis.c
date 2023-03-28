@@ -361,7 +361,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
    Input Parameter:
 .  part - the partitioning context
 
-   Options Database Keys:
+   Options Database Key:
 .  -mat_partitioning_parmetis_coarse_sequential - use sequential PARMETIS coarse partitioner
 
    Level: beginner
@@ -412,16 +412,16 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
    Output Parameter:
 .     dual - the dual graph
 
+   Level: advanced
+
    Notes:
      Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-$     Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,
-$         tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
-$         mix  tetrahedrals and hexahedrals
-$     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that row's cell.
-$     The number of rows in mesh is number of cells, the number of columns is the number of vertices.
-
-   Level: advanced
+     Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadrilaterials 4 entries,
+         tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
+         mix  tetrahedrals and hexahedrals
+     The columns of each row of the `Mat` mesh are the global vertex numbers of the vertices of that row's cell.
+     The number of rows in mesh is number of cells, the number of columns is the number of vertices.
 
 .seealso: `MatCreateMPIAdj()`, `MatPartitioningCreate()`
 @*/

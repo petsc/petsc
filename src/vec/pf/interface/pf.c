@@ -16,7 +16,7 @@ PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 +  pf - the function context
 .  apply - function to apply to an array
 .  applyvec - function to apply to a Vec
-.  view - function that prints information about the PF
+.  view - function that prints information about the `PF`
 .  destroy - function to free the private function context
 -  ctx - private function context
 
@@ -112,7 +112,7 @@ PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
 
    Input Parameters:
 +  pf - the function context
--  x - input vector (or NULL for the vector (0,1, .... N-1)
+-  x - input vector (or `NULL` for the vector (0,1, .... N-1)
 
    Output Parameter:
 .  y - output vector
@@ -177,15 +177,13 @@ PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y)
 +  pf - the function context
 .  n - number of pointwise function evaluations to perform, each pointwise function evaluation
        is a function of dimin variables and computes dimout variables where dimin and dimout are defined
-       in the call to PFCreate()
+       in the call to `PFCreate()`
 -  x - input array
 
    Output Parameter:
 .  y - output array
 
    Level: beginner
-
-   Notes:
 
 .seealso: `PF`, `PFApplyVec()`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFSet()`
 @*/

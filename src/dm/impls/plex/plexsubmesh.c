@@ -2975,7 +2975,7 @@ PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, co
   . firstFace       - First face in the mesh
   - newFacePoint    - Next face in the mesh
 
-  Output Parameters:
+  Output Parameter:
   . newFacePoint - Contains next face point number on input, updated on output
 
   Level: developer

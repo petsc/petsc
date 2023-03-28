@@ -17,12 +17,12 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 . -random_type <type> - Sets the random type; use -help for a list
                      of available types
 
-  Note:
-  See "petsc/include/petscsys.h" for available random types (for instance, `PETSCRAND48`, `PETSCRAND`).
-
   Level: intermediate
 
-.seealso: `PetscRandom`, `PetscRandomGetType()`, `PetscRandomCreate()`
+  Note:
+  See `PetscRandomType` for available random types (for instance, `PETSCRAND48`, `PETSCRAND`).
+
+.seealso: `PetscRandom`, `PetscRandomType`, `PetscRandomGetType()`, `PetscRandomCreate()`
 @*/
 
 PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
@@ -61,7 +61,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 
   Level: intermediate
 
-.seealso: `PetscRandom`, `PetscRandomSetType()`, `PetscRandomCreate()`
+.seealso: `PetscRandom`, `PetscRandomType`, `PetscRandomSetType()`, `PetscRandomCreate()`
 @*/
 PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 {
@@ -78,8 +78,10 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname    - The name of a new user-defined creation routine
+- function - The creation routine
+
+  Level: advanced
 
   Notes:
   `PetscRandomRegister()` may be called multiple times to add several user-defined randome number generators
@@ -100,8 +102,6 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 .vb
     -random_type my_random_name
 .ve
-
-  Level: advanced
 
 .seealso: `PetscRandom`, `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
 @*/
@@ -131,13 +131,13 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 #endif
 
 /*@C
-  PetscRandomRegisterAll - Registers all of the components in the `PetscRandom` package.
+  PetscRandomRegisterAll - Registers all of the implementations in the `PetscRandom` package.
 
-  Not Collective
+   Not Collective
 
   Level: advanced
 
-.seealso: `PetscRandom`, `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
+.seealso: `PetscRandom`, `PetscRandomType`, `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
 @*/
 PetscErrorCode PetscRandomRegisterAll(void)
 {

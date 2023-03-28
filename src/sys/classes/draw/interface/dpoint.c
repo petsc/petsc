@@ -8,7 +8,8 @@
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl - the coordinates of the point
+.  xl - horizatonal coordinate of the point
+.  yl - vertical coordinate of the point
 -  cl - the color of the point
 
    Level: beginner
@@ -31,7 +32,8 @@ PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl
 
    Input Parameters:
 +  draw - the drawing context
-.  x,y - the pixel coordinates of the point
+.  x - horizontal pixel coordinates of the point
+.  y - vertical pixel coordinates of the point
 -  c - the color of the point
 
    Level: beginner

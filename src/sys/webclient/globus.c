@@ -83,7 +83,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
 +  comm - the MPI communicator
 -  tokensize - size of the token array
 
-   Output Parameters:
+   Output Parameter:
 .  access_token - can be used with `PetscGlobusUpLoad()` for 30 days
 
    Level: intermediate
@@ -151,7 +151,7 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t t
                   will call `PetscGlobusAuthorize()`.
 -  buffsize - size of the buffer
 
-   Output Parameters:
+   Output Parameter:
 .  buff - location to put Globus information
 
    Level: intermediate

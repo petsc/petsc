@@ -171,10 +171,10 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
 /*@C
    PetscSocketEstablish - starts a listener on a socket
 
-   Input Parameters:
+   Input Parameter:
 .    portnumber - the port to wait at
 
-   Output Parameters:
+   Output Parameter:
 .     ss - the socket to be used with `PetscSocketListen()`
 
     Level: advanced

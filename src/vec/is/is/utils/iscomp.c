@@ -8,9 +8,10 @@
    Collective
 
    Input Parameters:
-.  is1, is2 - The index sets being compared
++  is1 - first index set to compare
+-  is2 - second index set to compare
 
-   Output Parameters:
+   Output Parameter:
 .  flg - output flag, either `PETSC_TRUE` (if both index sets have the
          same indices), or `PETSC_FALSE` if the index sets differ by size
          or by the set of indices)
@@ -96,9 +97,10 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
    Collective
 
    Input Parameters:
-.  is1, is2 - The index sets being compared
++  is1 - first index set to compare
+-  is2 - second index set to compare
 
-   Output Parameters:
+   Output Parameter:
 .  flg - output flag, either `PETSC_TRUE` (if both index sets have the
          same indices), or `PETSC_FALSE` if the index sets differ by size
          or by the set of indices)

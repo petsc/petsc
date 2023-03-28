@@ -109,7 +109,7 @@ PetscErrorCode MatDenseHIPPlaceArray(Mat mat, const PetscScalar *array)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . mat - the matrix
 
   Level: developer
@@ -158,11 +158,11 @@ PetscErrorCode MatDenseHIPReplaceArray(Mat mat, const PetscScalar *array)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - the matrix
 
-  Output Parameters
-. array - the GPU array in column major order
+  Output Parameter:
+. a - the GPU array in column major order
 
   Level: developer
 
@@ -191,7 +191,7 @@ PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
 
   Input Parameters:
 + A     - the matrix
-- array - the GPU array in column major order
+- a - the GPU array in column major order
 
   Level: developer
 
@@ -212,11 +212,11 @@ PetscErrorCode MatDenseHIPRestoreArrayWrite(Mat A, PetscScalar **a)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - the matrix
 
-  Output Parameters
-. array - the GPU array in column major order
+  Output Parameter:
+. a - the GPU array in column major order
 
   Level: developer
 
@@ -243,7 +243,7 @@ PetscErrorCode MatDenseHIPGetArrayRead(Mat A, const PetscScalar **a)
 
   Input Parameters:
 + A     - the matrix
-- array - the GPU array in column major order
+- a - the GPU array in column major order
 
   Level: developer
 
@@ -267,11 +267,11 @@ PetscErrorCode MatDenseHIPRestoreArrayRead(Mat A, const PetscScalar **a)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - the matrix
 
-  Output Parameters
-. array - the GPU array in column major order
+  Output Parameter:
+. a - the GPU array in column major order
 
   Level: developer
 
@@ -301,7 +301,7 @@ PetscErrorCode MatDenseHIPGetArray(Mat A, PetscScalar **a)
 
   Input Parameters:
 + A     - the matrix
-- array - the GPU array in column major order
+- a - the GPU array in column major order
 
 .seealso: `MATDENSEHIP`, `MatDenseHIPGetArray()`, `MatDenseHIPRestoreArrayWrite()`,
 `MatDenseHIPGetArrayWrite()`, `MatDenseHIPRestoreArrayRead()`, `MatDenseHIPGetArrayRead()`

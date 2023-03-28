@@ -434,8 +434,8 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
    Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined viewer
--  routine_create - routine to create method context
++  sname - name of a new user-defined viewer
+-  function - routine to create method context
 
    Level: developer
 

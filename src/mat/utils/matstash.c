@@ -23,7 +23,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *);
   comm - communicator, required for scatters.
   bs   - stash block size. used when stashing blocks of values
 
-  Output Parameters:
+  Output Parameter:
   stash    - the newly created stash
 */
 PetscErrorCode MatStashCreate_Private(MPI_Comm comm, PetscInt bs, MatStash *stash)
@@ -602,7 +602,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat, MatStash *stash, PetscIn
    a time to the calling function. If no messages are left, it indicates this
    by setting flg = 0, else it sets flg = 1.
 
-   Input Parameters:
+   Input Parameter:
    stash - the stash
 
    Output Parameters:

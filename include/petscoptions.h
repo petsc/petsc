@@ -205,7 +205,7 @@ M*/
 
     Collective
 
-  Input Parameters:
+  Input Parameter:
 .   obj - object to set options for
 
   Level: intermediate

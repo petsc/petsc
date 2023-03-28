@@ -41,10 +41,10 @@ PetscErrorCode DMNetworkInitializeHeaderComponentData(DM dm)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the `DMNETWORK` object
 
-  Output Parameters:
+  Output Parameter:
 . plexdm - the `DMPLEX` object
 
   Level: advanced
@@ -140,7 +140,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
               of the vertices) of each edge,
 $            [first vertex of first edge, second vertex of first edge, first vertex of second edge, second vertex of second edge, etc]
 
-  Output Parameters:
+  Output Parameter:
 . netnum - global index of the subnetwork
 
   Level: beginner
@@ -638,7 +638,7 @@ PetscErrorCode DMNetworkInitializeNonTopological(DM dm)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the `DMNETWORK` object
 
   Level: beginner
@@ -907,7 +907,7 @@ PetscErrorCode DMNetworkGetSharedVertices(DM dm, PetscInt *nsv, const PetscInt *
 . name - the component name
 - size - the storage size in bytes for this component data
 
-   Output Parameters:
+   Output Parameter:
 .  key - an integer key that defines the component
 
    Level: beginner
@@ -1123,7 +1123,7 @@ PetscErrorCode DMNetworkGetSubnetID(DM dm, PetscInt p, PetscInt *subnetid)
 + dm - `DMNETWORK` object
 - p - edge point
 
-  Output Parameters:
+  Output Parameter:
 . index - the global numbering for the edge
 
   Level: intermediate
@@ -1146,7 +1146,7 @@ PetscErrorCode DMNetworkGetGlobalEdgeIndex(DM dm, PetscInt p, PetscInt *index)
 + dm - `DMNETWORK` object
 - p  - vertex point
 
-  Output Parameters:
+  Output Parameter:
 . index - the global numbering for the vertex
 
   Level: intermediate
@@ -1169,7 +1169,7 @@ PetscErrorCode DMNetworkGetGlobalVertexIndex(DM dm, PetscInt p, PetscInt *index)
 + dm - the `DMNETWORK` object
 - p - vertex/edge point
 
-  Output Parameters:
+  Output Parameter:
 . numcomponents - Number of components at the vertex/edge
 
   Level: beginner
@@ -1197,7 +1197,7 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm, PetscInt p, PetscInt *numcompone
 . p - the edge or vertex point
 - compnum - component number; use ALL_COMPONENTS if no specific component is requested
 
-  Output Parameters:
+  Output Parameter:
 . offset - the local offset
 
   Level: intermediate
@@ -1243,7 +1243,7 @@ PetscErrorCode DMNetworkGetLocalVecOffset(DM dm, PetscInt p, PetscInt compnum, P
 . p - the edge or vertex point
 - compnum - component number; use ALL_COMPONENTS if no specific component is requested
 
-  Output Parameters:
+  Output Parameter:
 . offsetg - the global offset
 
   Level: intermediate
@@ -1287,7 +1287,7 @@ PetscErrorCode DMNetworkGetGlobalVecOffset(DM dm, PetscInt p, PetscInt compnum, 
 + dm - the `DMNETWORK` object
 - p - the edge point
 
-  Output Parameters:
+  Output Parameter:
 . offset - the offset
 
   Level: intermediate
@@ -1312,7 +1312,7 @@ PetscErrorCode DMNetworkGetEdgeOffset(DM dm, PetscInt p, PetscInt *offset)
 + dm - the `DMNETWORK` object
 - p - the vertex point
 
-  Output Parameters:
+  Output Parameter:
 . offset - the offset
 
   Level: intermediate
@@ -1587,7 +1587,7 @@ static PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend,
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the `DMNETWORK` Object
 
   Level: intermediate
@@ -2047,7 +2047,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *ned
 + dm - the `DMNETWORK` object
 - p - the edge point
 
-  Output Parameters:
+  Output Parameter:
 . vertices - vertices connected to this edge
 
   Level: beginner
@@ -2836,7 +2836,7 @@ PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 + dm - the `DMNETWORK` object
 - vloc - local vertex ordering, start from 0
 
-  Output Parameters:
+  Output Parameter:
 .  vg  - global vertex ordering, start from 0
 
   Level: advanced
@@ -3044,7 +3044,7 @@ static inline PetscErrorCode DMISComputeIdx_private(DM dm, PetscInt p, PetscInt 
 . nselectedvar - number of variables in each block to select
 - selectedvar - the offset into the block of each variable in each block to select
 
-  Output Parameters:
+  Output Parameter:
 . is - the index set
 
   Level: advanced
@@ -3141,7 +3141,7 @@ static inline PetscErrorCode DMISComputeLocalIdx_private(DM dm, PetscInt p, Pets
 . nselectedvar - number of variables in each block to select
 - selectedvar - the offset into the block of each variable in each block to select
 
-  Output Parameters:
+  Output Parameter:
 . is - the index set
 
   Level: advanced
@@ -3186,7 +3186,7 @@ PetscErrorCode DMNetworkCreateLocalIS(DM dm, PetscInt numkeys, PetscInt keys[], 
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the `DMNETWORK` object
 
   Level: beginner

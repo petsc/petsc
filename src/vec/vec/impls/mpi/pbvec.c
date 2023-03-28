@@ -604,7 +604,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
 .  n - local vector length
 .  N - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .  nghost - number of local ghost points
-.  ghosts - global indices of ghost points (or NULL if not needed), these do not need to be in increasing order (sorted)
+.  ghosts - global indices of ghost points (or `NULL` if not needed), these do not need to be in increasing order (sorted)
 -  array - the space to store the vector values (as long as n + nghost)
 
    Output Parameter:

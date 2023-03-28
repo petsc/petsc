@@ -129,7 +129,7 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin)
 +   draw - the window where the graph will be made.
 -   dim - the number of curves which will be drawn
 
-    Output Parameters:
+    Output Parameter:
 .   outlg - the line graph context
 
     Level: intermediate
@@ -307,7 +307,10 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim)
 
    Input Parameters:
 +  xlg - the line graph context
--  x_min,x_max,y_min,y_max - the limits
+.  x_min - the horizontal lower limit
+.  x_max - the horizonal upper limit
+.  y_min - the vertical lower limit
+-  y_max - the vertical upper limit
 
    Level: intermediate
 

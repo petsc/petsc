@@ -1601,7 +1601,7 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ctx - convergence context
 
    Level: intermediate

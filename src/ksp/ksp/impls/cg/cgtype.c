@@ -16,11 +16,11 @@
       KSP_CG_SYMMETRIC - complex, symmetric matrix
 .ve
 
-    Level: intermediate
-
     Options Database Keys:
 +   -ksp_cg_hermitian - Indicates Hermitian matrix
 -   -ksp_cg_symmetric - Indicates symmetric matrix
+
+    Level: intermediate
 
     Note:
     By default, the matrix is assumed to be complex, Hermitian.

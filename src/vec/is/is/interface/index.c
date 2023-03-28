@@ -843,10 +843,10 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
-   Output Parameters:
+   Output Parameter:
 .  ident - `PETSC_TRUE` if an identity, else `PETSC_FALSE`
 
    Level: intermediate
@@ -1015,7 +1015,7 @@ PetscErrorCode ISSetPermutation(IS is)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
    Level: beginner
@@ -1663,7 +1663,7 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
    Level: intermediate
@@ -1684,7 +1684,7 @@ PetscErrorCode ISSort(IS is)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . is - the index set
 
   Level: intermediate
@@ -1707,7 +1707,7 @@ PetscErrorCode ISSortRemoveDups(IS is)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
    Level: intermediate

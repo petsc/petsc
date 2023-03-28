@@ -13,8 +13,8 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs, TSTr
   Not Collective
 
   Input Parameters:
-+ name        - the name of a new user-defined creation routine
-- create_func - the creation routine itself
++ sname        - the name of a new user-defined creation routine
+- function - the creation routine itself
 
   Level: developer
 
@@ -73,7 +73,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
 
   Not Collective.
 
-  Input Parameters:
+  Input Parameter:
 . tj - the trajectory object
 
   Output Parameter:
@@ -142,12 +142,10 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
 . ts      - the time stepper object (optional)
 - stepnum - the requested step number
 
-  Input/Output Parameter:
-
   Output Parameters:
 + time - On input time for the step if step number is `PETSC_DECIDE`, on output the time associated with the step number
-. U    - state vector (can be NULL)
-- Udot - time derivative of state vector (can be NULL)
+. U    - state vector (can be `NULL`)
+- Udot - time derivative of state vector (can be `NULL`)
 
   Level: developer
 
@@ -486,7 +484,7 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
 + tj   - the `TSTrajectory` context
 - ts   - the `TS` context
 
-  Output Parameters:
+  Output Parameter:
 . type - a known method
 
   Level: developer

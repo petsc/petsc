@@ -70,8 +70,8 @@ PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
 +  ts        - the `TS` context obtained from `TSCreate()`
 -  splitname - name of this split
 
-   Output Parameters:
--  is        - the index set for part of the solution vector
+   Output Parameter:
+.  is        - the index set for part of the solution vector
 
    Level: intermediate
 

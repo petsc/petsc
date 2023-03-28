@@ -80,7 +80,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`
+.seealso: `DM`, `DMSLICED`, `DMDestroy()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[])
 {
@@ -98,7 +98,7 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
 }
 
 /*@C
-    DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by DMSliced
+    DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by `DMSLICED`
 
     Not Collective
 
@@ -108,7 +108,7 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
            submatrix  (same for all local rows)
 .    d_nnz - array containing the number of block nonzeros in the various block rows
            of the in diagonal portion of the local (possibly different for each block
-           row) or NULL.
+           row) or `NULL`.
 .    o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -    o_nnz - array containing the number of nonzeros in the various block rows of the
@@ -118,10 +118,10 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
     Level: advanced
 
     Note:
-    See `MatMPIBAIJSetPreallocation()` for more details on preallocation.  If a scalar matrix (AIJ) is
+    See `MatMPIBAIJSetPreallocation()` for more details on preallocation.  If a scalar matrix (`MATAIJ`) is
     obtained with `DMSlicedGetMatrix()`, the correct preallocation will be set, respecting `DMSlicedSetBlockFills()`.
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `MatMPIAIJSetPreallocation()`,
+.seealso: `DM`, `DMSLICED`, `DMDestroy()`, `DMCreateGlobalVector()`, `MatMPIAIJSetPreallocation()`,
          `MatMPIBAIJSetPreallocation()`, `DMSlicedGetMatrix()`, `DMSlicedSetBlockFills()`
 @*/
 PetscErrorCode DMSlicedSetPreallocation(DM dm, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
@@ -180,7 +180,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
     This only makes sense for multicomponent problems using scalar matrix formats (AIJ).
     See `DMDASetBlockFills()` for example usage.
 
-.seealso `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
+.seealso: `DM`, `DMSLICED`, `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
 @*/
 PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
 {
@@ -243,9 +243,9 @@ static PetscErrorCode DMGlobalToLocalEnd_Sliced(DM da, Vec g, InsertMode mode, V
 }
 
 /*MC
-   DMSLICED = "sliced" - A DM object that is used to manage data for a general graph. Uses VecCreateGhost() ghosted vectors for storing the fields
+   DMSLICED = "sliced" - A `DM` object that is used to manage data for a general graph. Uses `VecCreateGhost()` ghosted vectors for storing the fields
 
-   See DMCreateSliced() for details.
+   See `DMCreateSliced()` for details.
 
   Level: intermediate
 
@@ -282,7 +282,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 .   d_nnz - matrix preallocation information representing coupling within this process
 -   o_nnz - matrix preallocation information representing coupling between this process and other processes
 
-    Output Parameters:
+    Output Parameter:
 .   slice - the slice object
 
     Level: advanced
@@ -294,9 +294,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 
         One can use `DMGlobalToLocalBegin()`, and `DMGlobalToLocalEnd()` instead of `VecGhostUpdateBegin()` and `VecGhostUpdateEnd()`.
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMSetType()`, `DMSLICED`, `DMSlicedSetGhosts()`, `DMSlicedSetPreallocation()`, `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`,
-         `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`
-
+.seealso: `DM`, `DMSLICED`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMSetType()`, `DMSLICED`, `DMSlicedSetGhosts()`, `DMSlicedSetPreallocation()`,
+          `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`,
+          `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`
 @*/
 PetscErrorCode DMSlicedCreate(MPI_Comm comm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[], const PetscInt d_nnz[], const PetscInt o_nnz[], DM *dm)
 {

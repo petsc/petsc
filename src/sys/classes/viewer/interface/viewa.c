@@ -66,7 +66,7 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer`
 
    Level: intermediate

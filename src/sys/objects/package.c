@@ -6,10 +6,10 @@
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  pkg - external package name
 
-   Output Parameters:
+   Output Parameter:
 .  has - `PETSC_TRUE` if PETSc is configured with the given package, else `PETSC_FALSE`.
 
    Level: intermediate

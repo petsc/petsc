@@ -220,8 +220,8 @@ PetscErrorCode SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES,
 .  X - The last solution
 -  Y - The step direction
 
-   Output Parameters:
-.  changed_Y - Indicator that the step direction Y has been changed.
+   Output Parameter:
+.  changed_Y - Indicator that the step direction `Y` has been changed.
 
    Level: intermediate
 

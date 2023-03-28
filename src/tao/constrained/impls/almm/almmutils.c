@@ -6,10 +6,10 @@
 /*@
    TaoALMMGetType - Retrieve the augmented Lagrangian formulation type for the subproblem.
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the `Tao` context for the `TAOALMM` solver
 
-   Output Parameters:
+   Output Parameter:
 .  type - augmented Lagragrangian type
 
    Level: advanced
@@ -66,7 +66,7 @@ PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type)
 /*@
    TaoALMMGetSubsolver - Retrieve the subsolver being used by `TAOALMM`.
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the `Tao` context for the `TAOALMM` solver
 
    Output Parameter:
@@ -147,10 +147,10 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
 /*@
    TaoALMMGetMultipliers - Retrieve a pointer to the Lagrange multipliers.
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the `Tao` context for the `TAOALMM` solver
 
-   Output Parameters:
+   Output Parameter:
 .  Y - vector of Lagrange multipliers
 
    Level: advanced

@@ -86,7 +86,7 @@ static PetscErrorCode gamma_m1_f(PetscInt dim, PetscReal time, const PetscReal x
  .  actx - optional user-defined context
  .  dim - dimension
 
- Output Parameters:
+ Output Parameter:
  .  J0acP - Jacobian matrix filled, not created
  */
 static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const PetscInt dim, PetscReal shift, void *a_ctx)
@@ -2084,8 +2084,8 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
  +   func - call back function
  .   user_ctx - user context
 
- Input/Output Parameters:
- +   X - Vector to data to
+ Input/Output Parameter:
+ .   X - Vector to data to
 
  Level: advanced
 
@@ -2430,10 +2430,10 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
 
  Collective
 
- Input/Output Parameters:
+ Input Parameter:
 . pack     - the DM object. Puts matrix in Landau context M field
 
- Output Parameters:
+ Output Parameter:
 . Amat - The mass matrix (optional), mass matrix is added to the DM context
 
  Level: beginner

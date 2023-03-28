@@ -12,7 +12,7 @@
 .  Rows - the rows that will be in the submatrix
 -  Cols - the columns that will be in the submatrix
 
-   Output Parameters:
+   Output Parameter:
 .  J - New matrix
 
    Level: developer

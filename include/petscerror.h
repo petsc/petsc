@@ -461,7 +461,7 @@ void PetscCallVoid(PetscErrorCode);
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . ierr - nonzero error code
 
   Level: deprecated
@@ -486,7 +486,7 @@ PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, char *);
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . MPI_Function - an MPI function that returns an MPI error code
 
   Level: beginner
@@ -714,7 +714,7 @@ M*/
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 
   Level: deprecated
@@ -1311,7 +1311,7 @@ M*/
    #include <petscsys.h>
    void PetscStackPushExternal(char *funct);
 
-   Input Parameters:
+   Input Parameter:
 .  funct - the function name
 
    Level: developer

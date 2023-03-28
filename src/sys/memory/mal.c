@@ -337,7 +337,7 @@ static PetscBool petscmalloccoalesce =
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  coalesce - `PETSC_TRUE` to use coalesced malloc for multi-object allocation.
 
    Options Database Keys:
@@ -374,7 +374,7 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
 .  filename - file name to attribute allocation (typically __FILE__)
 -  bytes0 - first of n object sizes
 
-   Output Parameters:
+   Output Parameter:
 .  ptr0 - first of n pointers to allocate
 
    Notes

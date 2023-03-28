@@ -347,7 +347,7 @@ $ PetscErrorCode func(DMDALocalInfo *info, PetscReal t, void* x, void *xdot, Pet
 .  t    - time at which to evaluate the jacobian
 .  x    - array of local state information
 .  xdot - time derivative at this state
-.  shift - see TSSetIJacobian() for the meaning of this parameter
+.  shift - see `TSSetIJacobian()` for the meaning of this parameter
 .  J    - Jacobian matrix
 .  B    - preconditioner matrix; often same as `J`
 -  ctx  - optional context passed above

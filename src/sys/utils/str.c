@@ -135,7 +135,7 @@ PetscErrorCode PetscStrToArrayDestroy(int argc, char **args)
 
    Not Collective; No Fortran Support
 
-   Input Parameters:
+   Input Parameter:
 .  s - pointer to array of strings (final string is a `NULL`)
 
    Output Parameter:
@@ -167,7 +167,7 @@ PetscErrorCode PetscStrArrayallocpy(const char *const *list, char ***t)
 
    Not Collective; No Fortran Support
 
-   Output Parameters:
+   Output Parameter:
 .   list - array of strings
 
    Level: intermediate
@@ -352,7 +352,7 @@ struct _p_PetscToken {
 
    Not Collective; No Fortran Support
 
-   Input Parameters:
+   Input Parameter:
 .  a - pointer to token
 
    Output Parameter:
@@ -443,7 +443,7 @@ PetscErrorCode PetscTokenCreate(const char a[], char b, PetscToken *t)
 
    Not Collective; No Fortran Support
 
-   Input Parameters:
+   Input Parameter:
 .  a - pointer to token
 
    Level: intermediate
@@ -525,6 +525,8 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
 .   b - the resulting copy of a with replaced strings (`b` can be the same as `a`)
 -   len - the length of `b`
 
+   Level: developer
+
    Notes:
       Replaces ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
       ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME}, ${HOSTNAME}, ${PETSC_MAKE} with appropriate values
@@ -533,7 +535,6 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
       `PETSC_LIB_DIR` uses the environmental variable if it exists. `PETSC_ARCH` and `PETSC_DIR` use what
       PETSc was built with and do not use environmental variables.
 
-   Level: developer
 @*/
 PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t len)
 {
@@ -787,7 +788,7 @@ PetscErrorCode PetscStrcat(char s[], const char t[])
 
   Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . t - pointer to string
 
   Output Parameter:

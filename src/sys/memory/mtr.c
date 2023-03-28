@@ -554,7 +554,7 @@ PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[])
 
     Not Collective
 
-    Output Parameters:
+    Output Parameter:
 .   space - number of bytes currently allocated
 
     Level: intermediate
@@ -575,7 +575,7 @@ PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
 
     Not Collective
 
-    Output Parameters:
+    Output Parameter:
 .   space - maximum number of bytes ever allocated at one time
 
     Level: intermediate

@@ -139,7 +139,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  flag - values are
 .vb
     PETSC_FP_TRAP_OFF   - do not trap any exceptions
@@ -152,7 +152,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
     PETSC_FP_TRAP_FLTINEX - inexact floating point result
 .ve
 
-   Options Database Keys:
+   Options Database Key:
 .  -fp_trap <off,on> - turn on or off trapping of floating point exceptions
 
    Level: advanced

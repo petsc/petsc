@@ -419,7 +419,7 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 +   flist   - pointer to list
 -   name - name registered for the function
 
-    Output Parameters:
+    Output Parameter:
 .   fptr - the function pointer if name was found, else NULL
 
     Level: developer
@@ -558,10 +558,10 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
 /*@
     PetscFunctionListDuplicate - Creates a new list from a given object list.
 
-    Input Parameters:
+    Input Parameter:
 .   fl   - pointer to list
 
-    Output Parameters:
+    Output Parameter:
 .   nl - the new list (should point to 0 to start, otherwise appends)
 
     Level: developer

@@ -444,10 +444,10 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
-   Output Parameters:
+   Output Parameter:
 .  tr - the `TSTrajectory` object, if it exists
 
    Level: advanced
@@ -500,7 +500,7 @@ PetscErrorCode TSSetSaveTrajectory(TS ts)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Level: intermediate
@@ -523,7 +523,7 @@ PetscErrorCode TSResetTrajectory(TS ts)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Level: intermediate
@@ -1747,7 +1747,7 @@ PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariable tvar, void *ctx
 +  ts - TS on which to compute
 -  U - state vector to be transformed to transient variables
 
-   Output Parameters:
+   Output Parameter:
 .  C - transient (conservative) variable
 
    Level: developer
@@ -1781,10 +1781,10 @@ PetscErrorCode TSComputeTransientVariable(TS ts, Vec U, Vec C)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - `TS` on which to compute
 
-   Output Parameters:
+   Output Parameter:
 .  has - `PETSC_TRUE` if transient variables have been set
 
    Level: developer
@@ -2878,7 +2878,7 @@ PetscErrorCode TSSetMaxSteps(TS ts, PetscInt maxsteps)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Output Parameter:
@@ -2930,7 +2930,7 @@ PetscErrorCode TSSetMaxTime(TS ts, PetscReal maxtime)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Output Parameter:
@@ -3086,7 +3086,7 @@ PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . ts   - The `TS` context obtained from `TSCreate()`
 
   Level: developer
@@ -3275,7 +3275,7 @@ PetscErrorCode TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec 
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . ts - The `TS` context obtained from `TSCreate()`
 
   Level: developer
@@ -3338,7 +3338,7 @@ PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . ts   - The `TS` context obtained from `TSCreate()`
 
   Note:
@@ -5583,10 +5583,12 @@ PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu)
 
    Input Parameters:
 +  ts - the `TS` context
--  xr,xi - real and imaginary part of input arguments
+.  xr - real part of input argument
+-  xi - imaginary part of input argument
 
    Output Parameters:
-.  yr,yi - real and imaginary part of function value
++  yr - real part of function value
+-  yi - imaginary part of function value
 
    Level: developer
 
@@ -5944,8 +5946,8 @@ static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec
 
    Logically Collective
 
-    Input Parameters:
-    TS - the time stepping routine
+    Input Parameter:
+.    TS - the time stepping routine
 
    Output Parameter:
 .   flg - `PETSC_TRUE` if the multiply is likely correct
@@ -5978,8 +5980,8 @@ PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg)
 
    Logically Collective
 
-    Input Parameters:
-    TS - the time stepping routine
+    Input Parameter:
+.    TS - the time stepping routine
 
    Output Parameter:
 .   flg - `PETSC_TRUE` if the multiply is likely correct

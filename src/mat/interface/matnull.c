@@ -374,7 +374,7 @@ PetscErrorCode MatNullSpaceRemove(MatNullSpace sp, Vec vec)
 +  sp - the null space context
 -  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  isNull - `PETSC_TRUE` if the nullspace is valid for this matrix
 
    Level: advanced

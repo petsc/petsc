@@ -11,7 +11,7 @@
 
    Level: beginner
 
-.seealso: `TaoPDIPMUpdateConstraints()`, `TaoPDIPMSetUpBounds()`
+.seealso: `TAOPDIPM`, `TaoPDIPMUpdateConstraints()`, `TaoPDIPMSetUpBounds()`
 */
 static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao, Vec x)
 {
@@ -46,7 +46,7 @@ static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao, Vec x)
 
    Level: beginner
 
-.seealso: `TaoPDIPMEvaluateFunctionsAndJacobians()`
+.seealso: `TAOPDIPM`, `TaoPDIPMEvaluateFunctionsAndJacobians()`
 */
 static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x)
 {
@@ -143,7 +143,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x)
 
    Level: beginner
 
-.seealso: `TaoPDIPMUpdateConstraints`
+.seealso: `TAOPDIPM`, `TaoPDIPMUpdateConstraints`
 */
 static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
 {
@@ -204,10 +204,10 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
 }
 
 /*
-   TaoPDIPMInitializeSolution - Initialize PDIPM solution X = [x; lambdae; lambdai; z].
+   TaoPDIPMInitializeSolution - Initialize `TAOPDIPM` solution X = [x; lambdae; lambdai; z].
    X consists of four subvectors in the order [x; lambdae; lambdai; z]. These
      four subvectors need to be initialized and its values copied over to X. Instead
-     of copying, we use VecPlace/ResetArray functions to share the memory locations for
+     of copying, we use `VecPlaceArray()`/`VecResetArray()` functions to share the memory locations for
      X and the subvectors
 
    Collective
@@ -269,7 +269,7 @@ static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
 
    Output Parameter:
    J - Hessian matrix
-   Jpre - Preconditioner
+   Jpre - matrix to build the preconditioner from
 */
 static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, void *ctx)
 {
@@ -833,15 +833,6 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  TaoView_PDIPM - View PDIPM
-
-   Input Parameter:
-    tao - TAO object
-    viewer - PetscViewer
-
-   Output:
-*/
 PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
@@ -855,14 +846,6 @@ PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   TaoSetup_PDIPM - Sets up tao and pdipm
-
-   Input Parameter:
-   tao - TAO object
-
-   Output:   pdipm - initialized object
-*/
 PetscErrorCode TaoSetup_PDIPM(Tao tao)
 {
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
@@ -1370,15 +1353,6 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   TaoDestroy_PDIPM - Destroys the pdipm object
-
-   Input:
-   full pdipm
-
-   Output:
-   Destroyed pdipm
-*/
 PetscErrorCode TaoDestroy_PDIPM(Tao tao)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
@@ -1454,7 +1428,7 @@ PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsOb
 /*MC
   TAOPDIPM - Barrier-based primal-dual interior point algorithm for generally constrained optimization.
 
-  Option Database Keys:
+  Options Database Keys:
 +   -tao_pdipm_push_init_lambdai - parameter to push initial dual variables away from bounds (> 0)
 .   -tao_pdipm_push_init_slack - parameter to push initial slack variables away from bounds (> 0)
 .   -tao_pdipm_mu_update_factor - update scalar for barrier parameter (mu) update (> 0)
@@ -1463,7 +1437,7 @@ PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsOb
 
   Level: beginner
 
-.seealso: `Tao`, `TaoType`
+.seealso: `TAOPDIPM`, `Tao`, `TaoType`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)

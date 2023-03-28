@@ -5147,7 +5147,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, P
 
     Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .    A - the matrix
 
    Output Parameter:

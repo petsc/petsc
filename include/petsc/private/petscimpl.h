@@ -293,7 +293,7 @@ PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
   #include <petsc/private/petscimpl.h>
   PetscErrorCode PetscHeaderDestroy(PetscObject *obj)
 
-  Input Parameters:
+  Input Parameter:
 . h - A pointer to the header created with `PetscHeaderCreate()`
 
   Notes:

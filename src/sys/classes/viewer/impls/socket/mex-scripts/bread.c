@@ -67,11 +67,11 @@ void SYByteSwapScalar(PetscScalar *buff, int n)
     PetscBinaryRead - Reads from a socket, called from MATLAB
 
   Input Parameters:
-.   fd - the file
++   fd - the file
 .   n  - the number of items to read
-.   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
+-   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
-  Output Parameters:
+  Output Parameter:
 .   p - the buffer
 
   Notes:
@@ -115,10 +115,10 @@ PetscErrorCode PetscBinaryRead(int fd, void *p, int n, int *dummy, PetscDataType
     PetscBinaryWrite - Writes to a socket, called from MATLAB
 
   Input Parameters:
-.   fd - the file
++   fd - the file
 .   n  - the number of items to read
 .   p - the data
-.   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
+-   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
   Notes:
     does byte swapping to work on all machines.

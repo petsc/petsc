@@ -1450,7 +1450,7 @@ static PetscErrorCode DMPlexISFilterVertices_Private(DM dm, IS points)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The DMPlex object
 
   Notes:

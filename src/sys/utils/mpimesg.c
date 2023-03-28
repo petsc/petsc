@@ -14,7 +14,7 @@
 - ilengths - Non zero ilengths[i] represent a message to i of length `ilengths`[i].
              Optionally `NULL`.
 
-  Output Parameters:
+  Output Parameter:
 . nrecvs    - number of messages received
 
   Level: developer

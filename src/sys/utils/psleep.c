@@ -15,7 +15,7 @@
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  s - number of seconds to sleep
 
    Level: intermediate

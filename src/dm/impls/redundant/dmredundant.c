@@ -388,7 +388,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 .   rank - the MPI rank to own the redundant values
 -   N - total number of degrees of freedom
 
-    Output Parameters:
+    Output Parameter:
 .   dm - the `DM` object of type `DMREDUNDANT`
 
     Level: advanced

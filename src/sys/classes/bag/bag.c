@@ -30,6 +30,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag, PetscBagItem item, 
 .  addr - location of enum in struct, for example `&params->dt`
 .  list - array of strings containing names of enum values followed by enum name followed by enum prefix
 .  mdefault - the initial value, cast with (`PetscEnum`)
+.  name - the name of the item
 -  help - longer string with more information about the value
 
    Level: beginner
@@ -1023,9 +1024,8 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
 
   Not Collective
 
-  Input Parameters:
-+ bag   - the bag of values
-- names - array of the correct size to hold names, must be long enough to hold all the names
+  Input Parameter:
+. bag   - the bag of values
 
   Output Parameter:
 . names - array of char pointers for names

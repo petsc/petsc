@@ -78,8 +78,8 @@ PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt len, Pet
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname - The name of a new user-defined creation routine
+- function - The creation routine
 
   Sample usage:
 .vb
@@ -742,10 +742,10 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  sp - A dual space
 
-   Output Parameters:
+   Output Parameter:
 .  uniform - `PETSC_TRUE` if (a) the dual space is the same for each point in a stratum of the reference `DMPLEX`, and
              (b) every symmetry of each point in the reference `DMPLEX` is also a symmetry of the point's dual space.
 
@@ -895,7 +895,7 @@ PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace sp, PetscSecti
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . sp      - The `PetscDualSpace`
 
   Output Parameter:

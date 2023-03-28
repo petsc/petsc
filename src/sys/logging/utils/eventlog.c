@@ -332,6 +332,8 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
       PetscLogEventEnd(USER_EVENT,0,0,0,0);
 .ve
 
+  Level: developer
+
   Notes:
   PETSc can gather data for use with the utilities Jumpshot
   (part of the MPICH distribution).  If PETSc has been compiled
@@ -341,8 +343,6 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
   Jumpshot.
 
   This is a low level routine used by the logging functions in PETSc
-
-  Level: developer
 
 .seealso: `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogFlops()`,
           `PetscEventLogActivate()`, `PetscEventLogDeactivate()`
@@ -412,13 +412,13 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
         [code where you do want to log VecSetValues()]
 .ve
 
+  Level: developer
+
   Notes:
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
 
   This is a low level routine used by the logging functions in PETSc
-
-  Level: developer
 
 .seealso: `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogDeactivatePop()`, `PetscEventPerfLogDeactivatePush()`
 @*/
@@ -446,13 +446,13 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEve
         [code where you do want to log VecSetValues()]
 .ve
 
+   Level: developer
+
   Notes:
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
 
   This is a low level routine used by the logging functions in PETSc
-
-  Level: developer
 
 .seealso: `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivatePop()`, `PetscEventPerfLogDeactivatePush()`
 @*/
@@ -480,13 +480,13 @@ PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogE
         [code where you do want to log VecSetValues()]
 .ve
 
+  Level: developer
+
   Notes:
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
 
   This is a low level routine used by the logging functions in PETSc
-
-  Level: developer
 
 .seealso: `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivatePop()`
 @*/
@@ -514,13 +514,13 @@ PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog, Petsc
         [code where you do want to log VecSetValues()]
 .ve
 
+  Level: developer
+
   Notes:
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscEventRegLogRegister()`.
 
   This is a low level routine used by the logging functions in PETSc
-
-  Level: developer
 
 .seealso: `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivatePush()`
 @*/
@@ -636,9 +636,9 @@ PetscErrorCode PetscEventRegLogGetEvent(PetscEventRegLog eventLog, const char na
   Input Parameters:
 + eventLog  - The `PetscEventPerfLog`
 . event     - The event to log
-- isVisible - The visibility flag, PETSC_TRUE for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
+- isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
-  Database Options:
+  Options Database Key:
 . -log_view - Activates log summary
 
   Level: developer
@@ -667,7 +667,7 @@ PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogE
   Output Parameter:
 . isVisible - The visibility flag, `PETSC_TRUE` for printing, otherwise `PETSC_FALSE` (default is `PETSC_TRUE`)
 
-  Database Options:
+  Options Database Key:
 . -log_view - Activates log summary
 
   Level: developer
@@ -692,7 +692,7 @@ PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogE
 + stage - The stage number or `PETSC_DETERMINE` for the current stage
 - event - The event number
 
-  Output Parameters:
+  Output Parameter:
 . info - This structure is filled with the performance information
 
   Level: Intermediate
@@ -1125,13 +1125,13 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event, int t, PetscObject o1,
 . n     - The dof index, in [0, 8)
 - dof   - The number of dofs
 
-  Database Options:
+  Options Database Key:
 . -log_view - Activates log summary
+
+  Level: developer
 
   Note:
   This is to enable logging of convergence
-
-  Level: developer
 
 .seealso: `PetscLogEventSetError()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/
@@ -1160,16 +1160,16 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
 . n     - The error index, in [0, 8)
 - error - The error
 
-  Database Options:
+  Options Database Key:
 . -log_view - Activates log summary
+
+  Level: developer
 
   Notes:
   This is to enable logging of convergence, and enable users to interpret the errors as they wish. For example,
   as different norms, or as errors for different fields
 
   This is a low level routine used by the logging functions in PETSc
-
-  Level: developer
 
 .seealso: `PetscLogEventSetDof()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/

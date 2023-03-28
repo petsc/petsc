@@ -338,7 +338,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
 .  d1 - A vector defining a diagonal matrix
 -  d2 - A vector defining a diagonal matrix
 
-   Output Parameters:
+   Output Parameter:
 .  J - New matrix whose operations are defined in terms of mat, D1, and D2.
 
    Level: developer

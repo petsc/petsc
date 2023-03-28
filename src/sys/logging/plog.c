@@ -2369,9 +2369,9 @@ M*/
    Not Collective
 
    Input Parameters:
-+   flag - PETSC_TRUE to run twice, `PETSC_FALSE` to run once, may be overridden
++   flag - `PETSC_TRUE` to run twice, `PETSC_FALSE` to run once, may be overridden
            with command line option -preload true or -preload false
--   name - name of first stage (lines of code timed separately with -log_view) to
+-   name - name of first stage (lines of code timed separately with `-log_view`) to
            be preloaded
 
    Usage:
@@ -2393,8 +2393,8 @@ M*/
 .    PetscPreLoadingOn - true if it is CURRENTLY doing preload
 .    PetscPreLoadIt - 0 for the first computation (with preloading turned off it is only 0) 1 for the second
 -    PetscPreLoadMax - number of times it will do the computation, only one when preloading is turned on
-     The first two variables are available throughout the program, the second two only between the PetscPreLoadBegin()
-     and PetscPreLoadEnd()
+     The first two variables are available throughout the program, the second two only between the `PetscPreLoadBegin()`
+     and `PetscPreLoadEnd()`
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 M*/

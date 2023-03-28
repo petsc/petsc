@@ -95,8 +95,8 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname        - The name of a new user-defined creation routine
+- function - The creation routine itself
 
   Level: advanced
 

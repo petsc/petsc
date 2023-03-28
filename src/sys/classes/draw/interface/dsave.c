@@ -162,7 +162,7 @@ PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  draw - the drawing context
 
    Level: advanced
@@ -240,7 +240,7 @@ finally:
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  draw - the drawing context
 
    Level: advanced

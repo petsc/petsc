@@ -41,7 +41,8 @@ PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin
    Logically Collective
 
    Input Parameters:
-.  x, y  - the vectors
++  x - the numerators
+-  y - the denominators
 
    Output Parameter:
 .  max - the result
@@ -81,7 +82,8 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
    Collective
 
    Input Parameters:
-.  x, y - the vectors
++  x - first vector
+-  y - second vector
 
    Output Parameter:
 .  val - the dot product
@@ -137,7 +139,8 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
    Collective
 
    Input Parameters:
-.  x, y - the vectors
++  x - first vector
+-  y - second vector
 
    Output Parameter:
 .  val - the real part of the dot product;
@@ -404,7 +407,8 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
    Collective
 
    Input Parameters:
-.  x, y - the vectors
++  x - first vector
+-  y - second vector
 
    Output Parameter:
 .  val - the dot product
@@ -555,7 +559,8 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 
    Input Parameters:
 +  alpha - the scalar
--  x, y  - the vectors
+.  x - vector scale by `alpha`
+-  y - vector accumulated into
 
    Output Parameter:
 .  y - output vector
@@ -618,7 +623,7 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
    Level: intermediate
 
    Developer Note:
-    The implementation is optimized for beta of -1.0, 0.0, and 1.0
+    The implementation is optimized for `beta` of -1.0, 0.0, and 1.0
 
 .seealso: [](chapter_vectors), `Vec`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
@@ -658,7 +663,8 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
    Logically Collective
 
    Input Parameters:
-+  alpha,beta - the scalars
++  alpha - first scalar
+.  beta - second scalar
 .  x - the first scaled vector
 -  y - the second scaled vector
 
@@ -668,7 +674,7 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
    Level: intermediate
 
    Developer Note:
-   The implementation is optimized for alpha and/or beta values of 0.0 and 1.0
+   The implementation is optimized for `alpha` and/or `beta` values of 0.0 and 1.0
 
 .seealso: [](chapter_vectors), `Vec`, `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`
 @*/
@@ -707,8 +713,12 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
    Logically Collective
 
    Input Parameters:
-+  alpha,beta, gamma - the scalars
--  x, y, z  - the vectors
++  alpha - first scalar
+.  beta - second scalar
+.  gamma - third scalar
+.  x  - first vector
+.  y  - second vector
+-  z  - third vector
 
    Output Parameter:
 .  z - output vector
@@ -719,7 +729,7 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
    `x`, `y` and `z` must be different vectors
 
    Developer Note:
-    The implementation is optimized for alpha of 1.0 and gamma of 1.0 or 0.0
+    The implementation is optimized for `alpha` of 1.0 and `gamma` of 1.0 or 0.0
 
 .seealso: [](chapter_vectors), `Vec`, `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBY()`
 @*/
@@ -765,7 +775,8 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
 
    Input Parameters:
 +  alpha - the scalar
--  x, y  - the vectors
+.  x  - first vector, multiplied by `alpha`
+-  y  - second vector
 
    Output Parameter:
 .  w - the result
@@ -1355,7 +1366,7 @@ PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X, IS is, PetscBool *c
 .   is - the index set of the subvector
 -   bs - the block size of the subvector, gotten from VecGetSubVectorContiguityAndBS_Private()
 
-    Output Parameters:
+    Output Parameter:
 .   Z  - the subvector, which will compose the VecScatter context on output
 */
 PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt bs, Vec *Z)

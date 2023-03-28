@@ -900,7 +900,7 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
 . cmp  - function pointer to comparison function
 - ctx  - optional context to be passed to comparison function, NULL if not needed
 
-  Output Parameters:
+  Output Parameter:
 . arr  - sorted array
 
   Notes:
@@ -1151,7 +1151,7 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
 +  n   - number of values
 -  arr - array of integers
 
-   Output Parameters:
+   Output Parameter:
 .  arr - sorted array of integers
 
    Notes:
@@ -1222,7 +1222,7 @@ PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], Pet
 +  n   - number of values
 -  arr - array of `PetscMPIInt`
 
-   Output Parameters:
+   Output Parameter:
 .  arr - sorted array of integers
 
    Notes:
@@ -1293,7 +1293,7 @@ PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[
 +  n   - number of values
 -  arr - array of `PetscReal`
 
-   Output Parameters:
+   Output Parameter:
 .  arr - sorted array of integers
 
    Notes:

@@ -365,7 +365,7 @@ M*/
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  addr - address to align (any pointer type)
 
    Level: developer

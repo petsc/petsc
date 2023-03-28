@@ -686,7 +686,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
 +  A - FFTW matrix
 -  x - the PETSc vector
 
-   Output Parameters:
+   Output Parameter:
 .  y - the FFTW vector
 
    Level: intermediate
@@ -921,7 +921,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
 +   A - `MATFFTW` matrix
 -   x - FFTW vector
 
-   Output Parameters:
+   Output Parameter:
 .  y - PETSc vector
 
    Level: intermediate

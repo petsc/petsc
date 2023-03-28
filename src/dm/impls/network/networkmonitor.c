@@ -6,10 +6,10 @@
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . network - network to monitor
 
-  Output Parameters:
+  Output Parameter:
 . monitorptr - the `DMNetworkMonitor` object
 
   Level: intermediate
@@ -41,7 +41,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network, DMNetworkMonitor *monitorptr)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . monitor - monitor to destroy
 
   Level: intermediate
@@ -62,7 +62,7 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . monitor - the monitor
 
   Level: intermediate

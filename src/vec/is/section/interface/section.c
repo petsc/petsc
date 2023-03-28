@@ -638,7 +638,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
   Input Parameter:
 . s - the `PetscSection`
 
-  Output Parameters:
+  Output Parameter:
 . perm - The permutation as an `IS`
 
   Level: intermediate
@@ -1177,7 +1177,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . s - the `PetscSection`
 
   Output Parameter:
@@ -2318,7 +2318,7 @@ static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . s - the `PetscSection`
 
   Level: beginner
@@ -2366,7 +2366,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . s - the `PetscSection`
 
   Level: beginner
@@ -2924,7 +2924,7 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
 . depth     - Depth stratum on which to obtain closure permutation
 - clSize    - Closure size to be permuted (e.g., may vary with element topology and degree)
 
-  Output Parameters:
+  Output Parameter:
 . perm - The dof closure permutation
 
   Level: intermediate
@@ -3061,8 +3061,8 @@ PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname        - The name of a new user-defined creation routine
+- function - The creation routine itself
 
   Level: developer
 
@@ -3084,7 +3084,7 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  sym - the section symmetry
 
    Level: developer
@@ -3173,10 +3173,10 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . section - the section describing data layout
 
-  Output Parameters:
+  Output Parameter:
 . sym - the symmetry describing the affect of orientation on the access of the data, provided previously by `PetscSectionSetSym()`
 
   Level: developer
@@ -3223,7 +3223,7 @@ PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, Pet
 + section - the section describing data layout
 - field - the field number
 
-  Output Parameters:
+  Output Parameter:
 . sym - the symmetry describing the affect of orientation on the access of the data
 
   Level: developer
@@ -3487,7 +3487,7 @@ PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
 + sym - the `PetscSectionSym`
 - migrationSF - the distribution map from roots to leaves
 
-  Output Parameters:
+  Output Parameter:
 . dsym - the redistributed symmetries
 
   Level: developer
@@ -3512,7 +3512,7 @@ PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationS
   Input Parameter:
 . s - the global `PetscSection`
 
-  Output Parameters:
+  Output Parameter:
 . flg - the flag
 
   Level: developer

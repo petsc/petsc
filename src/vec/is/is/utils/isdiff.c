@@ -12,7 +12,7 @@
 +  is1 - first index, to have items removed from it
 -  is2 - index values to be removed
 
-   Output Parameters:
+   Output Parameter:
 .  isout - is1 - is2
 
    Level: intermediate
@@ -254,7 +254,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 +  is1 - first index set
 -  is2 - index values to be added
 
-   Output Parameters:
+   Output Parameter:
 .  isout - `is1` + `is2` The index set `is2` is appended to `is1` removing duplicates
 
    Level: intermediate
@@ -345,7 +345,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
 +  is1 - first index set
 -  is2 - second index set
 
-   Output Parameters:
+   Output Parameter:
 .  isout - the sorted intersection of `is1` and `is2`
 
    Level: intermediate
@@ -463,7 +463,7 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 .  len     - size of islist array (nonnegative)
 -  islist  - array of index sets
 
-   Output Parameters:
+   Output Parameter:
 .  isout   - The concatenated index set; empty, if `len` == 0.
 
    Level: intermediate
@@ -717,7 +717,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 . b    -  `IS` to embed into
 - drop -  flag indicating whether to drop indices of `a` that are not in `b`.
 
-  Output Parameters:
+  Output Parameter:
 . c    -  local embedding indices
 
   Level: developer

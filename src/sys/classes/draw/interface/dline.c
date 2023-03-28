@@ -13,7 +13,10 @@
 .  draw - the drawing context
 
    Output Parameters:
-.   xl,yl,xr,yr - coordinates of lower left and upper right corners of bounding box
++   xl - horizontal coordinate of lower left corner of bounding box
+.   yl - vertical coordinate of lower left corner of bounding box
+.   xr - horizontal coordinate of upper right corner of bounding box
+-   yr - vertical coordinate of upper right corner of bounding box
 
    Level: intermediate
 
@@ -43,7 +46,8 @@ PetscErrorCode PetscDrawGetBoundingBox(PetscDraw draw, PetscReal *xl, PetscReal 
 .  draw - the drawing context
 
    Output Parameters:
-.   x,y - the current point
++   x - horizontal coordinate of the current point
+-   y - vertical coordinate of the current point
 
    Level: intermediate
 
@@ -67,7 +71,8 @@ PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw draw, PetscReal *x, PetscReal 
 
    Input Parameters:
 +  draw - the drawing context
--  x,y - the location of the current point
+.   x - horizontal coordinate of the current point
+-   y - vertical coordinate of the current point
 
    Level: intermediate
 
@@ -89,7 +94,8 @@ PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y
 
    Input Parameters:
 +  draw - the drawing context
--  x,y - the location of the current point
+.   x - horizontal coordinate of the current point
+-   y - vertical coordinate of the current point
 
    Level: intermediate
 
@@ -132,7 +138,10 @@ PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw draw)
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl,xr,yr - the coordinates of the line endpoints
+.  xl - horizontal coordinate of first end point
+.  yl - vertical coordinate of first end point
+.  xr - horizontal coordinate of second end point
+.  yr - vertical coordinate of second end point
 -  cl - the colors of the endpoints
 
    Level: beginner
@@ -155,7 +164,10 @@ PetscErrorCode PetscDrawLine(PetscDraw draw, PetscReal xl, PetscReal yl, PetscRe
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl,xr,yr - the coordinates of the line endpoints
+.  xl - horizontal coordinate of first end point
+.  yl - vertical coordinate of first end point
+.  xr - horizontal coordinate of second end point
+.  yr - vertical coordinate of second end point
 -  cl - the colors of the endpoints
 
    Level: beginner

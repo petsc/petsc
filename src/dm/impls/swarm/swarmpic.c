@@ -817,8 +817,8 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 
   Not Collective
 
-  Input Parameters:
-, sw - The `DMSWARM`
+  Input Parameter:
+. sw - The `DMSWARM`
 
   Level: advanced
 

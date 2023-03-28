@@ -9,7 +9,7 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - the MPI communicator
 
    Output Parameter:

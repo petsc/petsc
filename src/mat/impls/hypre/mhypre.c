@@ -1527,10 +1527,10 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
           structure. The size of this array is equal to the number
           of local rows, i.e `m`.
 
+   Level: intermediate
+
    Note:
     If the *nnz parameter is given then the *nz parameter is ignored; for sequential matrices, `onz` and `onnz` are ignored.
-
-   Level: intermediate
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatMPIAIJSetPreallocation()`, `MATHYPRE`, `MATAIJ`
 @*/

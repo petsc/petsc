@@ -59,15 +59,15 @@ PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, cons
 
    Input Parameters:
 +  lg - the line graph context
--  x, y - the points to two arrays containing the new x and y
-          point for each curve.
+.  x - array containing the x coordinate for the point on each curve
+-  y - array containing the y coordinate for the point on each curve
+
+   Level: intermediate
 
    Notes:
    You must call `PetscDrawLGDraw()` to display any added points
 
    Call `PetscDrawLGReset()` to remove all points
-
-   Level: intermediate
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
@@ -115,8 +115,8 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
 
    Input Parameters:
 +  lg - the line graph context
-.  xx,yy - points to two arrays of pointers that point to arrays
-           containing the new x and y points for each curve.
+.  xx - array of pointers that point to arrays containing the new x coordinates for each curve.
+.  yy - array of pointers that point to arrays containing the new y points for each curve.
 -  n - number of points being added
 
    Level: intermediate

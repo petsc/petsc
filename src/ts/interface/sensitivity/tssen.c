@@ -90,7 +90,12 @@ PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, P
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+- U - the solution at which to compute the Jacobian
+
+  Output Parameter:
+. Amat - the computed Jacobian
 
   Level: developer
 
@@ -172,7 +177,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Petsc
 . shift - shift to apply, see note below
 - imex - flag indicates if the method is IMEX so that the RHSJacobianP should be kept separate
 
-  Output Parameters:
+  Output Parameter:
 . A - Jacobian matrix
 
   Level: developer
@@ -226,9 +231,9 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
 .   costintegral - vector that stores the integral values
 .   rf - routine for evaluating the integrand function
 .   drduf - function that computes the gradients of the r's with respect to u
-.   drdpf - function that computes the gradients of the r's with respect to p, can be NULL if parametric sensitivity is not desired (mu=NULL)
+.   drdpf - function that computes the gradients of the r's with respect to p, can be `NULL` if parametric sensitivity is not desired (`mu` = `NULL`)
 .   fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
--   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
+-   ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
     Calling sequence of `rf`:
 $   PetscErrorCode rf(TS ts, PetscReal t, Vec U, Vec F, oid *ctx)
@@ -437,7 +442,14 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -471,7 +483,14 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -505,7 +524,14 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -539,7 +565,14 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -605,7 +638,7 @@ $ PetscErrorCode rhshessianproductfunc(TS ts, PetscReal t, Vec U, Vec *Vl, Vec V
   $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * G_UP[i][j][k] * Vr[k]}
   If the cost function is a scalar, there will be only one vector in Vl and VHV.
 
-.seealso: `TS`
+.seealso: `TS`, `TSAdjoint`
 @*/
 PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshessianproductfunc1)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp2, PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp3, PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp4, PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
 {
@@ -631,7 +664,14 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -658,7 +698,14 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -685,7 +732,14 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -712,7 +766,14 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
   Collective
 
   Input Parameters:
-. ts   - The `TS` context obtained from `TSCreate()`
++ ts   - The `TS` context obtained from `TSCreate()`
+. t - the time
+. U - the solution at which to compute the Hessian product
+. Vl - the array of input vectors to be multiplied with the Hessian from the left
+- Vr - the input vector to be multiplied with the Hessian from the right
+
+  Output Parameter:
+. VhV - the array of output vectors that store the Hessian product
 
   Level: developer
 
@@ -817,7 +878,7 @@ PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **
 
    After `TSAdjointSolve()` is called, the lambda2 and the mu2 will contain the computed second-order adjoint sensitivities, and can be used to produce Hessian-vector product (not the full Hessian matrix). Users must provide a direction vector; it is usually generated by an optimization solver.
 
-   Passing NULL for lambda2 disables the second-order calculation.
+   Passing `NULL` for `lambda2` disables the second-order calculation.
 
 .seealso: [](chapter_ts), `TS`, `TSAdjointSolve()`, `TSAdjointSetForward()`
 @*/
@@ -874,8 +935,8 @@ PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2,
   Level: intermediate
 
   Notes:
-  When computing sensitivies w.r.t. initial condition, set didp to NULL so that the solver will take it as an identity matrix mathematically.
-  `TS` adjoint does not reset the tangent linear solver automatically, `TSAdjointResetForward()` should be called to reset the tangent linear solver.
+  When computing sensitivies w.r.t. initial condition, set didp to `NULL` so that the solver will take it as an identity matrix mathematically.
+  `TSAdjoint` does not reset the tangent linear solver automatically, `TSAdjointResetForward()` should be called to reset the tangent linear solver.
 
 .seealso: [](chapter_ts), `TSAdjointSolve()`, `TSSetCostHessianProducts()`, `TSAdjointResetForward()`
 @*/
@@ -922,7 +983,7 @@ PetscErrorCode TSAdjointSetForward(TS ts, Mat didp)
 
   Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
   Level: intermediate
@@ -1178,9 +1239,9 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
 +  ts - the `TS` context obtained from `TSCreate()`
 .  adjointmonitor - monitoring routine
 .  adjointmctx - [optional] user-defined context for private data for the
-             monitor routine (use NULL if no context is desired)
+             monitor routine (use `NULL` if no context is desired)
 -  adjointmonitordestroy - [optional] routine that frees monitor context
-          (may be NULL)
+          (may be `NULL`)
 
    Calling sequence of `adjointmonitor`:
 $    PetscErrorCode adjointmonitor(TS ts, PetscInt steps, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *adjointmctx)
@@ -1228,7 +1289,7 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, P
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Notes:
@@ -1286,7 +1347,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Ve
 .  numcost - number of cost functions
 .  lambda - sensitivities to initial conditions
 .  mu - sensitivities to parameters
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Level: intermediate
 
@@ -1795,7 +1856,7 @@ PetscErrorCode TSForwardGetStages(TS ts, PetscInt *ns, Mat **S)
 +  ts - the `TS` context obtained from `TSCreate()`
 -  fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 
-   Output Parameters:
+   Output Parameter:
 .  quadts - the child `TS` context
 
    Level: intermediate

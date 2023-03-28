@@ -675,8 +675,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJHIPSPARSE(Mat A)
 .  N - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 .  d_nz - number of nonzeros per row (same for all rows), for the "diagonal" portion of the matrix
 .  d_nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`, for the "diagonal" portion of the matrix
-.  d_nz - number of nonzeros per row (same for all rows), for the "off-diagonal" portion of the matrix
--  d_nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`, for the "off-diagonal" portion of the matrix
+.  o_nz - number of nonzeros per row (same for all rows), for the "off-diagonal" portion of the matrix
+-  o_nnz - array containing the number of nonzeros in the various rows (possibly different for each row) or `NULL`, for the "off-diagonal" portion of the matrix
 
    Output Parameter:
 .  A - the matrix
@@ -690,18 +690,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJHIPSPARSE(Mat A)
 
    If `d_nnz` (`o_nnz`) is given then `d_nz` (`o_nz`) is ignored
 
-   The AIJ format (compressed row storage), is fully compatible with standard Fortran
+   The `MATAIJ` format (compressed row storage), is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.
 
    Specify the preallocated storage with either `d_nz` (`o_nz`) or `d_nnz` (`o_nnz`) (not both).
    Set `d_nz` (`o_nz`) = `PETSC_DEFAULT` and `d_nnz` (`o_nnz`) = `NULL` for PETSc to control dynamic memory
    allocation.
-
-   By default, this format uses inodes (identical nodes) when possible, to
-   improve numerical efficiency of matrix-vector products and solves. We
-   search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATMPIAIJHIPSPARSE`, `MATAIJHIPSPARSE`
 @*/

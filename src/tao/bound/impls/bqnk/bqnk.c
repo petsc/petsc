@@ -194,10 +194,10 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
    TaoGetLMVMMatrix - Returns a pointer to the internal LMVM matrix. Valid
    only for quasi-Newton family of methods.
 
-   Input Parameters:
-.  tao - Tao solver context
+   Input Parameter:
+.  tao - `Tao` solver context
 
-   Output Parameters:
+   Output Parameter:
 .  B - LMVM matrix
 
    Level: advanced

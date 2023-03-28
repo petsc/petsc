@@ -1747,7 +1747,7 @@ static PetscErrorCode DMSwarmTSRedistribute(TS ts)
 + ts         - The TS
 - useInitial - Flag to also set the initial conditions to the current coodinates and velocities and setup the problem
 
-  Output Parameters:
+  Output Parameter:
 . u - The initialized solution vector
 
   Level: advanced

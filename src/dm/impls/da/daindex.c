@@ -54,8 +54,6 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
 +  da - the distributed array
 -  aotype - type of `AO`
 
-   Output Parameters:
-
    Level: intermediate
 
    Note:
@@ -95,7 +93,7 @@ PetscErrorCode DMDASetAOType(DM da, AOType aotype)
    Input Parameter:
 .  da - the distributed array
 
-   Output Parameters:
+   Output Parameter:
 .  ao - the application ordering context for `DMDA`
 
    Level: intermediate

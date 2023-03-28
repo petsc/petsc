@@ -292,10 +292,10 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes, PCASMType type)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  type - the type of update
 
    Level: intermediate
@@ -583,7 +583,7 @@ static PetscErrorCode SNESNASMGetDamping_NASM(SNES snes, PetscReal *dmp)
 . B - The RHS vector
 - X - The initial guess
 
-  Output Parameters:
+  Output Parameter:
 . Y - The solution update
 
   TODO: All scatters should be packed into one
@@ -899,7 +899,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 +  snes - the `SNES` context
 -  i - the number of the subsnes to get
 
-   Output Parameters:
+   Output Parameter:
 .  subsnes - the subsolver context
 
    Level: intermediate
@@ -921,10 +921,10 @@ PetscErrorCode SNESNASMGetSNES(SNES snes, PetscInt i, SNES *subsnes)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  n - the number of subsolvers
 
    Level: intermediate

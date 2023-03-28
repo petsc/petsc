@@ -32,8 +32,8 @@ PetscErrorCode DMFieldRegisterAll(void)
    Not collective
 
    Input Parameters:
-+  name_impl - name of a new user-defined implementation
--  routine_create - routine to create method context
++  sname - name of a new user-defined implementation
+-  function - routine to create method context
 
    Sample usage:
 .vb
