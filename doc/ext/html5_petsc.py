@@ -18,7 +18,6 @@ if not hasattr(re,'Pattern'): re.Pattern = re._pattern_type
 
 PETSC_DOC_OUT_ROOT_PLACEHOLDER = 'PETSC_DOC_OUT_ROOT_PLACEHOLDER'
 
-
 def setup(app: Sphinx) -> None:
     _check_version(app)
 
@@ -82,7 +81,7 @@ class PETScHTMLTranslatorMixin:
 
     def __init__(self, *args: Any) -> None:
         self._manpage_map = None
-        self._manpage_pattern = None
+        self._word_pattern = re.compile('\w+')
         super().__init__(*args)
 
 
@@ -98,22 +97,18 @@ class PETScHTMLTranslatorMixin:
             self._manpage_map = dict_complete_links(manpage_map_raw, manpage_prefix)
         return self._manpage_map
 
-    def _get_manpage_pattern(self) -> re.Pattern:
-        """ Return the manpage links pattern.
-
-        This is done lazily, so this function should always be used,
-        instead of the direct data member, which may not be populated yet
-        """
-
-        if not self._manpage_pattern:
-            self._manpage_pattern = get_multiple_replace_pattern(self._get_manpage_map())
-        return self._manpage_pattern
 
     def _add_manpage_links(self, string: str) -> str:
         """ Add plain HTML link tags to a string """
         manpage_map = self._get_manpage_map()
-        manpage_pattern = self._get_manpage_pattern()
-        return replace_from_dict_and_pattern(string, manpage_map, manpage_pattern)
+        def replace(matchobj):
+            word = matchobj.group(0)
+            if word in manpage_map:
+                return manpage_map[word]
+            return word
+
+        return self._word_pattern.sub(replace, string)
+
 
     # This method consists mostly of code duplicated from Sphinx:
     # overwritten
@@ -174,17 +169,17 @@ class PETScHTMLTranslatorMixin:
 
 def htmlmap_to_dict(htmlmap_filename: str) -> Dict[str,str]:
     """ Extract a dict from an htmlmap file, leaving URLs as they are."""
-    pattern = re.compile(r'man:\+([a-zA-Z_0-9]*)\+\+([a-zA-Z_0-9 .:]*)\+\+\+\+man\+([a-zA-Z_0-9#./:-]*)')
-    string_to_link = dict()
     with open(htmlmap_filename, 'r') as f:
-        for line in f.readlines():
-            m = re.match(pattern, line)
-            if m:
-                string = m.group(1)
-                string_to_link[string] = m.group(3)
-            else:
-                print("Warning: skipping unexpected line in " + htmlmap_filename + ":")
-                print(line)
+        lines = [l for l in f.readlines() if l.startswith('man:')]
+    string_to_link = dict()
+    pattern        = re.compile(r'man:\+([a-zA-Z_0-9]*)\+\+([a-zA-Z_0-9 .:]*)\+\+\+\+man\+([a-zA-Z_0-9#./:-]*)')
+    for line in lines:
+        m = pattern.match(line)
+        if m:
+            string_to_link[m.group(1)] = m.group(3)
+        else:
+            print("Warning: skipping unexpected line in " + htmlmap_filename + ":")
+            print(line)
     return string_to_link
 
 
@@ -196,16 +191,3 @@ def dict_complete_links(string_to_link: Dict[str,str], prefix: str = '') -> Dict
         url = link if link.startswith('http') else prefix + link
         return '<a href=\"' + url + '\">' + name + '</a>'
     return dict((k, link_string(k, v, prefix)) for (k, v) in string_to_link.items())
-
-
-def get_multiple_replace_pattern(source_dict: Dict[str,str]) -> re.Pattern:
-    """ Generate a regex to match any of the keys in source_dict, as full words """
-    def process_word(word):
-        """ add escape characters and word boundaries """
-        return r'\b' + re.escape(word) + r'\b'
-    return re.compile(r'|'.join(map(process_word, source_dict)))
-
-
-def replace_from_dict_and_pattern(string: str, replacements: Dict, pattern: re.Pattern) -> str:
-    """ Given a pattern which matches keys in replacements, replace keys found in string with their values"""
-    return pattern.sub(lambda match: replacements[match.group(0)], string)
