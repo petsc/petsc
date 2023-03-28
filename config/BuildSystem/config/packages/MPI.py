@@ -559,38 +559,38 @@ Unable to run hostname to check the network')
 
   def configureMPIX(self):
     '''Check for experimental functions added by MPICH or OpenMPI as MPIX'''
-    oldFlags = self.compilers.CPPFLAGS
-    oldLibs  = self.compilers.LIBS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    self.framework.saveLog()
+    # mpich-4.2 has a bug fix (PR6454). Without it, we could not use MPIX stream
+    if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) >= 40200000):
+      oldFlags = self.compilers.CPPFLAGS
+      oldLibs  = self.compilers.LIBS
+      self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+      self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+      self.framework.saveLog()
+      if self.checkLink('#include <mpi.h>\n',
+      '''
+        MPI_Info    info ;
+        // cudaStream_t stream;
+        int         stream; // use a fake type instead as we don't want this check to depend on CUDA
+        MPI_Comm    stream_comm ;
+        MPIX_Stream mpi_stream ;
+        MPI_Request req;
+        MPI_Status  stat;
+        int         sbuf[1]={0},rbuf[1]={0},count=1,dest=1,source=0,tag=0;
 
-    if self.checkLink('#include <mpi.h>\n',
-    '''
-      MPI_Info    info ;
-      // cudaStream_t stream;
-      int         stream; // use a fake type instead as we don't want this check to depend on CUDA
-      MPI_Comm    stream_comm ;
-      MPIX_Stream mpi_stream ;
-      MPI_Request req;
-      MPI_Status  stat;
-      int         sbuf[1]={0},rbuf[1]={0},count=1,dest=1,source=0,tag=0;
-
-      MPI_Info_create (&info);
-      MPI_Info_set(info, "type", "cudaStream_t");
-      MPIX_Info_set_hex(info, "value", &stream, sizeof(stream));
-      MPIX_Stream_create(info, &mpi_stream );
-      MPIX_Stream_comm_create(MPI_COMM_WORLD, mpi_stream, &stream_comm);
-      MPIX_Isend_enqueue(sbuf,count,MPI_INT,dest,tag,stream_comm,&req);
-      MPIX_Irecv_enqueue(rbuf,count,MPI_INT,source,tag,stream_comm,&req);
-      MPIX_Allreduce_enqueue(sbuf,rbuf,count,MPI_INT,MPI_SUM,stream_comm);
-      MPIX_Wait_enqueue(&req, &stat);
-    '''):
-      self.addDefine('HAVE_MPIX_STREAM', 1)
-
-    self.compilers.CPPFLAGS = oldFlags
-    self.compilers.LIBS = oldLibs
-    self.logWrite(self.framework.restoreLog())
+        MPI_Info_create (&info);
+        MPI_Info_set(info, "type", "cudaStream_t");
+        MPIX_Info_set_hex(info, "value", &stream, sizeof(stream));
+        MPIX_Stream_create(info, &mpi_stream );
+        MPIX_Stream_comm_create(MPI_COMM_WORLD, mpi_stream, &stream_comm);
+        MPIX_Isend_enqueue(sbuf,count,MPI_INT,dest,tag,stream_comm,&req);
+        MPIX_Irecv_enqueue(rbuf,count,MPI_INT,source,tag,stream_comm,&req);
+        MPIX_Allreduce_enqueue(sbuf,rbuf,count,MPI_INT,MPI_SUM,stream_comm);
+        MPIX_Wait_enqueue(&req, &stat);
+      '''):
+        self.addDefine('HAVE_MPIX_STREAM', 1)
+      self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
+      self.logWrite(self.framework.restoreLog())
     return
 
   def configureMPITypes(self):

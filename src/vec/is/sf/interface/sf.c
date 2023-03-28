@@ -5,6 +5,7 @@
 
 #if defined(PETSC_HAVE_CUDA)
   #include <cuda_runtime.h>
+  #include <petscdevice_cuda.h>
 #endif
 
 #if defined(PETSC_HAVE_HIP)
@@ -237,6 +238,12 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
   PetscTryTypeMethod((*sf), Destroy);
   PetscCall(PetscSFDestroy(&(*sf)->vscat.lsf));
   if ((*sf)->vscat.bs > 1) PetscCallMPI(MPI_Type_free(&(*sf)->vscat.unit));
+#if defined(PETSC_HAVE_MPIX_STREAM)
+  if ((*sf)->use_stream_aware_mpi) {
+    PetscCallMPI(MPIX_Stream_free(&(*sf)->mpi_stream));
+    PetscCallMPI(MPI_Comm_free(&(*sf)->stream_comm));
+  }
+#endif
   PetscCall(PetscHeaderDestroy(sf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -298,7 +305,6 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   }
 #endif
 
-#
 #if defined(PETSC_HAVE_KOKKOS)
   if (sf->backend == PETSCSF_BACKEND_KOKKOS) {
     sf->ops->Malloc = PetscSFMalloc_Kokkos;
@@ -366,6 +372,19 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
     else PetscCheck(!set, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "-sf_backend %s is not supported. You may choose cuda, hip or kokkos (if installed)", backendstr);
   #elif defined(PETSC_HAVE_KOKKOS)
     PetscCheck(!set || isKokkos, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "-sf_backend %s is not supported. You can only choose kokkos", backendstr);
+  #endif
+
+  #if defined(PETSC_HAVE_CUDA) && defined(PETSC_HAVE_MPIX_STREAM)
+    if (sf->use_stream_aware_mpi) {
+      MPI_Info info;
+
+      PetscCallMPI(MPI_Info_create(&info));
+      PetscCallMPI(MPI_Info_set(info, "type", "cudaStream_t"));
+      PetscCallMPI(MPIX_Info_set_hex(info, "value", &PetscDefaultCudaStream, sizeof(PetscDefaultCudaStream)));
+      PetscCallMPI(MPIX_Stream_create(info, &sf->mpi_stream));
+      PetscCallMPI(MPI_Info_free(&info));
+      PetscCallMPI(MPIX_Stream_comm_create(PetscObjectComm((PetscObject)sf), sf->mpi_stream, &sf->stream_comm));
+    }
   #endif
   }
 #endif

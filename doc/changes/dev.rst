@@ -127,6 +127,9 @@ Changes: Development
 
 .. rubric:: VecScatter / PetscSF:
 
+- Add experimental support in PetscSF for MPICH MPIX_Stream (with MPICH-4.2.0 and higher). One can enable it via ``-sf_use_stream_aware_mpi``
+- Add an alias option ``-sf_use_gpu_aware_mpi`` to ``-use_gpu_aware_mpi``
+
 - Remove ``SCATTER_LOCAL`` from the enum type since it is not a public value
 - Change ``PetscSFConcatenate()`` to accept ``PetscSFConcatenateRootMode`` parameter; add option to concatenate root spaces globally
 - Add ``PetscSFSetGraphFromCoordinates()`` to construct a graph from fuzzy matching of coordinates; such as occurs for projections between different dimensions or for overlapping meshes
