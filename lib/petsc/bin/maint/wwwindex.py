@@ -147,7 +147,7 @@ def modifylevel(filename,secname):
 
       # write the modified manpage
       with open(filename, "w") as fd:
-          fd.write(':orphan:"\n'+outbuf)
+          fd.write(':orphan:\n'+outbuf)
 
       return level
 
