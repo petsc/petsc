@@ -138,6 +138,8 @@ cdef extern from * nogil:
 
     PetscErrorCode DMSetSection(PetscDM,PetscSection)
     PetscErrorCode DMGetSection(PetscDM,PetscSection*)
+    PetscErrorCode DMSetLocalSection(PetscDM,PetscSection)
+    PetscErrorCode DMGetLocalSection(PetscDM,PetscSection*)
     PetscErrorCode DMSetGlobalSection(PetscDM,PetscSection)
     PetscErrorCode DMGetGlobalSection(PetscDM,PetscSection*)
     PetscErrorCode DMCreateSectionSF(PetscDM,PetscSection,PetscSection)
