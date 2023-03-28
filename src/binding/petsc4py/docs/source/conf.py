@@ -14,6 +14,8 @@ import sys
 import typing
 import datetime
 import importlib
+import sphobjinv
+
 sys.path.insert(0, os.path.abspath('.'))
 _today = datetime.datetime.now()
 
@@ -88,13 +90,42 @@ autosummary_context = {
     'autotype': {},
 }
 
+
+def _mangle_petsc_intersphinx():
+    """Preprocess the keys in PETSc's intersphinx inventory.
+
+    PETSc have intersphinx keys of the form::
+
+        manualpages/Vec/VecShift
+
+    instead of:
+
+        petsc.VecShift
+
+    This function downloads their object inventory and strips the leading path
+    elements so that references to PETSc names actually resolve."""
+    inv = sphobjinv.Inventory(url="https://petsc.org/main/objects.inv")
+
+    for obj in inv.objects:
+        if obj.name.startswith("manualpages"):
+            obj.name = "petsc." + "/".join(obj.name.split("/")[2:])
+            obj.role = "class"
+            obj.domain = "py"
+
+    sphobjinv.writebytes("petsc_objects.inv",
+                         sphobjinv.compress(inv.data_file(contract=True)))
+
+
+_mangle_petsc_intersphinx()
+
+
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'mpi4py': ('https://mpi4py.readthedocs.io/en/stable/', None),
     'pyopencl': ('https://documen.tician.de/pyopencl/', None),
     'dlpack': ('https://dmlc.github.io/dlpack/latest/', None),
-    'petsc': ('https://petsc.org/main/', None),
+    'petsc': ('https://petsc.org/main/', 'petsc_objects.inv'),
 }
 
 napoleon_preprocess_types = True
