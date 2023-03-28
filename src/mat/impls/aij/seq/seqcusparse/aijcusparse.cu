@@ -2131,7 +2131,8 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, 
 
 static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B, Mat A, const MatFactorInfo *info)
 {
-  Mat_SeqAIJCUSPARSE *cusparsestruct = static_cast<Mat_SeqAIJCUSPARSE *>(B->spptr);
+  // use_cpu_solve is a field in Mat_SeqAIJCUSPARSE. B, a factored matrix, uses Mat_SeqAIJCUSPARSETriFactors.
+  Mat_SeqAIJCUSPARSE *cusparsestruct = static_cast<Mat_SeqAIJCUSPARSE *>(A->spptr);
 
   PetscFunctionBegin;
   PetscCall(MatSeqAIJCUSPARSECopyFromGPU(A));
@@ -2263,7 +2264,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat A, MatFacto
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, n, n, n, n));
-  (*B)->factortype = ftype;
+  (*B)->factortype = ftype; // factortype makes MatSetType() allocate spptr of type Mat_SeqAIJCUSPARSETriFactors
   PetscCall(MatSetType(*B, MATSEQAIJCUSPARSE));
 
   prefix = (*B)->factorprefix ? (*B)->factorprefix : ((PetscObject)A)->prefix;
