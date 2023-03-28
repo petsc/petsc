@@ -145,7 +145,15 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 
    Logically Collective
 
-   The Jacobian is estimated with the differencing approximation
+   Input Parameters:
++  matfd - the coloring context
+.  error - relative error
+-  umin - minimum allowable u-value magnitude
+
+   Level: advanced
+
+   Note:
+     The Jacobian is estimated with the differencing approximation
 .vb
        F'(u)_{:,i} = [F(u+h*dx_{i}) - F(u)]/h where
        htype = 'ds':
@@ -156,13 +164,6 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
        htype = 'wp':
          h = error_rel * sqrt(1 + ||u||)
 .ve
-
-   Input Parameters:
-+  matfd - the coloring context
-.  error - relative error
--  umin - minimum allowable u-value magnitude
-
-   Level: advanced
 
 .seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFromOptions()`
 @*/
@@ -369,7 +370,7 @@ PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
 +  coloring - the coloring context
 -  type - either `MATMFFD_WP` or `MATMFFD_DS`
 
-   Options Database Keys:
+   Options Database Key:
 .  -mat_fd_type - "wp" or "ds"
 
    Level: intermediate

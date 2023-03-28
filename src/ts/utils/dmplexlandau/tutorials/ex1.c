@@ -16,8 +16,8 @@ Input Parameters:
  +   b_id - the batch index
  -   vctx - a user context
 
- Input/Output Parameters:
- +   x - Vector to data to
+ Input/Output Parameter:
+ .   x - Vector to data to
 
  */
 PetscErrorCode landau_field_print_access_callback(DM dm, Vec x, PetscInt local_field, PetscInt grid, PetscInt b_id, void *vctx)

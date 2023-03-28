@@ -69,7 +69,7 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(Tao tao, PetscOptionItems *PetscOp
              limited memory quasi-Newton formula. The quasi-Newton matrix and its options are
              accessible via the prefix `-tao_bqnls_`
 
-  Option Database Keys:
+  Options Database Keys:
 + -tao_bnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
 . -tao_bnk_as_type - active-set estimation method ("none", "bertsekas")
 . -tao_bnk_epsilon - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance
@@ -77,6 +77,7 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(Tao tao, PetscOptionItems *PetscOp
 - -tao_bnk_as_step - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
 
   Level: beginner
+
 .seealso: `TAOBNK`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)

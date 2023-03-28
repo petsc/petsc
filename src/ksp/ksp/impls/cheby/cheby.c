@@ -134,7 +134,8 @@ static PetscErrorCode KSPChebyshevSetKind_Chebyshev(KSP ksp, KSPChebyshevKind ki
 
    Input Parameters:
 +  ksp - the Krylov space context
--  emax, emin - the eigenvalue estimates
+   emax - the eigenvalue maximum estimate
+-  emin - the eigenvalue minimum estimate
 
   Options Database Key:
 .  -ksp_chebyshev_eigenvalues emin,emax - extreme eigenvalues
@@ -241,10 +242,10 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
   a Krylov method is not being used for this purpose, NULL is returned.  The reference count of the returned `KSP` is
   not incremented: it should not be destroyed by the user.
 
-  Input Parameters:
+  Input Parameter:
 . ksp - the Krylov space context
 
-  Output Parameters:
+  Output Parameter:
 . kspest - the eigenvalue estimation Krylov space context
 
   Level: advanced

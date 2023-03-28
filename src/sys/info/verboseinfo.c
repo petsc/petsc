@@ -34,7 +34,7 @@ FILE                    *PetscInfoFile                                          
 
     Not Collective
 
-    Input Parameters:
+    Input Parameter:
 .   classid - `PetscClassid` retrieved from a `PetscObject` e.g. `VEC_CLASSID`
 
     Output Parameter:

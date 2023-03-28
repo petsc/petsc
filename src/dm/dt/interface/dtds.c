@@ -3304,7 +3304,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 . bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
 - ctx      - An optional user context for bcFunc
 
-  Output Parameters:
+  Output Parameter:
 - bd       - The boundary number
 
   Options Database Keys:
@@ -3427,7 +3427,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 . bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
 - ctx      - An optional user context for bcFunc
 
-  Output Parameters:
+  Output Parameter:
 - bd       - The boundary number
 
   Options Database Keys:
@@ -3595,10 +3595,10 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
 /*@
   PetscDSGetNumBoundary - Get the number of registered BC
 
-  Input Parameters:
+  Input Parameter:
 . ds - The `PetscDS` object
 
-  Output Parameters:
+  Output Parameter:
 . numBd - The number of BC
 
   Level: intermediate

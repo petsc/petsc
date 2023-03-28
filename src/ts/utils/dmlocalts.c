@@ -186,10 +186,6 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
     It should set the essential boundary data for the local portion of the solution X, as well its time derivative X_t (if it is not NULL).
     Vectors are initialized to zero before this function, so it is only needed for non homogeneous data.
 
-  Note that this function is somewhat optional: boundary data could potentially be inserted by a function passed to
-  `DMTSSetIFunctionLocal()`.  The use case for this function is for discretizations with constraints (see
-  `DMGetDefaultConstraints()`): this function inserts boundary values before constraint interpolation.
-
   Logically Collective
 
   Input Parameters:
@@ -198,6 +194,11 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 - ctx  - context for function evaluation
 
   Level: intermediate
+
+  Note:
+  This function is somewhat optional: boundary data could potentially be inserted by a function passed to
+  `DMTSSetIFunctionLocal()`.  The use case for this function is for discretizations with constraints (see
+  `DMGetDefaultConstraints()`): this function inserts boundary values before constraint interpolation.
 
 .seealso: [](chapter_ts), `DM`, `TS`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
@@ -443,7 +444,7 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm   - `DM` providing the mass matrix
 
   Level: developer
@@ -478,7 +479,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm   - `DM` providing the mass matrix
 
   Level: developer
@@ -509,7 +510,7 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
 
   Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm   - `DM` providing the mass matrix
 
   Level: developer

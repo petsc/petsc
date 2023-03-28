@@ -62,11 +62,12 @@ static void PetscSignalHandler_Private(int sig)
 +  sig - signal value
 -  ptr - unused pointer
 
+   Level: advanced
+
    Developer Note:
    This does not call `PetscError()`, handles the entire error process directly
 
-   Level: advanced
-
+.seealso: `PetscPushSignalHandler()`
 @*/
 PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 {

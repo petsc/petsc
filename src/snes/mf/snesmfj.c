@@ -19,7 +19,7 @@
 .   flag - not relevant for matrix-free form
 -   dummy - the user context (ignored)
 
-   Option Database Key:
+   Options Database Key:
 .  -snes_mf - use the matrix created with `MatSNESMFCreate()` to setup the Jacobian for each new solution in the Newton process
 
    Level: developer

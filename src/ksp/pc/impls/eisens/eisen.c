@@ -258,6 +258,8 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
    Options Database Key:
 .  -pc_eisenstat_omega <omega> - Sets omega
 
+   Level: intermediate
+
    Notes:
    The Eisenstat trick implementation of SSOR requires about 50% of the
    usual amount of floating point operations used for SSOR + Krylov method;
@@ -267,8 +269,6 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
    To use SSOR without the Eisenstat trick, employ the `PCSOR` preconditioner,
    which can be chosen with the database options
 $    -pc_type  sor  -pc_sor_symmetric
-
-   Level: intermediate
 
 .seealso: `PCSORSetOmega()`, `PCEISENSTAT`
 @*/

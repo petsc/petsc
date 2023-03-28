@@ -142,7 +142,7 @@ PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS, PetscInt, Petsc
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Level: intermediate
@@ -556,7 +556,7 @@ PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime,
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .    ctx - the monitor context
 
    Level: intermediate
@@ -759,7 +759,7 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  filenametemplate - string containing a format specifier for the integer time step (e.g. %03" PetscInt_FMT ")
 
    Level: intermediate
@@ -1479,7 +1479,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec 
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts  - the `TS` solver object
 
    Output Parameter:

@@ -528,7 +528,7 @@ PetscErrorCode PetscGetArgs(int *argc, char ***args)
 
    Not Collective
 
-   Output Parameters:
+   Output Parameter:
 .  args - the command line arguments
 
    Level: intermediate
@@ -559,7 +559,7 @@ PetscErrorCode PetscGetArguments(char ***args)
 
    Not Collective
 
-   Output Parameters:
+   Output Parameter:
 .  args - the command line arguments
 
    Level: intermediate

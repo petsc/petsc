@@ -74,7 +74,7 @@ PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[])
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ao - the application ordering context
 
    Level: beginner
@@ -442,7 +442,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
    Input Parameters:
 +  ao - the application ordering
 .  isapp -  index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be NULL to use the
+-  ispetsc - index set that defines another ordering (may be `NULL` to use the
              natural ordering)
 
    Level: beginner
@@ -477,7 +477,7 @@ PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI communicator that is to share the `AO`
 
    Output Parameter:

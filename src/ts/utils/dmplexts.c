@@ -297,7 +297,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
 . u_t - a `DM` vector
 - tol - A tolerance for the check, or -1 to print the results instead
 
-  Output Parameters:
+  Output Parameter:
 . residual - The residual norm of the exact solution, or `NULL`
 
   Level: developer

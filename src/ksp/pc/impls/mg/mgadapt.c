@@ -133,10 +133,10 @@ PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM dm, KSP 
   PCMGComputeCoarseSpace_Internal - Compute vectors on level l that must be accurately interpolated.
 
   Input Parameters:
-+ pc     - The PCMG
++ pc     - The `PCMG`
 . l      - The level
 . Nc     - The number of vectors requested
-- cspace - The initial guess for the space, or NULL
+- cspace - The initial guess for the space, or `NULL`
 
   Output Parameter:
 . space  - The space which must be accurately interpolated.

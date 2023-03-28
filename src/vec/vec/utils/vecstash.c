@@ -14,8 +14,8 @@
   comm - communicator, required for scatters.
   bs   - stash block size. used when stashing blocks of values
 
-  Output Parameters:
-  stash    - the newly created stash
+  Output Parameter:
+. stash    - the newly created stash
 */
 PetscErrorCode VecStashCreate_Private(MPI_Comm comm, PetscInt bs, VecStash *stash)
 {

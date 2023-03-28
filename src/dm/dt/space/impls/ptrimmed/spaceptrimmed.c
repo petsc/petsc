@@ -261,10 +261,10 @@ PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegre
 /*@
   PetscSpacePTrimmedGetFormDegree - Get the form degree of the trimmed polynomials.
 
-  Input Parameters:
-. sp     - the function space object
+  Input Parameter:
+. sp - the function space object
 
-  Output Parameters:
+  Output Parameter:
 . formDegee - the form degree
 
   Level: intermediate

@@ -428,6 +428,8 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 .  xl   - lower bound.
 -  xu   - upper bound.
 
+   Level: advanced
+
    Notes:
    If this routine is not called then the lower and upper bounds are set to
    `PETSC_NINFINITY` and `PETSC_INFINITY` respectively during `SNESSetUp()`.
@@ -438,8 +440,6 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
    `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
    sequencing and need bounds set for a variety of vectors
-
-   Level: advanced
 
 .seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, 'SNESSetType()`
 @*/
@@ -500,10 +500,10 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
 .  xl   - lower bound (may be `NULL`)
 -  xu   - upper bound (may be `NULL`)
 
+   Level: advanced
+
    Notes:
    These vectors are owned by the `SNESVI` and should not be destroyed by the caller
-
-   Level: advanced
 
 .seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, SNESVINEWTONRSLS, SNESVINEWTONSSLS, 'SNESSetType()`
 @*/

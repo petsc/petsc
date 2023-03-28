@@ -14,7 +14,7 @@ static PetscMPIInt Petsc_Viewer_SAWs_keyval = MPI_KEYVAL_INVALID;
 
      Collective
 
-     Input Parameters:
+     Input Parameter:
 .    comm - the MPI communicator to share the `PetscViewer`
 
      Level: developer

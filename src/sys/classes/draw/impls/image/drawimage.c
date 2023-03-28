@@ -582,10 +582,11 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 
    Input Parameters:
 +  comm - the communicator that will share image
--  filename - optional name of the file where the image will be stored
--  w, h - the image width and height in pixels
+.  filename - optional name of the file where the image will be stored
+.  w - the image width in pixels
+-  h - the image height in pixels
 
-   Output Parameters:
+   Output Parameter:
 .  draw - the drawing context.
 
    Level: beginner

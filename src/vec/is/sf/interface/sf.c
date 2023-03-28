@@ -1950,7 +1950,7 @@ static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
 + sfA - The first `PetscSF`
 - sfB - The second `PetscSF`
 
-  Output Parameters:
+  Output Parameter:
 . sfBA - The composite `PetscSF`
 
   Level: developer
@@ -2053,7 +2053,7 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
 + sfA - The first `PetscSF`
 - sfB - The second `PetscSF`
 
-  Output Parameters:
+  Output Parameter:
 . sfBA - The composite `PetscSF`.
 
   Level: developer
@@ -2153,10 +2153,10 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
 /*
   PetscSFCreateLocalSF_Private - Creates a local `PetscSF` that only has intra-process edges of the global `PetscSF`
 
-  Input Parameters:
+  Input Parameter:
 . sf - The global `PetscSF`
 
-  Output Parameters:
+  Output Parameter:
 . out - The local `PetscSF`
 
 .seealso: `PetscSF`, `PetscSFCreate()`
@@ -2230,7 +2230,7 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
 . rootMode - the root mode specifying how roots are handled
 - leafOffsets - the array of local leaf offsets, one for each input `PetscSF`, or `NULL` for contiguous storage
 
-  Output Parameters:
+  Output Parameter:
 . newsf - The resulting `PetscSF`
 
   Level: advanced

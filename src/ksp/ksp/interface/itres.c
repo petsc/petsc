@@ -13,7 +13,7 @@
 .  vt1, vt2 - temporary work vectors
 -  vb       - right-hand-side vector
 
-   Output Parameters:
+   Output Parameter:
 .  vres     - calculated residual
 
    Level: developer

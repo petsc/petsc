@@ -217,7 +217,7 @@ PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNE
 .  X - The last solution
 -  Y - The step direction
 
-   Output Parameters:
+   Output Parameter:
 .  changed_Y - Indicator that the step direction `Y` has been changed.
 
    Level: developer
@@ -252,10 +252,10 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool 
 +  changed_Y - indicator if step has been changed
 -  changed_W - Indicator if the new candidate solution `W` has been changed.
 
+   Level: developer
+
    Note:
      If `Y` is changed then `W` is recomputed as `X` - `Y`
-
-   Level: developer
 
 .seealso: `SNESNEWTONTRDC`, `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCPreCheck()
 @*/

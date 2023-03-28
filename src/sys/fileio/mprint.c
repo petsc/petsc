@@ -736,7 +736,7 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
 /*@C
      PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
 
-   Input Parameters:
+   Input Parameter:
 .   format - the PETSc format string
 
  Level: developer

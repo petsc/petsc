@@ -216,7 +216,7 @@ PetscErrorCode PCFactorSetDropTolerance(PC pc, PetscReal dt, PetscReal dtcol, Pe
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
@@ -239,7 +239,7 @@ PetscErrorCode PCFactorGetZeroPivot(PC pc, PetscReal *pivot)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
@@ -285,7 +285,7 @@ PetscErrorCode PCFactorGetShiftType(PC pc, MatFactorShiftType *type)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:

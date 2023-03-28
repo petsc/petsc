@@ -48,7 +48,7 @@ static inline PetscErrorCode PetscFPTDestroy(void)
 /*
    PetscFPTCreate  Creates a PETSc look up table from function pointers to strings
 
-   Input Parameters:
+   Input Parameter:
 .     n - expected number of keys
 
 */

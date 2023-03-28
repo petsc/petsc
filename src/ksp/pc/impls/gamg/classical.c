@@ -15,7 +15,7 @@ typedef struct {
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context
 
    Options Database Key:

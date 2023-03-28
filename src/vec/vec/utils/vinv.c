@@ -906,7 +906,7 @@ PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
 +  v - the vector
 .  nidx - the number of indices
 .  idxv - the indices of the components 0 <= idxv[0] ...idxv[nidx-1] < bs(v), they need not be sorted
-.  idxs - the indices of the components 0 <= idxs[0] ...idxs[nidx-1] < bs(s), they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
+.  idxs - the indices of the components 0 <= idxs[0] ...idxs[nidx-1] < bs(s), they need not be sorted, may be null if nidx == bs(s) or is `PETSC_DETERMINE`
 -  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
    Output Parameter:
@@ -943,7 +943,7 @@ PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[]
    Input Parameters:
 +  s - the smaller-component vector
 .  nidx - the number of indices in idx
-.  idxs - the indices of the components in the smaller-component vector, 0 <= idxs[0] ...idxs[nidx-1] < bs(s) they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
+.  idxs - the indices of the components in the smaller-component vector, 0 <= idxs[0] ...idxs[nidx-1] < bs(s) they need not be sorted, may be null if nidx == bs(s) or is `PETSC_DETERMINE`
 .  idxv - the indices of the components in the larger-component vector, 0 <= idx[0] ...idx[nidx-1] < bs(v) they need not be sorted
 -  addv - one of `ADD_VALUES`, `INSERT_VALUES`, `MAX_VALUES`
 
@@ -1270,7 +1270,7 @@ static PetscScalar ScalarAbs_Fn(PetscScalar x)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  v - the vector
 
    Level: intermediate

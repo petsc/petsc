@@ -919,7 +919,7 @@ PetscErrorCode MatMFFDSetHHistory(Mat J, PetscScalar history[], PetscInt nhistor
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  J - the matrix-free matrix context
 
    Level: advanced

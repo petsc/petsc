@@ -211,7 +211,7 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
   Not Collective
 
   Input Parameters:
-+ q  - The PetscQuadrature object
++ q  - The `PetscQuadrature` object
 - Nc - The number of components
 
   Level: intermediate
@@ -285,7 +285,7 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
 + A - A `PetscQuadrature` object
 - B - Another `PetscQuadrature` object
 
-  Output Parameters:
+  Output Parameter:
 . equal - `PETSC_TRUE` if the quadratures are the same
 
   Level: intermediate
@@ -426,8 +426,8 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 .  J - the Jacobian of the image: an [imageDim x dim] matrix in row major order
 -  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see `PetscDTAltVPullback()` for interpretation of formDegree]
 
-   Output Parameters:
-.  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of J to the k-form weights in the image space.
+   Output Parameter:
+.  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of `J` to the k-form weights in the image space.
 
    Level: intermediate
 
@@ -594,7 +594,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 . v0 - An array of the initial points for each subelement
 - jac - An array of the Jacobian mappings from the reference to each subelement
 
-  Output Parameters:
+  Output Parameter:
 . dim - The dimension
 
   Level: intermediate
@@ -790,8 +790,8 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 . degree - the maximm degree polynomial space to evaluate, (degree + 1) will be evaluated total.
 - k - the maximum derivative to evaluate in the jet, (k + 1) will be evaluated total.
 
-  Output Parameters:
-- p - an array containing the evaluations of the Jacobi polynomials's jets on the points.  the size is (degree + 1) x
+  Output Parameter:
+. p - an array containing the evaluations of the Jacobi polynomials's jets on the points.  the size is (degree + 1) x
   (k + 1) x npoints, which also describes the order of the dimensions of this three-dimensional array: the first
   (slowest varying) dimension is polynomial degree; the second dimension is derivative order; the third (fastest
   varying) dimension is the index of the evaluation point.
@@ -1010,8 +1010,8 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
 - k - the maximum order partial derivative to evaluate in the jet.  There are (dim + k choose dim) partial derivatives
   in the jet.  Choosing k = 0 means to evaluate just the function and no derivatives
 
-  Output Parameters:
-- p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is ((dim + degree)
+  Output Parameter:
+. p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is ((dim + degree)
   choose dim) x ((dim + k) choose dim) x npoints, which also describes the order of the dimensions of this
   three-dimensional array: the first (slowest varying) dimension is basis function index; the second dimension is jet
   index; the third (fastest varying) dimension is the index of the evaluation point.
@@ -1173,7 +1173,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
 . degree - the degree (sum of degrees on the variables in a monomial) of the trimmed polynomial space.
 - formDegree - the degree of the form
 
-  Output Parameters:
+  Output Parameter:
 - size - The number ((`dim` + `degree`) choose (`dim` + `formDegree`)) x ((`degree` + `formDegree` - 1) choose (`formDegree`))
 
   Level: advanced

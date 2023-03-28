@@ -7,7 +7,10 @@
 
    Input Parameters:
 +  draw - a `PetscDraw`
-.  xmin,xmax,ymin,ymax - region to draw indicator function
+.  xmin - region to draw indicator function
+.  xmax - region to draw indicator function
+.  ymin - region to draw indicator function
+.  ymax - region to draw indicator function
 -  f - the indicator function
 
    Level: developer
@@ -96,14 +99,20 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscRea
 }
 
 /*@
-   PetscDrawRectangle - draws a rectangle  onto a drawable.
+   PetscDrawRectangle - draws a rectangle onto a `PetscDraw` object
 
    Not Collective
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl,xr,yr - the coordinates of the lower left, upper right corners
--  c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
+.  xl - coordinates of the lower left corner
+.  yl - coordinates of the lower left corner
+.  xr - coordinate of the upper right corner
+.  yr - coordinate of the upper right corner
+.  c1 - the color of the first corner
+.  c2 - the color of the second corner
+.  c3 - the color of the third corner
+-  c4 - the color of the fourth corner
 
    Level: beginner
 

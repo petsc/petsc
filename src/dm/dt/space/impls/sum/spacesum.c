@@ -45,10 +45,10 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp, PetscInt numSumSpaces
  A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces. A non-concatenated,
  or direct sum space will have the same number of components as its subspaces .
 
- Input Parameters:
+ Input Parameter:
 . sp - the function space object
 
- Output Parameters:
+ Output Parameter:
 . concatenate - flag indicating whether subspaces are concatenated.
 
 Level: intermediate

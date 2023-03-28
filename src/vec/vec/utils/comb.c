@@ -359,18 +359,17 @@ PetscErrorCode VecDotBegin(Vec x, Vec y, PetscScalar *result)
    VecDotEnd - Ends a split phase dot product computation.
 
    Input Parameters:
-+  x - the first vector (can be NULL)
-.  y - the second vector (can be NULL)
++  x - the first vector (can be `NULL`)
+.  y - the second vector (can be `NULL`)
 -  result - where the result will go
 
    Level: advanced
 
    Notes:
-   Each call to VecDotBegin() should be paired with a call to VecDotEnd().
+   Each call to `VecDotBegin()` should be paired with a call to `VecDotEnd()`.
 
 .seealso: `VecDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecTDotBegin()`, `VecTDotEnd()`, `PetscCommSplitReductionBegin()`
-
 @*/
 PetscErrorCode VecDotEnd(Vec x, Vec y, PetscScalar *result)
 {
@@ -405,16 +404,15 @@ PetscErrorCode VecDotEnd(Vec x, Vec y, PetscScalar *result)
    Input Parameters:
 +  x - the first vector
 .  y - the second vector
--  result - where the result will go (can be NULL)
+-  result - where the result will go (can be `NULL`)
 
    Level: advanced
 
    Notes:
-   Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
+   Each call to `VecTDotBegin()` should be paired with a call to `VecTDotEnd()`.
 
 .seealso: `VecTDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
-
 @*/
 PetscErrorCode VecTDotBegin(Vec x, Vec y, PetscScalar *result)
 {
@@ -438,8 +436,8 @@ PetscErrorCode VecTDotBegin(Vec x, Vec y, PetscScalar *result)
    VecTDotEnd - Ends a split phase transpose dot product computation.
 
    Input Parameters:
-+  x - the first vector (can be NULL)
-.  y - the second vector (can be NULL)
++  x - the first vector (can be `NULL`)
+.  y - the second vector (can be `NULL`)
 -  result - where the result will go
 
    Level: advanced
@@ -467,16 +465,15 @@ PetscErrorCode VecTDotEnd(Vec x, Vec y, PetscScalar *result)
 
    Input Parameters:
 +  x - the first vector
-.  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
--  result - where the result will go (can be NULL)
+.  ntype - norm type, one of `NORM_1`, `NORM_2`, `NORM_MAX`, `NORM_1_AND_2`
+-  result - where the result will go (can be `NULL`)
 
    Level: advanced
 
    Notes:
-   Each call to VecNormBegin() should be paired with a call to VecNormEnd().
+   Each call to `VecNormBegin()` should be paired with a call to `VecNormEnd()`.
 
 .seealso: `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`, `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
-
 @*/
 PetscErrorCode VecNormBegin(Vec x, NormType ntype, PetscReal *result)
 {
@@ -512,18 +509,17 @@ PetscErrorCode VecNormBegin(Vec x, NormType ntype, PetscReal *result)
 
    Input Parameters:
 +  x - the first vector
-.  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
+.  ntype - norm type, one of `NORM_1`, `NORM_2`, `NORM_MAX`, `NORM_1_AND_2`
 -  result - where the result will go
 
    Level: advanced
 
    Notes:
-   Each call to VecNormBegin() should be paired with a call to VecNormEnd().
+   Each call to `VecNormBegin()` should be paired with a call to `VecNormEnd()`.
 
-   The x vector is not allowed to be NULL, otherwise the vector would not have its correctly cached norm value
+   The `x` vector is not allowed to be `NULL`, otherwise the vector would not have its correctly cached norm value
 
 .seealso: `VecNormBegin()`, `VecNorm()`, `VecDot()`, `VecMDot()`, `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
-
 @*/
 PetscErrorCode VecNormEnd(Vec x, NormType ntype, PetscReal *result)
 {
@@ -572,12 +568,12 @@ PetscErrorCode VecNormEnd(Vec x, NormType ntype, PetscReal *result)
 +   x - the first vector
 .   nv - number of vectors
 .   y - array of vectors
--   result - where the result will go (can be NULL)
+-   result - where the result will go (can be `NULL`)
 
    Level: advanced
 
    Notes:
-   Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
+   Each call to `VecMDotBegin()` should be paired with a call to `VecMDotEnd()`.
 
 .seealso: `VecMDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecTDotBegin()`, `VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
@@ -608,21 +604,20 @@ PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resul
    VecMDotEnd - Ends a split phase multiple dot product computation.
 
    Input Parameters:
-+   x - the first vector (can be NULL)
++   x - the first vector (can be `NULL`)
 .   nv - number of vectors
--   y - array of vectors (can be NULL)
+-   y - array of vectors (can be `NULL`)
 
-   Output Parameters:
+   Output Parameter:
 .   result - where the result will go
 
    Level: advanced
 
    Notes:
-   Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
+   Each call to `VecMDotBegin()` should be paired with a call to `VecMDotEnd()`.
 
 .seealso: `VecMDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecTDotBegin()`, `VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
-
 @*/
 PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[])
 {
@@ -658,16 +653,15 @@ PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[
 +  x - the first vector
 .  nv - number of vectors
 .  y - array of  vectors
--  result - where the result will go (can be NULL)
+-  result - where the result will go (can be `NULL`)
 
    Level: advanced
 
    Notes:
-   Each call to VecMTDotBegin() should be paired with a call to VecMTDotEnd().
+   Each call to `VecMTDotBegin()` should be paired with a call to `VecMTDotEnd()`.
 
 .seealso: `VecMTDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecDotBegin()`, `VecDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `PetscCommSplitReductionBegin()`
-
 @*/
 PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar result[])
 {
@@ -695,17 +689,17 @@ PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resu
    VecMTDotEnd - Ends a split phase transpose multiple dot product computation.
 
    Input Parameters:
-+  x - the first vector (can be NULL)
++  x - the first vector (can be `NULL`)
 .  nv - number of vectors
--  y - array of  vectors (can be NULL)
+-  y - array of  vectors (can be `NULL`)
 
-   Output Parameters:
+   Output Parameter:
 .  result - where the result will go
 
    Level: advanced
 
    Notes:
-   Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
+   Each call to `VecTDotBegin()` should be paired with a call to `VecTDotEnd()`.
 
 .seealso: `VecMTDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
           `VecDotBegin()`, `VecDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `PetscCommSplitReductionBegin()`

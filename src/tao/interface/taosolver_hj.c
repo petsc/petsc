@@ -398,7 +398,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
 +  tao - the Tao solver context
 -  X   - input vector
 
-   Output Parameters:
+   Output Parameter:
 .  J - Jacobian matrix
 
    Level: developer

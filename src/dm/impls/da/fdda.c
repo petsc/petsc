@@ -775,7 +775,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode MatISSetPreallocation_IS(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 
 PetscErrorCode DMCreateMatrix_DA_IS(DM dm, Mat J)
@@ -1288,8 +1287,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------*/
-
 PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
 {
   PetscInt               xs, ys, nx, ny, i, j, slot, gxs, gys, gnx, gny;
@@ -1414,8 +1411,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
   PetscCall(PetscFree2(rows, cols));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------------------------*/
 
 PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
 {
@@ -1577,8 +1572,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------*/
-
 PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J)
 {
   PetscInt               xs, nx, i, i1, slot, gxs, gnx;
@@ -1642,8 +1635,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------------------------*/
 
 PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J)
 {
@@ -2122,8 +2113,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J)
   PetscCall(PetscFree(cols));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------------------------*/
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da, Mat J)
 {

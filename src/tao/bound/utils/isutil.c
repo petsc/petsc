@@ -87,13 +87,13 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
 }
 
 /*@C
-  TaoMatGetSubMat - Gets a submatrix using the IS
+  TaoMatGetSubMat - Gets a submatrix using the `IS`
 
   Input Parameters:
 + M - the full matrix (n x n)
 . is - the index set for the submatrix (both row and column index sets need to be the same)
 . v1 - work vector of dimension n, needed for TAO_SUBSET_MASK option
-- subset_type <TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE> - the method TAO is using for subsetting
+- subset_type <`TAO_SUBSET_SUBVEC`, `TAO_SUBSET_MASK`, `TAO_SUBSET_MATRIXFREE`> - the method `Tao` is using for subsetting
 
   Output Parameter:
 . Msub - the submatrix

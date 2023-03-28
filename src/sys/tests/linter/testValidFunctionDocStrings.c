@@ -16,10 +16,10 @@ typedef int testType;
 + viewer2 - a PetscViewer
 - y       - a pointer
 
+  Level: beginner
+
   Notes:
   Lorem ipsum dolor sit amet, for example\:
-
-  Level: beginner
 
   References:
   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.

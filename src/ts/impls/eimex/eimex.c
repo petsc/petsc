@@ -403,13 +403,14 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 }
 
 /*@C
-  TSEIMEXSetRowCol - Set the type index in the T table for the return value for the `TSEIMEX` scheme
+  TSEIMEXSetRowCol - Set the number of rows and the number of columns for the tableau that represents the T solution in the `TSEIMEX` scheme
 
   Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
--  tindex - index in the T table
+.  row - the row
+-  col - the column
 
   Level: intermediate
 

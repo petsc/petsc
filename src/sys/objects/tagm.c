@@ -94,7 +94,7 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag)
   Input Parameter:
 . comm_in - Input communicator
 
-  Output Parameters:
+  Output Parameter:
 . comm_out - Output communicator
 
   Notes:
@@ -183,14 +183,14 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out)
 +  comm_out - Output communicator.  May be comm_in.
 -  first_tag - Tag available that has not already been used with this communicator (you may pass in NULL if you do not need a tag)
 
+   Level: developer
+
    Note:
    PETSc communicators are just regular MPI communicators that keep track of which
    tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
    a PETSc creation routine it will attach a private communicator for use in the objects communications.
    The internal `MPI_Comm` is used to perform all the MPI calls for PETSc, the outer `MPI_Comm` is a user
    level `MPI_Comm` that may be performing communication for the user or other library and so IS NOT used by PETSc.
-
-Level: developer
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`
 @*/

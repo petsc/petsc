@@ -1347,7 +1347,7 @@ PetscErrorCode DMCreateAggregates(DM dac, DM daf, Mat *mat)
 +  dmc - the coarse grid `DMDA`
 -  dmf - the fine grid `DMDA`
 
-   Output Parameters:
+   Output Parameter:
 .  rest - the restriction matrix (transpose of the projection matrix)
 
    Level: intermediate

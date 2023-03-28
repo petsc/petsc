@@ -119,7 +119,6 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
    Input Parameters:
 +  mat - the matrix
 -  type - type of reordering, one of the following
-
 .vb
       MATORDERINGNATURAL_OR_ND - Nested dissection unless matrix is SBAIJ then it is natural
       MATORDERINGNATURAL - Natural

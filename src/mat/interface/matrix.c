@@ -144,7 +144,7 @@ PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat, PetscReal *pivot, PetscInt *r
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the factored matrix
 
    Output Parameter:
@@ -321,7 +321,7 @@ PetscErrorCode MatFindZeroRows(Mat mat, IS *zerorows)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .   A - the matrix
 
    Output Parameter:
@@ -359,7 +359,7 @@ PetscErrorCode MatGetDiagonalBlock(Mat A, Mat *a)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -388,7 +388,7 @@ PetscErrorCode MatGetTrace(Mat mat, PetscScalar *trace)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
@@ -446,7 +446,7 @@ PetscErrorCode MatGetGhosts(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[]
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
@@ -578,7 +578,7 @@ PetscErrorCode MatGetRow(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt 
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
@@ -655,7 +655,7 @@ PetscErrorCode MatRestoreRow(Mat mat, PetscInt row, PetscInt *ncols, const Petsc
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
@@ -683,7 +683,7 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
@@ -876,7 +876,7 @@ PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Level: beginner
@@ -904,7 +904,7 @@ PetscErrorCode MatResetPreallocation(Mat A)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Level: intermediate
@@ -1176,7 +1176,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    Input Parameters:
 +  mat - the newly loaded matrix, this needs to have been created with `MatCreate()`
             or some related function before a call to `MatLoad()`
--  viewer - binary/HDF5 file viewer
+-  viewer - `PETSCVIEWERBINARY`/`PETSCVIEWERHDF5` file viewer
 
    Options Database Keys:
    Used with block matrix formats (`MATSEQBAIJ`,  ...) to specify
@@ -1248,7 +1248,6 @@ machines that store the bytes reversed. Thus if you write your own binary
 read/write routines you have to swap the bytes; see `PetscBinaryRead()`
 and `PetscBinaryWrite()` to see how this may be done.
 
-   Notes:
    In case of `PETSCVIEWERHDF5`, a parallel HDF5 reader is used.
    Each processor's chunk is loaded independently by its owning rank.
    Multiple objects, both matrices and vectors, can be stored within the same file.
@@ -2867,7 +2866,7 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -4644,7 +4643,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -4873,7 +4872,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -5089,7 +5088,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
 
    Logically or Neighborhood Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -5231,7 +5230,7 @@ PetscErrorCode MatTranspose(Mat mat, MatReuse reuse, Mat *B)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix to transpose
 
    Output Parameter:
@@ -6026,7 +6025,7 @@ PetscErrorCode MatGetOption(Mat mat, MatOption op, PetscBool *flg)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: intermediate
@@ -6617,11 +6616,11 @@ PetscErrorCode MatZeroRowsColumnsLocalIS(Mat mat, IS is, PetscScalar diag, Vec x
    Input Parameter:
 .  mat - the matrix
 
-   Level: beginner
-
    Output Parameters:
 +  m - the number of global rows
 -  n - the number of global columns
+
+   Level: beginner
 
    Note:
    Both output parameters can be `NULL` on input.
@@ -6739,7 +6738,7 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
 
    Not Collective, unless matrix has not been allocated
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -6765,7 +6764,7 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
 
    Not Collective, unless matrix has not been allocated
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -6838,9 +6837,6 @@ PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
       1 or 0 - indicating force fill on diagonal (improves robustness for matrices
                 missing diagonal entries)
 .ve
-
-   Output Parameter:
-.  fact - new matrix that has been symbolically factored
 
    Level: developer
 
@@ -7175,7 +7171,7 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n, Mat *mat[])
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -7206,7 +7202,7 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat, Mat *matstruct)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix (this is a pointer to the array of matrices, just to match the calling
                        sequence of `MatGetSequentialNonzeroStructure()`)
 
@@ -8947,6 +8943,8 @@ PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
 .  row - row/column permutation
 -  info - information on desired factorization process
 
+   Level: developer
+
    Notes:
    Probably really in-place only when level of fill is zero, otherwise allocates
    new space to store factored matrix and deletes previous memory.
@@ -8954,8 +8952,6 @@ PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
    Most users should employ the `KSP` interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
-
-   Level: developer
 
    Developer Note:
    The Fortran interface is not autogenerated as the
@@ -9463,7 +9459,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .    info - the `MatFactorInfo` data structure
 
    Level: developer
@@ -9798,7 +9794,7 @@ static PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  F - the factored matrix obtained by calling `MatGetFactor()`
 
    Level: advanced
@@ -9827,7 +9823,7 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  F - the factored matrix obtained by calling `MatGetFactor()`
 
    Level: advanced
@@ -10113,7 +10109,7 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 .  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if not known
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -10153,7 +10149,7 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 -  fill - expected fill as ratio of nnz(D)/(nnz(A) + nnz(B)+nnz(C)), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  D - the product matrix
 
    Level: intermediate
@@ -10537,10 +10533,10 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
 
   Collective; No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . mat - the matrix
 
-  Output Parameters:
+  Output Parameter:
 . values - the block inverses in column major order (FORTRAN-like)
 
   Level: advanced
@@ -10574,7 +10570,7 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
 . nblocks - the number of blocks on the process, set with `MatSetVariableBlockSizes()`
 - bsizes - the size of each block on the process, set with `MatSetVariableBlockSizes()`
 
-  Output Parameters:
+  Output Parameter:
 . values - the block inverses in column major order (FORTRAN-like)
 
   Level: advanced
@@ -10909,7 +10905,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *i
 .  reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -  fill - expected fill, use `PETSC_DEFAULT` if you do not have a good estimate
 
-   Output Parameters:
+   Output Parameter:
 .  A - the Galerkin coarse matrix
 
    Options Database Key:
@@ -11016,8 +11012,10 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
     Level: developer
 
     Usage:
-$      PetscErrorCode (*usermult)(Mat,Vec,Vec);
-$      MatGetOperation(A,MATOP_MULT,(void(**)(void))&usermult);
+.vb
+      PetscErrorCode (*usermult)(Mat, Vec, Vec);
+      MatGetOperation(A, MATOP_MULT, (void (**)(void))&usermult);
+.ve
 
     Notes:
     See the file include/petscmat.h for a complete list of matrix
@@ -11083,7 +11081,7 @@ PetscErrorCode MatHasOperation(Mat mat, MatOperation op, PetscBool *has)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:

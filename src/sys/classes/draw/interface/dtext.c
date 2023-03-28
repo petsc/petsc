@@ -8,7 +8,8 @@
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl - the coordinates of lower left corner of text
+.  xl - coordinate of lower left corner of text
+.  yl - coordinate of lower left corner of text
 .  cl - the color of the text
 -  text - the text to draw
 
@@ -34,7 +35,8 @@ PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl - the coordinates of upper left corner of text
+.  xl - coordinate of upper left corner of text
+.  yl - coordinate of upper left corner of text
 .  cl - the color of the text
 -  text - the text to draw
 

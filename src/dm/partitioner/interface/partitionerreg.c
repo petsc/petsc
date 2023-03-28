@@ -11,8 +11,8 @@ PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname - The name of a new user-defined creation routine
+- function - The creation routine
 
   Notes:
   PetscPartitionerRegister() may be called multiple times to add several user-defined PetscPartitioners

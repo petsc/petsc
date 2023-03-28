@@ -78,7 +78,7 @@ PetscErrorCode PetscViewerInitializePackage(void)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer` to be destroyed.
 
    Level: beginner
@@ -147,7 +147,7 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  vf - the `PetscViewerAndFormat` to be destroyed.
 
    Level: developer
@@ -282,7 +282,7 @@ PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefi
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer` context
 
    Level: advanced
@@ -392,7 +392,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
 .  num      - Number of items of data to read
 -  datatype - Type of data to read
 
-   Output Parameters:
+   Output Parameter:
 .  count - number of items of data actually read, or `NULL`
 
    Level: beginner
@@ -451,10 +451,10 @@ PetscErrorCode PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pet
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer` context
 
-   Output Parameters:
+   Output Parameter:
 .  flg - `PETSC_TRUE` if the viewer is readable, `PETSC_FALSE` otherwise
 
    Level: intermediate
@@ -494,10 +494,10 @@ PetscErrorCode PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer` context
 
-   Output Parameters:
+   Output Parameter:
 .  flg - `PETSC_TRUE` if the viewer is writable, `PETSC_FALSE` otherwise
 
    Level: intermediate
@@ -529,7 +529,7 @@ PetscErrorCode PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer` context
 
    Level: intermediate
@@ -552,7 +552,7 @@ PetscErrorCode PetscViewerCheckReadable(PetscViewer viewer)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer` context
 
    Level: intermediate

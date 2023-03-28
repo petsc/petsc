@@ -8,8 +8,15 @@
 
    Input Parameters:
 +  draw - the drawing context
-.  x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
--  c1,c2,c3 - the colors of the three vertices in the same order as the xi,yi
+.  x1 - coordinate of the first vertex
+.  y1 - coordinate of the first vertex
+.  x2 - coordinate of the second vertex
+.  y2 - coordinate of the second vertex
+.  x3 - coordinate of the third vertex
+.  y3 - coordinate of the third vertex
+.  c1 - color of the first vertex
+.  c2 - color of the second vertex
+-  c3 - color of the third vertext
 
    Level: beginner
 
@@ -108,8 +115,8 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx)
    Input Parameters:
 +   draw  - the draw context
 .   m,n   - the global number of mesh points in the x and y directions
-.   xi,yi - the locations of the global mesh points (optional, use NULL
-            to indicate uniform spacing on [0,1])
+.   xi    - the locations of the global mesh points in the horizontal direction (optional, use `NULL` to indicate uniform spacing on [0,1])
+.   yi    - the locations of the global mesh points in the vertical direction (optional, use `NULL` to indicate uniform spacing on [0,1])
 -   V     - the values
 
    Options Database Keys:
@@ -191,11 +198,13 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
    Input Parameters:
 +  draw - the draw context
 .  m,n - the number of local mesh points in the x and y direction
-.  x,y - the locations of the local mesh points
-.  min,max - the minimum and maximum value in the entire contour
+.  x - the horizonal locations of the local mesh points
+.  y - the vertical locations of the local mesh points
+.  min - the minimum value in the entire contour
+.  max - the maximum value in the entire contour
 -  v - the data
 
-   Options Database Keys:
+   Options Database Key:
 .  -draw_x_shared_colormap - Activates private colormap
 
    Level: advanced

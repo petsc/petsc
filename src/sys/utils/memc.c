@@ -20,7 +20,7 @@
 -  len  - The length of the byte stream
          (both str1 and str2 are assumed to be of length len)
 
-   Output Parameters:
+   Output Parameter:
 .   e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
 
    Level: intermediate

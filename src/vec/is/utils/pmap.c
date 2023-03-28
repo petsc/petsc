@@ -10,10 +10,10 @@
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . comm - the MPI communicator
 
-  Output Parameters:
+  Output Parameter:
 . map - the new `PetscLayout`
 
   Level: advanced
@@ -79,7 +79,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm, PetscLayout *map)
 . N     - the global size (or `PETSC_DECIDE`)
 - bs    - the block size (or `PETSC_DECIDE`)
 
-  Output Parameters:
+  Output Parameter:
 . map - the new `PetscLayout`
 
   Level: advanced
@@ -114,7 +114,7 @@ PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm comm, PetscInt n, PetscInt N,
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . map - the `PetscLayout`
 
   Level: developer
@@ -147,7 +147,7 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
 . mode  - the copy mode for range
 - bs    - the block size (or `PETSC_DECIDE`)
 
-  Output Parameters:
+  Output Parameter:
 . newmap - the new `PetscLayout`
 
   Level: developer
@@ -203,7 +203,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . map - pointer to the map
 
   Level: developer
@@ -385,10 +385,10 @@ PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map, PetscInt n)
 
     Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .    map - pointer to the map
 
-   Output Parameters:
+   Output Parameter:
 .    n - the local size
 
    Level: developer
@@ -432,10 +432,10 @@ PetscErrorCode PetscLayoutSetSize(PetscLayout map, PetscInt n)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . map - pointer to the map
 
-  Output Parameters:
+  Output Parameter:
 . n - the global size
 
   Level: developer
@@ -487,10 +487,10 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map, PetscInt bs)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . map - pointer to the map
 
-  Output Parameters:
+  Output Parameter:
 . bs - the size
 
   Level: developer
@@ -541,10 +541,10 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map, PetscInt *rstart, PetscInt *
 
     Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .    map - pointer to the map
 
-   Output Parameters:
+   Output Parameter:
 .    range - start of each processors range of indices (the final entry is one more than the
              last index on the last process)
 
@@ -575,7 +575,7 @@ PetscErrorCode PetscLayoutGetRanges(PetscLayout map, const PetscInt *range[])
 + mapa - pointer to the first map
 - mapb - pointer to the second map
 
-  Output Parameters:
+  Output Parameter:
 . congruent - `PETSC_TRUE` if the two layouts are congruent, `PETSC_FALSE` otherwise
 
   Level: beginner

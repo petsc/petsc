@@ -13,7 +13,7 @@
 . coordinates - The `Vec` of coordinates of the sought points
 - eps - The tolerance or `PETSC_DEFAULT`
 
-  Output Parameters:
+  Output Parameter:
 . points - The `IS` of found DAG points or -1
 
   Level: intermediate
@@ -398,7 +398,7 @@ PetscErrorCode PetscGridHashEnlarge(PetscGridHash box, const PetscScalar point[]
 
   Level: developer
 
-.seealso: `PetscGridHashCreate()`
+.seealso: `DMPLEX`, `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const PetscReal h[])
 {
@@ -437,7 +437,7 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
   Note:
   This only guarantees that a box contains a point, not that a cell does.
 
-.seealso: `PetscGridHashCreate()`
+.seealso: `DMPLEX`, `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
 {
@@ -485,7 +485,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
   Note:
   This does an additional check that a cell actually contains the point, and found is `PETSC_FALSE` if no cell does. Thus, this function requires that `cellSection` is already constructed.
 
-.seealso: `PetscGridHashGetEnclosingBox()`
+.seealso: `DMPLEX`, `PetscGridHashGetEnclosingBox()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscSection cellSection, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[], PetscBool *found)
 {
@@ -1007,7 +1007,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
   Level: developer
 
-.seealso: `DMPlexComputeProjection3Dto1D()`, `DMPlexComputeProjection3Dto2D()`
+.seealso: `DMPLEX`, `DMPlexComputeProjection3Dto1D()`, `DMPlexComputeProjection3Dto2D()`
 @*/
 PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[])
 {
@@ -1041,7 +1041,7 @@ PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[]
 
   Level: developer
 
-.seealso: `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto2D()`
+.seealso: `DMPLEX`, `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto2D()`
 @*/
 PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[])
 {
@@ -1103,7 +1103,7 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
 
   Level: developer
 
-.seealso: `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto1D()`
+.seealso: `DMPLEX`, `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto1D()`
 @*/
 PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
 {
@@ -3318,7 +3318,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 . numPoints  - the number of points to locate
 - realCoords - (numPoints x coordinate dimension) array of coordinates (see `DMGetCoordinateDim()`)
 
-  Output Parameters:
+  Output Parameter:
 . refCoords  - (`numPoints` x `dimension`) array of reference coordinates (see `DMGetDimension()`)
 
   Level: intermediate
@@ -3390,19 +3390,19 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
   Not Collective
 
   Input Parameters:
-+ dm         - The mesh, with coordinate maps defined either by a PetscDS for the coordinate DM (see DMGetCoordinateDM()) or
++ dm         - The mesh, with coordinate maps defined either by a PetscDS for the coordinate `DM` (see `DMGetCoordinateDM()`) or
                implicitly by the coordinates of the corner vertices of the cell: as an affine map for simplicial elements, or
                as a multilinear map for tensor-product elements
 . cell       - the cell whose map is used.
 . numPoints  - the number of points to locate
-- refCoords  - (numPoints x dimension) array of reference coordinates (see DMGetDimension())
+- refCoords  - (numPoints x dimension) array of reference coordinates (see `DMGetDimension()`)
 
-  Output Parameters:
-. realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
+  Output Parameter:
+. realCoords - (numPoints x coordinate dimension) array of coordinates (see `DMGetCoordinateDim()`)
 
    Level: intermediate
 
-.seealso: `DMPlexCoordinatesToReference()`
+.seealso: `DMPLEX`, `DMPlexCoordinatesToReference()`
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
 {
@@ -3463,12 +3463,12 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
 }
 
 /*@C
-  DMPlexRemapGeometry - This function maps the original DM coordinates to new coordinates.
+  DMPlexRemapGeometry - This function maps the original `DM` coordinates to new coordinates.
 
   Not Collective
 
   Input Parameters:
-+ dm      - The DM
++ dm      - The `DM`
 . time    - The time
 - func    - The function transforming current coordinates to new coordaintes
 
@@ -3500,7 +3500,7 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
 
   Level: intermediate
 
-.seealso: `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`
+.seealso: `DMPLEX`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`
 @*/
 PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time, void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]))
 {

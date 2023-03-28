@@ -914,7 +914,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer, void *
 .  num - number of items of data to read
 -  dtype - type of data to read
 
-   Output Parameters:
+   Output Parameter:
 .  count - number of items of data actually read, or `NULL`.
 
    Level: beginner

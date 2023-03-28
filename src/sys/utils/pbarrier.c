@@ -7,7 +7,7 @@ PetscLogEvent PETSC_Barrier;
 /*@C
     PetscBarrier - Blocks until this routine is executed by all processors owning the object `obj`.
 
-   Input Parameters:
+   Input Parameter:
 .  obj - PETSc object  (`Mat`, `Vec`, `IS`, `SNES` etc...)
         The object must be cast with a (`PetscObject`). `NULL` can be used to indicate the barrier should be across `PETSC_COMM_WORLD`
 

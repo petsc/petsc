@@ -13,10 +13,10 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
 
    Collective over draw
 
-   Input Parameters:
+   Input Parameter:
 .  draw  - The window where the graph will be made
 
-   Output Parameters:
+   Output Parameter:
 .  bar - The bar graph context
 
    Notes:
@@ -228,7 +228,7 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . bar - The bar graph context
 
   Level: intermediate
@@ -297,7 +297,8 @@ PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tole
 
   Input Parameters:
 + bar - The bar graph context
-- y_min,y_max - The limits
+. y_min - The lower limit
+- y_max - The upper limit
 
   Level: intermediate
 

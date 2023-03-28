@@ -174,7 +174,7 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
     Collective
 
     Input Parameters:
-+   PetscViewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
++   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
 -   windownumber - indicates which subwindow (usually 0)
 
     Output Parameter:
@@ -357,9 +357,10 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 +  comm - communicator that will share window
 .  display - the X display on which to open, or `NULL` for the local machine
 .  title - the title to put in the title bar, or `NULL` for no title
-.  x, y - the screen coordinates of the upper left corner of window, or use `PETSC_DECIDE`
--  w, h - window width and height in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,
-          `PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
+.  x - horizonal screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
+.  y - vertical screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
+.  w - window width in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
+-  h - window height in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
 
    Output Parameter:
 . viewer - the `PetscViewer`

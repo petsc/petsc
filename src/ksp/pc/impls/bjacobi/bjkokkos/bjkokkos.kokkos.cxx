@@ -1439,12 +1439,12 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
 +  pc - the `PCBJKOKKOS` preconditioner context
 -  ksp - the `KSP` solver
 
+   Level: advanced
+
    Notes:
    The `PC` and the `KSP` must have the same communicator
 
    If the `PC` is not `PCBJKOKKOS` this function returns without doing anything
-
-   Level: advanced
 
 ,seealso: `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
 @*/
@@ -1479,12 +1479,12 @@ static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp)
    Output Parameter:
 .  ksp - the `KSP` solver
 
+   Level: advanced
+
    Notes:
    You must call `KSPSetUp()` before calling `PCBJKOKKOSGetKSP()`.
 
    If the `PC` is not a `PCBJKOKKOS` object it raises an error
-
-   Level: advanced
 
 .seealso: `PCBJKOKKOS`, `PCBJKOKKOSSetKSP()`
 @*/

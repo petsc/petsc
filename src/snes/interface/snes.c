@@ -119,7 +119,7 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
    Level: advanced
@@ -145,7 +145,7 @@ PetscErrorCode SNESSetFunctionDomainError(SNES snes)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
    Level: advanced
@@ -196,10 +196,10 @@ PetscErrorCode SNESSetCheckJacobianDomainError(SNES snes, PetscBool flg)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  flg  - `PETSC_FALSE` indicates that we don't check Jacobian domain errors after each Jacobian evaluation
 
    Level: advanced
@@ -220,10 +220,10 @@ PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  domainerror - Set to `PETSC_TRUE` if there's a domain error; `PETSC_FALSE` otherwise.
 
    Level: developer
@@ -244,10 +244,10 @@ PetscErrorCode SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  domainerror - Set to `PETSC_TRUE` if there's a Jacobian domain error; `PETSC_FALSE` otherwise.
 
    Level: advanced
@@ -3112,7 +3112,7 @@ static PetscErrorCode SNESSetDefaultComputeJacobian(SNES snes)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
    Level: advanced
@@ -3653,7 +3653,7 @@ PetscErrorCode SNESSetForceIteration(SNES snes, PetscBool force)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
    Output Parameter:
@@ -4014,7 +4014,7 @@ PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES, PetscInt, Pet
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
    Options Database Key:
@@ -4483,7 +4483,7 @@ PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES, v
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . snes   - the `SNES` object
 
   Level: advanced

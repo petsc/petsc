@@ -158,8 +158,6 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ===========================================================================================*/
-
 PetscFunctionList MatPartitioningList              = NULL;
 PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
@@ -338,11 +336,7 @@ PetscErrorCode MatPartitioningApply(MatPartitioning matp, IS *partitioning)
 
    Input Parameters:
 +  matp - the matrix partitioning object
--  partitioning - the partitioning. For each local node this tells the processor
-                   number that that node is assigned to.
-
-   Output Parameter:
-.   partitioning - the partitioning. For each local node this tells the processor
+-  partitioning - the original partitioning. For each local node this tells the processor
                    number that that node is assigned to.
 
    Options Database Key:
@@ -557,10 +551,10 @@ PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning part, PetscBool 
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  part - the partitioning context
 
-   Output Parameters:
+   Output Parameter:
 .  use_edge_weights - the flag indicateing whether or not to edge weights are used.
 
    Level: beginner

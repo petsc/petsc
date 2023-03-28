@@ -1571,7 +1571,7 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
    Level: advanced
 
    Note:
-   When fix is true, new local matrices and l2g maps are generated during the final assembly process.
+   When `fix` is `PETSC_TRUE`, new local matrices and l2g maps are generated during the final assembly process.
 
 .seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatAssemblyEnd()`, `MAT_FINAL_ASSEMBLY`
 @*/

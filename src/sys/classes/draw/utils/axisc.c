@@ -8,7 +8,7 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  win - `PetscDraw` object where axis to to be made
 
    Output Parameter:
@@ -57,7 +57,7 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis)
 
     Collective
 
-    Input Parameters:
+    Input Parameter:
 .   axis - the axis context
 
     Level: advanced
@@ -121,12 +121,12 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
 .   top - the label at the top of the image
 -   xlabel,ylabel - the labes for the x and y axis
 
+    Level: advanced
+
     Notes:
     Must be called before `PetscDrawAxisDraw()` or `PetscDrawLGDraw()`
 
     There should be no newlines in the arguments
-
-    Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetColors()`, `PetscDrawAxisDraw()`, `PetscDrawAxisSetLimits()`
 @*/

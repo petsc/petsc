@@ -22,8 +22,8 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname - The name of a new user-defined creation routine
+- function - The creation routine
 
   Sample usage:
 .vb
@@ -897,8 +897,8 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname - The name of a new user-defined creation routine
+- function - The creation routine itself
 
   Sample usage:
 .vb

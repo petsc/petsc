@@ -126,17 +126,6 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx, PetscOptionItems *Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   MatMFFDDestroy_WP - Frees the space allocated by
-       MatCreateMFFD_WP().
-
-  Input Parameter:
-.  ctx - the matrix free context
-
-   Notes:
-    does not free the ctx, that is handled by the calling routine
-
-*/
 static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
 {
   PetscFunctionBegin;

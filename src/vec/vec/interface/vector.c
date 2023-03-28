@@ -480,7 +480,7 @@ PetscErrorCode VecPointwiseMult(Vec w, Vec x, Vec y)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  v - a vector to mimic
 
    Output Parameter:
@@ -519,7 +519,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  v  - the vector
 
    Level: beginner

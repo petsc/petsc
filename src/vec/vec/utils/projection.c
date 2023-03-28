@@ -461,7 +461,7 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
 . alpha    - the scalar coefficient
 - vreduced - the reduced-space vector
 
-  Output Parameters:
+  Output Parameter:
 . vfull    - the sum of the full-space vector and reduced-space vector
 
   Level: advanced
@@ -529,7 +529,7 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 . mode     - the direction of copying, `SCATTER_FORWARD` or `SCATTER_REVERSE`
 - vreduced - the reduced-space vector
 
-  Output Parameters:
+  Output Parameter:
 . vfull    - the sum of the full-space vector and reduced-space vector
 
   Level: advanced
@@ -802,9 +802,9 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 -      DX  - step direction, can have negative, positive or zero entries
 
      Output Parameters:
-+     boundmin -  (may be NULL this it is not computed) maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
-.     wolfemin -  (may be NULL this it is not computed)
--     boundmax -   (may be NULL this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
++     boundmin -  (may be `NULL` this it is not computed) maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
+.     wolfemin -  (may be `NULL` this it is not computed)
+-     boundmax -   (may be `NULL` this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
 
   Level: advanced
 

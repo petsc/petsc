@@ -59,8 +59,7 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat A, MatType type, MatReuse re
 . n    - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
 . M    - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
 . N    - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
-- data - optional location of GPU matrix data. Pass`NULL` to have PETSc to control matrix
-         memory allocation.
+- data - optional location of GPU matrix data. Pass `NULL` to have PETSc to control matrix memory allocation.
 
   Output Parameter:
 . A - the matrix
@@ -94,7 +93,7 @@ PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   array must have been allocated with `cudaMalloc()`.
 
 .seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDAResetArray()`,
-`MatDenseCUDAReplaceArray()`
+          `MatDenseCUDAReplaceArray()`
 @*/
 PetscErrorCode MatDenseCUDAPlaceArray(Mat mat, const PetscScalar *array)
 {
@@ -109,7 +108,7 @@ PetscErrorCode MatDenseCUDAPlaceArray(Mat mat, const PetscScalar *array)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . mat - the matrix
 
   Level: developer
@@ -158,11 +157,11 @@ PetscErrorCode MatDenseCUDAReplaceArray(Mat mat, const PetscScalar *array)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - the matrix
 
-  Output Parameters
-. array - the GPU array in column major order
+  Output Parameter:
+. a - the GPU array in column major order
 
   Level: developer
 
@@ -173,8 +172,8 @@ PetscErrorCode MatDenseCUDAReplaceArray(Mat mat, const PetscScalar *array)
   The array must be restored with `MatDenseCUDARestoreArrayWrite()` when no longer needed.
 
 .seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`,
-`MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayRead()`,
-`MatDenseCUDARestoreArrayRead()`
+          `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayRead()`,
+          `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
 {
@@ -191,7 +190,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
 
   Input Parameters:
 + A     - the matrix
-- array - the GPU array in column major order
+- a - the GPU array in column major order
 
   Level: developer
 
@@ -212,11 +211,11 @@ PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - the matrix
 
-  Output Parameters
-. array - the GPU array in column major order
+  Output Parameter:
+. a - the GPU array in column major order
 
   Level: developer
 
@@ -225,8 +224,8 @@ PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
   access, use `MatDenseCUDAGetArrayWrite()`.
 
 .seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`,
-`MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`,
-`MatDenseCUDARestoreArrayRead()`
+          `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`,
+          `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
 {
@@ -243,7 +242,7 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
 
   Input Parameters:
 + A     - the matrix
-- array - the GPU array in column major order
+- a - the GPU array in column major order
 
   Level: developer
 
@@ -252,7 +251,7 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
   access, use `MatDenseCUDAGetArrayWrite()`.
 
 .seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`,
-`MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDAGetArrayRead()`
+          `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
 {
@@ -267,11 +266,11 @@ PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - the matrix
 
-  Output Parameters
-. array - the GPU array in column major order
+  Output Parameter:
+. a - the GPU array in column major order
 
   Level: developer
 
@@ -281,8 +280,8 @@ PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
   `MatDenseCUDAGetArrayRead()`.
 
 .seealso: `MATDENSECUDA`, `MatDenseCUDAGetArrayRead()`, `MatDenseCUDARestoreArray()`,
-`MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`,
-`MatDenseCUDARestoreArrayRead()`
+          `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`,
+          `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
 {
@@ -300,11 +299,11 @@ PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
   Level: developer
 
   Input Parameters:
-+ A     - the matrix
-- array - the GPU array in column major order
++ A - the matrix
+- a - the GPU array in column major order
 
 .seealso: `MATDENSECUDA`, `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArrayWrite()`,
-`MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
+          `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 {

@@ -1282,8 +1282,7 @@ PetscErrorCode TaoGetLineSearch(Tao tao, TaoLineSearch *ls)
   in the line search to the running total.
 
    Input Parameters:
-+  tao - the `Tao` solver
--  ls - the line search used in the optimization solver
+.  tao - the `Tao` solver
 
    Level: developer
 
@@ -1373,14 +1372,13 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 
 /*@C
   TaoSetUpdate - Sets the general-purpose update function called
-  at the beginning of every iteration of the optimization algorithm. Specifically
-  it is called at the top of every iteration, after the new solution and the gradient
+  at the beginning of every iteration of the optimization algorithm. Called after the new solution and the gradient
   is determined, but before the Hessian is computed (if applicable).
 
   Logically Collective
 
   Input Parameters:
-+ tao - The tao solver context
++ tao - The `Tao` solver context
 - func - The function
 
   Calling sequence of `func`:
@@ -1444,16 +1442,18 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 
    Input Parameters:
 +  tao - the `Tao` solver context
-.  mymonitor - monitoring routine
--  mctx - [optional] user-defined context for private data for the
-          monitor routine (may be `NULL`)
+.  func - monitoring routine
+.  ctx - [optional] user-defined context for private data for the monitor routine (may be `NULL`)
+-  dest - [optional] function to destroy the context when the `Tao` is destroyed
 
-   Calling sequence of `mymonitor`:
-.vb
-     PetscErrorCode mymonitor(Tao tao, void *mctx)
-.ve
+   Calling sequence of `func`:
+$     PetscErrorCode func(Tao tao, void *ctx)
 +    tao - the `Tao` solver context
--    mctx - [optional] monitoring context
+-    ctx - [optional] monitoring context
+
+   Calling sequence of `dest`:
+$     PetscErrorCode dest(void *ctx)
+.    ctx -  monitoring context
 
    Options Database Keys:
 +    -tao_monitor        - sets the default monitor `TaoMonitorDefault()`
@@ -1921,9 +1921,6 @@ PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
 +  tao - the `Tao` context
 -  dummy - unused dummy context
 
-   Output Parameter:
-.  reason - for terminating
-
    Level: developer
 
    Notes:
@@ -1993,6 +1990,8 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
 +  tao - the `Tao` context
 -  prefix - the prefix string to prepend to all Tao option requests
 
+   Level: advanced
+
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
@@ -2009,8 +2008,6 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
       -sys1_tao_method blmvm -sys1_tao_grtol 1.e-3
       -sys2_tao_method lmvm  -sys2_tao_grtol 1.e-4
 .ve
-
-   Level: advanced
 
 .seealso: [](chapter_tao), `Tao`, `TaoSetFromOptions()`, `TaoAppendOptionsPrefix()`, `TaoGetOptionsPrefix()`
 @*/
@@ -2033,11 +2030,11 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
 +  tao - the `Tao` solver context
 -  prefix - the prefix string to prepend to all `Tao` option requests
 
+   Level: advanced
+
    Note:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is automatically the hyphen.
-
-   Level: advanced
 
 .seealso: [](chapter_tao), `Tao`, `TaoSetFromOptions()`, `TaoSetOptionsPrefix()`, `TaoGetOptionsPrefix()`
 @*/
@@ -2439,9 +2436,6 @@ PetscErrorCode TaoGetType(Tao tao, TaoType *type)
 .  cnorm - the infeasibility of the current solution with regard to the constraints.
 -  steplength - multiple of the step direction added to the previous iterate.
 
-   Output Parameter:
-.  reason - The termination reason, which can equal `TAO_CONTINUE_ITERATING`
-
    Options Database Key:
 .  -tao_monitor - Use the default monitor, which prints statistics to standard output
 
@@ -2707,6 +2701,16 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
    TaoMonitorDrawCtxCreate - Creates the monitor context for `TaoMonitorDrawSolution()`
 
    Collective
+
+   Input Parameters:
++  comm - the communicator to share the context
+.  host - the name of the X Windows host that will display the monitor
+.  label - the label to put at the top of the display window
+.  x - the horizontal coordinate of the lower left corner of the window to open
+.  y - the vertical coordinate of the lower left corner of the window to open
+.  m - the width of the window
+.  n - the height of the window
+-  howoften - how many `Tao` iterations between displaying the monitor information
 
    Output Parameter:
 .    ctx - the monitor context

@@ -219,7 +219,7 @@ static PetscErrorCode MatProductDataDestroy_MPIAIJKokkos(void *data)
 .  A     - the diag matrix using local col ids
 -  B     - the offdiag matrix using global col ids
 
-  Output Parameters:
+  Output Parameter:
 .  mat   - the updated MATMPIAIJKOKKOS matrix
 */
 static PetscErrorCode MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(Mat mat, Mat A, Mat B, PetscInt *garray)

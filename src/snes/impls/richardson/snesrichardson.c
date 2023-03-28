@@ -6,14 +6,6 @@ PetscErrorCode SNESReset_NRichardson(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESDestroy_NRichardson - Destroys the private SNES_NRichardson context that was created with SNESCreate_NRichardson().
-
-  Input Parameter:
-. snes - the SNES context
-
-  Application Interface Routine: SNESDestroy()
-*/
 PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
@@ -22,16 +14,6 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESSetUp_NRichardson - Sets up the internal data structures for the later use
-   of the SNESNRICHARDSON nonlinear solver.
-
-   Input Parameters:
-+  snes - the SNES context
--  x - the solution vector
-
-   Application Interface Routine: SNESSetUp()
- */
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
@@ -40,14 +22,6 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESSetFromOptions_NRichardson - Sets various parameters for the SNESNEWTONLS method.
-
-  Input Parameter:
-. snes - the SNES context
-
-  Application Interface Routine: SNESSetFromOptions()
-*/
 static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
@@ -56,15 +30,6 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESView_NRichardson - Prints info from the SNESRichardson data structure.
-
-  Input Parameters:
-+ SNES - the SNES context
-- viewer - visualization context
-
-  Application Interface Routine: SNESView()
-*/
 static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 {
   PetscBool iascii;
@@ -75,17 +40,6 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESSolve_NRichardson - Solves a nonlinear system with the Richardson method.
-
-  Input Parameters:
-. snes - the SNES context
-
-  Output Parameter:
-. outits - number of iterations until termination
-
-  Application Interface Routine: SNESSolve()
-*/
 PetscErrorCode SNESSolve_NRichardson(SNES snes)
 {
   Vec                  X, Y, F;

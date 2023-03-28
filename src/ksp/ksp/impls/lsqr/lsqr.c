@@ -313,10 +313,10 @@ PetscErrorCode KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp   - iterative context
 
-   Output Parameters:
+   Output Parameter:
 .  se - vector of standard estimates
 
    Level: intermediate

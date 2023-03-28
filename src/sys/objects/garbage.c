@@ -23,7 +23,7 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
 
     Not Collective
 
-    Input Parameters:
+    Input Parameter:
 .   obj - object to be destroyed
 
     Notes:
@@ -159,7 +159,7 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
 
     Collective
 
-    Input Parameters:
+    Input Parameter:
 .   comm      - communicator over which to perform collective cleanup
 
     Notes:

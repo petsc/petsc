@@ -367,7 +367,7 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
 
     Collective
 
-   Input Parameters:
+   Input Parameter:
 .   draw - the draw object
 
   Level: advanced
@@ -414,7 +414,7 @@ M*/
 
     Collective
 
-  Input Parameters:
+  Input Parameter:
 .   draw - the draw object
 
   Level: advanced

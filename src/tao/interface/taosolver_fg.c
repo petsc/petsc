@@ -294,12 +294,12 @@ PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscRe
   Input Parameter:
 . tao - the `Tao` context
 
-  Output Parameters
+  Output Parameters:
 + func - the objective function
 - ctx - the user-defined context for private data for the function evaluation
 
   Calling sequence of `func`:
-$ PetscErrorCode func(Tao tao, Vec x, PetscReal *f, void *ctx);
+$ PetscErrorCode func(Tao tao, Vec x, PetscReal *f, void *ctx)
 + tao - the optimizer
 . x - input vector
 . f - function value

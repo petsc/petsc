@@ -155,7 +155,7 @@ PetscErrorCode DMCompositeGetNumberDM(DM dm, PetscInt *nDM)
 +    dm - the `DMCOMPOSITE` object
 -    gvec - the global vector
 
-    Output Parameters:
+    Output Parameter:
 .    Vec* ... - the packed parallel vectors, NULL for those that are not needed
 
     Level: advanced
@@ -224,7 +224,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
 .    nwanted - number of vectors wanted
 -    wanted - sorted array of vectors wanted, or NULL to get all vectors
 
-    Output Parameters:
+    Output Parameter:
 .    vecs - array of requested global vectors (must be allocated)
 
     Level: advanced
@@ -284,7 +284,7 @@ PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, cons
 .    nwanted - number of vectors wanted
 -    wanted - sorted array of vectors wanted, or NULL to get all vectors
 
-    Output Parameters:
+    Output Parameter:
 .    vecs - array of requested local vectors (must be allocated)
 
     Level: advanced
@@ -849,7 +849,7 @@ PetscErrorCode DMCreateLocalVector_Composite(DM dm, Vec *lvec)
     Input Parameter:
 .    dm - the `DMCOMPOSITE` object
 
-    Output Parameters:
+    Output Parameter:
 .    ltogs - the individual mappings for each packed vector. Note that this includes
            all the ghost points that individual ghosted `DMDA` may have.
 
@@ -980,7 +980,7 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
     Input Parameter:
 .    dm - the `DMCOMPOSITE` object
 
-    Output Parameters:
+    Output Parameter:
 .    is - the array of index sets
 
     Level: advanced
@@ -1720,7 +1720,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
     Input Parameter:
 .   comm - the processors that will share the global vector
 
-    Output Parameters:
+    Output Parameter:
 .   packer - the `DMCOMPOSITE` object
 
     Level: advanced

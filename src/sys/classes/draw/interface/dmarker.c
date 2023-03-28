@@ -12,7 +12,8 @@ const char *const PetscDrawMarkerTypes[] = {"CROSS", "POINT", "PLUS", "CIRCLE", 
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl - the coordinates of the marker
+.  xl - horizontal coordinate of the marker
+.  yl - vertical coordinate of the marker
 -  cl - the color of the marker
 
    Level: beginner

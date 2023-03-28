@@ -132,6 +132,7 @@ PetscErrorCode MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
    Input Parameters:
 +  agg - the coarsen context
 -  str - `PETSC_TRUE` keep strict aggregates, `PETSC_FALSE` allow overlap
+
    Level: advanced
 
 .seealso: `MatCoarsen`, `MatCoarsenCreate()`, `MatCoarsenSetFromOptions()`
@@ -149,7 +150,7 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  agg - the coarsen context
 
    Level: advanced

@@ -26,7 +26,7 @@
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  len  - maximum length of path
 
    Output Parameter:

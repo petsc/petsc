@@ -3814,7 +3814,7 @@ PetscErrorCode MatRetrieveValues_SeqAIJ(Mat mat)
 
    Logically Collect
 
-  Input Parameters:
+  Input Parameter:
 .  mat - the matrix (currently only `MATAIJ` matrices support this option)
 
   Level: advanced

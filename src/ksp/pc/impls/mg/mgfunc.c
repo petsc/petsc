@@ -243,8 +243,6 @@ PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat)
 
    Level: advanced
 
-.keywords:  multigrid, set, interpolate, level
-
 .seealso: `PCMG`, `PCMGSetGalerkin()`, `PCMGSetRestriction()`, `PCMGSetInterpolation()`
 @*/
 PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat)
@@ -272,7 +270,7 @@ PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat)
 -  l - the level (0 is coarsest) to supply [Do not supply 0]
 
    Output Parameter:
-.  mat - the interpolation matrix, can be NULL
+.  mat - the interpolation matrix, can be `NULL`
 
    Level: advanced
 

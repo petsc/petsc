@@ -24,7 +24,7 @@
 +  n  - number of values
 -  X  - array of integers
 
-   Output Parameters:
+   Output Parameter:
 .  sorted - flag whether the array is sorted
 
    Level: intermediate

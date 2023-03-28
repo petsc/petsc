@@ -173,7 +173,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 .  isrow - rows to be present in the submatrix
 -  iscol - columns to be present in the submatrix
 
-   Output Parameters:
+   Output Parameter:
 .  newmat - new matrix
 
    Level: developer

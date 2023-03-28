@@ -111,9 +111,10 @@ PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char
 +  comm - MPI communicator
 .  display - X display when using X Windows
 .  title - optional title added to top of window
-.  x,y - coordinates of lower left corner of window or `PETSC_DECIDE`
--  w, h - width and height of window or `PETSC_DECIDE` or `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`,
-          or `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
+.  x - horizonatl coordinate of lower left corner of window or `PETSC_DECIDE`
+.  y - vertical coordinate of lower left corner of window or `PETSC_DECIDE`
+.  w - width of window, `PETSC_DECIDE`, `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
+-  h - height of window, `PETSC_DECIDE`, `PETSC_DRAW_HALF_SIZE`, `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_THIRD_SIZE` or `PETSC_DRAW_QUARTER_SIZE`
 
    Output Parameter:
 .  draw - location to put the `PetscDraw` context
@@ -266,7 +267,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
    Input Parameter:
 .  draw - Krylov context
 
-   Output Parameters:
+   Output Parameter:
 .  name - name of PetscDraw method
 
    Level: advanced

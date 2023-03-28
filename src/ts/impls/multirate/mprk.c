@@ -439,7 +439,7 @@ PetscErrorCode TSMPRKFinalizePackage(void)
    Input Parameters:
 +  name - identifier for method
 .  order - approximation order of method
-.  s  - number of stages in the base methods
+.  sbase  - number of stages in the base methods
 .  ratio1 - stepsize ratio at 1st level (e.g. slow/medium)
 .  ratio2 - stepsize ratio at 2nd level (e.g. medium/fast)
 .  Af - stage coefficients for fast components(dimension s*s, row-major)

@@ -289,7 +289,7 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
    Input Parameter:
 .     da - the `DMDA` object
 
-   Output Parameters:
+   Output Parameter:
 .     etype - the element type, currently either `DMDA_ELEMENT_P1` or `DMDA_ELEMENT_Q1`
 
    Level: intermediate
@@ -326,7 +326,7 @@ PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
    Input Parameter:
 .     da - the `DMDA` object
 
-   Output Parameters:
+   Output Parameter:
 .     etype - the element type, currently either `DMDA_ELEMENT_P1` or `DMDA_ELEMENT_Q1`
 
    Level: intermediate
@@ -416,7 +416,7 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
    Input Parameter:
 .     dm - the `DMDA` object
 
-   Output Parameters:
+   Output Parameter:
 .     is - the index set
 
    Level: intermediate

@@ -348,6 +348,8 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
 + dctx  - The `PetscDeviceContext` used to free the memory
 - ptr   - The pointer to free
 
+  Level: intermediate
+
   Notes:
   `ptr` must have been allocated using any of `PetscDeviceMalloc()`, `PetscDeviceCalloc()` or
   `PetscDeviceAllocate_Private()`, or registered with the system via `PetscDeviceRegisterMemory()`.
@@ -367,8 +369,6 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
   -> dctx -/- |= CALL =| - dctx ->
   -> ptr -/
 .ve
-
-  Level: intermediate
 
 .N ASYNC_API
 
@@ -425,6 +425,8 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
 . src  - The pointer to copy from
 - n    - The amount (in bytes) to copy
 
+  Level: intermediate
+
   Notes:
   Both `dest` and `src` must have been allocated by `PetscDeviceMalloc()` or
   `PetscDeviceCalloc()`.
@@ -444,8 +446,6 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
   -> dest --------------------->
   -> src ---------------------->
 .ve
-
-  Level: intermediate
 
 .N ASYNC_API
 
@@ -496,6 +496,8 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
 . v     - The value to set
 - n     - The amount (in bytes) to set
 
+  Level: intermediate
+
   Notes:
   `ptr` must have been allocated by `PetscDeviceMalloc()` or `PetscDeviceCalloc()`.
 
@@ -516,8 +518,6 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
   -> dctx - |= CALL =| - dctx ->
   -> dest --------------------->
 .ve
-
-  Level: intermediate
 
 .N ASYNC_API
 

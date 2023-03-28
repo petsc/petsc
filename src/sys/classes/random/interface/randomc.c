@@ -50,7 +50,7 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r)
 
    Not collective
 
-   Input Parameters:
+   Input Parameter:
 .  r - The random number generator context
 
    Output Parameter:
@@ -355,7 +355,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
 
    Not collective
 
-   Input Parameters:
+   Input Parameter:
 .  r - The random number generator context
 
    Level: intermediate

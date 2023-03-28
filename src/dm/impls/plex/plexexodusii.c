@@ -235,7 +235,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
 . obj_type - the type of entity for instance EX_NODAL, EX_ELEM_BLOCK
 - name     - the name of the result
 
-  Output Parameters:
+  Output Parameter:
 . varIndex - the location in the exodus file of the result
 
   Level: beginner

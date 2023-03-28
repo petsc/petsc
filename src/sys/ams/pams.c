@@ -9,7 +9,7 @@
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  obj - the `PetscObject` variable. This must be cast with a (`PetscObject`), for example, `PetscObjectSAWSTakeAccess`((`PetscObject`)mat);
 
    Level: advanced
@@ -34,7 +34,7 @@ PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject obj)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  obj - the `PetscObject` variable. This must be cast with a (`PetscObject`), for example, `PetscObjectSAWSRestoreAccess`((`PetscObject`)mat);
 
    Level: advanced
@@ -83,7 +83,7 @@ PetscErrorCode PetscSAWsBlock(void)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  obj - the PETSc variable
 
    Level: advanced

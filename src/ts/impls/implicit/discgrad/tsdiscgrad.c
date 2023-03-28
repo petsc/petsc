@@ -489,7 +489,8 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 + ts    - timestepping context
 . Sfunc - constructor for the S matrix from the formulation
 . Ffunc - functional F from the formulation
-- Gfunc - constructor for the gradient of F from the formulation
+. Gfunc - constructor for the gradient of F from the formulation
+- ctx - optional context for the functions
 
   Calling sequence of `Sfunc`:
 $ PetscErrorCode Sfunc(TS ts, PetscReal time, Vec u, Mat S, void *ctx)

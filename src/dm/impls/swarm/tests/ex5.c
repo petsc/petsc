@@ -368,7 +368,7 @@ PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal dum
 + ts         - The TS
 - useInitial - Flag to also set the initial conditions to the current coordinates and velocities and setup the problem
 
-  Output Parameters:
+  Output Parameter:
 . u - The initialized solution vector
 
   Level: advanced

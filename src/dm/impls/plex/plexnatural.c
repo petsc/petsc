@@ -213,7 +213,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 + dm - The distributed `DMPLEX`
 - gv - The global `Vec`
 
-  Output Parameters:
+  Output Parameter:
 . nv - `Vec` in the canonical ordering distributed over all processors associated with `gv`
 
   Level: intermediate
@@ -315,7 +315,7 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 + dm - The distributed `DMPLEX`
 - nv - The natural `Vec`
 
-  Output Parameters:
+  Output Parameter:
 . gv - The global `Vec`
 
   Level: intermediate
@@ -363,7 +363,7 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 + dm - The distributed `DMPLEX`
 - nv - The natural `Vec`
 
-  Output Parameters:
+  Output Parameter:
 . gv - The global `Vec`
 
   Level: intermediate

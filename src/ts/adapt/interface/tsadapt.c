@@ -20,8 +20,8 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt);
    Not Collective
 
    Input Parameters:
-+  name_scheme - name of user-defined adaptivity scheme
--  routine_create - routine to create method context
++  sname - name of user-defined adaptivity scheme
+-  function - routine to create method context
 
    Level: advanced
 
@@ -49,7 +49,7 @@ PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TS
 }
 
 /*@C
-  TSAdaptRegisterAll - Registers all of the adaptivity schemes in TSAdapt
+  TSAdaptRegisterAll - Registers all of the adaptivity schemes in `TSAdapt`
 
   Not Collective
 
@@ -72,8 +72,8 @@ PetscErrorCode TSAdaptRegisterAll(void)
 }
 
 /*@C
-  TSAdaptFinalizePackage - This function destroys everything in the TS package. It is
-  called from PetscFinalize().
+  TSAdaptFinalizePackage - This function destroys everything in the `TS` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
@@ -89,8 +89,8 @@ PetscErrorCode TSAdaptFinalizePackage(void)
 }
 
 /*@C
-  TSAdaptInitializePackage - This function initializes everything in the TSAdapt package. It is
-  called from TSInitializePackage().
+  TSAdaptInitializePackage - This function initializes everything in the `TSAdapt` package. It is
+  called from `TSInitializePackage()`.
 
   Level: developer
 
@@ -175,7 +175,7 @@ PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
 }
 
 /*@C
-  TSAdaptLoad - Loads a TSAdapt that has been stored in binary  with TSAdaptView().
+  TSAdaptLoad - Loads a TSAdapt that has been stored in binary with `TSAdaptView()`.
 
   Collective
 
@@ -324,15 +324,14 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
 /*@C
    TSAdaptSetCheckStage - Set a callback to check convergence for a stage
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
 -  func - stage check function
 
-   Arguments of func:
+  Calling Sequence of `func`:
 $  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
-
 +  adapt - adaptive controller context
 .  ts - time stepping context
 -  accept - pending choice of whether to accept, can be modified by this routine
@@ -353,7 +352,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdap
    TSAdaptSetAlwaysAccept - Set whether to always accept steps regardless of
    any error or stability condition not meeting the prescribed goal.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - time step adaptivity context, usually gotten with `TSGetAdapt()`
@@ -378,7 +377,7 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
 /*@
    TSAdaptSetSafety - Set safety factors for time step adaptor
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -439,7 +438,7 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *rej
    TSAdaptSetMaxIgnore - Set error estimation threshold. Solution components below this threshold value will not be considered when computing error norms
    for time step adaptivity (in absolute value). A negative value (default) of the threshold leads to considering all solution components.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -662,7 +661,8 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
    Collective
 
    Input Parameter:
-.  adapt - the `TSAdapt` context
++  adapt - the `TSAdapt` context
+-  PetscOptionsObject - object created by `PetscOptionsBegin()`
 
    Options Database Keys:
 +  -ts_adapt_type <type> - algorithm to use for adaptivity

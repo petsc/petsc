@@ -61,8 +61,8 @@ PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname - The name of a new user-defined creation routine
+- function - The creation routine
 
   Sample usage:
 .vb
@@ -813,7 +813,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
 + fem - The `PetscFE` object
 - k   - The highest derivative we need to tabulate, very often 1
 
-  Output Parameters:
+  Output Parameter:
 . Tf - The basis function values and derivatives at face quadrature points
 
   Level: intermediate
@@ -873,7 +873,7 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscInt k, PetscTabulation
   Input Parameter:
 . fem - The `PetscFE` object
 
-  Output Parameters:
+  Output Parameter:
 . Tc - The basis function values at face centroid points
 
   Level: intermediate

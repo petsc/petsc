@@ -1720,7 +1720,7 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
 /*@C
      MatH2OpusGetIndexMap - Access reordering index set.
 
-   Input Parameters:
+   Input Parameter:
 .     A - the matrix
 
    Output Parameter:

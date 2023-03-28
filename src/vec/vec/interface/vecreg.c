@@ -149,11 +149,11 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname        - The name of a new user-defined creation routine
+- function - The creation routine
 
   Notes:
-  VecRegister() may be called multiple times to add several user-defined vectors
+  `VecRegister()` may be called multiple times to add several user-defined vectors
 
   Sample usage:
 .vb

@@ -15,13 +15,13 @@
    Output Parameter:
 .  options - the options database
 
+  Level: advanced
+
    Note:
    If this is not called the object will use the default options database
 
    Developer Note:
    This functionality is not used in PETSc and should, perhaps, be removed
-
-  Level: advanced
 
 .seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectAppendOptionsPrefix()`, `PetscObjectPrependOptionsPrefix()`,
           `PetscObjectGetOptionsPrefix()`, `PetscObjectSetOptions()`
@@ -43,13 +43,13 @@ PetscErrorCode PetscObjectGetOptions(PetscObject obj, PetscOptions *options)
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
 -  options - the options database, use NULL for default
 
+  Level: advanced
+
    Note:
    If this is not called the object will use the default options database
 
    Developer Note:
    This functionality is not used in PETSc and should, perhaps, be removed
-
-  Level: advanced
 
 .seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectAppendOptionsPrefix()`, `PetscObjectPrependOptionsPrefix()`,
           `PetscObjectGetOptionsPrefix()`, `PetscObjectGetOptions()`
@@ -72,12 +72,12 @@ PetscErrorCode PetscObjectSetOptions(PetscObject obj, PetscOptions options)
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
 -  prefix - the prefix string to prepend to option requests of the object.
 
+  Level: advanced
+
    Note:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
-
-  Level: advanced
 
 .seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectAppendOptionsPrefix()`, `PetscObjectPrependOptionsPrefix()`,
           `PetscObjectGetOptionsPrefix()`, `TSSetOptionsPrefix()`, `SNESSetOptionsPrefix()`, `KSPSetOptionsPrefix()`
@@ -138,10 +138,10 @@ PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject obj, const char prefix
 /*@C
    PetscObjectGetOptionsPrefix - Gets the prefix of the `PetscObject` used for searching in the options database
 
-   Input Parameters:
+   Input Parameter:
 .  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
 
-   Output Parameters:
+   Output Parameter:
 .  prefix - pointer to the prefix string used is returned
 
   Level: advanced

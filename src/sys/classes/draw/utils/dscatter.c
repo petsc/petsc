@@ -226,7 +226,8 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp, PetscReal *x, PetscReal *y)
 
   Input Parameters:
 + sp - the scatter plot context
-. xx,yy - points to two arrays of pointers that point to arrays containing the new x and y points for each curve.
+. xx - array of pointers that point to arrays containing the new x coordinates for each curve.
+. yy - array of pointers that point to arrays containing the new y points for each curve.
 - n - number of points being added, each represents a subarray of length dim where dim is the value from `PetscDrawSPGetDimension()`
 
   Level: intermediate
@@ -286,12 +287,14 @@ PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp, int n, PetscReal **xx, Petsc
 
   Input Parameters:
 + sp - the scatter plot data structure
-. x, y - two arrays of length dim containing the new x and y coordinate values for each of the point curves. Here  dim is the number of point curves passed to `PetscDrawSPCreate()`
+. x - array of length dim containing the new x coordinate values for each of the point curves.
+. y - array of length dim containing the new y coordinate values for each of the point curves.
 - z - array of length dim containing the numeric values that will be mapped to [0,255] and used for scatter point colors.
 
   Level: intermediate
 
   Note:
+  The dimensions of the arrays is the number of point curves passed to `PetscDrawSPCreate()`.
   The new points will not be displayed until a call to `PetscDrawSPDraw()` is made
 
 .seealso: `PetscDrawSPAddPoints()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`
@@ -418,7 +421,10 @@ PetscErrorCode PetscDrawSPSave(PetscDrawSP sp)
 
   Input Parameters:
 + xsp - the line graph context
-- x_min,x_max,y_min,y_max - the limits
+. x_min - the horizontal lower limit
+. x_max - the horizonal upper limit
+. y_min - the vertical lower limit
+- y_max - the vertical upper limit
 
   Level: intermediate
 

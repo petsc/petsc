@@ -1061,8 +1061,8 @@ PetscErrorCode MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat, PetscInt *indices)
   in a `MATSEQSBAIJ` matrix.
 
   Input Parameters:
-  +  mat     - the `MATSEQSBAIJ` matrix
-  -  indices - the column indices
++  mat     - the `MATSEQSBAIJ` matrix
+-  indices - the column indices
 
   Level: advanced
 

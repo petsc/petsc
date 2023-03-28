@@ -222,6 +222,8 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc, Mat W, PetscBool tran
 .  W         - deflation matrix
 -  transpose - indicates that W is an explicit transpose of the deflation matrix
 
+   Level: intermediate
+
    Notes:
     Setting W as a multipliplicative `MATCOMPOSITE` enables use of the multilevel
     deflation. If W = W0*W1*W2*...*Wn, W0 is taken as the first deflation space and
@@ -230,8 +232,6 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc, Mat W, PetscBool tran
     PCDeflationSetLevels() is reached or there are no more matrices available.
     If there are matrices left after reaching the maximum level,
     they are merged into a deflation matrix ...*W{n-1}*Wn.
-
-   Level: intermediate
 
 .seealso: `PCDeflationSetLevels()`, `PCDEFLATION`, `PCDeflationSetProjectionNullSpaceMat()`
 @*/

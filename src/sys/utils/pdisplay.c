@@ -141,10 +141,10 @@ PetscErrorCode PetscSetDisplay(void)
 /*@C
      PetscGetDisplay - Gets the X windows display variable for all processors.
 
-  Input Parameters:
+  Input Parameter:
 .   n - length of string display
 
-  Output Parameters:
+  Output Parameter:
 .   display - the display string
 
   Options Database Keys:

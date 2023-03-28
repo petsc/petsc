@@ -2167,7 +2167,7 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 + dm                - The `DM` into which the topology is loaded
 - viewer            - The `PetscViewer` for the saved topology
 
-  Output Parameters:
+  Output Parameter:
 . globalToLocalPointSF - The `PetscSF` that pushes points in [0, N) to the associated points in the loaded `DMPLEX`, where N is the global number of points; `NULL` if unneeded
 
   Level: advanced
@@ -2685,7 +2685,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   Input Parameter:
 . mesh - The `DMPLEX`
 
-  Output Parameters:
+  Output Parameter:
 . subsection - The subdomain section
 
   Level: developer
@@ -4740,7 +4740,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 + dmA - A `DMPLEX` object
 - dmB - A `DMPLEX` object
 
-  Output Parameters:
+  Output Parameter:
 . equal - `PETSC_TRUE` if the topologies are identical
 
   Level: intermediate
@@ -4804,7 +4804,7 @@ PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
 . cellDim    - The cell dimension
 - numCorners - The number of vertices on a cell
 
-  Output Parameters:
+  Output Parameter:
 . numFaceVertices - The number of vertices on a face
 
   Level: developer
@@ -5256,7 +5256,7 @@ PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm        - The `DMPLEX` object
 
   Output Parameter:
@@ -5281,7 +5281,7 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm        - The `DMPLEX` object
 
   Output Parameter:
@@ -5306,7 +5306,7 @@ PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm        - The `DMPLEX` object
 
   Output Parameter:
@@ -5331,7 +5331,7 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm        - The `DMPLEX` object
 
   Output Parameter:

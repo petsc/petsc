@@ -27,9 +27,10 @@ static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, Pet
 .  ksp - iterative context obtained from `KSPCreate()`
 
    Output Parameters:
-.  emin, emax - extreme singular values
++  emax - maximum estimated singular value
+-  emin - minimum estimated singular value
 
-   Options Database Keys:
+   Options Database Key:
 .  -ksp_view_singularvalues - compute extreme singular values and print when `KSPSolve()` completes.
 
    Notes:
@@ -258,10 +259,10 @@ PetscErrorCode KSPSetReusePreconditioner(KSP ksp, PetscBool flag)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp   - iterative context obtained from `KSPCreate()`
 
-   Output Parameters:
+   Output Parameter:
 .  flag - the boolean flag
 
    Level: intermediate
@@ -553,7 +554,7 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . ksp   - the `KSP` object
 
   Level: intermediate
@@ -592,7 +593,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
 +  ksp    - iterative context obtained from `KSPCreate()`
 -  viewer - the viewer to display the reason
 
-  Options Database Keys:
+  Options Database Key:
 . -ksp_converged_rate - print reason for convergence or divergence and the convergence rate (or 0.0 for divergence)
 
   Notes:
@@ -1698,7 +1699,7 @@ PetscErrorCode KSPGetInitialGuessNonzero(KSP ksp, PetscBool *flag)
 +  ksp - iterative context obtained from `KSPCreate()`
 -  flg - `PETSC_TRUE` indicates you want the error generated
 
-   Options database keys:
+   Options Database Key:
 .  -ksp_error_if_not_converged <true,false> - generate an error and stop the program
 
    Level: intermediate
@@ -1979,10 +1980,10 @@ PetscErrorCode KSPGetRhs(KSP ksp, Vec *r)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
 
-   Output Parameters:
+   Output Parameter:
 .  v - solution vector
 
    Level: developer
@@ -2035,7 +2036,7 @@ PetscErrorCode KSPSetPC(KSP ksp, PC pc)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
 
    Output Parameter:
@@ -2165,7 +2166,7 @@ PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP, PetscInt, P
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
 
    Options Database Key:

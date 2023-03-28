@@ -911,7 +911,7 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix whose values are to be computed via a matrix-matrix product operation
 
    Options Database Key:
@@ -1041,7 +1041,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 .  B - the second matrix
 -  C - the third matrix (or `NULL`)
 
-   Output Parameters:
+   Output Parameter:
 .  D - the matrix whose values are to be computed via a matrix-matrix product operation
 
    Level: intermediate

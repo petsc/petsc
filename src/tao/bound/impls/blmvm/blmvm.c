@@ -353,10 +353,10 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 /*@
   TaoLMVMGetH0KSP - Get the iterative solver for applying the inverse of the QN initial Hessian
 
-  Input Parameters:
+  Input Parameter:
 .  tao  - the `Tao` solver context
 
-  Output Parameters:
+  Output Parameter:
 .  ksp - `KSP` solver context for the initial Hessian
 
   Level: advanced

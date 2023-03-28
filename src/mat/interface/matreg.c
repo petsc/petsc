@@ -15,10 +15,10 @@ PetscFunctionList MatList = NULL;
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat      - the input matrix, could be sequential or MPI
 
-   Output Parameters:
+   Output Parameter:
 .  rootType  - the root matrix type
 
    Level: developer
@@ -52,10 +52,10 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat      - the input matrix, could be sequential or MPI
 
-   Output Parameters:
+   Output Parameter:
 .  MPIType  - the parallel (MPI) matrix type
 
    Level: developer

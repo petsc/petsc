@@ -49,7 +49,7 @@ PetscErrorCode PetscMkdir(const char dir[])
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dir - file name template, the last six characters must be 'XXXXXX', and they will be modified upon return
 
   Level: developer

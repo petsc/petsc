@@ -222,7 +222,7 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
 
    Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 .   viewer - string viewer
 
   Level: advanced

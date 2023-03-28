@@ -13,7 +13,7 @@ struct _n_PetscViewers {
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  v - the `PetscViewer`s to be destroyed.
 
    Level: intermediate

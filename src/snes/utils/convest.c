@@ -43,7 +43,7 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . ce - The `PetscConvEst` object
 
   Level: beginner
@@ -138,7 +138,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . ce - The `PetscConvEst` object
 
   Level: beginner

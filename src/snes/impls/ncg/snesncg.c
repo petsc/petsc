@@ -7,14 +7,6 @@ static PetscErrorCode SNESReset_NCG(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESDestroy_NCG - Destroys the private SNES_NCG context that was created with SNESCreate_NCG().
-
-  Input Parameter:
-. snes - the SNES context
-
-  Application Interface Routine: SNESDestroy()
-*/
 static PetscErrorCode SNESDestroy_NCG(SNES snes)
 {
   PetscFunctionBegin;
@@ -22,17 +14,6 @@ static PetscErrorCode SNESDestroy_NCG(SNES snes)
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*
-   SNESSetUp_NCG - Sets up the internal data structures for the later use
-   of the SNESNCG nonlinear solver.
-
-   Input Parameters:
-+  snes - the SNES context
--  x - the solution vector
-
-   Application Interface Routine: SNESSetUp()
- */
 
 static PetscErrorCode SNESSetUp_NCG(SNES snes)
 {
@@ -63,7 +44,6 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   if (!snes->jacobian) PetscCall(SNESSetUpMatrices(snes));
 
   /*
-
    The exact step size for unpreconditioned linear CG is just:
    alpha = (r, r) / (p, Ap) = (f, f) / (y, Jy)
    */
@@ -109,14 +89,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linese
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESSetFromOptions_NCG - Sets various parameters for the SNESNCG method.
-
-  Input Parameter:
-. snes - the SNES context
-
-  Application Interface Routine: SNESSetFromOptions()
-*/
 static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   SNES_NCG      *ncg     = (SNES_NCG *)snes->data;
@@ -144,15 +116,6 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems *PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESView_NCG - Prints info from the SNESNCG data structure.
-
-  Input Parameters:
-+ SNES - the SNES context
-- viewer - visualization context
-
-  Application Interface Routine: SNESView()
-*/
 static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
 {
   SNES_NCG *ncg = (SNES_NCG *)snes->data;
@@ -241,8 +204,8 @@ static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 /*
   SNESSolve_NCG - Solves a nonlinear system with the Nonlinear Conjugate Gradient method.
 
-  Input Parameters:
-. snes - the SNES context
+  Input Parameter:
+. snes - the `SNES` context
 
   Output Parameter:
 . outits - number of iterations until termination

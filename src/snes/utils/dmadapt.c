@@ -244,7 +244,7 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . adaptor - The `DMAdaptor` object
 
   Level: beginner

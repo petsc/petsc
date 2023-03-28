@@ -147,7 +147,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 
    Calling sequence of `eventhandler`:
 $   PetscErrorCode eventhandler(TS ts, PetscReal t, Vec U, PetscScalar fvalue[], void* ctx)
-+  ts  - the TS context
++  ts  - the `TS` context
 .  t   - current time
 .  U   - current iterate
 .  ctx - [optional] context passed with eventhandler
@@ -155,12 +155,12 @@ $   PetscErrorCode eventhandler(TS ts, PetscReal t, Vec U, PetscScalar fvalue[],
 
    Calling sequence of `postevent`:
 $   PetscErrorCode postevent(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
-+  ts - the TS context
++  ts - the `TS` context
 .  nevents_zero - number of local events whose event function is zero
 .  events_zero  - indices of local events which have reached zero
 .  t            - current time
 .  U            - current solution
-.  forwardsolve - Flag to indicate whether TS is doing a forward solve (1) or adjoint solve (0)
+.  forwardsolve - Flag to indicate whether `TS` is doing a forward solve (1) or adjoint solve (0)
 -  ctx          - the context passed with eventhandler
 
    Level: intermediate

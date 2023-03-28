@@ -41,7 +41,7 @@ PETSC_EXTERN PetscErrorCode PetscStrcpy(char[], const char[]);
 
   Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . a - pointer to string
 
   Level: intermediate
@@ -64,7 +64,7 @@ static inline PetscErrorCode PetscStrtolower(char a[])
 
   Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . a - pointer to string
 
   Level: intermediate
@@ -87,7 +87,7 @@ static inline PetscErrorCode PetscStrtoupper(char a[])
 
   Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . s - pointer to string
 
   Output Parameter:
@@ -121,7 +121,7 @@ static inline PetscErrorCode PetscStrlen(const char s[], size_t *len)
 
   Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . s - pointer to string
 
   Output Parameter:
@@ -784,7 +784,7 @@ static inline PetscErrorCode PetscMemzero(void *a, size_t n)
 .  str2 - Second array
 -  cnt  - Count of the array, not in bytes, but number of entries in the arrays
 
-   Output Parameters:
+   Output Parameter:
 .   e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
 
    Level: intermediate

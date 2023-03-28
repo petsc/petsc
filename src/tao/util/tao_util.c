@@ -24,6 +24,8 @@ static inline PetscReal Fischer(PetscReal a, PetscReal b)
    Output Parameter:
 .  FB - The Fischer-Burmeister function vector
 
+   Level: developer
+
    Notes:
    The Fischer-Burmeister function is defined as
 $        phi(a,b) := sqrt(a*a + b*b) - a - b
@@ -36,8 +38,6 @@ $        phi(a,b) := sqrt(a*a + b*b) - a - b
 .  l[i] finite,       u[i] == infinity  -- fb[i] = phi(x[i]-l[i],  f[i])
 .  l[i] finite < u[i] finite -- fb[i] = phi(x[i]-l[i], phi(u[i]-x[i], -f[u]))
 -  otherwise l[i] == u[i] -- fb[i] = l[i] - x[i]
-
-   Level: developer
 
 .seealso: `Vec`, `VecSFischer()`, `MatDFischer()`, `MatDSFischer()`
 @*/

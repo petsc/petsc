@@ -496,8 +496,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
 
   Input Parameters:
 + hist - The histogram context
-- color - one of the colors defined in petscdraw.h or `PETSC_DRAW_ROTATE` to make each bar a
-          different color
+- color - one of the colors defined in petscdraw.h or `PETSC_DRAW_ROTATE` to make each bar a different color
 
   Level: intermediate
 
@@ -521,7 +520,10 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
 
   Input Parameters:
 + hist - The histogram context
-- x_min,x_max,y_min,y_max - The limits
+. x_min - the horizontal lower limit
+. x_max - the horizonal upper limit
+. y_min - the vertical lower limit
+- y_max - the vertical upper limit
 
   Level: intermediate
 

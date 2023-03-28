@@ -61,10 +61,10 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
            of the change in the solution between steps
 -  maxit - maximum number of iterations
 
+   Level: intermediate
+
    Note:
    The user can specify NULL for any parameter that is not needed.
-
-   Level: intermediate
 
 .seealso: `SNESNCG`, `SNESSetTolerances()`
 @*/
@@ -109,10 +109,10 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 /*@
    SNESNGSGetSweeps - Gets the number of sweeps nonlinear GS will use in `SNESNCG`
 
-   Input Parameters:
+   Input Parameter:
 .  snes   - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  sweeps  - the number of sweeps of nonlinear GS to perform.
 
    Level: intermediate

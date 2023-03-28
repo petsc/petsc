@@ -226,10 +226,10 @@ PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . da  - The `DMDA`
 
-  Output Parameters:
+  Output Parameter:
 . Nsub   - Number of local subdomains created upon decomposition
 
   Level: intermediate
@@ -644,7 +644,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
    Input Parameter:
 .     da - the `DMDA` object
 
-   Output Parameters:
+   Output Parameter:
 .     ranks - the neighbors ranks, stored with the x index increasing most rapidly.
               this process itself is in the list
 
@@ -1339,7 +1339,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nodes)
 
    Input Parameters:
 +   da - the `DMDA` object
--   n - the number of GLL nodes
+.   n - the number of GLL nodes
 -   nodes - the GLL nodes
 
    Level: advanced

@@ -430,7 +430,7 @@ inline PetscErrorCode PoolAllocator::allocate_ptr_(size_type size, align_type al
 + size - the size (in bytes) of the allocated area, nullptr if not needed
 - align - the alignment (in bytes) of the allocated, nullptr if not needed
 
-  Notes:
+  Note:
   ptr must have been allocated by the pool, and is exactly the pointer returned by either
   allocate() or try_allocate() (if successful).
 */

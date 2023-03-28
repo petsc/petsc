@@ -117,7 +117,7 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
    SNESSolve_NEWTONLS - Solves a nonlinear system with a truncated Newton
    method with a line search.
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:

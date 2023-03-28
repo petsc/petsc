@@ -11,7 +11,7 @@
 +   ksp - the iterative context
 -   scale - the damping factor
 
-    Options Database Keys:
+    Options Database Key:
 . -ksp_richardson_scale <scale> - Set the scale factor
 
     Level: intermediate
@@ -37,7 +37,7 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
 +   ksp - the iterative context
 -   scale - `PETSC_TRUE` or the default of `PETSC_FALSE`
 
-    Options Database Keys:
+    Options Database Key:
 . -ksp_richardson_self_scale - Use self-scaling
 
     Level: intermediate

@@ -1136,7 +1136,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 
   Input Parameters:
 + label - the `DMLabel`
-. is    - the point IS
+. is    - the point `IS`
 - value - The point value
 
   Level: intermediate
@@ -1872,7 +1872,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 + label - the `DMLabel`
 - sf - the `PetscSF` communication map
 
-  Output Parameters:
+  Output Parameter:
 . labelNew - the new `DMLabel` with localised leaf values
 
   Level: developer
@@ -2834,7 +2834,7 @@ PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym)
 + comm - the MPI communicator for the new symmetry
 - label - the label defining the strata
 
-  Output Parameters:
+  Output Parameter:
 . sym - the section symmetries
 
   Level: developer

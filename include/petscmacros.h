@@ -978,7 +978,7 @@ M*/
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . cond - Boolean expression
 
   This returns the same truth value, it is only a hint to compilers that the result of cond is
