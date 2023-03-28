@@ -6,6 +6,8 @@ jobs:
     name: "Build petsc4py docs"
     # The type of runner that the job will run on
     runs-on: self-hosted
+    container:
+      image: firedrakeproject/firedrake-env:latest
 
     steps:
       - uses: actions/checkout@v3
