@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install mpich
-        run: udo apt install -y mpich libmpich-dev
+        run: sudo apt install -y mpich libmpich-dev
       - name: configure
         run: ./configure
 
