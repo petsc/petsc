@@ -51,21 +51,19 @@ uninstall:
 # ----
 
 website:
-	${RM} -rf petsc-doc-env; virtualenv -p ${PYTHON2} petsc-doc-env && . petsc-doc-env/bin/activate  && ${PYTHON2} -m pip install -r docs/source/requirements.txt && make epydoc-website && deactivate
+	# TODO: properly
+	${RM} -rf petsc-doc-env
+	python -m venv petsc-doc-env
+	source petsc-doc-env/bin/activate \
+		&& ${PYTHON} -m pip install -r docs/source/requirements.txt \
+		&& make sphinx-html \
+		&& deactivate
 
 .PHONY: docs docs-html docs-pdf docs-misc
-docs: docs-html docs-pdf docs-misc
-docs-html: rst2html sphinx-html epydoc-html
-docs-pdf:  sphinx-pdf epydoc-pdf
+docs: build docs-html docs-pdf docs-misc
+docs-html: sphinx-html
+docs-pdf:  sphinx-pdf
 docs-misc: sphinx-man sphinx-info
-
-#it appears some of the documentation requires a python2 installation to build
-PYTHON2 = python2
-
-checkdocutils:
-	@${PYTHON} -c $$'try:\n  import docutils\nexcept:\n  print("Run `python -m pip install docutils` and then try this command again");exit(1)'
-	@${PYTHON2} -c $$'try:\n  import docutils\nexcept:\n  print("Run `python2 -m pip install docutils` or `pip2 install docutils` or `[sudo] easy_install docutils` and then try the command again");exit(1)'
-	@${PYTHON2} -c $$'try:\n  import epydoc\nexcept:\n  print("Run `python2 -m pip install epydoc` or `pip2 install epydoc` or `[sudo] easy_install epydoc` and then try the command again");exit(1)'
 
 RST2HTML = $(shell command -v rst2html || command -v rst2html.py || false)
 RST2HTMLOPTS  = --input-encoding=utf-8
@@ -103,22 +101,6 @@ sphinx-info:
 	docs/source build/texinfo
 	${MAKE} -C build/texinfo info > /dev/null
 	mv build/texinfo/*.info docs/
-
-EPYDOCBUILD = ${PYTHON2} ./conf/epydocify.py
-EPYDOCOPTS  =
-.PHONY: epydoc epydoc-html epydoc-pdf
-epydoc: epydoc-html epydoc-pdf
-epydoc-html: srcbuild
-	mkdir -p docs/apiref
-	env CFLAGS=-O0 ${PYTHON2} setup.py -q build --build-lib build/lib.py2
-	env PYTHONPATH=$$PWD/build/lib.py2 ${PYTHON2} -c 'import ${package}.${MODULE}'
-	env PYTHONPATH=$$PWD/build/lib.py2 ${EPYDOCBUILD} ${EPYDOCOPTS} --html -o docs/apiref
-epydoc-pdf:
-
-epydoc-website:
-	env CFLAGS=-O0 ${PYTHON2} setup.py -q build --build-lib build/lib.py2
-	env PYTHONPATH=$$PWD/build/lib.py2 ${PYTHON2} -c 'import ${package}.${MODULE}'
-	env PYTHONPATH=$$PWD/build/lib.py2 ${EPYDOCBUILD} ${EPYDOCOPTS} -q -q -q --html -o ${LOC}/petsc4py
 
 .PHONY: docsclean
 docsclean:
