@@ -30,5 +30,3 @@ jobs:
         run: |
           cd src/binding/petsc4py/docs/source
           . $PETSC_DIR/venv/bin/activate; SPHINXOPTS="-W" make html
-
-
