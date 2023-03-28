@@ -18,7 +18,7 @@ jobs:
           echo "PETSC_ARCH=arch-default" >> $GITHUB_ENV
       - name: install python-dev
         run: |
-          sudo apt-install python-dev
+          sudo apt install python-dev
       - name: configure
         run: ./configure
       - name: make
