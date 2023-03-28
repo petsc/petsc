@@ -7,10 +7,10 @@ jobs:
     # The type of runner that the job will run on
     runs-on: firedrakeproject/firedrake-env:latest
 
-  steps:
-    - uses: actions/checkout@v3
-    - name: configure
-      run: ./configure
+    steps:
+      - uses: actions/checkout@v3
+      - name: configure
+        run: ./configure
 
 
 
