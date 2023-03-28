@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install mpich
-        run: sudo apt install -y mpich libmpich-dev
+        run: apt install -y mpich libmpich-dev
       - name: set PETSc env vars
         run: |
           echo "PETSC_DIR=$PWD" >> $GITHUB_ENV
