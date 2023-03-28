@@ -16,20 +16,19 @@ jobs:
         run: |
           echo "PETSC_DIR=$PWD" >> $GITHUB_ENV
           echo "PETSC_ARCH=arch-default" >> $GITHUB_ENV
-      - name: install python-dev
-        run: |
-          sudo apt install python-dev
       - name: configure
         run: ./configure
       - name: make
         run: make
       - name: build petsc4py
-        run: python3 -m pip install src/binding/petsc4py[doc]
+        run: |
+          python3 -m venv venv
+          ./venv/bin/python -m pip install src/binding/petsc4py[doc]
         env: 
           CFLAGS: "-O0"
       - name: build docs
         run: |
           cd src/binding/petsc4py/docs/source
-          make html
+          . $PETSC_DIR/venv/bin/activate; make html
 
 
