@@ -438,6 +438,7 @@ OVERRIDE = {
 TYPING = """
 from typing import (
     Any,
+    Self,
     Union,
     Literal,
     Optional,
