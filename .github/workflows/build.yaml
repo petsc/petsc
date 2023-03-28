@@ -14,7 +14,6 @@ jobs:
       - name: set PETSc env vars
         run: |
           echo "PETSC_DIR=$PWD" >> $GITHUB_ENV
-        run:
           echo "PETSC_ARCH=arch-default" >> $GITHUB_ENV
       - name: configure
         run: ./configure
