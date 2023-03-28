@@ -1,6 +1,8 @@
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 cdef class Sys:
+
+    """System utilities."""
 
     @classmethod
     def getVersion(
@@ -9,6 +11,32 @@ cdef class Sys:
         date: bool = False,
         author: bool = False,
     ) -> tuple[int, int, int]:
+        """Return PETSc version information.
+
+        Parameters
+        ----------
+        devel:
+            Additonally, return whether using and in-development version.
+        date:
+            Additonally, return date information.
+        author:
+            Additonally, return author information.
+
+        Returns
+        -------
+        major: int
+            Major version number.
+        minor: int
+            Minor verson number.
+        micro: int
+            Micro (or patch) version number.
+
+        See Also
+        --------
+        PetscGetVersion
+        PetscGetVersionNumber
+
+        """
         cdef char cversion[256]
         cdef PetscInt major=0, minor=0, micro=0, release=0
         CHKERR( PetscGetVersion(cversion, sizeof(cversion)) )
@@ -32,7 +60,20 @@ cdef class Sys:
         return tuple(out)
 
     @classmethod
-    def getVersionInfo(cls) -> dict[str, int | str]:
+    def getVersionInfo(cls) -> dict[str, bool | int | str]:
+        """Return PETSc version information.
+
+        Returns
+        -------
+        info: dict
+           Dictionary with version information.
+
+        See Also
+        --------
+        PetscGetVersion
+        PetscGetVersionNumber
+
+        """
         version, dev, date, author = cls.getVersion(True, True, True)
         return dict(major      = version[0],
                     minor      = version[1],
@@ -45,22 +86,62 @@ cdef class Sys:
 
     @classmethod
     def isInitialized(cls) -> bool:
+        """Return whether PETSc has been initialized.
+
+        Returns
+        -------
+        initialized: bool
+            Whether PETSc has been initialized.
+
+        See Also
+        --------
+        PetscInitializeCalled
+
+        """
         return toBool(PetscInitializeCalled)
 
     @classmethod
     def isFinalized(cls) -> bool:
+        """Return whether PETSc has been finalized.
+
+        Returns
+        -------
+        finalized: bool
+            Whether PETSc has been finalized.
+
+        See Also
+        --------
+        PetscFinalizeCalled
+
+        """
         return toBool(PetscFinalizeCalled)
 
     # --- xxx ---
 
     @classmethod
     def getDefaultComm(cls) -> Comm:
+        """Get the default MPI communicator used to create PETSc objects.
+
+        Returns
+        -------
+        comm: Comm
+            The default MPI communicator.
+
+        """
         cdef Comm comm = Comm()
         comm.comm = PETSC_COMM_DEFAULT
         return comm
 
     @classmethod
     def setDefaultComm(cls, comm: Comm | None) -> None:
+        """Set the default MPI communicator used to create PETSc objects.
+
+        Parameters
+        ----------
+        comm: Comm
+            MPI communicator. If set to `None`, uses `PETSC_COMM_WORLD`.
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         if ccomm == MPI_COMM_NULL:
             raise ValueError("null communicator")
@@ -70,11 +151,35 @@ cdef class Sys:
     # --- xxx ---
 
     @classmethod
-    def Print(cls, *args: Any, **kargs: Any) -> None:
-        cdef object comm = kargs.get('comm', None)
+    def Print(
+        cls,
+        *args: Any,
+        sep: str = ' ',
+        end: str = '\n',
+        comm: Comm | None = None,
+        **kargs: Any,
+    ) -> None:
+        """Print output from the first processor of a communicator.
+
+        Parameters
+        ----------
+        *args:
+            Positional arguments.
+        sep:
+            String inserted between values, by default a space.
+        end:
+            String appended after the last value, by default a newline.
+        comm:
+            MPI communicator. If not provided, uses the default communicator.
+        **kwargs: dict
+            Keyword arguments.
+
+        See Also
+        --------
+        PetscPrintf
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef object sep = kargs.get('sep', ' ')
-        cdef object end = kargs.get('end', '\n')
         if comm_rank(ccomm) == 0:
             if not args: args = ('',)
             format = ['%s', sep] * len(args)
@@ -87,12 +192,39 @@ cdef class Sys:
         CHKERR( PetscPrintf(ccomm, '%s', m) )
 
     @classmethod
-    def syncPrint(cls, *args: Any, **kargs: Any) -> None:
-        cdef object comm = kargs.get('comm', None)
+    def syncPrint(
+        cls,
+        *args: Any,
+        sep: str = ' ',
+        end: str = '\n',
+        flush: bool = False,
+        comm: Comm | None = None,
+        **kargs: Any,
+    ) -> None:
+        """Print synchronized output from several processors of a communicator.
+
+        Parameters
+        ----------
+        *args:
+            Positional arguments.
+        sep:
+            String inserted between values, by default a space.
+        end:
+            String appended after the last value, by default a newline.
+        flush:
+            Whether to flush output with `syncFlush`.
+        comm:
+            MPI communicator. If not provided, uses the default communicator.
+        **kwargs: dict
+            Keyword arguments.
+
+        See Also
+        --------
+        PetscSynchronizedPrintf
+        PetscSynchronizedFlush
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef object sep = kargs.get('sep', ' ')
-        cdef object end = kargs.get('end', '\n')
-        cdef object flush = kargs.get('flush', False)
         if not args: args = ('',)
         format = ['%s', sep] * len(args)
         format[-1] = end
@@ -104,6 +236,20 @@ cdef class Sys:
 
     @classmethod
     def syncFlush(cls, comm: Comm | None = None) -> None:
+        """Flush output from previous `syncPrint` calls.
+
+        Parameters
+        ----------
+        comm:
+            MPI communicator. If not provided uses the default communicator.
+
+
+        See Also
+        --------
+        PetscSynchronizedPrintf
+        PetscSynchronizedFlush
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
 
@@ -113,8 +259,33 @@ cdef class Sys:
     def splitOwnership(
         cls,
         size: int | tuple[int, int],
-        bsize: int |None = None,
-        comm: Comm | None = None):
+        bsize: int | None = None,
+        comm: Comm | None = None
+    ) -> tuple[int, int]:
+        """Given a global (or local) size determines a local (or global) size.
+
+        Parameters
+        ----------
+        size:
+            Global size ``N`` or 2-tuple ``(n, N)`` with local and global
+            sizes. Either of ``n`` or ``N`` (but not both) can be `None`.
+        bsize:
+            Block size. If not provided, uses ``1`` by default.
+        comm:
+            MPI communicator. If not provided, uses the default communicator.
+
+        Returns
+        -------
+        n: int
+            The local size.
+        N: int
+            The global size.
+
+        See Also
+        --------
+        PetscSplitOwnership
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, n=0, N=0
         Sys_Sizes(size, bsize, &bs, &n, &N)
@@ -127,7 +298,19 @@ cdef class Sys:
         return (toInt(n), toInt(N))
 
     @classmethod
-    def sleep(cls, seconds: float = 1):
+    def sleep(cls, seconds: float = 1.0) -> None:
+        """Sleep some number of seconds.
+
+        Parameters
+        ----------
+        seconds:
+            Time to sleep in seconds.
+
+        See Also
+        --------
+        PetscSleep
+
+        """
         cdef PetscReal s = asReal(seconds)
         CHKERR( PetscSleep(s) )
 
@@ -135,6 +318,18 @@ cdef class Sys:
 
     @classmethod
     def pushErrorHandler(cls, errhandler: str) -> None:
+        """Set the current error handler.
+
+        Parameters
+        ----------
+        errhandler:
+            The name of the error handler.
+
+        See Also
+        --------
+        PetscPushErrorHandler
+
+        """
         cdef PetscErrorHandlerFunction handler = NULL
         if errhandler == "python":
             handler = <PetscErrorHandlerFunction> \
@@ -159,10 +354,24 @@ cdef class Sys:
 
     @classmethod
     def popErrorHandler(cls) -> None:
+        """Remove the current error handler.
+
+        See Also
+        --------
+        PetscPopErrorHandler
+
+        """
         CHKERR( PetscPopErrorHandler() )
 
     @classmethod
     def popSignalHandler(cls) -> None:
+        """Remove the current signal handler.
+
+        See Also
+        --------
+        PetscPopSignalHandler
+
+        """
         CHKERR( PetscPopSignalHandler() )
 
     @classmethod
@@ -172,6 +381,23 @@ cdef class Sys:
         filename: str | None = None,
         mode: str = "w",
     ) -> None:
+        """Enables or disables PETSc info messages.
+
+        Parameters
+        ----------
+        flag:
+            Whether to enable info messages.
+        filename:
+            Optional name of a file where to dump output.
+        mode:
+            Write mode for file, by default "w".
+
+        See Also
+        --------
+        PetscInfoAllow
+        PetscInfoSetFile
+
+        """
         cdef PetscBool tval = PETSC_FALSE
         cdef const char *cfilename = NULL
         cdef const char *cmode = NULL
@@ -184,6 +410,18 @@ cdef class Sys:
 
     @classmethod
     def registerCitation(cls, citation: str) -> None:
+        """Register BibTeX citation.
+
+        Parameters
+        ----------
+        citation:
+            The BibTex citation entry to register.
+
+        See Also
+        --------
+        PetscCitationsRegister
+
+        """
         if not citation: raise ValueError("empty citation")
         cdef const char *cit = NULL
         citation = str2bytes(citation, &cit)
@@ -193,6 +431,23 @@ cdef class Sys:
 
     @classmethod
     def hasExternalPackage(cls, package: str) -> bool:
+        """Return whether PETSc has support for external package.
+
+        Parameters
+        ----------
+        package:
+            The external package name.
+
+        Returns
+        -------
+        has: bool
+            Whether PETSc has support for the external package.
+
+        See Also
+        --------
+        PetscHasExternalPackage
+
+        """
         cdef const char *cpackage = NULL
         package = str2bytes(package, &cpackage)
         cdef PetscBool has = PETSC_FALSE
@@ -209,4 +464,4 @@ cdef PetscBool get_citation(object citation):
 cdef set_citation(object citation, bint is_set):
     citations_registry[citation] = is_set
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
