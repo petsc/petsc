@@ -94,7 +94,7 @@ autosummary_context = {
 def _mangle_petsc_intersphinx():
     """Preprocess the keys in PETSc's intersphinx inventory.
 
-    PETSc, in their infinite wisdom, have intersphinx keys of the form::
+    PETSc have intersphinx keys of the form::
 
         manualpages/Vec/VecShift
 
