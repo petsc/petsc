@@ -64,7 +64,7 @@ needs_sphinx = '5.0.0'
 
 default_role = 'any'
 
-pygments_style = 'sphinx'
+pygments_style = 'tango'
 
 nitpicky = True
 nitpick_ignore = [
