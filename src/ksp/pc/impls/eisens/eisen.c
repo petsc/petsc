@@ -152,10 +152,12 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscO
 {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     set, flg;
+  PetscReal     omega;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Eisenstat SSOR options");
-  PetscCall(PetscOptionsReal("-pc_eisenstat_omega", "Relaxation factor 0 < omega < 2", "PCEisenstatSetOmega", eis->omega, &eis->omega, NULL));
+  PetscCall(PetscOptionsReal("-pc_eisenstat_omega", "Relaxation factor 0 < omega < 2", "PCEisenstatSetOmega", eis->omega, &omega, &flg));
+  if (flg) PetscCall(PCEisenstatSetOmega(pc, omega));
   PetscCall(PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling", "Do not use standard diagonal scaling", "PCEisenstatSetNoDiagonalScaling", eis->usediag ? PETSC_FALSE : PETSC_TRUE, &flg, &set));
   if (set) PetscCall(PCEisenstatSetNoDiagonalScaling(pc, flg));
   PetscOptionsHeadEnd();
