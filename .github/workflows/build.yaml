@@ -3,15 +3,29 @@ on: [push]
 
 jobs:
   build:
-    name: "Build Firedrake"
+    name: "Build petsc4py docs"
     # The type of runner that the job will run on
-    runs-on: firedrakeproject/firedrake-env:latest
+    runs-on: self-hosted
+    container:
+      image: firedrakeproject/firedrake-env:latest
 
-  steps:
-    - uses: actions/checkout@v3
-    - name: configure
-      run: ./configure
-
-
-
-
+    steps:
+      - uses: actions/checkout@v3
+      - name: set PETSc env vars
+        run: |
+          echo "PETSC_DIR=$PWD" >> $GITHUB_ENV
+          echo "PETSC_ARCH=arch-default" >> $GITHUB_ENV
+      - name: configure
+        run: ./configure --with-mpi=0 --with-fc=0
+      - name: make
+        run: make
+      - name: build petsc4py
+        run: |
+          python3 -m venv venv
+          ./venv/bin/python -m pip install src/binding/petsc4py[doc]
+        env: 
+          CFLAGS: "-O0"
+      - name: build docs
+        run: |
+          cd src/binding/petsc4py/docs/source
+          . $PETSC_DIR/venv/bin/activate; SPHINXOPTS="-W -j12" make html

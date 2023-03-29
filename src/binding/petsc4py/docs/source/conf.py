@@ -64,10 +64,13 @@ needs_sphinx = '5.0.0'
 
 default_role = 'any'
 
+pygments_style = 'tango'
+
 nitpicky = True
 nitpick_ignore = [
     ('envvar', 'NUMPY_INCLUDE'),
     ('py:class', 'ndarray'),  # FIXME
+    ('py:class', 'typing_extensions.Self')
 ]
 nitpick_ignore_regex = [
     (r'c:.*', r'MPI_.*'),
