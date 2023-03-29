@@ -372,6 +372,23 @@ cdef PetscErrorCode TS_RHSJacobian(
     jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
     return PETSC_SUCCESS
 
+cdef PetscErrorCode TS_RHSJacobianP(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscMat  J,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts   = ref_TS(ts)
+    cdef Vec Xvec = ref_Vec(x)
+    cdef Mat Jmat = ref_Mat(J)
+    cdef object context = Ts.get_attr('__rhsjacobianp__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (jacobianp, args, kargs) = context
+    jacobianp(Ts, toReal(t), Xvec, Jmat, *args, **kargs)
+    return PETSC_SUCCESS
+
 # -----------------------------------------------------------------------------
 
 cdef PetscErrorCode TS_IFunction(
@@ -552,25 +569,6 @@ cdef PetscErrorCode TS_PostStep(
     cdef TS Ts = ref_TS(ts)
     (poststep, args, kargs) = Ts.get_attr('__poststep__')
     poststep(Ts, *args, **kargs)
-    return PETSC_SUCCESS
-
-# -----------------------------------------------------------------------------
-
-cdef PetscErrorCode TS_RHSJacobianP(
-    PetscTS   ts,
-    PetscReal t,
-    PetscVec  x,
-    PetscMat  J,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
-    cdef TS  Ts   = ref_TS(ts)
-    cdef Vec Xvec = ref_Vec(x)
-    cdef Mat Jmat = ref_Mat(J)
-    cdef object context = Ts.get_attr('__rhsjacobianp__')
-    if context is None and ctx != NULL: context = <object>ctx
-    assert context is not None and type(context) is tuple # sanity check
-    (jacobianp, args, kargs) = context
-    jacobianp(Ts, toReal(t), Xvec, Jmat, *args, **kargs)
     return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
