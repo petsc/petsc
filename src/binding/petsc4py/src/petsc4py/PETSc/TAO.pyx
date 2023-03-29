@@ -186,7 +186,7 @@ cdef class TAO(Object):
 
         See Also
         --------
-        setOptionsPrefix, petsc.TaoAppendOptionsPrefix
+        petsc_options, setOptionsPrefix, petsc.TaoAppendOptionsPrefix
 
         """
         cdef const char *cprefix = NULL
@@ -1641,7 +1641,7 @@ cdef class TAO(Object):
         else: return <object> context
 
     def setPythonType(self, py_type: str) -> None:
-        """Set the full dotted Python name of the class to be used.
+        """Set the fully qualified Python name of the class to be used.
 
         Collective.
 
