@@ -105,6 +105,8 @@ class Configure(config.package.GNUPackage):
       devflags = devflags.replace('-fvisibility=hidden','')
       self.popLanguage()
     elif self.cuda.found:
+      if self.cuda.version_tuple[0] >= 12:
+        raise RuntimeError('Package '+self.PACKAGE+' cannot be used with CUDA 12 or higher')
       stdflag   = '-std=c++11'
       cudabuild = True
       args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')
