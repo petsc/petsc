@@ -12,6 +12,13 @@
     #define H5_VERSION_GE(a, b, c) 0
   #endif
 
+  // HDF5 1.13.0 switched from hsize_t being typedef'd to unsigned long long to being uint64_t and introduced the
+  // PRIuHSIZE macro for printing. Definition of PRIuHSIZE actually preceds the change of typedef in the Git history,
+  // though there was never a release with the old definitions. Nonetheless, the logic here will work any commit.
+  #if !defined(PRIuHSIZE)
+    #define PRIuHSIZE "llu"
+  #endif
+
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
 
   /* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
