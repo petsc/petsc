@@ -34,6 +34,18 @@ __all__ = [
     "TSPostEventFunction",
     "TSPreStepFunction",
     "TSPostStepFunction",
+    "TAOObjectiveFunction",
+    "TAOGradientFunction",
+    "TAOObjectiveGradientFunction",
+    "TAOHessianFunction",
+    "TAOUpdateFunction",
+    "TAOMonitorFunction",
+    "TAOConvergedFunction",
+    "TAOJacobianFunction",
+    "TAOResidualFunction",
+    "TAOJacobianResidualFunction",
+    "TAOVariableBoundsFunction",
+    "TAOConstraintsFunction",
 ]
 
 
@@ -41,7 +53,7 @@ Scalar = float | complex
 """Scalar type.
 
 Scalars can be either `float` or `complex` (but not both) depending on how
-PETSc was configured (``./congigure --with-scalar-type=real|complex``).
+PETSc was configured (``./configure --with-scalar-type=real|complex``).
 
 """
 
@@ -75,18 +87,54 @@ TSI2JacobianP = Callable[[TS, float, Vec, Vec, Vec, float, float, Mat], None]
 """`TS` implicit 2nd order parameter Jacobian callback."""
 
 TSMonitorFunction = Callable[[TS, int, float, Vec], None]
-"""`TS` monitor function."""
+"""`TS` monitor callback."""
 
 TSPreStepFunction = Callable[[TS], None]
-"""`TS` pre-step function."""
+"""`TS` pre-step callback."""
 
 TSPostStepFunction = Callable[[TS], None]
-"""`TS` post-step function."""
+"""`TS` post-step callback."""
 
 TSEventHandlerFunction = Callable[[TS, float, Vec, NDArray[Scalar]], None]
-"""`TS` event handler function."""
+"""`TS` event handler callback."""
 
 TSPostEventFunction = Callable[[TS, NDArray[int], float, Vec, bool], None]
-"""`TS` post-event handler function."""
+"""`TS` post-event handler callback."""
 
 # --- TAO ---
+
+TAOObjectiveFunction = Callable[[TAO, Vec], float]
+"""`TAO` objective function callback."""
+
+TAOGradientFunction = Callable[[TAO, Vec, Vec], None]
+"""`TAO` objective gradient callback."""
+
+TAOObjectiveGradientFunction =  Callable[[TAO, Vec, Vec], float]
+"""`TAO` objective function and gradient callback."""
+
+TAOHessianFunction = Callable[[TAO, Vec, Mat, Mat], None]
+"""`TAO` objective Hessian callback."""
+
+TAOUpdateFunction = Callable[[TAO, int], None]
+"""`TAO` update callback."""
+
+TAOMonitorFunction = Callable[[TAO], None]
+"""`TAO` monitor callback."""
+
+TAOConvergedFunction = Callable[[TAO], None]
+"""`TAO` convergence test callback."""
+
+TAOJacobianFunction = Callable[[TAO, Vec, Mat, Mat], None]
+"""`TAO` Jacobian callback."""
+
+TAOResidualFunction = Callable[[TAO, Vec, Vec], None]
+"""`TAO` residual callback."""
+
+TAOJacobianResidualFunction = Callable[[TAO, Vec, Mat, Mat], None]
+"""`TAO` Jacobian residual callback."""
+
+TAOVariableBoundsFunction = Callable[[TAO, Vec, Vec], None]
+"""`TAO` variable bounds callback."""
+
+TAOConstraintsFunction = Callable[[TAO, Vec, Vec], None]
+"""`TAO` constraints callback."""

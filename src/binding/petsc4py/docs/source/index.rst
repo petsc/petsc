@@ -43,6 +43,7 @@ PETSc for Python
    overview
    tutorial
    petsc_options
+   petsc_python_types
    reference
    citing
    install
