@@ -146,7 +146,6 @@ clean-legacy:
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
 
 .cpp.o .cxx.o .cc.o .C.o:
-
 	${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
 
 .cu.o:
@@ -225,6 +224,9 @@ ifneq (,$(findstring -TP,$(PCC_FLAGS)))
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
 	${CLINKER} $(EXEFLAGS) -o $@ $@.o  $(PETSC_LIB)
 endif
+
+# We don't have % : %.cu target as we can't use nvcc as linker - due to difference in linker options [wrt CLINKER etc.]. For example, nvcc does not accept -Wl,-rpath
+# % : %.cu
 
 #  makes an Emscripten https://emscripten.org/ executable from a PETSc C main program
 #  See config/examples/arch-ci-linux-emcc.py for an example of building the PETSc libraries with Emscripten

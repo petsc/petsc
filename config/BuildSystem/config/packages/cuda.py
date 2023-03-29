@@ -453,9 +453,9 @@ class Configure(config.package.Package):
         self.logPrint('nvcc --dryrun failed, unable to determine CUDA_CXX and CUDA_CXXFLAGS')
 
     if not self.cudaclang:
-      self.addMakeMacro('CUDA_HOSTFLAGS','--compiler-options="${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS)"')
-      self.addMakeMacro('CUDA_PETSC_GENDEPS','$(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(MPICXX_INCLUDES) $(CUDAC_FLAGS) --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDA_CXXFLAGS)"')
+      self.addMakeMacro('CUDA_HOSTFLAGS','--compiler-options="$(CXXCPPFLAGS) $(CUDA_CXXFLAGS)"')
+      self.addMakeMacro('CUDA_PETSC_GENDEPS','$(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(MPICXX_INCLUDES) $(CUDAC_FLAGS) --compiler-options="$(CXXCPPFLAGS) $(CUDA_CXXFLAGS)"')
     else:
-      self.addMakeMacro('CUDA_HOSTFLAGS','$(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(CUDA_DEPFLAGS) $(PETSC_CC_INCLUDES)')
+      self.addMakeMacro('CUDA_HOSTFLAGS','$(CXXCPPFLAGS) $(CUDA_CXXFLAGS) $(CUDA_DEPFLAGS) $(PETSC_CC_INCLUDES)')
       self.addMakeMacro('CUDA_PETSC_GENDEPS','true')
     return
