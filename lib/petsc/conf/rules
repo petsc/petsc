@@ -34,6 +34,8 @@ clean-legacy:
               *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
 	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
+clean:: clean-legacy
+
 #
 #  These rules are for compiling the test examples.
 #

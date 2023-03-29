@@ -23,6 +23,15 @@ SOURCEALL   = `ls *.c *.cxx *.F *.F90 *.cu *.cpp *.h *.hpp 2> /dev/null`
 SOURCED     = `ls *.c *.cxx           *.cu *.cpp *.h *.hpp 2> /dev/null`
 EXAMPLESALL = `ls *.c *.cxx *.F *.F90 *.cu *.cpp           2> /dev/null`
 
+# This is included in this file so it may be used from any source code PETSc directory
+libs: ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
+	+@r=`echo "${MAKEFLAGS}" | grep ' -j'`; \
+        if [ "$$?" = 0 ]; then make_j=""; else make_j="-j${MAKE_NP}"; fi; \
+	r=`echo "${MAKEFLAGS}" | grep ' -l'`; \
+        if [ "$$?" = 0 ]; then make_l=""; else make_l="-l${MAKE_LOAD}"; fi; \
+        cmd="${OMAKE_PRINTDIR} -f gmakefile $${make_j} $${make_l} ${MAKE_PAR_OUT_FLG} V=${V} libs"; \
+        cd ${PETSC_DIR} && echo $${cmd} && exec $${cmd}
+
 # Does nothing; needed for some rules that require actions.
 foo:
 
