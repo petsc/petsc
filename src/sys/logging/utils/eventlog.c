@@ -386,7 +386,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char en
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
     if (rank == 0) {
       PetscCall(PetscLogMPEGetRGBColor(&color));
-      MPE_Describe_state(beginID, endID, str, (char *)color);
+      MPE_Describe_state(beginID, endID, eventLog->eventInfo[e].name, (char *)color);
     }
   }
 #endif
