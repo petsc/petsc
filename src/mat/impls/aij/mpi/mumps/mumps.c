@@ -1021,6 +1021,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMumpsGetInfog_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMumpsGetRinfo_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMumpsGetRinfog_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMumpsGetNullPivots_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMumpsGetInverse_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMumpsGetInverseTranspose_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2633,6 +2634,22 @@ PetscErrorCode MatMumpsGetRinfog_MUMPS(Mat F, PetscInt icntl, PetscReal *rinfog)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode MatMumpsGetNullPivots_MUMPS(Mat F, PetscInt *size, PetscInt **array)
+{
+  Mat_MUMPS *mumps = (Mat_MUMPS *)F->data;
+
+  PetscFunctionBegin;
+  PetscCheck(mumps->id.ICNTL(24) == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "-mat_mumps_icntl_24 must be set as 1 for null pivot row detection");
+  *size  = 0;
+  *array = NULL;
+  if (!mumps->myid) {
+    *size = mumps->id.INFOG(28);
+    PetscCall(PetscMalloc1(*size, array));
+    for (int i = 0; i < *size; i++) (*array)[i] = mumps->id.pivnul_list[i] - 1;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
 {
   Mat          Bt = NULL, Btseq = NULL;
@@ -2876,6 +2893,37 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatMumpsGetNullPivots - Get MUMPS parameter PIVNUL_LIST()
+
+   Logically Collective
+
+   Input Parameter:
+.  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+
+  Output Parameters:
++  size - local size of the array. The size of the array is non-zero only on the host.
+-  array - array of rows with null pivot, these rows follow 0-based indexing. The array gets allocated within the function and the user is responsible
+           for freeing this array.
+
+   Level: beginner
+
+   References:
+.  * - MUMPS Users' Guide
+
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
+@*/
+PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
+{
+  PetscFunctionBegin;
+  PetscValidType(F, 1);
+  PetscCheck(F->factortype, PetscObjectComm((PetscObject)F), PETSC_ERR_ARG_WRONGSTATE, "Only for factored matrix");
+  PetscValidIntPointer(size, 3);
+  PetscValidPointer(array, 4);
+  PetscUseMethod(F, "MatMumpsGetNullPivots_C", (Mat, PetscInt *, PetscInt **), (F, size, array));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
   MATSOLVERMUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
   distributed and sequential matrices via the external package MUMPS.
@@ -3041,6 +3089,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A, MatFactorType ftype, Mat *F)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInfog_C", MatMumpsGetInfog_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfo_C", MatMumpsGetRinfo_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfog_C", MatMumpsGetRinfog_MUMPS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetNullPivots_C", MatMumpsGetNullPivots_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInverse_C", MatMumpsGetInverse_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInverseTranspose_C", MatMumpsGetInverseTranspose_MUMPS));
 
@@ -3124,6 +3173,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A, MatFactorType ftype, Mat *
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInfog_C", MatMumpsGetInfog_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfo_C", MatMumpsGetRinfo_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfog_C", MatMumpsGetRinfog_MUMPS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetNullPivots_C", MatMumpsGetNullPivots_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInverse_C", MatMumpsGetInverse_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInverseTranspose_C", MatMumpsGetInverseTranspose_MUMPS));
 
@@ -3194,6 +3244,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInfog_C", MatMumpsGetInfog_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfo_C", MatMumpsGetRinfo_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfog_C", MatMumpsGetRinfog_MUMPS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetNullPivots_C", MatMumpsGetNullPivots_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInverse_C", MatMumpsGetInverse_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInverseTranspose_C", MatMumpsGetInverseTranspose_MUMPS));
 
@@ -3248,6 +3299,7 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetInfog_C", MatMumpsGetInfog_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfo_C", MatMumpsGetRinfo_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfog_C", MatMumpsGetRinfog_MUMPS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetNullPivots_C", MatMumpsGetNullPivots_MUMPS));
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;

@@ -2206,6 +2206,7 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat, PetscInt, PetscReal *);
+PETSC_EXTERN PetscErrorCode MatMumpsGetNullPivots(Mat, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInverse(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInverseTranspose(Mat, Mat);
 #endif
