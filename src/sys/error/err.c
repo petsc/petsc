@@ -391,10 +391,9 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   PetscStackClearTop;
 
   /*
-      If this is called from the main() routine we call MPI_Abort() instead of
-    return to allow the parallel program to be properly shutdown.
-
-    Does not call PETSCABORT() since that would provide the wrong source file and line number information
+      If this is called from the main() routine we abort the program.
+      We cannot just return because them some MPI processes may continue to attempt to run
+      while this process simply exits.
   */
   if (func) {
     PetscErrorCode cmp_ierr = PetscStrncmp(func, "main", 4, &ismain);
