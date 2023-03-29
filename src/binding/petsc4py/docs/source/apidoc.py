@@ -394,12 +394,12 @@ def visit_module(module, done=None):
 
 IMPORTS = """
 from __future__ import annotations
+import sys
 from numpy import dtype, ndarray
 import numpy
 
 from typing import (
     Any,
-    Self,
     Union,
     Literal,
     Optional,
@@ -414,6 +414,10 @@ from typing import (
     Sequence,
     Mapping,
 )
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 IntType: dtype = ...
 RealType: dtype =  ...
