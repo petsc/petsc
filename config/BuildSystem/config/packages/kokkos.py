@@ -16,6 +16,10 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.minCxxVersion    = 'c++17'
+    # nvcc_wrapper in Kokkos-4.0.00 does not handle -std=c++20 correctly (it wrongly passes that to -Xcompiler).
+    # Though Kokkos/develop fixed the problem, we set maxCxxVersion to c++17 here to lower the standard petsc would use as a workaround.
+    # TODO: remove this line once we use newer Kokkos versions
+    self.maxCxxVersion    = 'c++17'
     self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is available, it will be modified.
     self.hastests         = 1
     self.requiresrpath    = 1
