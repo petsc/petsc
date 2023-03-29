@@ -46,8 +46,8 @@
     Experienced users can set the error handler with `PetscPushErrorHandler()`.
 
    Fortran Notes:
-      SETERRQ() may be called from Fortran subroutines but SETERRA() must be called from the
-      Fortran main program.
+   `SETERRQ()` may be called from Fortran subroutines but `SETERRA()` must be called from the
+   Fortran main program.
 
 .seealso: `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`,
           `PetscError()`, `PetscCall()`, `CHKMEMQ`, `CHKERRA()`, `PetscCallMPI()`
@@ -68,6 +68,8 @@ PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
 
 /*MC
    SETERRMPI - Macro to be called when an error has been detected within an MPI callback function
+
+   No Fortran Support
 
    Synopsis:
    #include <petscsys.h>
@@ -136,6 +138,12 @@ M*/
 
    This should only be called in routines that cannot return an error code, such as in C++ constructors.
 
+   Fortran Note:
+   Use `SETERRA()` in Fortran main program and `SETERRQ()` in Fortran subroutines
+
+   Developer Note:
+   In Fortran `SETERRA()` could be called `SETERRABORT()` since they serve the same purpose
+
 .seealso: `SETERRQ()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `PetscCall()`, `CHKMEMQ`
 M*/
 #define SETERRABORT(comm, ierr, ...) \
@@ -146,6 +154,8 @@ M*/
 
 /*MC
   PetscCheck - Check that a particular condition is true
+
+  No Fortran Support
 
   Synopsis:
   #include <petscerror.h>
@@ -177,6 +187,8 @@ M*/
 /*MC
   PetscCheckAbort - Check that a particular condition is true, otherwise prints error and aborts
 
+  No Fortran Support
+
   Synopsis:
   #include <petscerror.h>
   void PetscCheckAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
@@ -197,7 +209,7 @@ M*/
   Calls `SETERRABORT()` if the assertion fails, can be called from a function that does not return an
   error code, such as a C++ constructor. usually `PetscCheck()` should be used.
 
-.seealso: `PetscAssertAbort()`, `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheck()`, `SETTERRABORT()`
+.seealso: `PetscAssertAbort()`, `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheck()`, `SETERRABORT()`
 M*/
 #define PetscCheckAbort(cond, comm, ierr, ...) \
   do { \
@@ -206,6 +218,8 @@ M*/
 
 /*MC
   PetscAssert - Assert that a particular condition is true
+
+  No Fortran Support
 
   Synopsis:
   #include <petscerror.h>
@@ -238,6 +252,8 @@ M*/
 
 /*MC
   PetscAssertAbort - Assert that a particular condition is true, otherwise prints error and aborts
+
+  No Fortran Support
 
   Synopsis:
   #include <petscerror.h>
@@ -337,8 +353,33 @@ M*/
 M*/
 
 /*MC
+   PetscCallA - Fortran-only macro that should be used in the main program to call PETSc functions instead of using
+   PetscCall() which should be used in other Fortran subroutines
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode PetscCallA(PetscFunction(arguments,ierr))
+
+   Collective
+
+   Input Parameter:
+.  PetscFunction(arguments,ierr) - the call to the function
+
+  Level: beginner
+
+   Notes:
+   This should only be used with Fortran. With C/C++, use `PetscCall()` always.
+
+   Use `SETERRA()` to set an error in a Fortran main program and `SETERRQ()` in Fortran subroutines
+
+.seealso: `SETERRQ()`, `SETERRA()`, `SETERRABORT()`, `PetscCall()`, `CHKERRA()`, `PetscCallAbort()`
+M*/
+
+/*MC
   PetscCallBack - Calls a user provided PETSc callback function and then checks the resulting error code, if it is non-zero it calls the error
   handler and returns from the current function with the error code.
+
+  No Fortran Support
 
   Synopsis:
   #include <petscerror.h>
@@ -369,6 +410,8 @@ M*/
 
 /*MC
   PetscCallVoid - Like `PetscCall()` but for functions returning `void`
+
+  No Fortran Support
 
   Synopsis:
   #include <petscerror.h>
@@ -550,6 +593,13 @@ M*/
 
   This routine may be used in functions returning `void` or other non-`PetscErrorCode` types.
 
+  Fortran Note:
+  In Fortran this is called `PetscCallMPIA()` and is intended to be used in the main program while `PetscCallMPI()` is
+  used in Fortran subroutines.
+
+  Developer Note:
+  This should have the same name in Fortran.
+
 .seealso: `PetscCallMPI()`, `PetscCallAbort()`, `SETERRABORT()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
@@ -599,7 +649,7 @@ M*/
 #define CHKERRMPI(...) PetscCallMPI(__VA_ARGS__)
 
 /*MC
-  PetscCallAbort - Checks error code returned from PETSc function, if non-zero it aborts immediately
+  PetscCallAbort - Checks error code returned from PETSc function, if non-zero it aborts immediately by calling `MPI_Abort()`
 
   Synopsis:
   #include <petscerror.h>
@@ -652,6 +702,12 @@ M*/
     }
   };
 .ve
+
+  Fortran Note:
+  Use `PetscCallA()`.
+
+  Developer Note:
+  This should have the same name in Fortran as in C.
 
 .seealso: `SETERRABORT()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`,
           `SETERRQ()`, `CHKMEMQ`, `PetscCallMPI()`, `PetscCallCXXAbort()`
@@ -722,6 +778,9 @@ M*/
    Note:
    This macro is rarely needed, normal usage is `PetscCallA()` in the main Fortran program.
 
+   Developer Note:
+   Why isn't this named `CHKERRABORT()` in Fortran?
+
 .seealso: `PetscCall()`, `PetscCallA()`, `PetscCallAbort()`, `CHKERRQ()`, `SETERRA()`, `SETERRQ()`, `SETERRABORT()`
 M*/
 
@@ -730,6 +789,8 @@ PETSC_EXTERN PetscBool petscindebugger;
 
 /*MC
    PETSCABORT - Call `MPI_Abort()` with an informative error code
+
+   No Fortran Support
 
    Synopsis:
    #include <petscsys.h>
@@ -744,10 +805,21 @@ PETSC_EXTERN PetscBool petscindebugger;
    Level: advanced
 
    Notes:
-   If the option -start_in_debugger was used then this calls abort() to stop the program in the debugger.
+   If the option `-start_in_debugger` was used then this calls `abort()` to stop the program in the debugger.
 
-   if `PetscCIEnabledPortableErrorOutput` is set it strives to exit cleanly without call `MPI_Abort()`
+   if `PetscCIEnabledPortableErrorOutput` is set, which means the code is running in the PETSc test harness (make test),
+   and `comm` is `MPI_COMM_WORLD` it strives to exit cleanly without calling `MPI_Abort()` and instead calling `MPI_Finalize()`.
 
+   This is currently only used when an error propagates up to the C `main()` program and is detected by a `PetscCall()`, `PetscCallMPI()`,
+   or is set in `main()` with `SETERRQ()`. Abort calls such as `SETERRABORT()`,
+   `PetscCheckAbort()`, `PetscCallMPIAbort()`, and `PetscCallAbort()` always call `MPI_Abort()` and do not have any special
+   handling for the test harness.
+
+   Developer Note:
+   Should the other abort calls also pass through this call instead of calling `MPI_Abort()` directly?
+
+.seealso: `PetscError()`, `PetscCall()`, `SETERRABORT()`, `PetscCheckAbort()`, `PetscCallMPIAbort()`, `PetscCall()`, `PetscCallMPI()`,
+          `PetscCallAbort()`, `MPI_Abort()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PETSCABORT(MPI_Comm, PetscErrorCode);
