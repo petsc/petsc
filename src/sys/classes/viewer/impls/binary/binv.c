@@ -1397,6 +1397,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinarySTDIO(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#include <errno.h>
 static PetscErrorCode PetscViewerFileSetUp_BinaryInfo(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary *)viewer->data;
@@ -1422,7 +1423,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryInfo(PetscViewer viewer)
     } else if (rank == 0) { /* write or append */
       const char *omode  = (vbinary->filemode == FILE_MODE_APPEND) ? "a" : "w";
       vbinary->fdes_info = fopen(infoname, omode);
-      PetscCheck(vbinary->fdes_info, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open .info file %s for writing", infoname);
+      PetscCheck(vbinary->fdes_info, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open .info file %s for writing due to \"%s\"", infoname, strerror(errno));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -300,7 +300,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
     int    ret = (int)read(fd, p, len);
     if (ret < 0 && errno == EINTR) continue;
     if (!ret && len > 0) break; /* Proxy for EOF */
-    PetscCheck(ret >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file, errno %d", errno);
+    PetscCheck(ret >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file due to \"%s\"", strerror(errno));
     m -= (size_t)ret;
     p += ret;
     n += (size_t)ret;
@@ -444,7 +444,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
     wsize = (m < maxblock) ? m : maxblock;
     err   = write(fd, pp, wsize);
     if (err < 0 && errno == EINTR) continue;
-    PetscCheck(err == wsize, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error writing to file total size %d err %d wsize %d", (int)n, (int)err, (int)wsize);
+    PetscCheck(err == wsize, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error writing to file total size %d err %d wsize %d due to \"%s\"", (int)n, (int)err, (int)wsize, strerror(errno));
     m -= wsize;
     pp += wsize;
   }
@@ -496,7 +496,7 @@ PetscErrorCode PetscBinaryOpen(const char name[], PetscFileMode mode, int *fd)
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[mode]);
   }
-  PetscCheck(*fd != -1, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open file %s for %s", name, PetscFileModes[mode]);
+  PetscCheck(*fd != -1, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open file %s for %s due to \"%s\"", name, PetscFileModes[mode], strerror(errno));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

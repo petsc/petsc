@@ -645,6 +645,7 @@ PetscErrorCode PetscViewerFileGetName_ASCII(PetscViewer viewer, const char **nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#include <errno.h>
 PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[])
 {
   size_t             len;
@@ -708,7 +709,7 @@ PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[
       default:
         SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[vascii->mode]);
       }
-      PetscCheck(vascii->fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
+      PetscCheck(vascii->fd, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s due to \"%s\"", fname, strerror(errno));
     }
   }
 #if defined(PETSC_USE_LOG)
