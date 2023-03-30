@@ -992,3 +992,62 @@ cdef class DMPlex(DM):
 del DMPlexReorderDefaultFlag
 
 # --------------------------------------------------------------------
+class DMPlexTransformType(object):
+    REFINEREGULAR = S_(DMPLEXREFINEREGULAR)
+    REFINEALFELD = S_(DMPLEXREFINEALFELD)
+    REFINEPOWELLSABIN = S_(DMPLEXREFINEPOWELLSABIN)
+    REFINEBOUNDARYLAYER = S_(DMPLEXREFINEBOUNDARYLAYER)
+    REFINESBR = S_(DMPLEXREFINESBR)
+    REFINETOBOX = S_(DMPLEXREFINETOBOX) 
+    REFINETOSIMPLEX = S_(DMPLEXREFINETOSIMPLEX) 
+    REFINE1D = S_(DMPLEXREFINE1D)
+    EXTRUDE = S_(DMPLEXEXTRUDE)
+    TRANSFORMFILTER = S_(DMPLEXTRANSFORMFILTER)
+
+cdef class DMPlexTransform(Object):
+
+    def __cinit__(self):
+        self.obj = <PetscObject*> &self.tr
+        self.tr  = NULL
+
+    def apply(self, DM dm):
+        cdef DMPlex newdm = DMPlex()
+        CHKERR( DMPlexTransformApply(self.tr, dm.dm, &newdm.dm) )
+        return newdm
+
+    def create(self, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscDMPlexTransform newtr = NULL
+        CHKERR( DMPlexTransformCreate(ccomm, &newtr) )
+        PetscCLEAR(self.obj)
+        self.tr = newtr
+        return self
+
+    def destroy(self):
+        CHKERR( DMPlexTransformDestroy(&self.tr) )
+        return self
+
+    def getType(self):
+        cdef PetscDMPlexTransformType cval = NULL
+        CHKERR( DMPlexTransformGetType(self.tr, &cval) )
+        return bytes2str(cval)
+    
+    def setUp(self):
+        CHKERR( DMPlexTransformSetUp(self.tr) )
+        return self
+
+    def setType(self, tr_type):
+        cdef PetscDMPlexTransformType cval = NULL
+        tr_type = str2bytes(tr_type, &cval)
+        CHKERR( DMPlexTransformSetType(self.tr, cval) )
+
+    def setDM(self, DM dm):
+        CHKERR( DMPlexTransformSetDM(self.tr, dm.dm) )
+    
+    def setFromOptions(self):
+        CHKERR( DMPlexTransformSetFromOptions(self.tr) )
+
+    def view(self, Viewer viewer=None):
+        cdef PetscViewer vwr = NULL
+        if viewer is not None: vwr = viewer.vwr
+        CHKERR( DMPlexTransformView(self.tr, vwr) )
