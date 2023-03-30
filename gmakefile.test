@@ -462,7 +462,8 @@ help-nontest:
 	-@echo
 	-@echo "Developer rules:"
 	-@echo "   docs - build all the PETSc documentation locally as a website"
-	-@echo "   clean - delete libraries and Fortran module files"
+	-@echo "   clean - delete libraries and Fortran module files (used in $PETSC_DIR)"
+	-@echo "           delete compilied examples, .o and related files (used in tutorials or test directories)"
 	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
 	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
 	-@echo "   deletefortranstubs - delete the generated Fortran stubs/interface definitions"

@@ -25,11 +25,8 @@ checklinks_rule:
 checklinks:
 	cd .. ; ${RM} -rf petsc-doc-env; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; make checklinks_rule; deactivate
 
-clean-classic-docs:
-	./build_classic_docs.py --clean
-
-clean: clean-classic-docs
-
+clean:
+	-@${RM} -rf _build __pycache__
 images:
 	git clone https://gitlab.com/petsc/images.git -b main-2 --depth=1 images
 
