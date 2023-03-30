@@ -9,6 +9,7 @@ CHANGES: PETSc for Python
 Release 3.19.0
 ==============
 
+- Update to PETSc 3.19 release.
 - Expose ``PetscDevice`` and ``PetscDeviceContext`` API as
   ``PETSc.Device`` and ``PETSc.DeviceContext`` classes respectively.
 

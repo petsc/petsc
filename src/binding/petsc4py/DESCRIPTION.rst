@@ -40,5 +40,5 @@ project.
   D. May, L. Curfman McInnes, R. Mills, L. Mitchell, T. Munson,
   J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith,
   S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
-  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.18, 2022.
+  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.19, 2023.
   https://petsc.org/release/docs/manual/manual.pdf
