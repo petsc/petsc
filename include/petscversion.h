@@ -2,11 +2,11 @@
 #define PETSCVERSION_H
 #include <petscconf.h>
 
-#define PETSC_VERSION_RELEASE    0
+#define PETSC_VERSION_RELEASE    1
 #define PETSC_VERSION_MAJOR      3
-#define PETSC_VERSION_MINOR      18
-#define PETSC_VERSION_SUBMINOR   6
-#define PETSC_RELEASE_DATE       "Sep 30, 2022"
+#define PETSC_VERSION_MINOR      19
+#define PETSC_VERSION_SUBMINOR   0
+#define PETSC_RELEASE_DATE       "Mar 30, 2023"
 #define PETSC_VERSION_DATE       "unknown"
 
 #if !defined(PETSC_VERSION_GIT)
