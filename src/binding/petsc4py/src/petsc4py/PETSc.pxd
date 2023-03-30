@@ -98,6 +98,9 @@ cdef extern from "<petsc.h>":
     struct _p_DM
     ctypedef _p_DM* PetscDM "DM"
 
+    struct _p_DMPlexTransform 
+    ctypedef _p_DMPlexTransform* PetscDMPlexTransform "DMPlexTransform"
+
     struct _p_PetscDS
     ctypedef _p_PetscDS* PetscDS
 
@@ -270,6 +273,12 @@ ctypedef public api class DM(Object) [
     object PyPetscDMObject,
     ]:
     cdef PetscDM dm
+
+ctypedef public api class DMPlexTransform(Object) [
+    type   PyPetscDMPlexTransform_Type,
+    object PyPetscDMPlexTransformObject,
+    ]:
+    cdef PetscDMPlexTransform tr
 
 ctypedef public api class DS(Object) [
     type   PyPetscDS_Type,
