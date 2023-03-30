@@ -68,10 +68,12 @@ PetscErrorCode PCSetFromOptions_SOR(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_SOR   *jac = (PC_SOR *)pc->data;
   PetscBool flg;
+  PetscReal omega;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "(S)SOR options");
-  PetscCall(PetscOptionsReal("-pc_sor_omega", "relaxation factor (0 < omega < 2)", "PCSORSetOmega", jac->omega, &jac->omega, NULL));
+  PetscCall(PetscOptionsReal("-pc_sor_omega", "relaxation factor (0 < omega < 2)", "PCSORSetOmega", jac->omega, &omega, &flg));
+  if (flg) PetscCall(PCSORSetOmega(pc, omega));
   PetscCall(PetscOptionsReal("-pc_sor_diagonal_shift", "Add to the diagonal entries", "", jac->fshift, &jac->fshift, NULL));
   PetscCall(PetscOptionsInt("-pc_sor_its", "number of inner SOR iterations", "PCSORSetIterations", jac->its, &jac->its, NULL));
   PetscCall(PetscOptionsInt("-pc_sor_lits", "number of local inner SOR iterations", "PCSORSetIterations", jac->lits, &jac->lits, NULL));
