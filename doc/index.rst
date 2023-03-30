@@ -5,7 +5,7 @@ PETSc, the Portable, Extensible Toolkit for Scientific Computation,
 pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is
 for the scalable (parallel) solution of scientific
 applications modeled by partial differential equations. It has bindings for C, Fortran, and Python (via :any:`petsc4py<petsc4py_api>`).
-PETSc also contains Tao, the Toolkit for Advanced Optimization, software library.
+PETSc also contains TAO, the Toolkit for Advanced Optimization, software library.
 It supports MPI, and GPUs through
 CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine.
 Immediately jump in and run PETSc code :any:`handson`.
