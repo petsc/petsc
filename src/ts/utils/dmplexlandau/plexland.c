@@ -1248,8 +1248,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   /* spherical domain (not used) */
   PetscCall(PetscOptionsBool("-dm_landau_sphere", "use sphere/semi-circle domain instead of rectangle", "plexland.c", ctx->sphere, &ctx->sphere, NULL));
   if (ctx->sphere) {
-    ctx->sphere_inner_radius_90degree = 0.40;
-    ctx->sphere_inner_radius_45degree = 0.35;
+    ctx->sphere_inner_radius_90degree = 0.50;
+    ctx->sphere_inner_radius_45degree = 0.45;
     PetscCall(PetscOptionsReal("-dm_landau_sphere_inner_radius_90degree_scale", "Scaling of radius for inner circle on 90 degree grid", "plexland.c", ctx->sphere_inner_radius_90degree, &ctx->sphere_inner_radius_90degree, NULL));
     PetscCall(PetscOptionsReal("-dm_landau_sphere_inner_radius_45degree_scale", "Scaling of radius for inner circle on 45 degree grid", "plexland.c", ctx->sphere_inner_radius_45degree, &ctx->sphere_inner_radius_45degree, NULL));
   } else {

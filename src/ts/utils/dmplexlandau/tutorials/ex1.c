@@ -461,7 +461,7 @@ int main(int argc, char **argv)
     nsize: 1
     test:
       suffix: sphere
-      args: -dm_landau_sphere -ts_max_steps 1 -dm_landau_amr_post_refine 0
+      args: -dm_landau_sphere -ts_max_steps 1 -dm_landau_sphere_inner_radius_90degree_scale .55 -dm_landau_sphere_inner_radius_45degree_scale .5
     test:
       suffix: re
       args: -dm_landau_num_cells 4,4 -dm_landau_amr_levels_max 0,2 -dm_landau_z_radius_pre 2.5 -dm_landau_z_radius_post 3.75 -dm_landau_amr_z_refine_pre 1 -dm_landau_amr_z_refine_post 1 -dm_landau_electron_shift 1.25 -ts_max_steps 1 -snes_converged_reason -info :vec
