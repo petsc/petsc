@@ -224,8 +224,15 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   HPDDM::upscaled_type<PetscScalar> *high[2];
 #endif
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
-  typedef HPDDM::downscaled_type<PetscScalar> PetscDownscaledScalar PETSC_ATTRIBUTE_MAY_ALIAS;
-  PetscDownscaledScalar                                            *low[2];
+  typedef HPDDM::downscaled_type<PetscReal> PetscDownscaledReal PETSC_ATTRIBUTE_MAY_ALIAS;
+  #if !PetscDefined(USE_COMPLEX)
+  PetscDownscaledReal *low[2];
+  #else
+  typedef PetscReal PetscAliasedReal   PETSC_ATTRIBUTE_MAY_ALIAS;
+  HPDDM::downscaled_type<PetscScalar> *low[2];
+  PetscAliasedReal                    *x_r;
+  PetscDownscaledReal                 *low_r;
+  #endif
 #endif
 #if PetscDefined(HAVE_CUDA)
   Mat     A;
@@ -281,11 +288,20 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
     if (type == PETSC_MEMTYPE_HOST) {
       PetscCall(PetscMalloc1(N, low));
-      low[1] = reinterpret_cast<PetscDownscaledScalar *>(x);
+  #if !PetscDefined(USE_COMPLEX)
+      low[1] = reinterpret_cast<PetscDownscaledReal *>(x);
+  #else
+      low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar> *>(x);
+  #endif
       std::copy_n(b, N, low[0]);
       for (PetscInt i = 0; i < N; ++i) low[1][i] = x[i];
       PetscCall(HPDDM::IterativeMethod::solve(*data->op, low[0], low[1], n, PetscObjectComm((PetscObject)ksp)));
+  #if !PetscDefined(USE_COMPLEX)
       for (PetscInt i = N; i-- > 0;) x[i] = low[1][i];
+  #else
+      x_r = reinterpret_cast<PetscAliasedReal *>(x), low_r = reinterpret_cast<PetscDownscaledReal *>(x_r);
+      for (PetscInt i = 2 * N; i-- > 0;) x_r[i] = low_r[i];
+  #endif
       PetscCall(PetscFree(low[0]));
     } else {
       PetscCheck(PetscDefined(HAVE_CUDA) && PetscDefined(USE_REAL_DOUBLE), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "CUDA in PETSc has no support for precisions other than single or double");
