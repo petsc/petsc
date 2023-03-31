@@ -14,7 +14,7 @@ configure_options = [
   '--download-metis=1',
   '--download-suitesparse=1',
   '--with-shared-libraries=0',
-  '--download-boost=1',
+  #'--download-boost=1', # build failure
   '--download-eigen',
   #'--with-coverage',
   '--with-strict-petscerrorcode=0',
