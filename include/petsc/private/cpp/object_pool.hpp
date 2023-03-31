@@ -276,7 +276,7 @@ inline PetscErrorCode PoolAllocator::finalize_() noexcept
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// a quick sanity check that the alignment is valid, does nothin in optimized builds
+// a quick sanity check that the alignment is valid, does nothing in optimized builds
 inline PetscErrorCode PoolAllocator::valid_alignment_(align_type in_align) noexcept
 {
   constexpr auto max_align = util::to_underlying(AllocationHeader::max_alignment());
@@ -512,7 +512,7 @@ inline PetscErrorCode PoolAllocator::try_allocate(void **out_ptr, size_type size
 + size  - The size (in bytes) to allocate
 - align - The alignment (in bytes) to align the allocation to
 
-  Ouput Parameters:
+  Output Parameters:
 + out_ptr             - A pointer containing the beginning of the allocated region
 - allocated_from_pool - True if the region was allocated from the pool, false otherwise
 

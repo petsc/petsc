@@ -62,7 +62,7 @@ PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
   Level: advanced
 
   Note:
-  Most basic implementatio of `TAOADMM`. Generally slower than adaptive or adaptive relaxed version.
+  Most basic implementation of `TAOADMM`. Generally slower than adaptive or adaptive relaxed version.
 
 .seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_ADAPTIVE`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/

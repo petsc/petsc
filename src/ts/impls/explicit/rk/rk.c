@@ -526,7 +526,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 .  bembed - completion table for embedded method (dimension s; NULL if not available)
 .  p - Order of the interpolation scheme, equal to the number of columns of binterp
 .  binterp - Coefficients of the interpolation formula (dimension s*p)
--  FSAL - wheather or not the scheme has the First Same As Last property
+-  FSAL - whether or not the scheme has the First Same As Last property
 
    Level: developer
 

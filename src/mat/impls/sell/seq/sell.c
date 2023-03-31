@@ -1421,7 +1421,7 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
       lastcol = 0;
       if (nrow > 0) {                                /* nonempty row */
         lastcol = cp[8 * (nrow - 1) + row_in_slice]; /* use the index from the last nonzero at current row */
-      } else if (!row_in_slice) {                    /* first row of the currect slice is empty */
+      } else if (!row_in_slice) {                    /* first row of the correct slice is empty */
         for (j = 1; j < 8; j++) {
           if (a->rlen[8 * i + j]) {
             lastcol = cp[j];

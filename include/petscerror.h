@@ -541,7 +541,7 @@ PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, char *);
   `--with-strict-petscerrorcode` option to check this at compile-time, otherwise they must
   check this themselves.
 
-  This rouine can only be used in functions returning `PetscErrorCode` themselves. If the
+  This routine can only be used in functions returning `PetscErrorCode` themselves. If the
   calling function returns a different type, use `PetscCallMPIAbort()` instead.
 
   Example Usage:

@@ -278,7 +278,7 @@ namespace detail
 //
 // A base class for creating thrust iterators over the local sub-matrix. This will set up the
 // proper iterator definitions so thrust knows how to handle things properly. Template
-// paramteres are as follows:
+// parameters are as follows:
 //
 // - Iterator:
 // The type of the primary array iterator. Usually this is

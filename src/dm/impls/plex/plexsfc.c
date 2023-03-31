@@ -970,7 +970,7 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
   Affine transforms are 4x4 matrices in which the leading 3x3 block expresses a rotation (or identity for no rotation),
   the last column contains a translation vector, and the bottom row is all zero except the last entry, which must always
   be 1. This representation is common in geometric modeling and allows affine transformations to be composed using
-  simple matrix mulitplication.
+  simple matrix multiplication.
 
   Although the interface accepts a general affine transform, only affine translation is supported at present.
 

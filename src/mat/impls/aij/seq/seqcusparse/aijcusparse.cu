@@ -686,7 +686,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildFactoredMatrix_Cheolesky(Mat A)
       PetscCallCUSPARSE(cusparseSpSV_bufferSize(fs->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, &PETSC_CUSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, cusparse_scalartype, CUSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_U, &fs->spsvBufferSize_U));
       PetscCallCUDA(cudaMalloc((void **)&fs->spsvBuffer_U, fs->spsvBufferSize_U));
 
-      PetscCallCUSPARSE(cusparseSpSV_createDescr(&fs->spsvDescr_Ut)); // Ut sovle uses the same matrix (spMatDescr_U), but different descr and buffer
+      PetscCallCUSPARSE(cusparseSpSV_createDescr(&fs->spsvDescr_Ut)); // Ut solve uses the same matrix (spMatDescr_U), but different descr and buffer
       PetscCallCUSPARSE(cusparseSpSV_bufferSize(fs->handle, CUSPARSE_OPERATION_TRANSPOSE, &PETSC_CUSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, cusparse_scalartype, CUSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
       PetscCallCUDA(cudaMalloc((void **)&fs->spsvBuffer_Ut, fs->spsvBufferSize_Ut));
 

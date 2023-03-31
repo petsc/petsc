@@ -2257,7 +2257,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
    When used with `-snes_fd_coloring` this will compute the Jacobian via coloring and thus represent a faster implementation of Newton's method. But the
    the nonzero structure of the Jacobian is, in general larger than that of the Picard matrix A so you must provide in A the needed nonzero structure for the correct
    coloring. When using `DMDA` this may mean creating the matrix A with `DMCreateMatrix()` using a wider stencil than strictly needed for A or with a `DMDA_STENCIL_BOX`.
-   See the commment in src/snes/tutorials/ex15.c.
+   See the comment in src/snes/tutorials/ex15.c.
 
 .seealso: [](chapter_snes), `SNES`, `SNESGetFunction()`, `SNESSetFunction()`, `SNESComputeFunction()`, `SNESSetJacobian()`, `SNESGetPicard()`, `SNESLineSearchPreCheckPicard()`, `SNESJacobianFunction`
 @*/
@@ -3866,7 +3866,7 @@ PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, void *
   PetscCall(PetscViewerDrawGetDrawLG(v, 1, &lg));
   if (!n) PetscCall(PetscDrawLGReset(lg));
   PetscCall(PetscDrawLGGetDraw(lg, &draw));
-  PetscCall(PetscDrawSetTitle(draw, "% elemts > .2*max elemt"));
+  PetscCall(PetscDrawSetTitle(draw, "% elements > .2*max element"));
   PetscCall(SNESMonitorRange_Private(snes, n, &per));
   x = (PetscReal)n;
   y = 100.0 * per;
@@ -4297,7 +4297,7 @@ $ PetscErrorCode func(SNES snes, PetscInt step);
      to `SNESSetFunction()`, or `SNESSetPicard()`
      This is not used by most users.
 
-     There are a varity of function hooks one many set that are called at different stages of the nonlinear solution process, see the functions listed below.
+     There are a variety of function hooks one many set that are called at different stages of the nonlinear solution process, see the functions listed below.
 
 .seealso: [](chapter_snes), `SNES`, `SNESSolve()`, `SNESSetJacobian()`, `SNESSolve()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRSetPostCheck()`,
          `SNESMonitorSet()`, `SNESSetDivergenceTest()`
@@ -4431,7 +4431,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
 
 /*@C
    SNESConvergedReasonViewSet - Sets an ADDITIONAL function that is to be used at the
-    end of the nonlinear solver to display the conver reason of the nonlinear solver.
+    end of the nonlinear solver to display the convergence reason of the nonlinear solver.
 
    Logically Collective
 

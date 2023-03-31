@@ -464,7 +464,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
         PetscCall(PetscBTSet(bte, i));
         for (j = ii[i]; j < ii[i + 1]; j++) PetscCall(PetscBTSet(btv, jj[j]));
       } else {
-        /* every edge dofs should be connected trough a certain number of nodal dofs
+        /* every edge dofs should be connected through a certain number of nodal dofs
            to other edge dofs belonging to coarse edges
            - at most 2 endpoints
            - order-1 interior nodal dofs

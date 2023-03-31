@@ -408,7 +408,7 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscDeviceCopyMode PetscMemTyp
   PETSC_MEMORY_ACCESS_READ | PETSC_MEMORY_ACCESS_WRITE = PETSC_MEMORY_ACCESS_READ_WRITE
 .ve
 
-  The following convience macros are also provided\:
+  The following convenience macros are also provided\:
 
   - `PetscMemoryAccessRead(mode)`\: `true` if `mode` is any kind of read, `false` otherwise
   - `PetscMemoryAccessWrite(mode)`\: `true` if `mode` is any kind of write, `false` otherwise

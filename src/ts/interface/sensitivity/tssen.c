@@ -1670,7 +1670,7 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
 }
 
 /*@
-  TSForwardGetIntegralGradients - Returns the forward sensitivities ofthe integral term.
+  TSForwardGetIntegralGradients - Returns the forward sensitivities of the integral term.
 
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`

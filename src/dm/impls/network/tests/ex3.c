@@ -114,7 +114,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ne", &ne, NULL));
   PetscCall(StarGraphCreate(PETSC_COMM_WORLD, 1, 0, ne, PETSC_TRUE, &dm));
   PetscCall(DMNetworkDistribute(&dm, 0));
-  /* Test if query functions for DMNetwork run sucessfully */
+  /* Test if query functions for DMNetwork run successfully */
   PetscCall(StarGraphTestQuery(dm, ne));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());

@@ -208,7 +208,7 @@ PETSC_EXTERN PetscErrorCode DMLabelCreate_Ephemeral(DMLabel label)
   Input Parameter:
 . label - the `DMLabel`
 
-  Output Paramater:
+  Output Parameter:
 . olabel - the base label for this ephemeral label
 
   Level: intermediate

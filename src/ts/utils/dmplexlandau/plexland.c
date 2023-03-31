@@ -837,7 +837,7 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
 }
 
 /*
- LandauSetInitialCondition - Addes Maxwellians with context
+ LandauSetInitialCondition - Adds Maxwellians with context
 
  Collective
 

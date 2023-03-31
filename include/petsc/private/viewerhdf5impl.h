@@ -48,7 +48,7 @@ typedef struct {
   PetscFileMode             btype;
   hid_t                     file_id;
   hid_t                     dxpl_id;         /* H5P_DATASET_XFER property list controlling raw data transfer (read/write). Properties are modified using H5Pset_dxpl_* functions. */
-  PetscBool                 timestepping;    /* Flag to indicate whether objects are stored by tiem index */
+  PetscBool                 timestepping;    /* Flag to indicate whether objects are stored by time index */
   PetscInt                  timestep;        /* The time index to look for an object at */
   PetscBool                 defTimestepping; /* Default if timestepping attribute is not found. Support for legacy files with no timestepping attribute */
   PetscViewerHDF5GroupList *groups;
