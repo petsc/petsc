@@ -650,7 +650,6 @@ PetscErrorCode MatProductNumeric(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogEvent eventtype = -1;
 #endif
-  PetscBool missing = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -684,9 +683,7 @@ PetscErrorCode MatProductNumeric(Mat mat)
     PetscCall(PetscLogEventBegin(eventtype, mat, 0, 0, 0));
     PetscUseTypeMethod(mat, productnumeric);
     PetscCall(PetscLogEventEnd(eventtype, mat, 0, 0, 0));
-  } else missing = PETSC_TRUE;
-
-  if (missing || !mat->product) {
+  } else if (mat->product) {
     char errstr[256];
 
     if (mat->product->type == MATPRODUCT_ABC) {
@@ -694,9 +691,9 @@ PetscErrorCode MatProductNumeric(Mat mat)
     } else {
       PetscCall(PetscSNPrintf(errstr, 256, "%s with A %s, B %s", MatProductTypes[mat->product->type], ((PetscObject)mat->product->A)->type_name, ((PetscObject)mat->product->B)->type_name));
     }
-    PetscCheck(!missing, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Unspecified numeric phase for product %s", errstr);
-    PetscCheck(mat->product, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing struct after symbolic phase for product %s", errstr);
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Unspecified numeric phase for product %s", errstr);
   }
+  PetscCheck(mat->product, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing struct after numeric phase for product");
 
   if (mat->product->clear) PetscCall(MatProductClear(mat));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
