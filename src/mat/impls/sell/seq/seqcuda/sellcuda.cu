@@ -103,6 +103,7 @@ __global__ void matmultadd_seqsell_basic_kernel(PetscInt nrows, PetscInt slicehe
   }
 }
 
+#if !defined(PETSC_USE_COMPLEX)
 /* use 1 block per slice, suitable for large slice width */
 template <int BLOCKY>
 __global__ void matmult_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceheight, const PetscInt *acolidx, const MatScalar *aval, const PetscInt *sliidx, const PetscScalar *x, PetscScalar *y)
@@ -119,13 +120,13 @@ __global__ void matmult_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceheig
   if (row < nrows) {
     for (i = sliidx[slice_id] + threadIdx.x + 32 * threadIdx.y; i < sliidx[slice_id + 1]; i += 32 * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
-#pragma unroll
+  #pragma unroll
   for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
-#pragma unroll
+  #pragma unroll
   for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
   if (tidx == 0 && tidy < sliceheight) { shared[0][tidy] = t; }
   __syncthreads();
@@ -148,13 +149,13 @@ __global__ void matmultadd_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceh
   if (row < nrows) {
     for (i = sliidx[slice_id] + threadIdx.x + 32 * threadIdx.y; i < sliidx[slice_id + 1]; i += 32 * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
-#pragma unroll
+  #pragma unroll
   for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
-#pragma unroll
+  #pragma unroll
   for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
   if (tidx == 0 && tidy < sliceheight) { shared[0][tidy] = t; }
   __syncthreads();
@@ -165,7 +166,7 @@ template <int BLOCKY>
 __device__ __forceinline__ bool segment_scan(PetscInt flag[], MatScalar shared[], PetscScalar *val)
 {
   bool head = true;
-#pragma unroll
+  #pragma unroll
   for (int i = 1; i < BLOCKY * 2; i <<= 1) {
     int halfwarpid                         = threadIdx.y * 2 + threadIdx.x / 16;
     shared[threadIdx.x + threadIdx.y * 32] = 0;
@@ -215,14 +216,14 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
         if (row < nrows) t += aval[gid] * x[acolidx[gid]];
         if (iter == chunksperblock - 1 || (cid + 2) * BLOCKY * 32 > sliidx[start_slice + 1]) { /* last iteration or next iteration covers more than one slice */
           int tid = threadIdx.x + threadIdx.y * 32, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
-/* reduction and write to output vector */
-#pragma unroll
+  /* reduction and write to output vector */
+  #pragma unroll
           for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
-#pragma unroll
+  #pragma unroll
           for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
           if (tidx == 0 && tidy < sliceheight) { shared[tidy] = t; /* shared[0][tidy] = t */ }
           __syncthreads();
@@ -269,14 +270,14 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
         if (row < nrows) t += aval[gid] * x[acolidx[gid]];
         if (iter == chunksperblock - 1 || (cid + 2) * BLOCKY * 32 > sliidx[start_slice + 1]) { /* last iteration or next iteration covers more than one slice */
           int tid = threadIdx.x + threadIdx.y * 32, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
-/* reduction and write to output vector */
-#pragma unroll
+  /* reduction and write to output vector */
+  #pragma unroll
           for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
-#pragma unroll
+  #pragma unroll
           for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
           if (tidx == 0 && tidy < sliceheight) { shared[tidy] = t; /* shared[0][tidy] = t */ }
           __syncthreads();
@@ -298,7 +299,7 @@ __global__ void matmult_seqsell_tiled_kernel7(PetscInt nrows, PetscInt sliceheig
   if (row < nrows) {
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += 32) t += aval[i] * x[acolidx[i]];
   }
-#pragma unroll
+  #pragma unroll
   for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
   if (row < nrows && threadIdx.x < sliceheight) { y[row] = t; }
 }
@@ -313,10 +314,11 @@ __global__ void matmultadd_seqsell_tiled_kernel7(PetscInt nrows, PetscInt sliceh
   if (row < nrows) {
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += 32) t += aval[i] * x[acolidx[i]];
   }
-#pragma unroll
+  #pragma unroll
   for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
   if (row < nrows && threadIdx.x < sliceheight) { z[row] = y[row] + t; }
 }
+#endif
 
 /***********  Kernel 2-6  are tied to slice height 16. They are kept only for performance comparison  **********/
 
@@ -589,6 +591,7 @@ PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogGpuTimeBegin());
 
   switch (cudastruct->kernelchoice) {
+#if !defined(PETSC_USE_COMPLEX)
   case 9:
     nblocks = 1 + (nrows - 1) / sliceheight;
     if (cudastruct->blocky == 2) {
@@ -621,6 +624,7 @@ PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
       matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     }
     break;
+#endif
   case 6:
     nblocks = 1 + (nrows - 1) / (blocksize / 32); /* 1 slice per block if blocksize=512 */
     matmult_seqsell_tiled_kernel6<<<nblocks, block32>>>(nrows, acolidx, aval, sliidx, x, y);
@@ -645,6 +649,7 @@ PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
     nblocks = 1 + (nrows - 1) / blocksize;
     matmult_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     break;
+#if !defined(PETSC_USE_COMPLEX)
   case 0:
     maxoveravg = a->maxslicewidth / a->avgslicewidth;
     if (maxoveravg > 12.0 && maxoveravg / nrows > 0.001) { /* important threshold */
@@ -686,6 +691,9 @@ PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
       }
     }
     break;
+#endif
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unsupported kernel choice %" PetscInt_FMT " for MatMult_SeqSELLCUDA.", cudastruct->kernelchoice);
   }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecCUDARestoreArrayRead(xx, &x));
@@ -720,6 +728,7 @@ PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
     PetscCall(PetscLogGpuTimeBegin());
 
     switch (cudastruct->kernelchoice) {
+#if !defined(PETSC_USE_COMPLEX)
     case 9:
       nblocks = 1 + (nrows - 1) / sliceheight;
       if (blocky == 2) {
@@ -773,6 +782,7 @@ PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
         matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       }
       break;
+#endif
     case 6:
       nblocks = 1 + (nrows - 1) / (blocksize / 32);
       matmultadd_seqsell_tiled_kernel6<<<nblocks, block32>>>(nrows, acolidx, aval, sliidx, x, y, z);
@@ -797,6 +807,7 @@ PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
       nblocks = 1 + (nrows - 1) / blocksize;
       matmultadd_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       break;
+#if !defined(PETSC_USE_COMPLEX)
     case 0:
       maxoveravg = a->maxslicewidth / a->avgslicewidth;
       if (maxoveravg > 12.0 && maxoveravg / nrows > 0.001) { /* important threshold */
@@ -838,6 +849,9 @@ PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
         }
       }
       break;
+#endif
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unsupported kernel choice %" PetscInt_FMT " for MatMult_SeqSELLCUDA.", cudastruct->kernelchoice);
     }
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(VecCUDARestoreArrayRead(xx, &x));

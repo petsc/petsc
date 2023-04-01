@@ -293,6 +293,6 @@ int main(int argc, char **args)
       nsize: 3
       args: -mat_type sellcuda -vec_type cuda -test_diagonalscale
       output_file: output/ex5_55.out
-      requires: cuda
+      requires: cuda !complex
 
 TEST*/
