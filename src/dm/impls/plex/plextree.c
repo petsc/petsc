@@ -974,7 +974,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
 /*@
   DMPlexSetTree - set the tree that describes the hierarchy of non-conforming mesh points.  This routine also creates
-  the point-to-point constraints determined by the tree: a point is constained to the points in the closure of its
+  the point-to-point constraints determined by the tree: a point is constrained to the points in the closure of its
   tree root.
 
   Collective

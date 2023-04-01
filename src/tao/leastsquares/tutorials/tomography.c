@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
   /* User set the regularizer objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */
   PetscCall(TaoBRGNSetRegularizerObjectiveAndGradientRoutine(tao, EvaluateRegularizerObjectiveAndGradient, (void *)&user));
-  /* User defined regularizer Hessian setup, here is identiy shell matrix */
+  /* User defined regularizer Hessian setup, here is identity shell matrix */
   PetscCall(MatCreate(PETSC_COMM_SELF, &Hreg));
   PetscCall(MatSetSizes(Hreg, PETSC_DECIDE, PETSC_DECIDE, user.N, user.N));
   PetscCall(MatSetType(Hreg, MATSHELL));

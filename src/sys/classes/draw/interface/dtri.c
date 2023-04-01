@@ -198,7 +198,7 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
    Input Parameters:
 +  draw - the draw context
 .  m,n - the number of local mesh points in the x and y direction
-.  x - the horizonal locations of the local mesh points
+.  x - the horizontal locations of the local mesh points
 .  y - the vertical locations of the local mesh points
 .  min - the minimum value in the entire contour
 .  max - the maximum value in the entire contour

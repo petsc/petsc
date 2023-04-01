@@ -329,7 +329,7 @@ PetscErrorCode testBadDocStringCharOutOfOrder(PetscInt n)
 
 /*
   testInternalLinkageDocstring = This looks like a docstring, acts like a docstring, but it is
-  not a docstring, no diagnostics should be emmitted for this function
+  not a docstring, no diagnostics should be emitted for this function
 
   Input parm:
   * hello - asdasd

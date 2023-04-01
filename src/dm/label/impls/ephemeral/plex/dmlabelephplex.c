@@ -9,7 +9,7 @@
   Input Parameter:
 . label - the `DMLabel`
 
-  Output Paramater:
+  Output Parameter:
 . tr - the transform for this ephemeral label
 
   Level: intermediate

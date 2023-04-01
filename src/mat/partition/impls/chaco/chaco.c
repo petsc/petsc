@@ -105,7 +105,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
     matAdj = matSeq;
   }
 
-  adj = (Mat_MPIAdj *)matAdj->data; /* finaly adj contains adjacency graph */
+  adj = (Mat_MPIAdj *)matAdj->data; /* finally adj contains adjacency graph */
 
   /* arguments for Chaco library */
   nvtxs         = mat->rmap->N;         /* number of vertices in full graph */
@@ -538,7 +538,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, Petsc
 }
 
 /*@
-   MatPartitioningChacoSetEigenNumber - Sets the number of eigenvectors to compute by Chaco during partioning
+   MatPartitioningChacoSetEigenNumber - Sets the number of eigenvectors to compute by Chaco during partitioning
    during partitioning.
 
    Collective

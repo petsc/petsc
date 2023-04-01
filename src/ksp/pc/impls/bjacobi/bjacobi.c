@@ -62,7 +62,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
         PetscCheck(sum == M, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Global lens set incorrectly");
       } else {
         PetscCall(MatGetOwnershipRange(pc->pmat, &start, &end));
-        /* loop over blocks determing first one owned by me */
+        /* loop over blocks determining first one owned by me */
         sum = 0;
         for (i = 0; i < jac->n + 1; i++) {
           if (sum == start) {

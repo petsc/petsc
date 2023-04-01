@@ -1943,7 +1943,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   failed = (PetscInt)(part[0] != rank);
   PetscCallMPI(MPI_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm));
   if (failedGlobal > 0) {
-    PetscCheck(failedGlobal <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partion");
+    PetscCheck(failedGlobal <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partition");
     PetscCall(PetscFree(vtxwgt));
     PetscCall(PetscFree(toBalance));
     PetscCall(PetscFree(isLeaf));

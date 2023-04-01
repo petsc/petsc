@@ -1174,7 +1174,7 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Union of quadrature points, with an attempt to identify commont points in the two sets */
+/* Union of quadrature points, with an attempt to identify common points in the two sets */
 static PetscErrorCode PetscQuadraturePointsMerge(PetscQuadrature quadA, PetscQuadrature quadB, PetscQuadrature *quadJoint, PetscInt *aToJoint[], PetscInt *bToJoint[])
 {
   PetscInt         dimA, dimB;

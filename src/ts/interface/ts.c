@@ -1330,7 +1330,7 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
-.  Amat - (approximate) matrix to store Jacobian entires computed by `f`
+.  Amat - (approximate) matrix to store Jacobian entries computed by `f`
 .  Pmat - matrix used to compute preconditioner (usually the same as `Amat`)
 .  f   - the Jacobian evaluation routine
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)

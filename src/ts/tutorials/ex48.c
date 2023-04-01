@@ -132,7 +132,7 @@ static void g1_phi_right(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   for (i = 0; i < dim; ++i)
     for (j = 0; j < dim; ++j)
       //  indexing with inner, j, index generates the left live variable [dy,-]
-      //  by convension, put j index on right, with i destination: [ d/dy,
+      //  by convention, put j index on right, with i destination: [ d/dy,
       //  -d/dx]'
       g1[i] += s_K[i][j] * pphiDer[j];
 }
@@ -182,7 +182,7 @@ static void g3_nmu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOf
   for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = mu;
 }
 
-// Auxilary variable = -del^2 x, negative sign goes away from IBP
+// Auxiliary variable = -del^2 x, negative sign goes away from IBP
 static void g3_n1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   PetscInt d;
@@ -491,7 +491,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, DM dm, AppCtx *ctx)
     PetscCall(PetscDSSetJacobian(prob, OMEGA, JZ, NULL, g1_npsi_right, NULL, NULL));
     PetscCall(PetscDSSetResidual(prob, OMEGA, f0_Omega, f1_Omega));
   }
-  /* Setup constants - is this persistant? */
+  /* Setup constants - is this persistent? */
   {
     PetscScalar scales[NUM_CONSTS]; // +1 adding in testType for use in the f
                                     // and g functions

@@ -69,7 +69,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
     matAdj = matSeq;
   }
 
-  adj = (Mat_MPIAdj *)matAdj->data; /* finaly adj contains adjacency graph */
+  adj = (Mat_MPIAdj *)matAdj->data; /* finally adj contains adjacency graph */
 
   /* arguments for Party library */
   n        = mat->rmap->N;             /* number of vertices in full graph */

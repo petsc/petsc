@@ -164,7 +164,7 @@ def __register_all_symbol_checks():
     "VecNestCheckCompatible2"            : _code.check_obj_idx_generic,
     "VecNestCheckCompatible3"            : _code.check_obj_idx_generic,
     "MatCheckPreallocated"               : _code.check_obj_idx_generic,
-    "MatCheckProduect"                   : _code.check_obj_idx_generic,
+    "MatCheckProduct"                    : _code.check_obj_idx_generic,
     "MatCheckSameLocalSize"              : _code.check_obj_idx_generic,
     "MatCheckSameSize"                   : _code.check_obj_idx_generic,
     "PetscValidDevice"                   : _code.check_obj_idx_generic,

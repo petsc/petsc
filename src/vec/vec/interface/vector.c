@@ -1240,7 +1240,7 @@ PetscErrorCode VecSetOperation(Vec vec, VecOperation op, void (*f)(void))
      VecAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
 
-   PETSc attempts to smartly manage the stash size so there is little likelyhood setting a
+   PETSc attempts to smartly manage the stash size so there is little likelihood setting a
    a specific value here will affect performance
 
 .seealso: [](chapter_vectors), `Vec`, `VecSetBlockSize()`, `VecSetValues()`, `VecSetValuesBlocked()`, `VecStashView()`

@@ -38,7 +38,7 @@ typedef struct {
 M*/
 
 /*MC
-  TSBASICSYMPLECTICVELVERLET - second order Velocity Verlet method (leapfrog method with starting process and determing velocity and position at the same time)
+  TSBASICSYMPLECTICVELVERLET - second order Velocity Verlet method (leapfrog method with starting process and determining velocity and position at the same time)
 
 Level: intermediate
 
@@ -280,7 +280,7 @@ static PetscErrorCode TSSetUp_BasicSymplectic(TS ts)
   PetscFunctionBegin;
   PetscCall(TSRHSSplitGetIS(ts, "position", &bsymp->is_q));
   PetscCall(TSRHSSplitGetIS(ts, "momentum", &bsymp->is_p));
-  PetscCheck(bsymp->is_q && bsymp->is_p, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must set up RHSSplits with TSRHSSplitSetIS() using split names positon and momentum respectively in order to use -ts_type basicsymplectic");
+  PetscCheck(bsymp->is_q && bsymp->is_p, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must set up RHSSplits with TSRHSSplitSetIS() using split names position and momentum respectively in order to use -ts_type basicsymplectic");
   PetscCall(TSRHSSplitGetSubTS(ts, "position", &bsymp->subts_q));
   PetscCall(TSRHSSplitGetSubTS(ts, "momentum", &bsymp->subts_p));
   PetscCheck(bsymp->subts_q && bsymp->subts_p, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must set up the RHSFunctions for position and momentum using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");

@@ -244,7 +244,7 @@ static PetscErrorCode PCBJKOKKOSCreateKSP_BJKOKKOS(PC pc)
   jac->monitor      = PETSC_FALSE;
   jac->batch_target = -1;
   jac->nsolves_team = 1;
-  jac->ksp->max_it  = 50; // this is realy for GMRES w/o restarts
+  jac->ksp->max_it  = 50; // this is really for GMRES w/o restarts
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

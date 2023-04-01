@@ -521,7 +521,7 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
   Input Parameters:
 + hist - The histogram context
 . x_min - the horizontal lower limit
-. x_max - the horizonal upper limit
+. x_max - the horizontal upper limit
 . y_min - the vertical lower limit
 - y_max - the vertical upper limit
 

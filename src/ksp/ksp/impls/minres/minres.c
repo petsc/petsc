@@ -369,7 +369,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
       relres = relresl;
     }
 
-    if (minres->monitor) { /* Mimicks matlab code with extra flag */
+    if (minres->monitor) { /* Mimics matlab code with extra flag */
       PetscCall(PetscViewerPushFormat(minres->viewer, minres->viewer_fmt));
       if (ksp->its == 1) PetscCall(PetscViewerASCIIPrintf(minres->viewer, "        flag      rnorm     Arnorm   Compatible         LS      Anorm      Acond      xnorm\n"));
       PetscCall(PetscViewerASCIIPrintf(minres->viewer, "%s %5d   %2d %10.2e %10.2e   %10.2e %10.2e %10.2e %10.2e %10.2e\n", QLPiter == 1 ? "P" : " ", (int)ksp->its - 1, (int)flag, (double)rnorml, (double)Arnorml, (double)relresl, (double)relAresl, (double)Anorml, (double)Acondl, (double)xnorml));
@@ -767,7 +767,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
   PetscCall(PetscNew(&minres));
 
-  /* this parameter is arbitrary and belongs to the old implementaion; but e-50 didn't work for __float128 in one example */
+  /* this parameter is arbitrary and belongs to the old implementation; but e-50 didn't work for __float128 in one example */
 #if defined(PETSC_USE_REAL___FLOAT128)
   minres->haptol = 1.e-100;
 #elif defined(PETSC_USE_REAL_SINGLE)

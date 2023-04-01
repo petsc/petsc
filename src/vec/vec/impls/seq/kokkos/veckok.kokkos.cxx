@@ -982,7 +982,7 @@ static PetscErrorCode VecCopySyncState_Kokkos_Private(Vec xin, Vec yout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Interal routine shared by VecGetSubVector_{SeqKokkos,MPIKokkos} */
+/* Internal routine shared by VecGetSubVector_{SeqKokkos,MPIKokkos} */
 PetscErrorCode VecGetSubVector_Kokkos_Private(Vec x, PetscBool xIsMPI, IS is, Vec *y)
 {
   PetscBool contig;

@@ -105,7 +105,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
   if (!draw->savefilename) PetscCall(PetscDrawSetSave(draw, ""));
   PetscCall(PetscDrawMovieCheckFormat(&movieext));
   PetscCall(PetscStrallocpy(movieext, &draw->savemovieext));
-  draw->savesinglefile = PETSC_FALSE; /* otherwise we cannot generage movies */
+  draw->savesinglefile = PETSC_FALSE; /* otherwise we cannot generate movies */
 
   PetscCall(PetscInfo(NULL, "Will save movie to file %s%s\n", draw->savefilename, draw->savemovieext));
   PetscFunctionReturn(PETSC_SUCCESS);

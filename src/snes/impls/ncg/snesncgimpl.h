@@ -9,7 +9,7 @@
 
 typedef struct {
   SNESNCGType type;    /* Fletcher-Reeves, Polak-Ribiere-Polyak, Hestenes-Steifel, Dai-Yuan, Conjugate Descent */
-  PetscViewer monitor; /* monitor for ncg (prints out the alpha and beta parameters at each interation) */
+  PetscViewer monitor; /* monitor for ncg (prints out the alpha and beta parameters at each iteration) */
 } SNES_NCG;
 
 #endif

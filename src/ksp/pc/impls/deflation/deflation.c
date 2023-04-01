@@ -808,7 +808,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PC pc, PetscOptionItems *PetscO
     The preconditioner supports `KSPMonitorDynamicTolerance()`. This is useful for the multilevel scheme for which we also
     recommend limiting the number of iterations for the coarse problems.
 
-    See section 3 of [4] for additional references and decription of the algorithm when used for conjugate gradients.
+    See section 3 of [4] for additional references and description of the algorithm when used for conjugate gradients.
     Section 4 describes some possible choices for the deflation space.
 
      Contributed by Jakub Kruzik (PERMON), Institute of Geonics of the Czech

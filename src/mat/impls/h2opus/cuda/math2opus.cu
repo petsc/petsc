@@ -710,7 +710,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(Mat A, PetscOptionItems *PetscOpt
   PetscCall(PetscOptionsInt("-mat_h2opus_order", "Basis order for off-diagonal sampling when constructed from kernel", NULL, a->basisord, &a->basisord, NULL));
   PetscCall(PetscOptionsInt("-mat_h2opus_maxrank", "Maximum rank when constructed from matvecs", NULL, a->max_rank, &a->max_rank, NULL));
   PetscCall(PetscOptionsInt("-mat_h2opus_samples", "Maximum number of samples to be taken concurrently when constructing from matvecs", NULL, a->bs, &a->bs, NULL));
-  PetscCall(PetscOptionsInt("-mat_h2opus_normsamples", "Maximum bumber of samples to be when estimating norms", NULL, a->norm_max_samples, &a->norm_max_samples, NULL));
+  PetscCall(PetscOptionsInt("-mat_h2opus_normsamples", "Maximum number of samples to be when estimating norms", NULL, a->norm_max_samples, &a->norm_max_samples, NULL));
   PetscCall(PetscOptionsReal("-mat_h2opus_rtol", "Relative tolerance for construction from sampling", NULL, a->rtol, &a->rtol, NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_check", "Check error when constructing from sampling during MatAssemblyEnd()", NULL, a->check_construction, &a->check_construction, NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_hara_verbose", "Verbose output from hara construction", NULL, a->hara_verbose, &a->hara_verbose, NULL));
@@ -1654,7 +1654,7 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
 .     -mat_h2opus_rtol <`PetscReal`> - Relative tolerance for construction from sampling
 .     -mat_h2opus_check <`PetscBool`> - Check error when constructing from sampling during MatAssemblyEnd()
 .     -mat_h2opus_hara_verbose <`PetscBool`> - Verbose output from hara construction
--     -mat_h2opus_normsamples <`PetscInt`> - Maximum bumber of samples to be when estimating norms
+-     -mat_h2opus_normsamples <`PetscInt`> - Maximum number of samples to be when estimating norms
 
    Level: intermediate
 
