@@ -20,6 +20,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
+    self.netliblapack  = framework.require('config.packages.netlib-lapack', self)
     self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
     self.blis          = framework.require('config.packages.blis', self)
     self.openblas      = framework.require('config.packages.openblas', self)
@@ -171,6 +172,12 @@ class Configure(config.package.Package):
       yield ('f2cblaslapack', f2cBlas, f2cLapack, '32','no')
       yield ('f2cblaslapack', f2cBlas+['-lquadmath'], f2cLapack, '32','no')
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
+    if self.netliblapack.found:
+      self.f2c = 0
+      # TODO: use self.netliblapack.libDir directly
+      libDir = os.path.join(self.netliblapack.directory,'lib')
+      yield ('netliblapack', os.path.join(libDir,'libnblas.a'), os.path.join(libDir,'libnlapack.a'), '32', 'no')
+      raise RuntimeError('--download-netlib-lapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
       # TODO: use self.fblaslapack.libDir directly
@@ -406,6 +413,7 @@ class Configure(config.package.Package):
       for libdir in ['lib64','lib','']:
         if os.path.exists(os.path.join(dir,libdir)):
           yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,libdir,'libf2cblas.a'), os.path.join(dir,libdir,'libf2clapack.a'),'32','no')
+      yield ('User specified installation root(NETLIB-LAPACK)', os.path.join(dir, 'libnblas.a'), os.path.join(dir, 'libnlapack.a'),'32','no')
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       for lib in ['','lib64']:
         yield ('User specified installation root IBM ESSL', None, os.path.join(dir, lib, 'libessl.a'),'32','unknown')
@@ -559,7 +567,7 @@ class Configure(config.package.Package):
       self.compilers.LIBS = oldLibs
 
     self.found = 1
-    if not self.f2cblaslapack.found and not self.fblaslapack.found:
+    if not self.f2cblaslapack.found and not self.netliblapack.found and not self.fblaslapack.found:
       self.executeTest(self.checkMKL)
       if not self.mkl:
         self.executeTest(self.checkESSL)

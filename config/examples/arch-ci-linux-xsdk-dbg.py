@@ -6,7 +6,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
   '--download-xsdk',
-  '--download-fblaslapack=1',
+  '--download-netlib-lapack=1',
   '--download-mpich=1',
   '--download-cmake=1',
   '--with-clanguage=C++',
