@@ -242,7 +242,7 @@ M*/
 
     Values:
 +  `REDUCTION_SUM_REALPART` - sum of real part of each matrix column
-.  `REDUCTION_SUM_IMAGINARYPART` - sum of imaginary part of each matrix colum
+.  `REDUCTION_SUM_IMAGINARYPART` - sum of imaginary part of each matrix column
 .  `REDUCTION_MEAN_REALPART` - arithmetic mean of real part of each matrix column
 -  `REDUCTION_MEAN_IMAGINARYPART` - arithmetic mean of imaginary part of each matrix column
 

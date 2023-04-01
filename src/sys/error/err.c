@@ -108,7 +108,7 @@ $  PetscErrorCode handler(MPI_Comm comm, int line, char *func, char *file, Petsc
    `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, and `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`.
 
    Fortran Note:
-    You can only push one error handler from Fortran before poping it.
+    You can only push one error handler from Fortran before popping it.
 
 .seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`
 @*/

@@ -53,7 +53,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
   Notes:
   See `ISType` for available types (for instance, `ISGENERAL`, `ISSTRIDE`, or `ISBLOCK`).
 
-  Often convience constructors such as `ISCreateGeneral()`, `ISCreateStride()` or  `ISCreateBlock()` can be used to construct the desired `IS` in one step
+  Often convenience constructors such as `ISCreateGeneral()`, `ISCreateStride()` or  `ISCreateBlock()` can be used to construct the desired `IS` in one step
 
   Use `ISDuplicate()` to make a duplicate
 

@@ -117,7 +117,7 @@ PetscErrorCode DMSetUp_Composite(DM dm)
 /* ----------------------------------------------------------------------------------*/
 
 /*@
-    DMCompositeGetNumberDM - Get's the number of `DM` objects in the `DMCOMPOSITE`
+    DMCompositeGetNumberDM - Gets the number of `DM` objects in the `DMCOMPOSITE`
        representation.
 
     Not Collective

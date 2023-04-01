@@ -33,7 +33,7 @@ static PetscErrorCode MatCreateColInode_Private(Mat A, PetscInt *size, PetscInt 
 
   /* if m < n; pad up the remainder with inode_limit */
   for (; count + 1 < n; count++, i++) ns_col[i] = 1;
-  /* The last node is the odd ball. padd it up with the remaining rows; */
+  /* The last node is the odd ball. pad it up with the remaining rows; */
   if (count < n) {
     ns_col[i] = n - count;
     i++;

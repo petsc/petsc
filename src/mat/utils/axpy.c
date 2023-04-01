@@ -361,7 +361,7 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 +  a - the `PetscScalar` multiplier
 .  Y - the first matrix
 .  X - the second matrix
--  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of X is a subset of Y's)
+-  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
 
    Level: intermediate
 

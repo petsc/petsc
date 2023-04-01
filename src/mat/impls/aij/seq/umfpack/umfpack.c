@@ -436,7 +436,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType fty
   /* initializations */
   /* get the default control parameters */
   umfpack_UMF_defaults(lu->Control);
-  lu->perm_c                  = NULL; /* use defaul UMFPACK col permutation */
+  lu->perm_c                  = NULL; /* use default UMFPACK col permutation */
   lu->Control[UMFPACK_IRSTEP] = 0;    /* max num of iterative refinement steps to attempt */
 
   *F = B;

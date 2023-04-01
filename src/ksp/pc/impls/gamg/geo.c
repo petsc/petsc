@@ -656,7 +656,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData
     PetscInt lid = selected_idx[kk];
     if (lid < nloc) {
       PetscCall(MatGetRow(Gmat, lid + my0, &ncols, NULL, NULL));
-      if (ncols > 1) clid_flid[nLocalSelected++] = lid; /* fiter out singletons */
+      if (ncols > 1) clid_flid[nLocalSelected++] = lid; /* filter out singletons */
       PetscCall(MatRestoreRow(Gmat, lid + my0, &ncols, NULL, NULL));
     }
   }

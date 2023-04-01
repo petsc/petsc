@@ -27,7 +27,7 @@ typedef struct {
   Mat A; /* local submatrix */
 
   /* The following variables are used for matrix assembly */
-  PetscBool    donotstash;        /* Flag indicationg if values should be stashed */
+  PetscBool    donotstash;        /* Flag indicating if values should be stashed */
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
   PetscInt     nsends, nrecvs;    /* numbers of sends and receives */

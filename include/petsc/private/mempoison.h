@@ -143,7 +143,7 @@ static inline PetscErrorCode PetscUnpoisonMemoryRegion(const void *ptr, size_t s
 /*@C
   PetscIsRegionPoisoned - Query whether a particular memory region is poisoned
 
-  Input Paramaters:
+  Input Parameters:
 + ptr  - The pointer to the start of the region
 - size - The size (in bytes) of the region to query
 

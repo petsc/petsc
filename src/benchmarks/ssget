@@ -254,7 +254,7 @@ Available options:
     -i ID        matrix id
     -j           print information about the matrix in JSON format
     -n           get number of matrices in collection
-    -p PROPERTY  print information about the matrix, PROPERTY is the propery to
+    -p PROPERTY  print information about the matrix, PROPERTY is the property to
                  print, one of group, name, rows, cols, nonzeros, real, binary,
                  2d3d, posdef, psym, nsym, kind
     -r           remove archive

@@ -491,7 +491,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
       PetscReal coeff = 1.0;
 
       PetscCall(KSPMonitorDynamicToleranceCreate(&scale));
-      PetscCall(PetscOptionsReal("-sub_ksp_dynamic_tolerance", "Coeffcient of dynamic tolerance for inner PC", "KSPMonitorDynamicTolerance", coeff, &coeff, &flg));
+      PetscCall(PetscOptionsReal("-sub_ksp_dynamic_tolerance", "Coefficient of dynamic tolerance for inner PC", "KSPMonitorDynamicTolerance", coeff, &coeff, &flg));
       if (flg) PetscCall(KSPMonitorDynamicToleranceSetCoefficient(scale, coeff));
       PetscCall(KSPMonitorSet(ksp, KSPMonitorDynamicTolerance, scale, KSPMonitorDynamicToleranceDestroy));
     }

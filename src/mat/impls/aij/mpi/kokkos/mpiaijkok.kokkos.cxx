@@ -162,7 +162,7 @@ struct MatMatStruct {
   KernelHandle kh3; // compute C3
   KernelHandle kh4; // compute C4
 
-  PetscInt E_TeamSize; // kernel launching parameters in merging E or spliting F
+  PetscInt E_TeamSize; // kernel launching parameters in merging E or splitting F
   PetscInt E_VectorLength;
   PetscInt E_RowsPerTeam;
   PetscInt F_TeamSize;
@@ -670,7 +670,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
     mm->sf       = reduceSF;
     mm->leafBuf  = MatScalarKokkosView("leafBuf", nleaves);
     mm->rootBuf  = MatScalarKokkosView("rootBuf", nroots);
-    mm->garray   = garray2; // give owership, so no free
+    mm->garray   = garray2; // give ownership, so no free
     mm->n        = n2;
     mm->E_NzLeft = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), E_NzLeft_h);
     mm->Fdjmap   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Fdjmap_h);
@@ -742,7 +742,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// To finsih MatMPIAIJKokkosReduce.
+// To finish MatMPIAIJKokkosReduce.
 static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm comm, KokkosCsrMatrix A, KokkosCsrMatrix B, PetscInt cstart, PetscInt cend, const PetscInt *garray1, PetscSF ownerSF, MatReuse reuse, PetscInt *map, MatMatStruct_AtB *mm)
 {
   PetscFunctionBegin;
@@ -789,7 +789,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm comm, KokkosCsrMatrix A,
   F has the same column layout as E.
 
   Conceptually F has global column indices. In this routine, we spit F into diagonal Fd and off-diagonal Fo.
-  Fd uses local column indices, which are easy to compute. We just need to substract the "local column range start" from the global indices.
+  Fd uses local column indices, which are easy to compute. We just need to subtract the "local column range start" from the global indices.
   Fo had global column indices at first. We will reduce them into local ones. In doing that, we also take into account the global
   column indices that E's off-diag block has. Let's say there are n1 such indices stored in garray1[]. We will reduce them along with
   column indices in Fo and update Fo with local indices.

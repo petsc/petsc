@@ -1671,7 +1671,7 @@ static inline PetscErrorCode SetSubnetIdLookupBT(DM dm, PetscInt v, PetscInt Nsu
 
   Input Parameters:
   + dm - The original `DMNETWORK` object
-  - migrationSF - The PetscSF discribing the migrgration from dm to dmnew
+  - migrationSF - The `PetscSF` describing the migration from dm to dmnew
   - newDM - The new distributed dmnetwork object.
 */
 
@@ -1707,7 +1707,7 @@ static PetscErrorCode DMNetworkDistributeCoordinates(DM dm, PetscSF migrationSF,
     PetscCall(DMSetCoordinatesLocal(newDM, newCoord));
 
     PetscCall(VecDestroy(&newCoord));
-    /* Migrate the components from the orignal coordinate network to the new coordinate network */
+    /* Migrate the components from the original coordinate network to the new coordinate network */
     PetscCall(DMPlexDistributeData(newDMnetwork->plex, migrationSF, oldCoordnetwork->DataSection, MPIU_INT, (void *)oldCoordnetwork->componentdataarray, newCoordnetwork->DataSection, (void **)&newCoordnetwork->componentdataarray));
     /* update the header pointers in the new coordinate network components */
     PetscCall(PetscSectionGetChart(newCoordnetwork->DataSection, &pStart, &pEnd));

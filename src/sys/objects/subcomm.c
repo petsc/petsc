@@ -28,7 +28,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscBool        flg;
 
   PetscFunctionBegin;
-  PetscCheck(psubcomm, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Must call PetscSubcommCreate firt");
+  PetscCheck(psubcomm, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Must call PetscSubcommCreate first");
 
   PetscOptionsBegin(psubcomm->parent, psubcomm->subcommprefix, "Options for PetscSubcomm", NULL);
   PetscCall(PetscOptionsEnum("-psubcomm_type", NULL, NULL, PetscSubcommTypes, (PetscEnum)psubcomm->type, (PetscEnum *)&type, &flg));

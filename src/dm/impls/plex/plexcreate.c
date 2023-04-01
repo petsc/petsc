@@ -1636,7 +1636,7 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
 }
 
 /*@C
-  DMPlexCreateHypercubicMesh - Creates a peridoic mesh on the tensor product of unit intervals using only vertices and edges.
+  DMPlexCreateHypercubicMesh - Creates a periodic mesh on the tensor product of unit intervals using only vertices and edges.
 
   Collective
 
@@ -4580,7 +4580,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_remesh_bd                 - Allow changes to the boundary on remeshing
 . -dm_plex_max_projection_height     - Maximum mesh point height used to project locally
 . -dm_plex_regular_refinement        - Use special nested projection algorithm for regular refinement
-. -dm_plex_check_all                 - Perform all shecks below
+. -dm_plex_check_all                 - Perform all checks below
 . -dm_plex_check_symmetry            - Check that the adjacency information in the mesh is symmetric
 . -dm_plex_check_skeleton <celltype> - Check that each cell has the correct number of vertices
 . -dm_plex_check_faces <celltype>    - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type

@@ -66,7 +66,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
 
   PetscFunctionBegin;
-  PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Cann't sync factorized matrix from host to device");
+  PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Can't sync factorized matrix from host to device");
   PetscCheck(aijkok, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
   if (aijkok->a_dual.need_sync_device()) {
     aijkok->a_dual.sync_device();
@@ -99,7 +99,7 @@ static PetscErrorCode MatSeqAIJKokkosSyncHost(Mat A)
   PetscFunctionBegin;
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   /* We do not expect one needs factors on host  */
-  PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Cann't sync factorized matrix from device to host");
+  PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Can't sync factorized matrix from device to host");
   PetscCheck(aijkok, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing AIJKOK");
   aijkok->a_dual.sync_host();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -232,7 +232,7 @@ PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat A, PetscSplitCSRDataStructure *d_
 
   Output Parameters:
 +  perm_d - the permutation array on device, which connects Ta(i) = Aa(perm(i))
--  T_d    - the transpose on device, whose value array is allcoated but not initialized
+-  T_d    - the transpose on device, whose value array is allocated but not initialized
 */
 static PetscErrorCode MatSeqAIJKokkosGenerateTransposeStructure(Mat A, MatRowMapKokkosView &perm_d, KokkosCsrMatrix &T_d)
 {

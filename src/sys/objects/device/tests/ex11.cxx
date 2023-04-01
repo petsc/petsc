@@ -226,7 +226,7 @@ static PetscErrorCode CheckMapEqual(std::unordered_map<PetscObjectId, std::pair<
         }
       }
       // remove the found iterator from the map, this ensure we either run out of map (which is
-      // caught by the fisrt check in the loop), or we run out of keys to check, which is
+      // caught by the first check in the loop), or we run out of keys to check, which is
       // caught in the end of the loop
       PetscCallCXX(expected_map.erase(found_it));
     }
@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
     PetscFunctionReturn(PETSC_SUCCESS);
   };
 
-  // Test that multiple readers can simulatenously read -- even if one of them is synchronized
+  // Test that multiple readers can simultaneously read -- even if one of them is synchronized
   PetscCall(test_multiple_readers({dctx_a, dctx_b}, 0));
   PetscCall(test_multiple_readers({dctx_a, dctx_b}, 1));
 
