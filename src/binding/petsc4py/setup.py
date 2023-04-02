@@ -115,7 +115,7 @@ metadata.update({
 })
 
 metadata_extra = {
-    'long_description_content_type': 'text/rst',
+    'long_description_content_type': 'text/x-rst',
 }
 
 # --------------------------------------------------------------------
