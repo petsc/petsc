@@ -196,7 +196,7 @@ def extensions():
 def get_release():
     suffix = os.path.join('src', 'binding', F('{pyname}'))
     if not topdir.endswith(os.path.join(os.path.sep, suffix)):
-        return False
+        return True
     release = 1
     rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
     version_h = os.path.join(rootdir, 'include', F('{name}version.h'))
