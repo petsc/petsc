@@ -5,9 +5,9 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  '--with-cc=clang',
-  '--with-cxx=clang++',
-  '--with-fc=gfortran', # https://brew.sh/
+  #'--with-cc=clang',
+  #'--with-cxx=clang++',
+  #'--with-fc=gfortran', # https://brew.sh/
   'COPTFLAGS=-g -Og',
   'FOPTFLAGS=-g -Og',
   'CXXOPTFLAGS=-g -Og',
@@ -17,8 +17,7 @@ configure_options = [
   '--with-scalar-type=complex',
 
   #'-download-fblaslapack=1',
-  '--download-mpich=1',
-  '--download-cmake=1',
+  #'--download-mpich=1',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-ptscotch=1',

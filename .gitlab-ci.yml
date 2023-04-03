@@ -70,7 +70,7 @@ check-ci-settings:
     - ccache --zero-stats
   script:
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
-    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; if [ -f ${HOME}/${INIT_SCRIPT} ]; then source ${HOME}/${INIT_SCRIPT}; else source ${INIT_SCRIPT}; fi; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
@@ -259,7 +259,7 @@ pause-for-approval:
   script:
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
     - if [ ! -z ${GCOV_MODULES+x} ]; then module --trace load ${GCOV_MODULES}; module list; fi
-    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; if [ -f ${HOME}/${INIT_SCRIPT} ]; then source ${HOME}/${INIT_SCRIPT}; else source ${INIT_SCRIPT}; fi; fi
     - if [ "${RUN_GCOV}" == 1 ]; then
         printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n";
         gcovr --version;
@@ -967,21 +967,22 @@ osx-cxx-cmplx-pkgs-dbg:
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos
+    - os:macos-x64
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
-    INIT_SCRIPT: /Users/glci/bin/py3.sh
+    INIT_SCRIPT: .zprofile
 
 osx-cxx-pkgs-opt:
   extends:
     - .stage-3
     - .osx_test
   tags:
-    - os:macos, opt
+    - os:macos-x64
   variables:
     PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
+    INIT_SCRIPT: .zprofile
 
 osx-dbg:
   extends:
@@ -989,10 +990,11 @@ osx-dbg:
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos
+    - os:macos-x64
   variables:
     TEST_ARCH: arch-ci-osx-dbg
     ASAN_OPTIONS: log_path=stdout
+    INIT_SCRIPT: .zprofile
 
 osx-xsdk-opt:
   extends:
@@ -1000,9 +1002,10 @@ osx-xsdk-opt:
     - .osx_test
     - .coverage-disable
   tags:
-    - os:macos, opt
+    - os:macos-x64
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
+    INIT_SCRIPT: .zprofile
 
 # job for analyzing the coverage results and generating the various reports
 coverage-analyze:
