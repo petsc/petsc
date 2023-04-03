@@ -198,10 +198,10 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   PetscCall(PetscDSSetConstants(prob, 1, &vz));
   PetscCall(PetscDSSetObjective(prob, 0, &f0_ve_shift));
   PetscCall(DMPlexComputeIntegralFEM(plexe, XsubArray[LAND_PACK_IDX(ctx->batch_view_idx, 0)], tt, NULL));
-  v        = ctx->n_0 * ctx->v_0 * PetscRealPart(tt[0]) / n_e;                                           /* remove number density to get velocity */
-  v2       = PetscSqr(v);                                                                                /* use real space: m^2 / s^2 */
-  Te_kev   = (v2 * ctx->masses[0] * PETSC_PI / 8) * kev_joul;                                            /* temperature in kev */
-  spit_eta = Spitzer(ctx->masses[0], -ctx->charges[0], Z, ctx->epsilon0, ctx->lnLam, Te_kev / kev_joul); /* kev --> J (kT) */
+  v        = ctx->n_0 * ctx->v_0 * PetscRealPart(tt[0]) / n_e;                                                   /* remove number density to get velocity */
+  v2       = PetscSqr(v);                                                                                        /* use real space: m^2 / s^2 */
+  Te_kev   = (v2 * ctx->masses[0] * PETSC_PI / 8) * kev_joul;                                                    /* temperature in kev */
+  spit_eta = Spitzer(ctx->masses[0], -ctx->charges[0], Z, ctx->epsilon0, ctx->lambdas[0][1], Te_kev / kev_joul); /* kev --> J (kT) */
   if (0) {
     PetscCall(DMGetDS(plexe, &prob));
     PetscCall(PetscDSSetConstants(prob, 1, q));
@@ -450,7 +450,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     PetscCall(rectx->test(ts, X, stepi, time, reason ? PETSC_TRUE : PETSC_FALSE, ctx, rectx));
   }
   /* parallel check that only works of all batches are identical */
-  if (reason && ctx->verbose > 3) {
+  if (reason && ctx->verbose > 3 && ctx->batch_sz > 1) {
     PetscReal   val, rval;
     PetscMPIInt rank;
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -563,15 +563,15 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   PetscCall(PetscFunctionListAdd(&plist, "step", &stepSrc));
   PetscCall(PetscFunctionListAdd(&plist, "none", &zeroSrc));
   PetscCall(PetscFunctionListAdd(&plist, "pulse", &pulseSrc));
-  PetscCall(PetscStrcpy(pname, "none"));
+  PetscCall(PetscStrncpy(pname, "none", sizeof(pname)));
   PetscCall(PetscFunctionListAdd(&testlist, "none", &testNone));
   PetscCall(PetscFunctionListAdd(&testlist, "spitzer", &testSpitzer));
   PetscCall(PetscFunctionListAdd(&testlist, "stable", &testStable));
-  PetscCall(PetscStrcpy(testname, "none"));
+  PetscCall(PetscStrncpy(testname, "none", sizeof(testname)));
   PetscCall(PetscFunctionListAdd(&elist, "none", &ENone));
   PetscCall(PetscFunctionListAdd(&elist, "induction", &EInduction));
   PetscCall(PetscFunctionListAdd(&elist, "constant", &EConstant));
-  PetscCall(PetscStrcpy(ename, "constant"));
+  PetscCall(PetscStrncpy(ename, "constant", sizeof(ename)));
 
   PetscOptionsBegin(PETSC_COMM_SELF, prefix, "Options for Runaway/seed electron model", "none");
   PetscCall(PetscOptionsReal("-ex2_plot_dt", "Plotting interval", "ex2.c", rectx->plotDt, &rectx->plotDt, NULL));
@@ -610,7 +610,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   /* convert E from Connor-Hastie E_c units to real if doing Spitzer E */
   if (Connor_E) {
     PetscReal E = ctx->Ez, Tev = ctx->thermal_temps[0] * 8.621738e-5, n = ctx->n_0 * ctx->n[0];
-    CalculateE(Tev, n, ctx->lnLam, ctx->epsilon0, &E);
+    CalculateE(Tev, n, ctx->lambdas[0][1], ctx->epsilon0, &E);
     ((LandauCtx *)ctx)->Ez *= E;
   }
   PetscCall(DMDestroy(&dm_dummy));
@@ -729,7 +729,7 @@ int main(int argc, char **argv)
   testset:
     requires: p4est !complex double defined(PETSC_USE_DMLANDAU_2D)
     output_file: output/ex2_0.out
-    args: -dm_landau_num_species_grid 1,1 -dm_landau_Ez 0 -petscspace_degree 3 -petscspace_poly_tensor 1 -dm_landau_type p4est -dm_landau_ion_masses 2 -dm_landau_ion_charges 1 -dm_landau_thermal_temps 5,5 -dm_landau_n 2,2 -dm_landau_n_0 5e19 -ts_monitor -snes_rtol 1.e-10 -snes_stol 1.e-14 -snes_monitor -snes_converged_reason -snes_max_it 10 -ts_type arkimex -ts_arkimex_type 1bee -ts_max_snes_failures -1 -ts_rtol 1e-3 -ts_dt 1.e-1 -ts_max_time 1 -ts_adapt_clip .5,1.25 -ts_max_steps 2 -ts_adapt_scale_solve_failed 0.75 -ts_adapt_time_step_increase_delay 5 -dm_landau_amr_levels_max 2,2 -ex2_impurity_source_type pulse -ex2_pulse_start_time 1e-1 -ex2_pulse_width_time 10 -ex2_pulse_rate 1e-2 -ex2_t_cold .05 -ex2_plot_dt 1e-1 -dm_refine 0 -dm_landau_gpu_assembly true -dm_landau_batch_size 2 -dm_landau_verbose 2 -dm_landau_domain_radius 5.,5.
+    args: -dm_landau_num_species_grid 1,1 -dm_landau_Ez 0 -petscspace_degree 3 -petscspace_poly_tensor 1 -dm_landau_type p4est -dm_landau_ion_masses 2 -dm_landau_ion_charges 1 -dm_landau_thermal_temps 5,5 -dm_landau_n 2,2 -dm_landau_n_0 5e19 -ts_monitor -snes_rtol 1.e-9 -snes_stol 1.e-14 -snes_monitor -snes_converged_reason -snes_max_it 10 -ts_type arkimex -ts_arkimex_type 1bee -ts_max_snes_failures -1 -ts_rtol 1e-3 -ts_dt 1.e-2 -ts_max_time 1 -ts_adapt_clip .5,1.25 -ts_max_steps 2 -ts_adapt_scale_solve_failed 0.75 -ts_adapt_time_step_increase_delay 5 -dm_landau_amr_levels_max 2,2 -dm_landau_amr_re_levels 2 -dm_landau_re_radius 0 -ex2_impurity_source_type pulse -ex2_pulse_start_time 1e-1 -ex2_pulse_width_time 10 -ex2_pulse_rate 1e-2 -ex2_t_cold .05 -ex2_plot_dt 1e-1 -dm_refine 0 -dm_landau_gpu_assembly true -dm_landau_batch_size 2 -dm_landau_verbose 2 -dm_landau_domain_radius 5.,5.
     test:
       suffix: cpu
       args: -dm_landau_device_type cpu -ksp_type bicg -pc_type jacobi
@@ -749,5 +749,11 @@ int main(int argc, char **argv)
       suffix: kokkos_batch_coo
       requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type bicg -pc_bjkokkos_pc_type jacobi -dm_landau_coo_assembly
+
+  test:
+    requires: !complex double defined(PETSC_USE_DMLANDAU_2D) !kokkos_kernels !cuda
+    suffix: single
+    nsize: 1
+    args: -dm_refine 2 -dm_landau_num_species_grid 1 -dm_landau_thermal_temps 1 -dm_landau_electron_shift 1.25 -petscspace_degree 3 -snes_converged_reason -ts_type beuler -ts_dt .1 -ex2_plot_dt .1 -ts_max_steps 1 -ex2_grid_view_idx 0 -ex2_dm_view -snes_rtol 1.e-13 -snes_stol 1.e-13 -dm_landau_verbose 2 -ex2_print_period 1 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -dm_landau_use_relativistic_corrections
 
 TEST*/

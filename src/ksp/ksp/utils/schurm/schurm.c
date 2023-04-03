@@ -143,8 +143,11 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
    Collective
 
    Input Parameters:
-+   A00,A01,A10,A11  - the four parts of the original matrix A = [A00 A01; A10 A11] (A11 is optional)
--   Ap00             - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A^{-1}
++   A00  - the upper-left block of the original matrix A = [A00 A01; A10 A11]
+.   Ap00 - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A00^{-1}
+.   A01  - the upper-right block of the original matrix A = [A00 A01; A10 A11]
+.   A10  - the lower-left block of the original matrix A = [A00 A01; A10 A11]
+-   A11  - (optional) the lower-right block of the original matrix A = [A00 A01; A10 A11]
 
    Output Parameter:
 .   S - the matrix that behaves as the Schur complement S = A11 - A10 ksp(A00,Ap00) A01
@@ -158,7 +161,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
     All four matrices must have the same MPI communicator.
 
-    A00 and  A11 must be square matrices.
+    `A00` and  `A11` must be square matrices.
 
     `MatGetSchurComplement()` takes as arguments the index sets for the submatrices and returns both the virtual Schur complement (what this returns) plus
     a sparse approximation to the Schur complement (useful for building a preconditioner for the Schur complement) which can be obtained from this
@@ -188,8 +191,11 @@ PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat
 
    Input Parameters:
 +   S                - matrix obtained with `MatSetType`(S,`MATSCHURCOMPLEMENT`)
-.   A00,A01,A10,A11  - the four parts of A = [A00 A01; A10 A11] (A11 is optional)
--   Ap00             - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A^{-1}.
++   A00  - the upper-left block of the original matrix A = [A00 A01; A10 A11]
+.   Ap00 - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A00^{-1}
+.   A01  - the upper-right block of the original matrix A = [A00 A01; A10 A11]
+.   A10  - the lower-left block of the original matrix A = [A00 A01; A10 A11]
+-   A11  - (optional) the lower-right block of the original matrix A = [A00 A01; A10 A11]
 
    Level: intermediate
 
@@ -199,7 +205,7 @@ PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat
 
      All four matrices must have the same MPI communicator.
 
-     A00 and A11 must be square matrices.
+     `A00` and `A11` must be square matrices.
 
      This is to be used in the context of code such as
 .vb
@@ -266,7 +272,7 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
 . ksp - the linear solver object
 
   Options Database Key:
-. -fieldsplit_<splitname_0>_XXX sets KSP and PC options for the 0-split solver inside the Schur complement used in PCFieldSplit; default <splitname_0> is 0.
+. -fieldsplit_<splitname_0>_XXX sets KSP and PC options for the 0-split solver inside the Schur complement used in `PCFIELDSPLIT`; default <splitname_0> is 0.
 
   Level: intermediate
 
@@ -329,15 +335,18 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 
    Input Parameters:
 +   S                - matrix obtained with `MatCreateSchurComplement()` (or `MatSchurSetSubMatrices()`) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
-.   A00,A01,A10,A11  - the four parts of A = [A00 A01; A10 A11] (A11 is optional)
--   Ap00             - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A^{-1}.
+.   A00  - the upper-left block of the original matrix A = [A00 A01; A10 A11]
+.   Ap00 - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A00^{-1}
+.   A01  - the upper-right block of the original matrix A = [A00 A01; A10 A11]
+.   A10  - the lower-left block of the original matrix A = [A00 A01; A10 A11]
+-   A11  - (optional) the lower-right block of the original matrix A = [A00 A01; A10 A11]
 
    Level: intermediate
 
    Notes:
      All four matrices must have the same MPI communicator
 
-     A00 and  A11 must be square matrices
+     `A00` and  `A11` must be square matrices
 
      All of the matrices provided must have the same sizes as was used with `MatCreateSchurComplement()` or `MatSchurComplementSetSubMatrices()`
      though they need not be the same matrices.
@@ -417,7 +426,9 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   Level: intermediate
 
   Note:
-  A11 is optional, and thus can be NULL.  The reference counts of the submatrices are not increased before they are returned and the matrices should not be modified or destroyed.
+  `A11` is optional, and thus can be `NULL`.
+
+  The reference counts of the submatrices are not increased before they are returned and the matrices should not be modified or destroyed.
 
 .seealso: [](chapter_ksp), `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`, `MatSchurComplementUpdateSubMatrices()`
 @*/
@@ -622,7 +633,7 @@ PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS 
 /*@
     MatSchurComplementSetAinvType - set the type of approximation used for the inverse of the (0,0) block used in forming Sp in `MatSchurComplementGetPmat()`
 
-    Not collective.
+    Not Collective
 
     Input Parameters:
 +   S        - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
@@ -655,7 +666,7 @@ PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType a
 /*@
     MatSchurComplementGetAinvType - get the type of approximation for the inverse of the (0,0) block used in forming Sp in `MatSchurComplementGetPmat()`
 
-    Not collective.
+    Not Collective
 
     Input Parameter:
 .   S      - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
@@ -686,7 +697,7 @@ PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *
     MatCreateSchurComplementPmat - create a preconditioning matrix for the Schur complement by explicitly assembling the sparse matrix
         Sp = A11 - A10 inv(DIAGFORM(A00)) A01
 
-    Collective on A00
+    Collective
 
     Input Parameters:
 +   A00      - the upper-left part of the original matrix A = [A00 A01; A10 A11]

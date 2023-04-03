@@ -29,14 +29,14 @@ PetscClassId MATLABENGINE_CLASSID = -1;
 .    -matlab_engine_host - hostname, machine to run the MATLAB engine on
 -    -info - print out all requests to MATLAB and all if its responses (for debugging)
 
+   Level: advanced
+
    Notes:
    If a host string is passed in, any MATLAB scripts that need to run in the
    engine must be available via MATLABPATH on that machine.
 
    One must `./configure` PETSc with  `--with-matlab [-with-matlab-dir=matlab_root_directory]` to
    use this capability
-
-   Level: advanced
 
 .seealso: `PetscMatlabEngineDestroy()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineGet()`,
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePrintOutput()`,
@@ -62,13 +62,13 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
 
   if (host) {
     PetscCall(PetscInfo(0, "Starting MATLAB engine on %s\n", host));
-    PetscCall(PetscStrcpy(buffer, "ssh "));
-    PetscCall(PetscStrcat(buffer, host));
-    PetscCall(PetscStrcat(buffer, " \""));
+    PetscCall(PetscStrncpy(buffer, "ssh ", sizeof(buffer)));
+    PetscCall(PetscStrlcat(buffer, host, sizeof(buffer)));
+    PetscCall(PetscStrlcat(buffer, " \"", sizeof(buffer)));
     PetscCall(PetscStrlcat(buffer, PETSC_MATLAB_COMMAND, sizeof(buffer)));
     if (!flg) PetscCall(PetscStrlcat(buffer, " -nodisplay ", sizeof(buffer)));
     PetscCall(PetscStrlcat(buffer, " -nosplash ", sizeof(buffer)));
-    PetscCall(PetscStrcat(buffer, "\""));
+    PetscCall(PetscStrlcat(buffer, "\"", sizeof(buffer)));
   } else {
     PetscCall(PetscStrncpy(buffer, PETSC_MATLAB_COMMAND, sizeof(buffer)));
     if (!flg) PetscCall(PetscStrlcat(buffer, " -nodisplay ", sizeof(buffer)));
@@ -95,7 +95,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  e  - the engine
 
    Level: advanced

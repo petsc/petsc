@@ -76,10 +76,10 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
 
 static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
-  PC_PATCH       *patch = (PC_PATCH *)vpatch;
-  DMLabel         ghost = NULL;
-  const PetscInt *leaves;
-  PetscInt        nleaves, pStart, pEnd, loc;
+  PC_PATCH       *patch   = (PC_PATCH *)vpatch;
+  DMLabel         ghost   = NULL;
+  const PetscInt *leaves  = NULL;
+  PetscInt        nleaves = 0, pStart, pEnd, loc;
   PetscBool       isFiredrake;
   PetscBool       flg;
   PetscInt        starSize;
@@ -579,22 +579,21 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 
   PCPatchSetComputeFunction - Set the callback used to compute patch residuals
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
-+ pc   - The PC
++ pc   - The `PC`
 . func - The callback
 - ctx  - The user context
 
-  Calling sequence of func:
-$   func (PC pc,PetscInt point,Vec x,Vec f,IS cellIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
-
-+  pc               - The PC
+  Calling sequence of `func`:
+$ PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
++  pc               - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  f                - The patch residual vector
 .  cellIS           - An array of the cell numbers
-.  n                - The size of dofsArray
+.  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
 -  ctx              - The user context
@@ -620,22 +619,21 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, Petsc
 
   PCPatchSetComputeFunctionInteriorFacets - Set the callback used to compute facet integrals for patch residuals
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
-+ pc   - The PC
++ pc   - The `PC`
 . func - The callback
 - ctx  - The user context
 
-  Calling sequence of func:
-$   func (PC pc,PetscInt point,Vec x,Vec f,IS facetIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
-
-+  pc               - The PC
+  Calling sequence of `func`:
+$  PetscErrorCode func(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
++  pc               - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  f                - The patch residual vector
 .  facetIS          - An array of the facet numbers
-.  n                - The size of dofsArray
+.  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
 -  ctx              - The user context
@@ -661,22 +659,21 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
 
   PCPatchSetComputeOperator - Set the callback used to compute patch matrices
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
-+ pc   - The PC
++ pc   - The `PC`
 . func - The callback
 - ctx  - The user context
 
-  Calling sequence of func:
-$   func (PC pc,PetscInt point,Vec x,Mat mat,IS facetIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
-
-+  pc               - The PC
+  Calling sequence of `func`:
+$ PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
++  pc               - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  mat              - The patch matrix
 .  cellIS           - An array of the cell numbers
-.  n                - The size of dofsArray
+.  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
 -  ctx              - The user context
@@ -702,22 +699,21 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
 
   PCPatchSetComputeOperatorInteriorFacets - Set the callback used to compute facet integrals for patch matrices
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
-+ pc   - The PC
++ pc   - The `PC`
 . func - The callback
 - ctx  - The user context
 
-  Calling sequence of func:
-$   func (PC pc,PetscInt point,Vec x,Mat mat,IS facetIS,PetscInt n,const PetscInt* dofsArray,const PetscInt* dofsArrayWithAll,void* ctx)
-
-+  pc               - The PC
+  Calling sequence of `func`:
+$  PetscErrorCode func(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt* dofsArray, const PetscInt* dofsArrayWithAll, void* ctx)
++  pc               - The `PC`
 .  point            - The point
 .  x                - The input solution (not used in linear problems)
 .  mat              - The patch matrix
 .  facetIS          - An array of the facet numbers
-.  n                - The size of dofsArray
+.  n                - The size of `dofsArray`
 .  dofsArray        - The dofmap for the dofs to be solved for
 .  dofsArrayWithAll - The dofmap for all dofs on the patch
 -  ctx              - The user context

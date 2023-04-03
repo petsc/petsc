@@ -1,6 +1,16 @@
-import sys, os
+# Author:  Lisandro Dalcin
+# Contact: dalcinl@gmail.com
+import os
+import sys
 import optparse
 import unittest
+
+__unittest = True
+
+components = [
+    'PETSc',
+]
+
 
 def getoptionparser():
     parser = optparse.OptionParser()
@@ -29,10 +39,6 @@ def getoptionparser():
     parser.add_option("--path", type="string",
                       action="append", dest="path", default=[],
                       help="prepend PATH to sys.path", metavar="PATH")
-    parser.add_option("--refleaks", type="int",
-                      action="store", dest="repeats", default=3,
-                      help="run tests REPEAT times in a loop to catch leaks",
-                      metavar="REPEAT")
     parser.add_option("--arch", type="string",
                       action="store", dest="arch", default=None,
                       help="use PETSC_ARCH",
@@ -45,11 +51,64 @@ def getoptionparser():
                       help="Do not use PETSc memory debugging")
     return parser
 
+
 def getbuilddir():
-    from distutils.util import get_platform
-    s = os.path.join("build", "lib.%s-%.3s" % (get_platform(), sys.version))
-    if hasattr(sys, 'gettotalrefcount'): s += '-pydebug'
-    return s
+    try:
+        try:
+            from setuptools.dist import Distribution
+        except ImportError:
+            from distutils.dist import Distribution
+        try:
+            from setuptools.command.build import build
+        except ImportError:
+            from distutils.command.build import build
+        cmd_obj = build(Distribution())
+        cmd_obj.finalize_options()
+        return cmd_obj.build_platlib
+    except Exception:
+        return None
+
+
+def getprocessorinfo():
+    try:
+        name = os.uname()[1]
+    except:
+        import platform
+        name = platform.uname()[1]
+    from petsc4py.PETSc import COMM_WORLD
+    rank = COMM_WORLD.getRank()
+    return (rank, name)
+
+
+def getlibraryinfo(name):
+    modname = "%s4py.%s" % (name.lower(), name)
+    module = __import__(modname, fromlist=[name])
+    (major, minor, micro), devel = module.Sys.getVersion(devel=True)
+    r = not devel
+    if r: release = 'release'
+    else: release = 'development'
+    arch = module.__arch__
+    return (
+        "%s %d.%d.%d %s (conf: '%s')" %
+        (name, major, minor, micro, release, arch)
+    )
+
+
+def getpythoninfo():
+    x, y, z = sys.version_info[:3]
+    return ("Python %d.%d.%d (%s)" % (x, y, z, sys.executable))
+
+
+def getpackageinfo(pkg):
+    try:
+        pkg = __import__(pkg)
+    except ImportError:
+        return None
+    name = pkg.__name__
+    version = pkg.__version__
+    path = pkg.__path__[0]
+    return ("%s %s (%s)" % (name, version, path))
+
 
 def setup_python(options):
     rootdir = os.path.dirname(os.path.dirname(__file__))
@@ -61,6 +120,7 @@ def setup_python(options):
         path.reverse()
         for p in path:
             sys.path.insert(0, p)
+
 
 def setup_unittest(options):
     from unittest import TestSuite
@@ -78,8 +138,9 @@ def setup_unittest(options):
         except: pass
     _WritelnDecorator.writeln = writeln
 
+
 def import_package(options, pkgname):
-    args = [ sys.argv[0] ]
+    args = [sys.argv[0]]
     if options.memdebug:
         args.append('-malloc')
         args.append('-malloc_debug')
@@ -88,48 +149,26 @@ def import_package(options, pkgname):
         args.append('-log_view')
     package = __import__(pkgname)
     package.init(args, arch=options.arch)
-    return package
 
-def getprocessorinfo():
-    try:
-        name = os.uname()[1]
-    except:
-        import platform
-        name = platform.uname()[1]
-    from petsc4py.PETSc import COMM_WORLD
-    rank = COMM_WORLD.getRank()
-    return (rank, name)
 
-def getlibraryinfo():
-    from petsc4py import PETSc
-    (major, minor, micro) = PETSc.Sys.getVersion()
-    r = PETSc.Sys.getVersionInfo()['release']
-    if r: release = 'release'
-    else: release = 'development'
-    arch = PETSc.__arch__
-    return ("PETSc %d.%d.%d %s (conf: '%s')"
-            % (major, minor, micro, release, arch) )
-
-def getpythoninfo():
-    x, y = sys.version_info[:2]
-    return ("Python %d.%d (%s)" % (x, y, sys.executable))
-
-def getpackageinfo(pkg):
-    return ("%s %s (%s)" % (pkg.__name__,
-                            pkg.__version__,
-                            pkg.__path__[0]))
-
-def writeln(message='', endl='\n'):
-    from petsc4py.PETSc import Sys
-    Sys.syncPrint(message, endl=endl, flush=True)
-
-def print_banner(options, package):
+def print_banner(options):
     r, n = getprocessorinfo()
-    fmt = "[%d@%s] %s"
+    prefix = "[%d@%s]" % (r, n)
+
+    def writeln(message='', endl='\n'):
+        if message is None:
+            return
+        from petsc4py.PETSc import Sys
+        message = "%s %s" % (prefix, message)
+        Sys.syncPrint(message, endl=endl, flush=True)
+
     if options.verbose:
-        writeln(fmt % (r, n, getpythoninfo()))
-        writeln(fmt % (r, n, getlibraryinfo()))
-        writeln(fmt % (r, n, getpackageinfo(package)))
+        writeln(getpythoninfo())
+        writeln(getpackageinfo('numpy'))
+        for entry in components:
+            writeln(getlibraryinfo(entry))
+            writeln(getpackageinfo('%s4py' % entry))
+
 
 def load_tests(options, args):
     from glob import glob
@@ -145,7 +184,8 @@ def load_tests(options, args):
     if options.patterns:
         testloader.testNamePatterns = [
             ('*%s*' % p) if ('*' not in p) else p
-            for p in options.patterns]
+            for p in options.patterns
+        ]
     include = exclude = None
     if options.include:
         include = re.compile('|'.join(options.include)).search
@@ -169,6 +209,7 @@ def load_tests(options, args):
             testsuite.addTests(cases)
     return testsuite
 
+
 def run_tests(options, testsuite, runner=None):
     if runner is None:
         runner = unittest.TextTestRunner(verbosity=options.verbose)
@@ -176,51 +217,30 @@ def run_tests(options, testsuite, runner=None):
     result = runner.run(testsuite)
     return result.wasSuccessful()
 
-def test_refleaks(options, args):
-    from sys import gettotalrefcount
-    from gc import collect
-    from copy import deepcopy
-    testsuite = load_tests(options, args)
-    class EmptyIO(object):
-        def write(self, *args):
-            pass
-    runner = unittest.TextTestRunner(stream=EmptyIO(), verbosity=0)
-    rank, name = getprocessorinfo()
-    r1 = r2 = 0
-    repeats = options.repeats
-    while repeats:
-        collect()
-        r1 = gettotalrefcount()
-        run_tests(options, deepcopy(testsuite), runner)
-        collect()
-        r2 = gettotalrefcount()
-        leaks = r2-r1
-        if leaks and repeats < options.repeats:
-            writeln('[%d@%s] refleaks:  (%d - %d) --> %d'
-                    % (rank, name, r2, r1, leaks))
-        repeats -= 1
+
 
 def abort(code=1):
     os.abort()
 
+
 def shutdown(success):
     pass
 
+
 def main(args=None):
-    pkgname = 'petsc4py'
+    pkgname = '%s4py' % components[-1].lower()
     parser = getoptionparser()
     (options, args) = parser.parse_args(args)
     setup_python(options)
     setup_unittest(options)
-    package = import_package(options, pkgname)
-    print_banner(options, package)
+    import_package(options, pkgname)
+    print_banner(options)
     testsuite = load_tests(options, args)
     success = run_tests(options, testsuite)
     if not success and options.failfast: abort()
-    if success and hasattr(sys, 'gettotalrefcount'):
-        test_refleaks(options, args)
     shutdown(success)
     return not success
+
 
 if __name__ == '__main__':
     import sys

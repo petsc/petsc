@@ -7,7 +7,7 @@
 
     Collective; No Fortran Support
 
-    Input Parameters:
+    Input Parameter:
 .   comm - the MPI communicator
 
     Output Parameter:
@@ -16,12 +16,12 @@
     Options Database Keys:
 +   -saws_port <port number> - port number where you are running SAWs client
 .   -xxx_view saws - publish the object xxx
--   -xxx_saws_block - blocks the program at the end of a critical point (for KSP and SNES it is the end of a solve) until
+-   -xxx_saws_block - blocks the program at the end of a critical point (for `KSP` and `SNES` it is the end of a solve) until
                     the user unblocks the problem with an external tool that access the object with SAWS
 
     Level: advanced
 
-    Note:
+    Notes:
     Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the SAWs viewer allows
     one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
     `PetscObjectSAWsViewOff()`.

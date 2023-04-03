@@ -1,33 +1,33 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 
 /*@C
-   VecTaggerCreate - create a Vec tagger context.  This object is used to control the tagging/selection of index sets
+   VecTaggerCreate - create a `VecTagger` context.  This object is used to control the tagging/selection of index sets
    based on the values in a vector.  This is used, for example, in adaptive simulations when aspects are selected for
    refinement or coarsening.  The primary intent is that the selected index sets are based purely on the values in the
    vector, though implementations that do not follow this intent are possible.
 
-   Once a VecTagger is created (VecTaggerCreate()), optionally modified by options (VecTaggerSetFromOptions()), and
-   set up (VecTaggerSetUp()), it is applied to vectors with VecTaggerComputeIS() to comute the selected index sets.
+   Once a `VecTagger` is created (`VecTaggerCreate()`), optionally modified by options (`VecTaggerSetFromOptions()`), and
+   set up (`VecTaggerSetUp()`), it is applied to vectors with `VecTaggerComputeIS()` to compute the selected index sets.
 
    In many cases, the selection criteria for an index is whether the corresponding value falls within a collection of
-   boxes: for this common case, VecTaggerCreateBoxes() can also be used to determine those boxes.
+   boxes: for this common case, `VecTaggerCreateBoxes()` can also be used to determine those boxes.
 
-   Provided implementations support tagging based on a box/interval of values (VECTAGGERABSOLUTE), based on a box of
-   values of relative to the range of values present in the vector (VECTAGGERRELATIVE), based on where values fall in
-   the cumulative distribution of values in the vector (VECTAGGERCDF), and based on unions (VECTAGGEROR) or
-   intersections (VECTAGGERAND) of other criteria.
+   Provided implementations support tagging based on a box/interval of values (`VECTAGGERABSOLUTE`), based on a box of
+   values of relative to the range of values present in the vector (`VECTAGGERRELATIVE`), based on where values fall in
+   the cumulative distribution of values in the vector (`VECTAGGERCDF`), and based on unions (`VECTAGGEROR`) or
+   intersections (`VECTAGGERAND`) of other criteria.
 
    Collective
 
    Input Parameter:
-.  comm - communicator on which the vec tagger will operate
+.  comm - communicator on which the `VecTagger` will operate
 
    Output Parameter:
 .  tagger - new Vec tagger context
 
    Level: advanced
 
-.seealso: `VecTaggerSetBlockSize()`, `VecTaggerSetFromOptions()`, `VecTaggerSetUp()`, `VecTaggerComputeIS()`, `VecTaggerComputeBoxes()`, `VecTaggerDestroy()`
+.seealso: `VecTagger`, `VecTaggerSetBlockSize()`, `VecTaggerSetFromOptions()`, `VecTaggerSetUp()`, `VecTaggerComputeIS()`, `VecTaggerComputeBoxes()`, `VecTaggerDestroy()`
 @*/
 PetscErrorCode VecTaggerCreate(MPI_Comm comm, VecTagger *tagger)
 {
@@ -50,25 +50,25 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm, VecTagger *tagger)
 /*@C
    VecTaggerSetType - set the Vec tagger implementation
 
-   Collective on VecTagger
+   Collective
 
    Input Parameters:
-+  tagger - the VecTagger context
++  tagger - the `VecTagger` context
 -  type - a known method
 
    Options Database Key:
 .  -vec_tagger_type <type> - Sets the method; use -help for a list
    of available methods (for instance, absolute, relative, cdf, or, and)
 
+  Level: advanced
+
    Notes:
    See "include/petscvec.h" for available methods (for instance)
-+    VECTAGGERABSOLUTE - tag based on a box of values
-.    VECTAGGERRELATIVE - tag based on a box relative to the range of values present in the vector
-.    VECTAGGERCDF      - tag based on a box in the cumulative distribution of values present in the vector
-.    VECTAGGEROR       - tag based on the union of a set of VecTagger contexts
--    VECTAGGERAND      - tag based on the intersection of a set of other VecTagger contexts
-
-  Level: advanced
++    `VECTAGGERABSOLUTE` - tag based on a box of values
+.    `VECTAGGERRELATIVE` - tag based on a box relative to the range of values present in the vector
+.    `VECTAGGERCDF`      - tag based on a box in the cumulative distribution of values present in the vector
+.    `VECTAGGEROR`       - tag based on the union of a set of `VecTagger` contexts
+-    `VECTAGGERAND`      - tag based on the intersection of a set of other `VecTagger` contexts
 
 .seealso: `VecTaggerType`, `VecTaggerCreate()`, `VecTagger`
 @*/
@@ -96,15 +96,15 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger, VecTaggerType type)
 }
 
 /*@C
-  VecTaggerGetType - Gets the VecTagger type name (as a string) from the VecTagger.
+  VecTaggerGetType - Gets the `VecTaggerType` name (as a string) from the `VecTagger`.
 
   Not Collective
 
   Input Parameter:
-. tagger  - The Vec tagger context
+. tagger  - The `VecTagger` context
 
   Output Parameter:
-. type - The VecTagger type name
+. type - The `VecTagger` type name
 
   Level: advanced
 
@@ -121,7 +121,7 @@ PetscErrorCode VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
 }
 
 /*@
-   VecTaggerDestroy - destroy a VecTagger context
+   VecTaggerDestroy - destroy a `VecTagger` context
 
    Collective
 
@@ -147,7 +147,7 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 }
 
 /*@
-   VecTaggerSetUp - set up a VecTagger context
+   VecTaggerSetUp - set up a `VecTagger` context
 
    Collective
 
@@ -169,7 +169,7 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 }
 
 /*@C
-   VecTaggerSetFromOptions - set VecTagger options using the options database
+   VecTaggerSetFromOptions - set `VecTagger` options using the options database
 
    Logically Collective
 
@@ -177,9 +177,9 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 .  tagger - vec tagger
 
    Options Database Keys:
-+  -vec_tagger_type       - implementation type, see VecTaggerSetType()
-.  -vec_tagger_block_size - set the block size, see VecTaggerSetBlockSize()
--  -vec_tagger_invert     - invert the index set returned by VecTaggerComputeIS()
++  -vec_tagger_type       - implementation type, see `VecTaggerSetType()`
+.  -vec_tagger_block_size - set the block size, see `VecTaggerSetBlockSize()`
+-  -vec_tagger_invert     - invert the index set returned by `VecTaggerComputeIS()`
 
    Level: advanced
 
@@ -206,7 +206,7 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 }
 
 /*@C
-   VecTaggerSetBlockSize - block size of the set of indices returned by VecTaggerComputeIS().  Values greater than one
+   VecTaggerSetBlockSize - block size of the set of indices returned by `VecTaggerComputeIS()`.  Values greater than one
    are useful when there are multiple criteria for determining which indices to include in the set.  For example,
    consider adaptive mesh refinement in a multiphysics problem, with metrics of solution quality for multiple fields
    measure on each cell.  The size of the vector will be [numCells * numFields]; the VecTagger block size should be
@@ -215,7 +215,7 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 
    Note that the block size of the vector does not have to match.
 
-   Note also that the index set created in VecTaggerComputeIS() has block size: it is an index set over the list of
+   Note also that the index set created in `VecTaggerComputeIS()` has block size: it is an index set over the list of
    items that the vector refers to, not to the vector itself.
 
    Logically Collective
@@ -238,7 +238,7 @@ PetscErrorCode VecTaggerSetBlockSize(VecTagger tagger, PetscInt blocksize)
 }
 
 /*@C
-   VecTaggerGetBlockSize - get the block size of the indices created by VecTaggerComputeIS().
+   VecTaggerGetBlockSize - get the block size of the indices created by `VecTaggerComputeIS()`.
 
    Logically Collective
 
@@ -262,7 +262,7 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 }
 
 /*@C
-   VecTaggerSetInvert - If the tagged index sets are based on boxes that can be returned by VecTaggerComputeBoxes(),
+   VecTaggerSetInvert - If the tagged index sets are based on boxes that can be returned by `VecTaggerComputeBoxes()`,
    then this option inverts values used to compute the IS, i.e., from being in the union of the boxes to being in the
    intersection of their exteriors.
 
@@ -270,7 +270,7 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 
    Input Parameters:
 +  tagger - vec tagger
--  invert - PETSC_TRUE to invert, PETSC_FALSE to use the indices as is
+-  invert - `PETSC_TRUE` to invert, `PETSC_FALSE` to use the indices as is
 
    Level: advanced
 
@@ -286,7 +286,7 @@ PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
 }
 
 /*@C
-   VecTaggerGetInvert - get whether the set of indices returned by VecTaggerComputeIS() are inverted
+   VecTaggerGetInvert - get whether the set of indices returned by `VecTaggerComputeIS()` are inverted
 
    Logically Collective
 
@@ -294,7 +294,7 @@ PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
 .  tagger - vec tagger
 
    Output Parameter:
-.  invert - PETSC_TRUE to invert, PETSC_FALSE to use the indices as is
+.  invert - `PETSC_TRUE` to invert, `PETSC_FALSE` to use the indices as is
 
    Level: advanced
 
@@ -310,13 +310,13 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 }
 
 /*@C
-   VecTaggerView - view a VecTagger context
+   VecTaggerView - view a `VecTagger` context
 
    Collective
 
    Input Parameters:
 +  tagger - vec tagger
--  viewer - viewer to display tagger, for example PETSC_VIEWER_STDOUT_WORLD
+-  viewer - viewer to display tagger, for example `PETSC_VIEWER_STDOUT_WORLD`
 
    Level: advanced
 
@@ -345,23 +345,23 @@ PetscErrorCode VecTaggerView(VecTagger tagger, PetscViewer viewer)
 
 /*@C
    VecTaggerComputeBoxes - If the tagged index set can be summarized as a list of boxes of values, returns that list, otherwise returns
-         in listed PETSC_FALSE
+         in listed `PETSC_FALSE`
 
    Collective on VecTagger
 
    Input Parameters:
-+  tagger - the VecTagger context
++  tagger - the `VecTagger` context
 -  vec - the vec to tag
 
    Output Parameters:
 +  numBoxes - the number of boxes in the tag definition
-.  boxes - a newly allocated list of boxes.  This is a flat array of (BlockSize * numBoxes) pairs that the user can free with PetscFree().
--  listed - PETSC_TRUE if a list was created, pass in NULL if not needed
-
-   Notes:
-     A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
+.  boxes - a newly allocated list of boxes.  This is a flat array of (BlockSize * `numBoxe`s) pairs that the user can free with `PetscFree()`.
+-  listed - `PETSC_TRUE` if a list was created, pass in `NULL` if not needed
 
    Level: advanced
+
+   Note:
+     A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see `VecTaggerSetInvert()`/`VecTaggerGetInvert()`), in which case a value is tagged if it is in none of the boxes.
 
 .seealso: `VecTaggerComputeIS()`, `VecTagger`, `VecTaggerCreate()`
 @*/
@@ -385,17 +385,17 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger, Vec vec, PetscInt *numBox
 }
 
 /*@C
-   VecTaggerComputeIS - Use a VecTagger context to tag a set of indices based on a vector's values
+   VecTaggerComputeIS - Use a `VecTagger` context to tag a set of indices based on a vector's values
 
-   Collective on VecTagger
+   Collective
 
    Input Parameters:
-+  tagger - the VecTagger context
++  tagger - the `VecTagger` context
 -  vec - the vec to tag
 
    Output Parameters:
-+  IS - a list of the indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is VecGetLocalSize() and bs is VecTaggerGetBlockSize().
--  listed - routine was able to compute the IS, pass in NULL if not needed
++  IS - a list of the indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is `VecGetLocalSize()` and bs is `VecTaggerGetBlockSize()`.
+-  listed - routine was able to compute the `IS`, pass in `NULL` if not needed
 
    Level: advanced
 

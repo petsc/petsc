@@ -3,12 +3,10 @@
 BuildSystem
 -----------
 
-BuildSystem is used by PETSc for configuration
-testing. Written solely in Python, it
-consists of a number of objects running in a coordinated fashion. Below
-we describe the main objects involved, and the organization of both the
-files and in-memory objects during the configure run. However, first we
-discuss the configure and build process at a higher level.
+``BuildSystem`` is used for configuring PETSc before it gets compiled.
+It is much like `GNU Autoconf (configure) <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.71/html_node/index.html#Top>`__
+but written in Python especially for PETSc.
+
 
 What is a build?
 ~~~~~~~~~~~~~~~~
@@ -48,8 +46,7 @@ Autoconf, CMake, and SCons.
 Why use PETSc BuildSystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PETSc's fully functional configure model ``BuildSystem`` has also been used as the
-configuration tool for other open sources packages. As more than a few configuration tools
+As several configuration tools
 currently exist, it is instructive to consider why PETSc would choose to create another
 from scratch. Below we list features and design considerations which lead us to prefer
 ``BuildSystem`` to the alternatives.
@@ -57,15 +54,15 @@ from scratch. Below we list features and design considerations which lead us to 
 Namespacing
 ^^^^^^^^^^^
 
-BuildSystem wraps collections of related tests in Python modules, which also hold
+``BuildSystem`` wraps collections of related tests in Python modules, which also hold
 the test results. Thus results are accessed using normal Python
 namespacing. As rudimentary as this sounds, no namespacing beyond the
-use of variable name prefixes is present in SCons, CMake, or Autoconf.
+use of variable name prefixes is present in Autoconf, CMake, and SCons.
 Instead, a flat namespace is used, mirroring the situation in C. This
 tendency appears again when composing command lines for external tools,
 such as the compiler and linker. In the traditional configure tools,
 options are aggregated in a single bucket variable, such as ``INCLUDE``
-or ``LIBS``, whereas in BuildSystem one can trace the provenance of a flag before it
+or ``LIBS``, whereas in ``BuildSystem`` one can trace the provenance of a flag before it
 is added to the command line. CMake also makes the unfortunate decision
 to force all link options to resolve to full paths, which causes havoc
 with compiler-private libraries.
@@ -73,7 +70,7 @@ with compiler-private libraries.
 Explicit control flow
 ^^^^^^^^^^^^^^^^^^^^^
 
-The BuildSystem configure modules mentioned above, containing one ``Configure`` object
+The ``BuildSystem`` configure modules mentioned above, containing one ``Configure`` object
 per module, are organized explicitly into a directed acyclic graph
 (DAG). The user indicates dependence, an *edge* in the dependence graph,
 with a single call, ``requires('path.to.other.test', self)``, which not
@@ -84,7 +81,7 @@ dependency, achieving test and result encapsulation simply.
 Multi-language tests
 ^^^^^^^^^^^^^^^^^^^^
 
-BuildSystem maintains an explicit language stack, so that the current language
+``BuildSystem`` maintains an explicit language stack, so that the current language
 can be manipulated by the test environment. A compile or link can be run
 using any language, complete with the proper compilers, flags,
 libraries, etc., with a single call. This automation is crucial
@@ -92,7 +89,7 @@ for cross-language tests, which are thinly supported in current
 tools. In fact, the design of these tools inhibits this kind of check.
 The ``check_function_exists()`` call in Autoconf and CMake looks only
 for the presence of a particular symbol in a library, and fails in C++
-and on Microsoft Windows, whereas the equivalent BuildSystem test can also take a
+and on Microsoft Windows, whereas the equivalent ``BuildSystem`` test can also take a
 declaration. The ``try_compile()`` test in Autoconf and CMake requires
 the entire list of libraries be present in the ``LIBS`` variable,
 providing no good way to obtain libraries from other tests in a modular
@@ -103,12 +100,12 @@ straightforward method exists to add this dependency.
 Subpackages
 ^^^^^^^^^^^
 
-The most complicated, yet perhaps most useful, part of BuildSystem is
+The most complicated, yet perhaps most useful, part of ``BuildSystem`` is
 support for dependent packages. It provides an object scaffolding for
 including a 3rd party package (more than 100 are now available) so that
 PETSc downloads, builds, and tests the package for inclusion. The native
 configure and build system for the package is used, and special support
-exists for GNU and CMake packages. No similar system exists in the other
+exists for Autoconf and CMake packages. No similar system exists in the other
 tools, which rely on static declarations, such as ``pkg-config`` or
 ``FindPackage.cmake`` files, that are not tested and often become
 obsolete. They also require that any dependent packages use the same
@@ -120,7 +117,7 @@ Batch environments
 Most systems, such as Autoconf and CMake, do not actually run tests in a
 batch environment, but rather require a direct specification, in CMake a
 "platform file". This requires a human expert to write and maintain the
-platform file. Alternatively, BuildSystem submits a dynamically
+platform file. Alternatively, ``BuildSystem`` submits a dynamically
 generated set of tests to the batch system, enabling automatic
 cross-configuration and cross-compilation.
 
@@ -144,7 +141,7 @@ Concision
 The cognitive load is usually larger for larger code bases,
 and our observation is that the addition of logic to Autoconf
 and CMake is often quite cumbersome and verbose as they do not employ a modern,
-higher level language. Although BuildSystem itself is not widely used,
+higher level language. Although ``BuildSystem`` itself is not widely used,
 it has the advantage of being written in a widely-understood, high-level
 language.
 
@@ -152,9 +149,9 @@ language.
 High level organization
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-A minimal BuildSystem setup consists of a ``config`` directory off the
+A minimal ``BuildSystem`` setup consists of a ``config`` directory off the
 package root, which contains all the Python necessary to run (in addition
-to the BuildSystem source). At minimum, the ``config`` directory contains
+to the ``BuildSystem`` source). At minimum, the ``config`` directory contains
 ``configure.py``, which is executed to run the configure process, and a
 module for the package itself. For example, PETSc contains
 ``config/PETSc/petsc.py``. It is also common to include a top level
@@ -248,7 +245,7 @@ level options can be defined in the ``setupHelp()`` method,
      help.addArgument(self.Project, '-with-dynamic-loading', nargs.ArgBool(None, 0, 'Make libraries dynamic'))
      return
 
-This uses the BuildSystem help facility that is used to define options
+This uses the ``BuildSystem`` help facility that is used to define options
 for all configure modules. The first argument groups these options into
 a section named for the package. The second task is to build the tree of
 modules for the configure run, using the ``setupDependencies()`` method.

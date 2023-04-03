@@ -899,16 +899,15 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
 /*@
   DMPlexSetIsoperiodicFaceSF - Express periodicity from an existing mesh
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + dm - The `DMPLEX` on which to set periodicity
-- face_sf - SF in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
+- face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
 
-  Notes:
-
+  Note:
   One can use `-dm_plex_shape zbox` to use this mode of periodicity, wherein the periodic points are distinct both globally
   and locally, but are paired when creating a global dof space.
 
@@ -935,13 +934,13 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
 /*@
   DMPlexGetIsoperiodicFaceSF - Obtain periodicity for a mesh
 
-  Logically collective
+  Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The `DMPLEX` for which to obtain periodic relation
 
-  Output Parameters:
-. face_sf - SF in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
+  Output Parameter:
+. face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
 
@@ -962,20 +961,24 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
   Logically Collective
 
   Input Arguments:
-+ dm - `DMPlex` that has been configured with `DMPlexSetIsoperiodicFaceSF()`
++ dm - `DMPLEX` that has been configured with `DMPlexSetIsoperiodicFaceSF()`
 - t - 4x4 affine transformation basis.
+
+  Level: advanced
 
   Notes:
   Affine transforms are 4x4 matrices in which the leading 3x3 block expresses a rotation (or identity for no rotation),
   the last column contains a translation vector, and the bottom row is all zero except the last entry, which must always
   be 1. This representation is common in geometric modeling and allows affine transformations to be composed using
-  simple matrix mulitplication.
+  simple matrix multiplication.
 
   Although the interface accepts a general affine transform, only affine translation is supported at present.
 
-  Developer Notes:
+  Developer Note:
   This interface should be replaced by making BasisTransform public, expanding it to support affine representations, and
   adding GPU implementations to apply the G2L/L2G transforms.
+
+.seealso: [](chapter_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
 @*/
 PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, const PetscScalar t[])
 {

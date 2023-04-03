@@ -8,7 +8,9 @@ AlignConsecutiveBitFields: Consecutive
 AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: DontAlign
 AlignOperands: AlignAfterOperator
-AlignTrailingComments: true
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
 AllowAllArgumentsOnNextLine: true
 AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
@@ -157,11 +159,23 @@ StatementMacros:
   - PETSC_NOEXCEPT_AUTO_RETURNS
   - PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS
   - PETSC_UNUSED
+  - PetscPragmaOMP
+  - PetscPragmaSIMD
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN_
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_
+  - _Pragma
 TabWidth: 2
 UseCRLF: false
 UseTab: Never
 WhitespaceSensitiveMacros:
   - PetscStringize
   - PetscStringize_
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN_
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END
+  - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_
+  - _Pragma
 TypenameMacros:
   - khash_t

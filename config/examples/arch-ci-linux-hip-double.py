@@ -30,6 +30,7 @@ if __name__ == '__main__':
     '--download-magma',
     '--with-magma-fortran-bindings=0',
     '--with-strict-petscerrorcode',
+    #'--with-coverage',
   ]
 
   configure.petsc_configure(configure_options)

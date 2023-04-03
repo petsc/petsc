@@ -27,6 +27,7 @@
 #define SNESNCGType PetscEnum
 #define SNESNGMRESRestartType PetscEnum
 #define SNESNGMRESSelectType PetscEnum
+#define SNESNewtonTRFallbackType PetscEnum
 
 !
 !  SNESType
@@ -52,7 +53,7 @@
 !
 
 #define SNESLINESEARCHBASIC     'basic'
-#define   SNESLINESEARCHNONE      'none'
+#define SNESLINESEARCHNONE      'none'
 #define SNESLINESEARCHBT        'bt'
 #define SNESLINESEARCHL2        'l2'
 #define SNESLINESEARCHCP        'cp'

@@ -1,0 +1,10 @@
+  Mumps row pivot threshold = 1e-06
+  Mumps determinant = (0.874416, 0.) * 2^4238
+  Mumps num of null pivots detected = 6
+  Mumps row with null pivots is = 0
+  Mumps row with null pivots is = 833
+  Mumps row with null pivots is = 834
+  Mumps row with null pivots is = 1666
+  Mumps row with null pivots is = 1667
+  Mumps row with null pivots is = 2499
+Norm of error 12.2482 iterations 1

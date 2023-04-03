@@ -836,19 +836,18 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 .  bs - size of each block in matrix
 .  nz - number of nonzeros per block row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various block rows
-         (possibly different for each row) or NULL
-
-   Notes:
-     If nnz is given then nz is ignored
-
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz = `PETSC_DEFAULT` and nnz = NULL for PETSc to control dynamic memory
-   allocation.  For large problems you MUST preallocate memory or you
-   will get TERRIBLE performance, see the users' manual chapter on matrices.
+         (possibly different for each row) or `NULL`
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
+   Notes:
+     If `nnz` is given then `nz` is ignored
+
+   Specify the preallocated storage with either `nz` or `nnz` (not both).
+   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
+   allocation.
+
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
 @*/
 PetscErrorCode MatBlockMatSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[])
 {
@@ -883,7 +882,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, bs, NULL, &bmat->middle));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, bs, &bmat->left));
 
-  if (!bmat->imax) { PetscCall(PetscMalloc2(A->rmap->n, &bmat->imax, A->rmap->n, &bmat->ilen)); }
+  if (!bmat->imax) PetscCall(PetscMalloc2(A->rmap->n, &bmat->imax, A->rmap->n, &bmat->ilen));
   if (PetscLikely(nnz)) {
     nz = 0;
     for (i = 0; i < A->rmap->n / A->rmap->bs; i++) {
@@ -917,7 +916,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
 
   Level: advanced
 
-.seealso: `MatCreateBlockMat()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateBlockMat()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
@@ -948,7 +947,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 .  n  - number of columns
 .  bs - size of each submatrix
 .  nz  - expected maximum number of nonzero blocks in row (use `PETSC_DEFAULT` if not known)
--  nnz - expected number of nonzers per block row if known (use NULL otherwise)
+-  nnz - expected number of nonzers per block row if known (use `NULL` otherwise)
 
    Output Parameter:
 .  A - the matrix
@@ -964,7 +963,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
    Developer Note:
    I don't like the name, it is not `MATNESTMAT`
 
-.seealso: `MATBLOCKMAT`, `MatCreateNest()`
+.seealso: [](chapter_matrices), `Mat`, `MATBLOCKMAT`, `MatCreateNest()`
 @*/
 PetscErrorCode MatCreateBlockMat(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt bs, PetscInt nz, PetscInt *nnz, Mat *A)
 {

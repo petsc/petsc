@@ -7,15 +7,15 @@
 /*@
   DMPlexCreateProcessSF - Create an `PetscSF` which just has process connectivity
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm      - The `DM`
 - sfPoint - The `PetscSF` which encodes point connectivity
 
   Output Parameters:
-+ processRanks - A list of process neighbors, or NULL
-- sfProcess    - An `PetscSF` encoding the process connectivity, or NULL
++ processRanks - A list of process neighbors, or `NULL`
+- sfProcess    - An `PetscSF` encoding the process connectivity, or `NULL`
 
   Level: developer
 
@@ -65,7 +65,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
 /*@
   DMPlexCreateCoarsePointIS - Creates an `IS` covering the coarse `DM` chart with the fine points as data
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - The coarse `DM`
@@ -246,8 +246,8 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 + dm - The `DM`
 - refinementFunc - Function giving the maximum cell volume in the refined mesh
 
-  Calling Sequence of refinementFunc:
-$ refinementFunc(coords, limit)
+  Calling Sequence of `refinementFunc`:
+$ PetscErrorCode refinementFunc(const PetscReal coords[], PetscReal *limit)
 + coords - Coordinates of the current point, usually a cell centroid
 - limit  - The maximum cell volume for a cell containing this point
 
@@ -269,13 +269,13 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
   DMPlexGetRefinementFunction - Get the function giving the maximum cell volume for refinement
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
 . refinementFunc - Function giving the maximum cell volume in the refined mesh
 
-  Calling Sequence of refinementFunc:
-$  refinementFunc(coords, limit)
+  Calling Sequence of `refinementFunc`:
+$  refinementFunc(const PetscReal coords[], PetscReal *limit)
 + coords - Coordinates of the current point, usually a cell centroid
 - limit  - The maximum cell volume for a cell containing this point
 

@@ -142,6 +142,7 @@ PC Object: 1 MPI process
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 1 MPI process
       type: chebyshev
+        Chebyshev polynomial of first kind
         eigenvalue targets used: min 0.099124, max 1.09036
         eigenvalues estimated via gmres: min 0.0171844, max 0.99124
         eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
@@ -172,6 +173,7 @@ PC Object: 1 MPI process
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 1 MPI process
       type: chebyshev
+        Chebyshev polynomial of first kind
         eigenvalue targets used: min 0.0977779, max 1.07556
         eigenvalues estimated via gmres: min 0.00339269, max 0.977779
         eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]

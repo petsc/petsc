@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version          = '4.1'
+    self.version          = '4.1.1'
     self.download         = ['https://github.com/pmodels/mpich/releases/download/v'+self.version+'/mpich-'+self.version+'.tar.gz',
                              'https://www.mpich.org/static/downloads/'+self.version+'/mpich-'+self.version+'.tar.gz', # does not always work from Python? So add in ftp.mcs URL below
                              'https://ftp.mcs.anl.gov/pub/petsc/externalpackages'+'/mpich-'+self.version+'.tar.gz']
@@ -66,7 +66,9 @@ class Configure(config.package.GNUPackage):
       mpich_device = 'ch3:nemesis'
     if self.cuda.found:
       args.append('--with-cuda='+self.cuda.cudaDir)
-      args.append('--with-cuda-sm='+self.cuda.cudaArch) # only for this arch; default is for all, resulting in a very large mpich library or even failures at mpich building
+      if not (self.cuda.cudaArch == 'all' or self.cuda.cudaArchIsVersionList()):
+        raise RuntimeError('MPICH not known to support cuda arch string '+self.cuda.cudaArch)
+      args.append('--with-cuda-sm='+self.cuda.cudaArch)
       mpich_device = 'ch4:ucx'
     elif self.hip.found:
       args.append('--with-hip='+self.hip.hipDir)
@@ -100,4 +102,3 @@ class Configure(config.package.GNUPackage):
 
   def configure(self):
     return config.package.Package.configure(self)
-

@@ -137,7 +137,7 @@ PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps maps[], PetscInt num_g
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal a_nu_alpha[], PetscReal a_nu_beta[], PetscReal a_invMass[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
+PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal a_nu_alpha[], PetscReal a_nu_beta[], PetscReal a_invMass[], PetscReal a_lambdas[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
 {
   PetscReal       *BB, *DD;
   PetscTabulation *Tf;
@@ -175,6 +175,9 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
     const Kokkos::View<PetscReal *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_invMass(a_invMass, Nftot);
     auto                                                                                                            invMass = new Kokkos::View<PetscReal *, Kokkos::LayoutLeft>("invMass", Nftot);
     SData_d->invMass                                                                                                        = static_cast<void *>(invMass);
+    const Kokkos::View<PetscReal *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_lambdas(a_lambdas, LANDAU_MAX_GRIDS * LANDAU_MAX_GRIDS);
+    auto                                                                                                            lambdas = new Kokkos::View<PetscReal *, Kokkos::LayoutLeft>("lambdas", LANDAU_MAX_GRIDS * LANDAU_MAX_GRIDS);
+    SData_d->lambdas                                                                                                        = static_cast<void *>(lambdas);
     const Kokkos::View<PetscReal *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_BB(BB, Nq * Nb);
     auto                                                                                                            B = new Kokkos::View<PetscReal *, Kokkos::LayoutLeft>("B", Nq * Nb);
     SData_d->B                                                                                                        = static_cast<void *>(B);
@@ -197,6 +200,7 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
     Kokkos::deep_copy(*alpha, h_alpha);
     Kokkos::deep_copy(*beta, h_beta);
     Kokkos::deep_copy(*invMass, h_invMass);
+    Kokkos::deep_copy(*lambdas, h_lambdas);
     Kokkos::deep_copy(*B, h_BB);
     Kokkos::deep_copy(*D, h_DD);
     Kokkos::deep_copy(*invJ, h_invJ);
@@ -282,6 +286,8 @@ PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *SData_d)
     delete beta;
     auto invMass = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->invMass);
     delete invMass;
+    auto lambdas = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->lambdas);
+    delete lambdas;
     auto B = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->B);
     delete B;
     auto D = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->D);
@@ -434,6 +440,8 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   const PetscReal           *d_beta       = d_beta_k->data();
   auto                       d_invMass_k  = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->invMass);
   const PetscReal           *d_invMass    = d_invMass_k->data();
+  auto                       d_lambdas_k  = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->lambdas);
+  const PetscReal           *d_lambdas    = d_lambdas_k->data();
   auto                       d_B_k        = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->B);
   const PetscReal           *d_BB         = d_B_k->data();
   auto                       d_D_k        = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->D);
@@ -616,14 +624,15 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[8], 0, 0, 0, 0));
     // Jacobian
-    int         maximum_shared_mem_size = 64000;
+    size_t      maximum_shared_mem_size = 64000;
     PetscDevice device;
 
     PetscCall(PetscDeviceGetDefault_Internal(&device));
     PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
-    const int jac_scr_bytes    = 2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
+    size_t    jac_scr_bytes    = (size_t)2 * (g2_scr_t::shmem_size(dim, Nf_max, Nq) + g3_scr_t::shmem_size(dim, dim, Nf_max, Nq));
     const int jac_shared_level = (jac_scr_bytes > maximum_shared_mem_size) ? 1 : KOKKOS_SHARED_LEVEL;
-    auto      jac_lambda       = KOKKOS_LAMBDA(const team_member team)
+    // device function/lambda
+    auto jac_lambda = KOKKOS_LAMBDA(const team_member team)
     {
       const PetscInt b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank() % b_Nelem, b_id = team.league_rank() / b_Nelem;
       // find my grid
@@ -652,7 +661,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
             [=](const int &ipidx, landau_inner_red::TensorValueType &ggg) {
               const PetscReal wi = d_w[ipidx], x = d_x[ipidx], y = d_y[ipidx];
               PetscReal       temp1[3] = {0, 0, 0}, temp2 = 0;
-              PetscInt        fieldA, d2, d3, f_off_r, grid_r, ipidx_g, nip_loc_r, loc_Nf_r;
+              PetscInt        fieldB, d2, d3, f_off_r, grid_r, ipidx_g, nip_loc_r, loc_Nf_r;
   #if LANDAU_DIM == 2
               PetscReal       Ud[2][2], Uk[2][2], mask = (PetscAbs(vj[0] - x) < 100 * PETSC_SQRT_MACHINE_EPSILON && PetscAbs(vj[1] - y) < 100 * PETSC_SQRT_MACHINE_EPSILON) ? 0. : 1.;
               LandauTensor2D(vj, x, y, Ud, Uk, mask);
@@ -666,14 +675,15 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
               ipidx_g   = ipidx - d_ip_offset[grid_r];
               nip_loc_r = d_numCells[grid_r] * Nq;
               loc_Nf_r  = d_species_offset[grid_r + 1] - d_species_offset[grid_r];
-              for (fieldA = 0; fieldA < loc_Nf_r; ++fieldA) {
-                const PetscInt idx = d_ipf_offset[grid_r] + fieldA * nip_loc_r + ipidx_g;
-                temp1[0] += d_fdf_k(b_id, 1, idx) * d_beta[fieldA + f_off_r] * d_invMass[fieldA + f_off_r];
-                temp1[1] += d_fdf_k(b_id, 2, idx) * d_beta[fieldA + f_off_r] * d_invMass[fieldA + f_off_r];
+              for (fieldB = 0; fieldB < loc_Nf_r; ++fieldB) { // fieldB is \beta  d_lambdas[grid][grid_r]
+                const PetscInt  idx = d_ipf_offset[grid_r] + fieldB * nip_loc_r + ipidx_g;
+                const PetscReal ff1 = d_beta[fieldB + f_off_r] * d_lambdas[LANDAU_MAX_GRIDS * grid + grid_r], ff2 = d_invMass[fieldB + f_off_r] * ff1;
+                temp1[0] += d_fdf_k(b_id, 1, idx) * ff2;
+                temp1[1] += d_fdf_k(b_id, 2, idx) * ff2;
   #if LANDAU_DIM == 3
-                temp1[2] += d_fdf_k(b_id, 3, idx) * d_beta[fieldA + f_off_r] * d_invMass[fieldA + f_off_r];
+                temp1[2] += d_fdf_k(b_id, 3, idx) * ff2;
   #endif
-                temp2 += d_fdf_k(b_id, 0, idx) * d_beta[fieldA + f_off_r];
+                temp2 += d_fdf_k(b_id, 0, idx) * ff1;
               }
               temp1[0] *= wi;
               temp1[1] *= wi;
@@ -703,7 +713,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
             },
             Kokkos::Sum<landau_inner_red::TensorValueType>(gg_temp));
           // add alpha and put in gg2/3
-          Kokkos::parallel_for(Kokkos::ThreadVectorRange(team, (int)loc_Nf), [&](const int &fieldA) {
+          Kokkos::parallel_for(Kokkos::ThreadVectorRange(team, (int)loc_Nf), [&](const int &fieldA) { // \alpha
             PetscInt d2, d3;
             for (d2 = 0; d2 < dim; d2++) {
               gg2(d2, fieldA, myQi) = gg_temp.gg2[d2] * d_alpha[fieldA + f_off];
@@ -759,7 +769,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     };
     PetscCall(PetscLogEventBegin(events[4], 0, 0, 0, 0));
     PetscCall(PetscLogGpuTimeBegin());
-    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %s (max shared=%d), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", jac_scr_bytes, jac_shared_level == 0 ? "local" : "global", maximum_shared_mem_size, num_cells_batch * batch_sz, team_size, vector_size, nfaces, Nf_max));
+    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %zu bytes in level %s (max shared=%zu), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", jac_scr_bytes, jac_shared_level == 0 ? "local" : "global", maximum_shared_mem_size, num_cells_batch * batch_sz, team_size, vector_size, nfaces, Nf_max));
     Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, vector_size).set_scratch_size(jac_shared_level, Kokkos::PerTeam(jac_scr_bytes)), jac_lambda); // Kokkos::LaunchBounds<512,2>
     Kokkos::fence();
     PetscCall(PetscLogGpuTimeEnd());

@@ -16,6 +16,7 @@ configure_options = [
   '--with-shared-libraries=0',
   '--download-boost=1',
   '--download-eigen',
+  #'--with-coverage',
   '--with-strict-petscerrorcode=0',
   ]
 

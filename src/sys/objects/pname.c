@@ -83,7 +83,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  obj - the Petsc variable
          Thus must be cast with a (`PetscObject`), for example,
          `PetscObjectName`((`PetscObject`)mat,name);

@@ -1,169 +1,32 @@
-masses:        e= 9.109e-31; ions in proton mass units:    2.000e+00  4.000e+00 ...
-charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  1.800e+01
-n:             e:  1.000e+00                           i:  1.000e+00  1.000e-05
-thermal T (K): e= 5.802e+07 i= 5.802e+07  5.802e+06. v_0= 2.965e+07 ( 9.892e-02c) n_0= 1.000e+20 t_0= 6.470e-05, classical, Intuitive, 1 batched
-Domain radius (AMR levels) grid 0: par= 6.000e+00, perp= 4.000e+00 (2) , 1: par= 9.903e-02, perp= 6.602e-02 (1) 
-Using default Plex order for all matrices
-0) FormLandau 416 IPs, 26 cells total, Nb=16, Nq=16, dim=2, Tab: Nb=16 Nf=3 Np=16 cdim=2 N=369
-  0) species-0: charge density= -1.5820096580436e+01 z-momentum=  4.8735827201316e-19 energy=  1.1889177678596e+05
-  0) species-1: charge density=  1.5853033257714e+01 z-momentum=  2.3653476490190e-17 energy=  1.1862901228043e+05
-  0) species-2: charge density=  2.8579412251416e-03 z-momentum= -1.0258862975586e-21 energy=  7.2841859176711e-02
-	  0) Total: charge density=  3.5794618503341e-02, momentum=  2.4139808875906e-17, energy=  2.3752086190825e+05 (m_i[0]/m_e = 3670.94, 16 cells on electron grid)
-0 TS dt 0.1 time 0.
-    0 SNES Function norm 1.245699566474e-01 
-    1 SNES Function norm 1.038335066040e-03 
-    2 SNES Function norm 1.900649925611e-05 
-    3 SNES Function norm 7.386497837112e-07 
-    4 SNES Function norm 5.429800494560e-08 
-    5 SNES Function norm 4.134352110477e-09 
-    6 SNES Function norm 3.200697651934e-10 
-    7 SNES Function norm 2.479819161487e-11 
-    8 SNES Function norm 1.923707880676e-12 
-    9 SNES Function norm 1.493501892666e-13 
-  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 9
-    0 SNES Function norm 3.002154542504e-02 
-    1 SNES Function norm 1.813921649320e-04 
-    2 SNES Function norm 3.263445794338e-06 
-    3 SNES Function norm 1.130638598647e-07 
-    4 SNES Function norm 4.804970072294e-09 
-    5 SNES Function norm 2.080427629519e-10 
-    6 SNES Function norm 9.181795014659e-12 
-    7 SNES Function norm 4.053807656395e-13 
-  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 7
-    0 SNES Function norm 3.948352961340e-02 
-    1 SNES Function norm 2.538121227423e-04 
-    2 SNES Function norm 3.974269325617e-06 
-    3 SNES Function norm 1.161260550725e-07 
-    4 SNES Function norm 4.687688835057e-09 
-    5 SNES Function norm 1.981584822857e-10 
-    6 SNES Function norm 8.673375533933e-12 
-    7 SNES Function norm 3.808039972211e-13 
-  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 7
-1 TS dt 0.119865 time 0.1
-  1) species-0: charge density= -1.5820096580436e+01 z-momentum= -1.4995639138866e-19 energy=  1.1889180193216e+05
-  1) species-1: charge density=  1.5853033257714e+01 z-momentum=  2.6878950557034e-17 energy=  1.1862871334691e+05
-  1) species-2: charge density=  2.8579412251416e-03 z-momentum= -7.7747208632932e-22 energy=  3.4662917832662e-01
-	  1) Total: charge density=  3.5794618503337e-02, momentum=  2.6728216693559e-17, energy=  2.3752086190825e+05 (m_i[0]/m_e = 3670.94, 16 cells on electron grid)
-DM Object: single 1 MPI process
+masses:        e= 9.109e-31; ions in proton mass units:    2.000e+00  0.000e+00 ...
+charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  0.000e+00
+n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
+thermal T (K): e= 3.481e+06 i= 2.321e+06  0.000e+00. Normalization grid 0: v_0= 7.264e+06 ( 2.423e-02c) n_0= 1.000e+20 t_0= 1.424e-06 1 batched, view batch 0
+Domain radius (AMR levels) grid 0: par= 6.000e+00 perp= 6.000e+00 (0) , 1: par= 8.086e-02 perp= 8.086e-02 (2) 
+0) FormLandau 736 IPs, 46 cells total, Nb=16, Nq=16, dim=2, Tab: Nb=16 Nf=2 Np=16 cdim=2 N=443
   type: plex
-single in 2 dimensions:
-  Number of 0-cells per rank: 18
-  Number of 1-cells per rank: 29
-  Number of 2-cells per rank: 10
+  Number of 0-cells per rank: 41
+  Number of 1-cells per rank: 75
+  Number of 2-cells per rank: 26
 Labels:
-  marker: 1 strata with value/size (1 (24))
-  Face Sets: 4 strata with value/size (4 (6), 1 (4), 2 (2), 3 (4))
-  _forest_base_subpoint_map: 25 strata with value/size (0 (9), 1 (1), 2 (9), 3 (1), 19 (3), 13 (3), 21 (4), 15 (3), 23 (1), 14 (1), 16 (1), 20 (3), 22 (4), 17 (3), 24 (1), 18 (1), 4 (1), 5 (1), 7 (1), 8 (1), 6 (1), 9 (1), 10 (1), 11 (1), 12 (1))
-  depth: 3 strata with value/size (0 (18), 1 (29), 2 (10))
-  celltype: 3 strata with value/size (4 (10), 1 (29), 0 (18))
-Field i2:
+  marker: 1 strata with value/size (1 (38))
+  Face Sets: 4 strata with value/size (4 (16), 1 (2), 2 (4), 3 (4))
+  _forest_base_subpoint_map: 45 strata with value/size (0 (1), 1 (1), 2 (23), 3 (1), 4 (33), 5 (1), 6 (9), 7 (1), 33 (1), 37 (1), 23 (1), 25 (4), 41 (1), 24 (1), 26 (1), 34 (5), 38 (4), 27 (5), 42 (1), 28 (1), 35 (7), 39 (4), 29 (6), 43 (1), 30 (1), 36 (3), 40 (4), 31 (3), 44 (1), 32 (1), 8 (1), 9 (1), 11 (1), 12 (1), 10 (1), 13 (1), 14 (1), 15 (1), 16 (1), 17 (1), 18 (1), 19 (1), 20 (1), 21 (1), 22 (1))
+  depth: 3 strata with value/size (0 (41), 1 (75), 2 (26))
+  celltype: 3 strata with value/size (4 (26), 1 (75), 0 (41))
+Field e:
   adjacency FEM
-%Vec Object: u 1 MPI process
-u = [
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-1.0000000000000000e+10
-];
+0 TS dt 0.01 time 0.005
+step    0) time= 5.000000e-03 temperature (eV): electron: T= 3.5979e+02 T_par= 3.0036e+02 T_perp= 3.8950e+02 ;ion: T= 2.3999e+02 T_par= 1.9984e+02 T_perp= 2.6006e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0000e+02 NRL_e_perp= 3.9000e+02
+  0) species-0: charge density= -1.6018004042620e+01 z-momentum=  9.9228167689656e-04 energy=  1.4050262623995e+04
+  0) species-1: charge density=  1.6028907952774e+01 z-momentum= -9.9216833917771e-04 energy=  5.7714762935928e+03
+	  0) Total: charge density=  1.0903910154205e-02, momentum=  1.1333771884566e-07, energy=  1.9821738917588e+04 (m_i[0]/m_e = 3670.94, 26 cells on electron grid)
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 6
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 5
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 5
+      TSAdapt basic arkimex 0:1bee step   0 accepted t=0.005      + 1.000e-02 dt=1.500e-02  wlte=0.0969  wltea=   -1 wlter=   -1
+1 TS dt 0.015 time 0.015
+step    1) time= 1.500000e-02 temperature (eV): electron: T= 3.6091e+02 T_par= 3.0243e+02 T_perp= 3.9015e+02 ;ion: T= 2.3999e+02 T_par= 1.9984e+02 T_perp= 2.6006e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0021e+02 NRL_e_perp= 3.8989e+02
+  1) species-0: charge density= -1.6018004042620e+01 z-momentum=  9.8980393887495e-04 energy=  1.4050259944917e+04
+  1) species-1: charge density=  1.6028907952774e+01 z-momentum= -9.8969060115610e-04 energy=  5.7714789726717e+03
+	  1) Total: charge density=  1.0903910154202e-02, momentum=  1.1333771884198e-07, energy=  1.9821738917588e+04 (m_i[0]/m_e = 3670.94, 26 cells on electron grid)

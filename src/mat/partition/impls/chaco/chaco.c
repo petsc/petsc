@@ -70,7 +70,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   long   seed;
   char  *mesg_log;
 #if defined(PETSC_HAVE_UNISTD_H)
-  int fd_stdout, fd_pipe[2], count, err;
+  int fd_stdout, fd_pipe[2], count;
 #endif
 
   PetscFunctionBegin;
@@ -105,7 +105,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
     matAdj = matSeq;
   }
 
-  adj = (Mat_MPIAdj *)matAdj->data; /* finaly adj contains adjacency graph */
+  adj = (Mat_MPIAdj *)matAdj->data; /* finally adj contains adjacency graph */
 
   /* arguments for Chaco library */
   nvtxs         = mat->rmap->N;         /* number of vertices in full graph */
@@ -139,8 +139,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   cerr = interface(nvtxs, start, adjacency, vwgts, NULL, NULL, NULL, NULL, NULL, NULL, assignment, architecture, ndims_tot, mesh_dims, NULL, global_method, local_method, rqi_flag, vmax, ndims, eigtol, seed);
 
 #if defined(PETSC_HAVE_UNISTD_H)
-  err = fflush(stdout);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on stdout");
+  PetscCall(PetscFFlush(stdout));
   count = read(fd_pipe[0], mesg_log, (SIZE_LOG - 1) * sizeof(char));
   if (count < 0) count = 0;
   mesg_log[count] = 0;
@@ -539,7 +538,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, Petsc
 }
 
 /*@
-   MatPartitioningChacoSetEigenNumber - Sets the number of eigenvectors to compute by Chaco during partioning
+   MatPartitioningChacoSetEigenNumber - Sets the number of eigenvectors to compute by Chaco during partitioning
    during partitioning.
 
    Collective

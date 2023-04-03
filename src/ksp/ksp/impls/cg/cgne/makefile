@@ -1,12 +1,7 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC  = cgne.c
-SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/cg/cgne/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/rules.doc

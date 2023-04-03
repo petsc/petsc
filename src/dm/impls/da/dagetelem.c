@@ -289,7 +289,7 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
    Input Parameter:
 .     da - the `DMDA` object
 
-   Output Parameters:
+   Output Parameter:
 .     etype - the element type, currently either `DMDA_ELEMENT_P1` or `DMDA_ELEMENT_Q1`
 
    Level: intermediate
@@ -326,7 +326,7 @@ PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
    Input Parameter:
 .     da - the `DMDA` object
 
-   Output Parameters:
+   Output Parameter:
 .     etype - the element type, currently either `DMDA_ELEMENT_P1` or `DMDA_ELEMENT_Q1`
 
    Level: intermediate
@@ -351,7 +351,7 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
       DMDAGetElements - Gets an array containing the indices (in local coordinates)
                  of all the local elements
 
-    Not Collective
+    Not Collective; No Fortran Support
 
    Input Parameter:
 .     dm - the `DMDA` object
@@ -369,9 +369,6 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
      Each process uniquely owns a subset of the elements. That is no element is owned by two or more processes.
 
      If on each process you integrate over its owned elements and use `ADD_VALUES` in `Vec`/`MatSetValuesLocal()` then you'll obtain the correct result.
-
-   Fortran Note:
-     Not supported in Fortran
 
 .seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `VecSetValuesLocal()`, `MatSetValuesLocal()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalBegin()`
 @*/
@@ -419,7 +416,7 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
    Input Parameter:
 .     dm - the `DMDA` object
 
-   Output Parameters:
+   Output Parameter:
 .     is - the index set
 
    Level: intermediate
@@ -454,10 +451,10 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
 /*@C
       DMDARestoreElements - Restores the array obtained with `DMDAGetElements()`
 
-    Not Collective
+    Not Collective; No Fortran Support
 
    Input Parameters:
-+     dm - the DM object
++     dm - the `DM` object
 .     nel - number of local elements
 .     nen - number of element nodes
 -     e - the local indices of the elements' vertices
@@ -466,9 +463,6 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
 
    Note:
    This restore signals the `DMDA` object that you no longer need access to the array information.
-
-   Fortran Note:
-   Not supported in Fortran
 
 .seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`
 @*/

@@ -508,10 +508,18 @@ struct _n_TSMonitorLGCtx {
 
 struct _n_TSMonitorSPCtx {
   PetscDrawSP sp;
-  PetscInt    howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscInt    retain;   /* Retain n points plotted to show trajectories, or -1 for all points */
-  PetscBool   phase;    /* Plot in phase space rather than coordinate space */
+  PetscInt    howoften;     /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt    retain;       /* Retain n points plotted to show trajectories, or -1 for all points */
+  PetscBool   phase;        /* Plot in phase space rather than coordinate space */
+  PetscBool   multispecies; /* Change scatter point color based on species */
   PetscInt    ksp_its, snes_its;
+};
+
+struct _n_TSMonitorHGCtx {
+  PetscDrawHG *hg;
+  PetscInt     howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt     Ns;       /* The number of species to histogram */
+  PetscBool    velocity; /* Plot in velocity space rather than coordinate space */
 };
 
 struct _n_TSMonitorEnvelopeCtx {

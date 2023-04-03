@@ -11,19 +11,19 @@
    Collective
 
    Input Parameters:
-+  comm - the communicator, should be PETSC_COMM_SELF
++  comm - the communicator, should be `PETSC_COMM_SELF`
 -  n - the vector length
 
    Output Parameter:
 .  V - the vector
 
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
-
    Level: intermediate
 
-.seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
+   Notes:
+   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
+   same type as an existing vector.
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
 PetscErrorCode VecCreateSeq(MPI_Comm comm, PetscInt n, Vec *v)
 {

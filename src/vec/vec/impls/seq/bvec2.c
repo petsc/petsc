@@ -883,7 +883,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
    Collective
 
    Input Parameters:
-+  comm - the communicator, should be PETSC_COMM_SELF
++  comm - the communicator, should be `PETSC_COMM_SELF`
 .  bs - the block size
 .  n - the vector length
 -  array - memory where the vector elements are to be stored.
@@ -891,17 +891,17 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
    Output Parameter:
 .  V - the vector
 
+   Level: intermediate
+
    Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   Use `VecDuplicate()` or `VecDuplicateVecs(`) to form additional vectors of the
    same type as an existing vector.
 
-   If the user-provided array is NULL, then VecPlaceArray() can be used
+   If the user-provided array is` NULL`, then `VecPlaceArray()` can be used
    at a later stage to SET the array for storing the vector values.
 
-   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+   PETSc does NOT free the array when the vector is destroyed via `VecDestroy()`.
    The user should not free the array until the vector is destroyed.
-
-   Level: intermediate
 
 .seealso: `VecCreateMPIWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`

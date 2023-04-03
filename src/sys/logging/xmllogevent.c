@@ -430,8 +430,8 @@ PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *ol
 {
   PetscFunctionBegin;
   if (oldThresh) *oldThresh = thresholdTime;
-  if (newThresh == PETSC_DECIDE) newThresh = 0.01;
-  if (newThresh == PETSC_DEFAULT) newThresh = 0.01;
+  if (newThresh == (PetscLogDouble)PETSC_DECIDE) newThresh = 0.01;
+  if (newThresh == (PetscLogDouble)PETSC_DEFAULT) newThresh = 0.01;
   thresholdTime = PetscMax(newThresh, 0.0);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -189,7 +189,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
 
    Input Parameters:
 +  dm - `DM` to be used with `KSP`
-.  func - matrix evaluation function, see KSPSetComputeOperators() for calling sequence
+.  func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
 -  ctx - context for matrix evaluation
 
    Level: developer
@@ -225,7 +225,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, 
 .  dm - `DM` used with a `KSP`
 
    Output Parameters:
-+  func - matrix evaluation function, see `KSPSetComputeOperators()` for calling sequence
++  func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
 -  ctx - context for matrix evaluation
 
    Level: developer
@@ -251,7 +251,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat,
 
    Input Parameters:
 +  dm - `DM` used with a `KSP`
-.  func - right hand side evaluation function, see `KSPSetComputeRHS()` for calling sequence
+.  func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
 -  ctx - context for right hand side evaluation
 
    Level: developer
@@ -285,7 +285,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *
 
    Input Parameters:
 +  dm - `DM` to be used with `KSP`
-.  func - initial guess evaluation function, see `KSPSetComputeInitialGuess()` for calling sequence
+.  func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
 -  ctx - context for right hand side evaluation
 
    Level: developer
@@ -309,7 +309,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Ve
 }
 
 /*@C
-   DMKSPGetComputeRHS - get `KSP `right hand side evaluation function
+   DMKSPGetComputeRHS - get `KSP` right hand side evaluation function
 
    Not Collective
 
@@ -317,7 +317,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Ve
 .  dm - `DM` to be used with `KSP`
 
    Output Parameters:
-+  func - right hand side evaluation function, see `KSPSetComputeRHS()` for calling sequence
++  func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
 -  ctx - context for right hand side evaluation
 
    Level: advanced
@@ -345,7 +345,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void 
 .  dm - `DM` used with a `KSP`
 
    Output Parameters:
-+  func - initial guess evaluation function, see `KSPSetComputeInitialGuess()` for calling sequence
++  func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
 -  ctx - context for right hand side evaluation
 
    Level: advanced

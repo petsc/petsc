@@ -144,7 +144,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 /*@
   DMPlexCheckInterfaceCones - Check that points on inter-partition interfaces have conforming order of cone points.
 
-  Input Parameters:
+  Input Parameter:
 . dm - The `DMPLEX` object
 
   Level: developer

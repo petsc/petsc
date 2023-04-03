@@ -435,21 +435,16 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
    MatCreateSeqBAIJMKL - Creates a sparse matrix of type `MATSEQBAIJMKL`.
    This type inherits from `MATSEQBAIJ` and is largely identical, but uses sparse BLAS
    routines from Intel MKL whenever possible.
-   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
-   operations are currently supported.
-   If the installed version of MKL supports the "SpMV2" sparse
-   inspector-executor routines, then those are used by default.
-   Default PETSc kernels are used otherwise.
 
    Input Parameters:
 +  comm - MPI communicator, set to `PETSC_COMM_SELF`
-.  bs - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
+.  bs - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
+          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzero blocks  per block row (same for all rows)
 -  nnz - array containing the number of nonzero blocks in the various block rows
-         (possibly different for each block row) or NULL
+         (possibly different for each block row) or `NULL`
 
    Output Parameter:
 .  A - the matrix
@@ -467,11 +462,17 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
    Notes:
    The number of rows and columns must be divisible by blocksize.
 
-   If the nnz parameter is given then the nz parameter is ignored
+   If the `nnz` parameter is given then the `nz` parameter is ignored
 
    A nonzero block is any block that as 1 or more nonzeros in it
 
-   The `MATSEQBAIJ` format is fully compatible with standard Fortran 77
+   `MatMult()`, `MatMultAdd()`, `MatMultTranspose()`, and `MatMultTransposeAdd()`
+   operations are currently supported.
+   If the installed version of MKL supports the "SpMV2" sparse
+   inspector-executor routines, then those are used by default.
+   Default PETSc kernels are used otherwise.
+
+   The `MATSEQBAIJ` format is fully compatible with standard Fortran
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
 

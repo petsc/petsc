@@ -144,7 +144,7 @@ static PetscErrorCode PetscStrdup(const char s[], char *t[])
     PetscCall(PetscStrlen(s, &len));
     tmp = (char *)malloc((len + 1) * sizeof(*tmp));
     PetscCheck(tmp, PETSC_COMM_SELF, PETSC_ERR_MEM, "No memory to duplicate string");
-    PetscCall(PetscStrcpy(tmp, s));
+    PetscCall(PetscArraycpy(tmp, s, len + 1));
   }
   *t = tmp;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -521,10 +521,10 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
   while (PetscOptionsObject->next) {
     if (PetscOptionsObject->next->set) {
       if (PetscOptionsObject->prefix) {
-        PetscCall(PetscStrcpy(option, "-"));
-        PetscCall(PetscStrcat(option, PetscOptionsObject->prefix));
-        PetscCall(PetscStrcat(option, PetscOptionsObject->next->option + 1));
-      } else PetscCall(PetscStrcpy(option, PetscOptionsObject->next->option));
+        PetscCall(PetscStrncpy(option, "-", sizeof(option)));
+        PetscCall(PetscStrlcat(option, PetscOptionsObject->prefix, sizeof(option)));
+        PetscCall(PetscStrlcat(option, PetscOptionsObject->next->option + 1, sizeof(option)));
+      } else PetscCall(PetscStrncpy(option, PetscOptionsObject->next->option, sizeof(option)));
 
       switch (PetscOptionsObject->next->type) {
       case OPTION_HEAD:
@@ -533,8 +533,8 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
         PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", (int)((PetscInt *)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
           PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%d", (int)((PetscInt *)PetscOptionsObject->next->data)[j]));
-          PetscCall(PetscStrcat(value, ","));
-          PetscCall(PetscStrcat(value, tmp));
+          PetscCall(PetscStrlcat(value, ",", sizeof(value)));
+          PetscCall(PetscStrlcat(value, tmp, sizeof(value)));
         }
         break;
       case OPTION_INT:
@@ -547,16 +547,16 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
         PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%g", (double)((PetscReal *)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
           PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%g", (double)((PetscReal *)PetscOptionsObject->next->data)[j]));
-          PetscCall(PetscStrcat(value, ","));
-          PetscCall(PetscStrcat(value, tmp));
+          PetscCall(PetscStrlcat(value, ",", sizeof(value)));
+          PetscCall(PetscStrlcat(value, tmp, sizeof(value)));
         }
         break;
       case OPTION_SCALAR_ARRAY:
         PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%g+%gi", (double)PetscRealPart(((PetscScalar *)PetscOptionsObject->next->data)[0]), (double)PetscImaginaryPart(((PetscScalar *)PetscOptionsObject->next->data)[0])));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
           PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%g+%gi", (double)PetscRealPart(((PetscScalar *)PetscOptionsObject->next->data)[j]), (double)PetscImaginaryPart(((PetscScalar *)PetscOptionsObject->next->data)[j])));
-          PetscCall(PetscStrcat(value, ","));
-          PetscCall(PetscStrcat(value, tmp));
+          PetscCall(PetscStrlcat(value, ",", sizeof(value)));
+          PetscCall(PetscStrlcat(value, tmp, sizeof(value)));
         }
         break;
       case OPTION_BOOL:
@@ -566,25 +566,25 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
         PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", (int)((PetscBool *)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
           PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%d", (int)((PetscBool *)PetscOptionsObject->next->data)[j]));
-          PetscCall(PetscStrcat(value, ","));
-          PetscCall(PetscStrcat(value, tmp));
+          PetscCall(PetscStrlcat(value, ",", sizeof(value)));
+          PetscCall(PetscStrlcat(value, tmp, sizeof(value)));
         }
         break;
       case OPTION_FLIST:
-        PetscCall(PetscStrcpy(value, (char *)PetscOptionsObject->next->data));
+        PetscCall(PetscStrncpy(value, (char *)PetscOptionsObject->next->data, sizeof(value)));
         break;
       case OPTION_ELIST:
-        PetscCall(PetscStrcpy(value, (char *)PetscOptionsObject->next->data));
+        PetscCall(PetscStrncpy(value, (char *)PetscOptionsObject->next->data, sizeof(value)));
         break;
       case OPTION_STRING:
-        PetscCall(PetscStrcpy(value, (char *)PetscOptionsObject->next->data));
+        PetscCall(PetscStrncpy(value, (char *)PetscOptionsObject->next->data, sizeof(value)));
         break;
       case OPTION_STRING_ARRAY:
         PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%s", ((char **)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
           PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%s", ((char **)PetscOptionsObject->next->data)[j]));
-          PetscCall(PetscStrcat(value, ","));
-          PetscCall(PetscStrcat(value, tmp));
+          PetscCall(PetscStrlcat(value, ",", sizeof(value)));
+          PetscCall(PetscStrlcat(value, tmp, sizeof(value)));
         }
         break;
       }
@@ -626,10 +626,12 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
 .  man - manual page with additional information on option
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsEnum(..., obj->value,&object->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsEnum(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsEnum(..., obj->value,&object->value,...) or
+                 value = defaultvalue
+                 PetscOptionsEnum(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the  value to return
@@ -749,22 +751,29 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObjec
 
    Synopsis:
    #include "petscsys.h"
-   PetscErrorCode  PetscOptionsBoundInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt bound)
+   PetscErrorCode  PetscOptionsBoundedInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt bound)
 
    Input Parameters:
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsInt(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsInt(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+  PetscOptionsInt(..., obj->value,&obj->value,...)
+.ve
+or
+.vb
+  value = defaultvalue
+  PetscOptionsInt(..., value,&value,&flg);
+  if (flg) {
+.ve
 -  bound - the requested value should be greater than or equal this bound or an error is generated
 
    Output Parameters:
 +  value - the integer value to return
 -  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+   Level: beginner
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -773,8 +782,6 @@ $                 if (flg) {
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsRangeInt()`
@@ -799,16 +806,20 @@ M*/
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsInt(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsInt(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsInt(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsInt(..., value,&value,&flg);
+                 if (flg) {
+.ve
 .  lb - the lower bound, provided value must be greater than or equal to this value or an error is generated
 -  ub - the upper bound, provided value must be less than or equal to this value or an error is generated
 
    Output Parameters:
 +  value - the integer value to return
 -  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+   Level: beginner
 
    Notes:
     If the user does not supply the option at all value is NOT changed. Thus
@@ -817,8 +828,6 @@ $                 if (flg) {
     The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
     Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
-
-   Level: beginner
 
 .seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsBoundedInt()`
@@ -843,10 +852,12 @@ M*/
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsInt(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsInt(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsInt(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsInt(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the integer value to return
@@ -971,10 +982,12 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsReal(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsReal(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsReal(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsReal(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the value to return
@@ -1033,10 +1046,12 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
-$                 PetscOptionsScalar(..., obj->value,&obj->value,...) or
-$                 value = defaultvalue
-$                 PetscOptionsScalar(..., value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsScalar(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsScalar(..., value,&value,&flg);
+                 if (flg) {
+.ve
 
    Output Parameters:
 +  value - the value to return
@@ -1137,8 +1152,10 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
 .  man - manual page with additional information on option
 .  list - the possible choices
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
-$                 PetscOptionsFlist(..., obj->value,value,len,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsFlist(..., obj->value,value,len,&flg);
+                 if (flg) {
+.ve
 -  len - the length of the character array value
 
    Output Parameters:
@@ -1207,8 +1224,9 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
 .  list - the possible choices (one of these must be selected, anything else is invalid)
 .  ntext - number of choices
 -  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
-$                 PetscOptionsElist(..., obj->value,&value,&flg);
-$                 if (flg) {
+.vb
+                 PetscOptionsEList(..., obj->value,&value,&flg);
+.ve                 if (flg) {
 
    Output Parameters:
 +  value - the index of the value to return

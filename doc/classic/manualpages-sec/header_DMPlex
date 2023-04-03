@@ -1,4 +1,4 @@
-# DMPLEX Manual Pages
+# Unstructured Grids and Cell Complexes (DMPlex)
 
 <A HREF="PETSC_DIRsrc/dm/impls/plex/tutorials/index.html">Examples</A><BR>
 
@@ -9,5 +9,3 @@ The DMPLEX class encapsulates an unstructured mesh, with interfaces for both top
   <li><a href="http://arxiv.org/abs/1506.07749">Efficient mesh management in Firedrake using PETSc-DMPlex</a>, Michael Lange, Lawrence Mitchell, Matthew G. Knepley and Gerard J. Gorman, SISC, <b>38</b>(5), S143-S155, 2016.</li>
   <li><a href="http://arxiv.org/abs/1506.06194">Unstructured Overlapping Mesh Distribution in Parallel</a>, Matthew G. Knepley, Michael Lange, Gerard J. Gorman, 2015.</li>
 </ul>
-
-

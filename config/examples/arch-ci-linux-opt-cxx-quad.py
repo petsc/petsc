@@ -9,8 +9,8 @@ configure_options = [
   'CC=gcc',
   'CXX=g++',
   'FC=gfortran',
-  '--with-mpi-include=/usr/include/mpich',
-  '--with-mpi-lib=-L/usr/lib/x86_64-linux-gnu -lmpichfort -lmpi',
+  '--with-mpi-include=/usr/include/x86_64-linux-gnu/mpich',
+  '--with-mpi-lib=-L/usr/lib/x86_64-linux-gnu -lmpichfort -lmpich',
   '--download-f2cblaslapack=1',
   '--download-slepc=1',
   '--download-hpddm=1',
@@ -18,6 +18,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-mpi-f90module-visibility=0',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':

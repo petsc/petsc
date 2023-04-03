@@ -3,9 +3,9 @@
 
 /*@C
    DMDACreatePF - Creates an appropriately dimensioned `PF` mathematical function object
-      from a DMDA.
+      from a `DMDA`.
 
-   Collective on da
+   Collective; No Fortran Support
 
    Input Parameter:
 .  da - initial distributed array
@@ -14,9 +14,6 @@
 .  pf - the mathematical function object
 
    Level: advanced
-
-   Fortran Note:
-   Not supported from Fortran
 
 .seealso: `DM`, `PF`, `DMDA`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMCreateGlobalVector()`
 @*/

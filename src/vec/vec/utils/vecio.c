@@ -235,7 +235,7 @@ PetscErrorCode VecLoad_Default(Vec newvec, PetscViewer viewer)
 + v   - The vector
 - tol - The zero tolerance
 
-  Output Parameters:
+  Output Parameter:
 . v - The chopped vector
 
   Level: intermediate

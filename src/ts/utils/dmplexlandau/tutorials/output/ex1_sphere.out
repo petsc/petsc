@@ -1,0 +1,15 @@
+masses:        e= 9.109e-31; ions in proton mass units:    2.000e+00  0.000e+00 ...
+charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  0.000e+00
+n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
+thermal T (K): e= 1.160e+07 i= 1.160e+07  0.000e+00. Normalization grid 0: v_0= 1.326e+07 ( 4.424e-02c) n_0= 1.000e+20 t_0= 7.343e-06 1 batched, view batch 0
+Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (3) , 1: par= 8.252e-02 perp= 8.252e-02 (3) 
+0) FormLandau 432 IPs, 48 cells total, Nb=9, Nq=9, dim=2, Tab: Nb=9 Nf=2 Np=9 cdim=2 N=198
+step    0) time= 5.000000e-02 temperature (eV): electron: T= 7.2585e+02 T_par= 6.7188e+02 T_perp= 7.5284e+02 ;ion: T= 7.2585e+02 T_par= 6.7188e+02 T_perp= 7.5284e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0000e+02 NRL_e_perp= 3.9000e+02
+  0) species-0: charge density= -1.5424312075833e+01 z-momentum=  1.6765634240281e-20 energy=  1.6793460783865e+04
+  0) species-1: charge density=  1.5424312075833e+01 z-momentum= -9.6165056975016e-19 energy=  1.6793460783865e+04
+	  0) Total: charge density=  5.3290705182008e-15, momentum= -9.4488493550988e-19, energy=  3.3586921567729e+04 (m_i[0]/m_e = 3670.94, 24 cells on electron grid)
+step    1) time= 1.500000e-01 temperature (eV): electron: T= 7.2584e+02 T_par= 6.8399e+02 T_perp= 7.4677e+02 ;ion: T= 7.2586e+02 T_par= 6.7201e+02 T_perp= 7.5279e+02 NRL_i_par= 2.0015e+02 NRL_i_perp= 2.5995e+02 NRL_e_par= 3.1120e+02 NRL_e_perp= 3.8437e+02
+  1) species-0: charge density= -1.5424312075833e+01 z-momentum= -1.6765634240281e-20 energy=  1.6793221704250e+04
+  1) species-1: charge density=  1.5424312075833e+01 z-momentum= -8.6548551277514e-18 energy=  1.6793699863479e+04
+	  1) Total: charge density=  3.5527136788005e-15, momentum= -8.6716207619917e-18, energy=  3.3586921567729e+04 (m_i[0]/m_e = 3670.94, 24 cells on electron grid)
+nrl-step 0 time= 0.05 300. 390. 200. 260. 

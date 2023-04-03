@@ -196,41 +196,50 @@ struct CsrMatrix {
 /* This is struct holding the relevant data needed to a MatSolve */
 struct Mat_SeqAIJCUSPARSETriFactorStruct {
   /* Data needed for triangular solve */
-  cusparseMatDescr_t    descr;
-  cusparseOperation_t   solveOp;
-  CsrMatrix            *csrMat;
+  cusparseMatDescr_t  descr;
+  cusparseOperation_t solveOp;
+  CsrMatrix          *csrMat;
+#if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
   csrsvInfo_t           solveInfo;
   cusparseSolvePolicy_t solvePolicy; /* whether level information is generated and used */
-  int                   solveBufferSize;
-  void                 *solveBuffer;
-  size_t                csr2cscBufferSize; /* to transpose the triangular factor (only used for CUDA >= 11.0) */
-  void                 *csr2cscBuffer;
-  PetscScalar          *AA_h; /* managed host buffer for moving values to the GPU */
+#endif
+  int          solveBufferSize;
+  void        *solveBuffer;
+  size_t       csr2cscBufferSize; /* to transpose the triangular factor (only used for CUDA >= 11.0) */
+  void        *csr2cscBuffer;
+  PetscScalar *AA_h; /* managed host buffer for moving values to the GPU */
 };
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and any indices used in a reordering */
 struct Mat_SeqAIJCUSPARSETriFactors {
+#if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
   Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactorPtr;          /* pointer for lower triangular (factored matrix) on GPU */
   Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactorPtr;          /* pointer for upper triangular (factored matrix) on GPU */
   Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactorPtrTranspose; /* pointer for lower triangular (factored matrix) on GPU for the transpose (useful for BiCG) */
   Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactorPtrTranspose; /* pointer for upper triangular (factored matrix) on GPU for the transpose (useful for BiCG)*/
-  THRUSTINTARRAY                    *rpermIndices;            /* indices used for any reordering */
-  THRUSTINTARRAY                    *cpermIndices;            /* indices used for any reordering */
-  THRUSTARRAY                       *workVector;
-  cusparseHandle_t                   handle;   /* a handle to the cusparse library */
-  PetscInt                           nnz;      /* number of nonzeros ... need this for accurate logging between ICC and ILU */
-  PetscScalar                       *a_band_d; /* GPU data for banded CSR LU factorization matrix diag(L)=1 */
-  int                               *i_band_d; /* this could be optimized away */
-  cudaDeviceProp                     dev_prop;
-  PetscBool                          init_dev_prop;
+#endif
 
+  THRUSTINTARRAY  *rpermIndices; /* indices used for any reordering */
+  THRUSTINTARRAY  *cpermIndices; /* indices used for any reordering */
+  THRUSTARRAY     *workVector;
+  cusparseHandle_t handle;   /* a handle to the cusparse library */
+  PetscInt         nnz;      /* number of nonzeros ... need this for accurate logging between ICC and ILU */
+  PetscScalar     *a_band_d; /* GPU data for banded CSR LU factorization matrix diag(L)=1 */
+  int             *i_band_d; /* this could be optimized away */
+  cudaDeviceProp   dev_prop;
+  PetscBool        init_dev_prop;
+
+  PetscBool factorizeOnDevice; /* Do factorization on device or not */
+#if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
   /* csrilu0/csric0 appeared in cusparse-8.0, but we use it along with cusparseSpSV,
      which first appeared in cusparse-11.5 with cuda-11.3.
   */
-  PetscBool factorizeOnDevice; /* Do factorization on device or not */
-#if CUSPARSE_VERSION >= 11500
-  PetscScalar *csrVal;
-  int         *csrRowPtr, *csrColIdx; /* a,i,j of M. Using int since some cusparse APIs only support 32-bit indices */
+  PetscScalar *csrVal, *diag;             // the diagonal D in UtDU of Cholesky
+  int         *csrRowPtr32, *csrColIdx32; // i,j of M. cusparseScsrilu02/ic02() etc require 32-bit indices
+
+  PetscInt    *csrRowPtr, *csrColIdx; // i, j of M on device for CUDA APIs that support 64-bit indices
+  PetscScalar *csrVal_h, *diag_h;     // Since LU is done on host, we prepare a factored matrix in regular csr format on host and then copy it to device
+  PetscInt    *csrRowPtr_h;           // csrColIdx_h is temporary, so it is not here
 
   /* Mixed mat descriptor types? yes, different cusparse APIs use different types */
   cusparseMatDescr_t   matDescr_M;

@@ -193,6 +193,7 @@ typedef struct _n_Field {
 
 typedef struct _n_Space {
   PetscDS ds;     /* Approximation space in this domain */
+  PetscDS dsIn;   /* Approximation space for input to this domain (now only used for cohesive cells) */
   DMLabel label;  /* Label defining the domain of definition of the discretization */
   IS      fields; /* Map from DS field numbers to original field numbers in the DM */
 } DMSpace;

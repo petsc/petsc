@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petscbt.h>
@@ -940,7 +939,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B, Mat A, const Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------- */
 PetscErrorCode MatLUFactor_SeqAIJ(Mat A, IS row, IS col, const MatFactorInfo *info)
 {
   Mat C;
@@ -956,7 +954,6 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A, IS row, IS col, const MatFactorInfo *in
   PetscCall(MatHeaderMerge(A, &C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ----------------------------------------------------------- */
 
 PetscErrorCode MatSolve_SeqAIJ_inplace(Mat A, Vec bb, Vec xx)
 {
@@ -1185,7 +1182,6 @@ static PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A, Vec bb, Vec xx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------- */
 #include <../src/mat/impls/aij/seq/ftn-kernels/fsolve.h>
 static PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
 {
@@ -1576,8 +1572,6 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A, Vec bb, Vec zz, Vec xx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------*/
-
 /*
    ilu() under revised new data structure.
    Factored arrays bj and ba are stored as
@@ -1610,7 +1604,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact, Mat A, IS isrow, IS is
   PetscCall(PetscMalloc3(ai[n] + 1, &b->a, ai[n] + 1, &b->j, n + 1, &b->i));
 
   b->singlemalloc = PETSC_TRUE;
-  if (!b->diag) { PetscCall(PetscMalloc1(n + 1, &b->diag)); }
+  if (!b->diag) PetscCall(PetscMalloc1(n + 1, &b->diag));
   bdiag = b->diag;
 
   if (n > 0) PetscCall(PetscArrayzero(b->a, ai[n]));
@@ -3226,10 +3220,10 @@ static PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A, IS isrow, IS iscol, const Mat
   PetscBool       missing;
 
   PetscFunctionBegin;
-  if (dt == PETSC_DEFAULT) dt = 0.005;
+  if (dt == (PetscReal)PETSC_DEFAULT) dt = 0.005;
   if (dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5 * a->rmax);
 
-  /* ------- symbolic factorization, can be reused ---------*/
+  /* symbolic factorization, can be reused */
   PetscCall(MatMissingDiagonal(A, &missing, &i));
   PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
   adiag = a->diag;
@@ -3276,7 +3270,7 @@ static PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A, IS isrow, IS iscol, const Mat
   B->factortype            = MAT_FACTOR_ILUDT;
   B->info.factor_mallocs   = 0;
   B->info.fill_ratio_given = ((PetscReal)nnz_max) / ((PetscReal)ai[n]);
-  /* ------- end of symbolic factorization ---------*/
+  /*  end of symbolic factorization */
 
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));

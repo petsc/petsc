@@ -55,7 +55,7 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
           PetscCall(VecNorm(F, NORM_2, &fnrm_mid));
         }
 
-        /* compute the norm at the new endpoit */
+        /* compute the norm at the new endpoint */
         PetscCall(VecWAXPY(W, -lambda, Y, X));
         if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
         PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
@@ -69,7 +69,6 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
         fnrm     = fnrm * fnrm;
       } else {
         /* compute the objective at the midpoint */
-        PetscCall(VecWAXPY(W, -lambda_mid, Y, X));
         PetscCall(SNESComputeObjective(snes, W, &fnrm_mid));
 
         /* compute the objective at the new endpoint */
@@ -131,7 +130,7 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
   /* postcheck */
   PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
-  if (changed_y) {
+  if (changed_y && !changed_w) {
     PetscCall(VecAXPY(X, -lambda, Y));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, X));
   } else {

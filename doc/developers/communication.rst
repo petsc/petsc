@@ -20,7 +20,7 @@ Comments and questions regarding PETSc design and development should go to petsc
 
 Configuration issues (with ``make.log`` and ``configure.log`` attached) should be reported to petsc-maint@mcs.anl.gov.
 
-For bugs and other issues, we encourage users to create a `GitLab <https://gitlab.com>`__ account and
+For bugs and other issues, we encourage developers to create a `GitLab <https://gitlab.com>`__ account and
 `file issues directly <https://gitlab.com/petsc/petsc/issues>`__;
 this allows better tracking of long-term bug reports and feature requests.
 

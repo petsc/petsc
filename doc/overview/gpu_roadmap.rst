@@ -71,4 +71,4 @@ and Jacobian creation and for matrix assembly extensions to ``MATAIJCUSPARSE`` a
    :ref:`documentation <ind_developers>`. The label ``GPU`` is used on our `Gitlab
    <https://gitlab.com/petsc/petsc>`__ repository for all activity involving GPUs.
 
-   **You must use petsc main (git branch) for GPUs, do not install the current release.**
+   **You should use petsc main (git branch) for GPUs, do not install the current release.**

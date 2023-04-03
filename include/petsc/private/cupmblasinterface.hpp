@@ -209,19 +209,32 @@ namespace impl
   // }
   #define PETSC_CUPMBLAS_ALIAS_FUNCTION(suffix) PETSC_CUPM_ALIAS_FUNCTION(PetscConcat(cupmBlas, suffix), PetscConcat(PETSC_CUPMBLAS_PREFIX, suffix))
 
-template <DeviceType T>
-struct BlasInterfaceBase : Interface<T> {
-  PETSC_NODISCARD static constexpr const char *cupmBlasName() noexcept { return T == DeviceType::CUDA ? "cuBLAS" : "hipBLAS"; }
-};
-
-  #define PETSC_CUPMBLAS_BASE_CLASS_HEADER(DEV_TYPE) \
-    using base_type = ::Petsc::device::cupm::impl::BlasInterfaceBase<DEV_TYPE>; \
-    using base_type::cupmBlasName; \
-    PETSC_CUPM_ALIAS_FUNCTION(cupmBlasGetErrorName, PetscConcat(PetscConcat(Petsc, PETSC_CUPMBLAS_PREFIX_U), GetErrorName)) \
-    PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, DEV_TYPE)
-
 template <DeviceType>
 struct BlasInterfaceImpl;
+
+// Exists because HIP (for whatever godforsaken reason) has elected to define both their
+// hipBlasHandle_t and hipSolverHandle_t as void *. So we cannot disambiguate them for overload
+// resolution and hence need to wrap their types int this mess.
+template <typename T, std::size_t I>
+class cupmBlasHandleWrapper {
+public:
+  constexpr cupmBlasHandleWrapper() noexcept = default;
+  constexpr cupmBlasHandleWrapper(T h) noexcept : handle_(std::move(h)) { static_assert(std::is_standard_layout<cupmBlasHandleWrapper<T, I>>::value, ""); }
+
+  cupmBlasHandleWrapper &operator=(std::nullptr_t) noexcept
+  {
+    handle_ = nullptr;
+    return *this;
+  }
+
+  operator T() const { return handle_; }
+
+  const T *ptr_to() const { return &handle_; }
+  T       *ptr_to() { return &handle_; }
+
+private:
+  T handle_{};
+};
 
   #if PetscDefined(HAVE_CUDA)
     #define PETSC_CUPMBLAS_PREFIX         cublas
@@ -230,15 +243,11 @@ struct BlasInterfaceImpl;
     #define PETSC_CUPMBLAS_FP_INPUT_TYPE  PETSC_CUPMBLAS_FP_INPUT_TYPE_U
     #define PETSC_CUPMBLAS_FP_RETURN_TYPE PETSC_CUPMBLAS_FP_RETURN_TYPE_L
 template <>
-struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA> {
-  PETSC_CUPMBLAS_BASE_CLASS_HEADER(DeviceType::CUDA);
-
+struct BlasInterfaceImpl<DeviceType::CUDA> : Interface<DeviceType::CUDA> {
   // typedefs
-  using cupmBlasHandle_t      = cublasHandle_t;
+  using cupmBlasHandle_t      = cupmBlasHandleWrapper<cublasHandle_t, 0>;
   using cupmBlasError_t       = cublasStatus_t;
   using cupmBlasInt_t         = int;
-  using cupmSolverHandle_t    = cusolverDnHandle_t;
-  using cupmSolverError_t     = cusolverStatus_t;
   using cupmBlasPointerMode_t = cublasPointerMode_t;
 
   // values
@@ -247,6 +256,13 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
   static const auto CUPMBLAS_STATUS_ALLOC_FAILED    = CUBLAS_STATUS_ALLOC_FAILED;
   static const auto CUPMBLAS_POINTER_MODE_HOST      = CUBLAS_POINTER_MODE_HOST;
   static const auto CUPMBLAS_POINTER_MODE_DEVICE    = CUBLAS_POINTER_MODE_DEVICE;
+  static const auto CUPMBLAS_OP_T                   = CUBLAS_OP_T;
+  static const auto CUPMBLAS_OP_N                   = CUBLAS_OP_N;
+  static const auto CUPMBLAS_OP_C                   = CUBLAS_OP_C;
+  static const auto CUPMBLAS_FILL_MODE_LOWER        = CUBLAS_FILL_MODE_LOWER;
+  static const auto CUPMBLAS_FILL_MODE_UPPER        = CUBLAS_FILL_MODE_UPPER;
+  static const auto CUPMBLAS_SIDE_LEFT              = CUBLAS_SIDE_LEFT;
+  static const auto CUPMBLAS_DIAG_NON_UNIT          = CUBLAS_DIAG_NON_UNIT;
 
   // utility functions
   PETSC_CUPMBLAS_ALIAS_FUNCTION(Create)
@@ -271,46 +287,12 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
 
   // level 3 BLAS
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, gemm)
+  PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, trsm)
 
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
 
-  static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
-  {
-    PetscFunctionBegin;
-    if (handle) PetscFunctionReturn(PETSC_SUCCESS);
-    for (auto i = 0; i < 3; ++i) {
-      const auto cerr = cusolverDnCreate(&handle);
-      if (PetscLikely(cerr == CUSOLVER_STATUS_SUCCESS)) break;
-      if ((cerr != CUSOLVER_STATUS_NOT_INITIALIZED) && (cerr != CUSOLVER_STATUS_ALLOC_FAILED)) PetscCallCUSOLVER(cerr);
-      if (i < 2) {
-        PetscCall(PetscSleep(3));
-        continue;
-      }
-      PetscCheck(cerr == CUSOLVER_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize cuSolverDn");
-    }
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  static PetscErrorCode SetHandleStream(const cupmSolverHandle_t &handle, const cupmStream_t &stream) noexcept
-  {
-    cupmStream_t cupmStream;
-
-    PetscFunctionBegin;
-    PetscCallCUSOLVER(cusolverDnGetStream(handle, &cupmStream));
-    if (cupmStream != stream) PetscCallCUSOLVER(cusolverDnSetStream(handle, stream));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
-  {
-    PetscFunctionBegin;
-    if (handle) {
-      PetscCallCUSOLVER(cusolverDnDestroy(handle));
-      handle = nullptr;
-    }
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  PETSC_NODISCARD static const char *cupmBlasGetErrorName(cupmBlasError_t status) noexcept { return PetscCUBLASGetErrorName(status); }
 };
     #undef PETSC_CUPMBLAS_PREFIX
     #undef PETSC_CUPMBLAS_PREFIX_U
@@ -326,15 +308,11 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
     #define PETSC_CUPMBLAS_FP_INPUT_TYPE  PETSC_CUPMBLAS_FP_INPUT_TYPE_U
     #define PETSC_CUPMBLAS_FP_RETURN_TYPE PETSC_CUPMBLAS_FP_RETURN_TYPE_L
 template <>
-struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
-  PETSC_CUPMBLAS_BASE_CLASS_HEADER(DeviceType::HIP);
-
+struct BlasInterfaceImpl<DeviceType::HIP> : Interface<DeviceType::HIP> {
   // typedefs
-  using cupmBlasHandle_t      = hipblasHandle_t;
+  using cupmBlasHandle_t      = cupmBlasHandleWrapper<hipblasHandle_t, 0>;
   using cupmBlasError_t       = hipblasStatus_t;
   using cupmBlasInt_t         = int; // rocblas will have its own
-  using cupmSolverHandle_t    = hipsolverHandle_t;
-  using cupmSolverError_t     = hipsolverStatus_t;
   using cupmBlasPointerMode_t = hipblasPointerMode_t;
 
   // values
@@ -343,6 +321,13 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
   static const auto CUPMBLAS_STATUS_ALLOC_FAILED    = HIPBLAS_STATUS_ALLOC_FAILED;
   static const auto CUPMBLAS_POINTER_MODE_HOST      = HIPBLAS_POINTER_MODE_HOST;
   static const auto CUPMBLAS_POINTER_MODE_DEVICE    = HIPBLAS_POINTER_MODE_DEVICE;
+  static const auto CUPMBLAS_OP_T                   = HIPBLAS_OP_T;
+  static const auto CUPMBLAS_OP_N                   = HIPBLAS_OP_N;
+  static const auto CUPMBLAS_OP_C                   = HIPBLAS_OP_C;
+  static const auto CUPMBLAS_FILL_MODE_LOWER        = HIPBLAS_FILL_MODE_LOWER;
+  static const auto CUPMBLAS_FILL_MODE_UPPER        = HIPBLAS_FILL_MODE_UPPER;
+  static const auto CUPMBLAS_SIDE_LEFT              = HIPBLAS_SIDE_LEFT;
+  static const auto CUPMBLAS_DIAG_NON_UNIT          = HIPBLAS_DIAG_NON_UNIT;
 
   // utility functions
   PETSC_CUPMBLAS_ALIAS_FUNCTION(Create)
@@ -367,33 +352,12 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
 
   // level 3 BLAS
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, gemm)
+  PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, trsm)
 
   // BLAS extensions
   PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION(STANDARD, geam)
 
-  static PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle) noexcept
-  {
-    PetscFunctionBegin;
-    if (!handle) PetscCallHIPSOLVER(hipsolverCreate(&handle));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  static PetscErrorCode SetHandleStream(cupmSolverHandle_t handle, cupmStream_t stream) noexcept
-  {
-    PetscFunctionBegin;
-    PetscCallHIPSOLVER(hipsolverSetStream(handle, stream));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  static PetscErrorCode DestroyHandle(cupmSolverHandle_t &handle) noexcept
-  {
-    PetscFunctionBegin;
-    if (handle) {
-      PetscCallHIPSOLVER(hipsolverDestroy(handle));
-      handle = nullptr;
-    }
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  PETSC_NODISCARD static const char *cupmBlasGetErrorName(cupmBlasError_t status) noexcept { return PetscHIPBLASGetErrorName(status); }
 };
     #undef PETSC_CUPMBLAS_PREFIX
     #undef PETSC_CUPMBLAS_PREFIX_U
@@ -402,54 +366,58 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
     #undef PETSC_CUPMBLAS_FP_RETURN_TYPE
   #endif // PetscDefined(HAVE_HIP)
 
-  #undef PETSC_CUPMBLAS_BASE_CLASS_HEADER
-
-  #define PETSC_CUPMBLAS_IMPL_CLASS_HEADER(base_name, T) \
-    PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(cupmInterface_t, T); \
-    using base_name = ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>; \
+  #define PETSC_CUPMBLAS_IMPL_CLASS_HEADER(T) \
+    PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T); \
     /* introspection */ \
-    using base_name::cupmBlasName; \
-    using base_name::cupmBlasGetErrorName; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasGetErrorName; \
     /* types */ \
-    using cupmBlasHandle_t      = typename base_name::cupmBlasHandle_t; \
-    using cupmBlasError_t       = typename base_name::cupmBlasError_t; \
-    using cupmBlasInt_t         = typename base_name::cupmBlasInt_t; \
-    using cupmSolverHandle_t    = typename base_name::cupmSolverHandle_t; \
-    using cupmSolverError_t     = typename base_name::cupmSolverError_t; \
-    using cupmBlasPointerMode_t = typename base_name::cupmBlasPointerMode_t; \
+    using cupmBlasHandle_t      = typename ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasHandle_t; \
+    using cupmBlasError_t       = typename ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasError_t; \
+    using cupmBlasInt_t         = typename ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasInt_t; \
+    using cupmBlasPointerMode_t = typename ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasPointerMode_t; \
     /* values */ \
-    using base_name::CUPMBLAS_STATUS_SUCCESS; \
-    using base_name::CUPMBLAS_STATUS_NOT_INITIALIZED; \
-    using base_name::CUPMBLAS_STATUS_ALLOC_FAILED; \
-    using base_name::CUPMBLAS_POINTER_MODE_HOST; \
-    using base_name::CUPMBLAS_POINTER_MODE_DEVICE; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_STATUS_SUCCESS; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_STATUS_NOT_INITIALIZED; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_STATUS_ALLOC_FAILED; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_POINTER_MODE_HOST; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_POINTER_MODE_DEVICE; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_OP_T; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_OP_N; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_OP_C; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_FILL_MODE_LOWER; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_FILL_MODE_UPPER; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_SIDE_LEFT; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::CUPMBLAS_DIAG_NON_UNIT; \
     /* utility functions */ \
-    using base_name::cupmBlasCreate; \
-    using base_name::cupmBlasDestroy; \
-    using base_name::cupmBlasGetStream; \
-    using base_name::cupmBlasSetStream; \
-    using base_name::cupmBlasGetPointerMode; \
-    using base_name::cupmBlasSetPointerMode; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasCreate; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasDestroy; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasGetStream; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasSetStream; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasGetPointerMode; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasSetPointerMode; \
     /* level 1 BLAS */ \
-    using base_name::cupmBlasXaxpy; \
-    using base_name::cupmBlasXscal; \
-    using base_name::cupmBlasXdot; \
-    using base_name::cupmBlasXdotu; \
-    using base_name::cupmBlasXswap; \
-    using base_name::cupmBlasXnrm2; \
-    using base_name::cupmBlasXamax; \
-    using base_name::cupmBlasXasum; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXaxpy; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXscal; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXdot; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXdotu; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXswap; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXnrm2; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXamax; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXasum; \
     /* level 2 BLAS */ \
-    using base_name::cupmBlasXgemv; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXgemv; \
     /* level 3 BLAS */ \
-    using base_name::cupmBlasXgemm; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXgemm; \
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXtrsm; \
     /* BLAS extensions */ \
-    using base_name::cupmBlasXgeam
+    using ::Petsc::device::cupm::impl::BlasInterfaceImpl<T>::cupmBlasXgeam
 
 // The actual interface class
 template <DeviceType T>
 struct BlasInterface : BlasInterfaceImpl<T> {
-  PETSC_CUPMBLAS_IMPL_CLASS_HEADER(blasinterface_type, T);
+  PETSC_CUPMBLAS_IMPL_CLASS_HEADER(T);
+
+  PETSC_NODISCARD static constexpr const char *cupmBlasName() noexcept { return T == DeviceType::CUDA ? "cuBLAS" : "hipBLAS"; }
 
   static PetscErrorCode PetscCUPMBlasSetPointerModeFromPointer(cupmBlasHandle_t handle, const void *ptr) noexcept
   {
@@ -465,24 +433,25 @@ struct BlasInterface : BlasInterfaceImpl<T> {
   {
     PetscFunctionBegin;
     PetscCheck((std::is_same<PetscInt, cupmBlasInt_t>::value) || (x <= std::numeric_limits<cupmBlasInt_t>::max()), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for %s, which may be restricted to 32 bit integers", x, cupmBlasName());
-    PetscCheck(x >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to %s routine: %" PetscInt_FMT, cupmBlasName(), x);
+    PetscCheck(x >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer (%" PetscInt_FMT ") to %s routine", x, cupmBlasName());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static cupmBlasInt_t cupmBlasIntCast(PetscInt x) noexcept
+  static PetscErrorCode PetscCUPMBlasIntCast(PetscInt x, cupmBlasInt_t *y) noexcept
   {
     PetscFunctionBegin;
-    PetscCallAbort(PETSC_COMM_SELF, checkCupmBlasIntCast(x));
-    PetscFunctionReturn(static_cast<cupmBlasInt_t>(x));
+    *y = static_cast<cupmBlasInt_t>(x);
+    PetscCall(checkCupmBlasIntCast(x));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 
-  #define PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(base_name, T) \
-    PETSC_CUPMBLAS_IMPL_CLASS_HEADER(PetscConcat(base_name, _impl), T); \
-    using base_name = ::Petsc::device::cupm::impl::BlasInterface<T>; \
-    using base_name::PetscCUPMBlasSetPointerModeFromPointer; \
-    using base_name::checkCupmBlasIntCast; \
-    using base_name::cupmBlasIntCast
+  #define PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(T) \
+    PETSC_CUPMBLAS_IMPL_CLASS_HEADER(T); \
+    using ::Petsc::device::cupm::impl::BlasInterface<T>::cupmBlasName; \
+    using ::Petsc::device::cupm::impl::BlasInterface<T>::PetscCUPMBlasSetPointerModeFromPointer; \
+    using ::Petsc::device::cupm::impl::BlasInterface<T>::checkCupmBlasIntCast; \
+    using ::Petsc::device::cupm::impl::BlasInterface<T>::PetscCUPMBlasIntCast
 
   #if PetscDefined(HAVE_CUDA)
 extern template struct BlasInterface<DeviceType::CUDA>;

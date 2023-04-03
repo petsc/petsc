@@ -13,7 +13,7 @@ typedef struct {
 /*@
     MatScatterGetVecScatter - Returns the user-provided scatter set with `MatScatterSetVecScatter()` in a `MATSCATTER` matrix
 
-    Not Collective, but not cannot use scatter if not used collectively on `Mat`
+    Logically Collective
 
     Input Parameter:
 .   mat - the matrix, should have been created with MatCreateScatter() or have type `MATSCATTER`
@@ -23,7 +23,7 @@ typedef struct {
 
     Level: intermediate
 
-.seealso: `MATSCATTER`, `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MATSCATTER`
+.seealso: [](chapter_matrices), `Mat`, `MATSCATTER`, `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter)
 {
@@ -249,11 +249,11 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL};
 
 /*MC
-   MATSCATTER - MATSCATTER = "scatter" - A matrix type that simply applies a `VecScatterBegin()` and `VecScatterEnd()`
+   MATSCATTER - "scatter" - A matrix type that simply applies a `VecScatterBegin()` and `VecScatterEnd()` to perform `MatMult()`
 
   Level: advanced
 
-.seealso: ``MATSCATTER`, MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
+.seealso: [](chapter_matrices), `Mat`, ``MATSCATTER`, MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
@@ -304,7 +304,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
    This directly accesses information inside the `VecScatter` associated with the matrix-vector product
    for this matrix. This is not desirable..
 
-.seealso: `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`, `MATSCATTER`
+.seealso: [](chapter_matrices), `Mat`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
 {
@@ -320,7 +320,7 @@ PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
 /*@
     MatScatterSetVecScatter - sets the scatter that the matrix is to apply as its linear operator in a `MATSCATTER`
 
-   Collective
+   Logically Collective
 
     Input Parameters:
 +   mat - the `MATSCATTER` matrix
@@ -328,7 +328,7 @@ PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
 
    Level: advanced
 
-.seealso: `MATSCATTER`, `MatCreateScatter()`, `MATSCATTER`
+.seealso: [](chapter_matrices), `Mat`, `MATSCATTER`, `MatCreateScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatScatterSetVecScatter(Mat mat, VecScatter scatter)
 {

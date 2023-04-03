@@ -14,8 +14,8 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.minversion        = '3.81'
-    self.download          = ['https://ftp.gnu.org/gnu/make/make-4.4.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.4.tar.gz']
+    self.download          = ['https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.4.1.tar.gz']
     self.downloadonWindows = 1
     self.useddirectly      = 0
     self.linkedbypetsc     = 0
@@ -43,6 +43,7 @@ class Configure(config.package.GNUPackage):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.installDir]
+    args.append('--without-guile')
     if 'download-make-cc' in self.argDB and self.argDB['download-make-cc']:
       args.append('CC="'+self.argDB['download-make-cc']+'"')
     return args
@@ -163,6 +164,7 @@ Otherwise try --download-make or install "make" with a package manager.''' % sel
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
     self.addMakeMacro('OMAKE_PRINTDIR', self.make+self.printdirflag)
     self.addMakeMacro('OMAKE', self.make+self.noprintdirflag)
+    self.addDefine('OMAKE','"'+self.make+self.noprintdirflag+'"')
     self.addMakeMacro('MAKE_PAR_OUT_FLG', self.paroutflg)
     return
 

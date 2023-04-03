@@ -87,14 +87,13 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 -  ctx - optional handler context that contains information needed by the handler (for
          example file pointers for error messages etc.)
 
-   Calling sequence of handler:
-$    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,int p,char *mess,void *ctx);
-
+   Calling sequence of `handler`:
+$  PetscErrorCode handler(MPI_Comm comm, int line, char *func, char *file, PetscErrorCode n, int p, char *mess, void *ctx);
 +  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  n - the generic error number (see list defined in include/petscerror.h)
-.  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
+.  p - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
 .  mess - an error text string, usually just printed to the screen
 -  ctx - the error handler context
 
@@ -109,7 +108,7 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,i
    `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, and `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`.
 
    Fortran Note:
-    You can only push one error handler from Fortran before poping it.
+    You can only push one error handler from Fortran before popping it.
 
 .seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`
 @*/
@@ -392,10 +391,9 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   PetscStackClearTop;
 
   /*
-      If this is called from the main() routine we call MPI_Abort() instead of
-    return to allow the parallel program to be properly shutdown.
-
-    Does not call PETSCABORT() since that would provide the wrong source file and line number information
+      If this is called from the main() routine we abort the program.
+      We cannot just return because them some MPI processes may continue to attempt to run
+      while this process simply exits.
   */
   if (func) {
     PetscErrorCode cmp_ierr = PetscStrncmp(func, "main", 4, &ismain);

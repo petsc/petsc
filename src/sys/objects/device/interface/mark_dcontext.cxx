@@ -10,8 +10,7 @@
 #include <sstream> // std::ostringstream
 
 #if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wgnu-zero-variadic-macro-arguments")
 #endif
 
 // ==========================================================================================
@@ -23,7 +22,7 @@ public:
   PetscErrorCode construct_(PetscEvent event) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(PetscArrayzero(event, 1));
+    PetscCall(PetscMemzero(event, sizeof(*event)));
     PetscCall(underlying().reset(event));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -250,7 +249,9 @@ public:
   struct mapped_type {
     using dependency_type = std::vector<snapshot_type>;
 
-    PetscMemoryAccessMode mode = PETSC_MEMORY_ACCESS_READ;
+    mapped_type() noexcept;
+
+    PetscMemoryAccessMode mode{PETSC_MEMORY_ACCESS_READ};
     snapshot_type         last_write{};
     dependency_type       dependencies{};
   };
@@ -264,6 +265,20 @@ private:
 
   PetscErrorCode finalize_() noexcept;
 };
+
+// ==========================================================================================
+// MarkedObjectMap::mapped_type -- Public API
+// ==========================================================================================
+
+// workaround for clang bug that produces the following warning
+//
+// src/sys/objects/device/interface/mark_dcontext.cxx:253:5: error: default member initializer
+// for 'mode' needed within definition of enclosing class 'MarkedObjectMap' outside of member
+// functions
+//     mapped_type() noexcept = default;
+//     ^
+// https://stackoverflow.com/questions/53408962/try-to-understand-compiler-error-message-default-member-initializer-required-be
+MarkedObjectMap::mapped_type::mapped_type() noexcept = default;
 
 // ==========================================================================================
 // MarkedObjectMap Private API
@@ -489,6 +504,7 @@ static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &m
 
   PetscFunctionBegin;
   PetscCall(DEBUG_INFO("new mode (%s) COMPATIBLE with %s mode (%s), no need to serialize\n", PetscMemoryAccessModeToString(mode), object_dependencies.empty() ? "default" : "old", PetscMemoryAccessModeToString(marked.mode)));
+  (void)mode;
   if (it != end) {
     using std::swap;
 
@@ -536,6 +552,7 @@ static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectM
   swap(last_write, last_dep);
   if (last_write_was_also_us) {
     PetscCall(DEBUG_INFO("we were also the last write event (intent %s), updating\n", PetscMemoryAccessModeToString(mode)));
+    (void)mode;
     // we are both the last to write *and* the last to leave a write event. This is the
     // fast path, we only need to update the frame and update the recorded event
     swap(last_dep.frame(), frame);
@@ -643,7 +660,3 @@ PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, Petsc
   PetscCall(PetscLogEventEnd(DCONTEXT_Mark, dctx, nullptr, nullptr, nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#endif

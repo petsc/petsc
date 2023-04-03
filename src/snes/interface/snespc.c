@@ -2,23 +2,23 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h"  I*/
 
 /*@
-   SNESApplyNPC - Calls SNESSolve() on preconditioner for the SNES
+   SNESApplyNPC - Calls `SNESSolve()` on preconditioner for the `SNES`
 
    Collective
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  x - input vector
--  f - optional; the function evaluation on x
+-  f - optional; the function evaluation on `x`
 
    Output Parameter:
-.  y - function vector, as set by SNESSetFunction()
-
-   Note:
-   SNESComputeFunction() should be called on x before SNESApplyNPC() is called, as it is
-   with SNESComuteJacobian().
+.  y - function vector, as set by `SNESSetFunction()`
 
    Level: developer
+
+   Note:
+   `SNESComputeFunction()` should be called on `x` before `SNESApplyNPC()` is called, as it is
+   with `SNESComuteJacobian()`.
 
 .seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`
 @*/
@@ -68,7 +68,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
 
    Output Parameters:
 +  F - function vector
--  fnorm - the norm of F
+-  fnorm - the norm of `F`
 
    Level: developer
 

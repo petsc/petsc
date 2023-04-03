@@ -216,7 +216,7 @@ class Configure(script.Script):
   def checkExecutable(self, dir, name):
     prog  = os.path.join(dir, name)
     # also strip any \ before spaces, braces, so that we can specify paths the way we want them in makefiles.
-    prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')')
+    prog  = prog.replace(r'\ ',' ').replace(r'\(','(').replace(r'\)',')')
     found = 0
     self.logWrite('    Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):
@@ -625,8 +625,10 @@ class Configure(script.Script):
     return not (returnCode or len(output))
 
   def getLinkerFlagsName(language):
-    if language in ['C', 'CUDA', 'Cxx', 'FC', 'HIP', 'SYCL']:
+    if language in ['C', 'CUDA', 'Cxx', 'FC', 'HIP']:
       flagsArg = 'LDFLAGS'
+    elif language == 'SYCL':
+      flagsArg = 'SYCLC_LINKER_FLAGS' # refer to SYCL.py. I need standalone sycl linker flags in make macros, so I don't use LDFLAGS
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg

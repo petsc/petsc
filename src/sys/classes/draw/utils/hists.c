@@ -38,8 +38,10 @@ struct _p_PetscDrawHG {
 +  draw  - The window where the graph will be made
 -  bins - The number of bins to use
 
-   Output Parameters:
+   Output Parameter:
 .  hist - The histogram context
+
+   Level: intermediate
 
    Notes:
     The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
@@ -48,8 +50,6 @@ struct _p_PetscDrawHG {
 
    The MPI communicator that owns the `PetscDraw` owns this `PetscDrawHG`, but the calls to set options and add data are ignored on all processes except the
    zeroth MPI process in the communicator. All MPI ranks in the communicator must call `PetscDrawHGDraw()` to display the updated graph.
-
-   Level: intermediate
 
 .seealso: `PetscDrawHGDestroy()`, `PetscDrawHG`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawSPCreate()`, `PetscDrawSP`,
           `PetscDrawHGSetNumberBins()`, `PetscDrawHGReset()`, `PetscDrawHGAddValue()`, `PetscDrawHGDraw()`, `PetscDrawHGSave()`, `PetscDrawHGView()`, `PetscDrawHGSetColor()`,
@@ -141,7 +141,7 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
   hist->xmin      = PETSC_MAX_REAL;
   hist->xmax      = PETSC_MIN_REAL;
   hist->ymin      = 0.0;
-  hist->ymax      = 0.0;
+  hist->ymax      = 1.0;
   hist->numValues = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -402,7 +402,7 @@ PetscErrorCode PetscDrawHGSave(PetscDrawHG hg)
 /*@
   PetscDrawHGView - Prints the histogram information to a viewer
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . hist - The histogram context
@@ -496,8 +496,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
 
   Input Parameters:
 + hist - The histogram context
-- color - one of the colors defined in petscdraw.h or `PETSC_DRAW_ROTATE` to make each bar a
-          different color
+- color - one of the colors defined in petscdraw.h or `PETSC_DRAW_ROTATE` to make each bar a different color
 
   Level: intermediate
 
@@ -521,7 +520,10 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
 
   Input Parameters:
 + hist - The histogram context
-- x_min,x_max,y_min,y_max - The limits
+. x_min - the horizontal lower limit
+. x_max - the horizontal upper limit
+. y_min - the vertical lower limit
+- y_max - the vertical upper limit
 
   Level: intermediate
 
@@ -542,7 +544,7 @@ PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal
 /*@
   PetscDrawHGCalcStats - Turns on calculation of descriptive statistics associated with the histogram
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + hist - The histogram context
@@ -564,7 +566,7 @@ PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
 /*@
   PetscDrawHGIntegerBins - Turns on integer width bins
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + hist - The histogram context

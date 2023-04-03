@@ -1,35 +1,17 @@
 DM Object: Mesh 1 MPI process
   type: plex
-Mesh in 2 dimensions:
-  Number of 0-cells per rank: 9
-  Number of 1-cells per rank: 12
-  Number of 2-cells per rank: 4
+Mesh in 3 dimensions:
+  Number of 0-cells per rank: 27
+  Number of 1-cells per rank: 54
+  Number of 2-cells per rank: 36
+  Number of 3-cells per rank: 8
 Labels:
-  depth: 3 strata with value/size (0 (9), 1 (12), 2 (4))
-  Face Sets: 4 strata with value/size (4 (2), 2 (2), 1 (2), 3 (2))
-  marker: 1 strata with value/size (1 (16))
-DM Object: 1 MPI process
+  marker: 1 strata with value/size (1 (98))
+  Face Sets: 6 strata with value/size (6 (4), 5 (4), 3 (4), 4 (4), 1 (4), 2 (4))
+  depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
+  celltype: 4 strata with value/size (7 (8), 0 (27), 4 (36), 1 (54))
+DM Object: Particles 1 MPI process
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 16 
-  buffer             = 0 
-  allocated          = 16 
-  nfields registered = 5 
-    [  0]     DMSwarm_pid : Mem. usage       = 1.28e-04 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  1]    DMSwarm_rank : Mem. usage       = 6.40e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 2.56e-04 (MB) [rank0]
-                            blocksize        = 2 
-                            atomic size      = 16 [full block, bs=2]
-                            atomic size/item = 8 
-    [  3]  DMSwarm_cellid : Mem. usage       = 6.40e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  4]             f_q : Mem. usage       = 1.28e-04 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-  Total mem. usage                           = 6.40e-04 (MB) (collective)
-Projected L2 Error: 0.18663
+Particles in 3 dimensions:
+  Number of particles per rank: 64
+Projected L2 Error: 9.48397e-16

@@ -5,13 +5,13 @@
 
 /*@C
   DMMoabGenerateHierarchy - Generate a multi-level uniform refinement hierarchy
-  by succesively refining a coarse mesh, already defined in the DM object
+  by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
 
   Collective
 
   Input Parameter:
-. dmb  - The DMMoab object
+. dmb  - The `DMMOAB` object
 
   Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
@@ -80,13 +80,13 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
 }
 
 /*@C
-  DMRefineHierarchy_Moab - Generate a multi-level DM hierarchy
+  DMRefineHierarchy_Moab - Generate a multi-level `DM` hierarchy
   by succesively refining a coarse mesh.
 
   Collective
 
   Input Parameter:
-. dm  - The DMMoab object
+. dm  - The `DMMOAB` object
 
   Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
@@ -107,17 +107,17 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
 }
 
 /*@C
-  DMCoarsenHierarchy_Moab - Generate a multi-level DM hierarchy
+  DMCoarsenHierarchy_Moab - Generate a multi-level `DM` hierarchy
   by succesively coarsening a refined mesh.
 
   Collective
 
   Input Parameter:
-. dm  - The DMMoab object
+. dm  - The `DMMOAB` object
 
   Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
-- dmc  - The DM objects after successive coarsening of the hierarchy
+- dmc  - The `DM` objects after successive coarsening of the hierarchy
 
   Level: beginner
 
@@ -138,13 +138,13 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *,
 /*@C
   DMCreateInterpolation_Moab - Generate the interpolation operators to transform
   operators (matrices, vectors) from parent level to child level as defined by
-  the DM inputs provided by the user.
+  the `DM` inputs provided by the user.
 
   Collective
 
   Input Parameters:
-+ dm1  - The DMMoab object
-- dm2  - the second, finer DMMoab object
++ dm1  - The `DMMOAB` object
+- dm2  - the second, finer `DMMOAB` object
 
   Output Parameters:
 + interpl  - The interpolation operator for transferring data between the levels
@@ -378,13 +378,13 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
 
 /*@C
   DMCreateInjection_Moab - Generate a multi-level uniform refinement hierarchy
-  by succesively refining a coarse mesh, already defined in the DM object
+  by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
 
   Collective
 
   Input Parameter:
-. dmb  - The DMMoab object
+. dmb  - The `DMMOAB` object
 
   Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
@@ -455,8 +455,8 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   dd2->numFields         = dmb->numFields;
   dd2->rw_dbglevel       = dmb->rw_dbglevel;
   dd2->partition_by_rank = dmb->partition_by_rank;
-  PetscCall(PetscStrcpy(dd2->extra_read_options, dmb->extra_read_options));
-  PetscCall(PetscStrcpy(dd2->extra_write_options, dmb->extra_write_options));
+  PetscCall(PetscStrncpy(dd2->extra_read_options, dmb->extra_read_options, sizeof(dd2->extra_read_options)));
+  PetscCall(PetscStrncpy(dd2->extra_write_options, dmb->extra_write_options, sizeof(dd2->extra_write_options)));
   dd2->read_mode  = dmb->read_mode;
   dd2->write_mode = dmb->write_mode;
 
@@ -493,21 +493,22 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
 
 /*@C
   DMRefine_Moab - Generate a multi-level uniform refinement hierarchy
-  by succesively refining a coarse mesh, already defined in the DM object
+  by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ dm  - The DMMoab object
-- comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
++ dm  - The `DMMOAB` object
+- comm - the communicator to contain the new DM object (or `MPI_COMM_NULL`)
 
   Output Parameter:
-. dmf - the refined DM, or NULL
-
-  Note: If no refinement was done, the return value is NULL
+. dmf - the refined `DM`, or `NULL`
 
   Level: developer
+
+  Note:
+  If no refinement was done, the return value is `NULL`
 
 @*/
 PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
@@ -521,21 +522,22 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
 
 /*@C
   DMCoarsen_Moab - Generate a multi-level uniform refinement hierarchy
-  by succesively refining a coarse mesh, already defined in the DM object
+  by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ dm  - The DMMoab object
-- comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
++ dm  - The `DMMOAB` object
+- comm - the communicator to contain the new `DM` object (or `MPI_COMM_NULL`)
 
   Output Parameter:
-. dmf - the coarsened DM, or NULL
-
-  Note: If no coarsening was done, the return value is NULL
+. dmf - the coarsened `DM`, or `NULL`
 
   Level: developer
+
+  Note:
+  If no coarsening was done, the return value is `NULL`
 
 @*/
 PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM *dmc)

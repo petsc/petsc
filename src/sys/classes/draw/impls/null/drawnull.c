@@ -199,7 +199,7 @@ PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win)
 /*@
    PetscDrawIsNull - Returns `PETSC_TRUE` if draw is a null draw object.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the draw context

@@ -236,7 +236,7 @@ int main(int argc, char **argv)
   user.csoil          = 2000000;        /* heat constant for layer */
   user.dzlay          = 0.08;           /* thickness of top soil layer */
   user.emma           = emma;           /* emission parameter */
-  user.wind           = put.wnd;        /* wind spped */
+  user.wind           = put.wnd;        /* wind speed */
   user.pressure1      = pressure1;      /* sea level pressure */
   user.airtemp        = airtemp;        /* temperature of air near boundar layer inversion */
   user.Tc             = cloudTemp;      /* temperature at base of lowest cloud layer */

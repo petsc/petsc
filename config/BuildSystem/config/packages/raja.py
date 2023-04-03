@@ -80,7 +80,6 @@ class Configure(config.package.CMakePackage):
       self.system = 'CUDA'
 
       with self.Language('CUDA'):
-        args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
         # Raja cmake adds the -ccbin and -std therefor remove them from provided options
         # to prevent error from double use
         cuda_flags = self.rmArgsStartsWith(self.rmArgsPair(self.getCompilerFlags().split(' '),['-ccbin']),['-std='])
@@ -88,7 +87,7 @@ class Configure(config.package.CMakePackage):
         args.append('-DCMAKE_CUDA_FLAGS="{}"'.format(cuda_flags))
 
       if hasattr(self.cuda,'cudaArch'):
-        generation = 'sm_'+self.cuda.cudaArch
+        generation = 'sm_'+self.cuda.cudaArchSingle()
       else:
         raise RuntimeError('You must set --with-cuda-arch=60, 70, 75, 80 etc.')
       args.append('-DCUDA_ARCH='+generation)
@@ -105,4 +104,3 @@ class Configure(config.package.CMakePackage):
       self.addMakeMacro('RAJA_USE_CUDA_COMPILER',1)
     elif self.hip.found:
       self.addMakeMacro('RAJA_USE_HIP_COMPILER',1)
-

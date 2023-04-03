@@ -5,7 +5,7 @@
 /*@
   DMPlexGetActivePoint - Get the point on which projection is currently working
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . dm   - the `DM`
@@ -27,7 +27,7 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 /*@
   DMPlexSetActivePoint - Set the point on which projection is currently working
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dm   - the `DM`
@@ -449,19 +449,19 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
 }
 
 /*@C
-  DMGetFirstLabeledPoint - Find first labeled point p_o in odm such that the corresponding point p in dm has the specified height. Return p and the corresponding ds.
+  DMGetFirstLabeledPoint - Find first labeled `point` in `odm` such that the corresponding point in `dm` has the specified `height`. Return `point` and the corresponding `ds`.
 
   Input Parameters:
-  dm - the `DM`
-  odm - the enclosing `DM`
-  label - label for `DM` domain, or NULL for whole domain
-  numIds - the number of ids
-  ids - An array of the label ids in sequence for the domain
-  height - Height of target cells in `DMPLEX` topology
++  dm - the `DM`
+.  odm - the enclosing `DM`
+.  label - label for `DM` domain, or `NULL` for whole domain
+.  numIds - the number of `ids`
+.  ids - An array of the label ids in sequence for the domain
+-  height - Height of target cells in `DMPLEX` topology
 
   Output Parameters:
-  point - the first labeled point
-  ds - the ds corresponding to the first labeled point
++  point - the first labeled point
+-  ds - the ds corresponding to the first labeled point
 
   Level: developer
 
@@ -493,7 +493,7 @@ PetscErrorCode DMGetFirstLabeledPoint(DM dm, DM odm, DMLabel label, PetscInt num
         PetscCall(DMGetEnclosurePoint(dm, odm, enc, points[i], &point));
         if (pStart <= point && point < pEnd) {
           ls = point;
-          if (ds) PetscCall(DMGetCellDS(dm, ls, ds));
+          if (ds) PetscCall(DMGetCellDS(dm, ls, ds, NULL));
         }
       }
       PetscCall(ISRestoreIndices(labelIS, &points));
@@ -646,7 +646,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   PetscCall(PetscDSGetNumFields(dsIn, &NfIn));
   PetscCall(DMGetNumFields(dm, &NfTot));
   PetscCall(DMFindRegionNum(dm, ds, &regionNum));
-  PetscCall(DMGetRegionNumDS(dm, regionNum, NULL, &fieldIS, NULL));
+  PetscCall(DMGetRegionNumDS(dm, regionNum, NULL, &fieldIS, NULL, NULL));
   PetscCall(PetscDSIsCohesive(ds, &isCohesive));
   PetscCall(DMGetCoordinateDim(dm, &dimEmbed));
   PetscCall(DMGetLocalSection(dm, &section));

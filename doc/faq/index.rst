@@ -151,16 +151,15 @@ How do such a small group of people manage to write and maintain such a large an
 
 #. **We work very efficiently**.
 
-   - We use Emacs for all editing (and strongly *discourage* our developers from using
-     other editors). Having a uniform editing environment speeds development up immensely.
+   - We use powerful editors and programming environments.
 
    - Our manual pages are generated automatically from formatted comments in the code,
      thus alleviating the need for creating and maintaining manual pages.
 
-   - We employ automatic nightly tests of the entire PETSc library on several different
+   - We employ continuous integration testing of the entire PETSc library on many different
      machine architectures. This process **significantly** protects (no bug-catching
      process is perfect) against inadvertently introducing bugs with new additions. Every
-     new feature **must** pass our suite of hundreds of tests as well as formal code
+     new feature **must** pass our suite of thousands of tests as well as formal code
      review before it may be included.
 
 #. **We are very careful in our design (and are constantly revising our design)**
@@ -185,7 +184,7 @@ How do such a small group of people manage to write and maintain such a large an
      name of a particular object or routine. Our memories are terrible, so careful
      consistent naming puts less stress on our limited human RAM.
 
-#. **The PETSc directory tree is carefully designed to make it easy to move throughout the
+#. **The PETSc directory tree is designed to make it easy to move throughout the
    entire package**
 
 #. **We have a rich, robust, and fast bug reporting system**
@@ -223,7 +222,7 @@ How come when I run the same program on the same number of processes I get a "di
 Inner products and norms in PETSc are computed using the ``MPI_Allreduce()`` command. For
 different runs the order at which values arrive at a given process (via MPI) can be in a
 different order, thus the order in which some floating point arithmetic operations are
-performed will be different. Since floating point arithmetic arithmetic is not
+performed will be different. Since floating point arithmetic is not
 associative, the computed quantity may be slightly different.
 
 Over a run the many slight differences in the inner products and norms will effect all the
@@ -304,7 +303,7 @@ must be built with the ``configure`` option ``--with-precision=single``.
 Can I run PETSc with extended precision?
 ----------------------------------------
 
-Yes, with gcc 4.6 and later (and gfortran 4.6 and later). ``configure`` PETSc using the
+Yes, with gcc and gfortran. ``configure`` PETSc using the
 options ``--with-precision=__float128`` and `` --download-f2cblaslapack``.
 
 .. admonition:: Warning
@@ -338,13 +337,13 @@ architecture and level of optimization, a new user must merely:
 
 #. Set ``PETSC_DIR`` to the full path of the PETSc home
    directory. This will be the location of the ``configure`` script, and usually called
-   "petsc" or some vairation of that (for example, /home/username/petsc).
+   "petsc" or some variation of that (for example, /home/username/petsc).
 
 #. Set ``PETSC_ARCH``, which indicates the configuration on which PETSc will be
    used. Note that ``$PETSC_ARCH`` is simply a name the installer used when installing
    the libraries. There will exist a directory within ``$PETSC_DIR`` that is named after
    its corresponding ``$PETSC_ARCH``. There many be several on a single system, for
-   example "linux-c-debug" for the debug versions compiled by a c compiler or
+   example "linux-c-debug" for the debug versions compiled by a C compiler or
    "linux-c-opt" for the optimized version.
 
 .. admonition:: Still Stuck?
@@ -357,10 +356,7 @@ architecture and level of optimization, a new user must merely:
 The PETSc distribution is SO Large. How can I reduce my disk space usage?
 -------------------------------------------------------------------------
 
-#. The directory ``$PETSC_DIR/docs`` contains a set of HTML manual pages in for use with a
-   browser. You can delete these pages to save some disk space.
-
-#. The PETSc users manual is provided in PDF format at ``$PETSC_DIR/docs/manual.pdf``. You
+#. The PETSc users manual is provided in PDF format at ``$PETSC_DIR/manual.pdf``. You
    can delete this.
 
 #. The PETSc test suite contains sample output for many of the examples. These are
@@ -386,7 +382,7 @@ Yes. Run ``configure`` with the additional flag ``--with-x=0``
 Why do you use MPI?
 -------------------
 
-MPI is the message-passing standard. Because it is a standard, it will not change over
+MPI is the message-passing standard. Because it is a standard, it will not frequently change over
 time; thus, we do not have to change PETSc every time the provider of the message-passing
 system decides to make an interface change. MPI was carefully designed by experts from
 industry, academia, and government labs to provide the highest quality performance and
@@ -657,11 +653,11 @@ PETSc also contains a balancing Neumann-Neumann type preconditioner, see the man
 for ``PCBDDC``. This requires matrices be constructed with ``MatCreateIS()`` via the finite
 element method. See ``src/ksp/ksp/tests/ex59.c`` for an example.
 
-You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric storage, how come no SAIJ?
-----------------------------------------------------------------------------------------
+You have ``MATAIJ`` and ``MATBAIJ`` matrix formats, and ``MATSBAIJ`` for symmetric storage, how come no `MATSAIJ``?
+-------------------------------------------------------------------------------------------------------------------
 
-Just for historical reasons; the SBAIJ format with blocksize one is just as efficient as
-an SAIJ would be.
+Just for historical reasons; the ``MATSBAIJ`` format with blocksize one is just as efficient as
+a `MATSAIJ` would be.
 
 Can I Create BAIJ matrices with different size blocks for different block rows?
 -------------------------------------------------------------------------------
@@ -868,15 +864,15 @@ How do I compile and link my own PETSc application codes and can I use my own ``
 See the :ref:`section <sec_writing_application_codes>` of the users manual on writing
 application codes with PETSc. 
 
-Can I use Cmake to build my own project that depends on PETSc?
+Can I use CMake to build my own project that depends on PETSc?
 --------------------------------------------------------------
 
 See the :ref:`section <sec_writing_application_codes>` of the users manual on writing
 application codes with PETSc. 
 
 
-How can I put carriage returns in PetscPrintf() statements from Fortran?
-------------------------------------------------------------------------
+How can I put carriage returns in ``PetscPrintf()`` statements from Fortran?
+----------------------------------------------------------------------------
 
 You can use the same notation as in C, just put a ``\n`` in the string. Note that no other C
 format instruction is supported.
@@ -966,7 +962,7 @@ the only general purpose way to determine which approach is best for your proble
    the problem since the performance benefits depend on the exact problem and and problem
    size!
 
-How can I use Newton's Method Jacobian free? Can I difference a different function than provided with SNESSetFunction()?
+How can I use Newton's Method Jacobian free? Can I difference a different function than provided with ``SNESSetFunction()``?
 ----------------------------------------------------------------------------------------------------------------------------
 
 The simplest way is with the option ``-snes_mf``, this will use finite differencing of the
@@ -1019,6 +1015,8 @@ to get approximations to the condition number of the operator. This will general
 accurate for the largest singular values, but may overestimate the smallest singular value
 unless the method has converged. Make sure to avoid restarts. To estimate the condition
 number of the preconditioned operator, use ``-pc_type somepc`` in the last command.
+
+You can use `SLEPc <https://slepc.upv.es>`__ for highly scalable, efficient, and quality eigenvalue computations.
 
 How can I compute the inverse of a matrix in PETSc?
 ---------------------------------------------------
@@ -1127,13 +1125,16 @@ type ``MATSCHURCOMPLEMENT``.
 Do you have examples of doing unstructured grid Finite Element Method (FEM) with PETSc?
 ---------------------------------------------------------------------------------------
 
-There are at least two ways to write a finite element code using PETSc:
+There are at least three ways to write finite element codes using PETSc:
 
 #. Use ``DMPLEX``, which is a high level approach to manage your mesh and
    discretization. See the :ref:`tutorials sections <tut_stokes>` for further information,
    or see ``src/snes/tutorial/ex62.c``.
 
-#. Manage the grid data structure yourself and use PETSc ``IS`` and ``VecScatter`` to
+#. Use packages such as `deal.ii <https://www.dealii.org>`__, `libMesh <https://libmesh.github.io>`__, or
+   `Firedrake <https://www.firedrakeproject.org>`__, which use PETSc for the solvers.
+
+#. Manage the grid data structure yourself and use PETSc ``PetscSF``, ``IS``, and ``VecScatter`` to
    communicate the required ghost point communication. See
    ``src/snes/tutorials/ex10d/ex10.c``.
 
@@ -1188,7 +1189,7 @@ When solving a system with Dirichlet boundary conditions I can use MatZeroRows()
   balancing. In this case the new matrix solved remains symmetric even though
   ``MatZeroRows()`` is used.
 
-An alternative approach is, when assemblying the matrix (generating values and passing
+An alternative approach is, when assembling the matrix (generating values and passing
 them to the matrix), never to include locations for the Dirichlet grid points in the
 vector and matrix, instead taking them into account as you put the other values into the
 load.
@@ -1244,8 +1245,8 @@ appropriate norm on the resulting residual. Note that depending on the
 ``KSPSetNormType()`` of the method you may not return the same norm as provided by the
 method. See also ``KSPSetPCSide()``.
 
-If I have a sequential program can I use a parallel direct solver?
-------------------------------------------------------------------
+If I have a sequential program can I use a PETSc parallel solver?
+-----------------------------------------------------------------
 
 .. important::
 
@@ -1278,6 +1279,7 @@ available.
    cores available for each MPI process. For example if your compute nodes have 6 cores
    and you use 2 MPI processes per node then set ``$OMP_NUM_THREADS`` to 2 or 3.
 
+Another approach that allows using a PETSc parallel solver is to use ``PCMPI``.
 
 TS or SNES produces infeasible (out of domain) solutions or states. How can I prevent this?
 -------------------------------------------------------------------------------------------
@@ -1294,7 +1296,7 @@ tightening ``TS`` tolerances for adaptive time stepping).
 Can PETSc work with Hermitian matrices?
 ---------------------------------------
 
-PETSc's support of Hermitian matrices is very limited. Many operations and solvers work
+PETSc's support of Hermitian matrices is limited. Many operations and solvers work
 for symmetric (``MATSBAIJ``) matrices and operations on transpose matrices but there is
 little direct support for Hermitian matrices and Hermitian transpose (complex conjugate
 transpose) operations. There is ``KSPSolveTranspose()`` for solving the transpose of a
@@ -1419,7 +1421,8 @@ PETSc has so many options for my program that it is hard to keep them straight
 Running the PETSc program with the option ``-help`` will print out many of the options. To
 print the options that have been specified within a program, employ ``-options_left`` to
 print any options that the user specified but were not actually used by the program and
-all options used; this is helpful for detecting typo errors.
+all options used; this is helpful for detecting typo errors. The PETSc website has a search option,
+in the upper right hand corner, that quickly finds answers to most PETSc questions.
 
 PETSc automatically handles many of the details in parallel PDE solvers. How can I understand what is really happening within my program?
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -1438,22 +1441,16 @@ Assembling large sparse matrices takes a long time. What can I do to make this p
 You probably need to do preallocation, as explained in :any:`sec_matsparse`.
 See also the :ref:`performance chapter <ch_performance>` of the users manual.
 
+For GPUs (and even CPUs) you can use ``MatSetPreallocationCOO()`` and ``MatSetValuesCOO()`` for more rapid assembly.
+
 How can I generate performance summaries with PETSc?
 ----------------------------------------------------
 
-Use these options at runtime:
+Use this option at runtime:
 
 -log_view  Outputs a comprehensive timing, memory consumption, and communications digest
            for your program. See the :ref:`profiling chapter <ch_profiling>` of the users
            manual for information on interpreting the summary data.
-
--snes_view  Generates performance and operational summaries for nonlinear solvers.
-
--ksp_view   Generates performance and operational summaries for nonlinear solvers.
-
-.. note::
-
-   Only the highest level PETSc object used needs to specify the view option.
 
 How do I know the amount of time spent on each level of the multigrid solver/preconditioner?
 --------------------------------------------------------------------------------------------
@@ -1489,9 +1486,10 @@ This can happen for many reasons:
    with ``-log_view``). Often the slower time is in generating the matrix or some other
    operation.
 
-#. There must be enough work for each process to overweigh the communication time. We
+#. There must be enough work for each process to outweigh the communication time. We
    recommend an absolute minimum of about 10,000 unknowns per process, better is 20,000 or
-   more.
+   more. This is even more true when using multiple GPUs, where you need to have millions
+   of unknowns per GPU.
 
 #. Make sure the :ref:`communication speed of the parallel computer
    <doc_faq_general_parallel>` is good enough for parallel solvers.
@@ -1868,7 +1866,7 @@ On newer Ubuntu linux machines - one has to disable ``ptrace_scope`` with
 
 to get start in debugger working.
 
-If ``-start_in_debugger`` does not really work on your OS, for a uniprocessor job, just
+If ``-start_in_debugger`` does not work on your OS, for a uniprocessor job, just
 try the debugger directly, for example: ``gdb ex1``. You can also use `TotalView
 <https://totalview.io/products/totalview>`__ which is a good graphical parallel debugger.
 
@@ -2096,8 +2094,8 @@ This error can also happen if your matrix is singular, see ``MatSetNullSpace()``
 to handle this. If this error occurs in the zeroth row of the matrix, it is likely you
 have an error in the code that generates the matrix.
 
-You create draw windows or ViewerDraw windows or use options ``-ksp_monitor draw::draw_lg`` or ``-snes_monitor draw::draw_lg`` and the program seems to run OK but windows never open
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+You create draw windows or ``PETSCVIEWERDRAW`` windows or use options ``-ksp_monitor draw::draw_lg`` or ``-snes_monitor draw::draw_lg`` and the program seems to run OK but windows never open
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 The libraries were compiled without support for X windows. Make sure that ``configure``
 was run with the option ``--with-x``.

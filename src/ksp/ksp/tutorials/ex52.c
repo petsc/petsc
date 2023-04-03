@@ -125,27 +125,9 @@ int main(int argc, char **args)
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
 
-  /*
-     Create parallel vectors.
-      - We form 1 vector from scratch and then duplicate as needed.
-      - When using VecCreate(), VecSetSizes and VecSetFromOptions()
-        in this example, we specify only the
-        vector's global dimension; the parallel partitioning is determined
-        at runtime.
-      - When solving a linear system, the vectors and matrices MUST
-        be partitioned accordingly.  PETSc automatically generates
-        appropriately partitioned matrices and vectors when MatCreate()
-        and VecCreate() are used with the same communicator.
-      - The user can alternatively specify the local vector and matrix
-        dimensions when more sophisticated partitioning is needed
-        (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
-        below).
-  */
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
-  PetscCall(VecSetSizes(u, PETSC_DECIDE, m * n));
-  PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u, &b));
-  PetscCall(VecDuplicate(b, &x));
+  /* Create parallel vectors */
+  PetscCall(MatCreateVecs(A, &u, &b));
+  PetscCall(VecDuplicate(u, &x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -208,6 +190,16 @@ int main(int argc, char **args)
     PetscCall(PCFactorGetMatrix(pc, &F));
 
     if (flg_mumps) {
+      /* Zero the first and last rows in the rank, they should then show up in corresponding null pivot rows output via
+         MatMumpsGetNullPivots */
+      flg = PETSC_FALSE;
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-zero_first_and_last_rows", &flg, NULL));
+      if (flg) {
+        PetscInt rows[2];
+        rows[0] = Istart;   /* first row of the rank */
+        rows[1] = Iend - 1; /* last row of the rank */
+        PetscCall(MatZeroRows(A, 2, rows, 0.0, NULL, NULL));
+      }
       /* Get memory estimates from MUMPS' MatLUFactorSymbolic(), e.g. INFOG(16), INFOG(17).
          KSPSetUp() below will do nothing inside MatLUFactorSymbolic() */
       MatFactorInfo info;
@@ -363,18 +355,25 @@ int main(int argc, char **args)
 
 #if defined(PETSC_HAVE_MUMPS)
   if (flg_mumps || flg_mumps_ch) {
-    PetscInt  icntl, infog34;
+    PetscInt  icntl, infog34, num_null_pivots, *null_pivots;
     PetscReal cntl, rinfo12, rinfo13;
     icntl = 3;
     PetscCall(MatMumpsGetCntl(F, icntl, &cntl));
 
-    /* compute determinant */
+    /* compute determinant and check for any null pivots*/
     if (rank == 0) {
       PetscCall(MatMumpsGetInfog(F, 34, &infog34));
       PetscCall(MatMumpsGetRinfog(F, 12, &rinfo12));
       PetscCall(MatMumpsGetRinfog(F, 13, &rinfo13));
+      PetscCall(MatMumpsGetNullPivots(F, &num_null_pivots, &null_pivots));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps row pivot threshold = %g\n", cntl));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps determinant = (%g, %g) * 2^%" PetscInt_FMT " \n", (double)rinfo12, (double)rinfo13, infog34));
+      if (num_null_pivots > 0) {
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps num of null pivots detected = %" PetscInt_FMT "\n", num_null_pivots));
+        PetscCall(PetscSortInt(num_null_pivots, null_pivots)); /* just make the printf deterministic */
+        for (j = 0; j < num_null_pivots; j++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps row with null pivots is = %" PetscInt_FMT "\n", null_pivots[j]));
+      }
+      PetscCall(PetscFree(null_pivots));
     }
   }
 #endif
@@ -453,8 +452,15 @@ int main(int argc, char **args)
       suffix: mumps_4
       nsize: 3
       requires: mumps !complex !single
-      args: -use_mumps_lu -m 50 -n 50 -use_mumps_lu -print_mumps_memory
+      args: -use_mumps_lu -m 50 -n 50 -print_mumps_memory
       output_file: output/ex52_4.out
+
+   test:
+      suffix: mumps_5
+      nsize: 3
+      requires: mumps !complex !single
+      args: -use_mumps_lu -m 50 -n 50 -zero_first_and_last_rows
+      output_file: output/ex52_5.out
 
    test:
       suffix: mumps_omp_2
@@ -480,44 +486,64 @@ int main(int argc, char **args)
       args: -use_mumps_ch -mat_type sbaij -mat_mumps_use_omp_threads
       output_file: output/ex52_1.out
 
-   test:
-      suffix: strumpack
+   testset:
+      suffix: strumpack_2
+      nsize: {{1 2}}
       requires: strumpack
       args: -use_strumpack_lu
       output_file: output/ex52_3.out
 
-   test:
-      suffix: strumpack_2
-      nsize: 2
-      requires: strumpack
-      args: -use_strumpack_lu
-      output_file: output/ex52_3.out
+      test:
+        suffix: aij
+        args: -mat_type aij
+
+      test:
+        requires: kokkos_kernels
+        suffix: kok
+        args: -mat_type aijkokkos
+
+      test:
+        requires: cuda
+        suffix: cuda
+        args: -mat_type aijcusparse
+
+      test:
+        requires: hip
+        suffix: hip
+        args: -mat_type aijhipsparse
 
    test:
       suffix: strumpack_ilu
+      nsize: {{1 2}}
       requires: strumpack
       args: -use_strumpack_ilu
       output_file: output/ex52_3.out
 
-   test:
-      suffix: strumpack_ilu_2
-      nsize: 2
-      requires: strumpack
-      args: -use_strumpack_ilu
-      output_file: output/ex52_3.out
-
-   test:
-      suffix: superlu
-      requires: superlu superlu_dist
-      args: -use_superlu_lu
-      output_file: output/ex52_2.out
-
-   test:
+   testset:
       suffix: superlu_dist
-      nsize: 2
+      nsize: {{1 2}}
       requires: superlu superlu_dist
       args: -use_superlu_lu
       output_file: output/ex52_2.out
+
+      test:
+        suffix: aij
+        args: -mat_type aij
+
+      test:
+        requires: kokkos_kernels
+        suffix: kok
+        args: -mat_type aijkokkos
+
+      test:
+        requires: cuda
+        suffix: cuda
+        args: -mat_type aijcusparse
+
+      test:
+        requires: hip
+        suffix: hip
+        args: -mat_type aijhipsparse
 
    test:
       suffix: superlu_ilu

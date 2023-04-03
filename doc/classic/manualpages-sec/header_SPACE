@@ -1,6 +1,5 @@
-# PetscSpace Manual Pages
+# Function Spaces (PetscSpace)
 
 <A HREF="PETSC_DIRsrc/dm/dt/space/tutorials/index.html">Examples</A><BR>
 
 The PetscSpace class encapsulates a function space.
-

@@ -10,19 +10,9 @@ extern "C" int EGlite_inTopology(const ego, const double *);
 #if defined(PETSC_HAVE_TETGEN_TETLIBRARY_NEEDED)
   #define TETLIBRARY
 #endif
-#if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wunused-parameter"
-#elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wunused-parameter")
 #include <tetgen.h>
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic pop
-#endif
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 
 /* This is to fix the tetrahedron orientation from TetGen */
 static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCorners, PetscInt cells[])
@@ -144,9 +134,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
 
     /* Take away 'Q' for verbose output */
 #ifdef PETSC_HAVE_EGADS
-    PetscCall(PetscStrcpy(args, "pqezQY"));
+    PetscCall(PetscStrncpy(args, "pqezQY", sizeof(args)));
 #else
-    PetscCall(PetscStrcpy(args, "pqezQ"));
+    PetscCall(PetscStrncpy(args, "pqezQ", sizeof(args)));
 #endif
     if (mesh->tetgenOpts) {
       ::tetrahedralize(mesh->tetgenOpts, &in, &out);
@@ -427,7 +417,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    PetscCall(PetscStrcpy(args, "qezQra"));
+    PetscCall(PetscStrncpy(args, "qezQra", sizeof(args)));
     ::tetrahedralize(args, &in, &out);
   }
 

@@ -10,7 +10,7 @@
 /*@C
   PetscClassRegLogCreate - This creates a `PetscClassRegLog` object.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . classLog - The `PetscClassRegLog`
@@ -41,7 +41,7 @@ PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
 /*@C
   PetscClassRegLogDestroy - This destroys a `PetscClassRegLog` object.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . classLog - The `PetscClassRegLog`
@@ -67,7 +67,7 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
 /*@C
   PetscClassRegInfoDestroy - This destroys a `PetscClassRegInfo` object.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . c - The PetscClassRegInfo
@@ -89,7 +89,7 @@ PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
 /*@C
   PetscClassPerfLogCreate - This creates a `PetscClassPerfLog` object.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . classLog - The `PetscClassPerfLog`
@@ -120,7 +120,7 @@ PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog)
 /*@C
   PetscClassPerfLogDestroy - This destroys a `PetscClassPerfLog` object.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . classLog - The `PetscClassPerfLog`
@@ -144,7 +144,7 @@ PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog)
 /*@C
   PetscClassPerfInfoClear - This clears a `PetscClassPerfInfo` object.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . classInfo - The `PetscClassPerfInfo`
@@ -170,7 +170,7 @@ PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 /*@C
   PetscClassPerfLogEnsureSize - This ensures that a `PetscClassPerfLog` is at least of a certain size.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + classLog - The `PetscClassPerfLog`

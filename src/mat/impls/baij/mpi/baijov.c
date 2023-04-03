@@ -13,8 +13,9 @@ extern PetscErrorCode MatRestoreRow_MPIBAIJ(Mat, PetscInt, PetscInt *, PetscInt 
 
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscInt ov)
 {
-  PetscInt i, N = C->cmap->N, bs = C->rmap->bs;
-  IS      *is_new;
+  PetscInt        i, N = C->cmap->N, bs = C->rmap->bs, n;
+  const PetscInt *idx;
+  IS             *is_new;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(imax, &is_new));
@@ -22,9 +23,13 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscIn
   PetscCall(ISCompressIndicesGeneral(N, C->rmap->n, bs, imax, is, is_new));
   PetscCheck(ov >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative overlap specified");
   for (i = 0; i < ov; ++i) PetscCall(MatIncreaseOverlap_MPIBAIJ_Once(C, imax, is_new));
-  for (i = 0; i < imax; i++) PetscCall(ISDestroy(&is[i]));
-  PetscCall(ISExpandIndicesGeneral(N, N, bs, imax, is_new, is));
-  for (i = 0; i < imax; i++) PetscCall(ISDestroy(&is_new[i]));
+  for (i = 0; i < imax; i++) {
+    PetscCall(ISDestroy(&is[i]));
+    PetscCall(ISGetLocalSize(is_new[i], &n));
+    PetscCall(ISGetIndices(is_new[i], &idx));
+    PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)is_new[i]), bs, n, idx, PETSC_COPY_VALUES, &is[i]));
+    PetscCall(ISDestroy(&is_new[i]));
+  }
   PetscCall(PetscFree(is_new));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -75,7 +80,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C, PetscInt imax, IS is[])
   PetscCall(PetscObjectGetNewTag((PetscObject)C, &tag1));
   PetscCall(PetscObjectGetNewTag((PetscObject)C, &tag2));
 
-  PetscCall(PetscMalloc2(imax + 1, (PetscInt ***)&idx, imax, &n));
+  PetscCall(PetscMalloc2(imax, (PetscInt ***)&idx, imax, &n));
 
   for (i = 0; i < imax; i++) {
     PetscCall(ISGetIndices(is[i], &idx[i]));
@@ -530,9 +535,14 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
   PetscFunctionBegin;
   /* The compression and expansion should be avoided. Doesn't point
      out errors, might change the indices, hence buggey */
-  PetscCall(PetscMalloc2(ismax + 1, &isrow_block, ismax + 1, &iscol_block));
-  PetscCall(ISCompressIndicesGeneral(N, C->rmap->n, bs, ismax, isrow, isrow_block));
-  PetscCall(ISCompressIndicesGeneral(N, C->cmap->n, bs, ismax, iscol, iscol_block));
+  PetscCall(PetscMalloc2(ismax, &isrow_block, ismax, &iscol_block));
+  PetscCall(ISCompressIndicesGeneral(C->rmap->N, C->rmap->n, bs, ismax, isrow, isrow_block));
+  if (isrow == iscol) {
+    for (i = 0; i < ismax; i++) {
+      iscol_block[i] = isrow_block[i];
+      PetscCall(PetscObjectReference((PetscObject)iscol_block[i]));
+    }
+  } else PetscCall(ISCompressIndicesGeneral(N, C->cmap->n, bs, ismax, iscol, iscol_block));
 
   /* Determine the number of stages through which submatrices are done */
   if (!C->cmap->N) nmax = 20 * 1000000 / sizeof(PetscInt);
@@ -606,7 +616,6 @@ PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const Pe
 }
 #endif
 
-/* -------------------------------------------------------------------------*/
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
 PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
 {

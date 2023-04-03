@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LOCDIR          = src/ts/tutorials/multirate/
 MANSEC          = TS
 OBJECTS_FV      = finitevolume1d.o
 
@@ -12,4 +11,3 @@ ex5: ex5.o $(OBJECTS_FV)
 ex6: ex6.o $(OBJECTS_FV)
 ex8: ex8.o $(OBJECTS_FV)
 
-include ${PETSC_DIR}/lib/petsc/conf/test

@@ -27,7 +27,7 @@ template <DeviceType T>
 class Device : public ::Petsc::device::impl::DeviceBase<Device<T>>, impl::Interface<T> {
 public:
   PETSC_DEVICE_IMPL_BASE_CLASS_HEADER(base_type, Device<T>);
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(cupmInterface_t, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
   static PetscErrorCode initialize(MPI_Comm, PetscInt *, PetscBool *, PetscDeviceInitType *) noexcept;
 

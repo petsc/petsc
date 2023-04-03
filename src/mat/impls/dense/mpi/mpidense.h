@@ -27,7 +27,7 @@ typedef struct {
   Mat A; /* local submatrix */
 
   /* The following variables are used for matrix assembly */
-  PetscBool    donotstash;        /* Flag indicationg if values should be stashed */
+  PetscBool    donotstash;        /* Flag indicating if values should be stashed */
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
   PetscInt     nsends, nrecvs;    /* numbers of sends and receives */
@@ -59,3 +59,21 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_Elemental(Mat, Mat, PetscReal, Ma
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_Elemental(Mat, Mat, Mat);
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat);
+
+PETSC_INTERN PetscErrorCode MatShift_MPIDense(Mat, PetscScalar);
+PETSC_INTERN PetscErrorCode MatDenseGetColumnVecWrite_MPIDense(Mat, PetscInt, Vec *);
+PETSC_INTERN PetscErrorCode MatDenseGetColumnVecRead_MPIDense(Mat, PetscInt, Vec *);
+PETSC_INTERN PetscErrorCode MatDenseGetColumnVec_MPIDense(Mat, PetscInt, Vec *);
+PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat, PetscInt, Vec *);
+PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecRead_MPIDense(Mat, PetscInt, Vec *);
+PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVec_MPIDense(Mat, PetscInt, Vec *);
+
+PETSC_INTERN PetscErrorCode MatCreate_MPIDense(Mat);
+
+#if PetscDefined(HAVE_CUDA)
+PETSC_INTERN PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat, MatType, MatReuse, Mat *);
+#endif
+
+#if PetscDefined(HAVE_HIP)
+PETSC_INTERN PetscErrorCode MatConvert_MPIDense_MPIDenseHIP(Mat, MatType, MatReuse, Mat *);
+#endif

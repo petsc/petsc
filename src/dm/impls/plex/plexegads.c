@@ -104,7 +104,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
 /*@
   DMPlexSnapToGeomModel - Given a coordinate point 'mcoords' on the mesh point 'p', return the closest coordinate point 'gcoords' on the geometry model associated with that point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dm      - The `DMPLEX` object
@@ -118,7 +118,9 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   Level: intermediate
 
   Note:
-  Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS. The coordinate dimension may be different from the coordinate dimension of the dm, for example if the transformation is extrusion.
+  Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS.
+
+  The coordinate dimension may be different from the coordinate dimension of the `dm`, for example if the transformation is extrusion.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMRefine()`, `DMPlexCreate()`, `DMPlexSetRefinementUniform()`
 @*/
@@ -1426,15 +1428,13 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
 #endif
 
 /*@
-  DMPlexInflateToGeomModel - Snaps the vertex coordinates of a `DMPLEX` object representing the mesh to its geometry if some vertices depart from the model. This usually happens with non-conforming refinement.
+  DMPlexInflateToGeomModel - Snaps the vertex coordinates of a `DMPLEX` object representing the mesh to its geometry if some vertices depart from the model.
+  This usually happens with non-conforming refinement.
 
-  Collective on dm
+  Collective
 
   Input Parameter:
 . dm - The uninflated `DM` object representing the mesh
-
-  Output Parameter:
-. dm - The inflated `DM` object representing the mesh
 
   Level: intermediate
 

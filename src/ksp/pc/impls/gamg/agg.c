@@ -19,7 +19,8 @@ typedef struct {
    Logically Collective
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+-  n - the number of smooths
 
    Options Database Key:
 .  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
@@ -123,7 +124,8 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 
 /*
    PCSetCoordinates_AGG
-     - collective
+
+   Collective
 
    Input Parameter:
    . pc - the preconditioner context

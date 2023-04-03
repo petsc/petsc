@@ -1,7 +1,6 @@
 
 #include <petscwebclient.h>
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma gcc diagnostic   ignored "-Wdeprecated-declarations"
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 
 static BIO *bio_err = NULL;
 
@@ -63,12 +62,12 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 
 #if defined(PETSC_USE_SSL_CERTIFICATE)
   /* Locate keyfile */
-  PetscCall(PetscStrcpy(keyfile, "sslclient.pem"));
+  PetscCall(PetscStrncpy(keyfile, "sslclient.pem", sizeof(keyfile)));
   PetscCall(PetscTestFile(keyfile, 'r', &exists));
   if (!exists) {
     PetscCall(PetscGetHomeDirectory(keyfile, PETSC_MAX_PATH_LEN));
-    PetscCall(PetscStrcat(keyfile, "/"));
-    PetscCall(PetscStrcat(keyfile, "sslclient.pem"));
+    PetscCall(PetscStrlcat(keyfile, "/", sizeof(keyfile)));
+    PetscCall(PetscStrlcat(keyfile, "sslclient.pem", sizeof(keyfile)));
     PetscCall(PetscTestFile(keyfile, 'r', &exists));
     PetscCheck(exists, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate sslclient.pem file in current directory or home directory");
   }
@@ -136,17 +135,17 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
   /* Now construct our HTTP request */
   request_len = typelen + 1 + pathlen + hostlen + 100 + headlen + contenttypelen + contentlen + bodylen + 1;
   PetscCall(PetscMalloc1(request_len, &request));
-  PetscCall(PetscStrcpy(request, type));
-  PetscCall(PetscStrcat(request, " "));
-  PetscCall(PetscStrcat(request, path));
-  PetscCall(PetscStrcat(request, " HTTP/1.1\r\nHost: "));
-  PetscCall(PetscStrcat(request, host));
+  PetscCall(PetscStrncpy(request, type, request_len));
+  PetscCall(PetscStrlcat(request, " ", request_len));
+  PetscCall(PetscStrlcat(request, path, request_len));
+  PetscCall(PetscStrlcat(request, " HTTP/1.1\r\nHost: ", request_len));
+  PetscCall(PetscStrlcat(request, host, request_len));
   PetscCall(PetscFree(host));
-  PetscCall(PetscStrcat(request, "\r\nUser-Agent:PETScClient\r\n"));
-  PetscCall(PetscStrcat(request, header));
-  if (ctype) PetscCall(PetscStrcat(request, contenttype));
-  PetscCall(PetscStrcat(request, contentlength));
-  PetscCall(PetscStrcat(request, body));
+  PetscCall(PetscStrlcat(request, "\r\nUser-Agent:PETScClient\r\n", request_len));
+  PetscCall(PetscStrlcat(request, header, request_len));
+  if (ctype) PetscCall(PetscStrlcat(request, contenttype, request_len));
+  PetscCall(PetscStrlcat(request, contentlength, request_len));
+  PetscCall(PetscStrlcat(request, body, request_len));
   PetscCall(PetscStrlen(request, &request_len));
   PetscCall(PetscInfo(NULL, "HTTPS request follows: \n%s\n", request));
 
@@ -272,7 +271,7 @@ PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char 
 
   PetscCall(PetscBinaryWrite(sock, request, request_len, PETSC_CHAR));
   PetscCall(PetscFree(request));
-  PetscBinaryRead(sock, buff, buffsize, NULL, PETSC_CHAR);
+  PetscCall(PetscBinaryRead(sock, buff, buffsize, NULL, PETSC_CHAR));
   buff[buffsize - 1] = 0;
   PetscCall(PetscInfo(NULL, "HTTP result follows: \n%s\n", buff));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -333,16 +332,16 @@ PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char valu
   size_t len;
 
   PetscFunctionBegin;
-  PetscCall(PetscStrcpy(work, "\""));
+  PetscCall(PetscStrncpy(work, "\"", sizeof(work)));
   PetscCall(PetscStrlcat(work, key, sizeof(work)));
-  PetscCall(PetscStrcat(work, "\":"));
+  PetscCall(PetscStrlcat(work, "\":", sizeof(work)));
   PetscCall(PetscStrstr(buff, work, &v));
   PetscCall(PetscStrlen(work, &len));
   if (v) {
     v += len;
   } else {
     work[len++ - 1] = 0;
-    PetscCall(PetscStrcat(work, " :"));
+    PetscCall(PetscStrlcat(work, " :", sizeof(work)));
     PetscCall(PetscStrstr(buff, work, &v));
     if (!v) {
       *found = PETSC_FALSE;
@@ -405,11 +404,11 @@ PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char valu
     }
   }
 
-  PetscCall(PetscStrcat(buff, "\""));
-  PetscCall(PetscStrcat(buff, key));
-  PetscCall(PetscStrcat(buff, "\":"));
-  if (!special) PetscCall(PetscStrcat(buff, "\""));
-  PetscCall(PetscStrcat(buff, value));
-  if (!special) PetscCall(PetscStrcat(buff, "\""));
+  PetscCall(PetscStrlcat(buff, "\"", bufflen));
+  PetscCall(PetscStrlcat(buff, key, bufflen));
+  PetscCall(PetscStrlcat(buff, "\":", bufflen));
+  if (!special) PetscCall(PetscStrlcat(buff, "\"", bufflen));
+  PetscCall(PetscStrlcat(buff, value, bufflen));
+  if (!special) PetscCall(PetscStrlcat(buff, "\"", bufflen));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

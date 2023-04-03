@@ -419,13 +419,13 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger, PetscOptionI
 /*@C
   VecTaggerCDFSetMethod - Set the method used to compute absolute boxes from CDF boxes
 
-  Logically Collective on tagger
-
-  Level: advanced
+  Logically Collective
 
   Input Parameters:
 + tagger - the `VecTagger` context
 - method - the method
+
+  Level: advanced
 
 .seealso: `Vec`, `VecTagger`, `VecTaggerCDFMethod`
 @*/
@@ -443,15 +443,15 @@ PetscErrorCode VecTaggerCDFSetMethod(VecTagger tagger, VecTaggerCDFMethod method
 /*@C
   VecTaggerCDFGetMethod - Get the method used to compute absolute boxes from CDF boxes
 
-  Logically Collective on tagger
+  Logically Collective
 
-  Level: advanced
-
-  Input Parameters:
+  Input Parameter:
 . tagger - the `VecTagger` context
 
-  Output Parameters:
+  Output Parameter:
 . method - the method
+
+  Level: advanced
 
 .seealso: `Vec`, `VecTagger`, `VecTaggerCDFMethod`
 @*/
@@ -469,17 +469,18 @@ PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *metho
 /*@C
   VecTaggerCDFIterativeSetTolerances - Set the tolerances for iterative computation of absolute boxes from CDF boxes.
 
-  Logically Collective on VecTagger
+  Logically Collective
 
   Input Parameters:
-+ tagger - the VecTagger context
-. maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean, and standard deviation of the box endpoints.
++ tagger - the `VecTagger` context
+. maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean,
+          and standard deviation of the box endpoints.
 . rtol - the acceptable relative tolerance in the absolute values from the initial guess
 - atol - the acceptable absolute tolerance in the absolute values from the initial guess
 
   Level: advanced
 
-.seealso: `VecTaggerCDFSetMethod()`
+.seealso: `VecTagger`, `VecTaggerCDFSetMethod()`
 @*/
 PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt maxit, PetscReal rtol, PetscReal atol)
 {
@@ -499,19 +500,20 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 /*@C
   VecTaggerCDFIterativeGetTolerances - Get the tolerances for iterative computation of absolute boxes from CDF boxes.
 
-  Logically Collective on VecTagger
+  Logically Collective
 
   Input Parameter:
-. tagger - the VecTagger context
+. tagger - the `VecTagger` context
 
   Output Parameters:
-+ maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean, and standard deviation of the box endpoints.
++ maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum,
+          mean, and standard deviation of the box endpoints.
 . rtol - the acceptable relative tolerance in the absolute values from the initial guess
 - atol - the acceptable absolute tolerance in the absolute values from the initial guess
 
   Level: advanced
 
-.seealso: `VecTaggerCDFSetMethod()`
+.seealso: `VecTagger`, `VecTaggerCDFSetMethod()`
 @*/
 PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *maxit, PetscReal *rtol, PetscReal *atol)
 {
@@ -531,12 +533,12 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
   Logically Collective
 
   Input Parameters:
-+ tagger - the VecTagger context
-- boxes - a blocksize array of VecTaggerBox boxes
++ tagger - the `VecTagger` context
+- boxes - a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 
-.seealso: `VecTaggerCDFGetBox()`
+.seealso: `VecTagger`, `VecTaggerCDFGetBox()`, `VecTaggerBox`
 @*/
 PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox *box)
 {
@@ -546,19 +548,20 @@ PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox *box)
 }
 
 /*@C
-  VecTaggerCDFGetBox - Get the cumulative box (multi-dimensional box) defining the values to be tagged by the tagger, where cumulative boxes are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
+  VecTaggerCDFGetBox - Get the cumulative box (multi-dimensional box) defining the values to be tagged by the tagger, where cumulative boxes
+  are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective
 
   Input Parameter:
-. tagger - the VecTagger context
+. tagger - the `VecTagger` context
 
   Output Parameter:
-. boxes - a blocksize array of VecTaggerBox boxes
+. boxes - a blocksize array of `VecTaggerBox` boxes
 
   Level: advanced
 
-.seealso: `VecTaggerCDFSetBox()`
+.seealso: `VecTagger`, `VecTaggerCDFSetBox()`, `VecTaggerBox`
 @*/
 PetscErrorCode VecTaggerCDFGetBox(VecTagger tagger, const VecTaggerBox **box)
 {

@@ -331,7 +331,7 @@ int main(int argc, char **argv)
   PetscCall(PetscFunctionListAdd(&plist, "rober", &RoberCreate));
   PetscCall(PetscFunctionListAdd(&plist, "ce", &CECreate));
   PetscCall(PetscFunctionListAdd(&plist, "orego", &OregoCreate));
-  PetscCall(PetscStrcpy(pname, "ce"));
+  PetscCall(PetscStrncpy(pname, "ce", sizeof(pname)));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options

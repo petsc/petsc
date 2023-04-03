@@ -434,7 +434,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C, Mat A
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------- */
 /*
      Version for when blocks are 1 by 1.
 */
@@ -716,7 +715,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A, MatFactorType ftyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------- */
 PetscErrorCode MatLUFactor_SeqBAIJ(Mat A, IS row, IS col, const MatFactorInfo *info)
 {
   Mat C;
@@ -1551,7 +1549,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
   PetscBool  allowzeropivot, zeropivotdetected = PETSC_FALSE;
 
   PetscFunctionBegin;
-  /* ------- symbolic factorization, can be reused ---------*/
+  /* symbolic factorization, can be reused */
   PetscCall(MatMissingDiagonal(A, &missing, &i));
   PetscCheck(!missing, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry %" PetscInt_FMT, i);
   adiag = a->diag;
@@ -1600,7 +1598,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
   (B)->factortype            = MAT_FACTOR_ILUDT;
   (B)->info.factor_mallocs   = 0;
   (B)->info.fill_ratio_given = ((PetscReal)nnz_max) / ((PetscReal)(ai[mbs] * bs2));
-  /* ------- end of symbolic factorization ---------*/
+  /* end of symbolic factorization */
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));
 

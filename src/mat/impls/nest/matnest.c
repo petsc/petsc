@@ -247,7 +247,6 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_Nest_Dense_AB(Mat C)
 {
   PetscFunctionBegin;
@@ -263,7 +262,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
   if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Nest_Dense_AB(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* --------------------------------------------------------- */
 
 static PetscErrorCode MatMultTranspose_Nest(Mat A, Vec x, Vec y)
 {
@@ -1055,7 +1053,7 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *m
 /*@
  MatNestGetSubMat - Returns a single, sub-matrix from a `MATNEST`
 
- Not collective
+ Not Collective
 
  Input Parameters:
 +   A  - `MATNEST` matrix
@@ -1063,11 +1061,11 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat *m
 -   jdxm - index of the matrix within the nest matrix
 
  Output Parameter:
-.   sub - matrix at index idxm,jdxm within the nest matrix
+.   sub - matrix at index `idxm`, `jdxm` within the nest matrix
 
  Level: developer
 
-.seealso: `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`,
           `MatNestGetLocalISs()`, `MatNestGetISs()`
 @*/
 PetscErrorCode MatNestGetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat *sub)
@@ -1109,22 +1107,22 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm, Mat ma
 /*@
  MatNestSetSubMat - Set a single submatrix in the `MATNEST`
 
- Logically collective on the submatrix communicator
+ Logically Collective
 
  Input Parameters:
 +   A  - `MATNEST` matrix
 .   idxm - index of the matrix within the nest matrix
 .   jdxm - index of the matrix within the nest matrix
--   sub - matrix at index idxm,jdxm within the nest matrix
+-   sub - matrix at index `idxm`, `jdxm` within the nest matrix
+
+ Level: developer
 
  Notes:
  The new submatrix must have the same size and communicator as that block of the nest.
 
  This increments the reference count of the submatrix.
 
- Level: developer
-
-.seealso: `MATNEST`, `MatNestSetSubMats()`, `MatNestGetSubMats()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatNestSetSubMats()`, `MatNestGetSubMats()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
           `MatNestGetSubMat()`, `MatNestGetISs()`, `MatNestGetSize()`
 @*/
 PetscErrorCode MatNestSetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat sub)
@@ -1148,7 +1146,7 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***ma
 /*@C
  MatNestGetSubMats - Returns the entire two dimensional array of matrices defining a `MATNEST` matrix.
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .   A  - nest matrix
@@ -1158,17 +1156,17 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Mat ***ma
 .   N - number of cols in the nest matrix
 -   mat - 2d array of matrices
 
+ Level: developer
+
  Note:
- The user should not free the array mat.
+ The user should not free the array `mat`.
 
  Fortran Note:
  This routine has a calling sequence
 $   call MatNestGetSubMats(A, M, N, mat, ierr)
- where the space allocated for the optional argument mat is assumed large enough (if provided).
+ where the space allocated for the optional argument `mat` is assumed large enough (if provided).
 
- Level: developer
-
-.seealso: `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MATNEST`, `MatCreateNest()`,
           `MatNestSetSubMats()`, `MatNestGetISs()`, `MatNestSetSubMat()`
 @*/
 PetscErrorCode MatNestGetSubMats(Mat A, PetscInt *M, PetscInt *N, Mat ***mat)
@@ -1191,7 +1189,7 @@ PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N)
 /*@
  MatNestGetSize - Returns the size of the `MATNEST` matrix.
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .   A  - `MATNEST` matrix
@@ -1202,7 +1200,7 @@ PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N)
 
  Level: developer
 
-.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MATNEST`, `MatCreateNest()`, `MatNestGetLocalISs()`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MATNEST`, `MatCreateNest()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`
 @*/
 PetscErrorCode MatNestGetSize(Mat A, PetscInt *M, PetscInt *N)
@@ -1228,7 +1226,7 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[])
 /*@C
  MatNestGetISs - Returns the index sets partitioning the row and column spaces of a `MATNEST`
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .   A  - `MATNEST` matrix
@@ -1240,9 +1238,9 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[])
  Level: advanced
 
  Note:
- The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
+ The user must have allocated arrays of the correct size. The reference count is not increased on the returned `IS`s.
 
-.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetLocalISs()`, `MATNEST`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetLocalISs()`, `MATNEST`,
           `MatCreateNest()`, `MatNestGetSubMats()`, `MatNestSetSubMats()`
 @*/
 PetscErrorCode MatNestGetISs(Mat A, IS rows[], IS cols[])
@@ -1269,21 +1267,21 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A, IS rows[], IS cols[])
 /*@C
  MatNestGetLocalISs - Returns the index sets partitioning the row and column spaces of a `MATNEST`
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .   A  - `MATNEST` matrix
 
  Output Parameters:
-+   rows - array of row index sets (or NULL to ignore)
--   cols - array of column index sets (or NULL to ignore)
++   rows - array of row index sets (or `NULL` to ignore)
+-   cols - array of column index sets (or `NULL` to ignore)
 
  Level: advanced
 
  Note:
- The user must have allocated arrays of the correct size. The reference count is not increased on the returned ISs.
+ The user must have allocated arrays of the correct size. The reference count is not increased on the returned `IS`s.
 
-.seealso: `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetISs()`, `MatCreateNest()`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatNestGetSize()`, `MatNestGetISs()`, `MatCreateNest()`,
           `MATNEST`, `MatNestSetSubMats()`, `MatNestSetSubMat()`
 @*/
 PetscErrorCode MatNestGetLocalISs(Mat A, IS rows[], IS cols[])
@@ -1309,7 +1307,7 @@ PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype)
 /*@C
  MatNestSetVecType - Sets the type of `Vec` returned by `MatCreateVecs()`
 
- Not collective
+ Not Collective
 
  Input Parameters:
 +  A  - `MATNEST` matrix
@@ -1317,7 +1315,7 @@ PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype)
 
  Level: developer
 
-.seealso: `MATNEST`, `MatCreateVecs()`, `MATNEST`, `MatCreateNest()`, `VecType`
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatCreateVecs()`, `MATNEST`, `MatCreateNest()`, `VecType`
 @*/
 PetscErrorCode MatNestSetVecType(Mat A, VecType vtype)
 {
@@ -1423,17 +1421,17 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], Pet
    Input Parameters:
 +  A - `MATNEST` matrix
 .  nr - number of nested row blocks
-.  is_row - index sets for each nested row block, or NULL to make contiguous
+.  is_row - index sets for each nested row block, or `NULL` to make contiguous
 .  nc - number of nested column blocks
-.  is_col - index sets for each nested column block, or NULL to make contiguous
--  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using NULL
+.  is_col - index sets for each nested column block, or `NULL` to make contiguous
+-  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using `NULL`
+
+   Level: advanced
 
    Note:
    This always resets any submatrix information previously set
 
-   Level: advanced
-
-.seealso: `MATNEST`, `MatCreateNest()`, `MATNEST`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
 @*/
 PetscErrorCode MatNestSetSubMats(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[])
 {
@@ -1710,17 +1708,17 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
    Input Parameters:
 +  comm - Communicator for the new `MATNEST`
 .  nr - number of nested row blocks
-.  is_row - index sets for each nested row block, or NULL to make contiguous
+.  is_row - index sets for each nested row block, or `NULL` to make contiguous
 .  nc - number of nested column blocks
-.  is_col - index sets for each nested column block, or NULL to make contiguous
--  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using NULL
+.  is_col - index sets for each nested column block, or `NULL` to make contiguous
+-  a - row-aligned array of nr*nc submatrices, empty submatrices can be passed using `NULL`
 
    Output Parameter:
 .  B - new matrix
 
    Level: advanced
 
-.seealso: `MATNEST`, `MatCreate()`, `VecCreateNest()`, `DMCreateMatrix()`, `MATNEST`, `MatNestSetSubMat()`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatCreate()`, `VecCreateNest()`, `DMCreateMatrix()`, `MatNestSetSubMat()`,
           `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MatNestGetSize()`,
           `MatNestGetISs()`, `MatNestSetSubMats()`, `MatNestGetSubMats()`
 @*/
@@ -2197,7 +2195,7 @@ PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *has)
 }
 
 /*MC
-  MATNEST - MATNEST = "nest" - Matrix type consisting of nested submatrices, each stored separately.
+  MATNEST -  "nest" - Matrix type consisting of nested submatrices, each stored separately.
 
   Level: intermediate
 
@@ -2210,7 +2208,7 @@ PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *has)
   rows/columns on some processes.) Thus this is not meant for cases where the submatrices live on far fewer processes
   than the nest matrix.
 
-.seealso: `MATNEST`, `MatCreate()`, `MatType`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`,
+.seealso: [](chapter_matrices), `Mat`, `MATNEST`, `MatCreate()`, `MatType`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`,
           `VecCreateNest()`, `DMCreateMatrix()`, `DMCOMPOSITE`, `MatNestSetVecType()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`, `MatNestSetSubMats()`, `MatNestGetSubMats()`
 M*/

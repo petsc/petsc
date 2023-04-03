@@ -1,18 +1,5 @@
 .. _doc_features:
 
-*******************************
-Core Features and Functionality
-*******************************
-
-PETSc is a general parallel linear and non-linear solver, ODE integrator, and optimization framework, which provides these
-general classes of functionality:
-
-.. contents:: Table Of Contents
-   :local:
-   :backlinks: entry
-   :depth: 1
-
-
 Supported Systems
 =================
 

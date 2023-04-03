@@ -4,7 +4,9 @@
       PetscIsNormalReal - Returns `PETSC_TRUE` if the input value satisfies `isnormal()`
 
     Input Parameter:
-.     a - the PetscReal Value
+.     a - the `PetscReal` Value
+
+     Level: beginner
 
     Developer Notes:
     Uses the C99 standard `isnormal()` on systems where they exist.
@@ -12,8 +14,6 @@
     Uses `isnormalq()` with `__float128`
 
     Otherwise always returns true
-
-     Level: beginner
 
 .seealso: `PetscIsInfReal()`, `PetscIsNanReal()`
 @*/
@@ -35,17 +35,17 @@ PetscBool PetscIsNormalReal(PetscReal a)
 #endif
 
 /*@C
-      PetscIsInfReal - Returns whether the input is an infinity value.
+      PetscIsInfReal - Returns whether the `PetscReal` input is an infinity value.
 
     Input Parameter:
 .     a - the floating point number
+
+     Level: beginner
 
     Developer Notes:
     Uses the C99 standard `isinf()` on systems where it exists.
 
     Otherwise uses (a && a/2 == a), note that some optimizing compilers compile out this form, thus removing the check.
-
-     Level: beginner
 
 .seealso: `PetscIsNormalReal()`, `PetscIsNanReal()`
 @*/
@@ -78,18 +78,18 @@ PetscBool PetscIsInfReal(PetscReal a)
 #endif
 
 /*@C
-      PetscIsNanReal - Returns whether the input is a Not-a-Number (NaN) value.
+      PetscIsNanReal - Returns whether the `PetscReal` input is a Not-a-Number (NaN) value.
 
     Input Parameter:
 .     a - the floating point number
+
+     Level: beginner
 
     Developer Notes:
     Uses the C99 standard `isnan()` on systems where it exists.
 
     Otherwise uses (a != a), note that some optimizing compilers compile
     out this form, thus removing the check.
-
-     Level: beginner
 
 .seealso: `PetscIsNormalReal()`, `PetscIsInfReal()`
 @*/

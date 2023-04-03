@@ -71,9 +71,9 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
-   Collective on c
+   Collective
 
-   Input  Parameters:
+   Input Parameters:
 +  c - the coloring context
 -  viewer - visualization context
 
@@ -145,7 +145,15 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 
    Logically Collective
 
-   The Jacobian is estimated with the differencing approximation
+   Input Parameters:
++  matfd - the coloring context
+.  error - relative error
+-  umin - minimum allowable u-value magnitude
+
+   Level: advanced
+
+   Note:
+     The Jacobian is estimated with the differencing approximation
 .vb
        F'(u)_{:,i} = [F(u+h*dx_{i}) - F(u)]/h where
        htype = 'ds':
@@ -157,13 +165,6 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
          h = error_rel * sqrt(1 + ||u||)
 .ve
 
-   Input Parameters:
-+  matfd - the coloring context
-.  error - relative error
--  umin - minimum allowable u-value magnitude
-
-   Level: advanced
-
 .seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFromOptions()`
 @*/
 PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd, PetscReal error, PetscReal umin)
@@ -172,8 +173,8 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd, PetscReal error, 
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);
   PetscValidLogicalCollectiveReal(matfd, error, 2);
   PetscValidLogicalCollectiveReal(matfd, umin, 3);
-  if (error != PETSC_DEFAULT) matfd->error_rel = error;
-  if (umin != PETSC_DEFAULT) matfd->umin = umin;
+  if (error != (PetscReal)PETSC_DEFAULT) matfd->error_rel = error;
+  if (umin != (PetscReal)PETSC_DEFAULT) matfd->umin = umin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -273,9 +274,11 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
 .  f - the function
 -  fctx - the optional user-defined function context
 
-   Calling sequence of (*f) function:
-    For `SNES`:    PetscErrorCode (*f)(SNES,Vec,Vec,void*)
-    If not using `SNES`: PetscErrorCode (*f)(void *dummy,Vec,Vec,void*) and dummy is ignored
+   Calling sequence with `SNES` of `f`:
+$   PetscErrorCode f(SNES, Vec in, Vec out, void *fctx)
+
+   Calling sequence without `SNES` of `f`:
+$   PetscErrorCode f(void *dummy, Vec in, Vec out, void *fctx)
 
    Level: advanced
 
@@ -367,7 +370,7 @@ PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
 +  coloring - the coloring context
 -  type - either `MATMFFD_WP` or `MATMFFD_DS`
 
-   Options Database Keys:
+   Options Database Key:
 .  -mat_fd_type - "wp" or "ds"
 
    Level: intermediate

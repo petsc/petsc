@@ -7,18 +7,18 @@ Prizes won by PETSc
 
 * Selected by the DOE Office of Science for the 40th anniversary collection of 40 major
   papers that have changed the face of science: S. Balay, W.D. Gropp, L.C. McInnes, and
-  B.F. Smith, "Efficient management of parallelism in object-oriented numerical software
-  libraries." Chapter 10 in E. Arge, A.M. Bruaset and H.P. Langtangen (Eds), Modern
+  B.F. Smith, **Efficient management of parallelism in object-oriented numerical software
+  libraries**. Chapter 10 in E. Arge, A.M. Bruaset and H.P. Langtangen (Eds), Modern
   Software Tools in Scientific Computing, pp. 163-202 (1997)
   https://science.energy.gov/news/doe-science-at-40
 
 * The PETSc Core Development Group won the `SIAM/ACM Prize in Computational Science and
   Engineering for 2015 <http://www.siam.org/prizes/sponsored/cse.php>`__
 
-* Jed Brown won a 2014 IEEE Technical Committee on Scalable Computing Award for Excellence
-  in Scalable Computing (Early Career Researcher) in part for his work on PETSc.
+* Jed Brown won a **2014 IEEE Technical Committee on Scalable Computing Award for Excellence
+  in Scalable Computing** (Early Career Researcher) in part for his work on PETSc.
 
-* Jed Brown won the 2014 SIAG/Supercomputing Junior Scientist Prize in part for his work on PETSc.
+* Jed Brown won the **2014 SIAG/Supercomputing Junior Scientist Prize** in part for his work on PETSc.
 
 * Lois Curfman McInnes and Barry Smith won the 2011 `Department of Energy E. O. Lawrence
   Award <http://science.energy.gov/lawrence/>`__ for contributions to DOE for their work
@@ -27,7 +27,7 @@ Prizes won by PETSc
 * PETSc was a winner of a `2009 R and D 100 Award
   <https://www.rdmag.com/article/2009/07/r-d-100-awards>`__
 
-* PETSc was one of the Top Ten Advances in Computational Science Accomplishments of the U.S. Department of Energy (DOE) in 2008
+* PETSc was one of the **Top Ten Advances in Computational Science Accomplishments of the U.S. Department of Energy** (DOE) in 2008
 
 Prizes won by PETSc users
 =========================
@@ -67,10 +67,10 @@ Prizes won by PETSc users
 * Mark Adams, Best Student Paper Competition, 5th Copper Mountain Conference on Iterative
   Methods, 1998
 
-* Number of theses prepared using PETSc: (19)
+* Hundreds of theses prepared using PETSc: (19)
 
-Industrial/DOE PETSc user sites
-===============================
+Industrial/DOE PETSc user sites over the years
+==============================================
 
 * Shell Research
 
@@ -119,13 +119,5 @@ DOE CSGF Users of PETSc
 * `Mary Ann Leung <https://www.linkedin.com/in/maleung>`__, University of Washington
 
 * `Richard Mills <http://www.climatemodeling.org/~rmills/>`__, William and Mary
-
-Commercial software that utilizes PETSc
-=======================================
-
-* Fluent's finite element CFD code FiDAP 8.5
-
-* Staar Inc.'s `RF3P-A Parallel Driven Frequency Electromagnetic Solver
-  <http://www.staarinc.com/support/papers/aces2002.pdf>`__
 
 

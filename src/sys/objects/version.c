@@ -32,13 +32,13 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
 /*@C
     PetscGetVersionNumber - Gets the PETSc version information from the library
 
-    Not collective
+    Not Collective
 
     Output Parameters:
-+   major - the major version (optional, pass NULL if not requested)
-.   minor - the minor version (optional, pass NULL if not requested)
-.   subminor - the subminor version (patch number)  (optional, pass NULL if not requested)
--   release - indicates the library is from a release, not random git repository  (optional, pass NULL if not requested)
++   major - the major version (optional, pass `NULL` if not requested)
+.   minor - the minor version (optional, pass `NULL` if not requested)
+.   subminor - the subminor version (patch number)  (optional, pass `NULL` if not requested)
+-   release - indicates the library is from a release, not random git repository  (optional, pass `NULL` if not requested)
 
     Level: developer
 

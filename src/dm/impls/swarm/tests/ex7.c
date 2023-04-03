@@ -76,7 +76,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
     PetscCall(MatGetLocalSize(M_p, &M, &N));
     if (N > M) {
       PC pc;
-      PetscCall(PetscInfo(ksp, " M (%" PetscInt_FMT ") < M (%" PetscInt_FMT ") -- skip revert to lsqr\n", M, N));
+      PetscCall(PetscInfo(ksp, " M (%" PetscInt_FMT ") < N (%" PetscInt_FMT ") -- skip revert to lsqr\n", M, N));
       is_lsqr = PETSC_TRUE;
       PetscCall(KSPSetType(ksp, KSPLSQR));
       PetscCall(KSPGetPC(ksp, &pc));
@@ -271,6 +271,7 @@ PetscErrorCode go()
         hp[i] = (hi[i] - lo[i]) / Np[i];
         vol *= (hi[i] - lo[i]);
         PetscCall(PetscInfo(dm_t[tid], " lo = %g hi = %g n = %" PetscInt_FMT " h = %g hp = %g\n", (double)lo[i], (double)hi[i], faces[i], (double)h[i], (double)hp[i]));
+        (void)h[i];
       }
     }
   }
@@ -304,27 +305,15 @@ PetscErrorCode go()
   PetscCall(PetscLogEventBegin(solve_ev, 0, 0, 0, 0));
   /* Create particle swarm */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, createSwarm(dm_t[tid], &sw_t[tid]));
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, createSwarm(dm_t[tid], &sw_t[tid]));
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
   /* Project field to particles */
   /*   This gives f_p = M_p^+ M f */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
   PetscPragmaOMP(parallel for)
-  for (int tid=0; tid<numthreads; tid++)
-  {
-    PetscCallAbort(PETSC_COMM_SELF, gridToParticles(dm_t[tid], sw_t[tid], (tid == target) ? moments_1 : NULL, rhs_t[tid], M_p_t[tid]));
-  }
+  for (int tid = 0; tid < numthreads; tid++) PetscCallAbort(PETSC_COMM_SELF, gridToParticles(dm_t[tid], sw_t[tid], (tid == target) ? moments_1 : NULL, rhs_t[tid], M_p_t[tid]));
   /* Cleanup */
   for (int tid = 0; tid < numthreads; tid++) {
     PetscCall(MatDestroy(&M_p_t[tid]));
@@ -360,19 +349,19 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: double triangle
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10,10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
     filter: grep -v DM_ | grep -v atomic
 
   test:
     suffix: 1
     requires: double triangle
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type lsqr -ftop_pc_type bjacobi -ftop_sub_pc_type lu -ftop_sub_pc_factor_shift_type nonzero -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10,10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type lsqr -ftop_pc_type bjacobi -ftop_sub_pc_type lu -ftop_sub_pc_factor_shift_type nonzero -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
     filter: grep -v DM_ | grep -v atomic
 
   test:
     suffix: 2
     requires: double triangle
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type cg -ftop_pc_type jacobi -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 15,15 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type cg -ftop_pc_type jacobi -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
     filter: grep -v DM_ | grep -v atomic
 
 TEST*/

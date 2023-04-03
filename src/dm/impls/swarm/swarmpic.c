@@ -20,25 +20,25 @@
 
 /* Coordinate insertition/addition API */
 /*@C
-   DMSwarmSetPointsUniformCoordinates - Set point coordinates in a DMSwarm on a regular (ijk) grid
+   DMSwarmSetPointsUniformCoordinates - Set point coordinates in a `DMSWARM` on a regular (ijk) grid
 
-   Collective on dm
+   Collective
 
    Input parameters:
-+  dm - the DMSwarm
++  dm - the `DMSWARM`
 .  min - minimum coordinate values in the x, y, z directions (array of length dim)
 .  max - maximum coordinate values in the x, y, z directions (array of length dim)
 .  npoints - number of points in each spatial direction (array of length dim)
--  mode - indicates whether to append points to the swarm (ADD_VALUES), or over-ride existing points (INSERT_VALUES)
+-  mode - indicates whether to append points to the swarm (`ADD_VALUES`), or over-ride existing points (`INSERT_VALUES`)
 
    Level: beginner
 
    Notes:
-   When using mode = INSERT_VALUES, this method will reset the number of particles in the DMSwarm
-   to be npoints[0]*npoints[1] (2D) or npoints[0]*npoints[1]*npoints[2] (3D). When using mode = ADD_VALUES,
-   new points will be appended to any already existing in the DMSwarm
+   When using mode = `INSERT_VALUES`, this method will reset the number of particles in the `DMSWARM`
+   to be npoints[0]*npoints[1] (2D) or npoints[0]*npoints[1]*npoints[2] (3D). When using mode = `ADD_VALUES`,
+   new points will be appended to any already existing in the `DMSWARM`
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
+.seealso: `DM`, `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode)
 {
@@ -178,25 +178,25 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
 }
 
 /*@C
-   DMSwarmSetPointCoordinates - Set point coordinates in a DMSwarm from a user defined list
+   DMSwarmSetPointCoordinates - Set point coordinates in a `DMSWARM` from a user defined list
 
-   Collective on dm
+   Collective
 
    Input parameters:
-+  dm - the DMSwarm
++  dm - the `DMSWARM`
 .  npoints - the number of points to insert
 .  coor - the coordinate values
-.  redundant - if set to PETSC_TRUE, it is assumed that npoints and coor[] are only valid on rank 0 and should be broadcast to other ranks
--  mode - indicates whether to append points to the swarm (ADD_VALUES), or over-ride existing points (INSERT_VALUES)
+.  redundant - if set to `PETSC_TRUE`, it is assumed that `npoints` and `coor` are only valid on rank 0 and should be broadcast to other ranks
+-  mode - indicates whether to append points to the swarm (`ADD_VALUES`), or over-ride existing points (`INSERT_VALUES`)
 
    Level: beginner
 
    Notes:
-   If the user has specified redundant = PETSC_FALSE, the cell DM will attempt to locate the coordinates provided by coor[] within
-   its sub-domain. If they any values within coor[] are not located in the sub-domain, they will be ignored and will not get
-   added to the DMSwarm.
+   If the user has specified `redundant` as `PETSC_FALSE`, the cell `DM` will attempt to locate the coordinates provided by `coor` within
+   its sub-domain. If they any values within `coor` are not located in the sub-domain, they will be ignored and will not get
+   added to the `DMSWARM`.
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode)
 {
@@ -337,27 +337,28 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwar
 /*@C
    DMSwarmInsertPointsUsingCellDM - Insert point coordinates within each cell
 
-   Not collective
+   Not Collective
 
    Input parameters:
-+  dm - the DMSwarm
-.  layout_type - method used to fill each cell with the cell DM
++  dm - the `DMSWARM`
+.  layout_type - method used to fill each cell with the cell `DM`
 -  fill_param - parameter controlling how many points per cell are added (the meaning of this parameter is dependent on the layout type)
 
    Level: beginner
 
    Notes:
+   The insert method will reset any previous defined points within the `DMSWARM`.
 
-   The insert method will reset any previous defined points within the DMSwarm.
+   When using a `DMDA` both 2D and 3D are supported for all layout types provided you are using `DMDA_ELEMENT_Q1`.
 
-   When using a DMDA both 2D and 3D are supported for all layout types provided you are using DMDA_ELEMENT_Q1.
-
-   When using a DMPLEX the following case are supported:
+   When using a `DMPLEX` the following case are supported:
+.vb
    (i) DMSWARMPIC_LAYOUT_REGULAR: 2D (triangle),
    (ii) DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
    (iii) DMSWARMPIC_LAYOUT_SUBDIVISION: 2D and 3D for quad/hex and 2D tri.
+.ve
 
-.seealso: `DMSwarmPICLayoutType`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
+.seealso: `DMSWARM`, `DMSwarmPICLayoutType`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param)
 {
@@ -382,27 +383,28 @@ extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, Pe
 /*@C
    DMSwarmSetPointCoordinatesCellwise - Insert point coordinates (defined over the reference cell) within each cell
 
-   Not collective
+   Not Collective
 
    Input parameters:
-+  dm - the DMSwarm
-.  celldm - the cell DM
++  dm - the `DMSWARM`
+.  celldm - the cell `DM`
 .  npoints - the number of points to insert in each cell
 -  xi - the coordinates (defined in the local coordinate system for each cell) to insert
 
  Level: beginner
 
  Notes:
- The method will reset any previous defined points within the DMSwarm.
- Only supported for DMPLEX. If you are using a DMDA it is recommended to either use
- DMSwarmInsertPointsUsingCellDM(), or extract and set the coordinates yourself the following code
+ The method will reset any previous defined points within the `DMSWARM`.
+ Only supported for `DMPLEX`. If you are using a `DMDA` it is recommended to either use
+ `DMSwarmInsertPointsUsingCellDM()`, or extract and set the coordinates yourself the following code
+.vb
+    PetscReal *coor;
+    DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+    // user code to define the coordinates here
+    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+.ve
 
-$    PetscReal *coor;
-$    DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
-$    // user code to define the coordinates here
-$    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
-
-.seealso: `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
+.seealso: `DMSWARM`, `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[])
 {
@@ -426,38 +428,39 @@ extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, Petsc
 extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[]);
 
 /*@C
-   DMSwarmProjectFields - Project a set of swarm fields onto the cell DM
+   DMSwarmProjectFields - Project a set of swarm fields onto the cell `DM`
 
-   Collective on dm
+   Collective
 
    Input parameters:
-+  dm - the DMSwarm
++  dm - the `DMSWARM`
 .  nfields - the number of swarm fields to project
 .  fieldnames - the textual names of the swarm fields to project
 .  fields - an array of Vec's of length nfields
 -  reuse - flag indicating whether the array and contents of fields should be re-used or internally allocated
 
+   Level: beginner
+
+   Notes:
    Currently, the only available projection method consists of
+.vb
      phi_i = \sum_{p=0}^{np} N_i(x_p) phi_p dJ / \sum_{p=0}^{np} N_i(x_p) dJ
    where phi_p is the swarm field at point p,
      N_i() is the cell DM basis function at vertex i,
      dJ is the determinant of the cell Jacobian and
      phi_i is the projected vertex value of the field phi.
+.ve
 
-   Level: beginner
+   If `reuse` is `PETSC_FALSE`, this function will allocate the array of `Vec`'s, and each individual `Vec`.
+     The user is responsible for destroying both the array and the individual `Vec` objects.
 
-   Notes:
-
-   If reuse = PETSC_FALSE, this function will allocate the array of Vec's, and each individual Vec.
-     The user is responsible for destroying both the array and the individual Vec objects.
-
-   Only swarm fields registered with data type = PETSC_REAL can be projected onto the cell DM.
+   Only swarm fields registered with data type of `PETSC_REAL` can be projected onto the cell `DM`.
 
    Only swarm fields of block size = 1 can currently be projected.
 
-   The only projection methods currently only support the DA (2D) and PLEX (triangles 2D).
+   The only projection methods currently only support the `DMDA` (2D) and `DMPLEX` (triangles 2D).
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec **fields, PetscBool reuse)
 {
@@ -506,13 +509,13 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const 
 /*@C
    DMSwarmCreatePointPerCellCount - Count the number of points within all cells in the cell DM
 
-   Not collective
+   Not Collective
 
    Input parameter:
-.  dm - the DMSwarm
+.  dm - the `DMSWARM`
 
    Output parameters:
-+  ncells - the number of cells in the cell DM (optional argument, pass NULL to ignore)
++  ncells - the number of cells in the cell `DM` (optional argument, pass `NULL` to ignore)
 -  count - array of length ncells containing the number of points per cell
 
    Level: beginner
@@ -520,7 +523,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const 
    Notes:
    The array count is allocated internally and must be free'd by the user.
 
-.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count)
 {
@@ -588,17 +591,17 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncel
 /*@
   DMSwarmGetNumSpecies - Get the number of particle species
 
-  Not collective
+  Not Collective
 
   Input parameter:
-. dm - the DMSwarm
+. dm - the `DMSWARM`
 
   Output parameters:
 . Ns - the number of species
 
   Level: intermediate
 
-.seealso: `DMSwarmSetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
+.seealso: `DMSWARM`, `DMSwarmSetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
 PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
 {
@@ -612,15 +615,15 @@ PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
 /*@
   DMSwarmSetNumSpecies - Set the number of particle species
 
-  Not collective
+  Not Collective
 
   Input parameter:
-+ dm - the DMSwarm
++ dm - the `DMSWARM`
 - Ns - the number of species
 
   Level: intermediate
 
-.seealso: `DMSwarmGetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
+.seealso: `DMSWARM`, `DMSwarmGetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
 PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 {
@@ -634,17 +637,17 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 /*@C
   DMSwarmGetCoordinateFunction - Get the function setting initial particle positions, if it exists
 
-  Not collective
+  Not Collective
 
   Input parameter:
-. dm - the DMSwarm
+. dm - the `DMSWARM`
 
   Output Parameter:
-. coordFunc - the function setting initial particle positions, or NULL
+. coordFunc - the function setting initial particle positions, or `NULL`
 
   Level: intermediate
 
-.seealso: `DMSwarmSetCoordinateFunction()`, `DMSwarmGetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
+.seealso: `DMSWARM`, `DMSwarmSetCoordinateFunction()`, `DMSwarmGetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
 PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc)
 {
@@ -660,15 +663,15 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 /*@C
   DMSwarmSetCoordinateFunction - Set the function setting initial particle positions
 
-  Not collective
+  Not Collective
 
   Input parameters:
-+ dm - the DMSwarm
++ dm - the `DMSWARM`
 - coordFunc - the function setting initial particle positions
 
   Level: intermediate
 
-.seealso: `DMSwarmGetCoordinateFunction()`, `DMSwarmSetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
+.seealso: `DMSWARM`, `DMSwarmGetCoordinateFunction()`, `DMSwarmSetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
 PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc)
 {
@@ -684,17 +687,17 @@ PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFun
 /*@C
   DMSwarmGetCoordinateFunction - Get the function setting initial particle velocities, if it exists
 
-  Not collective
+  Not Collective
 
   Input parameter:
-. dm - the DMSwarm
+. dm - the `DMSWARM`
 
   Output Parameter:
-. velFunc - the function setting initial particle velocities, or NULL
+. velFunc - the function setting initial particle velocities, or `NULL`
 
   Level: intermediate
 
-.seealso: `DMSwarmSetVelocityFunction()`, `DMSwarmGetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
+.seealso: `DMSWARM`, `DMSwarmSetVelocityFunction()`, `DMSwarmGetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 {
@@ -710,15 +713,15 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 /*@C
   DMSwarmSetVelocityFunction - Set the function setting initial particle velocities
 
-  Not collective
+  Not Collective
 
   Input parameters:
-+ dm - the DMSwarm
++ dm - the `DMSWARM`
 - coordFunc - the function setting initial particle velocities
 
   Level: intermediate
 
-.seealso: `DMSwarmGetVelocityFunction()`, `DMSwarmSetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
+.seealso: `DMSWARM`, `DMSwarmGetVelocityFunction()`, `DMSwarmSetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
 {
@@ -734,82 +737,92 @@ PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
 /*@C
   DMSwarmComputeLocalSize - Compute the local number and distribution of particles based upon a density function
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ sw      - The DMSwarm
++ sw      - The `DMSWARM`
 . N       - The target number of particles
 - density - The density field for the particle layout, normalized to unity
 
-  Note: One particle will be created for each species.
-
   Level: advanced
 
-.seealso: `DMSwarmComputeLocalSizeFromOptions()`
+  Note:
+  One particle will be created for each species.
+
+.seealso: `DMSWARM`, `DMSwarmComputeLocalSizeFromOptions()`
 @*/
 PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 {
   DM               dm;
   PetscQuadrature  quad;
   const PetscReal *xq, *wq;
-  PetscInt        *npc, *cellid;
-  PetscReal        xi0[3];
-  PetscInt         Ns, cStart, cEnd, c, dim, d, Nq, q, Np = 0, p;
+  PetscReal       *n_int;
+  PetscInt        *npc_s, *cellid, Ni;
+  PetscReal        gmin[3], gmax[3], xi0[3];
+  PetscInt         Ns, cStart, cEnd, c, dim, d, Nq, q, Np = 0, p, s;
   PetscBool        simplex;
 
   PetscFunctionBegin;
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
   PetscCall(DMSwarmGetCellDM(sw, &dm));
   PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   if (simplex) PetscCall(PetscDTStroudConicalQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
   else PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &xq, &wq));
-  PetscCall(PetscMalloc1(cEnd - cStart, &npc));
+  PetscCall(PetscCalloc2(Ns, &n_int, (cEnd - cStart) * Ns, &npc_s));
   /* Integrate the density function to get the number of particles in each cell */
   for (d = 0; d < dim; ++d) xi0[d] = -1.0;
   for (c = 0; c < cEnd - cStart; ++c) {
     const PetscInt cell = c + cStart;
-    PetscReal      v0[3], J[9], invJ[9], detJ;
-    PetscReal      n_int = 0.;
+    PetscReal      v0[3], J[9], invJ[9], detJ, detJp = 2. / (gmax[0] - gmin[0]), xr[3], den;
 
+    /*Have to transform quadrature points/weights to cell domain*/
     PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ));
+    PetscCall(PetscArrayzero(n_int, Ns));
     for (q = 0; q < Nq; ++q) {
-      PetscReal xr[3], den[3];
-
       CoordinatesRefToReal(dim, dim, xi0, v0, J, &xq[q * dim], xr);
-      PetscCall(density(xr, NULL, den));
-      n_int += den[0] * wq[q];
+      /* Have to transform mesh to domain of definition of PDF, [-1, 1], and weight PDF by |J|/2 */
+      xr[0] = detJp * (xr[0] - gmin[0]) - 1.;
+
+      for (s = 0; s < Ns; ++s) {
+        PetscCall(density(xr, NULL, &den));
+        n_int[s] += (detJp * den) * (detJ * wq[q]) / (PetscReal)Ns;
+      }
     }
-    npc[c] = (PetscInt)(N * n_int);
-    npc[c] *= Ns;
-    Np += npc[c];
+    for (s = 0; s < Ns; ++s) {
+      Ni = N;
+      npc_s[c * Ns + s] += (PetscInt)(Ni * n_int[s]);
+      Np += npc_s[c * Ns + s];
+    }
   }
   PetscCall(PetscQuadratureDestroy(&quad));
   PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
-
   PetscCall(DMSwarmGetField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
   for (c = 0, p = 0; c < cEnd - cStart; ++c) {
-    for (q = 0; q < npc[c]; ++q, ++p) cellid[p] = c;
+    for (s = 0; s < Ns; ++s) {
+      for (q = 0; q < npc_s[c * Ns + s]; ++q, ++p) cellid[p] = c;
+    }
   }
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
-  PetscCall(PetscFree(npc));
+  PetscCall(PetscFree2(n_int, npc_s));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
   DMSwarmComputeLocalSizeFromOptions - Compute the local number and distribution of particles based upon a density function determined by options
 
-  Not collective
+  Not Collective
 
-  Input Parameters:
-, sw - The DMSwarm
+  Input Parameter:
+. sw - The `DMSWARM`
 
   Level: advanced
 
-.seealso: `DMSwarmComputeLocalSize()`
+.seealso: `DMSWARM`, `DMSwarmComputeLocalSize()`
 @*/
 PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 {
@@ -854,16 +867,17 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 /*@
   DMSwarmInitializeCoordinates - Determine the initial coordinates of particles for a PIC method
 
-  Not collective
+  Not Collective
 
-  Input Parameters:
-, sw - The DMSwarm
-
-  Note: Currently, we randomly place particles in their assigned cell
+  Input Parameter:
+. sw - The `DMSWARM`
 
   Level: advanced
 
-.seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeVelocities()`
+  Note:
+  Currently, we randomly place particles in their assigned cell
+
+.seealso: `DMSWARM`, `DMSwarmComputeLocalSize()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 {
@@ -903,6 +917,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 
     PetscCall(DMSwarmGetCellDM(sw, &dm));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    PetscCall(DMGetApplicationContext(sw, &ctx));
 
     /* Set particle position randomly in cell, set weights to 1 */
     PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)dm), &rnd));
@@ -923,7 +938,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
         for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &xref[d]));
         CoordinatesRefToReal(dim, dim, xi0, v0, J, xref, &x[p * dim]);
 
-        weight[p]  = 1.0;
+        weight[p]  = 1.0 / Np;
         species[p] = p % Ns;
       }
       PetscCall(PetscFree(pidx));
@@ -943,18 +958,19 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 /*@C
   DMSwarmInitializeVelocities - Set the initial velocities of particles using a distribution.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ sw      - The DMSwarm object
++ sw      - The `DMSWARM` object
 . sampler - A function which uniformly samples the velocity PDF
 - v0      - The velocity scale for nondimensionalization for each species
 
-  Note: If v0 is zero for the first species, all velocities are set to zero. If it is zero for any other species, the effect will be to give that species zero velocity.
-
   Level: advanced
 
-.seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocitiesFromOptions()`
+  Note:
+  If `v0` is zero for the first species, all velocities are set to zero. If it is zero for any other species, the effect will be to give that species zero velocity.
+
+.seealso: `DMSWARM`, `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocitiesFromOptions()`
 @*/
 PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[])
 {
@@ -1007,15 +1023,15 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 /*@
   DMSwarmInitializeVelocitiesFromOptions - Set the initial velocities of particles using a distribution determined from options.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ sw      - The DMSwarm object
++ sw      - The `DMSWARM` object
 - v0      - The velocity scale for nondimensionalization for each species
 
   Level: advanced
 
-.seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocities()`
+.seealso: `DMSWARM`, `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[])
 {

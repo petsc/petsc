@@ -15,7 +15,7 @@
    Collective on `PETSC_COMM_WORLD`
 
    Input Parameter:
-.  fp - file pointer.  If fp is NULL, stdout is assumed.
+.  fp - file pointer.  If fp is `NULL`, `stdout` is assumed.
 
    Options Database Key:
 .  -mpidump - Dumps MPI incompleteness during call to PetscFinalize()
@@ -28,7 +28,6 @@ PetscErrorCode PetscMPIDump(FILE *fd)
 {
   PetscMPIInt rank;
   double      tsends, trecvs, work;
-  int         err;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -39,8 +38,7 @@ PetscErrorCode PetscMPIDump(FILE *fd)
   if (petsc_irecv_ct + petsc_isend_ct != petsc_sum_of_waits_ct) {
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "[%d]You have not waited on all non-blocking sends and receives", rank));
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "[%d]Number non-blocking sends %g receives %g number of waits %g\n", rank, petsc_isend_ct, petsc_irecv_ct, petsc_sum_of_waits_ct));
-    err = fflush(fd);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    PetscCall(PetscFFlush(fd));
   }
   PetscCall(PetscSequentialPhaseEnd(PETSC_COMM_WORLD, 1));
   /* Did we receive all the messages that we sent? */
@@ -50,8 +48,7 @@ PetscErrorCode PetscMPIDump(FILE *fd)
   PetscCallMPI(MPI_Reduce(&work, &tsends, 1, MPI_DOUBLE, MPI_SUM, 0, PETSC_COMM_WORLD));
   if (rank == 0 && tsends != trecvs) {
     PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "Total number sends %g not equal receives %g\n", tsends, trecvs));
-    err = fflush(fd);
-    PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+    PetscCall(PetscFFlush(fd));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

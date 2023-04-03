@@ -1718,6 +1718,13 @@ author = "D.A. May and J. Brown and L. {Le Pourhiet}",
   year      = {2022},
   petsc_uses={DMPlex},
 }
+@inproceedings{TimalsinaKnepley2023,
+  title     = {Tetrahedralization of a Hexahedral Mesh},
+  author    = {Aman Timalsina and Matthew G. Knepley},
+  booktitle = {SIAM International Meshing Roundtable Workshop 2023},
+  year      = {2023},
+  petsc_uses={DMPlex},
+}
 @article{FarrellKnepleyWechsungMitchell2020,
   title   = {{PCPATCH}: software for the topological construction of multigrid relaxation methods},
   author  = {Patrick E Farrell and Matthew G Knepley and Lawrence Mitchell and Florian Wechsung},
@@ -6266,7 +6273,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html",
   title        = {{PETS}c {W}eb page},
   url          = {https://petsc.org/},
   howpublished = {\url{https://petsc.org/}},
-  year         = {2022},
+  year         = {2023},
 }
 @Unpublished{petsc-debian-package,
     author = "Adam C. Powell, IV",
@@ -6697,8 +6704,8 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html",
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},
   title       = {{PETSc/TAO} Users Manual},
   institution = {Argonne National Laboratory},
-  number      = {ANL-21/39 - Revision 3.18},
-  year        = {2022},
+  number      = {ANL-21/39 - Revision 3.19},
+  year        = {2023},
 }
 %  url    = {https://petsc.org/release}
 @TechReport{petsc-developers,
@@ -12268,16 +12275,17 @@ mesh refinement",
 @TechReport{hypre-users-manual,
   author      = "R. Falgout",
   title       = "{hypre} Users Manual",
-  number      = "Revision 2.11.2",
+  number      = "Revision 2.28",
   institution = "Lawrence Livermore National Laboratory",
-  year        = 2017
+  year        = 2023,
+  url         = {https://hypre.readthedocs.io/}
 }
 
 
 @misc{hypre:homepage,
    author = "R. Falgout",
    title = "{hypre Web page}",
-   howpublished  = "\url{http://www.llnl.gov/CASC/hypre}"
+   howpublished  = "\url{https://www.llnl.gov/casc/hypre}"
 }
 
 @InProceedings{trilinos:gpu,
@@ -13070,7 +13078,7 @@ note  = "\url{https://ice.txcorp.com/trac/2011_FspDefinitionWorkshop}"
 @misc{petsc-dm:webpage,
    author =	 {B. F. {Smith et al.}},
    title = "{PETSc DM Webpage}",
-   howpublished  = "\url{https://petsc.org/release/docs/manualpages/DM/}",
+   howpublished  = "\url{https://petsc.org/release/manualpages/DM/}",
    year = 2018
 }
 
@@ -36710,4 +36718,11 @@ inproceedings{SuhIsaac2020,
   doi       = {https://doi.org/10.1016/B978-0-323-85733-8.00020-2},
   url       = {https://www.sciencedirect.com/science/article/pii/B9780323857338000202},
   year      = {2023}
+}
+@article{AdamsKnepley2023,
+  title  = {A bespoke multigrid approach for magnetohydrodynamics models of magnetized plasmas in PETSc},
+  author = {Mark F. Adams and Matthew G. Knepley},
+  url    = {https://arxiv.org/abs/2302.10242},
+  year   = {2023},
+  petsc_uses = {DMPlex},
 }

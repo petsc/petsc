@@ -477,7 +477,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
 /*@C
   DMPlexCreatePartitionerGraph - Create a CSR graph of point connections for the partitioner
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm      - The mesh `DM`
@@ -489,7 +489,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
 . adjacency       - Point connectivity in the graph
 - globalNumbering - A map from the local cell numbering to the global numbering used in "adjacency".  Negative indicates that the cell is a duplicate from another process.
 
-  Options Database Keys:
+  Options Database Key:
 . -dm_plex_csr_alg <mat,graph,overlap> - Choose the algorithm for computing the CSR graph
 
   Level: developer
@@ -523,7 +523,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 /*@C
   DMPlexCreateNeighborCSR - Create a mesh graph (cell-cell adjacency) in parallel CSR format.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm - The `DMPLEX`
@@ -722,11 +722,11 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
 /*@
   PetscPartitionerDMPlexPartition - Create a non-overlapping partition of the cells in the mesh
 
-  Collective on part
+  Collective
 
   Input Parameters:
 + part    - The `PetscPartitioner`
-. targetSection - The `PetscSection` describing the absolute weight of each partition (can be NULL)
+. targetSection - The `PetscSection` describing the absolute weight of each partition (can be `NULL`)
 - dm      - The mesh `DM`
 
   Output Parameters:
@@ -872,7 +872,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
 /*@
   DMPlexGetPartitioner - Get the mesh partitioner
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . dm - The `DM`
@@ -901,7 +901,7 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 /*@
   DMPlexSetPartitioner - Set the mesh partitioner
 
-  logically collective on dm
+  logically Collective
 
   Input Parameters:
 + dm - The `DM`
@@ -1217,7 +1217,7 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
 - processSF - A star forest mapping into the local index on each remote rank
 
   Output Parameter:
-. leafLabel - `DMLabel `assigning ranks to remote roots
+. leafLabel - `DMLabel` assigning ranks to remote roots
 
   Level: developer
 
@@ -1625,7 +1625,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
 . useInitialGuess  - whether to use the current distribution as initial guess (only used by ParMETIS).
 - parallel         - whether to use ParMETIS and do the partition in parallel or whether to gather the graph onto a single process and use METIS.
 
-  Output parameters:
+  Output parameter:
 . success          - whether the graph partitioning was successful or not, optional. Unsuccessful simply means no change to the partitioning
 
   Options Database Keys:
@@ -1796,8 +1796,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscCall(PetscMalloc1(ncon * nparts, &tpwgts));
   for (i = 0; i < ncon * nparts; i++) tpwgts[i] = 1. / (nparts);
   PetscCall(PetscMalloc1(ncon, &ubvec));
-  ubvec[0] = 1.05;
-  ubvec[1] = 1.05;
+  for (i = 0; i < ncon; i++) ubvec[i] = 1.05;
 
   PetscCall(PetscMalloc1(ncon * (1 + numNonExclusivelyOwned), &vtxwgt));
   if (ncon == 2) {
@@ -1944,7 +1943,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   failed = (PetscInt)(part[0] != rank);
   PetscCallMPI(MPI_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm));
   if (failedGlobal > 0) {
-    PetscCheck(failedGlobal <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partion");
+    PetscCheck(failedGlobal <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partition");
     PetscCall(PetscFree(vtxwgt));
     PetscCall(PetscFree(toBalance));
     PetscCall(PetscFree(isLeaf));

@@ -17,7 +17,7 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-  PetscCall(PetscStrcpy(dir, "."));
+  PetscCall(PetscStrncpy(dir, ".", sizeof(dir)));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-load_dir", dir, sizeof(dir), NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nmat", &nmat, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-reset", &reset, NULL));

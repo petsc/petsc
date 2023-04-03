@@ -446,7 +446,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set method
   std::string def_amg_method = map_reverse_lookup(AmgXControlMap::AMGMethods, amgx->amg_method);
-  PetscCall(PetscStrcpy(option, def_amg_method.c_str()));
+  PetscCall(PetscStrncpy(option, def_amg_method.c_str(), sizeof(option)));
   PetscCall(PetscOptionsString("-pc_amgx_amg_method", "AmgX AMG Method", "", option, option, MAX_PARAM_LEN, NULL));
   PetscCheck(AmgXControlMap::AMGMethods.count(option) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "AMG Method %s not registered for AmgX.", option);
   amgx->amg_method = AmgXControlMap::AMGMethods.at(option);
@@ -454,7 +454,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set cycle
   std::string def_amg_cycle = map_reverse_lookup(AmgXControlMap::AMGCycles, amgx->amg_cycle);
-  PetscCall(PetscStrcpy(option, def_amg_cycle.c_str()));
+  PetscCall(PetscStrncpy(option, def_amg_cycle.c_str(), sizeof(option)));
   PetscCall(PetscOptionsString("-pc_amgx_amg_cycle", "AmgX AMG Cycle", "", option, option, MAX_PARAM_LEN, NULL));
   PetscCheck(AmgXControlMap::AMGCycles.count(option) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "AMG Cycle %s not registered for AmgX.", option);
   amgx->amg_cycle = AmgXControlMap::AMGCycles.at(option);
@@ -462,7 +462,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set smoother
   std::string def_smoother = map_reverse_lookup(AmgXControlMap::Smoothers, amgx->smoother);
-  PetscCall(PetscStrcpy(option, def_smoother.c_str()));
+  PetscCall(PetscStrncpy(option, def_smoother.c_str(), sizeof(option)));
   PetscCall(PetscOptionsString("-pc_amgx_smoother", "AmgX Smoother", "", option, option, MAX_PARAM_LEN, NULL));
   PetscCheck(AmgXControlMap::Smoothers.count(option) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Smoother %s not registered for AmgX.", option);
   amgx->smoother = AmgXControlMap::Smoothers.at(option);
@@ -478,7 +478,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set selector
   std::string def_selector = map_reverse_lookup(AmgXControlMap::Selectors, amgx->selector);
-  PetscCall(PetscStrcpy(option, def_selector.c_str()));
+  PetscCall(PetscStrncpy(option, def_selector.c_str(), sizeof(option)));
   PetscCall(PetscOptionsString("-pc_amgx_selector", "AmgX Selector", "", option, option, MAX_PARAM_LEN, NULL));
   PetscCheck(AmgXControlMap::Selectors.count(option) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Selector %s not registered for AmgX.", option);
 
@@ -518,7 +518,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set coarse solver
   std::string def_coarse_solver = map_reverse_lookup(AmgXControlMap::CoarseSolvers, amgx->coarse_solver);
-  PetscCall(PetscStrcpy(option, def_coarse_solver.c_str()));
+  PetscCall(PetscStrncpy(option, def_coarse_solver.c_str(), sizeof(option)));
   PetscCall(PetscOptionsString("-pc_amgx_coarse_solver", "AmgX CoarseSolver", "", option, option, MAX_PARAM_LEN, NULL));
   PetscCheck(AmgXControlMap::CoarseSolvers.count(option) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "CoarseSolver %s not registered for AmgX.", option);
   amgx->coarse_solver = AmgXControlMap::CoarseSolvers.at(option);

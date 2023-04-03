@@ -173,7 +173,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 .  isrow - rows to be present in the submatrix
 -  iscol - columns to be present in the submatrix
 
-   Output Parameters:
+   Output Parameter:
 .  newmat - new matrix
 
    Level: developer
@@ -181,10 +181,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
    Note:
    Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
-   Developer Note:
-   The `MatType` is `MATSUBMATRIX` but the routines associated have `SubMatrixVirtual` in them, the `MatType` should likely be changed
-
-.seealso: `MATSUBMATRIX`, `MATLOCALREF`, `MatCreateLocalRef()`, `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
+.seealso: [](chapter_matrices), `Mat`, `MATSUBMATRIX`, `MATLOCALREF`, `MatCreateLocalRef()`, `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
 @*/
 PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
 {
@@ -253,10 +250,11 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
 
   Level: advanced
 
-  Developer Note:
-  This should be named `MATSUBMATRIXVIRTUAL`
+   Developer Note:
+   The `MatType` is `MATSUBMATRIX` but the routines associated have `SubMatrixVirtual` in them, the `MatType` name should likely be changed to
+   `MATSUBMATRIXVIRTUAL`
 
-.seealso: `Mat`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrix()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrix()`
 M*/
 
 /*@
@@ -275,7 +273,7 @@ M*/
    Note:
    Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
-.seealso: MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
+.seealso: [](chapter_matrices), `Mat`, `MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
 @*/
 PetscErrorCode MatSubMatrixVirtualUpdate(Mat N, Mat A, IS isrow, IS iscol)
 {

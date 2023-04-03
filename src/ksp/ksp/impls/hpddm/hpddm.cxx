@@ -21,7 +21,7 @@ const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
                              "  Url = {https://github.com/prj-/jolivet2020petsc}\n"
                              "}\n";
 
-#if PetscDefined(HAVE_SLEPC) && PetscDefined(USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_SLEPC) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
 static PetscBool loadedDL = PETSC_FALSE;
 #endif
 
@@ -224,7 +224,15 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   HPDDM::upscaled_type<PetscScalar> *high[2];
 #endif
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
+  typedef HPDDM::downscaled_type<PetscReal> PetscDownscaledReal PETSC_ATTRIBUTE_MAY_ALIAS;
+  #if !PetscDefined(USE_COMPLEX)
+  PetscDownscaledReal *low[2];
+  #else
+  typedef PetscReal PetscAliasedReal   PETSC_ATTRIBUTE_MAY_ALIAS;
   HPDDM::downscaled_type<PetscScalar> *low[2];
+  PetscAliasedReal                    *x_r;
+  PetscDownscaledReal                 *low_r;
+  #endif
 #endif
 #if PetscDefined(HAVE_CUDA)
   Mat     A;
@@ -280,15 +288,20 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
     if (type == PETSC_MEMTYPE_HOST) {
       PetscCall(PetscMalloc1(N, low));
+  #if !PetscDefined(USE_COMPLEX)
+      low[1] = reinterpret_cast<PetscDownscaledReal *>(x);
+  #else
       low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar> *>(x);
+  #endif
       std::copy_n(b, N, low[0]);
       for (PetscInt i = 0; i < N; ++i) low[1][i] = x[i];
       PetscCall(HPDDM::IterativeMethod::solve(*data->op, low[0], low[1], n, PetscObjectComm((PetscObject)ksp)));
-      if (N) {
-        low[0][0] = low[1][0];
-        std::copy_backward(low[1] + 1, low[1] + N, x + N);
-        x[0] = low[0][0];
-      }
+  #if !PetscDefined(USE_COMPLEX)
+      for (PetscInt i = N; i-- > 0;) x[i] = low[1][i];
+  #else
+      x_r = reinterpret_cast<PetscAliasedReal *>(x), low_r = reinterpret_cast<PetscDownscaledReal *>(x_r);
+      for (PetscInt i = 2 * N; i-- > 0;) x_r[i] = low_r[i];
+  #endif
       PetscCall(PetscFree(low[0]));
     } else {
       PetscCheck(PetscDefined(HAVE_CUDA) && PetscDefined(USE_REAL_DOUBLE), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "CUDA in PETSc has no support for precisions other than single or double");
@@ -619,7 +632,7 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
    Options Database Keys:
 +   -ksp_gmres_restart <restart, default=30> - see `KSPGMRES`
 .   -ksp_hpddm_type <type, default=gmres> - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, bfbcg, or preonly, see `KSPHPDDMType`
-.   -ksp_hpddm_precision <value, default=same as PetscScalar> - any of single or double, see `KSPHPDDMPrecision`
+.   -ksp_hpddm_precision <value, default=same as PetscScalar> - any of half, single, double or quadruple, see `KSPHPDDMPrecision`
 .   -ksp_hpddm_deflation_tol <eps, default=\-1.0> - tolerance when deflating right-hand sides inside block methods (no deflation by default, only relevant with block methods)
 .   -ksp_hpddm_enlarge_krylov_subspace <p, default=1> - split the initial right-hand side into multiple vectors (only relevant with nonblock methods)
 .   -ksp_hpddm_orthogonalization <type, default=cgs> - any of cgs or mgs, see KSPGMRES

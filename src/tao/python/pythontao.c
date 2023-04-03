@@ -1,12 +1,12 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 /*@C
-   TaoPythonSetType - Initialize a Tao object implemented in Python.
+   TaoPythonSetType - Initialize a `Tao` object implemented in Python.
 
    Collective
 
    Input Parameters:
-+  tao - the optimation solver (Tao) context.
++  tao - the optimization solver (`Tao`) context.
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
@@ -26,12 +26,12 @@ PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
 }
 
 /*@C
-   TaoPythonGetType - Get the type of a Tao object implemented in Python.
+   TaoPythonGetType - Get the type of a `Tao` object implemented in Python.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
-.  tao - the optimation solver (Tao) context.
+.  tao - the optimization solver (`Tao`) context.
 
    Output Parameter:
 .  pyname - full dotted Python name [package].module[.{class|function}]

@@ -131,7 +131,9 @@ class CompilerOptions(config.base.Configure):
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing', '-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
+        if config.setCompilers.Configure.isGNU(compiler, self.log):
+          flags.extend(['-Wno-psabi'])
         if not any([
             # skip -fstack-protector for brew gcc - as this gives SEGV
             config.setCompilers.Configure.isDarwin(self.log) and config.setCompilers.Configure.isGNU(compiler, self.log),
@@ -349,6 +351,9 @@ class CompilerOptions(config.base.Configure):
           #PGI/Windows writes an empty '\r\n' on the first line of output
           if output.count('\n') > 1 and output.split('\n')[0] == '\r':
             version = output.split('\r\n')[1]
+          #NVCC
+          elif output.find('Cuda compiler driver') >= 0:
+            version = output.split('\n')[3]
           else:
             version = output.split('\n')[0]
 

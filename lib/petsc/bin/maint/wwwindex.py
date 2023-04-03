@@ -18,9 +18,9 @@ import subprocess
 
 HLIST_COLUMNS = 3
 
-# Now use the level info, and print a html formatted index
-# table. Can also provide a header file, whose contents are
-# first copied over.
+# Read an optional header file, whose contents are first copied over
+# Use the level info, and print a formatted index table of all the manual pages
+#
 def printindex(outfilename, headfilename, levels, titles, tables):
       # Read in the header file
       headbuf = ''
@@ -33,14 +33,18 @@ def printindex(outfilename, headfilename, levels, titles, tables):
             print('Likley you introduced a new set of manual pages but did not add the header file that describes them')
 
       with open(outfilename, "w") as fd:
+          # Since it uses three columns we must remove right sidebar so all columns are displayed completely
+          # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/page-toc.html
+          fd.write(':html_theme.sidebar_secondary.remove: true\n')
           fd.write(headbuf)
-          fd.write('[Manual Pages Table of Contents](/docs/manualpages/index.md)\n')
+          fd.write('\n')
+          fd.write('[Manual Pages Table of Contents](/manualpages/index.md)\n')
           all_names = []
           fd.write('\n## Manual Pages by Level\n')
           for i, level in enumerate(levels):
                 title = titles[i]
                 if not tables[i]:
-                      if level != 'none':
+                      if level != 'none' and level != 'deprecated':
                           fd.write('\n### No %s routines\n' % level)
                       continue
 
@@ -58,12 +62,12 @@ def printindex(outfilename, headfilename, levels, titles, tables):
                 fd.write('```\n\n\n')
 
           fd.write('\n## Single list of manual pages\n')
-          fd.write('```{toctree}\n')
+          fd.write('```{hlist}\n')
           fd.write("---\n")
-          fd.write("maxdepth: 1\n")
+          fd.write("columns: %d\n" % HLIST_COLUMNS)
           fd.write("---\n")
           for name in sorted(all_names):
-              fd.write('%s\n' % name)
+              fd.write('- [](%s)\n' % name)
           fd.write('```\n\n\n')
 
 
@@ -73,7 +77,7 @@ def printindex(outfilename, headfilename, levels, titles, tables):
 def printsingleindex(outfilename, alphabet_dict):
       with open(outfilename, "w") as fd:
           fd.write("# Single Index of all PETSc Manual Pages\n\n")
-          fd.write(" Also see the [Manual page table of contents, by section](/docs/manualpages/index.md).\n\n")
+          fd.write(" Also see the [Manual page table of contents, by section](/manualpages/index.md).\n\n")
           for key in sorted(alphabet_dict.keys()):
                 fd.write("## %s\n\n" % key.upper())
                 fd.write("```{hlist}\n")
@@ -139,11 +143,11 @@ def modifylevel(filename,secname):
       tmpbuf = re.sub('.cxx#', '.cxx.html#', tmpbuf)
 
       # Add footer links
-      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/docs/manualpages/index.md)  \n' + '[Index of all manual pages](/docs/manualpages/singleindex.md)  \n'
+      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/manualpages/index.md)  \n' + '[Index of all manual pages](/manualpages/singleindex.md)  \n'
 
       # write the modified manpage
       with open(filename, "w") as fd:
-          fd.write(outbuf)
+          fd.write(':orphan:\n'+outbuf)
 
       return level
 
@@ -153,7 +157,7 @@ def createtable(dirname,levels,secname):
       mdfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.md')]
       mdfiles.sort()
       if mdfiles == []:
-            print('Error! Empty directory:',dirname)
+            print('Cannot create table for empty directory:',dirname)
             return None
 
       table = []
@@ -224,15 +228,15 @@ def main():
       PETSC_DIR = sys.argv[1]
       LOC       = sys.argv[2]
       HEADERDIR = (sys.argv[3] if arg_len > 3 else 'doc/classic/manualpages-sec')
-      dirs      = glob.glob(LOC + '/docs/manualpages/*')
+      dirs      = (glob.glob(LOC + '/manualpages/*') if arg_len < 5 else [sys.argv[4]])
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']
       titles = ['Beginner - Basic usage',
                 'Intermediate - Setting options for algorithms and data structures',
                 'Advanced - Setting more advanced options and customization',
-                'Developer - Interfaces intended primarily for library developers, not for typical applications programmers',
-                'Deprecated - Functionality scheduled for removal in future versions',
+                'Developer - Interfaces rarely needed by applications programmers',
+                'Deprecated - Functionality scheduled for removal in the future',
                 'None: Not yet cataloged']
 
       singlelist = []
@@ -246,7 +250,7 @@ def main():
             printindex(outfilename,headfilename,levels,titles,table)
 
       alphabet_dict = createdict(singlelist)
-      outfilename   = LOC + '/docs/manualpages/singleindex.md'
+      outfilename   = LOC + '/manualpages/singleindex.md'
       printsingleindex (outfilename,alphabet_dict)
 
 

@@ -27,8 +27,8 @@ Discrete System with 1 fields
         type: lagrange
         Dual space with 1 components, size 16
         Continuous tensor Lagrange dual space
-        Quadrature of order 9 on 25 points (dim 2)
+        Quadrature on a quadrilateral of order 9 on 25 points (dim 2)
   Weak Form System with 1 fields
 Exact mesh surface area    :  6.0
-Computed mesh surface area :  5.99999999999999
+Computed mesh surface area :  5.99999999999998
 Area verifies!

@@ -489,7 +489,7 @@ PetscErrorCode DMSNESGetObjective(DM dm, PetscErrorCode (**obj)(SNES, Vec, Petsc
    not.
 
    Dveloper Note:
-   If `DM `took a more central role at some later date, this could become the primary method of supplying the smoother
+   If `DM` took a more central role at some later date, this could become the primary method of supplying the smoother
 
 .seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESGSFunction`
 @*/
@@ -626,7 +626,7 @@ PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM dm)
 .  dm - `DM` to be used with `SNES`
 
    Output Parameters:
-+  J - Jacobian evaluation function; see `SNESJacobianFunction` for all calling sequence
++  J - Jacobian evaluation function; for all calling sequence see `SNESJacobianFunction`
 -  ctx - context for residual evaluation
 
    Level: advanced

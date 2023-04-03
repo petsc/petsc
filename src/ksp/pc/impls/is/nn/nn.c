@@ -32,8 +32,8 @@ static PetscErrorCode PCSetUp_NN(PC pc)
    PCApply_NN - Applies the NN preconditioner to a vector.
 
    Input Parameters:
-.  pc - the preconditioner context
-.  r - input vector (global)
++  pc - the preconditioner context
+-  r - input vector (global)
 
    Output Parameter:
 .  z - output vector (global)
@@ -485,18 +485,18 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
                    equation (14). The equation numbers refer to [Man93].
 
    Input Parameters:
-.  pcnn - NN preconditioner context.
++  pcnn - NN preconditioner context.
 .  r - MPI vector of all nodes (interior and interface). It's preserved.
-.  u - (Optional) sequential vector of local interface nodes. It's preserved UNLESS vec3_B is null.
+-  u - (Optional) sequential vector of local interface nodes. It's preserved UNLESS vec3_B is null.
 
    Output Parameters:
-.  z - MPI vector of interior and interface nodes. Returns s or z (see description above).
++  z - MPI vector of interior and interface nodes. Returns s or z (see description above).
 .  vec1_B - Sequential vector of local interface nodes. Workspace.
 .  vec2_B - Sequential vector of local interface nodes. Workspace.
 .  vec3_B - (Optional) sequential vector of local interface nodes. Workspace.
 .  vec1_D - Sequential vector of local interior nodes. Workspace.
 .  vec2_D - Sequential vector of local interior nodes. Workspace.
-.  work_N - Array of all local nodes (interior and interface). Workspace.
+-  work_N - Array of all local nodes (interior and interface). Workspace.
 
 */
 PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, PetscScalar *work_N)

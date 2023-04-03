@@ -293,7 +293,7 @@ PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
   #include <petsc/private/petscimpl.h>
   PetscErrorCode PetscHeaderDestroy(PetscObject *obj)
 
-  Input Parameters:
+  Input Parameter:
 . h - A pointer to the header created with `PetscHeaderCreate()`
 
   Notes:
@@ -752,8 +752,6 @@ void PetscCheckSorted(PetscInt, T);
    Level: developer
 
    Notes:
-   The object is always the implicit first argument of the method and is not listed in arg_types or args
-
    This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
@@ -784,8 +782,6 @@ M*/
    Level: developer
 
    Notes:
-   The object is always the implicit first argument of the method and is not listed in arg_types or args
-
    This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
@@ -906,6 +902,8 @@ M*/
          cast with a (PetscObject), for example,
          `PetscObjectStateIncrease`((`PetscObject`)mat);
 
+   Level: developer
+
    Notes:
    Object state is a 64 bit integer which gets increased every time
    the object is changed internally. By saving and later querying the object state
@@ -923,10 +921,7 @@ M*/
 
    `Mat` also has `MatGetNonzeroState()` for tracking changes to the nonzero structure.
 
-   Level: developer
-
 .seealso: `PetscObjectStateGet()`, `PetscObject`
-
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++, PETSC_SUCCESS)
 
@@ -948,20 +943,20 @@ PETSC_EXTERN PetscInt       PetscObjectComposedDataMax;
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetInt(PetscObject obj,int id,int data)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
 
+   Level: developer
+
    Notes:
-   The data identifier can be created through a call to  `PetscObjectComposedDataRegister()`
+   The `data` identifier can be created through a call to  `PetscObjectComposedDataRegister()`
 
    This allows the efficient composition of a single integer value with a `PetscObject`. Complex data may be
    attached with `PetscObjectCompose()`
-
-   Level: developer
 
 .seealso: `PetscObjectComposedDataGetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
@@ -977,7 +972,7 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetInt(PetscObject obj,int id,int data,PetscBool  flag)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object from which data is to be retrieved
@@ -990,7 +985,7 @@ M*/
    Level: developer
 
    Notes:
-   The 'data' and 'flag' variables are inlined, so they are not pointers.
+   The `data` and `flag` variables are inlined, so they are not pointers.
 
    The length of the array accessed must be known.
 
@@ -1007,19 +1002,19 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetIntstar(PetscObject obj,int id,int *data)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
 
+   Level: developer
+
    Notes:
-   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
+   The `data` identifier can be determined through a call to `PetscObjectComposedDataRegister()`
 
    The length of the array accessed must be known, it is not available through this API.
-
-   Level: developer
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1035,7 +1030,7 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetIntstar(PetscObject obj,int id,int *data,PetscBool  flag)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object from which data is to be retrieved
@@ -1045,12 +1040,12 @@ M*/
 +  data - the data to be retrieved
 -  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
+   Level: developer
+
    Notes:
-   The 'data' and 'flag' variables are inlined, so they are not pointers.
+   The `data` and `flag` variables are inlined, so they are not pointers.
 
    The length of the array accessed must be known, it is not available through this API.
-
-   Level: developer
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1066,17 +1061,17 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetReal(PetscObject obj,int id,PetscReal data)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Note:
-   The data identifier can be determined through a call to  `PetscObjectComposedDataRegister()`
-
    Level: developer
+
+   Note:
+   The `data` identifier can be determined through a call to  `PetscObjectComposedDataRegister()`
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1092,7 +1087,7 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetReal(PetscObject obj,int id,PetscReal data,PetscBool  flag)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object from which data is to be retrieved
@@ -1102,10 +1097,10 @@ M*/
 +  data - the data to be retrieved
 -  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
-   Note:
-   The 'data' and 'flag' variables are inlined, so they are not pointers.
-
    Level: developer
+
+   Note:
+   The `data` and `flag` variables are inlined, so they are not pointers.
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1120,19 +1115,19 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetRealstar(PetscObject obj,int id,PetscReal *data)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
 
+   Level: developer
+
    Notes:
-   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
+   The `data` identifier can be determined through a call to `PetscObjectComposedDataRegister()`
 
    The length of the array accessed must be known, it is not available through this API.
-
-   Level: developer
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1148,7 +1143,7 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetRealstar(PetscObject obj,int id,PetscReal *data,PetscBool  flag)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object from which data is to be retrieved
@@ -1159,11 +1154,11 @@ M*/
 -  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
    Notes:
-   The 'data' and 'flag' variables are inlined, so they are not pointers.
+   Level: developer
+
+   The `data` and `flag` variables are inlined, so they are not pointers.
 
    The length of the array accessed must be known, it is not available through this API.
-
-   Level: developer
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1179,17 +1174,17 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetScalar(PetscObject obj,int id,PetscScalar data)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
 
-   Note:
-   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
-
    Level: developer
+
+   Note:
+   The `data` identifier can be determined through a call to `PetscObjectComposedDataRegister()`
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1208,7 +1203,7 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetScalar(PetscObject obj,int id,PetscScalar data,PetscBool  flag)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object from which data is to be retrieved
@@ -1218,10 +1213,10 @@ M*/
 +  data - the data to be retrieved
 -  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
-   Note:
-   The 'data' and 'flag' variables are inlined, so they are not pointers.
-
    Level: developer
+
+   Note:
+   The `data` and `flag` variables are inlined, so they are not pointers.
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1241,19 +1236,19 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetScalarstar(PetscObject obj,int id,PetscScalar *data)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
 
+   Level: developer
+
    Notes:
-   The data identifier can be determined through a call to `PetscObjectComposedDataRegister()`
+   The `data` identifier can be determined through a call to `PetscObjectComposedDataRegister()`
 
    The length of the array accessed must be known, it is not available through this API.
-
-   Level: developer
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1273,7 +1268,7 @@ M*/
    #include "petsc/private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetScalarstar(PetscObject obj,int id,PetscScalar *data,PetscBool  flag)
 
-   Not collective
+   Not Collective
 
    Input parameters:
 +  obj - the object from which data is to be retrieved
@@ -1283,12 +1278,12 @@ M*/
 +  data - the data to be retrieved
 -  flag - `PETSC_TRUE` if the data item exists and is valid, `PETSC_FALSE` otherwise
 
+   Level: developer
+
    Notes:
-   The 'data' and 'flag' variables are inlined, so they are not pointers.
+   The `data` and `flag` variables are inlined, so they are not pointers.
 
    The length of the array accessed must be known, it is not available through this API.
-
-   Level: developer
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
@@ -1308,6 +1303,9 @@ PETSC_EXTERN PetscMPIInt Petsc_Seq_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_ShmComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_CreationIdx_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_Garbage_HMap_keyval;
+
+PETSC_EXTERN PetscMPIInt Petsc_SharedWD_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_SharedTmp_keyval;
 
 struct PetscCommStash {
   struct PetscCommStash *next;

@@ -2,14 +2,16 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*MC
-    DMDAVecGetArrayF90 - check Fortran Notes at `DMDAVecGetArray()`
+  DMDAVecGetArrayF90 - check Fortran Notes at `DMDAVecGetArray()`
+
+  Level: intermediate
 M*/
 
 /*@C
    DMDAVecGetArray - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Logically collective on da
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -77,13 +79,15 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
 }
 
 /*MC
-    DMDAVecRestoreArrayF90 - check Fortran Notes at `DMDAVecRestoreArray()`
+  DMDAVecRestoreArrayF90 - check Fortran Notes at `DMDAVecRestoreArray()`
+
+  Level: intermediate
 M*/
 
 /*@
    DMDAVecRestoreArray - Restores a multiple dimension array obtained with `DMDAVecGetArray()`
 
-   Logically collective on da
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -134,14 +138,16 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
 }
 
 /*MC
-    DMDAVecGetArrayWriteF90 - check Fortran Notes at `DMDAVecGetArrayWrite()`
+  DMDAVecGetArrayWriteF90 - check Fortran Notes at `DMDAVecGetArrayWrite()`
+
+  Level: intermediate
 M*/
 
 /*@C
    DMDAVecGetArrayWrite - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Logically collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -214,13 +220,15 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
 }
 
 /*MC
-    DMDAVecRestoreArrayWriteF90 - check Fortran Notes at `DMDAVecRestoreArrayWrite()`
+  DMDAVecRestoreArrayWriteF90 - check Fortran Notes at `DMDAVecRestoreArrayWrite()`
+
+  Level: intermediate
 M*/
 
 /*@
    DMDAVecRestoreArrayWrite - Restores a multiple dimension array obtained with `DMDAVecGetArrayWrite()`
 
-   Logically collective on vec
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -277,7 +285,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
    DMDAVecGetArrayDOF - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -339,7 +347,7 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
 /*@
    DMDAVecRestoreArrayDOF - Restores a multiple dimension array obtained with `DMDAVecGetArrayDOF()`
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -386,14 +394,16 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
 }
 
 /*MC
-    DMDAVecGetArrayReadF90 - check Fortran Notes at `DMDAVecGetArrayRead()`
+  DMDAVecGetArrayReadF90 - check Fortran Notes at `DMDAVecGetArrayRead()`
+
+  Level: intermediate
 M*/
 
 /*@C
    DMDAVecGetArrayRead - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  da - the distributed array
@@ -460,13 +470,15 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
 }
 
 /*MC
-    DMDAVecRestoreArrayReadF90 - check Fortran Notes at `DMDAVecRestoreArrayRead()`
+  DMDAVecRestoreArrayReadF90 - check Fortran Notes at `DMDAVecRestoreArrayRead()`
+
+  Level: intermediate
 M*/
 
 /*@
    DMDAVecRestoreArrayRead - Restores a multiple dimension array obtained with `DMDAVecGetArrayRead()`
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  da - the distributed array

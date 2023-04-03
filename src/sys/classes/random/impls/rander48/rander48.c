@@ -25,7 +25,7 @@ static double _dorander48(PetscRandom_Rander48 *r48)
   accu += (unsigned long)r48->mult[0] * (unsigned long)r48->seed[1] + (unsigned long)r48->mult[1] * (unsigned long)r48->seed[0];
   temp[1] = (unsigned short)accu; /* middle 16 bits */
   accu >>= sizeof(unsigned short) * 8;
-  accu += r48->mult[0] * r48->seed[2] + r48->mult[1] * r48->seed[1] + r48->mult[2] * r48->seed[0];
+  accu += (unsigned long)r48->mult[0] * r48->seed[2] + (unsigned long)r48->mult[1] * r48->seed[1] + (unsigned long)r48->mult[2] * r48->seed[0];
   r48->seed[0] = temp[0];
   r48->seed[1] = temp[1];
   r48->seed[2] = (unsigned short)accu;

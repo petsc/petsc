@@ -187,8 +187,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
           PetscCall(VecAXPY(X, step2, P));
         }
       }
-      pcgP->ltsnrm = pcgP->delta;                /* convergence in direction of */
-      ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE; /* negative curvature */
+      pcgP->ltsnrm = pcgP->delta; /* convergence in direction of */
+      ksp->reason  = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       if (!i) {
         PetscCall(PetscInfo(ksp, "negative curvature: delta=%g\n", (double)pcgP->delta));
       } else {
@@ -218,7 +218,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
           PetscCall(VecAXPY(X, step1, P)); /*  x <- step1*p + x  */
         }
         pcgP->ltsnrm = pcgP->delta;
-        ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
+        ksp->reason  = KSP_CONVERGED_STEP_LENGTH; /* convergence along constrained step */
         if (!i) {
           PetscCall(PetscInfo(ksp, "constrained step: delta=%g\n", (double)pcgP->delta));
         } else {
@@ -353,8 +353,8 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObje
 
    `KSPConvergedReason` may be
 .vb
-   KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-   KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+   KSP_CONVERGED_NEG_CURVE if convergence is reached along a negative curvature direction,
+   KSP_CONVERGED_STEP_LENGTH if convergence is reached along a constrained step,
 .ve
    and other `KSP` converged/diverged reasons
 
@@ -381,6 +381,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_SYMMETRIC, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_SYMMETRIC, 1));
+  PetscCall(KSPSetConvergedNegativeCurvature(ksp, PETSC_TRUE));
   PetscCall(PetscNew(&cgP));
 
   ksp->data                = (void *)cgP;

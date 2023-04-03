@@ -98,6 +98,7 @@ PETSC_EXTERN PetscErrorCode KSPSolve(KSP, Vec, Vec);
 PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP, Vec, Vec);
 PETSC_EXTERN PetscErrorCode KSPSetUseExplicitTranspose(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPMatSolve(KSP, Mat, Mat);
+PETSC_EXTERN PetscErrorCode KSPMatSolveTranspose(KSP, Mat, Mat);
 PETSC_EXTERN PetscErrorCode KSPSetMatSolveBatchSize(KSP, PetscInt);
 PETSC_DEPRECATED_FUNCTION("Use KSPSetMatSolveBatchSize() (since version 3.15)") static inline PetscErrorCode KSPSetMatSolveBlockSize(KSP ksp, PetscInt n)
 {
@@ -192,11 +193,30 @@ PETSC_EXTERN PetscErrorCode    PCMGGetCoarseSpaceConstructor(const char[], Petsc
 PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP, Vec, Vec, Vec *);
 
+/*E
+  KSPChebyshevKind - Which Chebyshev polynomial to use
+
+  Values:
++ `KSP_CHEBYSHEV_FIRST`      - "classic" first-kind Chebyshev polynomial
+. `KSP_CHEBYSHEV_FOURTH`     - fourth-kind Chebyshev polynomial
+- `KSP_CHEBYSHEV_OPT_FOURTH` - optimized fourth-kind Chebyshev polynomial
+
+  Level: intermediate
+
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevSetKind`
+E*/
+typedef enum {
+  KSP_CHEBYSHEV_FIRST,
+  KSP_CHEBYSHEV_FOURTH,
+  KSP_CHEBYSHEV_OPT_FOURTH
+} KSPChebyshevKind;
+
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP, PetscBool);
+PETSC_EXTERN PetscErrorCode KSPChebyshevSetKind(KSP, KSPChebyshevKind);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP, KSP *);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP, PetscInt, PetscReal[], PetscReal[], PetscInt *);
@@ -263,6 +283,10 @@ PETSC_EXTERN PetscErrorCode KSPPIPEFGMRESSetShift(KSP, PetscScalar);
 PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP, PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void *));
+
+PETSC_EXTERN PetscErrorCode KSPMINRESSetRadius(KSP, PetscReal);
+PETSC_EXTERN PetscErrorCode KSPMINRESGetUseQLP(KSP, PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPMINRESSetUseQLP(KSP, PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP, PC *);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP, PC);
@@ -595,7 +619,9 @@ PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType, PCSide, Pe
 PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 
-#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
+#define KSP_CONVERGED_CG_NEG_CURVE_DEPRECATED   KSP_CONVERGED_CG_NEG_CURVE PETSC_DEPRECATED_ENUM("Use KSP_CONVERGED_NEG_CURVE (since version 3.19)")
+#define KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED KSP_CONVERGED_CG_CONSTRAINED PETSC_DEPRECATED_ENUM("Use KSP_CONVERGED_STEP_LENGTH (since version 3.19)")
+#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED  KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM("Use KSP_DIVERGED_PC_FAILED (since version 3.11)")
 /*E
     KSPConvergedReason - reason a Krylov method was determined to have converged or diverged
 
@@ -607,8 +633,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_CONVERGED_RTOL` - requested decrease in the residual
 .  `KSP_CONVERGED_ATOL` - requested absolute value in the residual
 .  `KSP_CONVERGED_ITS` - requested number of iterations
-.  `KSP_CONVERGED_CG_NEG_CURVE` - see note below
-.  `KSP_CONVERGED_CG_CONSTRAINED` - see note below
+.  `KSP_CONVERGED_NEG_CURVE` - see note below
 .  `KSP_CONVERGED_STEP_LENGTH` - see note below
 .  `KSP_CONVERGED_HAPPY_BREAKDOWN` - happy breakdown (meaning early convergence of the `KSPType` occurred.
 .  `KSP_DIVERGED_NULL` - breakdown when solving the Hessenberg system within GMRES
@@ -623,7 +648,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 -  `KSP_DIVERGED_PC_FAILED` - the action of the preconditioner failed for some reason
 
    Note:
-   The values  `KSP_CONVERGED_CG_NEG_CURVE`, `KSP_CONVERGED_CG_CONSTRAINED`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by the special `KSPNASH`,
+   The values  `KSP_CONVERGED_NEG_CURVE`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by the special `KSPNASH`,
    `KSPSTCG`, and `KSPGLTR` solvers which are used by the `SNESNEWTONTR` (trust region) solver.
 
    Developer Notes:
@@ -635,15 +660,16 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .seealso: [](chapter_ksp), `KSP`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetTolerances()`, `KSPConvergedReasonView()`
 E*/
 typedef enum { /* converged */
-  KSP_CONVERGED_RTOL_NORMAL     = 1,
-  KSP_CONVERGED_ATOL_NORMAL     = 9,
-  KSP_CONVERGED_RTOL            = 2,
-  KSP_CONVERGED_ATOL            = 3,
-  KSP_CONVERGED_ITS             = 4,
-  KSP_CONVERGED_CG_NEG_CURVE    = 5,
-  KSP_CONVERGED_CG_CONSTRAINED  = 6,
-  KSP_CONVERGED_STEP_LENGTH     = 7,
-  KSP_CONVERGED_HAPPY_BREAKDOWN = 8,
+  KSP_CONVERGED_RTOL_NORMAL               = 1,
+  KSP_CONVERGED_ATOL_NORMAL               = 9,
+  KSP_CONVERGED_RTOL                      = 2,
+  KSP_CONVERGED_ATOL                      = 3,
+  KSP_CONVERGED_ITS                       = 4,
+  KSP_CONVERGED_NEG_CURVE                 = 5,
+  KSP_CONVERGED_CG_NEG_CURVE_DEPRECATED   = 5,
+  KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED = 6,
+  KSP_CONVERGED_STEP_LENGTH               = 6,
+  KSP_CONVERGED_HAPPY_BREAKDOWN           = 7,
   /* diverged */
   KSP_DIVERGED_NULL                      = -2,
   KSP_DIVERGED_ITS                       = -3,
@@ -813,6 +839,8 @@ PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP, PetscInt, PetscReal, KSPConver
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP, KSPConvergedReason *);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReasonString(KSP, const char **);
 PETSC_EXTERN PetscErrorCode KSPComputeConvergenceRate(KSP, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPSetConvergedNegativeCurvature(KSP, PetscBool);
+PETSC_EXTERN PetscErrorCode KSPGetConvergedNegativeCurvature(KSP, PetscBool *);
 
 PETSC_DEPRECATED_FUNCTION("Use KSPConvergedDefault() (since version 3.5)") static inline void KSPDefaultConverged(void)
 { /* never called */
@@ -866,6 +894,7 @@ PETSC_EXTERN PetscErrorCode KSPCGSetType(KSP, KSPCGType);
 PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP, PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP, PetscReal);
+PETSC_EXTERN PetscErrorCode KSPCGSetObjectiveTarget(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP, PetscReal *);
 

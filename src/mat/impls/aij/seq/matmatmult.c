@@ -160,7 +160,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A, Mat B, PetscR
 
   PetscFunctionBegin;
   /* Get ci and cj */
-  /*---------------*/
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
   PetscCall(PetscMalloc1(am + 2, &ci));
@@ -402,7 +401,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A, Mat B, Pets
 
   PetscFunctionBegin;
   /* Get ci and cj - same as MatMatMultSymbolic_SeqAIJ_SeqAIJ except using PetscLLxxx_fast() */
-  /*-----------------------------------------------------------------------------------------*/
   /* Allocate arrays for fill computation and free space for accumulating nonzero column */
   PetscCall(PetscMalloc1(am + 2, &ci));
   ci[0] = 0;
@@ -506,7 +504,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A, Mat B, PetscReal
 
   PetscFunctionBegin;
   /* Get ci and cj - same as MatMatMultSymbolic_SeqAIJ_SeqAIJ except using PetscLLxxx_Scalalbe() */
-  /*---------------------------------------------------------------------------------------------*/
   /* Allocate arrays for fill computation and free space for accumulating nonzero column */
   PetscCall(PetscMalloc1(am + 2, &ci));
   ci[0] = 0;
@@ -563,7 +560,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A, Mat B, PetscReal
   PetscCall(PetscLLCondensedDestroy_Scalable(lnk));
 
   /* Allocate space for ca */
-  /*-----------------------*/
   PetscCall(PetscCalloc1(ci[am] + 1, &ca));
 
   /* put together the new symbolic matrix */
@@ -611,7 +607,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A, Mat B, PetscReal fil
 
   PetscFunctionBegin;
   /* Get ci and cj - by merging sorted rows using a heap */
-  /*---------------------------------------------------------------------------------------------*/
   /* Allocate arrays for fill computation and free space for accumulating nonzero column */
   PetscCall(PetscMalloc1(am + 2, &ci));
   ci[0] = 0;
@@ -715,7 +710,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A, Mat B, PetscReal f
 
   PetscFunctionBegin;
   /* Get ci and cj - using a heap for the sorted rows, but use BT so that each index is only added once */
-  /*---------------------------------------------------------------------------------------------*/
   /* Allocate arrays for fill computation and free space for accumulating nonzero column */
   PetscCall(PetscMalloc1(am + 2, &ci));
   ci[0] = 0;
@@ -1654,7 +1648,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqDense_AB(Mat C)
 {
   PetscFunctionBegin;
@@ -1701,7 +1694,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqDense(Mat C)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ------------------------------------------------------- */
+
 static PetscErrorCode MatProductSetFromOptions_SeqXBAIJ_SeqDense_AB(Mat C)
 {
   Mat_Product *product = C->product;
@@ -1735,7 +1728,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqXBAIJ_SeqDense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_SeqDense_SeqAIJ_AB(Mat C)
 {
   PetscFunctionBegin;
@@ -1752,7 +1744,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense_SeqAIJ(Mat C)
   if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_SeqDense_SeqAIJ_AB(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ------------------------------------------------------- */
 
 PetscErrorCode MatTransColoringApplySpToDen_SeqAIJ(MatTransposeColoring coloring, Mat B, Mat Btdense)
 {
@@ -1949,7 +1940,6 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat, ISColoring iscoloring,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------- */
 static PetscErrorCode MatProductNumeric_AtB_SeqAIJ_SeqAIJ(Mat C)
 {
   Mat_Product *product = C->product;
@@ -1988,7 +1978,6 @@ static PetscErrorCode MatProductSymbolic_AtB_SeqAIJ_SeqAIJ(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AB(Mat C)
 {
   Mat_Product *product = C->product;

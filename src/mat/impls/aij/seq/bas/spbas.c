@@ -19,12 +19,12 @@
      levels of fill it does not. This needs to be investigated. Unless you are interested in drop tolerance ICC and willing to work through the code
      we recommend not using this functionality.
 
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `PCFactorSetLevels()`, `PCFactorSetDropTolerance()`
+.seealso: [](chapter_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `PCFactorSetLevels()`, `PCFactorSetDropTolerance()`
 M*/
 
 /*
   spbas_memory_requirement:
-    Calculate the number of bytes needed to store tha matrix
+    Calculate the number of bytes needed to store the matrix
 */
 size_t spbas_memory_requirement(spbas_matrix matrix)
 {

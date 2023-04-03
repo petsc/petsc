@@ -7,7 +7,7 @@
 /*@
   PetscDrawEllipse - Draws an ellipse onto a drawable.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + draw - The drawing context

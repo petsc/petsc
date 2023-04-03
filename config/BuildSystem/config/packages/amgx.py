@@ -14,6 +14,7 @@ class Configure(config.package.CMakePackage):
     self.precisions       = ['double']
     self.cxx              = 1
     self.requires32bitint = 1
+    self.maxCxxVersion    = 'c++17' # https://github.com/NVIDIA/AMGX/issues/231
     return
 
   def setupDependencies(self, framework):
@@ -25,16 +26,10 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    with self.Language('CUDA'):
-      args.append('-DCMAKE_CUDA_COMPILER="'+self.getCompiler()+'"')
-      if self.compilerFlags.debugging:
-        args.append('-DCMAKE_BUILD_TYPE=RelWithTraces')
-      else:
-        args.append('-DCMAKE_BUILD_TYPE=Release')
-      #args.append('-DCMAKE_CXX_FLAGS="-O3"')
-      #args.append('-DCMAKE_C_FLAGS="-O3"')
-      args.append('-DCUDA_ARCH=' + self.cuda.cudaArch)
-      args.append('-DCUDAToolkit_ROOT=' + self.cuda.cudaDir)
-    with self.Language('C++'):
-      args.append('\'-DCMAKE_CUDA_HOST_COMPILER='+self.framework.getCompiler('Cxx')+'\'')
+    if self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=RelWithTraces')
+    #args.append('-DCMAKE_CXX_FLAGS="-O3"')
+    #args.append('-DCMAKE_C_FLAGS="-O3"')
+    args.append('-D'+self.cuda.cmakeArchProperty())
+    args.append('-DCUDAToolkit_ROOT=' + self.cuda.cudaDir)
     return args

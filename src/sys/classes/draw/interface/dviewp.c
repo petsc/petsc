@@ -1,7 +1,4 @@
 
-/*
-       Provides the calling sequences for all the basic PetscDraw routines.
-*/
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
@@ -17,12 +14,12 @@
 .  yr - the vertical coordinate of the upper right corner of the subwindow.
 -  draw - the drawing context
 
+   Level: advanced
+
    Notes:
    These numbers must always be between 0.0 and 1.0.
 
    Lower left corner is (0,0).
-
-   Level: advanced
 
 .seealso: `PetscDrawGetViewPort(), ``PetscDraw`, `PetscDrawSplitViewPort()`, `PetscDrawViewPortsCreate()`
 @*/
@@ -54,12 +51,12 @@ PetscErrorCode PetscDrawSetViewPort(PetscDraw draw, PetscReal xl, PetscReal yl, 
 .  xr - the horizontal coordinate of the upper right corner of the subwindow.
 -  yr - the vertical coordinate of the upper right corner of the subwindow.
 
+   Level: advanced
+
    Notes:
    These numbers must always be between 0.0 and 1.0.
 
    Lower left corner is (0,0).
-
-   Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`
 @*/

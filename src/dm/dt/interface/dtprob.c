@@ -9,7 +9,7 @@ const char *const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltz
 /*@
   PetscPDFMaxwellBoltzmann1D - PDF for the Maxwell-Boltzmann distribution in 1D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Speed in [0, \infty]
@@ -30,7 +30,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 /*@
   PetscCDFMaxwellBoltzmann1D - CDF for the Maxwell-Boltzmann distribution in 1D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Speed in [0, \infty]
@@ -51,7 +51,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 /*@
   PetscPDFMaxwellBoltzmann2D - PDF for the Maxwell-Boltzmann distribution in 2D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Speed in [0, \infty]
@@ -72,7 +72,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 /*@
   PetscCDFMaxwellBoltzmann2D - CDF for the Maxwell-Boltzmann distribution in 2D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Speed in [0, \infty]
@@ -93,7 +93,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 /*@
   PetscPDFMaxwellBoltzmann3D - PDF for the Maxwell-Boltzmann distribution in 3D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Speed in [0, \infty]
@@ -114,7 +114,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 /*@
   PetscCDFMaxwellBoltzmann3D - CDF for the Maxwell-Boltzmann distribution in 3D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Speed in [0, \infty]
@@ -135,7 +135,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 /*@
   PetscPDFGaussian1D - PDF for the Gaussian distribution in 1D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Coordinate in [-\infty, \infty]
@@ -164,7 +164,7 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
 /*@
   PetscPDFSampleGaussian1D - Sample uniformly from a Gaussian distribution in 1D
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + p - A uniform variable on [0, 1]
@@ -208,7 +208,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
 /*@
   PetscPDFGaussian2D - PDF for the Gaussian distribution in 2D
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + x - Coordinate in [-\infty, \infty]^2
@@ -230,7 +230,7 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscPDFSampleGaussian2D - Sample uniformly from a Gaussian distribution in 2D
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + p - A uniform variable on [0, 1]^2
@@ -256,7 +256,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
 /*@
   PetscPDFGaussian3D - PDF for the Gaussian distribution in 3D
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + x - Coordinate in [-\infty, \infty]^3
@@ -278,7 +278,7 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscPDFSampleGaussian3D - Sample uniformly from a Gaussian distribution in 3D
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + p - A uniform variable on [0, 1]^3
@@ -304,7 +304,7 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
 /*@
   PetscPDFConstant1D - PDF for the uniform distribution in 1D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Coordinate in [-1, 1]
@@ -325,7 +325,7 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscCDFConstant1D - CDF for the uniform distribution in 1D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Coordinate in [-1, 1]
@@ -346,7 +346,7 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscPDFSampleConstant1D - Sample uniformly from a uniform distribution on [-1, 1] in 1D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . p - A uniform variable on [0, 1]
@@ -367,7 +367,7 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
 /*@
   PetscPDFConstant2D - PDF for the uniform distribution in 2D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Coordinate in [-1, 1] x [-1, 1]
@@ -388,7 +388,7 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscCDFConstant2D - CDF for the uniform distribution in 2D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Coordinate in [-1, 1] x [-1, 1]
@@ -409,7 +409,7 @@ PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscPDFSampleConstant2D - Sample uniformly from a uniform distribution on [-1, 1] x [-1, 1] in 2D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . p - Two uniform variables on [0, 1]
@@ -431,7 +431,7 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
 /*@
   PetscPDFConstant3D - PDF for the uniform distribution in 3D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
@@ -452,7 +452,7 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscCDFConstant3D - CDF for the uniform distribution in 3D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
@@ -473,7 +473,7 @@ PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 /*@
   PetscPDFSampleConstant3D - Sample uniformly from a uniform distribution on [-1, 1] x [-1, 1] in 3D
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . p - Three uniform variables on [0, 1]
@@ -496,7 +496,7 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 /*@C
   PetscProbCreateFromOptions - Return the probability distribution specified by the arguments and options
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + dim    - The dimension of sample points
@@ -607,7 +607,7 @@ EXTERN_C_END
 /*@C
   PetscProbComputeKSStatistic - Compute the Kolmogorov-Smirnov statistic for the empirical distribution for an input vector, compared to an analytic CDF.
 
-  Collective on v
+  Collective
 
   Input Parameters:
 + v   - The data vector, blocksize is the sample dimension

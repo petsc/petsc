@@ -7,13 +7,16 @@
 /*@
    PetscDrawGetBoundingBox - Gets the bounding box of all `PetscDrawStringBoxed()` commands
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context
 
    Output Parameters:
-.   xl,yl,xr,yr - coordinates of lower left and upper right corners of bounding box
++   xl - horizontal coordinate of lower left corner of bounding box
+.   yl - vertical coordinate of lower left corner of bounding box
+.   xr - horizontal coordinate of upper right corner of bounding box
+-   yr - vertical coordinate of upper right corner of bounding box
 
    Level: intermediate
 
@@ -37,13 +40,14 @@ PetscErrorCode PetscDrawGetBoundingBox(PetscDraw draw, PetscReal *xl, PetscReal 
 /*@
    PetscDrawGetCurrentPoint - Gets the current draw point, some codes use this point to determine where to draw next
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context
 
    Output Parameters:
-.   x,y - the current point
++   x - horizontal coordinate of the current point
+-   y - vertical coordinate of the current point
 
    Level: intermediate
 
@@ -63,11 +67,12 @@ PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw draw, PetscReal *x, PetscReal 
 /*@
    PetscDrawSetCurrentPoint - Sets the current draw point, some codes use this point to determine where to draw next
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
--  x,y - the location of the current point
+.   x - horizontal coordinate of the current point
+-   y - vertical coordinate of the current point
 
    Level: intermediate
 
@@ -85,11 +90,12 @@ PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw draw, PetscReal x, PetscReal y
 /*@
    PetscDrawPushCurrentPoint - Pushes a new current draw point, retaining the old one, some codes use this point to determine where to draw next
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
--  x,y - the location of the current point
+.   x - horizontal coordinate of the current point
+-   y - vertical coordinate of the current point
 
    Level: intermediate
 
@@ -108,7 +114,7 @@ PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw draw, PetscReal x, PetscReal 
 /*@
    PetscDrawPopCurrentPoint - Pops a current draw point (discarding it)
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -128,11 +134,14 @@ PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw draw)
 /*@
    PetscDrawLine - draws a line onto a drawable.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl,xr,yr - the coordinates of the line endpoints
+.  xl - horizontal coordinate of first end point
+.  yl - vertical coordinate of first end point
+.  xr - horizontal coordinate of second end point
+.  yr - vertical coordinate of second end point
 -  cl - the colors of the endpoints
 
    Level: beginner
@@ -151,11 +160,14 @@ PetscErrorCode PetscDrawLine(PetscDraw draw, PetscReal xl, PetscReal yl, PetscRe
 /*@
    PetscDrawArrow - draws a line with arrow head at end if the line is long enough
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl,xr,yr - the coordinates of the line endpoints
+.  xl - horizontal coordinate of first end point
+.  yl - vertical coordinate of first end point
+.  xr - horizontal coordinate of second end point
+.  yr - vertical coordinate of second end point
 -  cl - the colors of the endpoints
 
    Level: beginner
@@ -176,7 +188,7 @@ PetscErrorCode PetscDrawArrow(PetscDraw draw, PetscReal xl, PetscReal yl, PetscR
    relative to the user coordinates of the window; 0.0 denotes the natural
    width; 1.0 denotes the entire viewport.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -199,7 +211,7 @@ PetscErrorCode PetscDrawLineSetWidth(PetscDraw draw, PetscReal width)
    relative to the user coordinates of the window; 0.0 denotes the natural
    width; 1.0 denotes the interior viewport.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the drawing context

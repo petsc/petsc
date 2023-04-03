@@ -249,7 +249,7 @@
 +  n  - number of values
 -  X  - array of integers
 
-   Output Parameters:
+   Output Parameter:
 .  sorted - flag whether the array is sorted
 
    Level: intermediate
@@ -274,7 +274,7 @@ PetscErrorCode PetscSortedInt(PetscInt n, const PetscInt X[], PetscBool *sorted)
 +  n  - number of values
 -  X  - array of integers
 
-   Output Parameters:
+   Output Parameter:
 .  sorted - flag whether the array is sorted
 
    Level: intermediate
@@ -712,7 +712,7 @@ PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], Pet
 +  n  - number of values
 -  X  - array of integers
 
-   Output Parameters:
+   Output Parameter:
 .  sorted - flag whether the array is sorted
 
    Level: intermediate

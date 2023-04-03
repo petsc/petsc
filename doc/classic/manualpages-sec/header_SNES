@@ -1,5 +1,4 @@
-# Nonlinear solvers - SNES Manual Pages
-
+# Nonlinear Solvers (SNES)
 
 <A HREF="PETSC_DIRsrc/snes/tutorials/index.html">Examples</A><BR>
 
@@ -9,11 +8,11 @@ nonlinear equations.  SNES users can set various algorithmic options
 at runtime via the options database (e.g., specifying a trust region
 method via `-snes_type newtontr`).
 
-SNES internally employs <A HREF="PETSC_DIRdocs/manualpages/KSP/index.html">KSP</A> for the solution of
+SNES internally employs <A HREF="PETSC_DIRmanualpages/KSP/index.html">KSP</A> for the solution of
 its linear systems.
 SNES users can also set KSP options directly in application
 codes by first extracting the KSP context from the SNES context via
-<A HREF="PETSC_DIRdocs/manualpages/SNES/SNESGetKSP.html">SNESGetKSP()</A>
+<A HREF="PETSC_DIRmanualpages/SNES/SNESGetKSP.html">SNESGetKSP()</A>
 and then directly calling various KSP (and PC) routines (e.g.,
-<A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>
+<A HREF="PETSC_DIRmanualpages/PC/PCSetType.html">PCSetType()</A>
 ).

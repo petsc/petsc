@@ -156,28 +156,27 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 /*@
    VecCreateShared - Creates a parallel vector that uses shared memory.
 
+   Collective
+
    Input Parameters:
 +  comm - the MPI communicator to use
-.  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
--  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  n - local vector length (or `PETSC_DECIDE` to have calculated if `N` is given)
+-  N - global vector length (or `PETSC_DECIDE` to have calculated if `n` is given)
 
    Output Parameter:
 .  vv - the vector
 
-   Collective
-
-   Notes:
-   Currently VecCreateShared() is available only on the SGI; otherwise,
-   this routine is the same as VecCreateMPI().
-
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
-
    Level: advanced
 
-.seealso: `VecCreateSeq()`, `VecCreate()`, `VecCreateMPI()`, `VecDuplicate()`, `VecDuplicateVecs()`,
-          `VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`
+   Notes:
+   Currently `VecCreateShared()` is available only on the SGI; otherwise,
+   this routine is the same as `VecCreateMPI()`.
 
+   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
+   same type as an existing vector.
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecCreateMPI()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+          `VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecCreateShared(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 {

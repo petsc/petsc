@@ -1078,7 +1078,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C, PetscInt nrqr, Pe
   PetscCall(PetscInfo(C, "Allocated %" PetscInt_FMT " bytes, required %" PetscInt_FMT " bytes, no of mallocs = %" PetscInt_FMT "\n", mem_estimate, ct3, no_malloc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* -------------------------------------------------------------------------*/
+
 extern PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat *);
 /*
     Every processor gets the entire matrix
@@ -1096,9 +1096,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
   if (scall == MAT_INITIAL_MATRIX) {
-    /* ----------------------------------------------------------------
-         Tell every processor the number of nonzeros per row
-    */
+    /* Tell every processor the number of nonzeros per row */
     PetscCall(PetscMalloc1(A->rmap->N, &lens));
     for (i = A->rmap->rstart; i < A->rmap->rend; i++) lens[i] = ad->i[i - A->rmap->rstart + 1] - ad->i[i - A->rmap->rstart] + bd->i[i - A->rmap->rstart + 1] - bd->i[i - A->rmap->rstart];
     PetscCall(PetscMalloc2(size, &recvcounts, size, &displs));
@@ -1107,9 +1105,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
       displs[i]     = A->rmap->range[i];
     }
     PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, lens, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-    /* ---------------------------------------------------------------
-         Create the sequential matrix of the same type as the local block diagonal
-    */
+    /*     Create the sequential matrix of the same type as the local block diagonal  */
     PetscCall(MatCreate(PETSC_COMM_SELF, &B));
     PetscCall(MatSetSizes(B, A->rmap->N, A->cmap->N, PETSC_DETERMINE, PETSC_DETERMINE));
     PetscCall(MatSetBlockSizesFromMats(B, A, A));
@@ -1119,9 +1115,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     **Bin = B;
     b     = (Mat_SeqAIJ *)B->data;
 
-    /*--------------------------------------------------------------------
-       Copy my part of matrix column indices over
-    */
+    /*   Copy my part of matrix column indices over    */
     sendcount  = ad->nz + bd->nz;
     jsendbuf   = b->j + b->i[rstarts[rank]];
     a_jsendbuf = ad->j;
@@ -1146,9 +1140,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     }
     PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
-    /*--------------------------------------------------------------------
-       Gather all column indices to all processors
-    */
+    /*  Gather all column indices to all processors */
     for (i = 0; i < size; i++) {
       recvcounts[i] = 0;
       for (j = A->rmap->range[i]; j < A->rmap->range[i + 1]; j++) recvcounts[i] += lens[j];
@@ -1156,9 +1148,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     displs[0] = 0;
     for (i = 1; i < size; i++) displs[i] = displs[i - 1] + recvcounts[i - 1];
     PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, b->j, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-    /*--------------------------------------------------------------------
-        Assemble the matrix into useable form (note numerical values not yet set)
-    */
+    /*  Assemble the matrix into useable form (note numerical values not yet set) */
     /* set the b->ilen (length of each row) values */
     PetscCall(PetscArraycpy(b->ilen, lens, A->rmap->N));
     /* set the b->i indices */
@@ -1173,9 +1163,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     b = (Mat_SeqAIJ *)B->data;
   }
 
-  /*--------------------------------------------------------------------
-       Copy my part of matrix numerical values into the values location
-  */
+  /* Copy my part of matrix numerical values into the values location */
   if (flag == MAT_GET_VALUES) {
     const PetscScalar *ada, *bda, *a_sendbuf, *b_sendbuf;
     MatScalar         *sendbuf, *recvbuf;
@@ -1211,9 +1199,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     }
     PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
-    /* -----------------------------------------------------------------
-       Gather all numerical values to all processors
-    */
+    /*  Gather all numerical values to all processors  */
     if (!recvcounts) PetscCall(PetscMalloc2(size, &recvcounts, size, &displs));
     for (i = 0; i < size; i++) recvcounts[i] = b->i[rstarts[i + 1]] - b->i[rstarts[i]];
     displs[0] = 0;
@@ -2062,7 +2048,6 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C, PetscInt ismax, const IS isrow
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------*/
 PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS isrow[], const IS iscol[], MatReuse scall, Mat *submats)
 {
   Mat_MPIAIJ      *c = (Mat_MPIAIJ *)C->data;
@@ -2950,7 +2935,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
 #endif
       ngcol = 0;
       if (aij->lvec) PetscCall(VecGetSize(aij->lvec, &ngcol));
-      if (aij->garray) { PetscCall(PetscFree(aij->garray)); }
+      if (aij->garray) PetscCall(PetscFree(aij->garray));
       PetscCall(VecDestroy(&aij->lvec));
       PetscCall(VecScatterDestroy(&aij->Mvctx));
     }

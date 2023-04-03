@@ -365,6 +365,7 @@ template <typename T>
 __forceinline__ __device__ T wreduce(T a)
 {
   T b;
+
 #pragma unroll
   for (int i = WARP_SIZE / 2; i >= 1; i = i >> 1) {
     b = __shfl_down(0xffffffff, a, i);
@@ -428,7 +429,7 @@ __global__ void __launch_bounds__(256, 1) mat_solve_band(const PetscInt n, const
   for (int glbDD = end - 1, locDD = 0; glbDD >= start; glbDD--, locDD++) {
     const PetscInt col = (locDD < bw) ? end - 1 : glbDD + bw; // end of row in U
     PetscScalar    t   = 0;
-    for (int j = col - tid, idx = tid; j > glbDD; j -= blockDim.x, idx += blockDim.x) { t += pLi[-idx] * x[j]; }
+    for (int j = col - tid, idx = tid; j > glbDD; j -= blockDim.x, idx += blockDim.x) t += pLi[-idx] * x[j];
 #if defined(PETSC_USE_COMPLEX)
     PetscReal   tr = PetscRealPartComplex(t), ti = PetscImaginaryPartComplex(t);
     PetscScalar tt(breduce<PetscReal, BLOCK_SIZE>(tr), breduce<PetscReal, BLOCK_SIZE>(ti));

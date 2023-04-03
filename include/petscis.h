@@ -252,7 +252,10 @@ PETSC_EXTERN PetscErrorCode ISPartitioningToNumbering(IS, IS *);
 PETSC_EXTERN PetscErrorCode ISPartitioningCount(IS, PetscInt, PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode ISCompressIndicesGeneral(PetscInt, PetscInt, PetscInt, PetscInt, const IS[], IS[]);
-PETSC_EXTERN PetscErrorCode ISCompressIndicesSorted(PetscInt, PetscInt, PetscInt, const IS[], IS[]);
+PETSC_DEPRECATED_FUNCTION("Use ISCompressIndicesGeneral() (since version 3.19)") static inline PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
+{
+  return ISCompressIndicesGeneral(n, bs, n, imax, is_in, is_out);
+}
 PETSC_EXTERN PetscErrorCode ISExpandIndicesGeneral(PetscInt, PetscInt, PetscInt, PetscInt, const IS[], IS[]);
 
 struct _n_PetscLayout {
@@ -276,7 +279,7 @@ struct _n_PetscLayout {
 /*@C
      PetscLayoutFindOwner - Find the owning rank for a global index
 
-    Not Collective
+    Not Collective; No Fortran Support
 
    Input Parameters:
 +    map - the layout
@@ -286,9 +289,6 @@ struct _n_PetscLayout {
 .    owner - the owning rank
 
    Level: developer
-
-    Fortran Note:
-      Not available from Fortran
 
 .seealso: `PetscLayoutFindOwnerIndex()`
 @*/
@@ -315,7 +315,7 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 /*@C
      PetscLayoutFindOwnerIndex - Find the owning rank and the local index for a global index
 
-    Not Collective
+    Not Collective; No Fortran Support
 
    Input Parameters:
 +    map   - the layout
@@ -326,9 +326,6 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 -    lidx  - local index used by the owner for idx
 
    Level: developer
-
-    Fortran Note:
-      Not available from Fortran
 
 .seealso: `PetscLayoutFindOwner()`
 

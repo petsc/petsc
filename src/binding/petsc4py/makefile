@@ -12,22 +12,21 @@ MPIEXEC = mpiexec
 
 .PHONY: config build test
 config:
-	${PYTHON} setup.py config ${CONFIGOPT}
+	${PYTHON} setup.py config ${CONFIGOPT} ${opt}
 build:
-	${PYTHON} setup.py build ${BUILDOPT}
+	${PYTHON} setup.py build ${BUILDOPT} ${opt}
 test:
-	${VALGRIND} ${PYTHON} ${PWD}/test/runtests.py
+	${VALGRIND} ${PYTHON} ${PWD}/test/runtests.py ${TESTOPT} ${opt}
 test-%:
-	${MPIEXEC} -n $* ${VALGRIND} ${PYTHON} ${PWD}/test/runtests.py
+	${MPIEXEC} -n $* ${VALGRIND} ${PYTHON} ${PWD}/test/runtests.py ${TESTOPT} ${opt}
 
 .PHONY: srcbuild srcclean
 srcbuild:
-	${PYTHON} setup.py build_src ${SRCOPT}
+	${PYTHON} setup.py build_src ${SRCOPT} ${opt}
 srcclean:
-	-${RM} src/${package}.${MODULE}.c
-	-${RM} src/include/${package}/${package}.${MODULE}.h
-	-${RM} src/include/${package}/${package}.${MODULE}_api.h
-	-${RM} src/lib${package}/lib${package}.[ch]
+	-${RM} src/${package}/${MODULE}.c
+	-${RM} src/${package}/${MODULE}.h
+	-${RM} src/${package}/${MODULE}_api.h
 
 .PHONY: clean distclean fullclean
 clean:
@@ -51,6 +50,9 @@ uninstall:
 
 # ----
 
+website:
+	${RM} -rf petsc-doc-env; virtualenv -p ${PYTHON2} petsc-doc-env && . petsc-doc-env/bin/activate  && ${PYTHON2} -m pip install -r docs/source/requirements.txt && make epydoc-website && deactivate
+
 .PHONY: docs docs-html docs-pdf docs-misc
 docs: docs-html docs-pdf docs-misc
 docs-html: rst2html sphinx-html epydoc-html
@@ -61,9 +63,9 @@ docs-misc: sphinx-man sphinx-info
 PYTHON2 = python2
 
 checkdocutils:
-	@${PYTHON} -c $$'try:\n  import docutils\nexcept:\n  print("Run python -m pip install docutils and then try this command again");exit(1)'
-	@${PYTHON2} -c $$'try:\n  import docutils\nexcept:\n  print("Run python2 -m pip install docutils or pip2 install docutils or [sudo] easy_install docutils and then try the command again");exit(1)'
-	@${PYTHON2} -c $$'try:\n  import epydoc\nexcept:\n  print("Run python2 -m pip install epydoc or pip2 install epydoc or [sudo] easy_install epydoc and then try the command again");exit(1)'
+	@${PYTHON} -c $$'try:\n  import docutils\nexcept:\n  print("Run `python -m pip install docutils` and then try this command again");exit(1)'
+	@${PYTHON2} -c $$'try:\n  import docutils\nexcept:\n  print("Run `python2 -m pip install docutils` or `pip2 install docutils` or `[sudo] easy_install docutils` and then try the command again");exit(1)'
+	@${PYTHON2} -c $$'try:\n  import epydoc\nexcept:\n  print("Run `python2 -m pip install epydoc` or `pip2 install epydoc` or `[sudo] easy_install epydoc` and then try the command again");exit(1)'
 
 RST2HTML = $(shell command -v rst2html || command -v rst2html.py || false)
 RST2HTMLOPTS  = --input-encoding=utf-8
@@ -113,6 +115,11 @@ epydoc-html: srcbuild
 	env PYTHONPATH=$$PWD/build/lib.py2 ${EPYDOCBUILD} ${EPYDOCOPTS} --html -o docs/apiref
 epydoc-pdf:
 
+epydoc-website:
+	env CFLAGS=-O0 ${PYTHON2} setup.py -q build --build-lib build/lib.py2
+	env PYTHONPATH=$$PWD/build/lib.py2 ${PYTHON2} -c 'import ${package}.${MODULE}'
+	env PYTHONPATH=$$PWD/build/lib.py2 ${EPYDOCBUILD} ${EPYDOCOPTS} -q -q -q --html -o ${LOC}/petsc4py
+
 .PHONY: docsclean
 docsclean:
 	-${RM} docs/*.info docs/*.[137]
@@ -122,7 +129,7 @@ docsclean:
 # ----
 
 .PHONY: sdist
-sdist: srcbuild docs
+sdist:
 	${PYTHON} setup.py sdist ${SDISTOPT}
 
 # ----

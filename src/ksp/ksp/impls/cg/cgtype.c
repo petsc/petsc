@@ -16,11 +16,11 @@
       KSP_CG_SYMMETRIC - complex, symmetric matrix
 .ve
 
-    Level: intermediate
-
     Options Database Keys:
 +   -ksp_cg_hermitian - Indicates Hermitian matrix
 -   -ksp_cg_symmetric - Indicates symmetric matrix
+
+    Level: intermediate
 
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
@@ -72,15 +72,18 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
 }
 
 /*@
-    KSPCGSetRadius - Sets the radius of the trust region when the solver is used inside `SNESNEWTONTR`
+    KSPCGSetRadius - Sets the radius of the trust region
 
     Logically Collective
 
     Input Parameters:
 +   ksp    - the iterative context
--   radius - the trust region radius (Infinity is the default)
+-   radius - the trust region radius (0 is the default that disable the use of the radius)
 
     Level: advanced
+
+    Note:
+    When radius is greater then 0, the Steihaugh-Toint trick is used
 
 .seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
@@ -90,6 +93,33 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ksp, radius, 2);
   PetscTryMethod(ksp, "KSPCGSetRadius_C", (KSP, PetscReal), (ksp, radius));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+    KSPCGSetObjectiveTarget - Sets the target value for the quadratic model reduction
+
+    Logically Collective
+
+    Input Parameters:
++   ksp - the iterative context
+-   obj - the objective value (0 is the default)
+
+    Level: advanced
+
+    Note:
+    The CG process will stop when the current objective function
+           1/2 x_k * A * x_k - b * x_k is smaller than obj if obj is negative.
+           Otherwise the test is ignored.
+
+.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+@*/
+PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(ksp, obj, 2);
+  PetscTryMethod(ksp, "KSPCGSetObjectiveTarget_C", (KSP, PetscReal), (ksp, obj));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

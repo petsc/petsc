@@ -180,7 +180,7 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
     if self.checkCompile(length):
       buf = self.outputPreprocess(length)
       try:
-        MaxPathLength = re.compile('\nchar petsc_max_path_len\s?\[\s?\] = '+HASHLINESPACE+'\"([0-9]+)\"'+HASHLINESPACE+';').search(buf).group(1)
+        MaxPathLength = re.compile('\n'+r'char petsc_max_path_len\s?\[\s?\] = '+HASHLINESPACE+'\"([0-9]+)\"'+HASHLINESPACE+';').search(buf).group(1)
       except:
         raise RuntimeError('Unable to determine PETSC_MAX_PATH_LEN')
     if MaxPathLength == 'unknown' or not MaxPathLength.isdigit():
@@ -200,11 +200,9 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkCxxComplex)
     for t, sizes in {'void *': (8, 4),
-                     'short': (2, 4, 8),
                      'int': (4, 8, 2),
                      'long': (8, 4),
                      'long long': (8,),
-                     'enum': (4, 8),
                      'size_t': (8, 4)}.items():
       self.executeTest(self.checkSizeof, args=[t, sizes])
     if self.sizes['void-p'] == 8:

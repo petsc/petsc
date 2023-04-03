@@ -11,6 +11,21 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
        \mu = 10^6 ( y'(0) ~ -0.6666665432100101).,
    and computes the sensitivities of the final solution w.r.t. initial conditions and parameter \mu with the implicit theta method and its discrete adjoint.
 
+   In an IMEX setting,  we can split (2) by component,
+
+   [ u_1' ] = [ u_2 ] + [            0                ]
+   [ u_2' ]   [  0  ]   [ \mu ((1 - u_1^2) u_2 - u_1) ]
+
+   where
+
+   [ G(u,t) ] = [ u_2 ]
+                [  0  ]
+
+   and
+
+   [ F(u',u,t) ] = [ u_1' ] - [            0                ]
+                   [ u_2' ]   [ \mu ((1 - u_1^2) u_2 - u_1) ]
+
    Notes:
    This code demonstrates the TSAdjoint interface to a DAE system.
 
@@ -39,12 +54,14 @@ typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
   PetscReal next_output;
-
+  PetscBool imex;
   /* Sensitivity analysis support */
   PetscInt  steps;
   PetscReal ftime;
-  Mat       A;                    /* Jacobian matrix */
-  Mat       Jacp;                 /* JacobianP matrix */
+  Mat       A;                    /* IJacobian matrix */
+  Mat       B;                    /* RHSJacobian matrix */
+  Mat       Jacp;                 /* IJacobianP matrix */
+  Mat       Jacprhs;              /* RHSJacobianP matrix */
   Vec       U, lambda[2], mup[2]; /* adjoint variables */
 };
 
@@ -60,7 +77,11 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
   PetscCall(VecGetArrayRead(U, &u));
   PetscCall(VecGetArray(F, &f));
   f[0] = u[1];
-  f[1] = user->mu * ((1. - u[0] * u[0]) * u[1] - u[0]);
+  if (user->imex) {
+    f[1] = 0.0;
+  } else {
+    f[1] = user->mu * ((1. - u[0] * u[0]) * u[1] - u[0]);
+  }
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -77,9 +98,14 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void 
   PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U, &u));
   J[0][0] = 0;
-  J[1][0] = -mu * (2.0 * u[1] * u[0] + 1.);
   J[0][1] = 1.0;
-  J[1][1] = mu * (1.0 - u[0] * u[0]);
+  if (user->imex) {
+    J[1][0] = 0.0;
+    J[1][1] = 0.0;
+  } else {
+    J[1][0] = -mu * (2.0 * u[1] * u[0] + 1.);
+    J[1][1] = mu * (1.0 - u[0] * u[0]);
+  }
   PetscCall(MatSetValues(A, 2, rowcol, 2, rowcol, &J[0][0], INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -103,7 +129,11 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
   PetscCall(VecGetArrayRead(U, &u));
   PetscCall(VecGetArrayRead(Udot, &udot));
   PetscCall(VecGetArray(F, &f));
-  f[0] = udot[0] - u[1];
+  if (user->imex) {
+    f[0] = udot[0];
+  } else {
+    f[0] = udot[0] - u[1];
+  }
   f[1] = udot[1] - user->mu * ((1.0 - u[0] * u[0]) * u[1] - u[0]);
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArrayRead(Udot, &udot));
@@ -121,8 +151,13 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U, &u));
 
-  J[0][0] = a;
-  J[0][1] = -1.0;
+  if (user->imex) {
+    J[0][0] = a;
+    J[0][1] = 0.0;
+  } else {
+    J[0][0] = a;
+    J[0][1] = -1.0;
+  }
   J[1][0] = user->mu * (2.0 * u[0] * u[1] + 1.0);
   J[1][1] = a - user->mu * (1.0 - u[0] * u[0]);
 
@@ -138,7 +173,7 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
+static PetscErrorCode IJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, void *ctx)
 {
   PetscInt           row[] = {0, 1}, col[] = {0};
   PetscScalar        J[2][1];
@@ -147,11 +182,31 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U, &u));
   J[0][0] = 0;
-  J[1][0] = (1. - u[0] * u[0]) * u[1] - u[0];
+  J[1][0] = -((1.0 - u[0] * u[0]) * u[1] - u[0]);
   PetscCall(MatSetValues(A, 2, row, 1, col, &J[0][0], INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
+{
+  User user = (User)ctx;
+
+  PetscFunctionBeginUser;
+  if (!user->imex) {
+    PetscInt           row[] = {0, 1}, col[] = {0};
+    PetscScalar        J[2][1];
+    const PetscScalar *u;
+    PetscCall(VecGetArrayRead(U, &u));
+    J[0][0] = 0;
+    J[1][0] = (1. - u[0] * u[0]) * u[1] - u[0];
+    PetscCall(MatSetValues(A, 2, row, 1, col, &J[0][0], INSERT_VALUES));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(VecRestoreArrayRead(U, &u));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -202,9 +257,11 @@ int main(int argc, char **argv)
   user.mu          = 1.0e3;
   user.steps       = 0;
   user.ftime       = 0.5;
+  user.imex        = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitor", &monitor, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-mu", &user.mu, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-implicitform", &implicitform, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-imexform", &user.imex, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -214,27 +271,40 @@ int main(int argc, char **argv)
   PetscCall(MatSetFromOptions(user.A));
   PetscCall(MatSetUp(user.A));
   PetscCall(MatCreateVecs(user.A, &user.U, NULL));
-
+  PetscCall(MatDuplicate(user.A, MAT_DO_NOT_COPY_VALUES, &user.B));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &user.Jacp));
   PetscCall(MatSetSizes(user.Jacp, PETSC_DECIDE, PETSC_DECIDE, 2, 1));
   PetscCall(MatSetFromOptions(user.Jacp));
   PetscCall(MatSetUp(user.Jacp));
+  PetscCall(MatDuplicate(user.Jacp, MAT_DO_NOT_COPY_VALUES, &user.Jacprhs));
+  PetscCall(MatZeroEntries(user.Jacprhs));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetEquationType(ts, TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
-  if (implicitform) {
+  if (user.imex) {
     PetscCall(TSSetIFunction(ts, NULL, IFunction, &user));
     PetscCall(TSSetIJacobian(ts, user.A, user.A, IJacobian, &user));
-    PetscCall(TSSetType(ts, TSCN));
-  } else {
+    PetscCall(TSSetIJacobianP(ts, user.Jacp, IJacobianP, &user));
     PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &user));
-    PetscCall(TSSetRHSJacobian(ts, user.A, user.A, RHSJacobian, &user));
-    PetscCall(TSSetType(ts, TSRK));
+    PetscCall(TSSetRHSJacobian(ts, user.B, NULL, RHSJacobian, &user));
+    PetscCall(TSSetRHSJacobianP(ts, user.Jacprhs, NULL, &user));
+    PetscCall(TSSetType(ts, TSARKIMEX));
+  } else {
+    if (implicitform) {
+      PetscCall(TSSetIFunction(ts, NULL, IFunction, &user));
+      PetscCall(TSSetIJacobian(ts, user.A, user.A, IJacobian, &user));
+      PetscCall(TSSetIJacobianP(ts, user.Jacp, IJacobianP, &user));
+      PetscCall(TSSetType(ts, TSCN));
+    } else {
+      PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &user));
+      PetscCall(TSSetRHSJacobian(ts, user.A, user.A, RHSJacobian, &user));
+      PetscCall(TSSetRHSJacobianP(ts, user.Jacp, RHSJacobianP, &user));
+      PetscCall(TSSetType(ts, TSRK));
+    }
   }
-  PetscCall(TSSetRHSJacobianP(ts, user.Jacp, RHSJacobianP, &user));
   PetscCall(TSSetMaxTime(ts, user.ftime));
   PetscCall(TSSetTimeStep(ts, 0.001));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
@@ -315,7 +385,9 @@ int main(int argc, char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(MatDestroy(&user.A));
+  PetscCall(MatDestroy(&user.B));
   PetscCall(MatDestroy(&user.Jacp));
+  PetscCall(MatDestroy(&user.Jacprhs));
   PetscCall(VecDestroy(&user.U));
   PetscCall(VecDestroy(&user.lambda[0]));
   PetscCall(VecDestroy(&user.lambda[1]));
@@ -463,4 +535,8 @@ int main(int argc, char **argv)
       args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_units_ram 5 -ts_trajectory_solution_only 0 -ts_trajectory_monitor -ts_trajectory_memory_type cams
       output_file: output/ex20adj_6.out
 
+    test:
+      suffix: 25
+      args: -imexform -ts_max_steps 15 -ts_trajectory_type memory
+      output_file: output/ex20adj_imex.out
 TEST*/

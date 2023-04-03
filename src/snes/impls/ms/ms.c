@@ -169,6 +169,8 @@ PetscErrorCode SNESMSFinalizePackage(void)
 .  delta - coefficients, see Ketcheson's paper
 -  betasub - subdiagonal of Shu-Osher form
 
+   Level: advanced
+
    Notes:
    The notation is described in Ketcheson (2010) Runge-Kutta methods with minimum storage implementations.
 
@@ -180,8 +182,6 @@ PetscErrorCode SNESMSFinalizePackage(void)
 .vb
    SNESMSRegister("name",s,1,stability,NULL,NULL,alpha);
 .ve
-
-   Level: advanced
 
 .seealso: `SNESMS`
 @*/
@@ -469,7 +469,7 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype)
 /*@C
   SNESMSGetType - Get the type of multistage smoother `SNESMS`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 .  snes - nonlinear solver context
@@ -493,7 +493,7 @@ PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype)
 /*@C
   SNESMSSetType - Set the type of multistage smoother `SNESMS`
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  snes - nonlinear solver context
@@ -533,7 +533,7 @@ static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping)
 /*@C
   SNESMSGetDamping - Get the damping parameter of `SNESMS` multistage scheme
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 .  snes - nonlinear solver context
@@ -557,7 +557,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping)
 /*@C
   SNESMSSetDamping - Set the damping parameter for a `SNESMS` multistage scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  snes - nonlinear solver context

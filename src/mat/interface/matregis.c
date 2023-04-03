@@ -17,16 +17,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
-PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_SeqDense(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_MPIDense(Mat);
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat);
-PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat);
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseHIP(Mat);
-PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseHIP(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_SeqDenseHIP(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_MPIDenseHIP(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);

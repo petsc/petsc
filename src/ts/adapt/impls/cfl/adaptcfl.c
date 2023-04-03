@@ -27,7 +27,7 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt, TS ts, PetscReal h, Petsc
   /* The optimal new step based purely on CFL constraint for this step. */
   hcfl = adapt->safety * cfltimestep * ccfl;
   if (hcfl < adapt->dt_min) {
-    PetscCall(PetscInfo(adapt, "Cannot satisfy CFL constraint %g (with %g safety) at minimum time step %g with method coefficient %g, proceding anyway\n", (double)cfltimestep, (double)adapt->safety, (double)adapt->dt_min, (double)ccfl));
+    PetscCall(PetscInfo(adapt, "Cannot satisfy CFL constraint %g (with %g safety) at minimum time step %g with method coefficient %g, proceeding anyway\n", (double)cfltimestep, (double)adapt->safety, (double)adapt->dt_min, (double)ccfl));
   }
 
   *next_sc = 0;

@@ -9,7 +9,7 @@
 +  snes  - FAS context
 -  fastype  - `SNES_FAS_ADDITIVE`, `SNES_FAS_MULTIPLICATIVE`, `SNES_FAS_FULL`, or `SNES_FAS_KASKADE`
 
-Level: intermediate
+   Level: intermediate
 
 .seealso: `SNESFAS`, `PCMGSetType()`, `SNESFASGetType()`
 @*/
@@ -66,8 +66,8 @@ PetscErrorCode SNESFASGetType(SNES snes, SNESFASType *fastype)
    Level: intermediate
 
    Note:
-   If the number of levels is one then the multigrid uses the -fas_levels prefix
-  for setting the level options rather than the -fas_coarse prefix.
+   If the number of levels is one then the multigrid uses the `-fas_levels` prefix
+  for setting the level options rather than the `-fas_coarse` prefix.
 
 .seealso: `SNESFAS`, `SNESFASGetLevels()`
 @*/
@@ -326,7 +326,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 
    Input Parameters:
 +  snes   - the `SNESFAS` context
-.  vf     - viewer and format structure (may be NULL if flg is FALSE)
+.  vf     - viewer and format structure (may be `NULL` if flg is `PETSC_FALSE`)
 -  flg    - monitor or not
 
    Level: advanced

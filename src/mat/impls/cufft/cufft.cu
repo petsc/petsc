@@ -110,17 +110,17 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
   Input Parameters:
 + comm - MPI communicator, set to `PETSC_COMM_SELF`
 . ndim - the ndim-dimensional transform
-- dim  - array of size ndim, dim[i] contains the vector length in the i-dimension
+- dim  - array of size `ndim`, dim[i] contains the vector length in the i-dimension
 
   Output Parameter:
 . A - the matrix
 
-  Options Database Keys:
-. -mat_cufft_plannerflags - set CUFFT planner flags
+  Options Database Key:
+. -mat_cufft_plannerflags - set CuFFT planner flags
 
   Level: intermediate
 
-.seealso: `MATSEQCUFFT`
+.seealso: [](chapter_matrices), `Mat`, `MATSEQCUFFT`
 @*/
 PetscErrorCode MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], Mat *A)
 {

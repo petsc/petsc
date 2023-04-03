@@ -184,16 +184,6 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESSetUp_Multiblock - Sets up the internal data structures for the later use
-   of the SNESMULTIBLOCK nonlinear solver.
-
-   Input Parameters:
-+  snes - the SNES context
--  x - the solution vector
-
-   Application Interface Routine: SNESSetUp()
-*/
 PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb = (SNES_Multiblock *)snes->data;
@@ -418,15 +408,6 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(SNES snes, PetscOptionItems 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESView_Multiblock - Prints info from the SNESMULTIBLOCK data structure.
-
-  Input Parameters:
-+ SNES - the SNES context
-- viewer - visualization context
-
-  Application Interface Routine: SNESView()
-*/
 static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
 {
   SNES_Multiblock *mb     = (SNES_Multiblock *)snes->data;
@@ -462,17 +443,6 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  SNESSolve_Multiblock - Solves a nonlinear system with the Multiblock method.
-
-  Input Parameters:
-. snes - the SNES context
-
-  Output Parameter:
-. outits - number of iterations until termination
-
-  Application Interface Routine: SNESSolve()
-*/
 PetscErrorCode SNESSolve_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb = (SNES_Multiblock *)snes->data;
@@ -765,13 +735,13 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
 . name - name of this block, if NULL the number of the block is used
 - is   - the index set that defines the global row indices in this block
 
+  Level: intermediate
+
   Notes:
   Use `SNESMultiblockSetFields()`, for blocks defined by strides.
 
   This function is called once per block (it creates a new block each time). Solve options
   for this block will be available under the prefix -multiblock_BLOCKNAME_.
-
-  Level: intermediate
 
 .seealso: `SNESMULTBLOCK`, `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`
 @*/
@@ -843,13 +813,13 @@ PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
 + n       - the number of blocks
 - subsnes - the array of `SNES` contexts
 
+  Level: advanced
+
   Note:
   After `SNESMultiblockGetSubSNES()` the array of `SNES`s MUST be freed by the user
   (not each `SNES`, just the array that contains them).
 
   You must call `SNESSetUp()` before calling `SNESMultiblockGetSubSNES()`.
-
-  Level: advanced
 
 .seealso: `SNESMULTBLOCK`, `SNESMultiblockSetIS()`, `SNESMultiblockSetFields()`
 @*/

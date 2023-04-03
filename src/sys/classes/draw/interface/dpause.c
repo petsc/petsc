@@ -1,6 +1,3 @@
-/*
-       Provides the calling sequences for all the basic PetscDraw routines.
-*/
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
@@ -58,7 +55,7 @@ PetscErrorCode PetscDrawSetPause(PetscDraw draw, PetscReal lpause)
    PetscDrawGetPause - Gets the amount of time that program pauses after
    a `PetscDrawPause()` is called.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw   - the drawing object

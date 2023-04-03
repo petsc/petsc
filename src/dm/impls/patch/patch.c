@@ -19,20 +19,20 @@ Solver loop to update \tau:
 */
 
 /*@C
-  DMPatchZoom - Create patches of a DMDA on subsets of processes, indicated by commz
+  DMPatchZoom - Create patches of a `DMDA` on subsets of processes, indicated by `commz`
 
-  Collective on dm
+  Collective
 
   Input Parameters:
-+ dm - the DM
++ dm - the `DM`
 . lower - the lower left corner of the requested patch
 . upper - the upper right corner of the requested patch
-- commz - the new communicator for the patch, MPI_COMM_NULL indicates that the given rank will not own a patch
+- commz - the new communicator for the patch, `MPI_COMM_NULL` indicates that the given rank will not own a patch
 
   Output Parameters:
-+ dmz  - the patch DM
-. sfz  - the PetscSF mapping the patch+halo to the zoomed version (optional)
-- sfzr - the PetscSF mapping the patch to the restricted zoomed version
++ dmz  - the patch `DM`
+. sfz  - the `PetscSF` mapping the patch+halo to the zoomed version (optional)
+- sfzr - the `PetscSF` mapping the patch to the restricted zoomed version
 
   Level: intermediate
 

@@ -1,6 +1,6 @@
 New space: segment, order 0, trimmed 0, tensor 0, continuous 1, form degree 0
   All nodes:
-      Quadrature of order -1 on 1 points (dim 1)
+      Quadrature on a unknown of order -1 on 1 points (dim 1)
   All node indices:
 ( 1, 1,): [ 1.,]
   All matrix: 1 nonzeros
@@ -15,7 +15,7 @@ row 0: (0, 1.)
 row 0: (0, 1.) 
 New space: segment, order 0, trimmed 0, tensor 0, continuous 1, form degree 1
   All nodes:
-      Quadrature of order -1 on 1 points (dim 1)
+      Quadrature on a unknown of order -1 on 1 points (dim 1)
   All node indices:
 ( 1, 1,): [ 1.,]
   All matrix: 1 nonzeros
@@ -30,14 +30,14 @@ row 0: (0, -1.)
 row 0: (0, 1.) 
 New space: segment, order 1, trimmed 0, tensor 0, continuous 1, form degree 0
   All nodes:
-      Quadrature of order -1 on 2 points (dim 1)
+      Quadrature on a unknown of order -1 on 2 points (dim 1)
   All node indices:
 ( 1, 0,): [ 1.,]
 ( 0, 1,): [ 1.,]
   All matrix: 2 nonzeros
 New space: segment, order 1, trimmed 0, tensor 0, continuous 1, form degree 1
   All nodes:
-      Quadrature of order -1 on 2 points (dim 1)
+      Quadrature on a unknown of order -1 on 2 points (dim 1)
   All node indices:
 ( 2, 1,): [ 1.,]
 ( 1, 2,): [ 1.,]
@@ -55,14 +55,14 @@ row 0: (0, 1.)
 row 1: (1, 1.) 
 New space: segment, order 2, trimmed 0, tensor 0, continuous 1, form degree 0
   All nodes:
-      Quadrature of order -1 on 3 points (dim 1)
+      Quadrature on a unknown of order -1 on 3 points (dim 1)
   All node indices:
 ( 2, 2,): [ 1.,]
 ( 1, 0,): [ 1.,]
 ( 0, 1,): [ 1.,]
   All matrix: 3 nonzeros
   Interior nodes:
-      Quadrature of order -1 on 1 points (dim 1)
+      Quadrature on a unknown of order -1 on 1 points (dim 1)
   Interior matrix: 1 nonzeros
   Interior node symmetry matrix for orientation -1:
     Mat Object: 1 MPI process
@@ -74,7 +74,7 @@ row 0: (0, 1.)
 row 0: (0, 1.) 
 New space: segment, order 2, trimmed 0, tensor 0, continuous 1, form degree 1
   All nodes:
-      Quadrature of order -1 on 3 points (dim 1)
+      Quadrature on a unknown of order -1 on 3 points (dim 1)
   All node indices:
 ( 3, 1,): [ 1.,]
 ( 2, 2,): [ 1.,]
@@ -95,7 +95,7 @@ row 1: (1, 1.)
 row 2: (2, 1.) 
 New space: segment, order 3, trimmed 0, tensor 0, continuous 1, form degree 0
   All nodes:
-      Quadrature of order -1 on 4 points (dim 1)
+      Quadrature on a unknown of order -1 on 4 points (dim 1)
   All node indices:
 ( 3, 2,): [ 1.,]
 ( 2, 3,): [ 1.,]
@@ -103,7 +103,7 @@ New space: segment, order 3, trimmed 0, tensor 0, continuous 1, form degree 0
 ( 0, 1,): [ 1.,]
   All matrix: 4 nonzeros
   Interior nodes:
-      Quadrature of order -1 on 2 points (dim 1)
+      Quadrature on a unknown of order -1 on 2 points (dim 1)
   Interior matrix: 2 nonzeros
   Interior node symmetry matrix for orientation -1:
     Mat Object: 1 MPI process
@@ -117,7 +117,7 @@ row 0: (0, 1.)
 row 1: (1, 1.) 
 New space: segment, order 3, trimmed 0, tensor 0, continuous 1, form degree 1
   All nodes:
-      Quadrature of order -1 on 4 points (dim 1)
+      Quadrature on a unknown of order -1 on 4 points (dim 1)
   All node indices:
 ( 4, 1,): [ 1.,]
 ( 3, 2,): [ 1.,]

@@ -22,5 +22,6 @@ if __name__ == '__main__':
     '--download-parmetis=1',
     '--download-superlu_dist=1',
     '--with-strict-petscerrorcode',
+    '--with-coverage',
   ]
   configure.petsc_configure(configure_options)

@@ -16,7 +16,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
                            " a is a piecewise function with two values say a0 and a1 (both a0 and a1 are constant).\n"
                            " in this toy problem we assume a=a0 when x<0 and a=a1 when x>0 with a0<a1 which has the same discontinuous point with initial condition.\n"
                            " we don't provide an exact solution, so you need to generate reference solution to do convergnece staudy,\n"
-                           " more precisely, you need firstly generate a reference to a binary file say file.bin, then on commend line,\n"
+                           " more precisely, you need firstly generate a reference to a binary file say file.bin, then on command line,\n"
                            " you should type -simulation -f file.bin.\n"
                            " you can choose the number of grids by -da_grid_x.\n"
                            " you can choose the value of a by -physics_advect_a1 and -physics_advect_a2.\n";

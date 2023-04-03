@@ -768,24 +768,28 @@ M*/
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PETSC_MAX_REAL             3.40282346638528860e+38F
   #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
+  #define PETSC_REAL_MIN             1.1754944e-38F
   #define PETSC_MACHINE_EPSILON      1.19209290e-07F
   #define PETSC_SQRT_MACHINE_EPSILON 3.45266983e-04F
   #define PETSC_SMALL                1.e-5F
 #elif defined(PETSC_USE_REAL_DOUBLE)
   #define PETSC_MAX_REAL             1.7976931348623157e+308
   #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
+  #define PETSC_REAL_MIN             2.225073858507201e-308
   #define PETSC_MACHINE_EPSILON      2.2204460492503131e-16
   #define PETSC_SQRT_MACHINE_EPSILON 1.490116119384766e-08
   #define PETSC_SMALL                1.e-10
 #elif defined(PETSC_USE_REAL___FLOAT128)
   #define PETSC_MAX_REAL             FLT128_MAX
   #define PETSC_MIN_REAL             (-FLT128_MAX)
+  #define PETSC_REAL_MIN             FLT128_MIN
   #define PETSC_MACHINE_EPSILON      FLT128_EPSILON
   #define PETSC_SQRT_MACHINE_EPSILON 1.38777878078144567552953958511352539e-17Q
   #define PETSC_SMALL                1.e-20Q
 #elif defined(PETSC_USE_REAL___FP16)
   #define PETSC_MAX_REAL             65504.0F
   #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
+  #define PETSC_REAL_MIN             .00006103515625F
   #define PETSC_MACHINE_EPSILON      .0009765625F
   #define PETSC_SQRT_MACHINE_EPSILON .03125F
   #define PETSC_SMALL                5.e-3F
@@ -876,7 +880,7 @@ static inline PetscInt PetscPowInt(PetscInt base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }
@@ -887,7 +891,7 @@ static inline PetscInt64 PetscPowInt64(PetscInt base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }
@@ -902,7 +906,7 @@ static inline PetscReal PetscPowRealInt(PetscReal base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }
@@ -917,7 +921,7 @@ static inline PetscScalar PetscPowScalarInt(PetscScalar base, PetscInt power)
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
-    base *= base;
+    if (power) base *= base;
   }
   return result;
 }

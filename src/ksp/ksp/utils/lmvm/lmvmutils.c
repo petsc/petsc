@@ -47,7 +47,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
    MatLMVMClearJ0 - Removes all definitions of J0 and reverts to
    an identity matrix (scale = 1.0).
 
-   Input Parameters:
+   Input Parameter:
 .  B - An LMVM-type matrix
 
    Level: advanced
@@ -275,7 +275,7 @@ PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0)
    MatLMVMGetJ0PC - Returns a pointer to the internal `PC` object
    associated with the initial Jacobian.
 
-   Input Parameters:
+   Input Parameter:
 .  B - An LMVM-type matrix
 
    Output Parameter:
@@ -306,7 +306,7 @@ PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc)
    MatLMVMGetJ0KSP - Returns a pointer to the internal `KSP` solver
    associated with the initial Jacobian.
 
-   Input Parameters:
+   Input Parameter:
 .  B - An LMVM-type matrix
 
    Output Parameter:
@@ -458,7 +458,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
    MatLMVMIsAllocated - Returns a boolean flag that shows whether
    the necessary data structures for the underlying matrix is allocated.
 
-   Input Parameters:
+   Input Parameter:
 .  B - An LMVM-type matrix
 
    Output Parameter:
@@ -524,7 +524,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 /*@
    MatLMVMResetShift - Zero the shift factor.
 
-   Input Parameters:
+   Input Parameter:
 .  B - An LMVM-type matrix
 
    Level: intermediate
@@ -625,7 +625,7 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
    stored in the matrix. The counters are reset when `MatLMVMReset()`
    is called.
 
-   Input Parameters:
+   Input Parameter:
 .  B - An LMVM-type matrix
 
    Output Parameter:
@@ -652,7 +652,7 @@ PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
    MatLMVMGetRejectCount - Returns the number of rejected updates.
    The counters are reset when `MatLMVMReset()` is called.
 
-   Input Parameters:
+   Input Parameter:
 .  B - An LMVM-type matrix
 
    Output Parameter:

@@ -124,6 +124,7 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI process
           type: chebyshev
+            Chebyshev polynomial of first kind
             eigenvalue targets used: min 0.234693, max 2.58162
             eigenvalues provided (min 0.273728, max 2.34693) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
@@ -218,6 +219,7 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
           type: chebyshev
+            Chebyshev polynomial of first kind
             eigenvalue targets used: min 0.262061, max 2.88267
             eigenvalues provided (min 0.100732, max 2.62061) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess

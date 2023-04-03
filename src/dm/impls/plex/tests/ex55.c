@@ -29,7 +29,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->format                  = PETSC_VIEWER_DEFAULT;
   options->second_write_read       = PETSC_FALSE;
   options->use_low_level_functions = PETSC_FALSE;
-  PetscCall(PetscStrcpy(options->ofname, "ex55.h5"));
+  PetscCall(PetscStrncpy(options->ofname, "ex55.h5", sizeof(options->ofname)));
 
   PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex55.c", options->compare, &options->compare, NULL));

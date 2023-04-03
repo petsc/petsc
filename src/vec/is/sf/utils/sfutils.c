@@ -405,8 +405,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 . remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
 - leafSection - Data layout of local points for incoming data  (this is the distributed section)
 
-  Output Parameters:
-- sectionSF - The new `PetscSF`
+  Output Parameter:
+. sectionSF - The new `PetscSF`
 
   Level: advanced
 
@@ -788,7 +788,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
 }
 
 /*@
-  PetscSFMerge - append/merge indices of sfb into sfa, with preference for sfb
+  PetscSFMerge - append/merge indices of `sfb` into `sfa`, with preference for `sfb`
 
   Collective
 
@@ -798,6 +798,8 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
 
   Output Arguments:
 . merged - new `PetscSF` with combined edges
+
+  Level: intermediate
 
 .seealse: `PetscSFCompose()`
 @*/

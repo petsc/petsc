@@ -27,11 +27,14 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   Vec                  F, W;
   Vec                  Y, D, Dold;
   PetscInt             i, i_r;
-  PetscReal            fnorm, xnorm, ynorm, gnorm;
+  PetscReal            fnorm, xnorm, ynorm;
   SNESLineSearchReason lssucceed;
   PetscBool            badstep, powell, periodic;
   PetscScalar          DolddotD, DolddotDold;
   SNESConvergedReason  reason;
+#if defined(PETSC_USE_INFO)
+  PetscReal gnorm;
+#endif
 
   /* basically just a regular newton's method except for the application of the Jacobian */
 
@@ -124,7 +127,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     /* line search for lambda */
     ynorm = 1;
+#if defined(PETSC_USE_INFO)
     gnorm = fnorm;
+#endif
     PetscCall(VecCopy(D, Dold));
     PetscCall(VecCopy(X, Xold));
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
@@ -536,7 +541,7 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       Uses left nonlinear preconditioning by default.
 
 .seealso: `SNESQNRestartType`, `SNESQNSetRestartType()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`,
-          `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNSetType`, `SNESQNSetType ()`
+          `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNSetType`, `SNESQNSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 {

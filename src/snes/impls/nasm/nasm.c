@@ -292,10 +292,10 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes, PCASMType type)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  type - the type of update
 
    Level: intermediate
@@ -514,7 +514,7 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes, PetscBool 
 /*@
    SNESNASMSetDamping - Sets the update damping for `SNESNASM` the nonlinear additive Schwarz solver
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -583,7 +583,7 @@ static PetscErrorCode SNESNASMGetDamping_NASM(SNES snes, PetscReal *dmp)
 . B - The RHS vector
 - X - The initial guess
 
-  Output Parameters:
+  Output Parameter:
 . Y - The solution update
 
   TODO: All scatters should be packed into one
@@ -893,13 +893,13 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 /*@
    SNESNASMGetSNES - Gets a subsolver
 
-   Not collective
+   Not Collective
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 -  i - the number of the subsnes to get
 
-   Output Parameters:
+   Output Parameter:
 .  subsnes - the subsolver context
 
    Level: intermediate
@@ -919,12 +919,12 @@ PetscErrorCode SNESNASMGetSNES(SNES snes, PetscInt i, SNES *subsnes)
 /*@
    SNESNASMGetNumber - Gets number of subsolvers
 
-   Not collective
+   Not Collective
 
-   Input Parameters:
-.  snes - the SNES context
+   Input Parameter:
+.  snes - the `SNES` context
 
-   Output Parameters:
+   Output Parameter:
 .  n - the number of subsolvers
 
    Level: intermediate
@@ -946,7 +946,7 @@ PetscErrorCode SNESNASMGetNumber(SNES snes, PetscInt *n)
    Collective
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 -  weight - the weights to use (typically 1/N for each dof, where N is the number of patches it appears in)
 
    Level: intermediate

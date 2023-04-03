@@ -45,19 +45,6 @@ typedef struct {
   PetscReal umin; /* minimum allowable u'a value relative to |u|_1 */
 } MatMFFD_DS;
 
-/*
-   MatMFFDCompute_DS - Standard PETSc code for computing the
-   differencing parameter (h) for use with matrix-free finite differences.
-
-   Input Parameters:
-+  ctx - the matrix free context
-.  U - the location at which you want the Jacobian
--  a - the direction you want the derivative
-
-   Output Parameter:
-.  h - the scale computed
-
-*/
 static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx, Vec U, Vec a, PetscScalar *h, PetscBool *zeroa)
 {
   MatMFFD_DS *hctx = (MatMFFD_DS *)ctx->hctx;
@@ -98,16 +85,6 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx, Vec U, Vec a, PetscScalar *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   MatMFFDView_DS - Prints information about this particular
-   method for computing h. Note that this does not print the general
-   information about the matrix-free method, as such info is printed
-   by the calling routine.
-
-   Input Parameters:
-+  ctx - the matrix free context
--  viewer - the PETSc viewer
-*/
 static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer)
 {
   MatMFFD_DS *hctx = (MatMFFD_DS *)ctx->hctx;
@@ -124,14 +101,6 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   MatMFFDSetFromOptions_DS - Looks in the options database for
-   any options appropriate for this method.
-
-   Input Parameter:
-.  ctx - the matrix free context
-
-*/
 static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems *PetscOptionsObject)
 {
   MatMFFD_DS *hctx = (MatMFFD_DS *)ctx->hctx;
@@ -143,16 +112,6 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems *Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   MatMFFDDestroy_DS - Frees the space allocated by
-   MatCreateMFFD_DS().
-
-   Input Parameter:
-.  ctx - the matrix free context
-
-   Note:
-   Does not free the ctx, that is handled by the calling routine
-*/
 static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
 {
   PetscFunctionBegin;

@@ -58,7 +58,7 @@ PETSC_EXTERN PetscErrorCode F90Array4dGetNextRecord(F90Array4d *, void **PETSC_F
 .   start - starting index of the array
 -   len   - length of array (in items)
 
-  Output Parameters:
+  Output Parameter:
 .   ptr - Fortran 90 pointer
 */
 

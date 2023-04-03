@@ -87,8 +87,9 @@ struct Mat_SeqAIJKokkos {
   KokkosCsrMatrix  csrmat;       /* The CSR matrix, used to call KK functions */
   PetscObjectState nonzerostate; /* State of the nonzero pattern (graph) on device */
 
-  KokkosCsrMatrix csrmatT, csrmatH;                     /* Transpose and Hermitian of the matrix (built on demand) */
-  PetscBool       transpose_updated, hermitian_updated; /* Are At, Ah updated wrt the matrix? */
+  KokkosCsrMatrix     csrmatT, csrmatH;                     /* Transpose and Hermitian of the matrix (built on demand) */
+  PetscBool           transpose_updated, hermitian_updated; /* Are At, Ah updated wrt the matrix? */
+  MatRowMapKokkosView transpose_perm;                       // A permutation array making Ta(i) = Aa(perm(i)), where T = A^t
 
   /* COO stuff */
   PetscCountKokkosView jmap_d; /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
@@ -200,9 +201,12 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat, Mat_SeqAIJKokko
 PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm, Mat_SeqAIJKokkos *, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosMergeMats(Mat, Mat, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat);
+PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetKokkosCsrMatrix(Mat, KokkosCsrMatrix *);
+PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithKokkosCsrMatrix(MPI_Comm, KokkosCsrMatrix, Mat *);
 PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix &csrmat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat);
+PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGenerateTranspose_Private(Mat, KokkosCsrMatrix *);
 
 PETSC_INTERN PetscErrorCode MatSeqAIJGetKokkosView(Mat, MatScalarKokkosView *);
 PETSC_INTERN PetscErrorCode MatSeqAIJRestoreKokkosView(Mat, MatScalarKokkosView *);

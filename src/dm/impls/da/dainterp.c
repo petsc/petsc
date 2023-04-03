@@ -1341,13 +1341,13 @@ PetscErrorCode DMCreateAggregates(DM dac, DM daf, Mat *mat)
    DMDACreateAggregates - Gets the aggregates that map between
    grids associated with two `DMDA`
 
-   Collective on dmc
+   Collective
 
    Input Parameters:
 +  dmc - the coarse grid `DMDA`
 -  dmf - the fine grid `DMDA`
 
-   Output Parameters:
+   Output Parameter:
 .  rest - the restriction matrix (transpose of the projection matrix)
 
    Level: intermediate

@@ -8,7 +8,6 @@
 #define MIS_REMOVED        -3
 #define MIS_IS_SELECTED(s) (s != MIS_DELETED && s != MIS_NOT_DONE && s != MIS_REMOVED)
 
-/* -------------------------------------------------------------------------- */
 /*
    MatCoarsenApply_MIS_private - parallel maximal independent set (MIS) with data locality info. MatAIJ specific!!!
 

@@ -1,0 +1,43 @@
+    0 SNES Function norm 2.000000000000e+00, Update norm 0.000000000000e+00, Objective 1.000000000000e+00
+    Linear solve converged due to CONVERGED_STEP_LENGTH iterations 1
+    1 SNES Function norm 8.073724295516e+00, Update norm 2.000000000000e-01, Objective 7.984000000000e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    2 SNES Function norm 1.523502607643e+00, Update norm 3.627387043852e-02, Objective 6.515902821202e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_STEP_LENGTH iterations 1
+    3 SNES Function norm 5.709170588338e+00, Update norm 1.000000000000e-01, Objective 5.778511220523e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    4 SNES Function norm 1.266557541053e+00, Update norm 2.248861004179e-02, Objective 5.134189493425e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    5 SNES Function norm 8.772741467224e+00, Update norm 1.147452795503e-01, Objective 5.097283528742e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    6 SNES Function norm 9.952413555269e-01, Update norm 2.735543723072e-02, Objective 3.883160099540e-01
+    Linear solve converged due to CONVERGED_STEP_LENGTH iterations 1
+    7 SNES Function norm 9.702628551261e-01, Update norm 1.000000000000e-01, Objective 2.988769820136e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    8 SNES Function norm 1.464614419731e+00, Update norm 8.692018354220e-03, Objective 2.947551366810e-01
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+    Linear solve converged due to CONVERGED_STEP_LENGTH iterations 2
+    9 SNES Function norm 1.103875201694e+00, Update norm 1.000000000000e-01, Objective 2.220235380816e-01
+    Linear solve converged due to CONVERGED_STEP_LENGTH iterations 2
+   10 SNES Function norm 5.541278660993e+00, Update norm 2.000000000000e-01, Objective 1.447413861353e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+   11 SNES Function norm 4.136170358318e-01, Update norm 1.003743042576e-02, Objective 1.167422493654e-01
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+   12 SNES Function norm 3.192623385459e+00, Update norm 1.193990539937e-01, Objective 8.215880820432e-02
+    Linear solve converged due to CONVERGED_NEG_CURVE iterations 2
+    Linear solve converged due to CONVERGED_NEG_CURVE iterations 2
+    Linear solve converged due to CONVERGED_NEG_CURVE iterations 2
+   13 SNES Function norm 1.606870403700e+00, Update norm 1.000000000000e-01, Objective 4.890031111181e-02
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+   14 SNES Function norm 4.252156390615e+00, Update norm 1.996587868150e-01, Objective 2.404041686156e-02
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+   15 SNES Function norm 3.732636136802e-01, Update norm 8.044026297721e-02, Objective 5.815020344683e-03
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+   16 SNES Function norm 1.596055107050e+00, Update norm 1.290396610391e-01, Objective 1.568145814488e-03
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+   17 SNES Function norm 2.040940654340e-02, Update norm 2.178274050950e-02, Objective 3.784137117491e-05
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+   18 SNES Function norm 1.594825564395e-02, Update norm 1.347916850021e-02, Objective 1.377370964627e-07
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+   19 SNES Function norm 2.008125371048e-06, Update norm 2.170723142291e-04, Objective 3.552816666165e-13

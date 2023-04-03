@@ -51,12 +51,12 @@ if [ ! -d $petscrepo/.git ]; then
 fi
 
 # Initialize vars
-PETSC_ARCH=arch-build; export PETSC_ARCH
+PETSC_ARCH=arch-classic-docs; export PETSC_ARCH
 PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch
 cd $PETSC_DIR
-/bin/rm -rf $PETSC_DIR/$PETSC_ARCH $PETSC_DIR/arch-classic-docs
+/bin/rm -rf $PETSC_DIR/$PETSC_ARCH
 git clean -q -f -d -x
 git fetch -q origin
 git checkout -f origin/$branch
@@ -104,7 +104,7 @@ if [ ${version}foo = foo ]; then
 fi
 echo "Building ~/petsc$version.tar.gz and ~/petsc-with-docs$version.tar.gz"
 
-# build docs
+# build petsc docs (and include petsc4py docs within). And fortranstubs enabled here to avoid a rebuild for it.
 VENV=$PETSC_DIR/venv-petsc-docs
 python3 -m venv $VENV
 source $VENV/bin/activate
@@ -112,24 +112,20 @@ cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
 make html BUILDDIR="../docs" SPHINXOPTS="-T -E -j 6"
 mv ../docs/html/* ../docs/html/.[!.]* ../docs
-make latexpdf SPHINXOPTS="-j 6" && cp _build/latex/manual.pdf ../docs/docs/manual/
-rm -rf ../docs/doctrees
-make clean
-rm -rf images
+make latexpdf SPHINXOPTS="-j 6" && cp _build/latex/manual.pdf ../docs/manual/
 
-
-# petsc4py docs (and fortranstubs - hence --download-sowing below) and tarball
-cd $PETSC_DIR
-export PETSC_ARCH=arch-pydoc
-python3 ./config/configure.py --with-mpi=0 --with-cxx=0 --download-sowing=1
-make all
+# build petsc4py tarball (docs are no longer built here)
 cd $PETSC_DIR/src/binding/petsc4py
-  make sdist PYTHON=python3 PYTHON2=python2 SHELL=/bin/bash
+  rm -rf petsc-doc-env # remove python2 env created when building petsc+petsc4py docs
+  make srcclean docsclean
+  make sdist PYTHON=python3 SHELL=/bin/bash
   cp dist/*.gz ~/
-  make srcclean
+  make srcclean docsclean
+
+# Cleanup
 cd $PETSC_DIR
-#
-make ACTION=clean tree_basic
+  git clean -q -f -d -x config doc
+  rm -rf docs/doctrees doc/images
 
 # now tar up the PETSc tree
 cd $PETSC_DIR/..
@@ -189,7 +185,6 @@ cd $tmpdir
 
 # create lite version
 /bin/rm -rf $tmpdir/petsc$version/docs $tmpdir/petsc$version/zope $tmpdir/petsc$version/config/BuildSystem/docs $tmpdir/petsc$version/config/examples/old
-/bin/rm -rf $tmpdir/petsc$version/src/binding/petsc4py/docs
 find $tmpdir/petsc$version -type f -name "*.html" -exec rm {} \;
 # recreate EMACS-TAGS [after deletion]
 cd $tmpdir/petsc$version; ${PETSC_DIR}/lib/petsc/bin/maint/generateetags.py

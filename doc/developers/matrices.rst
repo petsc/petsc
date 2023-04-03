@@ -110,8 +110,7 @@ Sequential AIJ Sparse Matrices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The default matrix representation within PETSc is the general sparse AIJ
-format (also called the Yale sparse matrix format or compressed sparse
-row format, CSR).
+format (also called the compressed sparse row format, CSR).
 
 Parallel AIJ Sparse Matrices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -158,44 +158,14 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS iscol, Mat
 
 PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data;
-  IS              is1, is2;
-  PetscInt       *vary, *iary, nrows, ncols, i, bs = A->rmap->bs, count, maxmnbs, j;
-  const PetscInt *irow, *icol;
+  IS is1, is2;
 
   PetscFunctionBegin;
-  PetscCall(ISGetIndices(isrow, &irow));
-  PetscCall(ISGetIndices(iscol, &icol));
-  PetscCall(ISGetLocalSize(isrow, &nrows));
-  PetscCall(ISGetLocalSize(iscol, &ncols));
-
-  /* Verify if the indices correspond to each element in a block
-   and form the IS with compressed IS */
-  maxmnbs = PetscMax(a->mbs, a->nbs);
-  PetscCall(PetscMalloc2(maxmnbs, &vary, maxmnbs, &iary));
-  PetscCall(PetscArrayzero(vary, a->mbs));
-  for (i = 0; i < nrows; i++) vary[irow[i] / bs]++;
-  for (i = 0; i < a->mbs; i++) PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Index set does not match blocks");
-  count = 0;
-  for (i = 0; i < nrows; i++) {
-    j = irow[i] / bs;
-    if ((vary[j]--) == bs) iary[count++] = j;
-  }
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, count, iary, PETSC_COPY_VALUES, &is1));
-
-  PetscCall(PetscArrayzero(vary, a->nbs));
-  for (i = 0; i < ncols; i++) vary[icol[i] / bs]++;
-  for (i = 0; i < a->nbs; i++) PetscCheck(vary[i] == 0 || vary[i] == bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error in PETSc");
-  count = 0;
-  for (i = 0; i < ncols; i++) {
-    j = icol[i] / bs;
-    if ((vary[j]--) == bs) iary[count++] = j;
-  }
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, count, iary, PETSC_COPY_VALUES, &is2));
-  PetscCall(ISRestoreIndices(isrow, &irow));
-  PetscCall(ISRestoreIndices(iscol, &icol));
-  PetscCall(PetscFree2(vary, iary));
-
+  PetscCall(ISCompressIndicesGeneral(A->rmap->N, A->rmap->n, A->rmap->bs, 1, &isrow, &is1));
+  if (isrow == iscol) {
+    is2 = is1;
+    PetscCall(PetscObjectReference((PetscObject)is2));
+  } else PetscCall(ISCompressIndicesGeneral(A->cmap->N, A->cmap->n, A->cmap->bs, 1, &iscol, &is2));
   PetscCall(MatCreateSubMatrix_SeqBAIJ_Private(A, is1, is2, scall, B));
   PetscCall(ISDestroy(&is1));
   PetscCall(ISDestroy(&is2));
@@ -260,10 +230,7 @@ PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat A, PetscInt n, const IS irow[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */
-/* -------------------------------------------------------*/
-
 PetscErrorCode MatMult_SeqBAIJ_1(Mat A, Vec xx, Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;

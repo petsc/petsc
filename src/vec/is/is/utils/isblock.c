@@ -22,8 +22,9 @@
 @*/
 PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
 {
-  PetscInt        isz, len, i, j, ival;
+  PetscInt        isz, len, i, j, ival, bbs;
   const PetscInt *idx;
+  PetscBool       isblock;
 #if defined(PETSC_USE_CTABLE)
   PetscHMapI    gid1_lid1 = NULL;
   PetscInt      tt, gid1, *nidx;
@@ -43,6 +44,19 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
   PetscCall(PetscBTCreate(Nbs, &table));
 #endif
   for (i = 0; i < imax; i++) {
+    PetscCall(ISGetLocalSize(is_in[i], &len));
+    /* special case where IS is already block IS of the correct size */
+    PetscCall(PetscObjectTypeCompare((PetscObject)is_in[i], ISBLOCK, &isblock));
+    if (isblock) {
+      PetscCall(ISGetBlockSize(is_in[i], &bbs));
+      if (bs == bbs) {
+        len = len / bs;
+        PetscCall(ISBlockGetIndices(is_in[i], &idx));
+        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), len, idx, PETSC_COPY_VALUES, is_out + i));
+        PetscCall(ISBlockRestoreIndices(is_in[i], &idx));
+        continue;
+      }
+    }
     isz = 0;
 #if defined(PETSC_USE_CTABLE)
     PetscCall(PetscHMapIClear(gid1_lid1));
@@ -50,7 +64,6 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
     PetscCall(PetscBTMemzero(Nbs, table));
 #endif
     PetscCall(ISGetIndices(is_in[i], &idx));
-    PetscCall(ISGetLocalSize(is_in[i], &len));
     for (j = 0; j < len; j++) {
       ival = idx[j] / bs; /* convert the indices into block indices */
 #if defined(PETSC_USE_CTABLE)
@@ -79,9 +92,9 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
       PetscHashIterNext(gid1_lid1, tpos);
     }
     PetscCheck(j == isz, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "table error: jj != isz");
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), isz, nidx, PETSC_OWN_POINTER, (is_out + i)));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), isz, nidx, PETSC_OWN_POINTER, is_out + i));
 #else
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), isz, nidx, PETSC_COPY_VALUES, (is_out + i)));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), isz, nidx, PETSC_COPY_VALUES, is_out + i));
 #endif
   }
 #if defined(PETSC_USE_CTABLE)
@@ -90,70 +103,6 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
   PetscCall(PetscBTDestroy(&table));
   PetscCall(PetscFree(nidx));
 #endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode ISCompressIndicesSorted(PetscInt n, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
-{
-  PetscInt        i, j, k, val, len, *nidx, bbs;
-  const PetscInt *idx, *idx_local;
-  PetscBool       flg, isblock;
-#if defined(PETSC_USE_CTABLE)
-  PetscInt maxsz;
-#else
-  PetscInt Nbs = n / bs;
-#endif
-
-  PetscFunctionBegin;
-  for (i = 0; i < imax; i++) {
-    PetscCall(ISSorted(is_in[i], &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Indices are not sorted");
-  }
-
-#if defined(PETSC_USE_CTABLE)
-  /* Now check max size */
-  for (i = 0, maxsz = 0; i < imax; i++) {
-    PetscCall(ISGetLocalSize(is_in[i], &len));
-    PetscCheck(len % bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Indices are not block ordered");
-    len = len / bs; /* The reduced index size */
-    if (len > maxsz) maxsz = len;
-  }
-  PetscCall(PetscMalloc1(maxsz, &nidx));
-#else
-  PetscCall(PetscMalloc1(Nbs, &nidx));
-#endif
-  /* Now check if the indices are in block order */
-  for (i = 0; i < imax; i++) {
-    PetscCall(ISGetLocalSize(is_in[i], &len));
-
-    /* special case where IS is already block IS of the correct size */
-    PetscCall(PetscObjectTypeCompare((PetscObject)is_in[i], ISBLOCK, &isblock));
-    if (isblock) {
-      PetscCall(ISBlockGetLocalSize(is_in[i], &bbs));
-      if (bs == bbs) {
-        len = len / bs;
-        PetscCall(ISBlockGetIndices(is_in[i], &idx));
-        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, len, idx, PETSC_COPY_VALUES, (is_out + i)));
-        PetscCall(ISBlockRestoreIndices(is_in[i], &idx));
-        continue;
-      }
-    }
-    PetscCall(ISGetIndices(is_in[i], &idx));
-    PetscCheck(len % bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Indices are not block ordered");
-
-    len       = len / bs; /* The reduced index size */
-    idx_local = idx;
-    for (j = 0; j < len; j++) {
-      val = idx_local[0];
-      PetscCheck(val % bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Indices are not block ordered");
-      for (k = 0; k < bs; k++) PetscCheck(val + k == idx_local[k], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Indices are not block ordered");
-      nidx[j] = val / bs;
-      idx_local += bs;
-    }
-    PetscCall(ISRestoreIndices(is_in[i], &idx));
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), len, nidx, PETSC_COPY_VALUES, (is_out + i)));
-  }
-  PetscCall(PetscFree(nidx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1,14 +1,9 @@
 -include ../../../../../../petscdir.mk
 
-SOURCEC   = block.c
-SOURCEF   =
-SOURCEH   =
 LIBBASE   = libpetscvec
 MANSEC    = Vec
 SUBMANSEC = IS
-LOCDIR    = src/vec/is/is/impls/block/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/rules.doc
 

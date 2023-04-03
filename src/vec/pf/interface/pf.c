@@ -16,13 +16,13 @@ PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 +  pf - the function context
 .  apply - function to apply to an array
 .  applyvec - function to apply to a Vec
-.  view - function that prints information about the PF
+.  view - function that prints information about the `PF`
 .  destroy - function to free the private function context
 -  ctx - private function context
 
    Level: beginner
 
-.seealso: `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFApply()`, `PFApplyVec()`
+.seealso: `PF`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFApply()`, `PFApplyVec()`
 @*/
 PetscErrorCode PFSet(PF pf, PetscErrorCode (*apply)(void *, PetscInt, const PetscScalar *, PetscScalar *), PetscErrorCode (*applyvec)(void *, Vec, Vec), PetscErrorCode (*view)(void *, PetscViewer), PetscErrorCode (*destroy)(void *), void *ctx)
 {
@@ -46,7 +46,7 @@ PetscErrorCode PFSet(PF pf, PetscErrorCode (*apply)(void *, PetscInt, const Pets
 
    Level: beginner
 
-.seealso: `PFCreate()`, `PFSet()`, `PFSetType()`
+.seealso: `PF`, `PFCreate()`, `PFSet()`, `PFSetType()`
 @*/
 PetscErrorCode PFDestroy(PF *pf)
 {
@@ -79,7 +79,7 @@ PetscErrorCode PFDestroy(PF *pf)
 
    Level: developer
 
-.seealso: `PFSet()`, `PFApply()`, `PFDestroy()`, `PFApplyVec()`
+.seealso: `PF`, `PFSet()`, `PFApply()`, `PFDestroy()`, `PFApplyVec()`
 @*/
 PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
 {
@@ -112,14 +112,14 @@ PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
 
    Input Parameters:
 +  pf - the function context
--  x - input vector (or NULL for the vector (0,1, .... N-1)
+-  x - input vector (or `NULL` for the vector (0,1, .... N-1)
 
    Output Parameter:
 .  y - output vector
 
    Level: beginner
 
-.seealso: `PFApply()`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFSet()`
+.seealso: `PF`, `PFApply()`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFSet()`
 @*/
 PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y)
 {
@@ -177,7 +177,7 @@ PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y)
 +  pf - the function context
 .  n - number of pointwise function evaluations to perform, each pointwise function evaluation
        is a function of dimin variables and computes dimout variables where dimin and dimout are defined
-       in the call to PFCreate()
+       in the call to `PFCreate()`
 -  x - input array
 
    Output Parameter:
@@ -185,9 +185,7 @@ PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y)
 
    Level: beginner
 
-   Notes:
-
-.seealso: `PFApplyVec()`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFSet()`
+.seealso: `PF`, `PFApplyVec()`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFSet()`
 @*/
 PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
 {
@@ -202,16 +200,20 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
 }
 
 /*@C
-   PFViewFromOptions - View from Options
+   PFViewFromOptions - View a `PF` based on options set in the options database
 
    Collective
 
    Input Parameters:
-+  A - the PF context
-.  obj - Optional object
++  A - the `PF` context
+.  obj - Optional object that provides the prefix used to search the options database
 -  name - command line option
 
    Level: intermediate
+
+   Note:
+  See `PetscObjectViewFromOptions()` for the variety of viewer options available
+
 .seealso: `PF`, `PFView`, `PetscObjectViewFromOptions()`, `PFCreate()`
 @*/
 PetscErrorCode PFViewFromOptions(PF A, PetscObject obj, const char name[])
@@ -225,26 +227,26 @@ PetscErrorCode PFViewFromOptions(PF A, PetscObject obj, const char name[])
 /*@
    PFView - Prints information about a mathematical function
 
-   Collective on PF unless PetscViewer is PETSC_VIEWER_STDOUT_SELF
+   Collective unless `viewer` is `PETSC_VIEWER_STDOUT_SELF`
 
    Input Parameters:
-+  PF - the PF context
++  PF - the `PF` context
 -  viewer - optional visualization context
+
+   Level: developer
 
    Note:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
++     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
+-     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their
          data to the first processor to print.
 
    The user can open an alternative visualization contexts with
-   PetscViewerASCIIOpen() (output to a specified file).
+   `PetscViewerASCIIOpen()` (output to a specified file).
 
-   Level: developer
-
-.seealso: `PetscViewerCreate()`, `PetscViewerASCIIOpen()`
+.seealso: `PF`, `PetscViewerCreate()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode PFView(PF pf, PetscViewer viewer)
 {
@@ -273,14 +275,11 @@ PetscErrorCode PFView(PF pf, PetscViewer viewer)
 /*@C
    PFRegister - Adds a method to the mathematical function package.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined solver
--  routine_create - routine to create method context
-
-   Notes:
-   PFRegister() may be called multiple times to add several user-defined functions
++  sname - name of a new user-defined solver
+-  function - routine to create method context
 
    Sample usage:
 .vb
@@ -294,7 +293,10 @@ $     -pf_type my_function
 
    Level: advanced
 
-.seealso: `PFRegisterAll()`, `PFRegisterDestroy()`, `PFRegister()`
+   Note:
+   `PFRegister()` may be called multiple times to add several user-defined functions
+
+.seealso: `PF`, `PFRegisterAll()`, `PFRegisterDestroy()`, `PFRegister()`
 @*/
 PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, void *))
 {
@@ -305,7 +307,7 @@ PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, voi
 }
 
 /*@C
-   PFGetType - Gets the PF method type and name (as a string) from the PF
+   PFGetType - Gets the `PFType` name (as a string) from the `PF`
    context.
 
    Not Collective
@@ -318,8 +320,7 @@ PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, voi
 
    Level: intermediate
 
-.seealso: `PFSetType()`
-
+.seealso: `PF`, `PFSetType()`
 @*/
 PetscErrorCode PFGetType(PF pf, PFType *type)
 {
@@ -331,7 +332,7 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
 }
 
 /*@C
-   PFSetType - Builds PF for a particular function
+   PFSetType - Builds `PF` for a particular function
 
    Collective
 
@@ -343,14 +344,12 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
    Options Database Key:
 .  -pf_type <type> - Sets PF type
 
-  Notes:
-  See "petsc/include/petscpf.h" for available methods (for instance,
-  PFCONSTANT)
-
   Level: intermediate
 
-.seealso: `PFSet()`, `PFRegister()`, `PFCreate()`, `DMDACreatePF()`
+  Note:
+  See "petsc/include/petscpf.h" for available methods (for instance, `PFCONSTANT`)
 
+.seealso: `PF`, `PFSet()`, `PFRegister()`, `PFCreate()`, `DMDACreatePF()`
 @*/
 PetscErrorCode PFSetType(PF pf, PFType type, void *ctx)
 {
@@ -383,22 +382,20 @@ PetscErrorCode PFSetType(PF pf, PFType type, void *ctx)
 }
 
 /*@
-   PFSetFromOptions - Sets PF options from the options database.
+   PFSetFromOptions - Sets `PF` options from the options database.
 
    Collective
 
    Input Parameters:
 .  pf - the mathematical function context
 
-   Options Database Keys:
+   Level: intermediate
 
    Notes:
    To see all options, run your program with the -help option
    or consult the users manual.
 
-   Level: intermediate
-
-.seealso:
+.seealso: `PF`
 @*/
 PetscErrorCode PFSetFromOptions(PF pf)
 {
@@ -421,12 +418,12 @@ PetscErrorCode PFSetFromOptions(PF pf)
 
 static PetscBool PFPackageInitialized = PETSC_FALSE;
 /*@C
-  PFFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
-  called from PetscFinalize().
+  PFFinalizePackage - This function destroys everything in the PETSc `PF` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: `PF`, `PetscFinalize()`
 @*/
 PetscErrorCode PFFinalizePackage(void)
 {
@@ -438,13 +435,13 @@ PetscErrorCode PFFinalizePackage(void)
 }
 
 /*@C
-  PFInitializePackage - This function initializes everything in the PF package. It is called
-  from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to PFCreate()
+  PFInitializePackage - This function initializes everything in the `PF` package. It is called
+  from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to `PFCreate()`
   when using shared or static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: `PF`, `PetscInitialize()`
 @*/
 PetscErrorCode PFInitializePackage(void)
 {

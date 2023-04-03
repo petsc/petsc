@@ -1,13 +1,14 @@
 #include "../vecseqcupm.hpp" /*I <petscvec.h> I*/
 
-using namespace Petsc::vec::cupm::impl;
+using namespace Petsc::vec::cupm;
+using ::Petsc::device::cupm::DeviceType;
 
-static constexpr auto VecSeq_HIP = VecSeq_CUPM<::Petsc::device::cupm::DeviceType::HIP>{};
+static constexpr auto VecSeq_HIP = impl::VecSeq_CUPM<DeviceType::HIP>{};
 
 PetscErrorCode VecCreate_SeqHIP(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecSeq_HIP.create(v));
+  PetscCall(VecSeq_HIP.Create(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -37,7 +38,7 @@ PetscErrorCode VecCreate_SeqHIP(Vec v)
 PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
 {
   PetscFunctionBegin;
-  PetscCall(VecCreateSeqCUPMAsync(VecSeq_HIP, comm, n, v));
+  PetscCall(VecCreateSeqCUPMAsync<DeviceType::HIP>(comm, n, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -64,7 +65,7 @@ PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
   SET the array for storing the vector values. Otherwise, the array must be allocated on the
   device.
 
-  If both cpuarray and gpuarray are provided, the provided arrays must have identical
+  If both `cpuarray` and `gpuarray` are provided, the provided arrays must have identical
   values.
 
   The arrays are NOT freed when the vector is destroyed via `VecDestroy()`. The user must free
@@ -79,7 +80,7 @@ C@*/
 PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;
-  PetscCall(VecCreateSeqCUPMWithArraysAsync(VecSeq_HIP, comm, bs, n, cpuarray, gpuarray, v));
+  PetscCall(VecCreateSeqCUPMWithArraysAsync<DeviceType::HIP>(comm, bs, n, cpuarray, gpuarray, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -93,7 +94,7 @@ PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
 + comm     - the communicator, must be `PETSC_COMM_SELF`
 . bs       - the block size
 . n        - the vector length
-- gpuarray - GPU memory where the vector elements are to be stored (or NULL)
+- gpuarray - GPU memory where the vector elements are to be stored (or `NULL`)
 
   Output Parameter:
 . v - the vector
@@ -127,7 +128,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 /*@C
   VecHIPGetArray - Provides access to the device buffer inside a vector
 
-  Asynchronous; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -142,7 +143,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
   consistent view of the vector data. This may involve copying data from the host to the device
   if the data on the device is out of date. It is also assumed that the returned buffer is
   immediately modified, marking the host data out of date. This is similar to intent(inout) in
-  fortran.
+  Fortran.
 
   If the user does require strong memory guarantees, they are encouraged to use
   `VecHIPGetArrayRead()` and/or `VecHIPGetArrayWrite()` instead.
@@ -159,14 +160,14 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMGetArrayAsync(VecSeq_HIP, v, a));
+  PetscCall(VecCUPMGetArrayAsync<DeviceType::HIP>(v, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
   VecHIPRestoreArray - Restore a device buffer previously acquired with `VecHIPGetArray()`.
 
-  Asynchronous; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -185,14 +186,14 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMRestoreArrayAsync(VecSeq_HIP, v, a));
+  PetscCall(VecCUPMRestoreArrayAsync<DeviceType::HIP>(v, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
   VecHIPGetArrayRead - Provides read access to the HIP buffer inside a vector.
 
-  Asynchronous; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -219,7 +220,7 @@ PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMGetArrayReadAsync(VecSeq_HIP, v, a));
+  PetscCall(VecCUPMGetArrayReadAsync<DeviceType::HIP>(v, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -227,7 +228,7 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
   VecHIPRestoreArrayRead - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayRead()`.
 
-  No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -245,14 +246,14 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
 PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMRestoreArrayReadAsync(VecSeq_HIP, v, a));
+  PetscCall(VecCUPMRestoreArrayReadAsync<DeviceType::HIP>(v, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
   VecHIPGetArrayWrite - Provides write access to the HIP buffer inside a vector.
 
-  No Fortran Support
+   Not Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -278,7 +279,7 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMGetArrayWriteAsync(VecSeq_HIP, v, a));
+  PetscCall(VecCUPMGetArrayWriteAsync<DeviceType::HIP>(v, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -286,7 +287,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
   VecHIPRestoreArrayWrite - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayWrite()`.
 
-  No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -304,7 +305,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
 PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMRestoreArrayWriteAsync(VecSeq_HIP, v, a));
+  PetscCall(VecCUPMRestoreArrayWriteAsync<DeviceType::HIP>(v, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -312,7 +313,7 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
   VecHIPPlaceArray - Allows one to replace the GPU array in a vector with a GPU array provided
   by the user.
 
-  Not Collective; No Fortran Support
+  Not Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + vec - the vector
@@ -338,7 +339,7 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
 PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMPlaceArrayAsync(VecSeq_HIP, vin, a));
+  PetscCall(VecCUPMPlaceArrayAsync<DeviceType::HIP>(vin, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -367,14 +368,14 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
 PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMReplaceArrayAsync(VecSeq_HIP, vin, a));
+  PetscCall(VecCUPMReplaceArrayAsync<DeviceType::HIP>(vin, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
   VecHIPResetArray - Resets a vector to use its default memory.
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 . vec - the vector
@@ -390,6 +391,6 @@ PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
 PetscErrorCode VecHIPResetArray(Vec vin)
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMResetArrayAsync(VecSeq_HIP, vin));
+  PetscCall(VecCUPMResetArrayAsync<DeviceType::HIP>(vin));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

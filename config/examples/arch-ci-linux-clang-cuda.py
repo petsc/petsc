@@ -17,6 +17,7 @@ if __name__ == '__main__':
     '--with-cc=clang',
     '--with-cxx=clang++',
     '--download-openmpi',
+    #'--with-coverage',
   ]
 
   configure.petsc_configure(configure_options)

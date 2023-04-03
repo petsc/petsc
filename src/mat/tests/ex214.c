@@ -87,7 +87,7 @@ int main(int argc, char **args)
   PetscCall(MatSetRandom(C, rand));
   PetscCall(MatDuplicate(C, MAT_DO_NOT_COPY_VALUES, &X));
 
-  PetscCall(PetscStrcpy(solver, MATSOLVERMUMPS));
+  PetscCall(PetscStrncpy(solver, MATSOLVERMUMPS, sizeof(solver)));
   if (rank == 0 && displ) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Solving with %s: nrhs %" PetscInt_FMT ", size mat %" PetscInt_FMT " x %" PetscInt_FMT "\n", solver, nrhs, M, N));
 
   for (test = 0; test < 2; test++) {

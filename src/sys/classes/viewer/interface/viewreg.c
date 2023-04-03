@@ -28,7 +28,7 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
       PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
          been printed so they will not be printed again.
 
-     Not collective
+     Not Collective
 
     Level: developer
 
@@ -46,15 +46,15 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 /*@C
       PetscOptionsHelpPrintedCheck - Checks if a particular pre, name pair has previous been entered (meaning the help message was printed)
 
-     Not collective
+     Not Collective
 
     Input Parameters:
 +     hp - the object used to manage tracking what help messages have been printed
-.     pre - the prefix part of the string, many be NULL
--     name - the string to look for (cannot be NULL)
+.     pre - the prefix part of the string, many be `NULL`
+-     name - the string to look for (cannot be `NULL`)
 
     Output Parameter:
-.     found - PETSC_TRUE if the string was already set
+.     found - `PETSC_TRUE` if the string was already set
 
     Level: intermediate
 
@@ -76,11 +76,12 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const ch
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 #if !defined(PETSC_HAVE_THREADSAFETY)
-  PetscCall(PetscSegBufferGet(hp->strings, l1 + l2 + 1, &both));
-  PetscCall(PetscStrcpy(both, pre));
-  PetscCall(PetscStrcat(both, name));
+  size_t lboth = l1 + l2 + 1;
+  PetscCall(PetscSegBufferGet(hp->strings, lboth, &both));
+  PetscCall(PetscStrncpy(both, pre, lboth));
+  PetscCall(PetscStrncpy(both + l1, name, l2 + 1));
   kh_put(HTPrinted, hp->printed, both, &newitem);
-  if (!newitem) PetscCall(PetscSegBufferUnuse(hp->strings, l1 + l2 + 1));
+  if (!newitem) PetscCall(PetscSegBufferUnuse(hp->strings, lboth));
   *found = newitem ? PETSC_FALSE : PETSC_TRUE;
 #else
   *found = PETSC_FALSE;
@@ -170,13 +171,13 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
 
    Input Parameters:
 +  comm - the communicator to own the viewer
-.  options - options database, use NULL for default global database
-.  pre - the string to prepend to the name or NULL
+.  options - options database, use `NULL` for default global database
+.  pre - the string to prepend to the name or `NULL`
 -  name - the option one is seeking
 
    Output Parameters:
-+  viewer - the viewer, pass NULL if not needed
-.  format - the `PetscViewerFormat` requested by the user, pass NULL if not needed
++  viewer - the viewer, pass `NULL` if not needed
+.  format - the `PetscViewerFormat` requested by the user, pass `NULL` if not needed
 -  set - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: intermediate
@@ -197,7 +198,7 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
    `PetscOptionsPushGetViewerOff()`.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
    an appreciable fraction of the runtime.
 
-   If PETSc is configured with --with-viewfromoptions=0 this function always returns with *set of `PETSC_FALSE`
+   If PETSc is configured with `--with-viewfromoptions=0` this function always returns with *set of `PETSC_FALSE`
 
 .seealso: [](sec_viewers), `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -397,8 +398,7 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
    Level: advanced
 
    Note:
-   See "include/petscviewer.h" for available methods (for instance,
-   `PETSCVIEWERSOCKET`)
+   See `PetscViewerType` for possible values
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewerGetType()`, `PetscViewerType`, `PetscViewerPushFormat()`
 @*/
@@ -434,8 +434,8 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
    Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined viewer
--  routine_create - routine to create method context
++  sname - name of a new user-defined viewer
+-  function - routine to create method context
 
    Level: developer
 
@@ -463,7 +463,7 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
 }
 
 /*@C
-   PetscViewerSetFromOptions - Sets various options for a viewer from the options database.
+   PetscViewerSetFromOptions - Sets various options for a viewer based on values in the options database.
 
    Collective
 
@@ -473,7 +473,7 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
    Level: intermediate
 
    Note:
-    Must be called after PetscViewerCreate() before the PetscViewer is used.
+    Must be called after `PetscViewerCreate()` before the `PetscViewer` is used.
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/

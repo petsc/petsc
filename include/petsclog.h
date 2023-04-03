@@ -30,14 +30,16 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const c
 /*E
   PetscInfoCommFlag - Describes the method by which to filter `PetscInfo()` by communicator size
 
-  Used as an input for `PetscInfoSetFilterCommSelf()`
-
+  Values:
 + `PETSC_INFO_COMM_ALL` - Default uninitialized value. `PetscInfo()` will not filter based on
-communicator size (i.e. will print for all communicators)
+                          communicator size (i.e. will print for all communicators)
 . `PETSC_INFO_COMM_NO_SELF` - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
 - `PETSC_INFO_COMM_ONLY_SELF` - `PetscInfo()` will ONLY print for communicators with size = 1
 
   Level: intermediate
+
+  Note:
+  Used as an input for `PetscInfoSetFilterCommSelf()`
 
 .seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`, `PetscInfoSetFilterCommSelf()`
 E*/
@@ -559,6 +561,25 @@ static inline int PetscMPIParallelComm(MPI_Comm comm)
     #define MPI_Iscatterv(sendbuf, sendcount, displs, sendtype, recvbuf, recvcount, recvtype, root, comm, request) \
       (PetscAddLogDouble(&petsc_scatter_ct, &petsc_scatter_ct_th, 1) || PetscMPITypeSize((recvcount), (recvtype), (&petsc_recv_len), (&petsc_recv_len_th)) || MPI_Iscatterv((sendbuf), (sendcount), (displs), (sendtype), (recvbuf), (recvcount), (recvtype), (root), (comm), (request)))
 
+    #define MPIX_Send_enqueue(buf, count, datatype, dest, tag, comm) \
+      (PetscAddLogDouble(&petsc_send_ct, &petsc_send_ct_th, 1) || PetscMPITypeSize((count), (datatype), (&petsc_send_len), (&petsc_send_len_th)) || MPIX_Send_enqueue((buf), (count), (datatype), (dest), (tag), (comm)))
+
+    #define MPIX_Recv_enqueue(buf, count, datatype, source, tag, comm, status) \
+      (PetscAddLogDouble(&petsc_recv_ct, &petsc_recv_ct_th, 1) || PetscMPITypeSize((count), (datatype), (&petsc_recv_len), (&petsc_recv_len_th)) || MPIX_Recv_enqueue((buf), (count), (datatype), (source), (tag), (comm), (status)))
+
+    #define MPIX_Isend_enqueue(buf, count, datatype, dest, tag, comm, request) \
+      (PetscAddLogDouble(&petsc_isend_ct, &petsc_isend_ct_th, 1) || PetscMPITypeSize((count), (datatype), &(petsc_isend_len), &(petsc_isend_len_th)) || MPIX_Isend_enqueue((buf), (count), (datatype), (dest), (tag), (comm), (request)))
+
+    #define MPIX_Irecv_enqueue(buf, count, datatype, source, tag, comm, request) \
+      (PetscAddLogDouble(&petsc_irecv_ct, &petsc_irecv_ct_th, 1) || PetscMPITypeSize((count), (datatype), &(petsc_irecv_len), &(petsc_irecv_len_th)) || MPIX_Irecv_enqueue((buf), (count), (datatype), (source), (tag), (comm), (request)))
+
+    #define MPIX_Allreduce_enqueue(sendbuf, recvbuf, count, datatype, op, comm) \
+      (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPIX_Allreduce_enqueue((sendbuf), (recvbuf), (count), (datatype), (op), (comm)))
+
+    #define MPIX_Wait_enqueue(request, status) (PetscAddLogDouble(&petsc_wait_ct, &petsc_wait_ct_th, 1) || PetscAddLogDouble(&petsc_sum_of_waits_ct, &petsc_sum_of_waits_ct_th, 1) || MPIX_Wait_enqueue((request), (status)))
+
+    #define MPIX_Waitall_enqueue(count, array_of_requests, array_of_statuses) \
+      (PetscAddLogDouble(&petsc_wait_all_ct, &petsc_wait_all_ct_th, 1) || PetscAddLogDouble(&petsc_sum_of_waits_ct, &petsc_sum_of_waits_ct_th, count) || MPIX_Waitall_enqueue((count), (array_of_requests), (array_of_statuses)))
   #else
 
     #define MPI_Startall_irecv(count, datatype, number, requests) ((number) && MPI_Startall((number), (requests)))

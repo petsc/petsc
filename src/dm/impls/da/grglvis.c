@@ -273,20 +273,33 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       if (bss[i] == 1) {
         PetscCall(PetscStrallocpy(dafieldname[s], &fieldname[i]));
       } else {
-        PetscInt b;
-        size_t   tlen = 9; /* "Vector-" + end */
-        for (b = 0; b < bss[i]; b++) {
+        const char     prefix[]   = "Vector-";
+        const size_t   prefix_len = PETSC_STATIC_ARRAY_LENGTH(prefix);
+        const PetscInt bss_i      = bss[i];
+        char          *fname_i    = NULL;
+        size_t         tlen       = prefix_len, cur_len;
+
+        for (PetscInt b = 0; b < bss_i; ++b) {
           size_t len;
+
           PetscCall(PetscStrlen(dafieldname[s + b], &len));
           tlen += len + 1; /* field + "-" */
         }
-        PetscCall(PetscMalloc1(tlen, &fieldname[i]));
-        PetscCall(PetscStrcpy(fieldname[i], "Vector-"));
-        for (b = 0; b < bss[i] - 1; b++) {
-          PetscCall(PetscStrcat(fieldname[i], dafieldname[s + b]));
-          PetscCall(PetscStrcat(fieldname[i], "-"));
+        PetscCall(PetscMalloc1(tlen, &fname_i));
+        PetscCall(PetscArraycpy(fname_i, prefix, prefix_len - 1));
+        cur_len = prefix_len;
+        for (PetscInt b = 0; b < bss_i; ++b) {
+          const char *dafname = dafieldname[s + b];
+          size_t      len;
+
+          PetscCall(PetscStrlen(dafname, &len));
+          PetscCall(PetscArraycpy(fname_i + cur_len, dafname, len + 1));
+          cur_len += len + 1;
+          // don't add for final iteration of the loop
+          if ((b + 1) < bss_i) fname_i[cur_len++] = '-';
         }
-        PetscCall(PetscStrcat(fieldname[i], dafieldname[s + b]));
+        fname_i[cur_len] = '\0';
+        fieldname[i]     = fname_i;
       }
       dims[i]   = dim;
       nlocal[i] = M * N * P * bss[i];

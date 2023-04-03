@@ -56,7 +56,7 @@ int main(int argc, char **args)
   */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file[0], sizeof(file[0]), &flg));
   if (flg) {
-    PetscCall(PetscStrcpy(file[1], file[0]));
+    PetscCall(PetscStrncpy(file[1], file[0], sizeof(file[1])));
     preload = PETSC_FALSE;
   } else {
     PetscCall(PetscOptionsGetString(NULL, NULL, "-f0", file[0], sizeof(file[0]), &flg));

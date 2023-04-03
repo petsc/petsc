@@ -31,30 +31,30 @@ int main(int argc, char **args)
   ftyp = MAT_FACTOR_LU;
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &data_provided));
   if (!data_provided) { /* get matrices from PETSc distribution */
-    PetscCall(PetscStrcpy(file, "${PETSC_DIR}/share/petsc/datafiles/matrices/"));
+    PetscCall(PetscStrncpy(file, "${PETSC_DIR}/share/petsc/datafiles/matrices/", sizeof(file)));
     if (hpd) {
 #if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscStrcat(file, "hpd-complex-"));
+      PetscCall(PetscStrlcat(file, "hpd-complex-", sizeof(file)));
 #else
-      PetscCall(PetscStrcat(file, "spd-real-"));
+      PetscCall(PetscStrlcat(file, "spd-real-", sizeof(file)));
 #endif
       ftyp = MAT_FACTOR_CHOLESKY;
     } else {
 #if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscStrcat(file, "nh-complex-"));
+      PetscCall(PetscStrlcat(file, "nh-complex-", sizeof(file)));
 #else
-      PetscCall(PetscStrcat(file, "ns-real-"));
+      PetscCall(PetscStrlcat(file, "ns-real-", sizeof(file)));
 #endif
     }
 #if defined(PETSC_USE_64BIT_INDICES)
-    PetscCall(PetscStrcat(file, "int64-"));
+    PetscCall(PetscStrlcat(file, "int64-", sizeof(file)));
 #else
-    PetscCall(PetscStrcat(file, "int32-"));
+    PetscCall(PetscStrlcat(file, "int32-", sizeof(file)));
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscCall(PetscStrcat(file, "float32"));
+    PetscCall(PetscStrlcat(file, "float32", sizeof(file)));
 #else
-    PetscCall(PetscStrcat(file, "float64"));
+    PetscCall(PetscStrlcat(file, "float64", sizeof(file)));
 #endif
   }
 

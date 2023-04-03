@@ -35,7 +35,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   const char            *redm, *redo;
   char                  *mesg_log;
 #if defined(PETSC_HAVE_UNISTD_H)
-  int fd_stdout, fd_pipe[2], count, err;
+  int fd_stdout, fd_pipe[2], count;
 #endif
 
   PetscFunctionBegin;
@@ -69,7 +69,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
     matAdj = matSeq;
   }
 
-  adj = (Mat_MPIAdj *)matAdj->data; /* finaly adj contains adjacency graph */
+  adj = (Mat_MPIAdj *)matAdj->data; /* finally adj contains adjacency graph */
 
   /* arguments for Party library */
   n        = mat->rmap->N;             /* number of vertices in full graph */
@@ -101,8 +101,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS *parti
   part_info(n, vertex_w, edge_p, edge, NULL, p, part_party, 1);
 
 #if defined(PETSC_HAVE_UNISTD_H)
-  err = fflush(stdout);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on stdout");
+  PetscCall(PetscFFlush(stdout));
   count = read(fd_pipe[0], mesg_log, (SIZE_LOG - 1) * sizeof(char));
   if (count < 0) count = 0;
   mesg_log[count] = 0;
@@ -393,8 +392,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
   PetscCall(PetscNew(&party));
   part->data = (void *)party;
 
-  PetscCall(PetscStrcpy(party->global, "gcf,gbf"));
-  PetscCall(PetscStrcpy(party->local, "kl"));
+  PetscCall(PetscStrncpy(party->global, "gcf,gbf", sizeof(party->global)));
+  PetscCall(PetscStrncpy(party->local, "kl", sizeof(party->local)));
 
   party->redm         = PETSC_TRUE;
   party->redo         = PETSC_TRUE;

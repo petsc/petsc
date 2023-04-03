@@ -2,9 +2,7 @@
 
 /*@C
    MatCheckCompressedRow - Determines whether the compressed row matrix format should be used.
-      If the format is to be used, this routine creates Mat_CompressedRow struct.
       Compressed row format provides high performance routines by taking advantage of zero rows.
-      Supported types are MATAIJ, MATBAIJ and MATSBAIJ.
 
    Collective
 
@@ -12,16 +10,22 @@
 +  A             - the matrix
 .  nrows         - number of rows with nonzero entries
 .  compressedrow - pointer to the struct Mat_CompressedRow
-.  ai            - row pointer used by seqaij and seqbaij
-.  mbs           - number of (block) rows represented by ai
+.  ai            - row pointer used by `MATSEQAIJ` and `MATSEQBAIJ`
+.  mbs           - number of (block) rows represented by `ai`
 -  ratio         - ratio of (num of zero rows)/m, used to determine if the compressed row format should be used
 
-   Developer Note: The reason this takes the compressedrow, ai and mbs arguments is because it is called by both the SeqAIJ and SEQBAIJ matrices and
-                   the values are not therefore obtained by directly taking the values from the matrix object.
-                   This is not a general public routine and hence is not listed in petscmat.h (it exposes a private data structure) but it is used
-                   by some preconditioners and hence is labeled as PETSC_EXTERN
-
    Level: developer
+
+   Note:
+   Supported types are `MATAIJ`, `MATBAIJ` and `MATSBAIJ`.
+
+   Developer Note:
+   The reason this takes the `compressedrow`, `ai` and `mbs` arguments is because it is called by both the `MATSEQAIJ` and `MATSEQBAIJ` matrices and
+   the values are not therefore obtained by directly taking the values from the matrix object.
+   This is not a general public routine and hence is not listed in petscmat.h (it exposes a private data structure) but it is used
+   by some preconditioners and hence is labeled as `PETSC_EXTERN`
+
+.seealso: `Mat`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ`.
 @*/
 PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A, PetscInt nrows, Mat_CompressedRow *compressedrow, PetscInt *ai, PetscInt mbs, PetscReal ratio)
 {

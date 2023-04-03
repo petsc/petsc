@@ -440,7 +440,7 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result)
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!gmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &gmres->sol_temp)); }
+    if (!gmres->sol_temp) PetscCall(VecDuplicate(ksp->vec_sol, &gmres->sol_temp));
     ptr = gmres->sol_temp;
   }
   if (!gmres->nrs) {
@@ -580,7 +580,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol)
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (tol == PETSC_DEFAULT) {
+  if (tol == (PetscReal)PETSC_DEFAULT) {
     gmres->breakdowntol = 0.1;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

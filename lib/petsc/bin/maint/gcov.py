@@ -16,7 +16,7 @@ import functools
 
 # version of gcovr JSON format that this script was tested against and knows how to write
 # see https://gcovr.com/en/stable/output/json.html#json-output
-known_gcovr_json_versions = {'0.1', '0.2', '0.3'}
+known_gcovr_json_versions = {'0.1', '0.2', '0.3', '0.5'}
 
 class Logger:
   def __init__(self, *args, **kwargs):
@@ -32,7 +32,7 @@ class Logger:
     if stderr is None:
       stderr = self._stderr
 
-    self.flush(close = True)
+    self.flush(close=True)
     self.stdout  = stdout
     self.stderr  = stderr
     self.verbose = bool(verbosity)
@@ -53,7 +53,7 @@ class Logger:
     self.__log(self.stderr, *args, **kwargs)
     return
 
-  def flush(self, close = False):
+  def flush(self, close=False):
     for stream_name in ('stdout', 'stderr'):
       stream = getattr(self, stream_name, None)
       if stream:
@@ -63,7 +63,10 @@ class Logger:
     return
 
   def __del__(self):
-    self.flush(close = True)
+    try:
+      self.flush(close=True)
+    except:
+      pass
     return
 
 gcov_logger = Logger()
@@ -76,6 +79,10 @@ class Version:
     self.micro     = int(micro)
     self.__version = (self.major, self.minor, self.micro)
     return
+
+  @classmethod
+  def from_string(cls, ver):
+    return cls.from_iterable(ver.split('.'))
 
   @classmethod
   def from_iterable(cls, it):
@@ -126,12 +133,15 @@ class GcovrRunner:
       mess = 'Invalid gcovr version string, cannot determine gcovr version from:\n{}'.format(raw_output)
       raise RuntimeError(mess) from ie
 
-    version = Version.from_iterable(version.split('.'))
+    version = Version.from_string(version)
     setattr(cls, attr_name, version)
     return version
 
   def build_command(self, *args):
-    base_args = ['gcovr', '-j', '4', '--root', self.petsc_dir]
+    base_args = [
+      'gcovr', '-j', '4', '--root', self.petsc_dir, '--exclude-throw-branches',
+      '--exclude-unreachable-branches'
+    ]
     if self.verbosity > 1:
       base_args.append('--verbose')
 
@@ -155,16 +165,15 @@ class GcovrRunner:
       #   int my_func() { retunr 1; }
       # #endif
       #
-      # So to work around it we exclude offending files
+      # So to work around it we monkey-patch the gcovr executable every time to disable
+      # the check
+      monkey_patched = 'import sys; import gcovr; import gcovr.merging; gcovr.merging.DEFAULT_MERGE_OPTIONS.ignore_function_lineno = True; import gcovr.__main__; sys.exit(gcovr.__main__.main())'
+      args = ['python3', '-c', monkey_patched] + args[1:]
+    if version >= (6,):
       args.extend([
-        '--exclude', 'src/sys/error/fp.c',
-        '--exclude', 'src/dm/impls/da/kokkos/dagetov.kokkos.cxx'
+        '--exclude-noncode-lines',
+        '--merge-mode-functions', 'separate',
       ])
-    if version > (5,2):
-      # so we don't forget to check in case we update
-      raise RuntimeError(
-        'Check that gcovr correctly handles merging functions on different lines! See comment above me'
-      )
     args.append('.')
     return list(map(str, args))
 
@@ -226,11 +235,12 @@ def load_report(json_file):
     json_format_version = json_data['gcovr/format_version']
   except KeyError:
     json_format_version = 'unknown'
+
   if str(json_format_version) not in known_gcovr_json_versions:
-      mess = 'gcovr JSON version \'{}\' is incompatible, script is tested with version(s) {}'.format(
-        json_format_version, known_gcovr_json_versions
-      )
-      raise RuntimeError(mess)
+    mess = 'gcovr JSON version \'{}\' is incompatible, script is tested with version(s) {}'.format(
+      json_format_version, known_gcovr_json_versions
+    )
+    raise RuntimeError(mess)
 
   return json_data
 
@@ -254,11 +264,11 @@ def get_branch_diff(merge_branch):
 
   merge_branch_name       = str(merge_branch)
   files_changed_by_branch = subprocess_check_output(
-    ['git', 'diff', '--name-only', merge_branch_name+'...']
+    ['git', 'diff', '--name-only', merge_branch_name + '...']
   ).splitlines()
   for file_name in files_changed_by_branch:
     blame_output = subprocess_run(
-      ['git', 'blame', '-s', '--show-name', merge_branch_name+'..', file_name],
+      ['git', 'blame', '-s', '--show-name', merge_branch_name + '..', file_name],
       capture_output=True, universal_newlines=True
     )
 
@@ -307,10 +317,9 @@ def extract_tarballs(base_paths, dest_dir):
   tar_files = []
   for path in base_paths:
     if path.is_dir():
-      tar_files.extend(list(path.glob('*.json.tar.gz')))
+      tar_files.extend(list(path.glob('*.json.tar.*')))
     else:
       assert path.is_file(), 'path {} is not a file'.format(path)
-      assert path.name.endswith('.json.tar.gz'), 'path {} must be a path to tarball'.format(path)
       tar_files.append(path)
 
   tar_files = unique_list(tar_files)
@@ -335,7 +344,7 @@ def merge_reports(runner, base_paths, dest_path):
   contents. Write the merged result to DEST_PATH.
   """
   if dest_path.suffix != '.json':
-    dest_path = pathlib.Path(str(dest_path)+'.json').resolve()
+    dest_path = pathlib.Path(str(dest_path) + '.json').resolve()
 
   try:
     dest_path.unlink()
@@ -441,7 +450,6 @@ def generate_xml(runner, merged_report, dest_dir):
       '--output', mega_report,
       '--add-tracefile', merged_report,
       '--xml-pretty',
-      '--exclude-unreachable-branches',
       '--print-summary',
       '--exclude', r'arch-ci.*'
     ),
@@ -515,11 +523,29 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
   merged_report_json      = load_report(merged_report)
 
   total_testable_lines_by_branch = 0
+  gcovr_report_version_str       = merged_report_json['gcovr/format_version']
+  gcovr_report_version           = Version.from_string(gcovr_report_version_str)
   untested_code_by_branch        = {}
   untested_code_report           = {
-    'gcovr/format_version' : merged_report_json['gcovr/format_version'],
+    'gcovr/format_version' : gcovr_report_version_str,
     'files'                : []
   }
+
+  if gcovr_report_version < (0, 5):
+    line_exclusion = 'gcovr/noncode'
+  elif gcovr_report_version == (0, 5):
+    # Since JSON format version 0.5:
+    # - The gcovr/noncode field was removed. Instead of generating noncode entries,
+    #   the entire line is skipped.
+    # - The gcovr/excluded field can be absent if false.
+    line_exclusion = 'gcovr/excluded'
+  else:
+    # In addition to JSON format changes, also since gcovr 6.0:
+    # - New --exclude-noncode-lines to exclude noncode lines. Noncode lines are not
+    #   excluded by default anymore.
+    #
+    # should also check that empty lines are nicely handled.
+    raise RuntimeError('Check that gcovr still handles report exclusions as above! See comment above')
 
   for data in merged_report_json['files']:
     file_name = data['file']
@@ -529,7 +555,7 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
     changed_lines = set(files_changed_by_branch[file_name])
     cur_file_data = [
       line['line_number'] for line in data['lines']
-        if line['line_number'] in changed_lines and line['count'] == 0 and not line['gcovr/noncode']
+      if line['line_number'] in changed_lines and line['count'] == 0 and not line.get(line_exclusion)
     ]
 
     if cur_file_data:
@@ -541,7 +567,10 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
         if line['line_number'] in changed_lines and line['count'] == 0:
           # only ignore untested lines added by the branch
           continue
-        line['gcovr/noncode'] = True
+        if gcovr_report_version < (0, 5):
+          line['gcovr/noncode'] = True
+        else:
+          line['gcovr/excluded'] = True
 
       untested_code_report['files'].append(report_data)
       untested_code_by_branch[file_name] = cur_file_data
@@ -559,7 +588,11 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
     # untested lines since the environment must have a valid file to load...
     if ci_mode or untested_code_report['files']:
       untested_report = store_report(untested_code_report, gcovr_dir/'untested-gcovr-report.json')
-      generate_html(runner, untested_report, gcovr_dir/'html_untested', symlink_dir=gcovr_dir, report_name='report_untested.html', html_title='PETSc Untested Code Report')
+      generate_html(
+        runner, untested_report, gcovr_dir/'html_untested',
+        symlink_dir=gcovr_dir, report_name='report_untested.html',
+        html_title='PETSc Untested Code Report'
+      )
     generate_html(runner, merged_report, gcovr_dir/'html', symlink_dir=gcovr_dir)
 
   if 'xml' in formats:
@@ -593,11 +626,11 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
     gcov_logger.log_error('')
     gcov_logger.log_error(mini_bar, 'detailed breakdown:')
     for file_name, lines in untested_code_by_branch.items():
-      gcov_logger.log_error('\n-', file_name+':')
+      gcov_logger.log_error('\n-', '{}:'.format(file_name))
       with open(file_name) as fd:
         src_lines = fd.readlines()
       for line in lines:
-        gcov_logger.log_error(str(line)+':', src_lines[line-1], end='')
+        gcov_logger.log_error('{}:'.format(line), src_lines[line - 1], end='')
     gcov_logger.log_error(warn_banner)
     gcov_logger.log_error('NOTE:')
     gcov_logger.log_error('\n'.join((
@@ -641,12 +674,26 @@ if __name__ == '__main__':
   parser.add_argument('--petsc_dir', default=petsc_dir, required=petsc_dir is None, type=pathlib.Path, help='PETSc directory')
   parser.add_argument('--petsc_arch', default=petsc_arch, required=petsc_arch is None, help='PETSc build directory name')
   parser.add_argument('-b', '--merge-branch', help='destination branch corresponding to the merge request')
-  parser.add_argument('-c', '--ci-mode', action='store_true', help='enable CI mode, which adds all arch-ci-* folders in PETSC_DIR to the base search path')
-  parser.add_argument('-p','--base-path', type=pathlib.Path, action='append', help='base path containing tarball of gcovr report files for analysis, may be repeated to add multiple base paths')
+  parser.add_argument('-c', '--ci-mode', action='store_true', help='enable CI mode, which adds all arch-ci-* folders in PETSC_DIR to the base search path, and overrides the log output files')
+  parser.add_argument('-p','--base-path', type=pathlib.Path, nargs='*', help='base path containing tarball of gcovr report files for analysis, may be repeated to add multiple base paths')
   parser.add_argument('--html', action='store_true', help='generate HTML output')
   parser.add_argument('--xml', action='store_true', help='generate XML output')
   parser.add_argument('-v', '--verbose', action='count', default=0, help='verbose output, multiple flags increases verbosity')
+  parser.add_argument('-l', '--log-output-stdout', default='stdout', const='stdout', nargs='?', help='Output file (or file stream) to log informational output to')
+  parser.add_argument('-e', '--log-output-stderr', default='stderr', const='stderr', nargs='?', help='Output file (or file stream) to log errors to')
   args = parser.parse_args()
+
+  formats = [attr for attr in ('html', 'xml') if getattr(args, attr)]
+
+  if len(formats) == 0:
+    parser.error('Must supply one of --html or --xml or both')
+
+  for stream_name in ('stdout', 'stderr'):
+    attr = 'log_output_' + stream_name
+    if getattr(args, attr) == stream_name:
+      setattr(args, attr, getattr(sys, stream_name))
+
+  gcov_logger.setup(args.log_output_stdout, args.log_output_stderr, args.verbose)
 
   args.petsc_dir = sanitize_path(args.petsc_dir)
 
@@ -657,19 +704,13 @@ if __name__ == '__main__':
     args.base_path.extend(list(args.petsc_dir.glob('arch-*')))
 
   if not args.merge_branch:
-    gcov_logger.setup(None, None, args.verbose)
     args.merge_branch = subprocess_check_output(
-      [args.petsc_dir/'lib/petsc/bin/maint/check-merge-branch.sh']
+      [args.petsc_dir/'lib'/'petsc'/'bin'/'maint'/'check-merge-branch.sh']
     ).strip()
 
-  formats = []
-  if args.html:
-    formats.append('html')
-
-  if args.xml:
-    formats.append('xml')
-
-  if len(formats) == 0:
-    parser.error('Must supply one of --html or --xml or both')
-
-  sys.exit(main(args.petsc_dir, args.petsc_arch, args.merge_branch, args.base_path, formats, args.verbose, args.ci_mode))
+  sys.exit(
+    main(
+      args.petsc_dir, args.petsc_arch, args.merge_branch, args.base_path, formats,
+      args.verbose, args.ci_mode
+    )
+  )

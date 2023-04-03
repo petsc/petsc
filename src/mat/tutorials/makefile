@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LOCDIR          = src/mat/tutorials/
 MANSEC          = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
@@ -18,4 +17,3 @@ ifneq ($(KOKKOS_LIB),)
 endif
 ex18 : ${ex18objs}
 
-include ${PETSC_DIR}/lib/petsc/conf/test

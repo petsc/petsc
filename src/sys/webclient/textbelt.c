@@ -4,7 +4,7 @@
 /*@C
      PetscTextBelt - Sends an SMS to an American/Canadian phone number
 
-   Not collective, only the first process in `MPI_Comm` does anything
+   Not Collective, only the first process in `MPI_Comm` does anything
 
    Input Parameters:
 +  comm - the MPI communicator
@@ -48,12 +48,13 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm, const char number[], const char mess
     char     buff[474], *body;
     PetscInt i;
 
-    PetscCall(PetscMalloc1(mlen + nlen + 100, &body));
-    PetscCall(PetscStrcpy(body, "number="));
-    PetscCall(PetscStrcat(body, number));
-    PetscCall(PetscStrcat(body, "&"));
-    PetscCall(PetscStrcat(body, "message="));
-    PetscCall(PetscStrcat(body, message));
+    blen = mlen + nlen + 100;
+    PetscCall(PetscMalloc1(blen, &body));
+    PetscCall(PetscStrncpy(body, "number=", blen));
+    PetscCall(PetscStrlcat(body, number, blen));
+    PetscCall(PetscStrlcat(body, "&", blen));
+    PetscCall(PetscStrlcat(body, "message=", blen));
+    PetscCall(PetscStrlcat(body, message, blen));
     PetscCall(PetscStrlen(body, &blen));
     for (i = 0; i < (int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';

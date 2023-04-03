@@ -1174,7 +1174,7 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Union of quadrature points, with an attempt to identify commont points in the two sets */
+/* Union of quadrature points, with an attempt to identify common points in the two sets */
 static PetscErrorCode PetscQuadraturePointsMerge(PetscQuadrature quadA, PetscQuadrature quadB, PetscQuadrature *quadJoint, PetscInt *aToJoint[], PetscInt *bToJoint[])
 {
   PetscInt         dimA, dimB;
@@ -1667,7 +1667,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
   if (useMoments) {
     Mat              allMat;
     PetscInt         momentOrder, i;
-    PetscBool        tensor;
+    PetscBool        tensor = PETSC_FALSE;
     const PetscReal *weights;
     PetscScalar     *array;
 
@@ -2881,13 +2881,13 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 /*@
   PetscDualSpaceLagrangeSetContinuity - Indicate whether the element is continuous
 
-  Logically Collective on sp
+  Logically Collective
 
   Input Parameters:
 + sp         - the `PetscDualSpace`
 - continuous - flag for element continuity
 
-  Options Database:
+  Options Database Key:
 . -petscdualspace_lagrange_continuity <bool> - use a continuous element
 
   Level: intermediate
@@ -3001,7 +3001,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder_Lagrange(PetscDualSpa
 /*@
   PetscDualSpaceLagrangeGetTensor - Get the tensor nature of the dual space
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -3025,7 +3025,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
 /*@
   PetscDualSpaceLagrangeSetTensor - Set the tensor nature of the dual space
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - The `PetscDualSpace`
@@ -3046,7 +3046,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tens
 /*@
   PetscDualSpaceLagrangeGetTrimmed - Get the trimmed nature of the dual space
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -3070,7 +3070,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *tr
 /*@
   PetscDualSpaceLagrangeSetTrimmed - Set the trimmed nature of the dual space
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - The `PetscDualSpace`
@@ -3092,7 +3092,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool tri
   PetscDualSpaceLagrangeGetNodeType - Get a description of how nodes are laid out for Lagrange polynomials in this
   dual space
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -3123,7 +3123,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeT
   PetscDualSpaceLagrangeSetNodeType - Set a description of how nodes are laid out for Lagrange polynomials in this
   dual space
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + sp - The `PetscDualSpace`
@@ -3148,7 +3148,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeT
 /*@
   PetscDualSpaceLagrangeGetUseMoments - Get the flag for using moment functionals
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -3172,7 +3172,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool 
 /*@
   PetscDualSpaceLagrangeSetUseMoments - Set the flag for moment functionals
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + sp - The `PetscDualSpace`
@@ -3193,7 +3193,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool 
 /*@
   PetscDualSpaceLagrangeGetMomentOrder - Get the order for moment integration
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -3217,7 +3217,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt 
 /*@
   PetscDualSpaceLagrangeSetMomentOrder - Set the order for moment integration
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + sp - The `PetscDualSpace`

@@ -501,11 +501,11 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo 
   A matrix type providing direct solvers (Cholesky) for sequential matrices
   via the external package CHOLMOD.
 
-  Use ./configure --download-suitesparse to install PETSc to use CHOLMOD
+  Use `./configure --download-suitesparse` to install PETSc to use CHOLMOD
 
-  Use -pc_type cholesky -pc_factor_mat_solver_type cholmod to use this direct solver
+  Use `-pc_type cholesky` `-pc_factor_mat_solver_type cholmod` to use this direct solver
 
-  Consult CHOLMOD documentation for more information about the Common parameters
+  Consult CHOLMOD documentation for more information about the common parameters
   which correspond to the options database keys below.
 
   Options Database Keys:
@@ -514,7 +514,7 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo 
 . -mat_cholmod_grow1 <1.2>         - Column growth ratio when factors are modified (None)
 . -mat_cholmod_grow2 <5>           - Affine column growth constant when factors are modified (None)
 . -mat_cholmod_maxrank <8>         - Max rank of update, larger values are faster but use more memory [2,4,8] (None)
-. -mat_cholmod_factor <AUTO>       - (choose one of) SIMPLICIAL AUTO SUPERNODAL
+. -mat_cholmod_factor <AUTO>       - (choose one of) `SIMPLICIAL`, `AUTO`, `SUPERNODAL`
 . -mat_cholmod_supernodal_switch <40> - flop/nnz_L threshold for switching to supernodal factorization (None)
 . -mat_cholmod_final_asis <TRUE>   - Leave factors "as is" (None)
 . -mat_cholmod_final_pack <TRUE>   - Pack the columns when finished (use FALSE if the factors will be updated later) (None)
@@ -526,9 +526,10 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo 
 
    Level: beginner
 
-   Note: CHOLMOD is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
+   Note:
+   CHOLMOD is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: `PCCHOLESKY`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](chapter_matrices), `Mat`, `PCCHOLESKY`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A, MatFactorType ftype, Mat *F)

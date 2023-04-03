@@ -1271,10 +1271,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   Caller should cast (*ctx) to (const cl_context). Caller is responsible for
   invoking clReleaseContext().
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
-  Output Parameters:
+  Output Parameter:
 .  ctx - pointer to the underlying CL context
 
   Level: intermediate
@@ -1293,7 +1293,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
   PetscCall(VecViennaCLGetArrayRead(v, &v_vcl));
   try {
     viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
-    const cl_context ocl_ctx = vcl_ctx.handle().get();
+    const cl_context       ocl_ctx = vcl_ctx.handle().get();
     clRetainContext(ocl_ctx);
     *ctx = (PETSC_UINTPTR_T)(ocl_ctx);
   } catch (std::exception const &ex) {
@@ -1311,10 +1311,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
   Caller should cast (*queue) to (const cl_command_queue). Caller is
   responsible for invoking clReleaseCommandQueue().
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
-  Output Parameters:
+  Output Parameter:
 .  ctx - pointer to the CL command queue
 
   Level: intermediate
@@ -1331,9 +1331,9 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
   const ViennaCLVector *v_vcl;
   PetscCall(VecViennaCLGetArrayRead(v, &v_vcl));
   try {
-    viennacl::ocl::context vcl_ctx = v_vcl->handle().opencl_handle().context();
+    viennacl::ocl::context              vcl_ctx   = v_vcl->handle().opencl_handle().context();
     const viennacl::ocl::command_queue &vcl_queue = vcl_ctx.current_queue();
-    const cl_command_queue ocl_queue = vcl_queue.handle().get();
+    const cl_command_queue              ocl_queue = vcl_queue.handle().get();
     clRetainCommandQueue(ocl_queue);
     *queue = (PETSC_UINTPTR_T)(ocl_queue);
   } catch (std::exception const &ex) {
@@ -1350,10 +1350,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
   Caller should cast (*mem) to (const cl_mem). Caller is responsible for
   invoking clReleaseMemObject().
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
-  Output Parameters:
+  Output Parameter:
 .  mem - pointer to the device buffer
 
   Level: intermediate
@@ -1391,10 +1391,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T *mem)
   the host will be marked as out of date.  A subsequent access of the host data
   will thus incur a data transfer from the device to the host.
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
-  Output Parameters:
+  Output Parameter:
 .  mem - pointer to the device buffer
 
   Level: intermediate
@@ -1430,7 +1430,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T *mem
    vector data on the host side with for instance VecGetArray() incurs a
    data transfer.
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
   Level: intermediate
@@ -1461,10 +1461,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
   date.  A subsequent access of the host data will thus incur a data transfer
   from the device to the host.
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
-  Output Parameters:
+  Output Parameter:
 .  mem - pointer to the device buffer
 
   Level: intermediate
@@ -1500,7 +1500,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T *mem)
    data on the host side with for instance VecGetArray() incurs a data
    transfer.
 
-  Input Parameters:
+  Input Parameter:
 .  v    - the vector
 
   Level: intermediate

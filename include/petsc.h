@@ -15,6 +15,7 @@
 #include <petscdmcomposite.h>
 #include <petscdmpatch.h>
 #include <petscdmplex.h>
+#include <petscdmplextransform.h>
 #include <petscdmredundant.h>
 #include <petscdmshell.h>
 #include <petscdmsliced.h>

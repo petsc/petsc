@@ -144,10 +144,10 @@ PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - the Krylov context
 
-   Output Parameters:
+   Output Parameter:
 .   guess - the object
 
    Level: developer
@@ -177,10 +177,10 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - the Krylov context
 
-   Output Parameters:
+   Output Parameter:
 .  prefix - pointer to the prefix string used is returned
 
    Notes:
@@ -408,6 +408,9 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   if (set && flag) PetscCall(KSPConvergedDefaultSetUMIRNorm(ksp));
   PetscCall(PetscOptionsBool("-ksp_converged_maxits", "Declare convergence if the maximum number of iterations is reached", "KSPConvergedDefaultSetConvergedMaxits", PETSC_FALSE, &flag, &set));
   if (set) PetscCall(KSPConvergedDefaultSetConvergedMaxits(ksp, flag));
+  PetscCall(KSPGetConvergedNegativeCurvature(ksp, &flag));
+  PetscCall(PetscOptionsBool("-ksp_converged_neg_curve", "Declare convergence if negative curvature is detected", "KSPConvergedNegativeCurvature", flag, &flag, &set));
+  if (set) PetscCall(KSPSetConvergedNegativeCurvature(ksp, flag));
   PetscCall(KSPGetReusePreconditioner(ksp, &reuse));
   PetscCall(PetscOptionsBool("-ksp_reuse_preconditioner", "Use initial preconditioner and don't ever compute a new one", "KSPReusePreconditioner", reuse, &reuse, NULL));
   PetscCall(KSPSetReusePreconditioner(ksp, reuse));
@@ -488,7 +491,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
       PetscReal coeff = 1.0;
 
       PetscCall(KSPMonitorDynamicToleranceCreate(&scale));
-      PetscCall(PetscOptionsReal("-sub_ksp_dynamic_tolerance", "Coeffcient of dynamic tolerance for inner PC", "KSPMonitorDynamicTolerance", coeff, &coeff, &flg));
+      PetscCall(PetscOptionsReal("-sub_ksp_dynamic_tolerance", "Coefficient of dynamic tolerance for inner PC", "KSPMonitorDynamicTolerance", coeff, &coeff, &flg));
       if (flg) PetscCall(KSPMonitorDynamicToleranceSetCoefficient(scale, coeff));
       PetscCall(KSPMonitorSet(ksp, KSPMonitorDynamicTolerance, scale, KSPMonitorDynamicToleranceDestroy));
     }

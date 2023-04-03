@@ -48,7 +48,7 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 /*@C
   PetscSpaceSetType - Builds a particular `PetscSpace`
 
-  Collective on sp
+  Collective
 
   Input Parameters:
 + sp   - The `PetscSpace` object
@@ -112,14 +112,15 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 /*@C
    PetscSpaceViewFromOptions - View a `PetscSpace` based on values in the options database
 
-   Collective on PetscSpace
+   Collective
 
    Input Parameters:
-+  A - the PetscSpace object
++  A - the `PetscSpace` object
 .  obj - Optional object that provides the options name prefix
 -  name - command line option name
 
    Level: intermediate
+
 .seealso: `PetscSpace`, `PetscSpaceView()`, `PetscObjectViewFromOptions()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const char name[])
@@ -133,7 +134,7 @@ PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const ch
 /*@C
   PetscSpaceView - Views a `PetscSpace`
 
-  Collective on sp
+  Collective
 
   Input Parameters:
 + sp - the `PetscSpace` object to view
@@ -165,7 +166,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 /*@
   PetscSpaceSetFromOptions - sets parameters in a `PetscSpace` from the options database
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - the `PetscSpace` object to set options for
@@ -219,7 +220,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 /*@C
   PetscSpaceSetUp - Construct data structures for the `PetscSpace`
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - the `PetscSpace` object to setup
@@ -239,10 +240,10 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
 /*@
   PetscSpaceDestroy - Destroys a `PetscSpace` object
 
-  Collective on sp
+  Collective
 
   Input Parameter:
-. sp - the PetscSpace object to destroy
+. sp - the `PetscSpace` object to destroy
 
   Level: beginner
 
@@ -496,10 +497,10 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
 /*@
   PetscSpaceGetHeightSubspace - Get the subset of the primal space basis that is supported on a mesh point of a given height.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ sp - the PetscSpace object
++ sp - the `PetscSpace` object
 - height - the height of the mesh point for which the subspace is desired
 
   Output Parameter:

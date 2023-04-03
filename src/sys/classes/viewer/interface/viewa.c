@@ -14,40 +14,10 @@ const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATH
 +  viewer - the `PetscViewer`
 -  format - the format
 
-   Level: intermediate
+   Level: deprecated
 
-   Notes:
-   Available formats include
-+    `PETSC_VIEWER_DEFAULT` - default format
-.    `PETSC_VIEWER_ASCII_MATLAB` - MATLAB format
-.    `PETSC_VIEWER_ASCII_DENSE` - print matrix as dense
-.    `PETSC_VIEWER_ASCII_IMPL` - implementation-specific format
-      (which is in many cases the same as the default)
-.    `PETSC_VIEWER_ASCII_INFO` - basic information about object
-.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info
-       about object
-.    `PETSC_VIEWER_ASCII_COMMON` - identical output format for
-       all objects of a particular type
-.    `PETSC_VIEWER_ASCII_INDEX` - (for vectors) prints the vector
-       element number next to each vector entry
-.    `PETSC_VIEWER_ASCII_SYMMODU` - print parallel vectors without
-       indicating the processor ranges
-.    `PETSC_VIEWER_ASCII_VTK` - outputs the object to a VTK file (deprecated since v3.14)
-.    `PETSC_VIEWER_NATIVE` - store the object to the binary
-       file in its native format (for example, dense
-       matrices are stored as dense), `DMDA` vectors are dumped directly to the
-       file instead of being first put in the natural ordering
-.    `PETSC_VIEWER_DRAW_BASIC` - views the vector with a simple 1d plot
-.    `PETSC_VIEWER_DRAW_LG` - views the vector with a line graph
--    `PETSC_VIEWER_DRAW_CONTOUR` - views the vector with a contour plot
-
-   These formats are most often used for viewing matrices and vectors.
-
-   If a format (for example `PETSC_VIEWER_DRAW_CONTOUR`) was applied to a viewer
-  where it didn't apply (`PETSC_VIEWER_STDOUT_WORLD`) it cause the default behavior
-  for that viewer to be used.
-
-   This supports passing in a `NULL` for the viewer for use in the debugger, but it should never be called in the code with a `NULL` viewer
+   Note:
+   See `PetscViewerFormat` for available values
 
 .seealso: [](sec_viewers), `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
@@ -73,29 +43,8 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
 
    Level: intermediate
 
-   Notes:
-   Available formats include
-+    `PETSC_VIEWER_DEFAULT` - default format
-.    `PETSC_VIEWER_ASCII_MATLAB` - MATLAB format
-.    `PETSC_VIEWER_ASCII_IMPL` - implementation-specific format
-      (which is in many cases the same as the default)
-.    `PETSC_VIEWER_ASCII_INFO` - basic information about object
-.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info
-       about object
-.    `PETSC_VIEWER_ASCII_COMMON` - identical output format for
-       all objects of a particular type
-.    `PETSC_VIEWER_ASCII_INDEX` - (for vectors) prints the vector
-       element number next to each vector entry
-.    `PETSC_VIEWER_NATIVE` - store the object to the binary
-       file in its native format (for example, dense
-       matrices are stored as dense), for `DMDA` vectors displays vectors in `DMDA` ordering, not natural
-.    `PETSC_VIEWER_DRAW_BASIC` - views the vector with a simple 1d plot
-.    `PETSC_VIEWER_DRAW_LG` - views the vector with a line graph
-.    `PETSC_VIEWER_DRAW_CONTOUR` - views the vector with a contour plot
--    `PETSC_VIEWER_ASCII_XML` - saves the data in XML format, needed for `PetscLogView()` when viewing with `PetscLogNestedBegin()`
-
-   These formats are most often used for viewing matrices and vectors.
-   Currently, the object name is used only in the MATLAB format.
+   Note:
+   See `PetscViewerFormat` for available values
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerFormat`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPopFormat()`
@@ -113,11 +62,11 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
 }
 
 /*@C
-   PetscViewerPopFormat - Resets the format for a `PetscViewer`.
+   PetscViewerPopFormat - Resets the format for a `PetscViewer` to the value it had before the previous call to `PetscViewerPushFormat()`
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the `PetscViewer`
 
    Level: intermediate
@@ -138,7 +87,7 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
 /*@C
    PetscViewerGetFormat - Gets the current format for `PetscViewer`.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  viewer - the `PetscViewer`
@@ -148,38 +97,10 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
 
    Level: intermediate
 
-   Notes:
-   Available formats include
-+    `PETSC_VIEWER_DEFAULT` - default format
-.    `PETSC_VIEWER_ASCII_MATLAB` - MATLAB format
-.    `PETSC_VIEWER_ASCII_DENSE` - print matrix as dense
-.    `PETSC_VIEWER_ASCII_IMPL` - implementation-specific format
-      (which is in many cases the same as the default)
-.    `PETSC_VIEWER_ASCII_INFO` - basic information about object
-.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info
-       about object
-.    `PETSC_VIEWER_ASCII_COMMON` - identical output format for
-       all objects of a particular type
-.    `PETSC_VIEWER_ASCII_INDEX` - (for vectors) prints the vector
-       element number next to each vector entry
-.    `PETSC_VIEWER_ASCII_SYMMODU` - print parallel vectors without
-       indicating the processor ranges
-.    `PETSC_VIEWER_ASCII_VTK` - outputs the object to a VTK file (deprecated since v3.14)
-.    `PETSC_VIEWER_NATIVE` - store the object to the binary
-       file in its native format (for example, dense
-       matrices are stored as dense), DMDA vectors are dumped directly to the
-       file instead of being first put in the natural ordering
-.    `PETSC_VIEWER_DRAW_BASIC` - views the vector with a simple 1d plot
-.    `PETSC_VIEWER_DRAW_LG` - views the vector with a line graph
--    `PETSC_VIEWER_DRAW_CONTOUR` - views the vector with a contour plot
+   Note:
+   See `PetscViewerFormat` for available values
 
-   These formats are most often used for viewing matrices and vectors.
-
-   If a format (for example `PETSC_VIEWER_DRAW_CONTOUR`) was applied to a viewer
-  where it didn't apply (`PETSC_VIEWER_STDOUT_WORLD`) it cause the default behavior
-  for that viewer to be used.
-
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode PetscViewerGetFormat(PetscViewer viewer, PetscViewerFormat *format)

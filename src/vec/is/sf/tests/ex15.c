@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
   PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, n, iy, PETSC_COPY_VALUES, &isy));
 
-  /* create a vecscatter that shifts x to the tail by quater periodically and puts the results in y */
+  /* create a vecscatter that shifts x to the tail by quarter periodically and puts the results in y */
   PetscCall(VecScatterCreate(x, isx, y, isy, &vscat));
   PetscCall(VecScatterBegin(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));

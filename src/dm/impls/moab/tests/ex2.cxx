@@ -31,7 +31,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->write_output  = PETSC_FALSE;
   options->interlace     = PETSC_FALSE;
   options->input_file[0] = '\0';
-  PetscCall(PetscStrcpy(options->output_file, "ex2.h5m"));
+  PetscCall(PetscStrncpy(options->output_file, "ex2.h5m", sizeof(options->output_file)));
 
   PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");
   PetscCall(PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL));

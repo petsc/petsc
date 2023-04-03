@@ -836,7 +836,7 @@ static PetscErrorCode TSLoad_GLEE(TS ts, PetscViewer viewer)
 /*@C
   TSGLEESetType - Set the type of `TSGLEE` scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -858,7 +858,7 @@ PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
 /*@C
   TSGLEEGetType - Get the type of `TSGLEE` scheme
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 .  ts - timestepping context

@@ -38,7 +38,7 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-  PetscCall(PetscStrcpy(mattype, MATMPIDENSE));
+  PetscCall(PetscStrncpy(mattype, MATMPIDENSE, sizeof(mattype)));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_type", mattype, sizeof(mattype), NULL));
   /*
       Create a parallel dense matrix shared by all processors

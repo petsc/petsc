@@ -45,6 +45,24 @@
 extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP, PetscReal *, PetscReal *);
 extern PetscErrorCode KSPComputeEigenvalues_CG(KSP, PetscInt, PetscReal *, PetscReal *, PetscInt *);
 
+static PetscErrorCode KSPCGSetObjectiveTarget_CG(KSP ksp, PetscReal obj_min)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  cg->obj_min = obj_min;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPCGSetRadius_CG(KSP ksp, PetscReal radius)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  cg->radius = radius;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method.
 
@@ -95,10 +113,11 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   PetscInt    i, stored_max_it, eigs;
   PetscScalar dpi = 0.0, a = 1.0, beta, betaold = 1.0, b = 0, *e = NULL, *d = NULL, dpiold;
   PetscReal   dp = 0.0;
+  PetscReal   r2, norm_p, norm_d, dMp;
   Vec         X, B, Z, R, P, W;
   KSP_CG     *cg;
   Mat         Amat, Pmat;
-  PetscBool   diagonalscale;
+  PetscBool   diagonalscale, testobj;
 
   PetscFunctionBegin;
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
@@ -113,6 +132,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   Z             = ksp->work[1];
   P             = ksp->work[2];
   W             = Z;
+  r2            = PetscSqr(cg->radius);
 
   if (eigs) {
     e    = cg->e;
@@ -124,9 +144,15 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   ksp->its = 0;
   if (!ksp->guess_zero) {
     PetscCall(KSP_MatMult(ksp, Amat, X, R)); /*    r <- b - Ax                       */
+
     PetscCall(VecAYPX(R, -1.0, B));
+    if (cg->radius) { /* XXX direction? */
+      PetscCall(VecNorm(X, NORM_2, &norm_d));
+      norm_d *= norm_d;
+    }
   } else {
     PetscCall(VecCopy(B, R)); /*    r <- b (x is 0)                   */
+    norm_d = 0.0;
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
   if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(R));
@@ -153,11 +179,27 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   default:
     SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
+
+  /* Initialize objective function
+     obj = 1/2 x^T A x - x^T b */
+  testobj = (PetscBool)(cg->obj_min < 0.0);
+  PetscCall(VecXDot(R, X, &a));
+  cg->obj = 0.5 * PetscRealPart(a);
+  PetscCall(VecXDot(B, X, &a));
+  cg->obj -= 0.5 * PetscRealPart(a);
+
+  PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", ksp->its, (double)cg->obj));
   PetscCall(KSPLogResidualHistory(ksp, dp));
-  PetscCall(KSPMonitor(ksp, 0, dp));
+  PetscCall(KSPMonitor(ksp, ksp->its, dp));
   ksp->rnorm = dp;
 
-  PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
+  PetscCall((*ksp->converged)(ksp, ksp->its, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
+
+  if (!ksp->reason && testobj && cg->obj <= cg->obj_min) {
+    PetscCall(PetscInfo(ksp, "converged to objective target minimum\n"));
+    ksp->reason = KSP_CONVERGED_ATOL;
+  }
+
   if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) { PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                           */ }
@@ -183,6 +225,12 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     }
     if (!i) {
       PetscCall(VecCopy(Z, P)); /*     p <- z                           */
+      if (cg->radius) {
+        PetscCall(VecNorm(P, NORM_2, &norm_p));
+        norm_p *= norm_p;
+        dMp = 0.0;
+        if (!ksp->guess_zero) { PetscCall(VecDotRealPart(X, P, &dMp)); }
+      }
       b = 0.0;
     } else {
       b = beta / betaold;
@@ -191,6 +239,11 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
         e[i] = PetscSqrtReal(PetscAbsScalar(b)) / a;
       }
       PetscCall(VecAYPX(P, b, Z)); /*     p <- z + b* p                    */
+      if (cg->radius) {
+        PetscCall(VecDotRealPart(X, P, &dMp));
+        PetscCall(VecNorm(P, NORM_2, &norm_p));
+        norm_p *= norm_p;
+      }
     }
     dpiold = dpi;
     PetscCall(KSP_MatMult(ksp, Amat, P, W)); /*     w <- Ap                          */
@@ -199,13 +252,48 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     betaold = beta;
 
     if ((dpi == 0.0) || ((i > 0) && ((PetscSign(PetscRealPart(dpi)) * PetscSign(PetscRealPart(dpiold))) < 0.0))) {
-      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Diverged due to indefinite matrix, dpi %g, dpiold %g", (double)PetscRealPart(dpi), (double)PetscRealPart(dpiold));
-      ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-      PetscCall(PetscInfo(ksp, "diverging due to indefinite or negative definite matrix\n"));
+      if (cg->radius) {
+        a = 0.0;
+        if (i == 0) {
+          if (norm_p > 0.0) {
+            a = PetscSqrtReal(r2 / norm_p);
+          } else {
+            PetscCall(VecNorm(R, NORM_2, &dp));
+            a = cg->radius > dp ? 1.0 : cg->radius / dp;
+          }
+        } else if (norm_p > 0.0) {
+          a = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
+        }
+        PetscCall(VecAXPY(X, a, P)); /*     x <- x + ap                      */
+        cg->obj += PetscRealPart(a * (0.5 * a * dpi - betaold));
+      }
+      PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " N obj %g\n", i + 1, (double)cg->obj));
+      if (ksp->converged_neg_curve) {
+        PetscCall(PetscInfo(ksp, "converged due to negative curvature: %g\n", (double)(PetscRealPart(dpi))));
+        ksp->reason = KSP_CONVERGED_NEG_CURVE;
+      } else {
+        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Diverged due to indefinite matrix, dpi %g, dpiold %g", (double)PetscRealPart(dpi), (double)PetscRealPart(dpiold));
+        ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
+        PetscCall(PetscInfo(ksp, "diverging due to indefinite matrix\n"));
+      }
       break;
     }
     a = beta / dpi; /*     a = beta/p'w                     */
     if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b)) * e[i] + 1.0 / a;
+    if (cg->radius) { /* Steihaugh-Toint */
+      PetscReal norm_dp1 = norm_d + PetscRealPart(a) * (2.0 * dMp + PetscRealPart(a) * norm_p);
+      if (norm_dp1 > r2) {
+        ksp->reason = KSP_CONVERGED_STEP_LENGTH;
+        PetscCall(PetscInfo(ksp, "converged to the trust region radius %g\n", (double)cg->radius));
+        if (norm_p > 0.0) {
+          dp = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
+          PetscCall(VecAXPY(X, dp, P)); /*     x <- x + ap                      */
+          cg->obj += PetscRealPart(dp * (0.5 * dp * dpi - beta));
+        }
+        PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " R obj %g\n", i + 1, (double)cg->obj));
+        break;
+      }
+    }
     PetscCall(VecAXPY(X, a, P));  /*     x <- x + ap                      */
     PetscCall(VecAXPY(R, -a, W)); /*     r <- r - aw                      */
     if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i + 2) {
@@ -223,11 +311,25 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     } else {
       dp = 0.0;
     }
+    cg->obj -= PetscRealPart(0.5 * a * betaold);
+    PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", i + 1, (double)cg->obj));
+
     ksp->rnorm = dp;
     PetscCall(KSPLogResidualHistory(ksp, dp));
     PetscCall(KSPMonitor(ksp, i + 1, dp));
     PetscCall((*ksp->converged)(ksp, i + 1, dp, &ksp->reason, ksp->cnvP));
+
+    if (!ksp->reason && testobj && cg->obj <= cg->obj_min) {
+      PetscCall(PetscInfo(ksp, "converged to objective target minimum\n"));
+      ksp->reason = KSP_CONVERGED_ATOL;
+    }
+
     if (ksp->reason) break;
+
+    if (cg->radius) {
+      PetscCall(VecNorm(X, NORM_2, &norm_d));
+      norm_d *= norm_d;
+    }
 
     if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i + 2)) { PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                          */ }
     if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i + 2)) {
@@ -436,6 +538,8 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PetscFree4(cg->e, cg->d, cg->ee, cg->dd));
   PetscCall(KSPDestroyDefault(ksp));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetObjectiveTarget_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -582,7 +686,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
 #else
   cg->type = KSP_CG_HERMITIAN;
 #endif
-  ksp->data = (void *)cg;
+  cg->obj_min = 0.0;
+  ksp->data   = (void *)cg;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));
@@ -608,5 +713,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", KSPCGSetType_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", KSPCGUseSingleReduction_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetObjectiveTarget_C", KSPCGSetObjectiveTarget_CG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

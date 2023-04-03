@@ -337,7 +337,7 @@ static PetscBool petscmalloccoalesce =
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  coalesce - `PETSC_TRUE` to use coalesced malloc for multi-object allocation.
 
    Options Database Keys:
@@ -374,7 +374,7 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
 .  filename - file name to attribute allocation (typically __FILE__)
 -  bytes0 - first of n object sizes
 
-   Output Parameters:
+   Output Parameter:
 .  ptr0 - first of n pointers to allocate
 
    Notes
@@ -448,7 +448,7 @@ PetscErrorCode PetscFreeA(int n, int lineno, const char *function, const char *f
   int     i;
 
   PetscFunctionBegin;
-  PetscCheck(n <= 8, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Attempt to allocate %d objects but only up to 8 supported", n);
+  PetscCheck((n >= 1) && (n <= 8), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Attempt to allocate %d objects but only up to 8 supported", n);
   ptr[0] = (void **)ptr0;
   va_start(Argp, ptr0);
   for (i = 1; i < n; i++) ptr[i] = va_arg(Argp, void **);

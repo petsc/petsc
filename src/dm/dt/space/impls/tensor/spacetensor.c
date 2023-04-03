@@ -147,7 +147,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
   if (!Ns) {
     SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have zero subspaces");
   } else {
-    PetscSpace s0;
+    PetscSpace s0 = NULL;
 
     PetscCheck(Nv <= 0 || Ns <= Nv, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a tensor space with %" PetscInt_FMT " subspaces over %" PetscInt_FMT " variables", Ns, Nv);
     PetscCall(PetscSpaceTensorGetSubspace(sp, 0, &s0));
@@ -179,7 +179,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
       Ncprod = 1;
       for (PetscInt i = 0; i < Ns; i++) {
         PetscInt   Nvs, Ncs;
-        PetscSpace si;
+        PetscSpace si = NULL;
 
         PetscCall(PetscSpaceTensorGetSubspace(sp, i, &si));
         if (!si) PetscCall(PetscSpaceTensorCreateSubspace(sp, 1, 1, &si));

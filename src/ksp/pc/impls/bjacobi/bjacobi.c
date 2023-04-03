@@ -62,7 +62,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
         PetscCheck(sum == M, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Global lens set incorrectly");
       } else {
         PetscCall(MatGetOwnershipRange(pc->pmat, &start, &end));
-        /* loop over blocks determing first one owned by me */
+        /* loop over blocks determining first one owned by me */
         sum = 0;
         for (i = 0; i < jac->n + 1; i++) {
           if (sum == start) {
@@ -500,7 +500,7 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 
      To set the options on the solvers separate for each block call `PCBJacobiGetSubKSP()`
          and set the options directly on the resulting `KSP` object (you can access its `PC`
-         `KSPGetPC())`
+         `KSPGetPC()`)
 
      For GPU-based vectors (`VECCUDA`, `VECViennaCL`) it is recommended to use exactly one block per MPI process for best
          performance.  Different block partitioning may lead to additional data transfers

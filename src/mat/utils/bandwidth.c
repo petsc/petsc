@@ -6,7 +6,7 @@
   Collective
 
   Input Parameters:
-+ A - The Mat
++ A - The `Mat`
 - fraction - An optional percentage of the Frobenius norm of the matrix that the bandwidth should enclose
 
   Output Parameter:

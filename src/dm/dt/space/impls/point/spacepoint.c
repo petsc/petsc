@@ -131,7 +131,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
 /*@
   PetscSpacePointSetPoints - Sets the evaluation points for the space to coincide with the points of a quadrature rule
 
-  Logically collective
+  Logically Collective
 
   Input Parameters:
 + sp - The `PetscSpace`
@@ -156,7 +156,7 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 /*@
   PetscSpacePointGetPoints - Gets the evaluation points for the space as the points of a quadrature rule
 
-  Logically collective
+  Logically Collective
 
   Input Parameter:
 . sp - The `PetscSpace`

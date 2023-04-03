@@ -101,7 +101,7 @@ GSYMS
 GTAGS
 CMakeLists.txt
 petsc-doc-env
-doc/docs/manualpages
+doc/manualpages
 src/binding/petsc4py/.eggs
 src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc.h
 src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc_api.h
@@ -187,3 +187,7 @@ compile_commands.json
 .cache/
 .vscode/
 include/petsc/private/generated_hashset.txt
+configtest.mod
+*gcovr-report.json
+arch-*/gcovr/*
+*-arch/gcovr/*

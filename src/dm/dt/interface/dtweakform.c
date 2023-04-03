@@ -83,7 +83,7 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
 
   Input Parameters:
 + n - number of values
-- X - array of PetscFormKey
+- X - array of `PetscFormKey`
 
   Level: intermediate
 
@@ -291,26 +291,40 @@ PetscErrorCode PetscWeakFormClear(PetscWeakForm wf)
 static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscHMapForm hmap, DMLabel label, PetscInt Nv, const PetscInt values[])
 {
   PetscFormKey *keys;
-  PetscInt      n, i, v, off = 0;
+  void (**tmpfuncs)(void);
+  PetscInt n, off = 0, maxNf = 0;
 
   PetscFunctionBegin;
   PetscCall(PetscHMapFormGetSize(hmap, &n));
   PetscCall(PetscMalloc1(n, &keys));
   PetscCall(PetscHMapFormGetKeys(hmap, &off, keys));
-  for (i = 0; i < n; ++i) {
+  // Need to make a copy since SetFunction() can invalidate the storage
+  for (PetscInt i = 0; i < n; ++i) {
+    if (keys[i].label == label) {
+      void (**funcs)(void);
+      PetscInt Nf;
+
+      PetscCall(PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs));
+      maxNf = PetscMax(maxNf, Nf);
+    }
+  }
+  PetscCall(PetscMalloc1(maxNf, &tmpfuncs));
+  for (PetscInt i = 0; i < n; ++i) {
     if (keys[i].label == label) {
       PetscBool clear = PETSC_TRUE;
       void (**funcs)(void);
       PetscInt Nf;
 
       PetscCall(PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs));
-      for (v = 0; v < Nv; ++v) {
-        PetscCall(PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, values[v], keys[i].field, keys[i].part, Nf, funcs));
+      for (PetscInt f = 0; f < Nf; ++f) tmpfuncs[f] = funcs[f];
+      for (PetscInt v = 0; v < Nv; ++v) {
+        PetscCall(PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, values[v], keys[i].field, keys[i].part, Nf, tmpfuncs));
         if (values[v] == keys[i].value) clear = PETSC_FALSE;
       }
       if (clear) PetscCall(PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, 0, NULL));
     }
   }
+  PetscCall(PetscFree(tmpfuncs));
   PetscCall(PetscFree(keys));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -863,7 +877,7 @@ PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm wf, DMLabel labe
 /*@
   PetscWeakFormGetNumFields - Returns the number of fields in a `PetscWeakForm`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . wf - The `PetscWeakForm` object
@@ -887,7 +901,7 @@ PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
 /*@
   PetscWeakFormSetNumFields - Sets the number of fields
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + wf - The `PetscWeakForm` object
@@ -908,7 +922,7 @@ PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm wf, PetscInt Nf)
 /*@
   PetscWeakFormDestroy - Destroys a `PetscWeakForm` object
 
-  Collective on wf
+  Collective
 
   Input Parameter:
 . wf - the `PetscWeakForm` object to destroy
@@ -1009,18 +1023,12 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
           PetscCall(PetscViewerASCIIPrintf(viewer, "%s", fname));
         } else if (showPointer) {
 #if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wformat-pedantic"
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic");
 #elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wformat"
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat");
 #endif
           PetscCall(PetscViewerASCIIPrintf(viewer, "%p", funcs[f]));
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic pop
-#endif
+          PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END();
         }
         PetscCall(PetscFree(fname));
       }
@@ -1050,7 +1058,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 /*@C
   PetscWeakFormView - Views a `PetscWeakForm`
 
-  Collective on wf
+  Collective
 
   Input Parameters:
 + wf - the `PetscWeakForm` object to view

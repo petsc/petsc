@@ -28,7 +28,7 @@ class CUPMStream : public StreamBase<CUPMStream<T>>, impl::Interface<T> {
   friend crtp_base_type;
 
 public:
-  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
+  PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
   using stream_type = cupmStream_t;
   using id_type     = typename crtp_base_type::id_type;

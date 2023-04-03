@@ -37,7 +37,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
   B  = ksp->vec_rhs;
   P2 = ksp->work[0];
 
-  /* The followings are involved in modified inner product calculations and vector updates */
+  /* The following are involved in modified inner product calculations and vector updates */
   RP = ksp->work[1];
   PetscCall(VecGetArray(RP, (PetscScalar **)&rp));
   PetscCall(VecRestoreArray(RP, NULL));

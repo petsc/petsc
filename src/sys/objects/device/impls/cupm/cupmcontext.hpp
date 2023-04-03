@@ -2,7 +2,7 @@
 #define PETSCDEVICECONTEXTCUPM_HPP
 
 #include <petsc/private/deviceimpl.h>
-#include <petsc/private/cupmblasinterface.hpp>
+#include <petsc/private/cupmsolverinterface.hpp>
 #include <petsc/private/logimpl.h>
 
 #include <petsc/private/cpp/array.hpp>
@@ -27,9 +27,9 @@ namespace impl
 {
 
 template <DeviceType T>
-class DeviceContext : BlasInterface<T> {
+class DeviceContext : SolverInterface<T> {
 public:
-  PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(cupmBlasInterface_t, T);
+  PETSC_CUPMSOLVER_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
 private:
   template <typename H, std::size_t>
@@ -87,36 +87,30 @@ private:
   // handles
   static PetscErrorCode initialize_handle_(stream_tag, PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
 
-  static PetscErrorCode create_handle_(blas_tag, cupmBlasHandle_t &handle) noexcept
-  {
-    PetscLogEvent event;
-
-    PetscFunctionBegin;
-    if (PetscLikely(handle)) PetscFunctionReturn(PETSC_SUCCESS);
-    PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
-    PetscCall(PetscLogEventBegin(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
-    for (auto i = 0; i < 3; ++i) {
-      auto cberr = cupmBlasCreate(&handle);
-      if (PetscLikely(cberr == CUPMBLAS_STATUS_SUCCESS)) break;
-      if (PetscUnlikely(cberr != CUPMBLAS_STATUS_ALLOC_FAILED) && (cberr != CUPMBLAS_STATUS_NOT_INITIALIZED)) PetscCallCUPMBLAS(cberr);
-      if (i != 2) {
-        PetscCall(PetscSleep(3));
-        continue;
-      }
-      PetscCheck(cberr == CUPMBLAS_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmBlasName());
-    }
-    PetscCall(PetscLogEventEnd(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
-    PetscCall(PetscLogEventResume_Internal(event));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  static PetscErrorCode initialize_handle_(blas_tag tag, PetscDeviceContext dctx) noexcept
+  static PetscErrorCode initialize_handle_(blas_tag, PetscDeviceContext dctx) noexcept
   {
     const auto dci    = impls_cast_(dctx);
     auto      &handle = blashandles_[dctx->device->deviceId];
 
     PetscFunctionBegin;
-    PetscCall(create_handle_(tag, handle));
+    if (!handle) {
+      PetscLogEvent event;
+
+      PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
+      PetscCall(PetscLogEventBegin(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
+      for (auto i = 0; i < 3; ++i) {
+        const auto cberr = cupmBlasCreate(handle.ptr_to());
+        if (PetscLikely(cberr == CUPMBLAS_STATUS_SUCCESS)) break;
+        if (PetscUnlikely(cberr != CUPMBLAS_STATUS_ALLOC_FAILED) && (cberr != CUPMBLAS_STATUS_NOT_INITIALIZED)) PetscCallCUPMBLAS(cberr);
+        if (i != 2) {
+          PetscCall(PetscSleep(3));
+          continue;
+        }
+        PetscCheck(cberr == CUPMBLAS_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmBlasName());
+      }
+      PetscCall(PetscLogEventEnd(CUPMBLAS_HANDLE_CREATE(), 0, 0, 0, 0));
+      PetscCall(PetscLogEventResume_Internal(event));
+    }
     PetscCallCUPMBLAS(cupmBlasSetStream(handle, dci->stream.get_stream()));
     dci->blas = handle;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -124,17 +118,29 @@ private:
 
   static PetscErrorCode initialize_handle_(solver_tag, PetscDeviceContext dctx) noexcept
   {
-    const auto    dci    = impls_cast_(dctx);
-    auto         &handle = solverhandles_[dctx->device->deviceId];
-    PetscLogEvent event;
+    const auto dci    = impls_cast_(dctx);
+    auto      &handle = solverhandles_[dctx->device->deviceId];
 
     PetscFunctionBegin;
-    PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
-    PetscCall(PetscLogEventBegin(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
-    PetscCall(cupmBlasInterface_t::InitializeHandle(handle));
-    PetscCall(PetscLogEventEnd(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
-    PetscCall(PetscLogEventResume_Internal(event));
-    PetscCall(cupmBlasInterface_t::SetHandleStream(handle, dci->stream.get_stream()));
+    if (!handle) {
+      PetscLogEvent event;
+
+      PetscCall(PetscLogPauseCurrentEvent_Internal(&event));
+      PetscCall(PetscLogEventBegin(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
+      for (auto i = 0; i < 3; ++i) {
+        const auto cerr = cupmSolverCreate(&handle);
+        if (PetscLikely(cerr == CUPMSOLVER_STATUS_SUCCESS)) break;
+        if ((cerr != CUPMSOLVER_STATUS_NOT_INITIALIZED) && (cerr != CUPMSOLVER_STATUS_ALLOC_FAILED)) PetscCallCUPMSOLVER(cerr);
+        if (i < 2) {
+          PetscCall(PetscSleep(3));
+          continue;
+        }
+        PetscCheck(cerr == CUPMSOLVER_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmSolverName());
+      }
+      PetscCall(PetscLogEventEnd(CUPMSOLVER_HANDLE_CREATE(), 0, 0, 0, 0));
+      PetscCall(PetscLogEventResume_Internal(event));
+    }
+    PetscCallCUPMSOLVER(cupmSolverSetStream(handle, dci->stream.get_stream()));
     dci->solver = handle;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -166,7 +172,7 @@ private:
 
     for (auto &&handle : solverhandles_) {
       if (handle) {
-        PetscCall(cupmBlasInterface_t::DestroyHandle(handle));
+        PetscCallCUPMSOLVER(cupmSolverDestroy(handle));
         handle = nullptr;
       }
     }
@@ -213,25 +219,25 @@ public:
   static PetscErrorCode initialize(PetscDevice) noexcept;
 
   // clang-format off
-  const _DeviceContextOps ops = {
-    destroy,
-    changeStreamType,
-    setUp,
-    query,
-    waitForContext,
-    synchronize,
-    getHandle<blas_tag>,
-    getHandle<solver_tag>,
-    getHandle<stream_tag>,
-    beginTimer,
-    endTimer,
-    memAlloc,
-    memFree,
-    memCopy,
-    memSet,
-    createEvent,
-    recordEvent,
-    waitForEvent
+  static constexpr _DeviceContextOps ops = {
+    PetscDesignatedInitializer(destroy, destroy),
+    PetscDesignatedInitializer(changestreamtype, changeStreamType),
+    PetscDesignatedInitializer(setup, setUp),
+    PetscDesignatedInitializer(query, query),
+    PetscDesignatedInitializer(waitforcontext, waitForContext),
+    PetscDesignatedInitializer(synchronize, synchronize),
+    PetscDesignatedInitializer(getblashandle, getHandle<blas_tag>),
+    PetscDesignatedInitializer(getsolverhandle, getHandle<solver_tag>),
+    PetscDesignatedInitializer(getstreamhandle, getHandle<stream_tag>),
+    PetscDesignatedInitializer(begintimer, beginTimer),
+    PetscDesignatedInitializer(endtimer, endTimer),
+    PetscDesignatedInitializer(memalloc, memAlloc),
+    PetscDesignatedInitializer(memfree, memFree),
+    PetscDesignatedInitializer(memcopy, memCopy),
+    PetscDesignatedInitializer(memset, memSet),
+    PetscDesignatedInitializer(createevent, createEvent),
+    PetscDesignatedInitializer(recordevent, recordEvent),
+    PetscDesignatedInitializer(waitforevent, waitForEvent)
   };
   // clang-format on
 };
@@ -517,6 +523,9 @@ std::array<typename DeviceContext<T>::cupmBlasHandle_t, PETSC_DEVICE_MAX_DEVICES
 
 template <DeviceType T>
 std::array<typename DeviceContext<T>::cupmSolverHandle_t, PETSC_DEVICE_MAX_DEVICES> DeviceContext<T>::solverhandles_ = {};
+
+template <DeviceType T>
+constexpr _DeviceContextOps DeviceContext<T>::ops;
 
 } // namespace impl
 

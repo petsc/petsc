@@ -33,7 +33,7 @@
 /*MC
     PetscCallBLAS - Calls a BLAS or LAPACK routine with error check handling
 
-    Not collective
+    Not Collective
 
     Synopsis:
    #include <petscsys.h>
@@ -212,7 +212,7 @@ BLAS_EXTERN void LAPACKtgsen_(const PetscBLASInt *, const PetscBLASInt *, const 
     #define LAPACKtgsen_(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x) PetscMissingLapack("TGSEN", a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x)
   #endif
   #if !defined(PETSC_MISSING_LAPACK_GGES)
-BLAS_EXTERN void LAPACKgges_(const char *, const char *, const char *, PetscBLASInt (*)(), const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscBLASInt *);
+BLAS_EXTERN void LAPACKgges_(const char *, const char *, const char *, PetscBLASInt (*)(void), const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscBLASInt *);
   #else
     #define LAPACKgges_(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u) PetscMissingLapack("GGES", a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u)
   #endif

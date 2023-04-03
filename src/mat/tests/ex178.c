@@ -121,7 +121,7 @@ PetscErrorCode MatIsDiagonal(Mat A)
       }
     }
     PetscCall(MatRestoreRow(A, i, &ncols, &cols, &vals));
-    PetscCheck(founddiag, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row %" PetscInt_FMT " does not have diagonal entrie", i);
+    PetscCheck(founddiag, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row %" PetscInt_FMT " does not have diagonal entry", i);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

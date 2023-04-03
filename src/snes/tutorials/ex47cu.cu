@@ -73,7 +73,7 @@ struct ApplyStencil {
   }
 };
 
-PetscErrorCode ComputeFunction(SNES snes, Vec x, Vec f, void *ctx)
+PetscErrorCode ComputeFunction(SNES, Vec x, Vec f, void *ctx)
 {
   PetscInt           i, Mx, xs, xm, xstartshift, xendshift, fstart, lsize;
   PetscScalar       *xx, *ff, hx;
@@ -147,7 +147,7 @@ PetscErrorCode ComputeFunction(SNES snes, Vec x, Vec f, void *ctx)
   PetscCall(DMRestoreLocalVector(da, &xlocal));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode ComputeJacobian(SNES snes, Vec x, Mat J, Mat B, void *ctx)
+PetscErrorCode ComputeJacobian(SNES, Vec x, Mat J, Mat, void *ctx)
 {
   DM          da = (DM)ctx;
   PetscInt    i, Mx, xm, xs;

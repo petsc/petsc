@@ -174,7 +174,7 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
     Collective
 
     Input Parameters:
-+   PetscViewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
++   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
 -   windownumber - indicates which subwindow (usually 0)
 
     Output Parameter:
@@ -355,11 +355,12 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 
    Input Parameters:
 +  comm - communicator that will share window
-.  display - the X display on which to open, or null for the local machine
-.  title - the title to put in the title bar, or null for no title
-.  x, y - the screen coordinates of the upper left corner of window, or use `PETSC_DECIDE`
--  w, h - window width and height in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,
-          `PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
+.  display - the X display on which to open, or `NULL` for the local machine
+.  title - the title to put in the title bar, or `NULL` for no title
+.  x - horizontal screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
+.  y - vertical screen coordinate of the upper left corner of window, or use `PETSC_DECIDE`
+.  w - window width in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
+-  h - window height in pixels, or may use `PETSC_DECIDE` or `PETSC_DRAW_FULL_SIZE`, `PETSC_DRAW_HALF_SIZE`,`PETSC_DRAW_THIRD_SIZE`, `PETSC_DRAW_QUARTER_SIZE`
 
    Output Parameter:
 . viewer - the `PetscViewer`
@@ -379,7 +380,7 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 
    Level: beginner
 
-   Note for Fortran Programmers:
+   Fortran Note:
    Whenever indicating null character data in a Fortran code,
    `PETSC_NULL_CHARACTER` must be employed; using NULL is not
    correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be
@@ -715,7 +716,6 @@ PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.

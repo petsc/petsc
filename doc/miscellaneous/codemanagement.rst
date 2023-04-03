@@ -111,18 +111,3 @@ Other suggestions
    are saving time by not spending the time upgrading your system, but,
    in fact, your loss in efficiency by sticking with an outdated system
    is probably larger than then the time required to keep it up-to-date.
-
-Fortran notes
--------------
-
-PETSc provides interfaces and modules for Fortran 90; see
-:doc:`/docs/manual/fortran`.
-
-When passing floating point numbers into Fortran subroutines, always
-make sure you have them marked as double precision (e.g., pass in ``10.d0``
-instead of ``10.0`` or declare them as PETSc variables, e.g.
-``PetscScalar one = 1.0``). Otherwise, the compiler interprets the input as a single
-precision number, which can cause crashes or other mysterious problems.
-Make sure to declare all variables (do not use the implicit feature of
-Fortran). In fact, we **highly** recommend using the **implicit none**
-option at the beginning of each Fortran subroutine you write.

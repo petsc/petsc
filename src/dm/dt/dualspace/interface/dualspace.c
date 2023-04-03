@@ -19,7 +19,7 @@ PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 - tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
 
   Output Parameter:
-. tup - A tuple of len integers whose sum is at most 'max'
+. tup - A tuple of `len` integers whose sum is at most `max`
 
   Level: developer
 
@@ -50,7 +50,7 @@ PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt len, Pe
 - tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
 
   Output Parameter:
-. tup - A tuple of len integers whose entries are at most 'max'
+. tup - A tuple of `len` integers whose entries are at most `max`
 
   Level: developer
 
@@ -78,8 +78,8 @@ PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt len, Pet
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname - The name of a new user-defined creation routine
+- function - The creation routine
 
   Sample usage:
 .vb
@@ -113,7 +113,7 @@ PetscErrorCode PetscDualSpaceRegister(const char sname[], PetscErrorCode (*funct
 /*@C
   PetscDualSpaceSetType - Builds a particular `PetscDualSpace` based on its `PetscDualSpaceType`
 
-  Collective on sp
+  Collective
 
   Input Parameters:
 + sp   - The `PetscDualSpace` object
@@ -206,7 +206,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 /*@C
    PetscDualSpaceViewFromOptions - View a `PetscDualSpace` based on values in the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the `PetscDualSpace` object
@@ -214,6 +214,9 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 -  name - command line option name
 
    Level: intermediate
+
+   Note:
+   See `PetscObjectViewFromOptions()` for possible command line values
 
 .seealso: `PetscDualSpace`, `PetscDualSpaceView()`, `PetscObjectViewFromOptions()`, `PetscDualSpaceCreate()`
 @*/
@@ -228,7 +231,7 @@ PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace A, PetscObject obj, 
 /*@
   PetscDualSpaceView - Views a `PetscDualSpace`
 
-  Collective on sp
+  Collective
 
   Input Parameters:
 + sp - the `PetscDualSpace` object to view
@@ -254,7 +257,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 /*@
   PetscDualSpaceSetFromOptions - sets parameters in a `PetscDualSpace` from the options database
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - the `PetscDualSpace` object to set options for
@@ -263,7 +266,15 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 + -petscdualspace_order <order>      - the approximation order of the space
 . -petscdualspace_form_degree <deg>  - the form degree, say 0 for point evaluations, or 2 for area integrals
 . -petscdualspace_components <c>     - the number of components, say d for a vector field
-- -petscdualspace_refcell <celltype> - Reference cell type name
+. -petscdualspace_refcell <celltype> - Reference cell type name
+. -petscdualspace_lagrange_continuity           - Flag for continuous element
+. -petscdualspace_lagrange_tensor               - Flag for tensor dual space
+. -petscdualspace_lagrange_trimmed              - Flag for trimmed dual space
+. -petscdualspace_lagrange_node_type <nodetype> - Lagrange node location type
+. -petscdualspace_lagrange_node_endpoints       - Flag for nodes that include endpoints
+. -petscdualspace_lagrange_node_exponent        - Gauss-Jacobi weight function exponent
+. -petscdualspace_lagrange_use_moments          - Use moments (where appropriate) for functionals
+- -petscdualspace_lagrange_moment_order <order> - Quadrature order for moment functionals
 
   Level: intermediate
 
@@ -315,7 +326,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 /*@
   PetscDualSpaceSetUp - Construct a basis for a `PetscDualSpace`
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - the `PetscDualSpace` object to setup
@@ -376,7 +387,7 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
 /*@
   PetscDualSpaceDestroy - Destroys a `PetscDualSpace` object
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - the `PetscDualSpace` object to destroy
@@ -455,7 +466,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
 /*@
   PetscDualSpaceDuplicate - Creates a duplicate `PetscDualSpace` object that is not setup.
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - The original `PetscDualSpace`
@@ -495,7 +506,7 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
 /*@
   PetscDualSpaceGetDM - Get the `DM` representing the reference cell of a `PetscDualSpace`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -519,7 +530,7 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
 /*@
   PetscDualSpaceSetDM - Get the `DM` representing the reference cell
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - The `PetscDual`Space
@@ -545,7 +556,7 @@ PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
 /*@
   PetscDualSpaceGetOrder - Get the order of the dual space
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -569,7 +580,7 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
 /*@
   PetscDualSpaceSetOrder - Set the order of the dual space
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - The `PetscDualSpace`
@@ -636,7 +647,7 @@ PetscErrorCode PetscDualSpaceSetNumComponents(PetscDualSpace sp, PetscInt Nc)
 /*@
   PetscDualSpaceGetFunctional - Get the i-th basis functional in the dual space
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - The `PetscDualSpace`
@@ -665,7 +676,7 @@ PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQ
 /*@
   PetscDualSpaceGetDimension - Get the dimension of the dual space, i.e. the number of basis functionals
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -697,7 +708,7 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
 /*@
   PetscDualSpaceGetInteriorDimension - Get the interior dimension of the dual space, i.e. the number of basis functionals assigned to the interior of the reference domain
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -729,12 +740,12 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
 /*@
    PetscDualSpaceGetUniform - Whether this dual space is uniform
 
-   Not collective
+   Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  sp - A dual space
 
-   Output Parameters:
+   Output Parameter:
 .  uniform - `PETSC_TRUE` if (a) the dual space is the same for each point in a stratum of the reference `DMPLEX`, and
              (b) every symmetry of each point in the reference `DMPLEX` is also a symmetry of the point's dual space.
 
@@ -758,7 +769,7 @@ PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
 /*@C
   PetscDualSpaceGetNumDof - Get the number of degrees of freedom for each spatial (topological) dimension
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - The `PetscDualSpace`
@@ -882,9 +893,9 @@ PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace sp, PetscSecti
 /*@
   PetscDualSpaceGetSection - Create a `PetscSection` over the reference cell with the layout from this space
 
-  Collective on sp
+  Collective
 
-  Input Parameters:
+  Input Parameter:
 . sp      - The `PetscDualSpace`
 
   Output Parameter:
@@ -984,9 +995,9 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
   Output Parameter:
 . value   - numComp output values
 
-  Calling Sequence of func:
+  Calling Sequence of `func`:
 .vb
-  func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt numComponents, PetscScalar values[], void *ctx)
+  PetscErrorCode func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt numComponents, PetscScalar values[], void *ctx)
 .ve
 
   Level: beginner
@@ -1062,9 +1073,9 @@ PetscErrorCode PetscDualSpaceApplyInterior(PetscDualSpace sp, const PetscScalar 
   Output Parameter:
 . value   - The output value
 
-  Calling Sequence of func:
+  Calling Sequence of `func`:
 .vb
-   func(PetscInt dim, PetscReal time, const PetscReal x[],PetscInt numComponents, PetscScalar values[], void *ctx)
+   PetscErrorCode func(PetscInt dim, PetscReal time, const PetscReal x[],PetscInt numComponents, PetscScalar values[], void *ctx)
 .ve
 
   Level: advanced
@@ -1483,10 +1494,11 @@ PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool
   Output Parameter:
 . value - The output value (scalar)
 
-  Calling Sequence of func:
+  Calling Sequence of `func`:
 .vb
-  func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt numComponents, PetscScalar values[], void *ctx)
+  PetscErrorCode func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt numComponents, PetscScalar values[], void *ctx)
 .ve
+
   Level: advanced
 
   Note:
@@ -1524,7 +1536,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a
   given height.  This assumes that the reference cell is symmetric over points of this height.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - the `PetscDualSpace` object
@@ -1594,7 +1606,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 /*@
   PetscDualSpaceGetPointSubspace - Get the subset of the dual space basis that is supported on a particular mesh point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - the `PetscDualSpace` object
@@ -1659,7 +1671,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
 /*@C
   PetscDualSpaceGetSymmetries - Returns a description of the symmetries of this basis
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - the `PetscDualSpace` object

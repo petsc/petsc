@@ -9,7 +9,7 @@ typedef struct {
    PetscDualSpaceRefinedSetCellSpaces - Set the dual spaces for the closures of each of the cells
    in the multicell `DM` of a `PetscDualSpace`
 
-   Collective on sp
+   Collective
 
    Input Parameters:
 +  sp - a `PetscDualSpace`

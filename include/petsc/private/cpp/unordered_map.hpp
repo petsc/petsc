@@ -10,6 +10,7 @@
 
   #include <cstdint>   // std::uint32_t
   #include <climits>   // CHAR_BIT
+  #include <iterator>  // std::inserter
   #include <limits>    // std::numeric_limits
   #include <algorithm> // std::fill
   #include <vector>
@@ -731,7 +732,7 @@ template <typename V, typename H, typename KE>
 template <typename KeyValueType>
 inline std::pair<typename KHashTable<V, H, KE>::iterator, bool> KHashTable<V, H, KE>::find_and_emplace_(KeyValueType &&key_value) noexcept
 {
-  return find_and_emplace_final_(std::forward<KeyValueType>(key_value), [&] { return std::move(key_value); });
+  return find_and_emplace_final_(std::forward<KeyValueType>(key_value), [&] { return std::forward<KeyValueType>(key_value); });
 }
 
 // ==========================================================================================

@@ -71,13 +71,13 @@ static sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
   Output Parameter:
 . device - The `PetscDevice`
 
+  Level: beginner
+
   Notes:
   This routine may initialize `PetscDevice`. If this is the case, it may cause some sort of
   device synchronization.
 
   `devid` is what you might pass to `cudaSetDevice()` for example.
-
-  Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceInitType`,
 `PetscDeviceInitialize()`, `PetscDeviceInitialized()`, `PetscDeviceConfigure()`,
@@ -149,10 +149,10 @@ PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
   Input Parameter:
 . device - The `PetscDevice` to configure
 
+  Level: beginner
+
   Notes:
   The user should not assume that this is a cheap operation.
-
-  Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceView()`, `PetscDeviceDestroy()`,
 `PetscDeviceGetType()`, `PetscDeviceGetDeviceId()`
@@ -281,12 +281,12 @@ PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type)
   Output Parameter:
 . id - The id
 
+  Level: beginner
+
   Notes:
   The returned ID may have been assigned by the underlying device backend. For example if the
   backend is CUDA then `id` is exactly the value returned by `cudaGetDevice()` at the time when
   this device was configured.
-
-  Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceGetType()`
 @*/
@@ -317,11 +317,11 @@ static auto default_device_type = DefaultDeviceType();
 
   Not Collective
 
+  Level: beginner
+
   Notes:
   Unless selected by the user, the default device is selected in the following order\:
   `PETSC_DEVICE_HIP`, `PETSC_DEVICE_CUDA`, `PETSC_DEVICE_SYCL`, `PETSC_DEVICE_HOST`.
-
-  Level: beginner
 
 .seealso: `PetscDeviceType`, `PetscDeviceSetDefaultDeviceType()`, `PetscDeviceGetType()`
 @*/
@@ -338,10 +338,10 @@ PetscDeviceType PETSC_DEVICE_DEFAULT(void)
   Input Parameter:
 . type - the new default device type
 
+  Level: beginner
+
   Notes:
   This sets the `PetscDeviceType` returned by `PETSC_DEVICE_DEFAULT()`.
-
-  Level: beginner
 
 .seealso: `PetscDeviceType`, `PetscDeviceGetType`,
 @*/
@@ -387,11 +387,11 @@ static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceTyp
   Input Parameter:
 . type - The `PetscDeviceType` to initialize
 
+  Level: beginner
+
   Notes:
   Eagerly initializes the corresponding `PetscDeviceType` if needed. If this is the case it may
   result in device synchronization.
-
-  Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceInitialized()`,
 `PetscDeviceCreate()`, `PetscDeviceDestroy()`
@@ -413,13 +413,13 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type)
   Input Parameter:
 . type - The `PetscDeviceType` to check
 
+  Level: beginner
+
   Notes:
   Returns `PETSC_TRUE` if `type` is initialized, `PETSC_FALSE` otherwise.
 
   If one has not configured PETSc for a particular `PetscDeviceType` then this routine will
   return `PETSC_FALSE` for that `PetscDeviceType`.
-
-  Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceInitialize()`,
 `PetscDeviceCreate()`, `PetscDeviceDestroy()`
@@ -451,13 +451,13 @@ PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, Petsc
   Output Parameter:
 . value - The value of the attribute
 
+  Level: intermediate
+
   Notes:
   Since different attributes are often different types `value` is a `void *` to accommodate
   them all. The underlying type of the attribute is therefore included in the name of the
   `PetscDeviceAttribute` responsible for querying it. For example,
   `PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK` is of type `size_t`.
-
-  Level: intermediate
 
 .seealso: `PetscDeviceAtrtibute`, `PetscDeviceConfigure()`, `PetscDevice`
 @*/

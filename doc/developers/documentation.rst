@@ -284,7 +284,7 @@ For debugging, a quick preview of manual pages from a single source directory ca
 
     $ cd $PETSC_DIR/src/snes/interface
     $ make LOC=$PETSC_DIR manualpages_buildcite
-    $ browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or otherwise open in browser
+    $ browse $PETSC_DIR/manualpages/SNES/SNESCreate.html  # or otherwise open in browser
 
 
 .. rubric:: Footnotes

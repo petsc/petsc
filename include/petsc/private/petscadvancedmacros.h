@@ -11,15 +11,14 @@
 /*
   PetscIf - Conditionally expand to the second or remaining args
 
+  No Fortran Support
+
   Input Parameters:
 + cond           - Preprocessor conditional
 . result_if_true - Result of macro expansion if cond expands to 1
 - __VA_ARGS__    - Result of macro expansion if cond expands to 0
 
   Notes:
-  Not available from Fortran, requires variadic macro support, definition is disabled by
-  defining PETSC_SKIP_VARIADIC_MACROS.
-
   cond must be defined and expand (not evaluate!) to either integer literal 0 or 1. Must have
   at least 1 argument for __VA_ARGS__, but it may expand empty.
 
@@ -44,15 +43,14 @@
 /*
   PetscIfPetscDefined - Like PetscIf(), but passes cond through PetscDefined() first
 
+  No Fortran Support
+
   Input Parameters:
 + cond           - Condition passed to PetscDefined()
 . result_if_true - Result of macro expansion if PetscDefined(cond) expands to 1
 - __VA_ARGS__    - Result of macro expansion if PetscDefined(cond) expands to 0
 
   Notes:
-  Not available from Fortran, requires variadic macro support, definition is disabled by
-  defining PETSC_SKIP_VARIADIC_MACROS.
-
   cond must satisfy all conditions for PetscDefined(). Must have at least 1 argument for
   __VA_ARGS__, but it may expand empty.
 

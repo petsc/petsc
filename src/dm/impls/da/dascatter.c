@@ -10,20 +10,20 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
    DMDAGetScatter - Gets the global-to-local, and
    local-to-local vector scatter contexts for a distributed array.
 
-   Collective on da
+   Collective
 
    Input Parameter:
 .  da - the distributed array
 
    Output Parameters:
-+  gtol - global-to-local scatter context (may be NULL)
--  ltol - local-to-local scatter context (may be NULL)
++  gtol - global-to-local scatter context (may be `NULL`)
+-  ltol - local-to-local scatter context (may be `NULL`)
 
    Level: developer
 
    Note:
-   The output contexts are valid only as long as the input da is valid.
-   If you delete the da, the scatter contexts will become invalid.
+   The output contexts are valid only as long as the input `da` is valid.
+   If you delete the `da`, the scatter contexts will become invalid.
 
 .seealso: `DM`, `DMDA`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/

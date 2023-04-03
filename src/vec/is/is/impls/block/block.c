@@ -36,7 +36,7 @@ static PetscErrorCode ISLocate_Block(IS is, PetscInt key, PetscInt *location)
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
-  PetscCall(PetscLayoutGetSize(is->map, &numIdx));
+  PetscCall(PetscLayoutGetLocalSize(is->map, &numIdx));
   numIdx /= bs;
   bkey = key / bs;
   mkey = key % bs;
@@ -541,7 +541,7 @@ static PetscErrorCode ISBlockRestoreIndices_Block(IS is, const PetscInt *idx[])
    Note:
    Call `ISBlockRestoreIndices()` when you no longer need access to the indices
 
-.seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISGetIndices()`, `ISBlockRestoreIndices()`, `ISBLOCK`, `ISBlockSetIndices()`, `ISCreateBlock()`
+.seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISGetIndices()`, `ISBlockRestoreIndices()`, `ISBlockSetIndices()`, `ISCreateBlock()`
 @*/
 PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
 {

@@ -356,10 +356,12 @@ int main(int argc, char **args)
 
    test:
       suffix: pipecg2
+      requires: !defined(PETSC_HAVE_THREADSAFETY)
       args: -ksp_monitor_short -ksp_type pipecg2 -m 9 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
 
    test:
       suffix: pipecg2_2
+      requires: !defined(PETSC_HAVE_THREADSAFETY)
       nsize: 4
       args: -ksp_monitor_short -ksp_type pipecg2 -m 15 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
 

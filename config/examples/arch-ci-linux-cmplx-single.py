@@ -12,7 +12,8 @@ configure_options = [
   '--with-precision=single',
   '--with-petsc4py=1',
   '--with-strict-petscerrorcode',
-   ]
+  '--with-coverage',
+  ]
 
 if __name__ == '__main__':
   import sys,os

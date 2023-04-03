@@ -282,7 +282,7 @@ PETSC_INTERN const char SNESCitation[];
 /* Used by TAOBNK solvers */
 PETSC_EXTERN PetscErrorCode KSPPostSolve_SNESEW(KSP, Vec, Vec, SNES);
 PETSC_EXTERN PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, SNES);
-PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, MPI_Comm, const char *);
+PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool, MPI_Comm, const char *);
 
 /*
     Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf.

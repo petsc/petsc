@@ -9,7 +9,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerCreate_And(VecTagger);
 PetscFunctionList VecTaggerList;
 
 /*@C
-   VecTaggerRegisterAll - Registers all the VecTagger communication implementations
+   VecTaggerRegisterAll - Registers all the `VecTagger` communication implementations
 
    Not Collective
 
@@ -31,16 +31,18 @@ PetscErrorCode VecTaggerRegisterAll(void)
 }
 
 /*@C
-  VecTaggerRegister  - Adds an implementation of the VecTagger communication protocol.
+  VecTaggerRegister  - Adds an implementation of the `VecTagger` communication protocol.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
-+  name_impl - name of a new user-defined implementation
--  routine_create - routine to create method context
++  sname - name of a new user-defined implementation
+-  functions - routine to create method context
+
+   Level: advanced
 
    Notes:
-   VecTaggerRegister() may be called multiple times to add several user-defined implementations.
+   `VecTaggerRegister()` may be called multiple times to add several user-defined implementations.
 
    Sample usage:
 .vb
@@ -51,8 +53,6 @@ PetscErrorCode VecTaggerRegisterAll(void)
 $     VecTaggerSetType(tagger,"my_impl")
    or at runtime via the option
 $     -snes_type my_solver
-
-   Level: advanced
 
 .seealso: `VecTaggerRegisterAll()`, `VecTaggerRegisterDestroy()`
 @*/

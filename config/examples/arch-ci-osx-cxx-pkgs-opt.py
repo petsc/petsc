@@ -20,7 +20,6 @@ configure_options = [
   '--download-mpich=1',
   '--download-mpich-device=ch3:sock',
   '--download-mpich-configure-arguments=--disable-two-level-namespace', # workaround for AMREX build failure with MPICH 4.0.1 and above
-  '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-bison=1',
@@ -40,7 +39,7 @@ configure_options = [
   '--download-suitesparse=1',
   '--download-chaco=1',
   '--download-spai=1',
-  '--download-moab=1',
+  # '--download-moab=1', # disabled since its maxCxxVersion is c++14, but Kokkos-4.0's minCxxVersion is c++17
   '--download-saws',
   '--download-revolve=1',
   '--download-cams=1',

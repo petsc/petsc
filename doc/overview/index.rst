@@ -18,9 +18,10 @@ managing parallel PDE discretizations including parallel matrix and vector assem
    matrix_table
    linear_solve_table
    nonlinear_solve_table
+   integrator_table
    tao_solve_table
    discrete_table
-   ../docs/manual/index
-   ../docs/manualpages/index
-   ../docs/changes/index
-   ../docs/manualpages/singleindex
+   ../manual/index
+   ../manualpages/index
+   ../changes/index
+   ../manualpages/singleindex

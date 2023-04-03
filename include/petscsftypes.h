@@ -24,6 +24,14 @@ typedef struct _p_PetscSF *PetscSF;
 .seealso: `PetscSFSetType()`, `PetscSF`
 J*/
 typedef const char *PetscSFType;
+#define PETSCSFBASIC      "basic"
+#define PETSCSFNEIGHBOR   "neighbor"
+#define PETSCSFALLGATHERV "allgatherv"
+#define PETSCSFALLGATHER  "allgather"
+#define PETSCSFGATHERV    "gatherv"
+#define PETSCSFGATHER     "gather"
+#define PETSCSFALLTOALL   "alltoall"
+#define PETSCSFWINDOW     "window"
 
 /*S
    PetscSFNode - specifier of owner and index

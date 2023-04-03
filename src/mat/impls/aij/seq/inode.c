@@ -33,7 +33,7 @@ static PetscErrorCode MatCreateColInode_Private(Mat A, PetscInt *size, PetscInt 
 
   /* if m < n; pad up the remainder with inode_limit */
   for (; count + 1 < n; count++, i++) ns_col[i] = 1;
-  /* The last node is the odd ball. padd it up with the remaining rows; */
+  /* The last node is the odd ball. pad it up with the remaining rows; */
   if (count < n) {
     ns_col[i] = n - count;
     i++;
@@ -241,8 +241,6 @@ static PetscErrorCode MatRestoreRowIJ_SeqAIJ_Inode(Mat A, PetscInt oshift, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------- */
-
 static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A, const PetscInt *iia[], const PetscInt *jja[], PetscInt ishift, PetscInt oshift)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
@@ -347,8 +345,6 @@ static PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Inode(Mat A, PetscInt oshift, Pe
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ----------------------------------------------------------- */
 
 PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
 {
@@ -552,7 +548,7 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogFlops(2.0 * a->nz - nonzerorow));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ----------------------------------------------------------- */
+
 /* Almost same code as the MatMult_SeqAIJ_Inode() */
 PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A, Vec xx, Vec zz, Vec yy)
 {
@@ -753,7 +749,6 @@ PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A, Vec xx, Vec zz, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------- */
 static PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A, Vec bb, Vec xx)
 {
   Mat_SeqAIJ        *a     = (Mat_SeqAIJ *)A->data;
@@ -1281,7 +1276,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
 
       switch (nodesz) {
       case 1:
-        /*----------*/
         /* zero rtmp1 */
         /* L part */
         nz    = bi[i + 1] - bi[i];
@@ -1353,7 +1347,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
         break;
 
       case 2:
-        /*----------*/
         /* zero rtmp1 and rtmp2 */
         /* L part */
         nz    = bi[i + 1] - bi[i];
@@ -1486,7 +1479,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
         break;
 
       case 3:
-        /*----------*/
         /* zero rtmp */
         /* L part */
         nz    = bi[i + 1] - bi[i];
@@ -1673,7 +1665,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
         *pc3 = 1.0 / sctx.pv; /* Mark diag[i+2] */
         break;
       case 4:
-        /*----------*/
         /* zero rtmp */
         /* L part */
         nz    = bi[i + 1] - bi[i];
@@ -2394,7 +2385,6 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B, Mat A, cons
 }
 #endif
 
-/* ----------------------------------------------------------- */
 PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
 {
   Mat_SeqAIJ        *a     = (Mat_SeqAIJ *)A->data;
@@ -4323,23 +4313,24 @@ PetscErrorCode MatSeqAIJCheckInode(Mat A)
   node_count = 0;
   idx        = a->j;
   ii         = a->i;
-  while (i < m) {            /* For each row */
-    nzx = ii[i + 1] - ii[i]; /* Number of nonzeros */
-    /* Limits the number of elements in a node to 'a->inode.limit' */
-    for (j = i + 1, idy = idx, blk_size = 1; j < m && blk_size < a->inode.limit; ++j, ++blk_size) {
-      nzy = ii[j + 1] - ii[j]; /* Same number of nonzeros */
-      if (nzy != nzx) break;
-      idy += nzx; /* Same nonzero pattern */
-      PetscCall(PetscArraycmp(idx, idy, nzx, &flag));
-      if (!flag) break;
+  if (idx) {
+    while (i < m) {            /* For each row */
+      nzx = ii[i + 1] - ii[i]; /* Number of nonzeros */
+      /* Limits the number of elements in a node to 'a->inode.limit' */
+      for (j = i + 1, idy = idx, blk_size = 1; j < m && blk_size < a->inode.limit; ++j, ++blk_size) {
+        nzy = ii[j + 1] - ii[j]; /* Same number of nonzeros */
+        if (nzy != nzx) break;
+        idy += nzx; /* Same nonzero pattern */
+        PetscCall(PetscArraycmp(idx, idy, nzx, &flag));
+        if (!flag) break;
+      }
+      ns[node_count++] = blk_size;
+      idx += blk_size * nzx;
+      i = j;
     }
-    ns[node_count++] = blk_size;
-    idx += blk_size * nzx;
-    i = j;
   }
-
   /* If not enough inodes found,, do not use inode version of the routines */
-  if (!m || node_count > .8 * m) {
+  if (!m || !idx || node_count > .8 * m) {
     PetscCall(MatSeqAIJ_Inode_ResetOps(A));
     PetscCall(PetscFree(a->inode.size));
     PetscCall(PetscInfo(A, "Found %" PetscInt_FMT " nodes out of %" PetscInt_FMT " rows. Not using Inode routines\n", node_count, m));
@@ -4583,19 +4574,17 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
 
    Output Parameters:
 +  node_count - no of inodes present in the matrix.
-.  sizes      - an array of size node_count,with sizes of each inode.
+.  sizes      - an array of size `node_count`, with the sizes of each inode.
 -  limit      - the max size used to generate the inodes.
 
    Level: advanced
 
    Note:
-    This routine returns some internal storage information
-   of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.
    The contents of the sizes[] array should not be changed.
-   NULL may be passed for information not requested.
+   `NULL` may be passed for information not needed
 
-.seealso: `MatGetInfo()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetInfo()`
 @*/
 PetscErrorCode MatInodeGetInodeSizes(Mat A, PetscInt *node_count, PetscInt *sizes[], PetscInt *limit)
 {

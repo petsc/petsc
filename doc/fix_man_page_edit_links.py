@@ -10,7 +10,7 @@ EDIT_URL_PATTERN = re.compile(
 
 
 def _get_edit_url(filename):
-    """ Get the edit URL for a manual page HTML page """
+    """ Get the edit URL for the source code for a manual page that was added by lib/petsc/bin/maint/wwwindex.py"""
     with open(filename, "r") as f:
         for line in f:
             m = re.match(EDIT_URL_PATTERN, line)
@@ -30,7 +30,8 @@ def _check_edit_link(filename):
 
 
 def _update_edit_link(filename, url):
-    """ Update the edit this page URL """
+    """ Change the URL for editthispage that Sphinx generates to the URL for GitLab repository location of the file
+        Remove the Edit on GitLab line added by lib/petsc/bin/maint/wwwindex.py since it is now a duplicate"""
     with fileinput.FileInput(filename, inplace=True) as f:
         replace_link_line = False
         done = False
@@ -43,12 +44,12 @@ def _update_edit_link(filename, url):
                 if replace_link_line and line.lstrip().startswith("<a"):
                     print("<a href=%s>" % url)  # prints to file
                     done = True
-                else:
+                elif not 'Edit on GitLab' in line:
                     print(line, end="")  # prints to file
 
 
 def fix_man_page_edit_links(root):
-    base = os.path.join(root, "docs", "manualpages")
+    base = os.path.join(root, "manualpages")
     for root, dirs, filenames in os.walk(base):
         for filename in filenames:
             if filename.endswith(".html"):

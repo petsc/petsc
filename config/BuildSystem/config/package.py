@@ -347,7 +347,7 @@ class Package(config.base.Configure):
       # -DCMAKE_CXX_STANDARD to set the std flag
       cmakeLists = os.path.join(self.packageDir,self.cmakelistsdir,'CMakeLists.txt')
       with open(cmakeLists,'r') as fd:
-        refcxxstd = re.compile('^\s*(?!#)(set\()(CMAKE_CXX_STANDARD\s[A-z0-9\s]*)')
+        refcxxstd = re.compile(r'^\s*(?!#)(set\()(CMAKE_CXX_STANDARD\s[A-z0-9\s]*)')
         for line in fd:
           match = refcxxstd.search(line)
           if match:
@@ -1647,6 +1647,7 @@ class GNUPackage(Package):
   def __init__(self, framework):
     Package.__init__(self,framework)
     self.builddir = 'no' # requires build be done in a subdirectory, not in the directory tree
+    self.configureName = 'configure'
     return
 
   def setupHelp(self, help):
@@ -1736,7 +1737,7 @@ class GNUPackage(Package):
 
   def preInstall(self):
     '''Run pre-install steps like generate configure script'''
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+    if not os.path.isfile(os.path.join(self.packageDir,self.configureName)):
       if not self.programs.autoreconf:
         raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)! Use your package manager to install autoconf')
       if not self.programs.libtoolize:
@@ -1787,7 +1788,7 @@ class GNUPackage(Package):
     ### Configure and Build package
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand(dot+'/configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
+      output1,err1,ret1  = config.base.Configure.executeShellCommand(os.path.join(dot, self.configureName)+' '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running configure on ' + self.PACKAGE+': '+str(e))
       try:
@@ -1816,7 +1817,7 @@ class GNUPackage(Package):
   def Bootstrap(self,command):
     '''check for configure script - and run bootstrap - if needed'''
     import os
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+    if not os.path.isfile(os.path.join(self.packageDir,self.configureName)):
       if not self.programs.libtoolize:
         raise RuntimeError('Could not bootstrap '+self.PACKAGE+' using autotools: libtoolize not found')
       if not self.programs.autoreconf:
@@ -1924,14 +1925,20 @@ class CMakePackage(Package):
 
     if 'MSYSTEM' in os.environ:
       args.append('-G "MSYS Makefiles"')
-    cuda_module = self.framework.findModule(self, config.packages.cuda)
-    if cuda_module and cuda_module.found:
-      with self.Language('CUDA'):
-        args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
-        cuda_flags = self.updatePackageCUDAFlags(self.getCompilerFlags())
-        args.append('-DCMAKE_CUDA_FLAGS:STRING="{}"'.format(cuda_flags))
-        args.append('-DCMAKE_CUDA_FLAGS_DEBUG:STRING="{}"'.format(cuda_flags))
-        args.append('-DCMAKE_CUDA_FLAGS_RELEASE:STRING="{}"'.format(cuda_flags))
+    for package in self.deps + self.odeps:
+      if package.found and package.name == 'cuda':
+        with self.Language('CUDA'):
+          args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
+          cuda_flags = self.updatePackageCUDAFlags(self.getCompilerFlags())
+          args.append('-DCMAKE_CUDA_FLAGS:STRING="{}"'.format(cuda_flags))
+          args.append('-DCMAKE_CUDA_FLAGS_DEBUG:STRING="{}"'.format(cuda_flags))
+          args.append('-DCMAKE_CUDA_FLAGS_RELEASE:STRING="{}"'.format(cuda_flags))
+          if hasattr(self.setCompilers,'CUDA_CXX'): # CUDA_CXX is set in cuda.py and might be mpicxx.
+            args.append('-DCMAKE_CUDA_HOST_COMPILER="{}"'.format(self.setCompilers.CUDA_CXX))
+          else:
+            with self.Language('C++'):
+              args.append('-DCMAKE_CUDA_HOST_COMPILER="{}"'.format(self.getCompiler()))
+        break
     return args
 
   def updateControlFiles(self):

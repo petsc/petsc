@@ -4,6 +4,7 @@
 #include <petscblaslapack.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/dtimpl.h>
+#include <petsc/private/petscfeimpl.h> /* For CoordinatesRefToReal() */
 #include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>
@@ -50,7 +51,7 @@ PetscClassId PETSCQUADRATURE_CLASSID = 0;
 . comm - The communicator for the `PetscQuadrature` object
 
   Output Parameter:
-. q  - The PetscQuadrature object
+. q  - The `PetscQuadrature` object
 
   Level: beginner
 
@@ -62,6 +63,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
   PetscValidPointer(q, 2);
   PetscCall(DMInitializePackage());
   PetscCall(PetscHeaderCreate(*q, PETSCQUADRATURE_CLASSID, "PetscQuadrature", "Quadrature", "DT", comm, PetscQuadratureDestroy, PetscQuadratureView));
+  (*q)->ct        = DM_POLYTOPE_UNKNOWN;
   (*q)->dim       = -1;
   (*q)->Nc        = 1;
   (*q)->order     = -1;
@@ -74,7 +76,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 /*@
   PetscQuadratureDuplicate - Create a deep copy of the `PetscQuadrature` object
 
-  Collective on q
+  Collective
 
   Input Parameter:
 . q  - The `PetscQuadrature` object
@@ -88,6 +90,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 @*/
 PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 {
+  DMPolytopeType   ct;
   PetscInt         order, dim, Nc, Nq;
   const PetscReal *points, *weights;
   PetscReal       *p, *w;
@@ -95,6 +98,8 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   PetscFunctionBegin;
   PetscValidPointer(q, 1);
   PetscCall(PetscQuadratureCreate(PetscObjectComm((PetscObject)q), r));
+  PetscCall(PetscQuadratureGetCellType(q, &ct));
+  PetscCall(PetscQuadratureSetCellType(*r, ct));
   PetscCall(PetscQuadratureGetOrder(q, &order));
   PetscCall(PetscQuadratureSetOrder(*r, order));
   PetscCall(PetscQuadratureGetData(q, &dim, &Nc, &Nq, &points, &weights));
@@ -109,7 +114,7 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 /*@
   PetscQuadratureDestroy - Destroys a `PetscQuadrature` object
 
-  Collective on q
+  Collective
 
   Input Parameter:
 . q  - The `PetscQuadrature` object
@@ -134,9 +139,54 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 }
 
 /*@
+  PetscQuadratureGetCellType - Return the cell type of the integration domain
+
+  Not Collective
+
+  Input Parameter:
+. q - The `PetscQuadrature` object
+
+  Output Parameter:
+. ct - The cell type of the integration domain
+
+  Level: intermediate
+
+.seealso: `PetscQuadrature`, `PetscQuadratureSetCellType()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
+@*/
+PetscErrorCode PetscQuadratureGetCellType(PetscQuadrature q, DMPolytopeType *ct)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
+  PetscValidPointer(ct, 2);
+  *ct = q->ct;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscQuadratureSetCellType - Set the cell type of the integration domain
+
+  Not Collective
+
+  Input Parameters:
++ q - The `PetscQuadrature` object
+- ct - The cell type of the integration domain
+
+  Level: intermediate
+
+.seealso: `PetscQuadrature`, `PetscQuadratureGetCellType()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
+@*/
+PetscErrorCode PetscQuadratureSetCellType(PetscQuadrature q, DMPolytopeType ct)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
+  q->ct = ct;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscQuadratureGetOrder - Return the order of the method in the `PetscQuadrature`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . q - The `PetscQuadrature` object
@@ -160,7 +210,7 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 /*@
   PetscQuadratureSetOrder - Set the order of the method in the `PetscQuadrature`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + q - The `PetscQuadrature` object
@@ -181,7 +231,7 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 /*@
   PetscQuadratureGetNumComponents - Return the number of components for functions to be integrated
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . q - The `PetscQuadrature` object
@@ -189,10 +239,10 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
   Output Parameter:
 . Nc - The number of components
 
+  Level: intermediate
+
   Note:
   We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
-
-  Level: intermediate
 
 .seealso: `PetscQuadrature`, `PetscQuadratureSetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
@@ -208,16 +258,16 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 /*@
   PetscQuadratureSetNumComponents - Return the number of components for functions to be integrated
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ q  - The PetscQuadrature object
++ q  - The `PetscQuadrature` object
 - Nc - The number of components
+
+  Level: intermediate
 
   Note:
   We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
-
-  Level: intermediate
 
 .seealso: `PetscQuadrature`, `PetscQuadratureGetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
@@ -232,7 +282,7 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 /*@C
   PetscQuadratureGetData - Returns the data defining the `PetscQuadrature`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . q  - The `PetscQuadrature` object
@@ -285,7 +335,7 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
 + A - A `PetscQuadrature` object
 - B - Another `PetscQuadrature` object
 
-  Output Parameters:
+  Output Parameter:
 . equal - `PETSC_TRUE` if the quadratures are the same
 
   Level: intermediate
@@ -299,7 +349,7 @@ PetscErrorCode PetscQuadratureEqual(PetscQuadrature A, PetscQuadrature B, PetscB
   PetscValidHeaderSpecific(B, PETSCQUADRATURE_CLASSID, 2);
   PetscValidBoolPointer(equal, 3);
   *equal = PETSC_FALSE;
-  if (A->dim != B->dim || A->Nc != B->Nc || A->order != B->order || A->numPoints != B->numPoints) PetscFunctionReturn(PETSC_SUCCESS);
+  if (A->ct != B->ct || A->dim != B->dim || A->Nc != B->Nc || A->order != B->order || A->numPoints != B->numPoints) PetscFunctionReturn(PETSC_SUCCESS);
   for (PetscInt i = 0; i < A->numPoints * A->dim; i++) {
     if (PetscAbsReal(A->points[i] - B->points[i]) > PETSC_SMALL) PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -416,7 +466,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 /*@
    PetscQuadraturePushForward - Push forward a quadrature functional under an affine transformation.
 
-   Collecive on `PetscQuadrature`
+   Collective
 
    Input Parameters:
 +  q - the quadrature functional
@@ -426,8 +476,8 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 .  J - the Jacobian of the image: an [imageDim x dim] matrix in row major order
 -  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see `PetscDTAltVPullback()` for interpretation of formDegree]
 
-   Output Parameters:
-.  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of J to the k-form weights in the image space.
+   Output Parameter:
+.  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of `J` to the k-form weights in the image space.
 
    Level: intermediate
 
@@ -490,7 +540,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
 /*@C
   PetscQuadratureSetData - Sets the data defining the quadrature
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + q  - The `PetscQuadrature` object
@@ -531,8 +581,9 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  if (quad->Nc > 1) PetscCall(PetscViewerASCIIPrintf(v, "Quadrature of order %" PetscInt_FMT " on %" PetscInt_FMT " points (dim %" PetscInt_FMT ") with %" PetscInt_FMT " components\n", quad->order, quad->numPoints, quad->dim, quad->Nc));
-  else PetscCall(PetscViewerASCIIPrintf(v, "Quadrature of order %" PetscInt_FMT " on %" PetscInt_FMT " points (dim %" PetscInt_FMT ")\n", quad->order, quad->numPoints, quad->dim));
+  if (quad->Nc > 1)
+    PetscCall(PetscViewerASCIIPrintf(v, "Quadrature on a %s of order %" PetscInt_FMT " on %" PetscInt_FMT " points (dim %" PetscInt_FMT ") with %" PetscInt_FMT " components\n", DMPolytopeTypes[quad->ct], quad->order, quad->numPoints, quad->dim, quad->Nc));
+  else PetscCall(PetscViewerASCIIPrintf(v, "Quadrature on a %s of order %" PetscInt_FMT " on %" PetscInt_FMT " points (dim %" PetscInt_FMT ")\n", DMPolytopeTypes[quad->ct], quad->order, quad->numPoints, quad->dim));
   PetscCall(PetscViewerGetFormat(v, &format));
   if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(PETSC_SUCCESS);
   for (q = 0; q < quad->numPoints; ++q) {
@@ -558,7 +609,7 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
 /*@C
   PetscQuadratureView - View a `PetscQuadrature` object
 
-  Collective on quad
+  Collective
 
   Input Parameters:
 + quad  - The `PetscQuadrature` object
@@ -586,7 +637,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 /*@C
   PetscQuadratureExpandComposite - Return a quadrature over the composite element, which has the original quadrature in each subelement
 
-  Not collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + q - The original `PetscQuadrature`
@@ -594,21 +645,19 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 . v0 - An array of the initial points for each subelement
 - jac - An array of the Jacobian mappings from the reference to each subelement
 
-  Output Parameters:
+  Output Parameter:
 . dim - The dimension
+
+  Level: intermediate
 
   Note:
   Together v0 and jac define an affine mapping from the original reference element to each subelement
-
-  Fortran Note:
-  Not available from Fortran
-
-  Level: intermediate
 
 .seealso: `PetscQuadrature`, `PetscFECreate()`, `PetscSpaceGetDimension()`, `PetscDualSpaceGetDimension()`
 @*/
 PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSubelements, const PetscReal v0[], const PetscReal jac[], PetscQuadrature *qref)
 {
+  DMPolytopeType   ct;
   const PetscReal *points, *weights;
   PetscReal       *pointsRef, *weightsRef;
   PetscInt         dim, Nc, order, npoints, npointsRef, c, p, cp, d, e;
@@ -619,6 +668,7 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
   PetscValidRealPointer(jac, 4);
   PetscValidPointer(qref, 5);
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, qref));
+  PetscCall(PetscQuadratureGetCellType(q, &ct));
   PetscCall(PetscQuadratureGetOrder(q, &order));
   PetscCall(PetscQuadratureGetData(q, &dim, &Nc, &npoints, &points, &weights));
   npointsRef = npoints * numSubelements;
@@ -634,6 +684,7 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
       for (cp = 0; cp < Nc; ++cp) weightsRef[(c * npoints + p) * Nc + cp] = weights[p * Nc + cp] / numSubelements;
     }
   }
+  PetscCall(PetscQuadratureSetCellType(*qref, ct));
   PetscCall(PetscQuadratureSetOrder(*qref, order));
   PetscCall(PetscQuadratureSetData(*qref, dim, Nc, npointsRef, pointsRef, weightsRef));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -793,8 +844,8 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 . degree - the maximm degree polynomial space to evaluate, (degree + 1) will be evaluated total.
 - k - the maximum derivative to evaluate in the jet, (k + 1) will be evaluated total.
 
-  Output Parameters:
-- p - an array containing the evaluations of the Jacobi polynomials's jets on the points.  the size is (degree + 1) x
+  Output Parameter:
+. p - an array containing the evaluations of the Jacobi polynomials's jets on the points.  the size is (degree + 1) x
   (k + 1) x npoints, which also describes the order of the dimensions of this three-dimensional array: the first
   (slowest varying) dimension is polynomial degree; the second dimension is derivative order; the third (fastest
   varying) dimension is the index of the evaluation point.
@@ -1013,8 +1064,8 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
 - k - the maximum order partial derivative to evaluate in the jet.  There are (dim + k choose dim) partial derivatives
   in the jet.  Choosing k = 0 means to evaluate just the function and no derivatives
 
-  Output Parameters:
-- p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is ((dim + degree)
+  Output Parameter:
+. p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is ((dim + degree)
   choose dim) x ((dim + k) choose dim) x npoints, which also describes the order of the dimensions of this
   three-dimensional array: the first (slowest varying) dimension is basis function index; the second dimension is jet
   index; the third (fastest varying) dimension is the index of the evaluation point.
@@ -1176,8 +1227,8 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
 . degree - the degree (sum of degrees on the variables in a monomial) of the trimmed polynomial space.
 - formDegree - the degree of the form
 
-  Output Parameters:
-- size - The number ((dim + degree) choose (dim + formDegree)) x ((degree + formDegree - 1) choose (formDegree))
+  Output Parameter:
+- size - The number ((`dim` + `degree`) choose (`dim` + `formDegree`)) x ((`degree` + `formDegree` - 1) choose (`formDegree`))
 
   Level: advanced
 
@@ -1319,8 +1370,8 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
 - jetDegree - the maximum order partial derivative to evaluate in the jet.  There are ((dim + jetDegree) choose dim) partial derivatives
               in the jet.  Choosing jetDegree = 0 means to evaluate just the function and no derivatives
 
-  Output Parameters:
-- p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
+  Output Parameter:
+. p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
       `PetscDTPTrimmedSize()` x ((dim + formDegree) choose dim) x ((dim + k) choose dim) x npoints,
       which also describes the order of the dimensions of this
       four-dimensional array:
@@ -1663,7 +1714,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints, Pe
   PetscDTGaussJacobiQuadrature - quadrature for the interval [a, b] with the weight function
   $(x-a)^\alpha (x-b)^\beta$.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + npoints - the number of points in the quadrature rule
@@ -1673,8 +1724,8 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints, Pe
 - beta - the right exponent
 
   Output Parameters:
-+ x - array of length npoints, the locations of the quadrature points
-- w - array of length npoints, the weights of the quadrature points
++ x - array of length `npoints`, the locations of the quadrature points
+- w - array of length `npoints`, the weights of the quadrature points
 
   Level: intermediate
 
@@ -1720,7 +1771,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
   PetscDTGaussLobattoJacobiQuadrature - quadrature for the interval [a, b] with the weight function
   $(x-a)^\alpha (x-b)^\beta$, with endpoints a and b included as quadrature points.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + npoints - the number of points in the quadrature rule
@@ -1730,8 +1781,8 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
 - beta - the right exponent
 
   Output Parameters:
-+ x - array of length npoints, the locations of the quadrature points
-- w - array of length npoints, the weights of the quadrature points
++ x - array of length `npoints`, the locations of the quadrature points
+- w - array of length `npoints`, the weights of the quadrature points
 
   Level: intermediate
 
@@ -1850,8 +1901,9 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints, PetscGaus
 @*/
 PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
-  PetscInt   totpoints = dim > 1 ? dim > 2 ? npoints * PetscSqr(npoints) : PetscSqr(npoints) : npoints, i, j, k, c;
-  PetscReal *x, *w, *xw, *ww;
+  DMPolytopeType ct;
+  PetscInt       totpoints = dim > 1 ? dim > 2 ? npoints * PetscSqr(npoints) : PetscSqr(npoints) : npoints;
+  PetscReal     *x, *w, *xw, *ww;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(totpoints * dim, &x));
@@ -1859,42 +1911,46 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
   /* Set up the Golub-Welsch system */
   switch (dim) {
   case 0:
+    ct = DM_POLYTOPE_POINT;
     PetscCall(PetscFree(x));
     PetscCall(PetscFree(w));
     PetscCall(PetscMalloc1(1, &x));
     PetscCall(PetscMalloc1(Nc, &w));
     x[0] = 0.0;
-    for (c = 0; c < Nc; ++c) w[c] = 1.0;
+    for (PetscInt c = 0; c < Nc; ++c) w[c] = 1.0;
     break;
   case 1:
+    ct = DM_POLYTOPE_SEGMENT;
     PetscCall(PetscMalloc1(npoints, &ww));
     PetscCall(PetscDTGaussQuadrature(npoints, a, b, x, ww));
-    for (i = 0; i < npoints; ++i)
-      for (c = 0; c < Nc; ++c) w[i * Nc + c] = ww[i];
+    for (PetscInt i = 0; i < npoints; ++i)
+      for (PetscInt c = 0; c < Nc; ++c) w[i * Nc + c] = ww[i];
     PetscCall(PetscFree(ww));
     break;
   case 2:
+    ct = DM_POLYTOPE_QUADRILATERAL;
     PetscCall(PetscMalloc2(npoints, &xw, npoints, &ww));
     PetscCall(PetscDTGaussQuadrature(npoints, a, b, xw, ww));
-    for (i = 0; i < npoints; ++i) {
-      for (j = 0; j < npoints; ++j) {
+    for (PetscInt i = 0; i < npoints; ++i) {
+      for (PetscInt j = 0; j < npoints; ++j) {
         x[(i * npoints + j) * dim + 0] = xw[i];
         x[(i * npoints + j) * dim + 1] = xw[j];
-        for (c = 0; c < Nc; ++c) w[(i * npoints + j) * Nc + c] = ww[i] * ww[j];
+        for (PetscInt c = 0; c < Nc; ++c) w[(i * npoints + j) * Nc + c] = ww[i] * ww[j];
       }
     }
     PetscCall(PetscFree2(xw, ww));
     break;
   case 3:
+    ct = DM_POLYTOPE_HEXAHEDRON;
     PetscCall(PetscMalloc2(npoints, &xw, npoints, &ww));
     PetscCall(PetscDTGaussQuadrature(npoints, a, b, xw, ww));
-    for (i = 0; i < npoints; ++i) {
-      for (j = 0; j < npoints; ++j) {
-        for (k = 0; k < npoints; ++k) {
+    for (PetscInt i = 0; i < npoints; ++i) {
+      for (PetscInt j = 0; j < npoints; ++j) {
+        for (PetscInt k = 0; k < npoints; ++k) {
           x[((i * npoints + j) * npoints + k) * dim + 0] = xw[i];
           x[((i * npoints + j) * npoints + k) * dim + 1] = xw[j];
           x[((i * npoints + j) * npoints + k) * dim + 2] = xw[k];
-          for (c = 0; c < Nc; ++c) w[((i * npoints + j) * npoints + k) * Nc + c] = ww[i] * ww[j] * ww[k];
+          for (PetscInt c = 0; c < Nc; ++c) w[((i * npoints + j) * npoints + k) * Nc + c] = ww[i] * ww[j] * ww[k];
         }
       }
     }
@@ -1904,6 +1960,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %" PetscInt_FMT, dim);
   }
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, q));
+  PetscCall(PetscQuadratureSetCellType(*q, ct));
   PetscCall(PetscQuadratureSetOrder(*q, 2 * npoints - 1));
   PetscCall(PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*q, "GaussTensor"));
@@ -1923,12 +1980,12 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 - b       - right end of interval (often +1)
 
   Output Parameter:
-. q - A PetscQuadrature object
+. q - A `PetscQuadrature` object
 
   Level: intermediate
 
   Note:
-  For dim == 1, this is Gauss-Legendre quadrature
+  For `dim` == 1, this is Gauss-Legendre quadrature
 
   References:
 . * - Karniadakis and Sherwin.  FIAT
@@ -1937,31 +1994,46 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 @*/
 PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
-  PetscInt   totprev, totrem;
-  PetscInt   totpoints;
-  PetscReal *p1, *w1;
-  PetscReal *x, *w;
-  PetscInt   i, j, k, l, m, pt, c;
+  DMPolytopeType ct;
+  PetscInt       totpoints;
+  PetscReal     *p1, *w1;
+  PetscReal     *x, *w;
 
   PetscFunctionBegin;
   PetscCheck(!(a != -1.0) && !(b != 1.0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
+  switch (dim) {
+  case 0:
+    ct = DM_POLYTOPE_POINT;
+    break;
+  case 1:
+    ct = DM_POLYTOPE_SEGMENT;
+    break;
+  case 2:
+    ct = DM_POLYTOPE_TRIANGLE;
+    break;
+  case 3:
+    ct = DM_POLYTOPE_TETRAHEDRON;
+    break;
+  default:
+    ct = DM_POLYTOPE_UNKNOWN;
+  }
   totpoints = 1;
-  for (i = 0, totpoints = 1; i < dim; i++) totpoints *= npoints;
+  for (PetscInt i = 0; i < dim; ++i) totpoints *= npoints;
   PetscCall(PetscMalloc1(totpoints * dim, &x));
   PetscCall(PetscMalloc1(totpoints * Nc, &w));
   PetscCall(PetscMalloc2(npoints, &p1, npoints, &w1));
-  for (i = 0; i < totpoints * Nc; i++) w[i] = 1.;
-  for (i = 0, totprev = 1, totrem = totpoints / npoints; i < dim; i++) {
+  for (PetscInt i = 0; i < totpoints * Nc; ++i) w[i] = 1.;
+  for (PetscInt i = 0, totprev = 1, totrem = totpoints / npoints; i < dim; ++i) {
     PetscReal mul;
 
     mul = PetscPowReal(2., -i);
     PetscCall(PetscDTGaussJacobiQuadrature(npoints, -1., 1., i, 0.0, p1, w1));
-    for (pt = 0, l = 0; l < totprev; l++) {
-      for (j = 0; j < npoints; j++) {
-        for (m = 0; m < totrem; m++, pt++) {
-          for (k = 0; k < i; k++) x[pt * dim + k] = (x[pt * dim + k] + 1.) * (1. - p1[j]) * 0.5 - 1.;
+    for (PetscInt pt = 0, l = 0; l < totprev; l++) {
+      for (PetscInt j = 0; j < npoints; j++) {
+        for (PetscInt m = 0; m < totrem; m++, pt++) {
+          for (PetscInt k = 0; k < i; k++) x[pt * dim + k] = (x[pt * dim + k] + 1.) * (1. - p1[j]) * 0.5 - 1.;
           x[pt * dim + i] = p1[j];
-          for (c = 0; c < Nc; c++) w[pt * Nc + c] *= mul * w1[j];
+          for (PetscInt c = 0; c < Nc; c++) w[pt * Nc + c] *= mul * w1[j];
         }
       }
     }
@@ -1970,6 +2042,7 @@ PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscIn
   }
   PetscCall(PetscFree2(p1, w1));
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, q));
+  PetscCall(PetscQuadratureSetCellType(*q, ct));
   PetscCall(PetscQuadratureSetOrder(*q, 2 * npoints - 1));
   PetscCall(PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*q, "StroudConical"));
@@ -2054,6 +2127,7 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
     PetscInt points_per_dim = (degree + 2) / 2; // ceil((degree + 1) / 2);
     PetscCall(PetscDTStroudConicalQuadrature(dim, 1, points_per_dim, -1, 1, quad));
   } else {
+    DMPolytopeType    ct;
     PetscInt          n    = dim + 1;
     PetscInt          fact = 1;
     PetscInt         *part, *perm;
@@ -2066,6 +2140,22 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
     const char       *citation           = NULL;
     PetscBool        *cited              = NULL;
 
+    switch (dim) {
+    case 0:
+      ct = DM_POLYTOPE_POINT;
+      break;
+    case 1:
+      ct = DM_POLYTOPE_SEGMENT;
+      break;
+    case 2:
+      ct = DM_POLYTOPE_TRIANGLE;
+      break;
+    case 3:
+      ct = DM_POLYTOPE_TETRAHEDRON;
+      break;
+    default:
+      ct = DM_POLYTOPE_UNKNOWN;
+    }
     switch (dim) {
     case 2:
       cited              = &MinSymTriQuadCite;
@@ -2195,6 +2285,7 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
     PetscCall(PetscFree3(part, perm, counts));
     PetscCall(PetscFree(bary_to_biunit));
     PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &q));
+    PetscCall(PetscQuadratureSetCellType(q, ct));
     PetscCall(PetscQuadratureSetOrder(q, degree));
     PetscCall(PetscQuadratureSetData(q, dim, 1, num_full_nodes, points, weights));
     *quad = q;
@@ -2222,6 +2313,7 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
 @*/
 PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
+  DMPolytopeType  ct;
   const PetscInt  p     = 16;                        /* Digits of precision in the evaluation */
   const PetscReal alpha = (b - a) / 2.;              /* Half-width of the integration interval */
   const PetscReal beta  = (b + a) / 2.;              /* Center of the integration interval */
@@ -2234,9 +2326,26 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   PetscFunctionBegin;
   PetscCheck(dim <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not yet implemented", dim);
   PetscCheck(level, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a number of significant digits");
+  switch (dim) {
+  case 0:
+    ct = DM_POLYTOPE_POINT;
+    break;
+  case 1:
+    ct = DM_POLYTOPE_SEGMENT;
+    break;
+  case 2:
+    ct = DM_POLYTOPE_QUADRILATERAL;
+    break;
+  case 3:
+    ct = DM_POLYTOPE_HEXAHEDRON;
+    break;
+  default:
+    ct = DM_POLYTOPE_UNKNOWN;
+  }
   /* Find K such that the weights are < 32 digits of precision */
   for (K = 1; PetscAbsReal(PetscLog10Real(wk)) < 2 * p; ++K) wk = 0.5 * h * PETSC_PI * PetscCoshReal(K * h) / PetscSqr(PetscCoshReal(0.5 * PETSC_PI * PetscSinhReal(K * h)));
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, q));
+  PetscCall(PetscQuadratureSetCellType(*q, ct));
   PetscCall(PetscQuadratureSetOrder(*q, 2 * K + 1));
   npoints = 2 * K - 1;
   PetscCall(PetscMalloc1(npoints * dim, &x));
@@ -2462,6 +2571,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void
 @*/
 PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature q1, PetscQuadrature q2, PetscQuadrature *q)
 {
+  DMPolytopeType   ct1, ct2, ct;
   const PetscReal *x1, *w1, *x2, *w2;
   PetscReal       *x, *w;
   PetscInt         dim1, Nc1, Np1, order1, qa, d1;
@@ -2476,14 +2586,144 @@ PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature q1, PetscQuadrature
   PetscCall(PetscQuadratureGetOrder(q2, &order2));
   PetscCheck(order1 == order2, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Order1 %" PetscInt_FMT " != %" PetscInt_FMT " Order2", order1, order2);
   PetscCall(PetscQuadratureGetData(q1, &dim1, &Nc1, &Np1, &x1, &w1));
+  PetscCall(PetscQuadratureGetCellType(q1, &ct1));
   PetscCall(PetscQuadratureGetData(q2, &dim2, &Nc2, &Np2, &x2, &w2));
+  PetscCall(PetscQuadratureGetCellType(q2, &ct2));
   PetscCheck(Nc1 == Nc2, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "NumComp1 %" PetscInt_FMT " != %" PetscInt_FMT " NumComp2", Nc1, Nc2);
 
+  switch (ct1) {
+  case DM_POLYTOPE_POINT:
+    ct = ct2;
+    break;
+  case DM_POLYTOPE_SEGMENT:
+    switch (ct2) {
+    case DM_POLYTOPE_POINT:
+      ct = ct1;
+      break;
+    case DM_POLYTOPE_SEGMENT:
+      ct = DM_POLYTOPE_QUADRILATERAL;
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      ct = DM_POLYTOPE_TRI_PRISM;
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      ct = DM_POLYTOPE_HEXAHEDRON;
+      break;
+    case DM_POLYTOPE_TETRAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_HEXAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    default:
+      ct = DM_POLYTOPE_UNKNOWN;
+    }
+    break;
+  case DM_POLYTOPE_TRIANGLE:
+    switch (ct2) {
+    case DM_POLYTOPE_POINT:
+      ct = ct1;
+      break;
+    case DM_POLYTOPE_SEGMENT:
+      ct = DM_POLYTOPE_TRI_PRISM;
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_TETRAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_HEXAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    default:
+      ct = DM_POLYTOPE_UNKNOWN;
+    }
+    break;
+  case DM_POLYTOPE_QUADRILATERAL:
+    switch (ct2) {
+    case DM_POLYTOPE_POINT:
+      ct = ct1;
+      break;
+    case DM_POLYTOPE_SEGMENT:
+      ct = DM_POLYTOPE_HEXAHEDRON;
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_TETRAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_HEXAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    default:
+      ct = DM_POLYTOPE_UNKNOWN;
+    }
+    break;
+  case DM_POLYTOPE_TETRAHEDRON:
+    switch (ct2) {
+    case DM_POLYTOPE_POINT:
+      ct = ct1;
+      break;
+    case DM_POLYTOPE_SEGMENT:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_TETRAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_HEXAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    default:
+      ct = DM_POLYTOPE_UNKNOWN;
+    }
+    break;
+  case DM_POLYTOPE_HEXAHEDRON:
+    switch (ct2) {
+    case DM_POLYTOPE_POINT:
+      ct = ct1;
+      break;
+    case DM_POLYTOPE_SEGMENT:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_TETRAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    case DM_POLYTOPE_HEXAHEDRON:
+      ct = DM_POLYTOPE_UNKNOWN;
+      break;
+    default:
+      ct = DM_POLYTOPE_UNKNOWN;
+    }
+    break;
+  default:
+    ct = DM_POLYTOPE_UNKNOWN;
+  }
   dim   = dim1 + dim2;
   Nc    = Nc1;
   Np    = Np1 * Np2;
   order = order1;
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, q));
+  PetscCall(PetscQuadratureSetCellType(*q, ct));
   PetscCall(PetscQuadratureSetOrder(*q, order));
   PetscCall(PetscMalloc1(Np * dim, &x));
   PetscCall(PetscMalloc1(Np, &w));
@@ -2520,7 +2760,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m, PetscInt mstride, Petsc
     mstride = m;
   }
 #else
-  A = A_in;
+  A    = A_in;
   Ainv = Ainv_out;
 #endif
 
@@ -2799,7 +3039,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
 
    Output Parameters:
 .  AA - the stiffness element
--  AAT - the transpose of AA (pass in NULL if you do not need this array)
+-  AAT - the transpose of AA (pass in `NULL` if you do not need this array)
 
    Level: beginner
 
@@ -3076,5 +3316,120 @@ PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coo
     sum -= coord[--c];
   }
   *index = i;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscQuadratureComputePermutations - Compute permutations of quadrature points corresponding to domain orientations
+
+  Input Parameter:
+. quad - The `PetscQuadrature`
+
+  Output Parameters:
++ Np   - The number of domain orientations
+- perm - An array of `IS` permutations, one for ech orientation,
+
+  Level: developer
+
+.seealso: `PetscQuadratureSetCellType()`, `PetscQuadrature`
+@*/
+PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PetscInt *Np, IS *perm[])
+{
+  DMPolytopeType   ct;
+  const PetscReal *xq, *wq;
+  PetscInt         dim, qdim, d, Na, o, Nq, q, qp;
+
+  PetscFunctionBegin;
+  PetscCall(PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &xq, &wq));
+  PetscCall(PetscQuadratureGetCellType(quad, &ct));
+  dim = DMPolytopeTypeGetDim(ct);
+  Na  = DMPolytopeTypeGetNumArrangments(ct);
+  PetscCall(PetscMalloc1(Na, perm));
+  if (Np) *Np = Na;
+  Na /= 2;
+  for (o = -Na; o < Na; ++o) {
+    DM        refdm;
+    PetscInt *idx;
+    PetscReal xi0[3] = {-1., -1., -1.}, v0[3], J[9], detJ, txq[3];
+    PetscBool flg;
+
+    PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, ct, &refdm));
+    PetscCall(DMPlexOrientPoint(refdm, 0, o));
+    PetscCall(DMPlexComputeCellGeometryFEM(refdm, 0, NULL, v0, J, NULL, &detJ));
+    PetscCall(PetscMalloc1(Nq, &idx));
+    for (q = 0; q < Nq; ++q) {
+      CoordinatesRefToReal(dim, dim, xi0, v0, J, &xq[q * dim], txq);
+      for (qp = 0; qp < Nq; ++qp) {
+        PetscReal diff = 0.;
+
+        for (d = 0; d < dim; ++d) diff += PetscAbsReal(txq[d] - xq[qp * dim + d]);
+        if (diff < PETSC_SMALL) break;
+      }
+      PetscCheck(qp < Nq, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Transformed quad point %" PetscInt_FMT " does not match another quad point", q);
+      idx[q] = qp;
+    }
+    PetscCall(DMDestroy(&refdm));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Nq, idx, PETSC_OWN_POINTER, &(*perm)[o + Na]));
+    PetscCall(ISGetInfo((*perm)[o + Na], IS_PERMUTATION, IS_LOCAL, PETSC_TRUE, &flg));
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ordering for orientation %" PetscInt_FMT " was not a permutation", o);
+    PetscCall(ISSetPermutation((*perm)[o + Na]));
+  }
+  if (!Na) (*perm)[0] = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDTCreateDefaultQuadrature - Create default quadrature for a given cell
+
+  Not collective
+
+  Input Parameters:
++ ct     - The integration domain
+- qorder - The desired quadrature order
+
+  Output Parameters:
++ q  - The cell quadrature
+- fq - The face quadrature
+
+  Level: developer
+
+.seealso: `PetscFECreateDefault()`, `PetscDTGaussTensorQuadrature()`, `PetscDTSimplexQuadrature()`, `PetscDTTensorQuadratureCreate()`
+@*/
+PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType ct, PetscInt qorder, PetscQuadrature *q, PetscQuadrature *fq)
+{
+  const PetscInt quadPointsPerEdge = PetscMax(qorder + 1, 1);
+  const PetscInt dim               = DMPolytopeTypeGetDim(ct);
+
+  PetscFunctionBegin;
+  switch (ct) {
+  case DM_POLYTOPE_SEGMENT:
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+  case DM_POLYTOPE_QUADRILATERAL:
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+  case DM_POLYTOPE_HEXAHEDRON:
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    PetscCall(PetscDTGaussTensorQuadrature(dim, 1, quadPointsPerEdge, -1.0, 1.0, q));
+    PetscCall(PetscDTGaussTensorQuadrature(dim - 1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
+    break;
+  case DM_POLYTOPE_TRIANGLE:
+  case DM_POLYTOPE_TETRAHEDRON:
+    PetscCall(PetscDTSimplexQuadrature(dim, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, q));
+    PetscCall(PetscDTSimplexQuadrature(dim - 1, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, fq));
+    break;
+  case DM_POLYTOPE_TRI_PRISM:
+  case DM_POLYTOPE_TRI_PRISM_TENSOR: {
+    PetscQuadrature q1, q2;
+
+    // TODO: this should be able to use symmetric rules, but doing so causes tests to fail
+    PetscCall(PetscDTSimplexQuadrature(2, 2 * qorder, PETSCDTSIMPLEXQUAD_CONIC, &q1));
+    PetscCall(PetscDTGaussTensorQuadrature(1, 1, quadPointsPerEdge, -1.0, 1.0, &q2));
+    PetscCall(PetscDTTensorQuadratureCreate(q1, q2, q));
+    PetscCall(PetscQuadratureDestroy(&q2));
+    *fq = q1;
+    /* TODO Need separate quadratures for each face */
+  } break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No quadrature for celltype %s", DMPolytopeTypes[PetscMin(ct, DM_POLYTOPE_UNKNOWN)]);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

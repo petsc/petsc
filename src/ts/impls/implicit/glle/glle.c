@@ -761,7 +761,7 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts, TSGLLEType type)
   PetscCall(PetscFunctionListFind(TSGLLEList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSGLLE type \"%s\" given", type);
   PetscCall((*r)(ts));
-  PetscCall(PetscStrcpy(gl->type_name, type));
+  PetscCall(PetscStrncpy(gl->type_name, type, sizeof(gl->type_name)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1201,8 +1201,8 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
    Not Collective
 
    Input Parameters:
-+  name_scheme - name of user-defined general linear scheme
--  routine_create - routine to create method context
++  sname - name of user-defined general linear scheme
+-  function - routine to create method context
 
    Level: advanced
 
@@ -1235,8 +1235,8 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
    Not Collective
 
    Input Parameters:
-+  name_scheme - name of user-defined acceptance scheme
--  routine_create - routine to create method context
++  sname - name of user-defined acceptance scheme
+-  function - routine to create method context
 
    Level: advanced
 

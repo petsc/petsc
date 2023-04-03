@@ -30,7 +30,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
     Level: developer
 
     Note:
-    Though this is collective each MPI rank maintains a separate string
+    Though this is collective each MPI process maintains a separate string
 
 .seealso: [](sec_viewers), `PETSCVIEWERSTRING`, `PetscViewerStringOpen()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
@@ -222,7 +222,7 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
 
    Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 .   viewer - string viewer
 
   Level: advanced

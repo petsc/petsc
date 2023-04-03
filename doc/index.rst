@@ -2,11 +2,13 @@
 PETSc |version|
 ===============
 PETSc, the Portable, Extensible Toolkit for Scientific Computation,
-pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is a suite of
-data structures and routines for the scalable (parallel) solution of scientific
-applications modeled by partial differential equations. It supports MPI, and GPUs through
-CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine. PETSc (sometimes called PETSc/Tao)
-also contains the Tao, the Toolkit for Advanced Optimization, software library.
+pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is
+for the scalable (parallel) solution of scientific
+applications modeled by partial differential equations. It has bindings for C, Fortran, and Python (via :any:`petsc4py<petsc4py_api>`).
+PETSc also contains TAO, the Toolkit for Advanced Optimization, software library.
+It supports MPI, and GPUs through
+CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine.
+Immediately jump in and run PETSc code :any:`handson`.
 
 PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
 
@@ -35,15 +37,16 @@ Main Topics
 
    overview/index
    install/index
-   docs/manual/index
-   docs/manualpages/index
    tutorials/index
+   manual/index
+   manualpages/index
+   petsc4py/petsc4py
    faq/index
    community/index
    developers/index
    miscellaneous/index
 
-* `PETSc/TAO Users Manual in PDF <docs/manual/manual.pdf>`__
+* `PETSc/TAO Users Manual in PDF <manual/manual.pdf>`__
 
 .. _doc_toolkits_use_petsc:
 
@@ -137,6 +140,14 @@ For general citations on PETSc please use the following:
 .. literalinclude:: /petsc.bib
    :language: none
    :start-at: @inproceedings{petsc-efficient
+   :end-at: year
+   :append: }
+
+For petsc4py usage please cite
+
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @article{DalcinPazKlerCosimo2011
    :end-at: year
    :append: }
 

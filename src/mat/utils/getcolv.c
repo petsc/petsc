@@ -14,14 +14,14 @@
    Level: advanced
 
    Notes:
-   If a Mat type does not implement the operation, each processor for which this is called
+   If a `MatType` does not implement the operation, each processor for which this is called
    gets the values for its rows using `MatGetRow()`.
 
    The vector must have the same parallel row layout as the matrix.
 
    Contributed by: Denis Vanderstraeten
 
-.seealso: `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
 @*/
 PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
 {
@@ -82,7 +82,7 @@ PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
     Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `NormType`, `MatNorm()`
+.seealso: [](chapter_matrices), `Mat`, `NormType`, `MatNorm()`
 @*/
 PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
 {
@@ -112,7 +112,7 @@ PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `MatGetColumnSumsImaginaryPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetColumnSumsImaginaryPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[])
 {
@@ -136,7 +136,7 @@ PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[])
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `MatGetColumnSumsRealPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetColumnSumsRealPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[])
 {
@@ -160,7 +160,7 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[])
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](chapter_matrices), `Mat`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
 {
@@ -201,7 +201,7 @@ PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `MatGetColumnMeansImaginaryPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetColumnMeansImaginaryPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[])
 {
@@ -225,7 +225,7 @@ PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[])
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `MatGetColumnMeansRealPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetColumnMeansRealPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[])
 {
@@ -249,7 +249,7 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[])
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
+.seealso: [](chapter_matrices), `Mat`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
 PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
 {
@@ -296,7 +296,7 @@ PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
     This routine is primarily intended as a back-end.
     `MatGetColumnNorms()`, `MatGetColumnSums()`, and `MatGetColumnMeans()` are implemented using this routine.
 
-.seealso: `ReductionType`, `NormType`, `MatGetColumnNorms()`, `MatGetColumnSums()`, `MatGetColumnMeans()`
+.seealso: [](chapter_matrices), `Mat`, `ReductionType`, `NormType`, `MatGetColumnNorms()`, `MatGetColumnSums()`, `MatGetColumnMeans()`
 @*/
 PetscErrorCode MatGetColumnReductions(Mat A, PetscInt type, PetscReal reductions[])
 {

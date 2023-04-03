@@ -10,11 +10,11 @@
 static PetscMPIInt Petsc_Viewer_SAWs_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
-     PETSC_VIEWER_SAWS_ - Creates an SAWs `PetscViewer` shared by all processors in a communicator.
+     PETSC_VIEWER_SAWS_ - Creates a SAWs `PetscViewer` shared by all processors in a communicator.
 
      Collective
 
-     Input Parameters:
+     Input Parameter:
 .    comm - the MPI communicator to share the `PetscViewer`
 
      Level: developer

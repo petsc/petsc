@@ -30,6 +30,7 @@ configure_options = [
   '--download-libceed',
   '--download-chaco=1',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':

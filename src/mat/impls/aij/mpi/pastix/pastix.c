@@ -229,7 +229,6 @@ PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
   }
 
   /* solve phase */
-  /*-------------*/
   lu->iparm[IPARM_START_TASK] = API_TASK_SOLVE;
   lu->iparm[IPARM_END_TASK]   = API_TASK_REFINE;
   lu->iparm[IPARM_RHS_MAKING] = API_RHS_B;
@@ -334,7 +333,6 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
     lu->iparm[IPARM_FACTORIZATION] = API_FACT_LU;
   }
 
-  /*----------------*/
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN) {
     if (!(isSeqAIJ || isSeqSBAIJ) && !lu->b_seq) {
       /* PaStiX only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
@@ -415,21 +413,21 @@ PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
      MATSOLVERPASTIX  - A solver package providing direct solvers (LU) for distributed
   and sequential matrices via the external package PaStiX.
 
-  Use ./configure --download-pastix --download-ptscotch  to have PETSc installed with PasTiX
+  Use `./configure` `--download-pastix` `--download-ptscotch`  to have PETSc installed with PasTiX
 
-  Use -pc_type lu -pc_factor_mat_solver_type pastix to use this direct solver
+  Use `-pc_type lu` `-pc_factor_mat_solver_type pastix` to use this direct solver
 
   Options Database Keys:
-+ -mat_pastix_verbose   <0,1,2>   - print level
-- -mat_pastix_threadnbr <integer> - Set the thread number by MPI task.
++ -mat_pastix_verbose   <0,1,2>   - print level of information messages from PaStiX
+- -mat_pastix_threadnbr <integer> - Set the number of threads for each MPI process
 
   Notes:
     This only works for matrices with symmetric nonzero structure, if you pass it a matrix with
-   nonsymmetric structure PasTiX and hence PETSc return with an error.
+   nonsymmetric structure PasTiX, and hence, PETSc return with an error.
 
   Level: beginner
 
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/
 
 PetscErrorCode MatGetInfo_PaStiX(Mat A, MatInfoType flag, MatInfo *info)

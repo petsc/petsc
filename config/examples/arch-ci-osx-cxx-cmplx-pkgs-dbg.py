@@ -8,9 +8,9 @@ configure_options = [
   '--with-cc=clang',
   '--with-cxx=clang++',
   '--with-fc=gfortran', # https://brew.sh/
-  'COPTFLAGS=-g -O',
-  'FOPTFLAGS=-g -O',
-  'CXXOPTFLAGS=-g -O',
+  'COPTFLAGS=-g -Og',
+  'FOPTFLAGS=-g -Og',
+  'CXXOPTFLAGS=-g -Og',
 
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-clanguage=cxx',
@@ -33,6 +33,11 @@ configure_options = [
   '--download-netcdf=1',
   '--download-pnetcdf',
   '--download-hdf5',
+  '--download-ssl=1',
+  '--download-mpfr=1',
+  '--download-gmp=1',
+  '--download-eigen=1',
+  '--download-grid=1',
   '--download-zlib=1',
   '--with-petsc4py=1',
   '--download-mpi4py=1',
@@ -43,6 +48,7 @@ configure_options = [
   #'--download-suitesparse=1',
   #'--download-chaco=1',
   #'--download-spai=1',
+  #'--with-coverage',
   '--with-strict-petscerrorcode',
   ]
 

@@ -13,7 +13,7 @@ struct _n_PetscViewers {
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  v - the `PetscViewer`s to be destroyed.
 
    Level: intermediate
@@ -66,7 +66,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 
    Input Parameters:
 +   viewers - object created with `PetscViewersCreate()`
--   n - number of `PetscViewer `you want
+-   n - number of `PetscViewer` you want
 
    Output Parameter:
 .  viewer - the `PetscViewer`
@@ -99,7 +99,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 /*
   PetscMonitorCompare - Checks if two monitors are identical; if they are then it destroys the new one
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + nmon      - The new monitor

@@ -48,11 +48,12 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, size_t cou
 -  expected - expected/typical number of entries
 
    Output Parameter:
-.  seg - segmented buffer object
+.  seg - `PetscSegBuffer` object
 
    Level: developer
 
-.seealso: `PetscSegBufferGet()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`
+.seealso: `PetscSegBufferGet()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`,
+          `PetscSegBuffer`
 @*/
 PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegBuffer *seg)
 {
@@ -75,7 +76,7 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegB
    Not Collective
 
    Input Parameters:
-+  seg - address of segmented buffer
++  seg - `PetscSegBuffer` buffer
 -  count - number of entries needed
 
    Output Parameter:
@@ -83,7 +84,8 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegB
 
    Level: developer
 
-.seealso: `PetscSegBufferCreate()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`
+.seealso: `PetscSegBufferCreate()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`,
+          `PetscSegBuffer`
 @*/
 PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, size_t count, void *buf)
 {
@@ -108,7 +110,7 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, size_t count, void *buf)
 
    Level: developer
 
-.seealso: `PetscSegBufferCreate()`
+.seealso: `PetscSegBuffer`, `PetscSegBufferCreate()`
 @*/
 PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 {
@@ -136,7 +138,8 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 
    Level: developer
 
-.seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferDestroy()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractInPlace()`
+.seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferDestroy()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractInPlace()`,
+          `PetscSegBuffer`
 @*/
 PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig)
 {
@@ -169,7 +172,7 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig)
    Not Collective
 
    Input Parameter:
-.  seg - segmented buffer
+.  seg - `PetscSegBuffer` buffer
 
    Output Parameter:
 .  contiguous - address of new array containing contiguous data, caller frees with `PetscFree()`
@@ -179,7 +182,8 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig)
    Developer Note:
    'seg' argument is a pointer so that implementation could reallocate, though this is not currently done
 
-.seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferDestroy()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`
+.seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferDestroy()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`,
+          `PetscSegBuffer`
 @*/
 PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg, void *contiguous)
 {
@@ -201,14 +205,14 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg, void *contiguous)
    Not Collective
 
    Input Parameter:
-.  seg - segmented buffer object
+.  seg - `PetscSegBuffer` object
 
    Output Parameter:
-.  contig - address of pointer to contiguous memory, may be NULL
+.  contig - address of pointer to contiguous memory, may be `NULL`
 
    Level: developer
 
-.seealso: `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`
+.seealso: `PetscSegBuffer`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`
 @*/
 PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig)
 {
@@ -232,19 +236,19 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig)
 }
 
 /*@C
-   PetscSegBufferGetSize - get currently used size of segmented buffer
+   PetscSegBufferGetSize - get currently used size of a `PetscSegBuffer`
 
    Not Collective
 
    Input Parameter:
-.  seg - segmented buffer object
+.  seg - `PetscSegBuffer` object
 
    Output Parameter:
 .  usedsize - number of used units
 
    Level: developer
 
-.seealso: `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferCreate()`, `PetscSegBufferGet()`
+.seealso: `PetscSegBuffer`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferCreate()`, `PetscSegBufferGet()`
 @*/
 PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize)
 {
@@ -259,12 +263,12 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize)
    Not Collective
 
    Input Parameters:
-+  seg - segmented buffer object
++  seg - `PetscSegBuffer` object
 -  unused - number of unused units
 
    Level: developer
 
-.seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`
+.seealso: `PetscSegBuffer`, `PetscSegBufferCreate()`, `PetscSegBufferGet()`
 @*/
 PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg, size_t unused)
 {

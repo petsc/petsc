@@ -338,14 +338,14 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
 .  d1 - A vector defining a diagonal matrix
 -  d2 - A vector defining a diagonal matrix
 
-   Output Parameters:
+   Output Parameter:
 .  J - New matrix whose operations are defined in terms of mat, D1, and D2.
 
    Level: developer
 
    Note:
    The user provides the input data and is responsible for destroying
-   this data after matrix J has been destroyed.
+   this data after matrix `J` has been destroyed.
 
 .seealso: `Mat`, `MatCreate()`
 @*/

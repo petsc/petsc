@@ -602,7 +602,7 @@ PetscErrorCode SNESCompositeAddSNES(SNES snes, SNESType type)
 +  snes - the snes context
 -  n - the number of the composed snes requested
 
-   Output Parameters:
+   Output Parameter:
 .  subsnes - the `SNES` requested
 
    Level: Developer
@@ -624,10 +624,10 @@ PetscErrorCode SNESCompositeGetSNES(SNES snes, PetscInt n, SNES *subsnes)
    Logically Collective
 
    Input Parameter:
-   snes - the snes context
+.   snes - the snes context
 
    Output Parameter:
-   n - the number of subsolvers
+.   n - the number of subsolvers
 
    Level: Developer
 
@@ -674,7 +674,7 @@ static PetscErrorCode SNESCompositeSetDamping_Composite(SNES snes, PetscInt n, P
 
    Input Parameters:
 +  snes - the snes context
-.  n - the number of the snes requested
+.  n - the number of the sub-`SNES` object requested
 -  dmp - the damping
 
    Level: intermediate
@@ -810,7 +810,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 
    Options Database Keys:
 +  -snes_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
--  -snes_composite_sneses - <snes0,snes1,...> list of SNESes to compose
+-  -snes_composite_sneses - <snes0,snes1,...> list of `SNES` to compose
 
    Level: intermediate
 

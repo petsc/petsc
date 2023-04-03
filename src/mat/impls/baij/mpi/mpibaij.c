@@ -1139,9 +1139,11 @@ PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
   Mat_SeqBAIJ    *A      = (Mat_SeqBAIJ *)aij->A->data;
   Mat_SeqBAIJ    *B      = (Mat_SeqBAIJ *)aij->B->data;
   const PetscInt *garray = aij->garray;
-  PetscInt        header[4], M, N, m, rs, cs, bs, nz, cnt, i, j, ja, jb, k, l;
+  PetscInt        header[4], M, N, m, rs, cs, bs, cnt, i, j, ja, jb, k, l;
+  PetscInt64      nz, hnz;
   PetscInt       *rowlens, *colidxs;
   PetscScalar    *matvals;
+  PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerSetUp(viewer));
@@ -1158,8 +1160,9 @@ PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
   header[0] = MAT_FILE_CLASSID;
   header[1] = M;
   header[2] = N;
-  header[3] = nz;
-  PetscCallMPI(MPI_Reduce(&nz, &header[3], 1, MPIU_INT, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPI_Reduce(&nz, &hnz, 1, MPIU_INT64, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat), &rank));
+  if (rank == 0) PetscCall(PetscIntCast(hnz, &header[3]));
   PetscCall(PetscViewerBinaryWrite(viewer, header, 4, PETSC_INT));
 
   /* fill in and store row lengths */
@@ -1183,7 +1186,7 @@ PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
         for (l = 0; l < bs; l++) colidxs[cnt++] = bs * garray[B->j[jb]] + l;
     }
   }
-  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_LIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt_FMT, cnt, nz);
+  PetscCheck(cnt == nz, PETSC_COMM_SELF, PETSC_ERR_LIB, "Internal PETSc error: cnt = %" PetscInt_FMT " nz = %" PetscInt64_FMT, cnt, nz);
   PetscCall(PetscViewerBinaryWriteAll(viewer, colidxs, nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_INT));
   PetscCall(PetscFree(colidxs));
 
@@ -1938,7 +1941,10 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
   /* The compression and expansion should be avoided. Doesn't point
      out errors, might change the indices, hence buggey */
   PetscCall(ISCompressIndicesGeneral(mat->rmap->N, mat->rmap->n, mat->rmap->bs, 1, &isrow, &isrow_new));
-  PetscCall(ISCompressIndicesGeneral(mat->cmap->N, mat->cmap->n, mat->cmap->bs, 1, &iscol, &iscol_new));
+  if (isrow == iscol) {
+    iscol_new = isrow_new;
+    PetscCall(PetscObjectReference((PetscObject)iscol_new));
+  } else PetscCall(ISCompressIndicesGeneral(mat->cmap->N, mat->cmap->n, mat->cmap->bs, 1, &iscol, &iscol_new));
 
   if (call == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*newmat, "SubMatrix", (PetscObject *)&Mreuse));
@@ -2110,9 +2116,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
 
-  /* ----------------------------------------------------------------
-     Tell every processor the number of nonzeros per row
-  */
+  /*   Tell every processor the number of nonzeros per row  */
   PetscCall(PetscMalloc1(A->rmap->N / bs, &lens));
   for (i = A->rmap->rstart / bs; i < A->rmap->rend / bs; i++) lens[i] = ad->i[i - A->rmap->rstart / bs + 1] - ad->i[i - A->rmap->rstart / bs] + bd->i[i - A->rmap->rstart / bs + 1] - bd->i[i - A->rmap->rstart / bs];
   PetscCall(PetscMalloc1(2 * size, &recvcounts));
@@ -2122,18 +2126,14 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
     displs[i]     = A->rmap->range[i] / bs;
   }
   PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, lens, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-  /* ---------------------------------------------------------------
-     Create the sequential matrix of the same type as the local block diagonal
-  */
+  /* Create the sequential matrix of the same type as the local block diagonal  */
   PetscCall(MatCreate(PETSC_COMM_SELF, &B));
   PetscCall(MatSetSizes(B, A->rmap->N / bs, A->cmap->N / bs, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetType(B, MATSEQAIJ));
   PetscCall(MatSeqAIJSetPreallocation(B, 0, lens));
   b = (Mat_SeqAIJ *)B->data;
 
-  /*--------------------------------------------------------------------
-    Copy my part of matrix column indices over
-  */
+  /*     Copy my part of matrix column indices over  */
   sendcount  = ad->nz + bd->nz;
   jsendbuf   = b->j + b->i[rstarts[rank] / bs];
   a_jsendbuf = ad->j;
@@ -2158,9 +2158,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
   }
   PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
-  /*--------------------------------------------------------------------
-    Gather all column indices to all processors
-  */
+  /*  Gather all column indices to all processors  */
   for (i = 0; i < size; i++) {
     recvcounts[i] = 0;
     for (j = A->rmap->range[i] / bs; j < A->rmap->range[i + 1] / bs; j++) recvcounts[i] += lens[j];
@@ -2168,9 +2166,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A, Mat *newmat)
   displs[0] = 0;
   for (i = 1; i < size; i++) displs[i] = displs[i - 1] + recvcounts[i - 1];
   PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, b->j, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-  /*--------------------------------------------------------------------
-    Assemble the matrix into useable form (note numerical values not yet set)
-  */
+  /*  Assemble the matrix into useable form (note numerical values not yet set)  */
   /* set the b->ilen (length of each row) values */
   PetscCall(PetscArraycpy(b->ilen, lens, A->rmap->N / bs));
   /* set the b->i indices */
@@ -2421,7 +2417,6 @@ PetscErrorCode MatGetDiagonalBlock_MPIBAIJ(Mat A, Mat *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatGetRow_MPIBAIJ,
                                        MatRestoreRow_MPIBAIJ,
@@ -2655,7 +2650,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs, const P
    Input Parameters:
 +  B - the matrix
 .  bs - the block size
-.  i - the indices into j for the start of each local row (starts with zero)
+.  i - the indices into `j` for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
 
@@ -3025,9 +3020,7 @@ M*/
    Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
    and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
-   or you will get TERRIBLE performance; see the users' manual chapter on
-   matrices.
+   one expects `d_nz` >> `o_nz`.
 
    You can call `MatGetInfo()` to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
@@ -3137,9 +3130,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
    Now `d_nz` should indicate the number of block nonzeros per row in the d matrix,
    and `o_nz` should indicate the number of block nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects `d_nz` >> `o_nz`.   For large problems you MUST preallocate memory
-   or you will get TERRIBLE performance; see the users' manual chapter on
-   matrices.
+   one expects `d_nz` >> `o_nz`.
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
@@ -3418,10 +3409,10 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 . v - numerical values input
 - addvin - `INSERT_VALUES` or `ADD_VALUES`
 
+  Level: advanced
+
   Developer Note:
     This has a complete copy of `MatSetValuesBlocked_MPIBAIJ()` which is terrible code un-reuse.
-
-  Level: advanced
 
 .seealso: `Mat`, `MatSetValuesBlocked()`
 @*/

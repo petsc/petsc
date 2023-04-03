@@ -96,15 +96,12 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
 .  monitor - monitoring routine
-.  mctx - [optional] user-defined context for private data for the
-             monitor routine (use NULL if no context is desired)
--  monitordestroy - [optional] routine that frees monitor context
-          (may be NULL)
+.  mctx - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
+-  monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
 
-   Calling sequence of monitor:
-$    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
-
-+    ts - the TS context
+   Calling sequence of `monitor`:
+$    PetscErrorCode monitor(TS ts, PetscInt steps, PetscReal time, Vec u, void *mctx)
++    ts - the `TS` context
 .    steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
 .    time - current time
 .    u - current iterate
@@ -113,11 +110,10 @@ $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx
    Level: intermediate
 
    Note:
-   This routine adds an additional monitor to the list of monitors that
-   already has been loaded.
+   This routine adds an additional monitor to the list of monitors that already has been loaded.
 
    Fortran Note:
-    Only a single monitor function can be set for each `TS` object
+   Only a single monitor function can be set for each `TS` object
 
 .seealso: [](chapter_ts), `TSMonitorDefault()`, `TSMonitorCancel()`, `TSDMSwarmMonitorMoments()`, `TSMonitorExtreme()`, `TSMonitorDrawSolution()`,
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
@@ -146,7 +142,7 @@ PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS, PetscInt, Petsc
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
 
    Level: intermediate
@@ -170,7 +166,7 @@ PetscErrorCode TSMonitorCancel(TS ts)
 }
 
 /*@C
-   TSMonitorDefault - The Default monitor, prints the timestep and time for each step
+   TSMonitorDefault - The default monitor, prints the timestep and time for each step
 
    Options Database Key:
 .  -ts_monitor - monitors the time integration
@@ -226,9 +222,9 @@ PetscErrorCode TSMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
 
    Level: intermediate
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the TS integration.
+   to be used during the `TS` integration.
 
 .seealso: [](chapter_ts), `TS`, `TSMonitorSet()`
 @*/
@@ -260,7 +256,7 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
    Collective
 
    Input Parameters:
-+  host - the X display to open, or null for the local machine
++  host - the X display to open, or `NULL` for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of the window
 .  m, n - the screen width and height in pixels
@@ -337,8 +333,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v,
 }
 
 /*@C
-   TSMonitorLGCtxDestroy - Destroys a line graph context that was created
-   with `TSMonitorLGCtxCreate()`.
+   TSMonitorLGCtxDestroy - Destroys a line graph context that was created with `TSMonitorLGCtxCreate()`.
 
    Collective
 
@@ -365,8 +360,8 @@ PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Creates a TS Monitor SPCtx for use with DMSwarm particle visualizations */
-PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, PetscInt retain, PetscBool phase, TSMonitorSPCtx *ctx)
+/* Creates a TSMonitorSPCtx for use with DMSwarm particle visualizations */
+PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, PetscInt retain, PetscBool phase, PetscBool multispecies, TSMonitorSPCtx *ctx)
 {
   PetscDraw draw;
 
@@ -376,22 +371,54 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char
   PetscCall(PetscDrawSetFromOptions(draw));
   PetscCall(PetscDrawSPCreate(draw, 1, &(*ctx)->sp));
   PetscCall(PetscDrawDestroy(&draw));
-  (*ctx)->howoften = howoften;
-  (*ctx)->retain   = retain;
-  (*ctx)->phase    = phase;
+  (*ctx)->howoften     = howoften;
+  (*ctx)->retain       = retain;
+  (*ctx)->phase        = phase;
+  (*ctx)->multispecies = multispecies;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate
-*/
+/* Destroys a TSMonitorSPCtx that was created with TSMonitorSPCtxCreate */
 PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 {
   PetscFunctionBegin;
 
   PetscCall(PetscDrawSPDestroy(&(*ctx)->sp));
   PetscCall(PetscFree(*ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
+/* Creates a TSMonitorHGCtx for use with DMSwarm particle visualizations */
+PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, PetscInt Ns, PetscInt Nb, PetscBool velocity, TSMonitorHGCtx *ctx)
+{
+  PetscDraw draw;
+  PetscInt  s;
+
+  PetscFunctionBegin;
+  PetscCall(PetscNew(ctx));
+  PetscCall(PetscMalloc1(Ns, &(*ctx)->hg));
+  for (s = 0; s < Ns; ++s) {
+    PetscCall(PetscDrawCreate(comm, host, label, x + s * m, y, m, n, &draw));
+    PetscCall(PetscDrawSetFromOptions(draw));
+    PetscCall(PetscDrawHGCreate(draw, Nb, &(*ctx)->hg[s]));
+    PetscCall(PetscDrawHGCalcStats((*ctx)->hg[s], PETSC_TRUE));
+    PetscCall(PetscDrawDestroy(&draw));
+  }
+  (*ctx)->howoften = howoften;
+  (*ctx)->Ns       = Ns;
+  (*ctx)->velocity = velocity;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Destroys a TSMonitorHGCtx that was created with TSMonitorHGCtxCreate */
+PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
+{
+  PetscInt s;
+
+  PetscFunctionBegin;
+  for (s = 0; s < (*ctx)->Ns; ++s) PetscCall(PetscDrawHGDestroy(&(*ctx)->hg[s]));
+  PetscCall(PetscFree((*ctx)->hg));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -405,7 +432,7 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Options Database Keys:
 +   -ts_monitor_draw_solution - draw the solution at each time-step
@@ -414,7 +441,7 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
    Level: intermediate
 
    Notes:
-   The initial solution and current solution are not displayed with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
+   The initial solution and current solution are not displayed with a common axis scaling so generally the option `-ts_monitor_draw_solution_initial`
    will look bad
 
    This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, as well as the context created with
@@ -468,7 +495,7 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Level: intermediate
 
@@ -529,7 +556,7 @@ PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime,
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .    ctx - the monitor context
 
    Level: intermediate
@@ -563,7 +590,7 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
    Level: intermediate
 
    Note:
-   The context created by this function,  `PetscMonitorDrawSolution()`, and `TSMonitorDrawCtxDestroy()` should be passed together to `TSMonitorSet()`.
+   The context created by this function, `PetscMonitorDrawSolution()`, and `TSMonitorDrawCtxDestroy()` should be passed together to `TSMonitorSet()`.
 
 .seealso: [](chapter_ts), `TS`, `TSMonitorDrawCtxDestroy()`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorDrawCtx`, `PetscMonitorDrawSolution()`
 @*/
@@ -593,7 +620,7 @@ PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const ch
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Options Database Key:
 .  -ts_monitor_draw_solution_function - Monitor error graphically, requires user to have provided `TSSetSolutionFunction()`
@@ -631,7 +658,7 @@ PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal pti
 +  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or NULL
+-  dummy - either a viewer or `NULL`
 
    Options Database Key:
 .  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided `TSSetSolutionFunction()`
@@ -661,7 +688,7 @@ PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, 
 }
 
 /*@C
-   TSMonitorSolution - Monitors progress of the TS solvers by `VecView()` for the solution at each timestep. Normally the viewer is a binary file or a `PetscDraw` object
+   TSMonitorSolution - Monitors progress of the `TS` solvers by `VecView()` for the solution at each timestep. Normally the viewer is a binary file or a `PetscDraw` object
 
    Collective
 
@@ -732,7 +759,7 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  filenametemplate - string containing a format specifier for the integer time step (e.g. %03" PetscInt_FMT ")
 
    Level: intermediate
@@ -868,7 +895,7 @@ PetscErrorCode TSMonitorLGSolution(TS ts, PetscInt step, PetscReal ptime, Vec u,
 
    Input Parameters:
 +  ts - the `TS` context
--  names - the names of the components, final string must be NULL
+-  names - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -898,7 +925,7 @@ PetscErrorCode TSMonitorLGSetVariableNames(TS ts, const char *const *names)
 
    Input Parameters:
 +  ts - the `TS` context
--  names - the names of the components, final string must be NULL
+-  names - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -921,7 +948,7 @@ PetscErrorCode TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx, const char *co
 .  ts - the `TS` context
 
    Output Parameter:
-.  names - the names of the components, final string must be NULL
+.  names - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -953,7 +980,7 @@ PetscErrorCode TSMonitorLGGetVariableNames(TS ts, const char *const **names)
 
    Input Parameters:
 +  ctx - the `TSMonitorLG` context
--  displaynames - the names of the components, final string must be NULL
+-  displaynames - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -995,7 +1022,7 @@ PetscErrorCode TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx, const char 
 
    Input Parameters:
 +  ts - the `TS` context
--  displaynames - the names of the components, final string must be NULL
+-  displaynames - the names of the components, final string must be `NULL`
 
    Level: intermediate
 
@@ -1152,9 +1179,10 @@ PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, vo
 -  dctx - the `TSMonitorSPCtx` object that contains all the options for the monitoring, this is created with `TSMonitorSPCtxCreate()`
 
    Options Database Keys:
-+ -ts_monitor_sp_swarm <n>          - Monitor the solution every n steps, or -1 for plotting only the final solution
-. -ts_monitor_sp_swarm_retain <n>   - Retain n old points so we can see the history, or -1 for all points
-- -ts_monitor_sp_swarm_phase <bool> - Plot in phase space, as opposed to coordinate space
++ -ts_monitor_sp_swarm <n>                  - Monitor the solution every n steps, or -1 for plotting only the final solution
+. -ts_monitor_sp_swarm_retain <n>           - Retain n old points so we can see the history, or -1 for all points
+. -ts_monitor_sp_swarm_multi_species <bool> - Color each species differently
+- -ts_monitor_sp_swarm_phase <bool>         - Plot in phase space, as opposed to coordinate space
 
    Level: intermediate
 
@@ -1170,10 +1198,12 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
   PetscDraw          draw;
   DM                 dm, cdm;
   const PetscScalar *yy;
-  PetscInt           Np, p, dim = 2;
+  PetscInt           Np, p, dim = 2, *species;
+  PetscReal          species_color;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* -1 indicates interpolated solution */
+  PetscCall(TSGetDM(ts, &dm));
   if (!step) {
     PetscDrawAxis axis;
     PetscReal     dmboxlower[2], dmboxupper[2];
@@ -1188,7 +1218,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
     PetscCall(PetscDrawSPGetAxis(ctx->sp, &axis));
     if (ctx->phase) {
       PetscCall(PetscDrawAxisSetLabels(axis, "Particles", "X", "V"));
-      PetscCall(PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -5, 5));
+      PetscCall(PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -10, 10));
     } else {
       PetscCall(PetscDrawAxisSetLabels(axis, "Particles", "X", "Y"));
       PetscCall(PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], dmboxlower[1], dmboxupper[1]));
@@ -1196,6 +1226,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
     PetscCall(PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE));
     PetscCall(PetscDrawSPReset(ctx->sp));
   }
+  if (ctx->multispecies) PetscCall(DMSwarmGetField(dm, "species", NULL, NULL, (void **)&species));
   PetscCall(VecGetLocalSize(u, &Np));
   Np /= dim * 2;
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
@@ -1214,11 +1245,97 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
         x = PetscRealPart(yy[p * dim * 2]);
         y = PetscRealPart(yy[p * dim * 2 + 1]);
       }
+      if (ctx->multispecies) {
+        species_color = species[p] + 2;
+        PetscCall(PetscDrawSPAddPointColorized(ctx->sp, &x, &y, &species_color));
+      } else {
+        PetscCall(PetscDrawSPAddPoint(ctx->sp, &x, &y));
+      }
       PetscCall(PetscDrawSPAddPoint(ctx->sp, &x, &y));
     }
     PetscCall(VecRestoreArrayRead(u, &yy));
     PetscCall(PetscDrawSPDraw(ctx->sp, PETSC_FALSE));
     PetscCall(PetscDrawSPSave(ctx->sp));
+    if (ctx->multispecies) PetscCall(DMSwarmRestoreField(dm, "species", NULL, NULL, (void **)&species));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   TSMonitorHGSwarmSolution - Graphically displays histograms of `DMSWARM` particles
+
+   Input Parameters:
++  ts - the `TS` context
+.  step - current time-step
+.  ptime - current time
+.  u - current solution
+-  dctx - the `TSMonitorSPCtx` object that contains all the options for the monitoring, this is created with `TSMonitorHGCtxCreate()`
+
+   Options Database Keys:
++ -ts_monitor_hg_swarm <n>             - Monitor the solution every n steps, or -1 for plotting only the final solution
+. -ts_monitor_hg_swarm_species <num>   - Number of species to histogram
+. -ts_monitor_hg_swarm_bins <num>      - Number of histogram bins
+- -ts_monitor_hg_swarm_velocity <bool> - Plot in velocity space, as opposed to coordinate space
+
+   Level: intermediate
+
+   Note:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the `TS` integration.
+
+.seealso: `TSMonitoSet()`
+@*/
+PetscErrorCode TSMonitorHGSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
+{
+  TSMonitorHGCtx     ctx = (TSMonitorHGCtx)dctx;
+  PetscDraw          draw;
+  DM                 sw;
+  const PetscScalar *yy;
+  PetscInt          *species;
+  PetscInt           dim, d = 0, Np, p, Ns, s;
+
+  PetscFunctionBegin;
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* -1 indicates interpolated solution */
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
+  Ns = PetscMin(Ns, ctx->Ns);
+  PetscCall(VecGetLocalSize(u, &Np));
+  Np /= dim * 2;
+  if (!step) {
+    PetscDrawAxis axis;
+    char          title[PETSC_MAX_PATH_LEN];
+
+    for (s = 0; s < Ns; ++s) {
+      PetscCall(PetscDrawHGGetAxis(ctx->hg[s], &axis));
+      PetscCall(PetscSNPrintf(title, PETSC_MAX_PATH_LEN, "Species %" PetscInt_FMT, s));
+      if (ctx->velocity) PetscCall(PetscDrawAxisSetLabels(axis, title, "V", "N"));
+      else PetscCall(PetscDrawAxisSetLabels(axis, title, "X", "N"));
+    }
+  }
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
+    PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **)&species));
+    for (s = 0; s < Ns; ++s) {
+      PetscCall(PetscDrawHGReset(ctx->hg[s]));
+      PetscCall(PetscDrawHGGetDraw(ctx->hg[s], &draw));
+      PetscCall(PetscDrawClear(draw));
+      PetscCall(PetscDrawFlush(draw));
+    }
+    PetscCall(VecGetArrayRead(u, &yy));
+    for (p = 0; p < Np; ++p) {
+      const PetscInt s = species[p] < Ns ? species[p] : 0;
+      PetscReal      v;
+
+      if (ctx->velocity) v = PetscRealPart(yy[p * dim * 2 + d + dim]);
+      else v = PetscRealPart(yy[p * dim * 2 + d]);
+      PetscCall(PetscDrawHGAddValue(ctx->hg[s], v));
+    }
+    PetscCall(VecRestoreArrayRead(u, &yy));
+    for (s = 0; s < Ns; ++s) {
+      PetscCall(PetscDrawHGDraw(ctx->hg[s]));
+      PetscCall(PetscDrawHGSave(ctx->hg[s]));
+    }
+    PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **)&species));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1362,7 +1479,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec 
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts  - the `TS` solver object
 
    Output Parameter:
@@ -1385,7 +1502,7 @@ PetscErrorCode TSMonitorEnvelopeCtxCreate(TS ts, TSMonitorEnvelopeCtx *ctx)
    Collective
 
    Input Parameters:
-+  ts - the TS context
++  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
 .  u  - current solution
@@ -1433,10 +1550,10 @@ PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, v
 +  max - the maximum values
 -  min - the minimum values
 
+   Level: intermediate
+
    Notes:
     If the `TS` does not have a `TSMonitorEnvelopeCtx` associated with it then this function is ignored
-
-   Level: intermediate
 
 .seealso: [](chapter_ts), `TSMonitorEnvelopeCtx`, `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetDisplayVariables()`
 @*/
@@ -1482,7 +1599,7 @@ PetscErrorCode TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 /*@C
   TSDMSwarmMonitorMoments - Monitors the first three moments of a `DMSWARM` being evolved by the `TS`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + ts   - the `TS` context

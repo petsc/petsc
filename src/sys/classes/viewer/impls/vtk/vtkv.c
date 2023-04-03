@@ -25,15 +25,15 @@ M*/
 +  viewer - `PETSCVIEWERVTK`
 .  dm - `DM` on which `Vec` lives
 .  PetscViewerVTKWriteFunction - function to write this `Vec`
-.  fieldnum - which field of the DM to write (`PETSC_DEFAULT` if the while vector should be written)
+.  fieldnum - which field of the `DM` to write (`PETSC_DEFAULT` if the while vector should be written)
 .  fieldtype - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
 .  checkdm - whether to check for identical dm arguments as fields are added
 -  vec - `Vec` from which to write
 
+   Level: developer
+
    Note:
    This routine keeps exclusive ownership of the `Vec`. The caller should not use or destroy the `Vec` after calling it.
-
-   Level: developer
 
 .seealso: [](sec_viewers), `PETSCVIEWERVTK`, `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKGetDM()`
 @*/
@@ -54,7 +54,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscE
 
    Input Parameters:
 +  viewer - `PETSCVIEWERVTK` viewer
--  dm - `DM` associated with the viewer (as PetscObject)
+-  dm - `DM` associated with the viewer (as a `PetscObject`)
 
    Level: developer
 
@@ -241,9 +241,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
 +  comm - MPI communicator
 .  name - name of file
 -  type - type of file
-$    `FILE_MODE_WRITE` - create new file for binary output
-$    `FILE_MODE_READ` - open existing file for binary input (not currently supported)
-$    `FILE_MODE_APPEND` - open existing file for binary output (not currently supported)
+.vb
+    FILE_MODE_WRITE - create new file for binary output
+    FILE_MODE_READ - open existing file for binary input (not currently supported)
+    FILE_MODE_APPEND - open existing file for binary output (not currently supported)
+.ve
 
    Output Parameter:
 .  vtk - `PetscViewer` for VTK input/output to use with the specified file
@@ -267,7 +269,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
 /*@C
    PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  viewer - logically collective viewer, data written from rank 0

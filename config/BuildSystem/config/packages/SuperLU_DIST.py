@@ -27,8 +27,9 @@ class Configure(config.package.CMakePackage):
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.cuda           = framework.require('config.packages.cuda',self)
+    self.hip            = framework.require('config.packages.hip',self)
     self.openmp         = framework.require('config.packages.openmp',self)
-    self.odeps          = [self.parmetis,self.cuda,self.openmp]
+    self.odeps          = [self.parmetis,self.cuda,self.hip,self.openmp]
     self.deps           = [self.mpi,self.blasLapack]
     return
 
@@ -45,10 +46,18 @@ class Configure(config.package.CMakePackage):
           args[place]=item[:-1]+' '+self.headers.toString(self.cuda.include)+' -DDEBUGlevel=0 -DPRNTlevel=0"'
       args.append('-DTPL_ENABLE_CUDALIB=TRUE')
       args.append('-DTPL_CUDA_LIBRARIES="'+self.libraries.toString(self.cuda.dlib)+'"')
-      args.append('-DCUDA_ARCH_FLAGS="-arch=sm_'+self.cuda.cudaArch+'"')
       with self.Language('CUDA'):
-        args.append('-DCMAKE_CUDA_COMPILER="'+self.getCompiler()+'"')
+        # already set in package.py so could be removed, but why are MPI include paths listed here
         args.append('-DCMAKE_CUDA_FLAGS="'+self.getCompilerFlags()+' '+self.mpi.includepaths+' '+self.headers.toString(self.cuda.include)+' -DDEBUGlevel=0 -DPRNTlevel=0"')
+
+    if self.hip.found:
+      args.append('-DTPL_ENABLE_HIPLIB=TRUE')
+      with self.Language('HIP'):
+        for place,item in enumerate(args):
+          if item.find('CMAKE_C_FLAGS') >= 0 or item.find('CMAKE_CXX_FLAGS') >= 0:
+            args[place]=item[:-1]+' '+' -DDEBUGlevel=0 -DPRNTlevel=0"'
+        hipArchFlags = '--amdgpu-target=' + self.hip.hipArch
+        args.append('-DHIP_HIPCC_FLAGS="'+hipArchFlags+' '+self.getCompilerFlags()+' '+self.mpi.includepaths+' '+self.headers.toString(self.hip.include)+' -DDEBUGlevel=0 -DPRNTlevel=0"')
 
     args.append('-DUSE_XSDK_DEFAULTS=YES')
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')

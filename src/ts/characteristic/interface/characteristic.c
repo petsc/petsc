@@ -202,8 +202,8 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
    Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined solver
--  routine_create - routine to create method context
++  sname - name of a new user-defined solver
+-  function - routine to create method context
 
   Level: advanced
 

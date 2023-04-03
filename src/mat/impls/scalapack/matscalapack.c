@@ -348,7 +348,6 @@ static PetscErrorCode MatMatTransposeMultSymbolic_ScaLAPACK(Mat A, Mat B, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_ScaLAPACK_AB(Mat C)
 {
   PetscFunctionBegin;
@@ -382,7 +381,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_ScaLAPACK(Mat C)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* --------------------------------------- */
 
 static PetscErrorCode MatGetDiagonal_ScaLAPACK(Mat A, Vec D)
 {
@@ -765,7 +763,7 @@ static PetscErrorCode MatLUFactor_ScaLAPACK(Mat A, IS row, IS col, const MatFact
   PetscBLASInt   one = 1, info;
 
   PetscFunctionBegin;
-  if (!a->pivots) { PetscCall(PetscMalloc1(a->locr + a->mb, &a->pivots)); }
+  if (!a->pivots) PetscCall(PetscMalloc1(a->locr + a->mb, &a->pivots));
   PetscCallBLAS("SCALAPACKgetrf", SCALAPACKgetrf_(&a->M, &a->N, a->loc, &one, &one, a->desc, a->pivots, &info));
   PetscCheckScaLapackInfo("getrf", info);
   A->factortype = MAT_FACTOR_LU;
@@ -1319,7 +1317,6 @@ PetscErrorCode MatLoad_ScaLAPACK(Mat newMat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_ScaLAPACK,
                                        0,
                                        0,
@@ -1652,7 +1649,10 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A, PetscInt mb, Pe
 
    Level: intermediate
 
-.seealso: `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
+   Note:
+   This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
+
+.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKSetBlockSizes(Mat A, PetscInt mb, PetscInt nb)
 {
@@ -1678,7 +1678,7 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A, PetscInt *mb, P
    MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distribution of
    the `MATSCALAPACK` matrix
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  A  - a `MATSCALAPACK` matrix
@@ -1689,7 +1689,10 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A, PetscInt *mb, P
 
    Level: intermediate
 
-.seealso: `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
+   Note:
+   This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
+
+.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKGetBlockSizes(Mat A, PetscInt *mb, PetscInt *nb)
 {
@@ -1705,22 +1708,22 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
 /*MC
    MATSCALAPACK = "scalapack" - A matrix type for dense matrices using the ScaLAPACK package
 
-   Use ./configure --download-scalapack to install PETSc to use ScaLAPACK
+   Use `./configure --download-scalapack` to install PETSc to use ScaLAPACK
 
    Options Database Keys:
-+  -mat_type scalapack - sets the matrix type to `MATSCALAPACK` during a call to `MatSetFromOptions()`
-.  -pc_factor_mat_solver_type scalapack - to use this direct solver with the option -pc_type lu
++  -mat_type scalapack - sets the matrix type to `MATSCALAPACK`
+.  -pc_factor_mat_solver_type scalapack - to use this direct solver with the option `-pc_type lu`
 .  -mat_scalapack_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix
 -  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
+
+   Level: intermediate
 
   Note:
    Note unlike most matrix formats, this format does not store all the matrix entries for a contiguous
    range of rows on an MPI rank. Use `MatGetOwnershipIS()` to determine what values are stored on
    the given rank.
 
-   Level: beginner
-
-.seealso: `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`
+.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`, `MatCreateScaLAPACK()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
@@ -1830,23 +1833,21 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
    Options Database Key:
 .  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
 
+   Level: intermediate
+
+   Notes:
+   If `PETSC_DECIDE` is used for the block sizes, then an appropriate value is chosen
+
    It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`,
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-   Note:
-   If `PETSC_DECIDE` is used for the block sizes, then an appropriate value
-   is chosen.
-
-   Storage Information:
    Storate is completely managed by ScaLAPACK, so this requires PETSc to be
    configured with ScaLAPACK. In particular, PETSc's local sizes lose
    significance and are thus ignored. The block sizes refer to the values
    used for the distributed matrix, not the same meaning as in `MATBAIJ`.
 
-   Level: intermediate
-
-.seealso: `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
+.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateScaLAPACK(MPI_Comm comm, PetscInt mb, PetscInt nb, PetscInt M, PetscInt N, PetscInt rsrc, PetscInt csrc, Mat *A)
 {

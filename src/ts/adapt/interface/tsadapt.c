@@ -20,8 +20,8 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt);
    Not Collective
 
    Input Parameters:
-+  name_scheme - name of user-defined adaptivity scheme
--  routine_create - routine to create method context
++  sname - name of user-defined adaptivity scheme
+-  function - routine to create method context
 
    Level: advanced
 
@@ -49,7 +49,7 @@ PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TS
 }
 
 /*@C
-  TSAdaptRegisterAll - Registers all of the adaptivity schemes in TSAdapt
+  TSAdaptRegisterAll - Registers all of the adaptivity schemes in `TSAdapt`
 
   Not Collective
 
@@ -72,8 +72,8 @@ PetscErrorCode TSAdaptRegisterAll(void)
 }
 
 /*@C
-  TSAdaptFinalizePackage - This function destroys everything in the TS package. It is
-  called from PetscFinalize().
+  TSAdaptFinalizePackage - This function destroys everything in the `TS` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
@@ -89,8 +89,8 @@ PetscErrorCode TSAdaptFinalizePackage(void)
 }
 
 /*@C
-  TSAdaptInitializePackage - This function initializes everything in the TSAdapt package. It is
-  called from TSInitializePackage().
+  TSAdaptInitializePackage - This function initializes everything in the `TSAdapt` package. It is
+  called from `TSInitializePackage()`.
 
   Level: developer
 
@@ -110,7 +110,7 @@ PetscErrorCode TSAdaptInitializePackage(void)
 /*@C
   TSAdaptSetType - sets the approach used for the error adapter
 
-  Logicially Collective onadapt
+  Logicially Collective
 
   Input Parameters:
 + adapt - the `TS` adapter, most likely obtained with `TSGetAdapt()`
@@ -175,7 +175,7 @@ PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
 }
 
 /*@C
-  TSAdaptLoad - Loads a TSAdapt that has been stored in binary  with TSAdaptView().
+  TSAdaptLoad - Loads a TSAdapt that has been stored in binary with `TSAdaptView()`.
 
   Collective
 
@@ -324,15 +324,14 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
 /*@C
    TSAdaptSetCheckStage - Set a callback to check convergence for a stage
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
 -  func - stage check function
 
-   Arguments of func:
+  Calling Sequence of `func`:
 $  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
-
 +  adapt - adaptive controller context
 .  ts - time stepping context
 -  accept - pending choice of whether to accept, can be modified by this routine
@@ -353,7 +352,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdap
    TSAdaptSetAlwaysAccept - Set whether to always accept steps regardless of
    any error or stability condition not meeting the prescribed goal.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - time step adaptivity context, usually gotten with `TSGetAdapt()`
@@ -378,7 +377,7 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
 /*@
    TSAdaptSetSafety - Set safety factors for time step adaptor
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -399,12 +398,12 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal rejec
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, safety, 2);
   PetscValidLogicalCollectiveReal(adapt, reject_safety, 3);
-  PetscCheck(safety == PETSC_DEFAULT || safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be non negative", (double)safety);
-  PetscCheck(safety == PETSC_DEFAULT || safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be less than one", (double)safety);
-  PetscCheck(reject_safety == PETSC_DEFAULT || reject_safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be non negative", (double)reject_safety);
-  PetscCheck(reject_safety == PETSC_DEFAULT || reject_safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be less than one", (double)reject_safety);
-  if (safety != PETSC_DEFAULT) adapt->safety = safety;
-  if (reject_safety != PETSC_DEFAULT) adapt->reject_safety = reject_safety;
+  PetscCheck(safety == (PetscReal)PETSC_DEFAULT || safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be non negative", (double)safety);
+  PetscCheck(safety == (PetscReal)PETSC_DEFAULT || safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be less than one", (double)safety);
+  PetscCheck(reject_safety == (PetscReal)PETSC_DEFAULT || reject_safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be non negative", (double)reject_safety);
+  PetscCheck(reject_safety == (PetscReal)PETSC_DEFAULT || reject_safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be less than one", (double)reject_safety);
+  if (safety != (PetscReal)PETSC_DEFAULT) adapt->safety = safety;
+  if (reject_safety != (PetscReal)PETSC_DEFAULT) adapt->reject_safety = reject_safety;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -439,7 +438,7 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *rej
    TSAdaptSetMaxIgnore - Set error estimation threshold. Solution components below this threshold value will not be considered when computing error norms
    for time step adaptivity (in absolute value). A negative value (default) of the threshold leads to considering all solution components.
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -509,11 +508,11 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, low, 2);
   PetscValidLogicalCollectiveReal(adapt, high, 3);
-  PetscCheck(low == PETSC_DEFAULT || low >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be non negative", (double)low);
-  PetscCheck(low == PETSC_DEFAULT || low <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be less than one", (double)low);
-  PetscCheck(high == PETSC_DEFAULT || high >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Increase factor %g must be greater than one", (double)high);
-  if (low != PETSC_DEFAULT) adapt->clip[0] = low;
-  if (high != PETSC_DEFAULT) adapt->clip[1] = high;
+  PetscCheck(low == (PetscReal)PETSC_DEFAULT || low >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be non negative", (double)low);
+  PetscCheck(low == (PetscReal)PETSC_DEFAULT || low <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be less than one", (double)low);
+  PetscCheck(high == (PetscReal)PETSC_DEFAULT || high >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Increase factor %g must be greater than one", (double)high);
+  if (low != (PetscReal)PETSC_DEFAULT) adapt->clip[0] = low;
+  if (high != (PetscReal)PETSC_DEFAULT) adapt->clip[1] = high;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -547,7 +546,7 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
 /*@
    TSAdaptSetScaleSolveFailed - Scale step size by this factor if solve fails
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -565,9 +564,9 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, scale, 2);
-  PetscCheck(scale == PETSC_DEFAULT || scale > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be positive", (double)scale);
-  PetscCheck(scale == PETSC_DEFAULT || scale <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be less than one", (double)scale);
-  if (scale != PETSC_DEFAULT) adapt->scale_solve_failed = scale;
+  PetscCheck(scale == (PetscReal)PETSC_DEFAULT || scale > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be positive", (double)scale);
+  PetscCheck(scale == (PetscReal)PETSC_DEFAULT || scale <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be less than one", (double)scale);
+  if (scale != (PetscReal)PETSC_DEFAULT) adapt->scale_solve_failed = scale;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -598,7 +597,7 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
 /*@
    TSAdaptSetStepLimits - Set the minimum and maximum step sizes to be considered by the time step controller
 
-   Logically collective
+   Logically Collective
 
    Input Parameters:
 +  adapt - time step adaptivity context, usually gotten with `TSGetAdapt()`
@@ -619,10 +618,10 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hma
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, hmin, 2);
   PetscValidLogicalCollectiveReal(adapt, hmax, 3);
-  PetscCheck(hmin == PETSC_DEFAULT || hmin >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmin);
-  PetscCheck(hmax == PETSC_DEFAULT || hmax >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmax);
-  if (hmin != PETSC_DEFAULT) adapt->dt_min = hmin;
-  if (hmax != PETSC_DEFAULT) adapt->dt_max = hmax;
+  PetscCheck(hmin == (PetscReal)PETSC_DEFAULT || hmin >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmin);
+  PetscCheck(hmax == (PetscReal)PETSC_DEFAULT || hmax >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmax);
+  if (hmin != (PetscReal)PETSC_DEFAULT) adapt->dt_min = hmin;
+  if (hmax != (PetscReal)PETSC_DEFAULT) adapt->dt_max = hmax;
   hmin = adapt->dt_min;
   hmax = adapt->dt_max;
   PetscCheck(hmax > hmin, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum time step %g must greater than minimum time step %g", (double)hmax, (double)hmin);
@@ -662,7 +661,8 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
    Collective
 
    Input Parameter:
-.  adapt - the `TSAdapt` context
++  adapt - the `TSAdapt` context
+-  PetscOptionsObject - object created by `PetscOptionsBegin()`
 
    Options Database Keys:
 +  -ts_adapt_type <type> - algorithm to use for adaptivity
@@ -743,7 +743,7 @@ PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptio
 /*@
    TSAdaptCandidatesClear - clear any previously set candidate schemes
 
-   Logically collective
+   Logically Collective
 
    Input Parameter:
 .  adapt - adaptive controller
@@ -763,7 +763,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 /*@C
    TSAdaptCandidateAdd - add a candidate scheme for the adaptive controller to select from
 
-   Logically collective
+   Logically Collective; No Fortran Support
 
    Input Parameters:
 +  adapt - time step adaptivity context, obtained with `TSGetAdapt()` or `TSAdaptCreate()`
@@ -775,9 +775,6 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 -  inuse - indicates that this scheme is the one currently in use, this flag can only be set for one scheme
 
    Level: developer
-
-   Fortran Note:
-   This routine is not available in Fortran.
 
 .seealso: [](chapter_ts), `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptChoose()`
 @*/

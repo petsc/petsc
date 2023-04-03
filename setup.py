@@ -219,6 +219,7 @@ class cmd_install(_install):
         _install.finalize_options(self)
         self.install_lib = self.install_platlib
         self.install_libbase = self.install_lib
+        self.old_and_unmanageable = True
 
     def run(self):
         root_dir = os.path.abspath(self.install_lib)
@@ -258,7 +259,7 @@ def version():
     minor = int(version_re['minor'].search(data).groups()[0])
     micro = int(version_re['micro'].search(data).groups()[0])
     release = int(version_re['release'].search(data).groups()[0])
-    if release > 0 :
+    if release:
         v = "%d.%d.%d" % (major, minor, micro)
     else:
         v = "%d.%d.0.dev%d" % (major, minor+1, 0)
@@ -267,7 +268,7 @@ def version():
 def tarball():
     VERSION = version()
     if '.dev' in VERSION: return None
-    return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots//'
+    return ('https://ftp.mcs.anl.gov/pub/petsc/release-snapshots//'
             'petsc-%s.tar.gz#egg=petsc-%s' % (VERSION, VERSION))
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]

@@ -2,16 +2,16 @@
 #include <petsc/private/dmproductimpl.h>
 
 /*@C
-  DMProductGetDM - Get sub-DM associated with a given slot of a DMProduct
+  DMProductGetDM - Get sub-`DM` associated with a given slot of a `DMPRODUCT`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ dm - the DMProduct
++ dm - the` DMPRODUCT`
 - slot - which dimension slot, in the range 0 to dim-1
 
   Output Parameter:
-. subdm - the sub-DM
+. subdm - the sub-`DM`
 
   Level: advanced
 
@@ -31,19 +31,19 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
 }
 
 /*@C
-  DMProductSetDM - Set sub-DM associated with a given slot of DMProduct
+  DMProductSetDM - Set sub-`DM` associated with a given slot of `DMPRODUCT`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ dm - the DMProduct
++ dm - the `DMPRODUCT`
 . slot - which dimension slot, in the range 0 to dim-1
-- subdm - the sub-DM
-
-  Notes:
-  This function does not destroy the provided sub-DM. You may safely destroy it after calling this function.
+- subdm - the sub-`DM`
 
   Level: advanced
+
+  Note:
+  This function does not destroy the provided sub-`DM`. You may safely destroy it after calling this function.
 
 .seealso: `DMPRODUCT`, `DMProductGetDM()`, `DMProductSetDimensionIndex()`
 @*/
@@ -63,14 +63,14 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
 }
 
 /*@C
-  DMProductSetDimensionIndex - Set the dimension index associated with a given slot/sub-DM
+  DMProductSetDimensionIndex - Set the dimension index associated with a given slot/sub-`DM`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ dm - the DMProduct
++ dm - the `DMPRODUCT`
 . slot - which dimension slot, in the range 0 to dim-1
-- idx - the dimension index of the sub-DM
+- idx - the dimension index of the sub-`DM`
 
   Level: advanced
 

@@ -153,7 +153,7 @@ builtin and then its argument prototype would still apply. */
 
   def checkMkstemp(self):
     '''Check for mkstemp() to avoid using tmpnam as it is often deprecated'''
-    if self.checkLink('#include <stdlib.h>\n#include <string.h>', 'char filename[100];\n strcpy(filename, "/tmp/fileXXXXXX");\n mkstemp(filename)'):
+    if self.checkLink('#define _XOPEN_SOURCE 600\n#include <stdlib.h>\n#include <string.h>', 'char filename[100];\n strcpy(filename, "/tmp/fileXXXXXX");\n mkstemp(filename)'):
       self.addDefine('HAVE_MKSTEMP', 1)
 
   def checkTmpnam_s(self):

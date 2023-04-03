@@ -253,17 +253,17 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
 /*@
       MatTransposeGetMat - Gets the `Mat` object stored inside a `MATTRANSPOSEVIRTUAL`
 
-   Logically collective
+   Logically Collective
 
    Input Parameter:
 .   A  - the `MATTRANSPOSEVIRTUAL` matrix
 
    Output Parameter:
-.   M - the matrix object stored inside A
+.   M - the matrix object stored inside `A`
 
    Level: intermediate
 
-.seealso: `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`
 @*/
 PetscErrorCode MatTransposeGetMat(Mat A, Mat *M)
 {
@@ -280,7 +280,8 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M)
 
   Level: advanced
 
-.seealso: `MATHERMITIANTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`,
+          `MATNORMALHERMITIAN`, `MATNORMAL`
 M*/
 
 /*@
@@ -301,7 +302,8 @@ M*/
           object performs the matrix-vector product by using the `MatMultTranspose()` on
           the original matrix
 
-.seealso: `MATTRANSPOSEVIRTUAL`, `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`
+.seealso: [](chapter_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`,
+          `MATNORMALHERMITIAN`
 @*/
 PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
 {

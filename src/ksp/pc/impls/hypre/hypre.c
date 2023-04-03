@@ -19,7 +19,7 @@
 
 static PetscBool  cite            = PETSC_FALSE;
 static const char hypreCitation[] = "@manual{hypre-web-page,\n  title  = {{\\sl hypre}: High Performance Preconditioners},\n  organization = {Lawrence Livermore National Laboratory},\n  note  = "
-                                    "{\\url{https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods}}\n}\n";
+                                    "{\\url{https://www.llnl.gov/casc/hypre}}\n}\n";
 
 /*
    Private context (data structure) for the  preconditioner.
@@ -1497,10 +1497,10 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 
    Input Parameters:
 +  pc - the preconditioning context
--  dim - the dimension of the problem, only used in AMS
--  RT_PiFull - Raviart-Thomas interpolation matrix
--  RT_Pi - x/y/z component of Raviart-Thomas interpolation matrix
--  ND_PiFull - Nedelec interpolation matrix
+.  dim - the dimension of the problem, only used in AMS
+.  RT_PiFull - Raviart-Thomas interpolation matrix
+.  RT_Pi - x/y/z component of Raviart-Thomas interpolation matrix
+.  ND_PiFull - Nedelec interpolation matrix
 -  ND_Pi - x/y/z component of Nedelec interpolation matrix
 
    Level: intermediate
@@ -1682,8 +1682,8 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc, Vec ozz, Vec zo
 
    Input Parameters:
 +  pc - the preconditioning context
--  ozz - vector representing (1,0,0) (or (1,0) in 2D)
--  zoz - vector representing (0,1,0) (or (0,1) in 2D)
+.  ozz - vector representing (1,0,0) (or (1,0) in 2D)
+.  zoz - vector representing (0,1,0) (or (0,1) in 2D)
 -  zzo - vector representing (0,0,1) (use NULL in 2D)
 
    Level: intermediate

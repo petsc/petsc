@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version      = "1.2.11"
+    self.version      = '1.2.13'
     self.versionname  = 'ZLIB_VERSION'
     self.download     = ['http://www.zlib.net/zlib-'+self.version+'.tar.gz',
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zlib-'+self.version+'.tar.gz']

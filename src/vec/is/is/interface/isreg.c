@@ -9,19 +9,19 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - the MPI communicator
 
    Output Parameter:
 .  is - the new index set
 
+   Level: beginner
+
    Notes:
-   When the communicator is not `MPI_COMM_SELF`, the operations on `IS` are NOT
+   When the communicator is not `MPI_COMM_SELF`, the operations on `is` are NOT
    conceptually the same as `MPI_Group` operations. The `IS` are then
    distributed sets of indices and thus certain operations on them are
    collective.
-
-   Level: beginner
 
 .seealso: [](sec_scatter), `IS`, `ISType()`, `ISSetType()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
@@ -46,16 +46,18 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
 - method - The name of the index set type
 
   Options Database Key:
-. -is_type <type> - Sets the index set type; use -help for a list of available types
-
-  Notes:
-  See "petsc/include/petscis.h" for available istor types (for instance, ISGENERAL, ISSTRIDE, or ISBLOCK).
-
-  Use `ISDuplicate()` to make a duplicate
+. -is_type <type> - Sets the index set type; use `-help` for a list of available types
 
   Level: intermediate
 
-.seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISBLOCK`, `ISGetType()`, `ISCreate()`
+  Notes:
+  See `ISType` for available types (for instance, `ISGENERAL`, `ISSTRIDE`, or `ISBLOCK`).
+
+  Often convenience constructors such as `ISCreateGeneral()`, `ISCreateStride()` or  `ISCreateBlock()` can be used to construct the desired `IS` in one step
+
+  Use `ISDuplicate()` to make a duplicate
+
+.seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISBLOCK`, `ISGetType()`, `ISCreate()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`
 @*/
 PetscErrorCode ISSetType(IS is, ISType method)
 {
@@ -111,8 +113,8 @@ PetscErrorCode ISGetType(IS is, ISType *type)
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ sname        - The name of a new user-defined creation routine
+- function - The creation routine itself
 
   Sample usage:
 .vb

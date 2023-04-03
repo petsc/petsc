@@ -503,17 +503,19 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat *Gmat2)
 */
 PetscErrorCode PCSetUp_GAMG(PC pc)
 {
-  PC_MG         *mg      = (PC_MG *)pc->data;
-  PC_GAMG       *pc_gamg = (PC_GAMG *)mg->innerctx;
-  Mat            Pmat    = pc->pmat;
-  PetscInt       fine_level, level, level1, bs, M, N, qq, lidx, nASMBlocksArr[PETSC_MG_MAXLEVELS];
-  MPI_Comm       comm;
-  PetscMPIInt    rank, size, nactivepe;
-  Mat            Aarr[PETSC_MG_MAXLEVELS], Parr[PETSC_MG_MAXLEVELS];
-  IS            *ASMLocalIDsArr[PETSC_MG_MAXLEVELS];
+  PC_MG      *mg      = (PC_MG *)pc->data;
+  PC_GAMG    *pc_gamg = (PC_GAMG *)mg->innerctx;
+  Mat         Pmat    = pc->pmat;
+  PetscInt    fine_level, level, level1, bs, M, N, qq, lidx, nASMBlocksArr[PETSC_MG_MAXLEVELS];
+  MPI_Comm    comm;
+  PetscMPIInt rank, size, nactivepe;
+  Mat         Aarr[PETSC_MG_MAXLEVELS], Parr[PETSC_MG_MAXLEVELS];
+  IS         *ASMLocalIDsArr[PETSC_MG_MAXLEVELS];
+  PetscBool   is_last = PETSC_FALSE;
+#if defined(PETSC_USE_INFO)
   PetscLogDouble nnz0 = 0., nnztot = 0.;
   MatInfo        info;
-  PetscBool      is_last = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
@@ -599,9 +601,11 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PetscCall(MatGetBlockSize(Pmat, &bs));
   PetscCall(MatGetSize(Pmat, &M, &N));
 
+#if defined(PETSC_USE_INFO)
   PetscCall(MatGetInfo(Pmat, MAT_GLOBAL_SUM, &info)); /* global reduction */
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
+#endif
   PetscCall(PetscInfo(pc, "%s: level %d) N=%" PetscInt_FMT ", n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", np=%d\n", ((PetscObject)pc)->prefix, 0, M, pc_gamg->data_cell_rows, pc_gamg->data_cell_cols, (PetscInt)(nnz0 / (PetscReal)M + 0.5), size));
 
   /* Get A_i and R_i */
@@ -676,8 +680,10 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_LEVEL], 0, 0, 0, 0));
 
     PetscCall(MatGetSize(Aarr[level1], &M, &N)); /* M is loop test variables */
+#if defined(PETSC_USE_INFO)
     PetscCall(MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info));
     nnztot += info.nz_used;
+#endif
     PetscCall(PetscInfo(pc, "%s: %d) N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n", ((PetscObject)pc)->prefix, (int)level1, M, pc_gamg->data_cell_cols, (PetscInt)(info.nz_used / (PetscReal)M), nactivepe));
 
 #if defined(GAMG_STAGES)
@@ -872,11 +878,11 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
    Options Database Key:
 .  -pc_gamg_process_eq_limit <limit> - set the limit
 
+   Level: intermediate
+
    Note:
    `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process
    that has degrees of freedom
-
-   Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
 @*/
@@ -910,11 +916,11 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_coarse_eq_limit <limit> - set the limit
 
+   Level: intermediate
+
    Note:
    For example -pc_gamg_coarse_eq_limit 1000 will stop coarsening once the coarse grid
    has less than 1000 unknowns.
-
-   Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
 @*/
@@ -948,10 +954,10 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_repartition <true,false> - turn on the repartitioning
 
+   Level: intermediate
+
    Note:
    This will generally improve the loading balancing of the work on each level
-
-   Level: intermediate
 
 .seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`
 @*/
@@ -985,14 +991,14 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
    Options Database Key:
 .  -pc_gamg_use_sa_esteig <true,false> - use the eigen estimate
 
+   Level: advanced
+
    Notes:
    Smoothed aggregation constructs the smoothed prolongator $P = (I - \omega D^{-1} A) T$ where $T$ is the tentative prolongator and $D$ is the diagonal of $A$.
    Eigenvalue estimates (based on a few `PCCG` or `PCGMRES` iterations) are computed to choose $\omega$ so that this is a stable smoothing operation.
    If Chebyshev with Jacobi (diagonal) preconditioning is used for smoothing, then the eigenvalue estimates can be reused during the solution process
    This option is only used when the smoother uses Jacobi, and should be turned off if a different `PCJacobiType` is used.
    It became default in PETSc 3.17.
-
-   Level: advanced
 
 .seealso: `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
 @*/
@@ -1230,7 +1236,7 @@ static PetscErrorCode PCGAMGSetCoarseGridLayoutType_GAMG(PC pc, PCGAMGLayoutType
 /*@
    PCGAMGSetNlevels -  Sets the maximum number of levels `PCGAMG` will use
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  pc - the preconditioner
@@ -1267,7 +1273,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 /*@
    PCGAMGSetThreshold - Relative threshold to use for dropping edges in aggregation graph
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1277,15 +1283,15 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_threshold <threshold> - the threshold to drop edges
 
+   Level: intermediate
+
    Notes:
     Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
     Before coarsening or aggregating the graph, `PCGAMG` removes small values from the graph with this threshold, and thus reducing the coupling in the graph and a different (perhaps better) coarser set of points.
 
-    If n is less than the total number of coarsenings (see `PCGAMGSetNlevels()`), then threshold scaling (see `PCGAMGSetThresholdScale()`) is used for each successive coarsening.
+    If `n` is less than the total number of coarsenings (see `PCGAMGSetNlevels()`), then threshold scaling (see `PCGAMGSetThresholdScale()`) is used for each successive coarsening.
     In this case, `PCGAMGSetThresholdScale()` must be called before `PCGAMGSetThreshold()`.
-    If n is greater than the total number of levels, the excess entries in threshold will not be used.
-
-   Level: intermediate
+    If `n` is greater than the total number of levels, the excess entries in threshold will not be used.
 
 .seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetThresholdScale()`
 @*/
@@ -1349,7 +1355,7 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 /*@
    PCGAMGSetThresholdScale - Relative threshold reduction at each level
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1358,11 +1364,11 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
    Options Database Key:
 .  -pc_gamg_threshold_scale <v> - set the relative threshold reduction on each level
 
+   Level: advanced
+
    Note:
    The initial threshold (for an arbitrary number of levels starting from the finest) can be set with `PCGAMGSetThreshold()`.
    This scaling is used for each subsequent coarsening, but must be called before `PCGAMGSetThreshold()`.
-
-   Level: advanced
 
 .seealso: `PCGAMG`, `PCGAMGSetThreshold()`
 @*/
@@ -1574,14 +1580,14 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
 .  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
 -  -pc_mg_levels <levels> - Number of levels of multigrid to use. GAMG has a heuristic so pc_mg_levels is not usually used with GAMG
 
+  Level: intermediate
+
   Notes:
   To obtain good performance for `PCGAMG` for vector valued problems you must
   call `MatSetBlockSize()` to indicate the number of degrees of freedom per grid point
   call `MatSetNearNullSpace()` (or `PCSetCoordinates()` if solving the equations of elasticity) to indicate the near null space of the operator
 
   See [the Users Manual section on PCGAMG](sec_amg) for more details.
-
-  Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`, `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`,
           `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetUseParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`, `PCGAMGGetType()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGSetUseSAEstEig()`

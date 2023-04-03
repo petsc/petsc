@@ -6,16 +6,16 @@
   DMGetPeriodicity - Get the description of mesh periodicity
 
   Input Parameter:
-. dm      - The DM object
+. dm      - The `DM` object
 
   Output Parameters:
 + maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
-. Lstart  - If we assume the mesh is a torus, this is the start of each coordinate, or NULL for 0.0
+. Lstart  - If we assume the mesh is a torus, this is the start of each coordinate, or `NULL` for 0.0
 - L       - If we assume the mesh is a torus, this is the length of each coordinate, otherwise it is < 0.0
 
   Level: developer
 
-.seealso: `DMGetPeriodicity()`
+.seealso: `DM`, `DMGetPeriodicity()`
 @*/
 PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **Lstart, const PetscReal **L)
 {
@@ -31,14 +31,14 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
   DMSetPeriodicity - Set the description of mesh periodicity
 
   Input Parameters:
-+ dm      - The DM object
-. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates. Pass NULL to remove such information.
-. Lstart  - If we assume the mesh is a torus, this is the start of each coordinate, or NULL for 0.0
++ dm      - The `DM` object
+. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates. Pass `NULL` to remove such information.
+. Lstart  - If we assume the mesh is a torus, this is the start of each coordinate, or `NULL` for 0.0
 - L       - If we assume the mesh is a torus, this is the length of each coordinate, otherwise it is < 0.0
 
   Level: developer
 
-.seealso: `DMGetPeriodicity()`
+.seealso: `DM`, `DMGetPeriodicity()`
 @*/
 PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal Lstart[], const PetscReal L[])
 {
@@ -79,7 +79,7 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
   DMLocalizeCoordinate - If a mesh is periodic (a torus with lengths L_i, some of which can be infinite), project the coordinate onto [0, L_i) in each dimension.
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . in     - The input coordinate point (dim numbers)
 - endpoint - Include the endpoint L_i
 
@@ -88,7 +88,7 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 
   Level: developer
 
-.seealso: `DMLocalizeCoordinates()`, `DMLocalizeAddCoordinate()`
+.seealso: `DM`, `DMLocalizeCoordinates()`, `DMLocalizeAddCoordinate()`
 @*/
 PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool endpoint, PetscScalar out[])
 {
@@ -118,7 +118,7 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
   DMLocalizeCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . dim    - The spatial dimension
 . anchor - The anchor point, the input point can be no more than maxCell away from it
 - in     - The input coordinate point (dim numbers)
@@ -128,9 +128,10 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
 
   Level: developer
 
-  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+  Note:
+  This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
 
-.seealso: `DMLocalizeCoordinates()`, `DMLocalizeAddCoordinate()`
+.seealso: `DM`, `DMLocalizeCoordinates()`, `DMLocalizeAddCoordinate()`
 */
 PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
 {
@@ -174,7 +175,7 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
   DMLocalizeAddCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . dim    - The spatial dimension
 . anchor - The anchor point, the input point can be no more than maxCell away from it
 . in     - The input coordinate delta (dim numbers)
@@ -185,9 +186,10 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
 
   Level: developer
 
-  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+  Note:
+  This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
 
-.seealso: `DMLocalizeCoordinates()`, `DMLocalizeCoordinate()`
+.seealso: `DM`, `DMLocalizeCoordinates()`, `DMLocalizeCoordinate()`
 */
 PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
 {
@@ -215,19 +217,19 @@ PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const Petsc
 }
 
 /*@
-  DMGetCoordinatesLocalizedLocal - Check if the DM coordinates have been localized for cells on this process
+  DMGetCoordinatesLocalizedLocal - Check if the `DM` coordinates have been localized for cells on this process
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-  areLocalized - True if localized
+  areLocalized - `PETSC_TRUE` if localized
 
   Level: developer
 
-.seealso: `DMLocalizeCoordinates()`, `DMGetCoordinatesLocalized()`, `DMSetPeriodicity()`
+.seealso: `DM`, `DMLocalizeCoordinates()`, `DMGetCoordinatesLocalized()`, `DMSetPeriodicity()`
 @*/
 PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
 {
@@ -239,19 +241,19 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
 }
 
 /*@
-  DMGetCoordinatesLocalized - Check if the DM coordinates have been localized for cells
+  DMGetCoordinatesLocalized - Check if the `DM` coordinates have been localized for cells
 
-  Collective on dm
+  Collective
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameter:
-  areLocalized - True if localized
+  areLocalized - `PETSC_TRUE` if localized
 
   Level: developer
 
-.seealso: `DMLocalizeCoordinates()`, `DMSetPeriodicity()`, `DMGetCoordinatesLocalizedLocal()`
+.seealso: `DM`, `DMLocalizeCoordinates()`, `DMSetPeriodicity()`, `DMGetCoordinatesLocalizedLocal()`
 @*/
 PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
 {
@@ -268,14 +270,14 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
 /*@
   DMLocalizeCoordinates - If a mesh is periodic, create local coordinates for cells having periodic faces
 
-  Collective on dm
+  Collective
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Level: developer
 
-.seealso: `DMSetPeriodicity()`, `DMLocalizeCoordinate()`, `DMLocalizeAddCoordinate()`
+.seealso: `DM`, `DMSetPeriodicity()`, `DMLocalizeCoordinate()`, `DMLocalizeAddCoordinate()`
 @*/
 PetscErrorCode DMLocalizeCoordinates(DM dm)
 {

@@ -1,4 +1,4 @@
-.. _doc_dm:
+.. _dm_table:
 
 ============================================
 Summary of Discretization Management Systems

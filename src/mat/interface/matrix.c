@@ -57,10 +57,7 @@ const char *const MatFactorTypes[] = {"NONE", "LU", "CHOLESKY", "ILU", "ICC", "I
 -  rctx - the `PetscRandom` object, formed by `PetscRandomCreate()`, or `NULL` and
           it will create one internally.
 
-   Output Parameter:
-.  x  - the matrix
-
-   Example of Usage:
+   Example:
 .vb
      PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
      MatSetRandom(x,rctx);
@@ -69,12 +66,14 @@ const char *const MatFactorTypes[] = {"NONE", "LU", "CHOLESKY", "ILU", "ICC", "I
 
    Level: intermediate
 
-   Note:
+   Notes:
    For sparse matrices that have been preallocated but not been assembled it randomly selects appropriate locations,
-   for sparse matrices that already have locations it fills the locations with random numbers. It generates an error if used on sparse matrices that have
-   not been preallocated.
 
-.seealso: `Mat`, `PetscRandom`, `PetscRandomCreate()`, `MatZeroEntries()`, `MatSetValues()`, `PetscRandomCreate()`, `PetscRandomDestroy()`
+   for sparse matrices that already have locations it fills the locations with random numbers.
+
+   It generates an error if used on sparse matrices that have not been preallocated.
+
+.seealso: [](chapter_matrices), `Mat`, `PetscRandom`, `PetscRandomCreate()`, `MatZeroEntries()`, `MatSetValues()`, `PetscRandomCreate()`, `PetscRandomDestroy()`
 @*/
 PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
 {
@@ -114,7 +113,7 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
 
    Output Parameters:
 +  pivot - the pivot value computed
--  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
+-  row - the row that the zero pivot occurred. This row value must be interpreted carefully due to row reorderings and which processes
          the share the matrix
 
    Level: advanced
@@ -124,9 +123,9 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
 
     This routine should only be called if `MatGetFactorError()` returns a value of `MAT_FACTOR_NUMERIC_ZEROPIVOT`
 
-    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+    This can also be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorClearError()`, `MatFactorGetErrorZeroPivot()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorClearError()`, `MatFactorGetErrorZeroPivot()`,
           `MAT_FACTOR_NUMERIC_ZEROPIVOT`
 @*/
 PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat, PetscReal *pivot, PetscInt *row)
@@ -145,7 +144,7 @@ PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat, PetscReal *pivot, PetscInt *r
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the factored matrix
 
    Output Parameter:
@@ -156,8 +155,8 @@ PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat, PetscReal *pivot, PetscInt *r
    Note:
     This can also be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorClearError()`, `MatFactorGetErrorZeroPivot()`,
-          `MatFactorError`
+.seealso: [](chapter_matrices), `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`,
+          `MatFactorClearError()`, `MatFactorGetErrorZeroPivot()`, `MatFactorError`
 @*/
 PetscErrorCode MatFactorGetError(Mat mat, MatFactorError *err)
 {
@@ -181,7 +180,7 @@ PetscErrorCode MatFactorGetError(Mat mat, MatFactorError *err)
    Note:
     This can also be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorGetError()`, `MatFactorGetErrorZeroPivot()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorGetError()`, `MatFactorGetErrorZeroPivot()`,
           `MatGetErrorCode()`, `MatFactorError`
 @*/
 PetscErrorCode MatFactorClearError(Mat mat)
@@ -263,7 +262,7 @@ PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool co
   Note:
     `keptrows` is set to `NULL` if all rows are nonzero.
 
-.seealso: `Mat`, `MatFindZeroRows()`
+.seealso: [](chapter_matrices), `Mat`, `MatFindZeroRows()`
  @*/
 PetscErrorCode MatFindNonzeroRows(Mat mat, IS *keptrows)
 {
@@ -292,7 +291,7 @@ PetscErrorCode MatFindNonzeroRows(Mat mat, IS *keptrows)
   Note:
     `zerorows` is set to `NULL` if no rows are zero.
 
-.seealso: `Mat`, `MatFindNonzeroRows()`
+.seealso: [](chapter_matrices), `Mat`, `MatFindNonzeroRows()`
  @*/
 PetscErrorCode MatFindZeroRows(Mat mat, IS *zerorows)
 {
@@ -322,20 +321,20 @@ PetscErrorCode MatFindZeroRows(Mat mat, IS *zerorows)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .   A - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .   a - the diagonal part (which is a SEQUENTIAL matrix)
 
    Level: advanced
 
    Notes:
-   See the manual page for `MatCreateAIJ()` for more information on the "diagonal part" of the matrix.
+   See `MatCreateAIJ()` for more information on the "diagonal part" of the matrix.
 
    Use caution, as the reference count on the returned matrix is not incremented and it is used as part of `A`'s normal operation.
 
-.seealso: `Mat`, `MatCreateAIJ()`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateAIJ()`, `MATAIJ`, `MATBAIJ`, `MATSBAIJ`
 @*/
 PetscErrorCode MatGetDiagonalBlock(Mat A, Mat *a)
 {
@@ -360,7 +359,7 @@ PetscErrorCode MatGetDiagonalBlock(Mat A, Mat *a)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -368,7 +367,7 @@ PetscErrorCode MatGetDiagonalBlock(Mat A, Mat *a)
 
    Level: advanced
 
-.seealso: `Mat`
+.seealso: [](chapter_matrices), `Mat`
 @*/
 PetscErrorCode MatGetTrace(Mat mat, PetscScalar *trace)
 {
@@ -389,12 +388,12 @@ PetscErrorCode MatGetTrace(Mat mat, PetscScalar *trace)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
 
-.seealso: `Mat`, `MatImaginaryPart()`
+.seealso: [](chapter_matrices), `Mat`, `MatImaginaryPart()`
 @*/
 PetscErrorCode MatRealPart(Mat mat)
 {
@@ -417,7 +416,7 @@ PetscErrorCode MatRealPart(Mat mat)
 .  mat - the matrix
 
    Output Parameters:
-+   nghosts - number of ghosts (note for `MATBAIJ` and `MATSBAIJ` matrices there is one ghost for each block)
++   nghosts - number of ghosts (for `MATBAIJ` and `MATSBAIJ` matrices there is one ghost for each block)
 -   ghosts - the global indices of the ghost points
 
    Level: advanced
@@ -425,7 +424,7 @@ PetscErrorCode MatRealPart(Mat mat)
    Note:
    `nghosts` and `ghosts` are suitable to pass into `VecCreateGhost()`
 
-.seealso: `Mat`, `VecCreateGhost()`
+.seealso: [](chapter_matrices), `Mat`, `VecCreateGhost()`
 @*/
 PetscErrorCode MatGetGhosts(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[])
 {
@@ -447,12 +446,12 @@ PetscErrorCode MatGetGhosts(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[]
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
 
-.seealso: `Mat`, `MatRealPart()`
+.seealso: [](chapter_matrices), `Mat`, `MatRealPart()`
 @*/
 PetscErrorCode MatImaginaryPart(Mat mat)
 {
@@ -480,7 +479,7 @@ PetscErrorCode MatImaginaryPart(Mat mat)
 
    Level: advanced
 
-.seealso: `Mat`
+.seealso: [](chapter_matrices), `Mat`
 @*/
 PetscErrorCode MatMissingDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
 {
@@ -551,10 +550,10 @@ PetscErrorCode MatMissingDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
    where maxcols >= maximum nonzeros in any row of the matrix.
 
    Caution:
-   Do not try to change the contents of the output arrays (cols and vals).
+   Do not try to change the contents of the output arrays (`cols` and `vals`).
    In some cases, this may corrupt the matrix.
 
-.seealso: `Mat`, `MatRestoreRow()`, `MatSetValues()`, `MatGetValues()`, `MatCreateSubMatrices()`, `MatGetDiagonal()`, `MatGetRowIJ()`, `MatRestoreRowIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MatRestoreRow()`, `MatSetValues()`, `MatGetValues()`, `MatCreateSubMatrices()`, `MatGetDiagonal()`, `MatGetRowIJ()`, `MatRestoreRowIJ()`
 @*/
 PetscErrorCode MatGetRow(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt *cols[], const PetscScalar *vals[])
 {
@@ -579,12 +578,12 @@ PetscErrorCode MatGetRow(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt 
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
 
-.seealso: `Mat`, `MatRealPart()`, `MatImaginaryPart()`, `VecConjugate()`, `MatTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MatRealPart()`, `MatImaginaryPart()`, `VecConjugate()`, `MatTranspose()`
 @*/
 PetscErrorCode MatConjugate(Mat mat)
 {
@@ -606,7 +605,8 @@ PetscErrorCode MatConjugate(Mat mat)
    Input Parameters:
 +  mat - the matrix
 .  row - the row to get
-.  ncols, cols - the number of nonzeros and their columns
+.  ncols - the number of nonzeros
+.  cols - the columns of the nonzeros
 -  vals - if nonzero the column values
 
    Level: advanced
@@ -633,7 +633,7 @@ PetscErrorCode MatConjugate(Mat mat)
    In Fortran `MatRestoreRow()` MUST be called after `MatGetRow()`
    before another call to `MatGetRow()` can be made.
 
-.seealso: `Mat`, `MatGetRow()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetRow()`
 @*/
 PetscErrorCode MatRestoreRow(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt *cols[], const PetscScalar *vals[])
 {
@@ -655,7 +655,7 @@ PetscErrorCode MatRestoreRow(Mat mat, PetscInt row, PetscInt *ncols, const Petsc
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
@@ -663,7 +663,7 @@ PetscErrorCode MatRestoreRow(Mat mat, PetscInt row, PetscInt *ncols, const Petsc
    Note:
    The flag is to ensure that users are aware that `MatGetRow()` only provides the upper triangular part of the row for the matrices in `MATSBAIJ` format.
 
-.seealso: `Mat`, `MATSBAIJ`, `MatRestoreRowUpperTriangular()`
+.seealso: [](chapter_matrices), `Mat`, `MATSBAIJ`, `MatRestoreRowUpperTriangular()`
 @*/
 PetscErrorCode MatGetRowUpperTriangular(Mat mat)
 {
@@ -683,7 +683,7 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: advanced
@@ -691,7 +691,7 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
    Note:
    This routine should be called after you have finished calls to `MatGetRow()` and `MatRestoreRow()`.
 
-.seealso: `Mat`, `MATSBAIJ`, `MatGetRowUpperTriangular()`
+.seealso: [](chapter_matrices), `Mat`, `MATSBAIJ`, `MatGetRowUpperTriangular()`
 @*/
 PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
 {
@@ -726,7 +726,7 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
    prefix is automatically passed in from the PC calling the factorization. To set
    it directly use  `MatSetOptionsPrefixFactor()`
 
-.seealso: `Mat`, `MatSetFromOptions()`, `MatSetOptionsPrefixFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatSetFromOptions()`, `MatSetOptionsPrefixFactor()`
 @*/
 PetscErrorCode MatSetOptionsPrefix(Mat A, const char prefix[])
 {
@@ -755,7 +755,7 @@ PetscErrorCode MatSetOptionsPrefix(Mat A, const char prefix[])
    Normally the prefix is automatically passed in from the `PC` calling the factorization. To set
    it directly when not using `KSP`/`PC` use  `MatSetOptionsPrefixFactor()`
 
-.seealso: `Mat`,   [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSetFromOptions()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`
+.seealso: [](chapter_matrices), `Mat`,   [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSetFromOptions()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`
 @*/
 PetscErrorCode MatSetOptionsPrefixFactor(Mat A, const char prefix[])
 {
@@ -791,30 +791,28 @@ PetscErrorCode MatSetOptionsPrefixFactor(Mat A, const char prefix[])
    Normally the prefix is automatically passed in from the `PC` calling the factorization. To set
    it directly when not using `KSP`/`PC` use  `MatAppendOptionsPrefixFactor()`
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectPrependOptionsPrefix()`,
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectPrependOptionsPrefix()`,
           `PetscObjectGetOptionsPrefix()`, `TSAppendOptionsPrefix()`, `SNESAppendOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `MatSetOptionsPrefixFactor()`,
           `MatSetOptionsPrefix()`
 @*/
 PetscErrorCode MatAppendOptionsPrefixFactor(Mat A, const char prefix[])
 {
-  char  *buf = A->factorprefix;
-  size_t len1, len2;
+  size_t len1, len2, new_len;
 
   PetscFunctionBegin;
   PetscValidHeader(A, 1);
   if (!prefix) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!buf) {
+  if (!A->factorprefix) {
     PetscCall(MatSetOptionsPrefixFactor(A, prefix));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(prefix[0] != '-', PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
 
-  PetscCall(PetscStrlen(prefix, &len1));
-  PetscCall(PetscStrlen(buf, &len2));
-  PetscCall(PetscMalloc1(1 + len1 + len2, &A->factorprefix));
-  PetscCall(PetscStrcpy(A->factorprefix, buf));
-  PetscCall(PetscStrcat(A->factorprefix, prefix));
-  PetscCall(PetscFree(buf));
+  PetscCall(PetscStrlen(A->factorprefix, &len1));
+  PetscCall(PetscStrlen(prefix, &len2));
+  new_len = len1 + len2 + 1;
+  PetscCall(PetscRealloc(new_len * sizeof(*(A->factorprefix)), &A->factorprefix));
+  PetscCall(PetscStrncpy(A->factorprefix + len1, prefix, len2 + 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -834,7 +832,7 @@ PetscErrorCode MatAppendOptionsPrefixFactor(Mat A, const char prefix[])
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
-.seealso: `Mat`, `MatGetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`, `MatSetOptionsPrefix()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`, `MatSetOptionsPrefix()`
 @*/
 PetscErrorCode MatAppendOptionsPrefix(Mat A, const char prefix[])
 {
@@ -859,10 +857,10 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A, const char prefix[])
    Level: advanced
 
    Fortran Note:
-    On the fortran side, the user should pass in a string `prefix` of
+   The user should pass in a string `prefix` of
    sufficient length to hold the prefix.
 
-.seealso: `Mat`, `MatAppendOptionsPrefix()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`, `MatSetOptionsPrefixFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatAppendOptionsPrefix()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`, `MatSetOptionsPrefixFactor()`
 @*/
 PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
 {
@@ -878,7 +876,7 @@ PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Level: beginner
@@ -888,9 +886,9 @@ PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
 
    Users can reset the preallocation to access the original memory.
 
-   Currently only supported for  `MATMPIAIJ` and `MATSEQAIJ` matrices.
+   Currently only supported for  `MATAIJ` matrices.
 
-.seealso: `Mat`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatXAIJSetPreallocation()`
+.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatXAIJSetPreallocation()`
 @*/
 PetscErrorCode MatResetPreallocation(Mat A)
 {
@@ -906,21 +904,20 @@ PetscErrorCode MatResetPreallocation(Mat A)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Level: intermediate
 
    Notes:
-   If the user has not set preallocation for this matrix then a default preallocation that is likely to be inefficient is used.
+   If the user has not set preallocation for this matrix then an efficient algorithm will be used for the first round of
+   setting values in the matrix.
 
    If a suitable preallocation routine is used, this function does not need to be called.
 
-   See the Performance chapter of the PETSc users manual for how to preallocate matrices
-
    This routine is called internally by other matrix functions when needed so rarely needs to be called by users
 
-.seealso: `Mat`, `MatMult()`, `MatCreate()`, `MatDestroy()`
+.seealso: [](chapter_matrices), `Mat`, `MatMult()`, `MatCreate()`, `MatDestroy()`, `MatXAIJSetPreallocation()`
 @*/
 PetscErrorCode MatSetUp(Mat A)
 {
@@ -944,7 +941,7 @@ PetscErrorCode MatSetUp(Mat A)
 #endif
 
 /*@C
-   MatViewFromOptions - View properties of the matrix from the options database
+   MatViewFromOptions - View properties of the matrix based on options set in the options database
 
    Collective
 
@@ -970,7 +967,7 @@ PetscErrorCode MatSetUp(Mat A)
        saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 .ve
 
-.seealso: `Mat`, `MatView()`, `PetscObjectViewFromOptions()`, `MatCreate()`
+.seealso: [](chapter_matrices), `Mat`, `MatView()`, `PetscObjectViewFromOptions()`, `MatCreate()`
 @*/
 PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 {
@@ -988,6 +985,22 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
    Input Parameters:
 +  mat - the matrix
 -  viewer - visualization context
+
+   Options Database Keys:
++  -mat_view ::ascii_info - Prints info on matrix at conclusion of `MatAssemblyEnd()`
+.  -mat_view ::ascii_info_detail - Prints more detailed info
+.  -mat_view - Prints matrix in ASCII format
+.  -mat_view ::ascii_matlab - Prints matrix in Matlab format
+.  -mat_view draw - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
+.  -display <name> - Sets display name (default is host)
+.  -draw_pause <sec> - Sets number of seconds to pause after display
+.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
+.  -viewer_socket_machine <machine> -
+.  -viewer_socket_port <port> -
+.  -mat_view binary - save matrix to file in binary format
+-  -viewer_binary_filename <name> -
+
+   Level: beginner
 
   Notes:
   The available visualization contexts include
@@ -1021,23 +1034,6 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 -    `PETSC_VIEWER_ASCII_INFO_DETAIL` - prints more detailed information about
          the matrix structure
 
-   Options Database Keys:
-+  -mat_view ::ascii_info - Prints info on matrix at conclusion of `MatAssemblyEnd()`
-.  -mat_view ::ascii_info_detail - Prints more detailed info
-.  -mat_view - Prints matrix in ASCII format
-.  -mat_view ::ascii_matlab - Prints matrix in Matlab format
-.  -mat_view draw - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
-.  -display <name> - Sets display name (default is host)
-.  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
-.  -viewer_socket_machine <machine> -
-.  -viewer_socket_port <port> -
-.  -mat_view binary - save matrix to file in binary format
--  -viewer_binary_filename <name> -
-
-   Level: beginner
-
-   Notes:
     The ASCII viewers are only recommended for small matrices on at most a moderate number of processes,
     the program will seemingly hang and take hours for larger matrices, for larger matrices one should use the binary format.
 
@@ -1057,7 +1053,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
   right mouse: continue with the simulation
 .ve
 
-.seealso: `Mat`, `PetscViewerPushFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewer`,
+.seealso: [](chapter_matrices), `Mat`, `PetscViewerPushFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewer`,
           `PetscViewerSocketOpen()`, `PetscViewerBinaryOpen()`, `MatLoad()`, `MatViewFromOptions()`
 @*/
 PetscErrorCode MatView(Mat mat, PetscViewer viewer)
@@ -1180,7 +1176,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    Input Parameters:
 +  mat - the newly loaded matrix, this needs to have been created with `MatCreate()`
             or some related function before a call to `MatLoad()`
--  viewer - binary/HDF5 file viewer
+-  viewer - `PETSCVIEWERBINARY`/`PETSCVIEWERHDF5` file viewer
 
    Options Database Keys:
    Used with block matrix formats (`MATSEQBAIJ`,  ...) to specify
@@ -1227,7 +1223,6 @@ $ -viewer_type {binary,hdf5}
    See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
    and src/mat/tutorials/ex10.c with the second approach.
 
-   Notes about the PETSc binary format:
    In case of `PETSCVIEWERBINARY`, a native PETSc binary format is used. Each of the blocks
    is read onto rank 0 and then shipped to its destination rank, one after another.
    Multiple objects, both matrices and vectors, can be stored within the same file.
@@ -1238,21 +1233,21 @@ $ -viewer_type {binary,hdf5}
    But for anyone who's interested, the standard binary matrix storage
    format is
 
-$    PetscInt    MAT_FILE_CLASSID
-$    PetscInt    number of rows
-$    PetscInt    number of columns
-$    PetscInt    total number of nonzeros
-$    PetscInt    *number nonzeros in each row
-$    PetscInt    *column indices of all nonzeros (starting index is zero)
-$    PetscScalar *values of all nonzeros
+.vb
+    PetscInt    MAT_FILE_CLASSID
+    PetscInt    number of rows
+    PetscInt    number of columns
+    PetscInt    total number of nonzeros
+    PetscInt    *number nonzeros in each row
+    PetscInt    *column indices of all nonzeros (starting index is zero)
+    PetscScalar *values of all nonzeros
+.ve
 
    PETSc automatically does the byte swapping for
-machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-Linux, Microsoft Windows and the Intel Paragon; thus if you write your own binary
+machines that store the bytes reversed. Thus if you write your own binary
 read/write routines you have to swap the bytes; see `PetscBinaryRead()`
 and `PetscBinaryWrite()` to see how this may be done.
 
-   Notes about the HDF5 (MATLAB MAT-File Version 7.3) format:
    In case of `PETSCVIEWERHDF5`, a parallel HDF5 reader is used.
    Each processor's chunk is loaded independently by its owning rank.
    Multiple objects, both matrices and vectors, can be stored within the same file.
@@ -1263,7 +1258,8 @@ and `PetscBinaryWrite()` to see how this may be done.
    within the HDF5 file. This means that a MAT file saved with -v7.3 flag, e.g.
 $    save example.mat A b -v7.3
    can be directly read by this routine (see Reference 1 for details).
-   Note that depending on your MATLAB version, this format might be a default,
+
+   Depending on your MATLAB version, this format might be a default,
    otherwise you can set it as default in Preferences.
 
    Unless -nocompression flag is used to save the file in MATLAB,
@@ -1271,8 +1267,7 @@ $    save example.mat A b -v7.3
 
    See also examples src/mat/tutorials/ex10.c and src/ksp/ksp/tutorials/ex27.c
 
-   Current HDF5 (MAT-File) limitations:
-   This reader currently supports only real `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQDENSE` and `MATMPIDENSE` matrices.
+   This reader currently supports only real `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQDENSE` and `MATMPIDENSE` matrices for `PETSCVIEWERHDF5`
 
    Corresponding `MatView()` is not yet implemented.
 
@@ -1285,7 +1280,7 @@ $    save example.mat A b -v7.3
    References:
 .  * - MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
 
-.seealso: `Mat`, `PetscViewerBinaryOpen()`, `PetscViewerSetType()`, `MatView()`, `VecLoad()`
+.seealso: [](chapter_matrices), `Mat`, `PetscViewerBinaryOpen()`, `PetscViewerSetType()`, `MatView()`, `VecLoad()`
  @*/
 PetscErrorCode MatLoad(Mat mat, PetscViewer viewer)
 {
@@ -1356,7 +1351,7 @@ static PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
    `MatHeaderMerge()` and `MatHeaderReplace()` also manipulate the data in the `Mat` object and likely need changes
    if changes are needed here.
 
-.seealso: `Mat`, `MatCreate()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`
 @*/
 PetscErrorCode MatDestroy(Mat *A)
 {
@@ -1401,17 +1396,16 @@ PetscErrorCode MatDestroy(Mat *A)
    Input Parameters:
 +  mat - the matrix
 .  v - a logically two-dimensional array of values
-.  m, idxm - the number of rows and their global indices
-.  n, idxn - the number of columns and their global indices
+.  m - the number of rows
+.  idxm - the global indices of the rows
+.  n - the number of columns
+.  idxn - the global indices of the columns
 -  addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
    Level: beginner
 
    Notes:
-   If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call MatXXXXSetPreallocation() or
-      `MatSetUp()` before using this routine
-
-   By default the values, v, are row-oriented. See `MatSetOption()` for other options.
+   By default the values, `v`, are stored row-oriented. See `MatSetOption()` for other options.
 
    Calls to `MatSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
    options cannot be mixed without intervening calls to the assembly
@@ -1420,7 +1414,7 @@ PetscErrorCode MatDestroy(Mat *A)
    `MatSetValues()` uses 0-based row and column numbers in Fortran
    as well as in C.
 
-   Negative indices may be passed in idxm and idxn, these rows and columns are
+   Negative indices may be passed in `idxm` and `idxn`, these rows and columns are
    simply ignored. This allows easily inserting element stiffness matrices
    with homogeneous Dirchlet boundary conditions that you don't want represented
    in the matrix.
@@ -1433,7 +1427,7 @@ PetscErrorCode MatDestroy(Mat *A)
    This is labeled with C so does not automatically generate Fortran stubs and interfaces
    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
-.seealso: `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
+.seealso: [](chapter_matrices), `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
 @*/
 PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], const PetscScalar v[], InsertMode addv)
@@ -1494,10 +1488,7 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
    Level: beginner
 
    Notes:
-   If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call MatXXXXSetPreallocation() or
-      `MatSetUp()` before using this routine
-
-   By default the values, v, are row-oriented. See `MatSetOption()` for other options.
+   By default the values, `v`, are stored row-oriented. See `MatSetOption()` for other options.
 
    Calls to `MatSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
    options cannot be mixed without intervening calls to the assembly
@@ -1506,7 +1497,7 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
    `MatSetValues()` uses 0-based row and column numbers in Fortran
    as well as in C.
 
-   Negative indices may be passed in ism and isn, these rows and columns are
+   Negative indices may be passed in `ism` and `isn`, these rows and columns are
    simply ignored. This allows easily inserting element stiffness matrices
    with homogeneous Dirchlet boundary conditions that you don't want represented
    in the matrix.
@@ -1521,7 +1512,7 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
     This is labeled with C so does not automatically generate Fortran stubs and interfaces
                     because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
-.seealso: `Mat`, `MatSetOption()`, `MatSetValues()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
+.seealso: [](chapter_matrices), `Mat`, `MatSetOption()`, `MatSetValues()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`
 @*/
 PetscErrorCode MatSetValuesIS(Mat mat, IS ism, IS isn, const PetscScalar v[], InsertMode addv)
@@ -1559,11 +1550,11 @@ PetscErrorCode MatSetValuesIS(Mat mat, IS ism, IS isn, const PetscScalar v[], In
 
    All the nonzeros in the row must be provided
 
-   The matrix must have previously had its column indices set
+   The matrix must have previously had its column indices set, likely by having been assembled.
 
    The row must belong to this process
 
-.seealso: `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
+.seealso: [](chapter_matrices), `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`, `MatSetValuesRow()`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatSetValuesRowLocal(Mat mat, PetscInt row, const PetscScalar v[])
@@ -1601,7 +1592,7 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat, PetscInt row, const PetscScalar v[]
 
    The row must belong to this process
 
-.seealso: `Mat`, `MatSetValues()`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
+.seealso: [](chapter_matrices), `Mat`, `MatSetValues()`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`
 @*/
 PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
@@ -1681,7 +1672,7 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
    for users of block sparse formats (`MATSEQBAIJ` and `MATMPIBAIJ`).
 
    Fortran Note:
-   In Fortran idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m),idxn(4,n)
    and the values inserted using
 .vb
@@ -1692,7 +1683,7 @@ $     MatStencil idxm(4,m),idxn(4,n)
     etc
 .ve
 
-.seealso: `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
+.seealso: [](chapter_matrices), `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
           `MatSetValues()`, `MatSetValuesBlockedStencil()`, `MatSetStencil()`, `DMCreateMatrix()`, `DMDAVecGetArray()`, `MatStencil`
 @*/
 PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[], PetscInt n, const MatStencil idxn[], const PetscScalar v[], InsertMode addv)
@@ -1791,7 +1782,7 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
    (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
    Fortran Note:
-   In Fortran idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m),idxn(4,n)
    and the values inserted using
 .vb
@@ -1801,7 +1792,7 @@ $     MatStencil idxm(4,m),idxn(4,n)
    etc
 .ve
 
-.seealso: `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
+.seealso: [](chapter_matrices), `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
           `MatSetValues()`, `MatSetValuesStencil()`, `MatSetStencil()`, `DMCreateMatrix()`, `DMDAVecGetArray()`, `MatStencil`,
           `MatSetBlockSize()`, `MatSetLocalToGlobalMapping()`
 @*/
@@ -1874,7 +1865,7 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat, PetscInt m, const MatStencil 
    For matrices generated with `DMCreateMatrix()` this routine is automatically called and so not needed by the
    user.
 
-.seealso: `Mat`, `MatStencil`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
+.seealso: [](chapter_matrices), `Mat`, `MatStencil`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
           `MatSetValues()`, `MatSetValuesBlockedStencil()`, `MatSetValuesStencil()`
 @*/
 PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const PetscInt starts[], PetscInt dof)
@@ -1921,7 +1912,7 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
    The values in idxm would be 1 2; that is the first index for each block divided by
    the block size.
 
-   Note that you must call `MatSetBlockSize()` when constructing this matrix (before
+   You must call `MatSetBlockSize()` when constructing this matrix (before
    preallocating it).
 
    By default the values, `v`, are row-oriented, so the layout of
@@ -1962,7 +1953,7 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
    v[] = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,16]
 .ve
 
-.seealso: `Mat`, `MatSetBlockSize()`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetValuesBlockedLocal()`
+.seealso: [](chapter_matrices), `Mat`, `MatSetBlockSize()`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetValuesBlockedLocal()`
 @*/
 PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], const PetscScalar v[], InsertMode addv)
 {
@@ -2056,7 +2047,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], P
      That is, rows with global index greater than or equal to rstart and less than rend where rstart and rend are obtainable
      from `MatGetOwnershipRange`(mat,&rstart,&rend).
 
-.seealso: `Mat`, `MatGetRow()`, `MatCreateSubMatrices()`, `MatSetValues()`, `MatGetOwnershipRange()`, `MatGetValuesLocal()`, `MatGetValue()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetRow()`, `MatCreateSubMatrices()`, `MatSetValues()`, `MatGetOwnershipRange()`, `MatGetValuesLocal()`, `MatGetValue()`
 @*/
 PetscErrorCode MatGetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
 {
@@ -2107,7 +2098,7 @@ PetscErrorCode MatGetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
       This is labelled with C so does not automatically generate Fortran stubs and interfaces
       because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
-.seealso: `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetLocalToGlobalMapping()`,
+.seealso: [](chapter_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetLocalToGlobalMapping()`,
           `MatSetValuesLocal()`, `MatGetValues()`
 @*/
 PetscErrorCode MatGetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], PetscScalar y[])
@@ -2167,7 +2158,7 @@ PetscErrorCode MatGetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
 
   In the future, we will extend this routine to handle rectangular blocks, and to allow multiple calls for a given matrix.
 
-.seealso: `Mat`, `Mat`MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
+.seealso: [](chapter_matrices), `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt rows[], const PetscScalar v[])
@@ -2205,7 +2196,7 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
    Note:
    If the matrix is obtained with `DMCreateMatrix()` then this may already have been called on the matrix
 
-.seealso: `Mat`, `DM`, `DMCreateMatrix()`, `MatGetLocalToGlobalMapping()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetValuesLocal()`, `MatGetValuesLocal()`
+.seealso: [](chapter_matrices), `Mat`, `DM`, `DMCreateMatrix()`, `MatGetLocalToGlobalMapping()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetValuesLocal()`, `MatGetValuesLocal()`
 @*/
 PetscErrorCode MatSetLocalToGlobalMapping(Mat x, ISLocalToGlobalMapping rmapping, ISLocalToGlobalMapping cmapping)
 {
@@ -2236,7 +2227,7 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x, ISLocalToGlobalMapping rmapping
 
    Level: advanced
 
-.seealso: `Mat`, `MatSetLocalToGlobalMapping()`, `MatSetValuesLocal()`
+.seealso: [](chapter_matrices), `Mat`, `MatSetLocalToGlobalMapping()`, `MatSetValuesLocal()`
 @*/
 PetscErrorCode MatGetLocalToGlobalMapping(Mat A, ISLocalToGlobalMapping *rmapping, ISLocalToGlobalMapping *cmapping)
 {
@@ -2269,7 +2260,7 @@ PetscErrorCode MatGetLocalToGlobalMapping(Mat A, ISLocalToGlobalMapping *rmappin
    Note:
    The `PetscLayout` objects are usually created automatically for the matrix so this routine rarely needs to be called.
 
-.seealso: `Mat`, `PetscLayout`, `MatCreateVecs()`, `MatGetLocalToGlobalMapping()`, `MatGetLayouts()`
+.seealso: [](chapter_matrices), `Mat`, `PetscLayout`, `MatCreateVecs()`, `MatGetLocalToGlobalMapping()`, `MatGetLayouts()`
 @*/
 PetscErrorCode MatSetLayouts(Mat A, PetscLayout rmap, PetscLayout cmap)
 {
@@ -2294,7 +2285,7 @@ PetscErrorCode MatSetLayouts(Mat A, PetscLayout rmap, PetscLayout cmap)
 
    Level: advanced
 
-.seealso: `Mat`, [Matrix Layouts](sec_matlayout), `PetscLayout`, `MatCreateVecs()`, `MatGetLocalToGlobalMapping()`, `MatSetLayouts()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Layouts](sec_matlayout), `PetscLayout`, `MatCreateVecs()`, `MatGetLocalToGlobalMapping()`, `MatSetLayouts()`
 @*/
 PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
 {
@@ -2346,7 +2337,7 @@ PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
     This is labeled with C so does not automatically generate Fortran stubs and interfaces
                     because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
-.seealso: `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetLocalToGlobalMapping()`,
+.seealso: [](chapter_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetLocalToGlobalMapping()`,
           `MatGetValuesLocal()`
 @*/
 PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
@@ -2434,7 +2425,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
     This is labeled with C so does not automatically generate Fortran stubs and interfaces
                     because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
-.seealso: `Mat`, `MatSetBlockSize()`, `MatSetLocalToGlobalMapping()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`,
+.seealso: [](chapter_matrices), `Mat`, `MatSetBlockSize()`, `MatSetLocalToGlobalMapping()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`,
           `MatSetValuesLocal()`, `MatSetValuesBlocked()`
 @*/
 PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
@@ -2508,7 +2499,7 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt i
 +  mat - the matrix
 -  x   - the vector to be multiplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: developer
@@ -2517,7 +2508,7 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat, PetscInt nrow, const PetscInt i
    The vectors `x` and `y` cannot be the same.  I.e., one cannot
    call `MatMultDiagonalBlock`(A,y,y).
 
-.seealso: `Mat`, `MatMult()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, `MatMult()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
 @*/
 PetscErrorCode MatMultDiagonalBlock(Mat mat, Vec x, Vec y)
 {
@@ -2546,7 +2537,7 @@ PetscErrorCode MatMultDiagonalBlock(Mat mat, Vec x, Vec y)
 +  mat - the matrix
 -  x   - the vector to be multiplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: beginner
@@ -2555,7 +2546,7 @@ PetscErrorCode MatMultDiagonalBlock(Mat mat, Vec x, Vec y)
    The vectors `x` and `y` cannot be the same.  I.e., one cannot
    call `MatMult`(A,y,y).
 
-.seealso: `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
 @*/
 PetscErrorCode MatMult(Mat mat, Vec x, Vec y)
 {
@@ -2594,7 +2585,7 @@ PetscErrorCode MatMult(Mat mat, Vec x, Vec y)
 +  mat - the matrix
 -  x   - the vector to be multiplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: beginner
@@ -2606,7 +2597,7 @@ PetscErrorCode MatMult(Mat mat, Vec x, Vec y)
    For complex numbers this does NOT compute the Hermitian (complex conjugate) transpose multiple,
    use `MatMultHermitianTranspose()`
 
-.seealso: `Mat`, `MatMult()`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatMultHermitianTranspose()`, `MatTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MatMult()`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatMultHermitianTranspose()`, `MatTranspose()`
 @*/
 PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y)
 {
@@ -2652,7 +2643,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y)
 +  mat - the matrix
 -  x   - the vector to be multilplied
 
-   Output Parameters:
+   Output Parameter:
 .  y - the result
 
    Level: beginner
@@ -2665,7 +2656,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y)
 
    For real numbers `MatMultTranspose()` and `MatMultHermitianTranspose()` are identical.
 
-.seealso: `Mat`, `MatMult()`, `MatMultAdd()`, `MatMultHermitianTransposeAdd()`, `MatMultTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MatMult()`, `MatMultAdd()`, `MatMultHermitianTransposeAdd()`, `MatMultTranspose()`
 @*/
 PetscErrorCode MatMultHermitianTranspose(Mat mat, Vec x, Vec y)
 {
@@ -2715,9 +2706,10 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat, Vec x, Vec y)
 
     Input Parameters:
 +   mat - the matrix
--   v1, v2 - the vectors
+.   v1 - the vector to be multiplied by `mat`
+-   v2 - the vector to be added to the result
 
-    Output Parameters:
+    Output Parameter:
 .   v3 - the result
 
     Level: beginner
@@ -2726,7 +2718,7 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat, Vec x, Vec y)
     The vectors `v1` and `v3` cannot be the same.  I.e., one cannot
     call `MatMultAdd`(A,v1,v2,v1).
 
-.seealso: `Mat`, `MatMultTranspose()`, `MatMult()`, `MatMultTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, `MatMultTranspose()`, `MatMult()`, `MatMultTransposeAdd()`
 @*/
 PetscErrorCode MatMultAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 {
@@ -2763,9 +2755,10 @@ PetscErrorCode MatMultAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 
    Input Parameters:
 +  mat - the matrix
--  v1, v2 - the vectors
+.  v1 - the vector to be multiplied by the transpose of the matrix
+-  v2 - the vector to be added to the result
 
-   Output Parameters:
+   Output Parameter:
 .  v3 - the result
 
    Level: beginner
@@ -2774,7 +2767,7 @@ PetscErrorCode MatMultAdd(Mat mat, Vec v1, Vec v2, Vec v3)
    The vectors `v1` and `v3` cannot be the same.  I.e., one cannot
    call `MatMultTransposeAdd`(A,v1,v2,v1).
 
-.seealso: `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMult()`
+.seealso: [](chapter_matrices), `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMult()`
 @*/
 PetscErrorCode MatMultTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 {
@@ -2812,9 +2805,10 @@ PetscErrorCode MatMultTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 
    Input Parameters:
 +  mat - the matrix
--  v1, v2 - the vectors
+.  v1 - the vector to be multiplied by the Hermitian transpose
+-  v2 - the vector to be added to the result
 
-   Output Parameters:
+   Output Parameter:
 .  v3 - the result
 
    Level: beginner
@@ -2823,7 +2817,7 @@ PetscErrorCode MatMultTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
    The vectors `v1` and `v3` cannot be the same.  I.e., one cannot
    call `MatMultHermitianTransposeAdd`(A,v1,v2,v1).
 
-.seealso: `Mat`, `MatMultHermitianTranspose()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMult()`
+.seealso: [](chapter_matrices), `Mat`, `MatMultHermitianTranspose()`, `MatMultTranspose()`, `MatMultAdd()`, `MatMult()`
 @*/
 PetscErrorCode MatMultHermitianTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 {
@@ -2872,15 +2866,15 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  t - the type, one of `MAT_FACTOR_NONE`, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ILU`, `MAT_FACTOR_ICC,MAT_FACTOR_ILUDT`, `MAT_FACTOR_QR`
 
    Level: intermediate
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorType`, `MatGetFactor()`, `MatSetFactorType()`, `MAT_FACTOR_NONE`, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ILU`,
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorType`, `MatGetFactor()`, `MatSetFactorType()`, `MAT_FACTOR_NONE`, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ILU`,
           `MAT_FACTOR_ICC,MAT_FACTOR_ILUDT`, `MAT_FACTOR_QR`
 @*/
 PetscErrorCode MatGetFactorType(Mat mat, MatFactorType *t)
@@ -2904,7 +2898,7 @@ PetscErrorCode MatGetFactorType(Mat mat, MatFactorType *t)
 
    Level: intermediate
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorType`, `MatGetFactor()`, `MatGetFactorType()`, `MAT_FACTOR_NONE`, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ILU`,
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorType`, `MatGetFactor()`, `MatGetFactorType()`, `MAT_FACTOR_NONE`, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ILU`,
           `MAT_FACTOR_ICC,MAT_FACTOR_ILUDT`, `MAT_FACTOR_QR`
 @*/
 PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
@@ -2926,7 +2920,7 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
 +  mat - the matrix
 -  flag - flag indicating the type of parameters to be returned (`MAT_LOCAL` - local matrix, `MAT_GLOBAL_MAX` - maximum over all processors, `MAT_GLOBAL_SUM` - sum over all processors)
 
-   Output Parameters:
+   Output Parameter:
 .  info - matrix information context
 
    Notes:
@@ -2938,7 +2932,7 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
    when using the runtime options
 $       -info -mat_view ::ascii_info
 
-   Example for C/C++ Users:
+   Example:
    See the file ${PETSC_DIR}/include/petscmat.h for a complete list of
    data within the MatInfo context.  For example,
 .vb
@@ -2951,7 +2945,6 @@ $       -info -mat_view ::ascii_info
       nz_a = info.nz_allocated;
 .ve
 
-   Example for Fortran Users:
    Fortran users should declare info as a double precision
    array of dimension `MAT_INFO_SIZE`, and then extract the parameters
    of interest.  See the file ${PETSC_DIR}/include/petsc/finclude/petscmat.h
@@ -2970,10 +2963,10 @@ $       -info -mat_view ::ascii_info
     Level: intermediate
 
     Developer Note:
-    Fortran interface is not autogenerated as the
-    interface definition cannot be generated correctly [due to MatInfo]
+    The Fortran interface is not autogenerated as the
+    interface definition cannot be generated correctly [due to `MatInfo` argument]
 
-.seealso: `Mat`, `MatInfo`, `MatStashGetInfo()`
+.seealso: [](chapter_matrices), `Mat`, `MatInfo`, `MatStashGetInfo()`
 @*/
 PetscErrorCode MatGetInfo(Mat mat, MatInfoType flag, MatInfo *info)
 {
@@ -3029,7 +3022,7 @@ PetscErrorCode MatGetInfo_External(Mat A, MatInfoType flag, MatInfo *info)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: [Matrix Factorization](sec_matfactor), `Mat`, `MatFactorType`, `MatLUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`,
+.seealso: [](chapter_matrices), [Matrix Factorization](sec_matfactor), `Mat`, `MatFactorType`, `MatLUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`,
           `MatGetOrdering()`, `MatSetUnfactored()`, `MatFactorInfo`, `MatGetFactor()`
 @*/
 PetscErrorCode MatLUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
@@ -3089,7 +3082,7 @@ PetscErrorCode MatLUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to MatFactorInfo]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatILUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatILUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`
 @*/
 PetscErrorCode MatILUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
 {
@@ -3115,12 +3108,13 @@ PetscErrorCode MatILUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
    MatLUFactorSymbolic - Performs symbolic LU factorization of matrix.
    Call this routine before calling `MatLUFactorNumeric()` and after `MatGetFactor()`.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
 +  fact - the factor matrix obtained with `MatGetFactor()`
 .  mat - the matrix
-.  row, col - row and column permutations
+.  row - the row permutation
+.  col - the column permutation
 -  info - options for factorization, includes
 .vb
           fill - expected fill as ratio of original fill. Run with the option -info to determine an optimal value to use
@@ -3140,7 +3134,7 @@ PetscErrorCode MatILUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatLUFactor()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`, `MatFactorInfoInitialize()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatLUFactor()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`, `MatFactorInfoInitialize()`
 @*/
 PetscErrorCode MatLUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatFactorInfo *info)
 {
@@ -3177,7 +3171,7 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatF
    MatLUFactorNumeric - Performs numeric LU factorization of a matrix.
    Call this routine after first calling `MatLUFactorSymbolic()` and `MatGetFactor()`.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
 +  fact - the factor matrix obtained with `MatGetFactor()`
@@ -3198,7 +3192,7 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatF
     The Fortran interface is not autogenerated as the
     interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatLUFactorSymbolic()`, `MatLUFactor()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatLUFactorSymbolic()`, `MatLUFactor()`, `MatCholeskyFactor()`
 @*/
 PetscErrorCode MatLUFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
 {
@@ -3255,7 +3249,7 @@ PetscErrorCode MatLUFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatLUFactor()`, `MatCholeskyFactorSymbolic()`, `MatCholeskyFactorNumeric()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatLUFactor()`, `MatCholeskyFactorSymbolic()`, `MatCholeskyFactorNumeric()`
           `MatGetOrdering()`
 @*/
 PetscErrorCode MatCholeskyFactor(Mat mat, IS perm, const MatFactorInfo *info)
@@ -3287,7 +3281,7 @@ PetscErrorCode MatCholeskyFactor(Mat mat, IS perm, const MatFactorInfo *info)
    MatCholeskyFactorSymbolic - Performs symbolic Cholesky factorization
    of a symmetric matrix.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
 +  fact - the factor matrix obtained with `MatGetFactor()`
@@ -3314,7 +3308,7 @@ PetscErrorCode MatCholeskyFactor(Mat mat, IS perm, const MatFactorInfo *info)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactor()`, `MatCholeskyFactorNumeric()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactor()`, `MatCholeskyFactorNumeric()`
           `MatGetOrdering()`
 @*/
 PetscErrorCode MatCholeskyFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorInfo *info)
@@ -3353,13 +3347,12 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFa
    of a symmetric matrix. Call this routine after first calling `MatGetFactor()` and
    `MatCholeskyFactorSymbolic()`.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
-+  fact - the factor matrix obtained with `MatGetFactor()`
-.  mat - the initial matrix
-.  info - options for factorization
--  fact - the symbolic factor of mat
++  fact - the factor matrix obtained with `MatGetFactor()`, where the factored values are stored
+.  mat - the initial matrix that is to be factored
+-  info - options for factorization
 
    Level: developer
 
@@ -3372,7 +3365,7 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFa
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatCholeskyFactorSymbolic()`, `MatCholeskyFactor()`, `MatLUFactorNumeric()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatCholeskyFactorSymbolic()`, `MatCholeskyFactor()`, `MatLUFactorNumeric()`
 @*/
 PetscErrorCode MatCholeskyFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
 {
@@ -3432,7 +3425,7 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to MatFactorInfo]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatQRFactorSymbolic()`, `MatQRFactorNumeric()`, `MatLUFactor()`,
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatQRFactorSymbolic()`, `MatQRFactorNumeric()`, `MatLUFactor()`,
           `MatSetUnfactored()`, `MatFactorInfo`, `MatGetFactor()`
 @*/
 PetscErrorCode MatQRFactor(Mat mat, IS col, const MatFactorInfo *info)
@@ -3456,7 +3449,7 @@ PetscErrorCode MatQRFactor(Mat mat, IS col, const MatFactorInfo *info)
    MatQRFactorSymbolic - Performs symbolic QR factorization of matrix.
    Call this routine after `MatGetFactor()` but before calling `MatQRFactorNumeric()`.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
 +  fact - the factor matrix obtained with `MatGetFactor()`
@@ -3480,7 +3473,7 @@ PetscErrorCode MatQRFactor(Mat mat, IS col, const MatFactorInfo *info)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatQRFactor()`, `MatQRFactorNumeric()`, `MatLUFactor()`, `MatFactorInfo`, `MatFactorInfoInitialize()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatQRFactor()`, `MatQRFactorNumeric()`, `MatLUFactor()`, `MatFactorInfo`, `MatFactorInfoInitialize()`
 @*/
 PetscErrorCode MatQRFactorSymbolic(Mat fact, Mat mat, IS col, const MatFactorInfo *info)
 {
@@ -3511,7 +3504,7 @@ PetscErrorCode MatQRFactorSymbolic(Mat fact, Mat mat, IS col, const MatFactorInf
    MatQRFactorNumeric - Performs numeric QR factorization of a matrix.
    Call this routine after first calling `MatGetFactor()`, and `MatQRFactorSymbolic()`.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
 +  fact - the factor matrix obtained with `MatGetFactor()`
@@ -3531,7 +3524,7 @@ PetscErrorCode MatQRFactorSymbolic(Mat fact, Mat mat, IS col, const MatFactorInf
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatQRFactor()`, `MatQRFactorSymbolic()`, `MatLUFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatQRFactor()`, `MatQRFactorSymbolic()`, `MatLUFactor()`
 @*/
 PetscErrorCode MatQRFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
 {
@@ -3584,7 +3577,7 @@ PetscErrorCode MatQRFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatLUFactor()`, `MatSolveAdd()`, `MatSolveTranspose()`, `MatSolveTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatLUFactor()`, `MatSolveAdd()`, `MatSolveTranspose()`, `MatSolveTransposeAdd()`
 @*/
 PetscErrorCode MatSolve(Mat mat, Vec b, Vec x)
 {
@@ -3670,7 +3663,7 @@ static PetscErrorCode MatMatSolve_Basic(Mat A, Mat B, Mat X, PetscBool trans)
    If `B` is a `MATDENSE` matrix then one can call `MatMatSolve`(A,B,B) except with `MATSOLVERMKL_CPARDISO`;
    otherwise, `B` and `X` cannot be the same.
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolve()`, `MatMatSolveTranspose()`, `MatLUFactor()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolve()`, `MatMatSolveTranspose()`, `MatLUFactor()`, `MatCholeskyFactor()`
 @*/
 PetscErrorCode MatMatSolve(Mat A, Mat B, Mat X)
 {
@@ -3716,7 +3709,7 @@ PetscErrorCode MatMatSolve(Mat A, Mat B, Mat X)
    The matrices `B` and `X` cannot be the same.  I.e., one cannot
    call `MatMatSolveTranspose`(A,X,X).
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolveTranspose()`, `MatMatSolve()`, `MatLUFactor()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolveTranspose()`, `MatMatSolve()`, `MatLUFactor()`, `MatCholeskyFactor()`
 @*/
 PetscErrorCode MatMatSolveTranspose(Mat A, Mat B, Mat X)
 {
@@ -3764,7 +3757,7 @@ PetscErrorCode MatMatSolveTranspose(Mat A, Mat B, Mat X)
    For MUMPS, it only supports centralized sparse compressed column format on the host processor for right hand side matrix. User must create B^T in sparse compressed row
    format on the host processor and call `MatMatTransposeSolve()` to implement MUMPS' `MatMatSolve()`.
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatMatSolve()`, `MatMatSolveTranspose()`, `MatLUFactor()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatMatSolve()`, `MatMatSolveTranspose()`, `MatLUFactor()`, `MatCholeskyFactor()`
 @*/
 PetscErrorCode MatMatTransposeSolve(Mat A, Mat Bt, Mat X)
 {
@@ -3819,7 +3812,7 @@ PetscErrorCode MatMatTransposeSolve(Mat A, Mat Bt, Mat X)
    `MatBackwardSolve()` solves U x = y.
    Thus they do not provide a symmetric preconditioner.
 
-.seealso: `Mat`, `MatBackwardSolve()`, `MatGetFactor()`, `MatSolve()`, `MatBackwardSolve()`
+.seealso: [](chapter_matrices), `Mat`, `MatBackwardSolve()`, `MatGetFactor()`, `MatSolve()`, `MatBackwardSolve()`
 @*/
 PetscErrorCode MatForwardSolve(Mat mat, Vec b, Vec x)
 {
@@ -3872,7 +3865,7 @@ PetscErrorCode MatForwardSolve(Mat mat, Vec b, Vec x)
    `MatBackwardSolve()` solves U x = y.
    Thus they do not provide a symmetric preconditioner.
 
-.seealso: `Mat`, `MatForwardSolve()`, `MatGetFactor()`, `MatSolve()`, `MatForwardSolve()`
+.seealso: [](chapter_matrices), `Mat`, `MatForwardSolve()`, `MatGetFactor()`, `MatSolve()`, `MatForwardSolve()`
 @*/
 PetscErrorCode MatBackwardSolve(Mat mat, Vec b, Vec x)
 {
@@ -3916,7 +3909,7 @@ PetscErrorCode MatBackwardSolve(Mat mat, Vec b, Vec x)
    The vectors `b` and `x` cannot be the same.  I.e., one cannot
    call `MatSolveAdd`(A,x,y,x).
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatSolve()`, `MatGetFactor()`, `MatSolveTranspose()`, `MatSolveTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatSolve()`, `MatGetFactor()`, `MatSolveTranspose()`, `MatSolveTransposeAdd()`
 @*/
 PetscErrorCode MatSolveAdd(Mat mat, Vec b, Vec y, Vec x)
 {
@@ -3987,7 +3980,7 @@ PetscErrorCode MatSolveAdd(Mat mat, Vec b, Vec y, Vec x)
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-.seealso: `Mat`, `MatGetFactor()`, `KSP`, `MatSolve()`, `MatSolveAdd()`, `MatSolveTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `KSP`, `MatSolve()`, `MatSolveAdd()`, `MatSolveTransposeAdd()`
 @*/
 PetscErrorCode MatSolveTranspose(Mat mat, Vec b, Vec x)
 {
@@ -4038,7 +4031,7 @@ PetscErrorCode MatSolveTranspose(Mat mat, Vec b, Vec x)
    The vectors `b` and `x` cannot be the same.  I.e., one cannot
    call `MatSolveTransposeAdd`(A,x,y,x).
 
-.seealso: `Mat`, `MatGetFactor()`, `MatSolve()`, `MatSolveAdd()`, `MatSolveTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSolve()`, `MatSolveAdd()`, `MatSolveTranspose()`
 @*/
 PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
 {
@@ -4135,7 +4128,6 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
 
    Vectors `x` and `b` CANNOT be the same
 
-   Notes for Advanced Users:
    The flags are implemented as bitwise inclusive or operations.
    For example, use (`SOR_ZERO_INITIAL_GUESS` | `SOR_SYMMETRIC_SWEEP`)
    to specify a zero initial guess for SSOR.
@@ -4143,7 +4135,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
    Developer Note:
    We should add block SOR support for `MATAIJ` matrices with block size set to great than one and no inodes
 
-.seealso: `Mat`, `MatMult()`, `KSP`, `PC`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatMult()`, `KSP`, `PC`, `MatGetFactor()`
 @*/
 PetscErrorCode MatSOR(Mat mat, Vec b, PetscReal omega, MatSORType flag, PetscReal shift, PetscInt its, PetscInt lits, Vec x)
 {
@@ -4212,13 +4204,13 @@ PetscErrorCode MatCopy_Basic(Mat A, Mat B, MatStructure str)
    Level: intermediate
 
    Notes:
-   If you use `SAME_NONZERO_PATTERN `then the two matrices must have the same nonzero pattern or the routine will crash.
+   If you use `SAME_NONZERO_PATTERN` then the two matrices must have the same nonzero pattern or the routine will crash.
 
    `MatCopy()` copies the matrix entries of a matrix to another existing
    matrix (after first zeroing the second matrix).  A related routine is
    `MatConvert()`, which first creates a new matrix and then copies the data.
 
-.seealso: `Mat`, `MatConvert()`, `MatDuplicate()`
+.seealso: [](chapter_matrices), `Mat`, `MatConvert()`, `MatDuplicate()`
 @*/
 PetscErrorCode MatCopy(Mat A, Mat B, MatStructure str)
 {
@@ -4282,7 +4274,7 @@ PetscErrorCode MatCopy(Mat A, Mat B, MatStructure str)
    the MPI communicator of the generated matrix is always the same as the communicator
    of the input matrix.
 
-.seealso: `Mat`, `MatCopy()`, `MatDuplicate()`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
+.seealso: [](chapter_matrices), `Mat`, `MatCopy()`, `MatDuplicate()`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
 @*/
 PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
 {
@@ -4449,7 +4441,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
    Fortran Note:
    Pass in an empty string and the package name will be copied into it. Make sure the string is long enough.
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolverType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolverType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`
 @*/
 PetscErrorCode MatFactorGetSolverType(Mat mat, MatSolverType *type)
 {
@@ -4494,7 +4486,7 @@ static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 
     Level: developer
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorGetSolverType()`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorGetSolverType()`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`
 @*/
 PetscErrorCode MatSolverTypeRegister(MatSolverType package, MatType mtype, MatFactorType ftype, PetscErrorCode (*createfactor)(Mat, MatFactorType, Mat *))
 {
@@ -4557,7 +4549,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package, MatType mtype, MatFa
 
     Level: developer
 
-.seealso: `Mat`, `MatFactorType`, `MatType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatSolverTypeRegister()`, `MatGetFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatFactorType`, `MatType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatSolverTypeRegister()`, `MatGetFactor()`
 @*/
 PetscErrorCode MatSolverTypeGet(MatSolverType type, MatType mtype, MatFactorType ftype, PetscBool *foundtype, PetscBool *foundmtype, PetscErrorCode (**createfactor)(Mat, MatFactorType, Mat *))
 {
@@ -4651,10 +4643,10 @@ PetscErrorCode MatSolverTypeDestroy(void)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  flg - `PETSC_TRUE` if uses the ordering
 
    Level: developer
@@ -4663,7 +4655,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
    Most internal PETSc factorizations use the ordering passed to the factorization routine but external
    packages do not, thus we want to skip generating the ordering when it is not needed or used.
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`
 @*/
 PetscErrorCode MatFactorGetCanUseOrdering(Mat mat, PetscBool *flg)
 {
@@ -4678,14 +4670,15 @@ PetscErrorCode MatFactorGetCanUseOrdering(Mat mat, PetscBool *flg)
    Logically Collective
 
    Input Parameters:
-.  mat - the matrix obtained with `MatGetFactor()`
++  mat - the matrix obtained with `MatGetFactor()`
+-  ftype - the factorization type to be used
 
-   Output Parameters:
-.  otype - the preferred type
+   Output Parameter:
+.  otype - the preferred ordering type
 
    Level: developer
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorType`, `MatOrderingType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatFactorType`, `MatOrderingType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`
 @*/
 PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOrderingType *otype)
 {
@@ -4705,7 +4698,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 .  type - name of solver type, for example, superlu, petsc (to use PETSc's default)
 -  ftype - factor type, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 
-   Output Parameters:
+   Output Parameter:
 .  f - the factor matrix used with MatXXFactorSymbolic() calls
 
    Options Database Key:
@@ -4729,7 +4722,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
    Developer Note:
       This should actually be called `MatCreateFactor()` since it creates a new factor object
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `KSP`, `MatSolverType`, `MatFactorType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatFactorGetCanUseOrdering()`, `MatSolverTypeRegister()`,
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `KSP`, `MatSolverType`, `MatFactorType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatFactorGetCanUseOrdering()`, `MatSolverTypeRegister()`,
           `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Mat *f)
@@ -4785,7 +4778,7 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Ma
    Developer Note:
       This should actually be called MatCreateFactorAvailable() since MatGetFactor() creates a new factor object
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatSolverType`, `MatFactorType`, `MatGetFactor()`, `MatCopy()`, `MatDuplicate()`, `MatGetFactor()`, `MatSolverTypeRegister()`,
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatSolverType`, `MatFactorType`, `MatGetFactor()`, `MatCopy()`, `MatDuplicate()`, `MatGetFactor()`, `MatSolverTypeRegister()`,
           `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 @*/
 PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type, MatFactorType ftype, PetscBool *flg)
@@ -4829,7 +4822,7 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type, MatFactorType 
     is duplicated and the internal data structures created for the reuse of previous matrix operations are not duplicated.
     User should not use `MatDuplicate()` to create new matrix M if M is intended to be reused as the product of matrix operation.
 
-.seealso: `Mat`, `MatCopy()`, `MatConvert()`, `MatDuplicateOption`
+.seealso: [](chapter_matrices), `Mat`, `MatCopy()`, `MatConvert()`, `MatDuplicateOption`
 @*/
 PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
 {
@@ -4879,9 +4872,8 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
 
    Logically Collective
 
-   Input Parameters:
-+  mat - the matrix
--  v - the vector for storing the diagonal
+   Input Parameter:
+.  mat - the matrix
 
    Output Parameter:
 .  v - the diagonal of the matrix
@@ -4891,7 +4883,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
    Note:
    Currently only correct in parallel for square matrices.
 
-.seealso: `Mat`, `Vec`, `MatGetRow()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMaxAbs()`
+.seealso: [](chapter_matrices), `Mat`, `Vec`, `MatGetRow()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMaxAbs()`
 @*/
 PetscErrorCode MatGetDiagonal(Mat mat, Vec v)
 {
@@ -4928,7 +4920,7 @@ PetscErrorCode MatGetDiagonal(Mat mat, Vec v)
 
     This code is only implemented for a couple of matrix formats.
 
-.seealso: `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMaxAbs()`, `MatGetRowMinAbs()`,
+.seealso: [](chapter_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMaxAbs()`, `MatGetRowMinAbs()`,
           `MatGetRowMax()`
 @*/
 PetscErrorCode MatGetRowMin(Mat mat, Vec v, PetscInt idx[])
@@ -4974,7 +4966,7 @@ PetscErrorCode MatGetRowMin(Mat mat, Vec v, PetscInt idx[])
 
     This code is only implemented for a couple of matrix formats.
 
-.seealso: `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMaxAbs()`, `MatGetRowMin()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMaxAbs()`, `MatGetRowMin()`
 @*/
 PetscErrorCode MatGetRowMinAbs(Mat mat, Vec v, PetscInt idx[])
 {
@@ -5021,7 +5013,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat, Vec v, PetscInt idx[])
 
     This code is only implemented for a couple of matrix formats.
 
-.seealso: `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMaxAbs()`, `MatGetRowMin()`, `MatGetRowMinAbs()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMaxAbs()`, `MatGetRowMin()`, `MatGetRowMinAbs()`
 @*/
 PetscErrorCode MatGetRowMax(Mat mat, Vec v, PetscInt idx[])
 {
@@ -5066,7 +5058,7 @@ PetscErrorCode MatGetRowMax(Mat mat, Vec v, PetscInt idx[])
 
     This code is only implemented for a couple of matrix formats.
 
-.seealso: `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMinAbs()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMinAbs()`
 @*/
 PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
 {
@@ -5096,7 +5088,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
 
    Logically or Neighborhood Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -5107,7 +5099,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
    Notes:
     This code is slow since it is not currently specialized for different formats
 
-.seealso: `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMaxAbs()`, `MatGetRowMinAbs()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMaxAbs()`, `MatGetRowMinAbs()`
 @*/
 PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 {
@@ -5144,7 +5136,7 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
    Normally the use of `MatTranspose`(A, `MAT_REUSE_MATRIX`, &B) requires that `B` was obtained with a call to `MatTranspose`(A, `MAT_INITIAL_MATRIX`, &B). This
    routine allows bypassing that call.
 
-.seealso: `Mat`, `MatTransposeSymbolic()`, `MatTranspose()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
+.seealso: [](chapter_matrices), `Mat`, `MatTransposeSymbolic()`, `MatTranspose()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
 @*/
 PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
 {
@@ -5192,7 +5184,7 @@ PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
 
      If you only need the symbolic transpose, and not the numerical values, use `MatTransposeSymbolic()`
 
-.seealso: `Mat`, `MatTransposeSetPrecursor()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`,
+.seealso: [](chapter_matrices), `Mat`, `MatTransposeSetPrecursor()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`,
           `MatTransposeSymbolic()`, `MatCreateTranspose()`
 @*/
 PetscErrorCode MatTranspose(Mat mat, MatReuse reuse, Mat *B)
@@ -5238,7 +5230,7 @@ PetscErrorCode MatTranspose(Mat mat, MatReuse reuse, Mat *B)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix to transpose
 
    Output Parameter:
@@ -5250,7 +5242,7 @@ PetscErrorCode MatTranspose(Mat mat, MatReuse reuse, Mat *B)
    Note:
    This is not supported for many matrix types, use `MatTranspose()` in those cases
 
-.seealso: `Mat`, `MatTransposeSetPrecursor()`, `MatTranspose()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
+.seealso: [](chapter_matrices), `Mat`, `MatTransposeSetPrecursor()`, `MatTranspose()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
 @*/
 PetscErrorCode MatTransposeSymbolic(Mat A, Mat *B)
 {
@@ -5294,9 +5286,10 @@ PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
 
    Input Parameters:
 +  A - the matrix to test
--  B - the matrix to test against, this can equal the first parameter
+.  B - the matrix to test against, this can equal the first parameter
+-  tol - tolerance, differences between entries smaller than this are counted as zero
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -5307,7 +5300,7 @@ PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
    The sequential algorithm has a running time of the order of the number of nonzeros; the parallel
    test involves parallel copies of the block-offdiagonal parts of the matrix.
 
-.seealso: `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`
+.seealso: [](chapter_matrices), `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`
 @*/
 PetscErrorCode MatIsTranspose(Mat A, Mat B, PetscReal tol, PetscBool *flg)
 {
@@ -5346,7 +5339,7 @@ PetscErrorCode MatIsTranspose(Mat A, Mat B, PetscReal tol, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: `Mat`, `MatTranspose()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`
+.seealso: [](chapter_matrices), `Mat`, `MatTranspose()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`
 @*/
 PetscErrorCode MatHermitianTranspose(Mat mat, MatReuse reuse, Mat *B)
 {
@@ -5365,9 +5358,10 @@ PetscErrorCode MatHermitianTranspose(Mat mat, MatReuse reuse, Mat *B)
 
    Input Parameters:
 +  A - the matrix to test
--  B - the matrix to test against, this can equal the first parameter
+.  B - the matrix to test against, this can equal the first parameter
+-  tol - tolerance, differences between entries smaller than this are counted as zero
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -5379,7 +5373,7 @@ PetscErrorCode MatHermitianTranspose(Mat mat, MatReuse reuse, Mat *B)
    has a running time of the order of the number of nonzeros; the parallel
    test involves parallel copies of the block-offdiagonal parts of the matrix.
 
-.seealso: `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsTranspose()`
 @*/
 PetscErrorCode MatIsHermitianTranspose(Mat A, Mat B, PetscReal tol, PetscBool *flg)
 {
@@ -5409,7 +5403,7 @@ PetscErrorCode MatIsHermitianTranspose(Mat A, Mat B, PetscReal tol, PetscBool *f
 .  row - row permutation, each processor supplies only the permutation for its rows
 -  col - column permutation, each processor supplies only the permutation for its columns
 
-   Output Parameters:
+   Output Parameter:
 .  B - the permuted matrix
 
    Level: advanced
@@ -5423,7 +5417,7 @@ PetscErrorCode MatIsHermitianTranspose(Mat A, Mat B, PetscReal tol, PetscBool *f
      exploit the fact that row and col are permutations, consider implementing the
      more general `MatCreateSubMatrix()` instead.
 
-.seealso: `Mat`, `MatGetOrdering()`, `ISAllGather()`, `MatCreateSubMatrix()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetOrdering()`, `ISAllGather()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode MatPermute(Mat mat, IS row, IS col, Mat *B)
 {
@@ -5463,7 +5457,7 @@ PetscErrorCode MatPermute(Mat mat, IS row, IS col, Mat *B)
 
    Level: intermediate
 
-.seealso: `Mat`
+.seealso: [](chapter_matrices), `Mat`
 @*/
 PetscErrorCode MatEqual(Mat A, Mat B, PetscBool *flg)
 {
@@ -5507,7 +5501,7 @@ PetscErrorCode MatEqual(Mat A, Mat B, PetscBool *flg)
    L = a diagonal matrix (stored as a vector), R = a diagonal matrix (stored as a vector)
    The L scales the rows of the matrix, the R scales the columns of the matrix.
 
-.seealso: `Mat`, `MatScale()`, `MatShift()`, `MatDiagonalSet()`
+.seealso: [](chapter_matrices), `Mat`, `MatScale()`, `MatShift()`, `MatDiagonalSet()`
 @*/
 PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
 {
@@ -5544,12 +5538,9 @@ PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
 +   mat - the matrix to be scaled
 -   a  - the scaling value
 
-    Output Parameter:
-.   mat - the scaled matrix
-
     Level: intermediate
 
-.seealso: `Mat`, `MatDiagonalScale()`
+.seealso: [](chapter_matrices), `Mat`, `MatDiagonalScale()`
 @*/
 PetscErrorCode MatScale(Mat mat, PetscScalar a)
 {
@@ -5585,7 +5576,7 @@ PetscErrorCode MatScale(Mat mat, PetscScalar a)
 
    Level: intermediate
 
-.seealso: `Mat`
+.seealso: [](chapter_matrices), `Mat`
 @*/
 PetscErrorCode MatNorm(Mat mat, NormType type, PetscReal *nrm)
 {
@@ -5635,7 +5626,7 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    out by assembly. If you intend to use that extra space on a subsequent assembly, be sure to insert explicit zeros
    before `MAT_FINAL_ASSEMBLY` so the space is not compressed out.
 
-.seealso: `Mat`, `MatAssemblyEnd()`, `MatSetValues()`, `MatAssembled()`
+.seealso: [](chapter_matrices), `Mat`, `MatAssemblyEnd()`, `MatSetValues()`, `MatAssembled()`
 @*/
 PetscErrorCode MatAssemblyBegin(Mat mat, MatAssemblyType type)
 {
@@ -5671,7 +5662,7 @@ PetscErrorCode MatAssemblyBegin(Mat mat, MatAssemblyType type)
 
    Level: advanced
 
-.seealso: `Mat`, `MatAssemblyEnd()`, `MatSetValues()`, `MatAssemblyBegin()`
+.seealso: [](chapter_matrices), `Mat`, `MatAssemblyEnd()`, `MatSetValues()`, `MatAssemblyBegin()`
 @*/
 PetscErrorCode MatAssembled(Mat mat, PetscBool *assembled)
 {
@@ -5686,7 +5677,7 @@ PetscErrorCode MatAssembled(Mat mat, PetscBool *assembled)
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
    be called after `MatAssemblyBegin()`.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -5707,7 +5698,7 @@ PetscErrorCode MatAssembled(Mat mat, PetscBool *assembled)
 
    Level: beginner
 
-.seealso: `Mat`, `MatAssemblyBegin()`, `MatSetValues()`, `PetscDrawOpenX()`, `PetscDrawCreate()`, `MatView()`, `MatAssembled()`, `PetscViewerSocketOpen()`
+.seealso: [](chapter_matrices), `Mat`, `MatAssemblyBegin()`, `MatSetValues()`, `PetscDrawOpenX()`, `PetscDrawCreate()`, `MatView()`, `MatAssembled()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
 {
@@ -5791,7 +5782,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
    Insert a logically dense subblock, which can be
 .    `MAT_ROW_ORIENTED` - row-oriented (default)
 
-   Note these options reflect the data you pass in with `MatSetValues()`; it has
+   These options reflect the data you pass in with `MatSetValues()`; it has
    nothing to do with how the data is stored internally in the matrix
    data structure.
 
@@ -5877,7 +5868,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
    to `PETSC_BOOL3_UNKNOWN` because the matrix values had changed so the code cannot be certain that the related property had
    not changed.
 
-.seealso: `MatOption`, `Mat`, `MatGetOption()`
+.seealso: [](chapter_matrices), `MatOption`, `Mat`, `MatGetOption()`
 @*/
 PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
 {
@@ -5985,7 +5976,7 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
     Certain option values may be unknown, for those use the routines `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, or
     `MatIsSymmetricKnown()`, `MatIsHermitianKnown()`, `MatIsStructurallySymmetricKnown()`
 
-.seealso: `Mat`, `MatOption`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`,
+.seealso: [](chapter_matrices), `Mat`, `MatOption`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`,
     `MatIsSymmetricKnown()`, `MatIsHermitianKnown()`, `MatIsStructurallySymmetricKnown()`
 @*/
 PetscErrorCode MatGetOption(Mat mat, MatOption op, PetscBool *flg)
@@ -6034,7 +6025,7 @@ PetscErrorCode MatGetOption(Mat mat, MatOption op, PetscBool *flg)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Level: intermediate
@@ -6043,7 +6034,7 @@ PetscErrorCode MatGetOption(Mat mat, MatOption op, PetscBool *flg)
     If the matrix was not preallocated then a default, likely poor preallocation will be set in the matrix, so this should be called after the preallocation phase.
    See the Performance chapter of the users manual for information on preallocating matrices.
 
-.seealso: `Mat`, `MatZeroRows()`, `MatZeroRowsColumns()`
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRows()`, `MatZeroRowsColumns()`
 @*/
 PetscErrorCode MatZeroEntries(Mat mat)
 {
@@ -6098,7 +6089,7 @@ PetscErrorCode MatZeroEntries(Mat mat)
 
    The option `MAT_NO_OFF_PROC_ZERO_ROWS` does not apply to this routine.
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRows()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRows()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsColumns(Mat mat, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -6135,7 +6126,7 @@ PetscErrorCode MatZeroRowsColumns(Mat mat, PetscInt numRows, const PetscInt rows
    Note:
    See `MatZeroRowsColumns()` for details on how this routine operates.
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRows()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsColumnsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
@@ -6205,7 +6196,7 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec
    You can call `MatSetOption`(mat,`MAT_NO_OFF_PROC_ZERO_ROWS`,`PETSC_TRUE`) if each process indicates only rows it
    owns that are to be zeroed. This saves a global synchronization in the implementation.
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`, `PCREDISTRIBUTE`
 @*/
 PetscErrorCode MatZeroRows(Mat mat, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -6228,7 +6219,7 @@ PetscErrorCode MatZeroRows(Mat mat, PetscInt numRows, const PetscInt rows[], Pet
    MatZeroRowsIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -6242,7 +6233,7 @@ PetscErrorCode MatZeroRows(Mat mat, PetscInt numRows, const PetscInt rows[], Pet
    Note:
    See `MatZeroRows()` for details on how this routine operates.
 
-.seealso: `Mat`, `MatZeroRows()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRows()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
@@ -6293,7 +6284,7 @@ PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
    a single value per point) you can skip filling those indices.
 
    Fortran Note:
-   idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m)
    and the values inserted using
 .vb
@@ -6304,7 +6295,7 @@ $     MatStencil idxm(4,m)
    etc
 .ve
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsl()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsl()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil rows[], PetscScalar diag, Vec x, Vec b)
@@ -6374,7 +6365,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
    a single value per point) you can skip filling those indices.
 
    Fortran Note:
-   In Fortran idxm and idxn should be declared as
+   `idxm` and `idxn` should be declared as
 $     MatStencil idxm(4,m)
    and the values inserted using
 .vb
@@ -6385,7 +6376,7 @@ $     MatStencil idxm(4,m)
     etc
 .ve
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRows()`
 @*/
 PetscErrorCode MatZeroRowsColumnsStencil(Mat mat, PetscInt numRows, const MatStencil rows[], PetscScalar diag, Vec x, Vec b)
@@ -6447,7 +6438,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat, PetscInt numRows, const MatSte
 
    See `MatZeroRows()` for details on how this routine operates.
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRows()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRows()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsLocal(Mat mat, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -6500,7 +6491,7 @@ PetscErrorCode MatZeroRowsLocal(Mat mat, PetscInt numRows, const PetscInt rows[]
 
    See `MatZeroRows()` for details on how this routine operates.
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRows()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRows()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsLocalIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
@@ -6545,7 +6536,7 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b
 
    See `MatZeroRowsColumns()` for details on how this routine operates.
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRows()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsColumnsLocal(Mat mat, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -6577,7 +6568,7 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat, PetscInt numRows, const PetscInt
    MatZeroRowsColumnsLocalIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix; using local numbering of rows.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -6594,7 +6585,7 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat, PetscInt numRows, const PetscInt
 
    See `MatZeroRowsColumns()` for details on how this routine operates.
 
-.seealso: `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRows()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsColumnsLocalIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
@@ -6625,16 +6616,16 @@ PetscErrorCode MatZeroRowsColumnsLocalIS(Mat mat, IS is, PetscScalar diag, Vec x
    Input Parameter:
 .  mat - the matrix
 
-   Level: beginner
-
    Output Parameters:
 +  m - the number of global rows
 -  n - the number of global columns
 
+   Level: beginner
+
    Note:
    Both output parameters can be `NULL` on input.
 
-.seealso: `Mat`, `MatSetSizes()`, `MatGetLocalSize()`
+.seealso: [](chapter_matrices), `Mat`, `MatSetSizes()`, `MatGetLocalSize()`
 @*/
 PetscErrorCode MatGetSize(Mat mat, PetscInt *m, PetscInt *n)
 {
@@ -6660,7 +6651,7 @@ PetscErrorCode MatGetSize(Mat mat, PetscInt *m, PetscInt *n)
 
    Level: beginner
 
-.seealso: `Mat`, `MatSetSizes()`, `MatGetSize()`
+.seealso: [](chapter_matrices), `Mat`, `MatSetSizes()`, `MatGetSize()`
 @*/
 PetscErrorCode MatGetLocalSize(Mat mat, PetscInt *m, PetscInt *n)
 {
@@ -6688,7 +6679,7 @@ PetscErrorCode MatGetLocalSize(Mat mat, PetscInt *m, PetscInt *n)
 
    Level: developer
 
-.seealso: `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
+.seealso: [](chapter_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
 @*/
 PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
 {
@@ -6724,7 +6715,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
   `PetscSplitOwnership`(`MPI_Comm` comm, `PetscInt` *n, `PetscInt` *N)
   and then `MPI_Scan()` to calculate prefix sums of the local sizes.
 
-.seealso: `Mat`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`,
+.seealso: [](chapter_matrices), `Mat`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`,
           `PetscLayout`
 @*/
 PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
@@ -6745,17 +6736,17 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
    each process. For all matrices  it returns the ranges of matrix rows associated with rows of a vector that would contain the result of a matrix
    vector product with this matrix. See :any:`<sec_matlayout>` for details on matrix layouts
 
-   Not Collective, unless matrix has not been allocated, then collective
+   Not Collective, unless matrix has not been allocated
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  ranges - start of each processors portion plus one more than the total length at the end
 
    Level: beginner
 
-.seealso: `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
+.seealso: [](chapter_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
 @*/
 PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
 {
@@ -6771,17 +6762,17 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
    MatGetOwnershipRangesColumn - Returns the ranges of matrix columns associated with rows of a vector one multiplies this vector by that are owned by
    each processor. (The columns of the "diagonal blocks", for most sparse matrix formats). See :any:`<sec_matlayout>` for details on matrix layouts.
 
-   Not Collective, unless matrix has not been allocated, then collective on Mat
+   Not Collective, unless matrix has not been allocated
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameters:
+   Output Parameter:
 .  ranges - start of each processors portion plus one more then the total length at the end
 
    Level: beginner
 
-.seealso: `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRanges()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRanges()`
 @*/
 PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt **ranges)
 {
@@ -6809,7 +6800,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt **ranges)
 
    Level: intermediate
 
-.seealso: `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatSetValues()`, ``MATELEMENTAL``, ``MATSCALAPACK``
+.seealso: [](chapter_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatSetValues()`, ``MATELEMENTAL``, ``MATSCALAPACK``
 @*/
 PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
 {
@@ -6832,13 +6823,13 @@ PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
    Uses levels of fill only, not drop tolerance. Use `MatLUFactorNumeric()`
    to complete the factorization.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
 +  fact - the factorized matrix obtained with `MatGetFactor()`
 .  mat - the matrix
 .  row - row permutation
-.  column - column permutation
+.  col - column permutation
 -  info - structure containing
 .vb
       levels - number of levels of fill.
@@ -6846,9 +6837,6 @@ PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
       1 or 0 - indicating force fill on diagonal (improves robustness for matrices
                 missing diagonal entries)
 .ve
-
-   Output Parameters:
-.  fact - new matrix that has been symbolically factored
 
    Level: developer
 
@@ -6868,7 +6856,7 @@ PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
    References:
 .  * - Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 
-.seealso: `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`
           `MatGetOrdering()`, `MatFactorInfo`
 @*/
 PetscErrorCode MatILUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatFactorInfo *info)
@@ -6902,7 +6890,7 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const Mat
    Cholesky factorization for a symmetric matrix.  Use
    `MatCholeskyFactorNumeric()` to complete the factorization.
 
-   Collective on fact
+   Collective
 
    Input Parameters:
 +  fact - the factorized matrix obtained with `MatGetFactor()`
@@ -6913,9 +6901,6 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const Mat
       levels - number of levels of fill.
       expected fill - as ratio of original fill.
 .ve
-
-   Output Parameter:
-.  fact - the factored matrix
 
    Level: developer
 
@@ -6933,7 +6918,7 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const Mat
    References:
 .  * - Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 
-.seealso: `Mat`, `MatGetFactor()`, `MatCholeskyFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatCholeskyFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`
 @*/
 PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorInfo *info)
 {
@@ -6970,7 +6955,8 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorI
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted (on this processor, may be zero)
-.  irow, icol - index sets of rows and columns to extract
+.  irow - index set of rows to extract
+.  icol - index set of columns to extract
 -  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
@@ -7008,9 +6994,9 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorI
 
    Fortran Note:
    The Fortran interface is slightly different from that given below; it
-   requires one to pass in  as submat a `Mat` (integer) array of size at least n+1.
+   requires one to pass in as `submat` a `Mat` (integer) array of size at least n+1.
 
-.seealso: `Mat`, `MatDestroySubMatrices()`, `MatCreateSubMatrix()`, `MatGetRow()`, `MatGetDiagonal()`, `MatReuse`
+.seealso: [](chapter_matrices), `Mat`, `MatDestroySubMatrices()`, `MatCreateSubMatrix()`, `MatGetRow()`, `MatGetDiagonal()`, `MatReuse`
 @*/
 PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
 {
@@ -7059,7 +7045,8 @@ PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const 
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted
-.  irow, icol - index sets of rows and columns to extract
+.  irow - index set of rows to extract
+.  icol - index set of columns to extract
 -  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
    Output Parameter:
@@ -7070,7 +7057,7 @@ PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const 
    Note:
    This is used by `PCGASM`
 
-.seealso: `Mat`, `PCGASM`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRow()`, `MatGetDiagonal()`, `MatReuse`
+.seealso: [](chapter_matrices), `Mat`, `PCGASM`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRow()`, `MatGetDiagonal()`, `MatReuse`
 @*/
 PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
 {
@@ -7112,7 +7099,7 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
 
    Input Parameters:
 +  n - the number of local matrices
--  mat - the matrices (note that this is a pointer to the array of matrices)
+-  mat - the matrices (this is a pointer to the array of matrices)
 
    Level: advanced
 
@@ -7120,9 +7107,9 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
     Frees not only the matrices, but also the array that contains the matrices
 
     Fortran Note:
-    Will not free the array.
+    This does not free the array.
 
-.seealso: `Mat`, `MatCreateSubMatrices()` `MatDestroySubMatrices()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSubMatrices()` `MatDestroySubMatrices()`
 @*/
 PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[])
 {
@@ -7147,8 +7134,8 @@ PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[])
 
    Input Parameters:
 +  n - the number of local matrices
--  mat - the matrices (note that this is a pointer to the array of matrices, just to match the calling
-                       sequence of MatCreateSubMatrices())
+-  mat - the matrices (this is a pointer to the array of matrices, just to match the calling
+                       sequence of `MatCreateSubMatrices()`)
 
    Level: advanced
 
@@ -7156,9 +7143,9 @@ PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[])
     Frees not only the matrices, but also the array that contains the matrices
 
     Fortran Note:
-    Will not free the array.
+    This does not free the array.
 
-.seealso: `Mat`, `MatCreateSubMatrices()`, `MatDestroyMatrices()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSubMatrices()`, `MatDestroyMatrices()`
 @*/
 PetscErrorCode MatDestroySubMatrices(PetscInt n, Mat *mat[])
 {
@@ -7184,7 +7171,7 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n, Mat *mat[])
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -7192,7 +7179,7 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n, Mat *mat[])
 
   Level: developer
 
-.seealso: `Mat`, `MatDestroySeqNonzeroStructure()`, `MatCreateSubMatrices()`, `MatDestroyMatrices()`
+.seealso: [](chapter_matrices), `Mat`, `MatDestroySeqNonzeroStructure()`, `MatCreateSubMatrices()`, `MatDestroyMatrices()`
 @*/
 PetscErrorCode MatGetSeqNonzeroStructure(Mat mat, Mat *matstruct)
 {
@@ -7215,8 +7202,8 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat, Mat *matstruct)
 
    Collective
 
-   Input Parameters:
-.  mat - the matrix (note that this is a pointer to the array of matrices, just to match the calling
+   Input Parameter:
+.  mat - the matrix (this is a pointer to the array of matrices, just to match the calling
                        sequence of `MatGetSequentialNonzeroStructure()`)
 
    Level: advanced
@@ -7224,7 +7211,7 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat, Mat *matstruct)
     Note:
     Frees not only the matrices, but also the array that contains the matrices
 
-.seealso: `Mat`, `MatGetSeqNonzeroStructure()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetSeqNonzeroStructure()`
 @*/
 PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
 {
@@ -7257,7 +7244,7 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
    That is: if a matrix nonzero for a given block would increase the overlap all columns associated with
    that block are included in the overlap regardless of whether each specific column would increase the overlap.
 
-.seealso: `Mat`, `PCASM`, `MatSetBlockSize()`, `MatIncreaseOverlapSplit()`, `MatCreateSubMatrices()`
+.seealso: [](chapter_matrices), `Mat`, `PCASM`, `MatSetBlockSize()`, `MatIncreaseOverlapSplit()`, `MatCreateSubMatrices()`
 @*/
 PetscErrorCode MatIncreaseOverlap(Mat mat, PetscInt n, IS is[], PetscInt ov)
 {
@@ -7307,7 +7294,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat, IS *, PetscInt);
 
    Level: developer
 
-.seealso: `Mat`, `MatCreateSubMatrices()`, `MatIncreaseOverlap()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSubMatrices()`, `MatIncreaseOverlap()`
 @*/
 PetscErrorCode MatIncreaseOverlapSplit(Mat mat, PetscInt n, IS is[], PetscInt ov)
 {
@@ -7349,7 +7336,7 @@ PetscErrorCode MatIncreaseOverlapSplit(Mat mat, PetscInt n, IS is[], PetscInt ov
 
    If the block size has not been set yet this routine returns 1.
 
-.seealso: `Mat`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSizes()`
+.seealso: [](chapter_matrices), `Mat`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatGetBlockSize(Mat mat, PetscInt *bs)
 {
@@ -7380,7 +7367,7 @@ PetscErrorCode MatGetBlockSize(Mat mat, PetscInt *bs)
 
    If a block size has not been set yet this routine returns 1.
 
-.seealso: `Mat`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSize()`, `MatSetBlockSizes()`
+.seealso: [](chapter_matrices), `Mat`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSize()`, `MatSetBlockSizes()`
 @*/
 PetscErrorCode MatGetBlockSizes(Mat mat, PetscInt *rbs, PetscInt *cbs)
 {
@@ -7411,7 +7398,7 @@ PetscErrorCode MatGetBlockSizes(Mat mat, PetscInt *rbs, PetscInt *cbs)
     For `MATAIJ` matrix format, this function can be called at a later stage, provided that the specified block size
     is compatible with the matrix local sizes.
 
-.seealso: `Mat`,  `MATBAIJ`, `MATSBAIJ`, `MATAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`
+.seealso: [](chapter_matrices), `Mat`, `MATBAIJ`, `MATSBAIJ`, `MATAIJ`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatSetBlockSize(Mat mat, PetscInt bs)
 {
@@ -7452,7 +7439,7 @@ static PetscErrorCode EnvelopeDataDestroy(EnvelopeData *edata)
 
      The blocks can overlap between processes, including laying on more than two processes
 
-.seealso: `Mat`, `MatInvertVariableBlockEnvelope()`, `MatSetVariableBlockSizes()`
+.seealso: [](chapter_matrices), `Mat`, `MatInvertVariableBlockEnvelope()`, `MatSetVariableBlockSizes()`
 */
 static PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
 {
@@ -7601,17 +7588,18 @@ static PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
   Collective
 
   Input Parameters:
-. A - the matrix
++ A - the matrix
+- reuse - indicates if the `C` matrix was obtained from a previous call to this routine
 
-  Output Parameters:
-. C - matrix with inverted block diagonal of A.  This matrix should be created and may have its type set.
+  Output Parameter:
+. C - matrix with inverted block diagonal of `A`
 
   Level: advanced
 
   Note:
-     For efficiency the matrix A should have all the nonzero entries clustered in smallish blocks along the diagonal.
+     For efficiency the matrix `A` should have all the nonzero entries clustered in smallish blocks along the diagonal.
 
-.seealso: `Mat`, `MatInvertBlockDiagonal()`, `MatComputeBlockDiagonal()`
+.seealso: [](chapter_matrices), `Mat`, `MatInvertBlockDiagonal()`, `MatComputeBlockDiagonal()`
 @*/
 PetscErrorCode MatInvertVariableBlockEnvelope(Mat A, MatReuse reuse, Mat *C)
 {
@@ -7667,7 +7655,7 @@ PetscErrorCode MatInvertVariableBlockEnvelope(Mat A, MatReuse reuse, Mat *C)
 
     Each variable point-block set of degrees of freedom must live on a single MPI rank. That is a point block cannot straddle two MPI ranks.
 
-.seealso: `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`, `MatGetVariableBlockSizes()`,
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`, `MatGetVariableBlockSizes()`,
           `MatComputeVariableBlockEnvelope()`, `PCVPBJACOBI`
 @*/
 PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsizes)
@@ -7701,7 +7689,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsi
 
    Level: intermediate
 
-.seealso: `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`, `MatSetVariableBlockSizes()`, `MatComputeVariableBlockEnvelope()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`, `MatSetVariableBlockSizes()`, `MatComputeVariableBlockEnvelope()`
 @*/
 PetscErrorCode MatGetVariableBlockSizes(Mat mat, PetscInt *nblocks, const PetscInt **bsizes)
 {
@@ -7734,7 +7722,7 @@ PetscErrorCode MatGetVariableBlockSizes(Mat mat, PetscInt *nblocks, const PetscI
 
     The row and column block size determine the blocksize of the "row" and "column" vectors returned by `MatCreateVecs()`.
 
-.seealso: `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSize()`, `MatGetBlockSizes()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSize()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatSetBlockSizes(Mat mat, PetscInt rbs, PetscInt cbs)
 {
@@ -7780,7 +7768,7 @@ PetscErrorCode MatSetBlockSizes(Mat mat, PetscInt rbs, PetscInt cbs)
 
    Level: developer
 
-.seealso: `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`
 @*/
 PetscErrorCode MatSetBlockSizesFromMats(Mat mat, Mat fromRow, Mat fromCol)
 {
@@ -7808,7 +7796,7 @@ PetscErrorCode MatSetBlockSizesFromMats(Mat mat, Mat fromRow, Mat fromCol)
 
    Level: developer
 
-.seealso: `Mat`, `MatMult()`, `MatMultAdd()`, `PCMGSetResidual()`
+.seealso: [](chapter_matrices), `Mat`, `MatMult()`, `MatMultAdd()`, `PCMGSetResidual()`
 @*/
 PetscErrorCode MatResidual(Mat mat, Vec b, Vec x, Vec r)
 {
@@ -7842,7 +7830,7 @@ PetscErrorCode MatResidual(Mat mat, Vec b, Vec x, Vec r)
 +   A - the matrix
 .   shift -  0 or 1 indicating we want the indices starting at 0 or 1
 .   symmetric - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be symmetrized
--   inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicats if the nonzero structure of the
+-   inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For `MATBAIJ` matrices the compressed version is
                  always used.
 
@@ -7858,7 +7846,7 @@ PetscErrorCode MatResidual(Mat mat, Vec b, Vec x, Vec r)
     Note:
     Use  `MatRestoreRowIJF90()` when you no longer need access to the data
 
-.seealso: [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatGetRowIJ()`, `MatRestoreRowIJ()`, `MatRestoreRowIJF90()`
+.seealso: [](chapter_matrices), [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatGetRowIJ()`, `MatRestoreRowIJ()`, `MatRestoreRowIJF90()`
 M*/
 
 /*MC
@@ -7873,7 +7861,7 @@ M*/
 +   A - the  matrix
 .   shift -  0 or 1 indicating we want the indices starting at 0 or 1
 .   symmetric - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be symmetrized
-    inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicats if the nonzero structure of the
+    inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For `MATBAIJ` matrices the compressed version is
                  always used.
 .   n - number of local rows in the (possibly compressed) matrix
@@ -7884,7 +7872,7 @@ M*/
 
     Level: developer
 
-.seealso: [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatGetRowIJ()`, `MatRestoreRowIJ()`, `MatGetRowIJF90()`
+.seealso: [](chapter_matrices), [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatGetRowIJ()`, `MatRestoreRowIJ()`, `MatGetRowIJF90()`
 M*/
 
 /*@C
@@ -7896,7 +7884,7 @@ M*/
 +   mat - the matrix
 .   shift -  0 or 1 indicating we want the indices starting at 0 or 1
 .   symmetric - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be symmetrized
--   inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicats if the nonzero structure of the
+-   inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For `MATBAIJ` matrices the compressed version is
                  always used.
 
@@ -7915,7 +7903,7 @@ M*/
     Use `MatRestoreRowIJ()` when you are finished accessing the ia[] and ja[] values.
 
     Fortran Notes:
-    In Fortran use
+    Use
 .vb
     PetscInt, pointer :: ia(:),ja(:)
     call MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
@@ -7923,7 +7911,7 @@ M*/
 .ve
    `MatGetRowIJ()` Fortran binding is deprecated (since PETSc 3.19), use `MatGetRowIJF90()`
 
-.seealso: `Mat`, `MATAIJ`, `MatGetRowIJF90()`, `MatGetColumnIJ()`, `MatRestoreRowIJ()`, `MatSeqAIJGetArray()`
+.seealso: [](chapter_matrices), `Mat`, `MATAIJ`, `MatGetRowIJF90()`, `MatGetColumnIJ()`, `MatRestoreRowIJ()`, `MatSeqAIJGetArray()`
 @*/
 PetscErrorCode MatGetRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscBool *done)
 {
@@ -7962,12 +7950,12 @@ PetscErrorCode MatGetRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBo
 .   ia - the column pointers; that is ia[0] = 0, ia[col] = i[col-1] + number of elements in that col of the matrix
 -   ja - the row indices
 
-    Output Parameters:
+    Output Parameter:
 .   done - `PETSC_TRUE` or `PETSC_FALSE`, indicating whether the values have been returned
 
     Level: developer
 
-.seealso: `Mat`, `MatGetRowIJ()`, `MatRestoreColumnIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetRowIJ()`, `MatRestoreColumnIJ()`
 @*/
 PetscErrorCode MatGetColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscBool *done)
 {
@@ -8003,7 +7991,7 @@ PetscErrorCode MatGetColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pets
 .   ia - the row pointers
 -   ja - the column indices
 
-    Output Parameters:
+    Output Parameter:
 .   done - `PETSC_TRUE` or `PETSC_FALSE` indicated that the values have been returned
 
     Level: developer
@@ -8015,7 +8003,8 @@ PetscErrorCode MatGetColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pets
 
     Fortran Note:
    `MatRestoreRowIJ()` Fortran binding is deprecated (since PETSc 3.19), use `MatRestoreRowIJF90()`
-.seealso: `Mat`, `MatGetRowIJ()`, `MatRestoreRowIJF90()`, `MatRestoreColumnIJ()`
+
+.seealso: [](chapter_matrices), `Mat`, `MatGetRowIJ()`, `MatRestoreRowIJF90()`, `MatRestoreColumnIJ()`
 @*/
 PetscErrorCode MatRestoreRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscBool *done)
 {
@@ -8041,7 +8030,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pet
 /*@C
     MatRestoreColumnIJ - Call after you are completed with the ia,ja indices obtained with `MatGetColumnIJ()`.
 
-    Collective on Mat
+    Collective
 
     Input Parameters:
 +   mat - the matrix
@@ -8059,7 +8048,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pet
 
     Level: developer
 
-.seealso: `Mat`, `MatGetColumnIJ()`, `MatRestoreRowIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetColumnIJ()`, `MatRestoreRowIJ()`
 @*/
 PetscErrorCode MatRestoreColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscBool *done)
 {
@@ -8089,16 +8078,16 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, 
 
     Input Parameters:
 +   mat - the matrix
-.   ncolors - max color value
+.   ncolors - maximum color value
 .   n   - number of entries in colorarray
 -   colorarray - array indicating color for each column
 
-    Output Parameters:
+    Output Parameter:
 .   iscoloring - coloring generated using colorarray information
 
     Level: developer
 
-.seealso: `Mat`, `MatGetRowIJ()`, `MatGetColumnIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetRowIJ()`, `MatGetColumnIJ()`
 @*/
 PetscErrorCode MatColoringPatch(Mat mat, PetscInt ncolors, PetscInt n, ISColoringValue colorarray[], ISColoring *iscoloring)
 {
@@ -8134,7 +8123,7 @@ PetscErrorCode MatColoringPatch(Mat mat, PetscInt ncolors, PetscInt n, ISColorin
    systems with a matrix-free Newton-Krylov method and a matrix-based, in-place
    ILU(0) preconditioner.
 
-   Note that one can specify in-place ILU(0) factorization by calling
+   One can specify in-place ILU(0) factorization by calling
 .vb
      PCType(pc,PCILU);
      PCFactorSeUseInPlace(pc);
@@ -8150,7 +8139,7 @@ PetscErrorCode MatColoringPatch(Mat mat, PetscInt ncolors, PetscInt n, ISColorin
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-.seealso: `Mat`, `PCFactorSetUseInPlace()`, `PCFactorGetUseInPlace()`
+.seealso: [](chapter_matrices), `Mat`, `PCFactorSetUseInPlace()`, `PCFactorGetUseInPlace()`
 @*/
 PetscErrorCode MatSetUnfactored(Mat mat)
 {
@@ -8170,7 +8159,7 @@ PetscErrorCode MatSetUnfactored(Mat mat)
     Synopsis:
     MatDenseGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   x - matrix
@@ -8190,7 +8179,7 @@ PetscErrorCode MatSetUnfactored(Mat mat)
 
     Level: advanced
 
-.seealso: `Mat`, `MatDenseRestoreArrayF90()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatSeqAIJGetArrayF90()`
+.seealso: [](chapter_matrices), `Mat`, `MatDenseRestoreArrayF90()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatSeqAIJGetArrayF90()`
 M*/
 
 /*MC
@@ -8200,7 +8189,7 @@ M*/
     Synopsis:
     MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameters:
 +   x - matrix
@@ -8220,7 +8209,7 @@ M*/
 
     Level: advanced
 
-.seealso: `Mat`, `MatDenseGetArrayF90()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatSeqAIJRestoreArrayF90()`
+.seealso: [](chapter_matrices), `Mat`, `MatDenseGetArrayF90()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatSeqAIJRestoreArrayF90()`
 M*/
 
 /*MC
@@ -8229,7 +8218,7 @@ M*/
     Synopsis:
     MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   x - matrix
@@ -8249,7 +8238,7 @@ M*/
 
     Level: advanced
 
-.seealso: `Mat`, `MatSeqAIJRestoreArrayF90()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`, `MatDenseGetArrayF90()`
+.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJRestoreArrayF90()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`, `MatDenseGetArrayF90()`
 M*/
 
 /*MC
@@ -8259,7 +8248,7 @@ M*/
     Synopsis:
     MatSeqAIJRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameters:
 +   x - matrix
@@ -8279,7 +8268,7 @@ M*/
 
     Level: advanced
 
-.seealso: `Mat`, `MatSeqAIJGetArrayF90()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`, `MatDenseRestoreArrayF90()`
+.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJGetArrayF90()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`, `MatDenseRestoreArrayF90()`
 M*/
 
 /*@
@@ -8290,17 +8279,17 @@ M*/
 
     Input Parameters:
 +   mat - the original matrix
-.   isrow - parallel IS containing the rows this processor should obtain
-.   iscol - parallel IS containing all columns you wish to keep. Each process should list the columns that will be in IT's "diagonal part" in the new matrix.
+.   isrow - parallel `IS` containing the rows this processor should obtain
+.   iscol - parallel `IS` containing all columns you wish to keep. Each process should list the columns that will be in IT's "diagonal part" in the new matrix.
 -   cll - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 
     Output Parameter:
-.   newmat - the new submatrix, of the same type as the old
+.   newmat - the new submatrix, of the same type as the original matrix
 
     Level: advanced
 
     Notes:
-    The submatrix will be able to be multiplied with vectors using the same layout as iscol.
+    The submatrix will be able to be multiplied with vectors using the same layout as `iscol`.
 
     Some matrix types place restrictions on the row and column indices, such
     as that they be sorted or that they be equal to each other. For `MATBAIJ` and `MATSBAIJ` matrices the indices must include all rows/columns of a block;
@@ -8311,20 +8300,19 @@ M*/
       The first time this is called you should use a cll of `MAT_INITIAL_MATRIX`,
    the `MatCreateSubMatrix()` routine will create the newmat for you. Any additional calls
    to this routine with a mat of the same nonzero structure and with a call of `MAT_REUSE_MATRIX`
-   will reuse the matrix generated the first time.  You should call `MatDestroy()` on newmat when
+   will reuse the matrix generated the first time.  You should call `MatDestroy()` on `newmat` when
    you are finished using it.
 
     The communicator of the newly obtained matrix is ALWAYS the same as the communicator of
     the input matrix.
 
-    If iscol is `NULL` then all columns are obtained (not supported in Fortran).
+    If `iscol` is `NULL` then all columns are obtained (not supported in Fortran).
 
    Example usage:
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Let's assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
-
+   as follows
 .vb
             1  2  0  |  0  3  0  |  0  4
     Proc0   0  5  6  |  7  0  0  |  8  0
@@ -8338,7 +8326,7 @@ M*/
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-    Suppose isrow = [0 1 | 4 | 6 7] and iscol = [1 2 | 3 4 5 | 6].  The resulting submatrix is
+    Suppose `isrow` = [0 1 | 4 | 6 7] and `iscol` = [1 2 | 3 4 5 | 6].  The resulting submatrix is
 
 .vb
             2  0  |  0  3  0  |  0
@@ -8350,7 +8338,7 @@ M*/
             0  0  | 31 32 33  |  0
 .ve
 
-.seealso: `Mat`, `MatCreateSubMatrices()`, `MatCreateSubMatricesMPI()`, `MatCreateSubMatrixVirtual()`, `MatSubMatrixVirtualUpdate()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateSubMatrices()`, `MatCreateSubMatricesMPI()`, `MatCreateSubMatrixVirtual()`, `MatSubMatrixVirtualUpdate()`
 @*/
 PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat *newmat)
 {
@@ -8456,7 +8444,7 @@ setproperties:
    Note:
    Propagates the options associated to `MAT_SYMMETRY_ETERNAL`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_HERMITIAN`, `MAT_SPD`, `MAT_SYMMETRIC`, and `MAT_STRUCTURAL_SYMMETRY_ETERNAL`
 
-.seealso: `Mat`, `MatSetOption()`, `MatIsSymmetricKnown()`, `MatIsSPDKnown()`, `MatIsHermitianKnown()`, MatIsStructurallySymmetricKnown()`
+.seealso: [](chapter_matrices), `Mat`, `MatSetOption()`, `MatIsSymmetricKnown()`, `MatIsSPDKnown()`, `MatIsHermitianKnown()`, MatIsStructurallySymmetricKnown()`
 @*/
 PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
 {
@@ -8500,7 +8488,7 @@ PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
      MatAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
 
-.seealso: `MatAssemblyBegin()`, `MatAssemblyEnd()`, `Mat`, `MatStashGetInfo()`
+.seealso: [](chapter_matrices), `MatAssemblyBegin()`, `MatAssemblyEnd()`, `Mat`, `MatStashGetInfo()`
 @*/
 PetscErrorCode MatStashSetInitialSize(Mat mat, PetscInt size, PetscInt bsize)
 {
@@ -8520,8 +8508,11 @@ PetscErrorCode MatStashSetInitialSize(Mat mat, PetscInt size, PetscInt bsize)
 
    Input Parameters:
 +  mat   - the matrix
-.  x,y - the vectors
--  w - where the result is stored
+.  x - the vector to be multiplied by the interpolation operator
+-  y - the vector to be added to the result
+
+   Output Parameter:
+.  w - the resulting vector
 
    Level: intermediate
 
@@ -8531,7 +8522,7 @@ PetscErrorCode MatStashSetInitialSize(Mat mat, PetscInt size, PetscInt bsize)
     This allows one to use either the restriction or interpolation (its transpose)
     matrix to do the interpolation
 
-.seealso: `Mat`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatRestrict()`, `PCMG`
+.seealso: [](chapter_matrices), `Mat`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatRestrict()`, `PCMG`
 @*/
 PetscErrorCode MatInterpolateAdd(Mat A, Vec x, Vec y, Vec w)
 {
@@ -8560,7 +8551,10 @@ PetscErrorCode MatInterpolateAdd(Mat A, Vec x, Vec y, Vec w)
 
    Input Parameters:
 +  mat   - the matrix
--  x,y - the vectors
+-  x - the vector to be interpolated
+
+   Output Parameter:
+.  y - the resulting vector
 
    Level: intermediate
 
@@ -8568,7 +8562,7 @@ PetscErrorCode MatInterpolateAdd(Mat A, Vec x, Vec y, Vec w)
     This allows one to use either the restriction or interpolation (its transpose)
     matrix to do the interpolation
 
-.seealso: `Mat`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatRestrict()`, `PCMG`
+.seealso: [](chapter_matrices), `Mat`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatRestrict()`, `PCMG`
 @*/
 PetscErrorCode MatInterpolate(Mat A, Vec x, Vec y)
 {
@@ -8591,11 +8585,14 @@ PetscErrorCode MatInterpolate(Mat A, Vec x, Vec y)
 /*@
    MatRestrict - y = A*x or A'*x
 
-   Neighbor-wise Collective on Mat
+   Neighbor-wise Collective
 
    Input Parameters:
 +  mat   - the matrix
--  x,y - the vectors
+-  x - the vector to be restricted
+
+   Output Parameter:
+.  y - the resulting vector
 
    Level: intermediate
 
@@ -8603,7 +8600,7 @@ PetscErrorCode MatInterpolate(Mat A, Vec x, Vec y)
     This allows one to use either the restriction or interpolation (its transpose)
     matrix to do the restriction
 
-.seealso: `Mat`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatInterpolate()`, `PCMG`
+.seealso: [](chapter_matrices), `Mat`, `MatMultAdd()`, `MatMultTransposeAdd()`, `MatInterpolate()`, `PCMG`
 @*/
 PetscErrorCode MatRestrict(Mat A, Vec x, Vec y)
 {
@@ -8626,13 +8623,14 @@ PetscErrorCode MatRestrict(Mat A, Vec x, Vec y)
 /*@
    MatMatInterpolateAdd - Y = W + A*X or W + A'*X
 
-   Neighbor-wise Collective on Mat
+   Neighbor-wise Collective
 
    Input Parameters:
 +  mat   - the matrix
--  w, x - the input dense matrices
+.  x - the input dense matrix to be multiplied
+-  w - the input dense matrix to be added to the result
 
-   Output Parameters:
+   Output Parameter:
 .  y - the output dense matrix
 
    Level: intermediate
@@ -8642,7 +8640,7 @@ PetscErrorCode MatRestrict(Mat A, Vec x, Vec y)
     matrix to do the interpolation. y matrix can be reused if already created with the proper sizes,
     otherwise it will be recreated. y must be initialized to `NULL` if not supplied.
 
-.seealso: `Mat`, `MatInterpolateAdd()`, `MatMatInterpolate()`, `MatMatRestrict()`, `PCMG`
+.seealso: [](chapter_matrices), `Mat`, `MatInterpolateAdd()`, `MatMatInterpolate()`, `MatMatRestrict()`, `PCMG`
 @*/
 PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
 {
@@ -8703,13 +8701,13 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
 /*@
    MatMatInterpolate - Y = A*X or A'*X
 
-   Neighbor-wise Collective on Mat
+   Neighbor-wise Collective
 
    Input Parameters:
 +  mat   - the matrix
 -  x - the input dense matrix
 
-   Output Parameters:
+   Output Parameter:
 .  y - the output dense matrix
 
    Level: intermediate
@@ -8719,7 +8717,7 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
     matrix to do the interpolation. y matrix can be reused if already created with the proper sizes,
     otherwise it will be recreated. y must be initialized to `NULL` if not supplied.
 
-.seealso: `Mat`, `MatInterpolate()`, `MatRestrict()`, `MatMatRestrict()`, `PCMG`
+.seealso: [](chapter_matrices), `Mat`, `MatInterpolate()`, `MatRestrict()`, `MatMatRestrict()`, `PCMG`
 @*/
 PetscErrorCode MatMatInterpolate(Mat A, Mat x, Mat *y)
 {
@@ -8731,13 +8729,13 @@ PetscErrorCode MatMatInterpolate(Mat A, Mat x, Mat *y)
 /*@
    MatMatRestrict - Y = A*X or A'*X
 
-   Neighbor-wise Collective on Mat
+   Neighbor-wise Collective
 
    Input Parameters:
 +  mat   - the matrix
 -  x - the input dense matrix
 
-   Output Parameters:
+   Output Parameter:
 .  y - the output dense matrix
 
    Level: intermediate
@@ -8747,7 +8745,7 @@ PetscErrorCode MatMatInterpolate(Mat A, Mat x, Mat *y)
     matrix to do the restriction. y matrix can be reused if already created with the proper sizes,
     otherwise it will be recreated. y must be initialized to `NULL` if not supplied.
 
-.seealso: `Mat`, `MatRestrict()`, `MatInterpolate()`, `MatMatInterpolate()`, `PCMG`
+.seealso: [](chapter_matrices), `Mat`, `MatRestrict()`, `MatInterpolate()`, `MatMatInterpolate()`, `PCMG`
 @*/
 PetscErrorCode MatMatRestrict(Mat A, Mat x, Mat *y)
 {
@@ -8767,7 +8765,7 @@ PetscErrorCode MatMatRestrict(Mat A, Mat x, Mat *y)
 
    Level: developer
 
-.seealso: `Mat`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatSetNullSpace()`, `MatNullSpace`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatSetNullSpace()`, `MatNullSpace`
 @*/
 PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 {
@@ -8810,7 +8808,7 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 
     The user should call `MatNullSpaceDestroy()`.
 
-.seealso: `Mat`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatSetTransposeNullSpace()`, `MatGetTransposeNullSpace()`, `MatNullSpaceRemove()`,
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatSetTransposeNullSpace()`, `MatGetTransposeNullSpace()`, `MatNullSpaceRemove()`,
           `KSPSetPCSide()`
 @*/
 PetscErrorCode MatSetNullSpace(Mat mat, MatNullSpace nullsp)
@@ -8836,7 +8834,7 @@ PetscErrorCode MatSetNullSpace(Mat mat, MatNullSpace nullsp)
 
    Level: developer
 
-.seealso: `Mat`, `MatNullSpace`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatSetTransposeNullSpace()`, `MatSetNullSpace()`, `MatGetNullSpace()`
+.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatSetTransposeNullSpace()`, `MatSetNullSpace()`, `MatGetNullSpace()`
 @*/
 PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
 {
@@ -8864,7 +8862,7 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
 
    See `MatSetNullSpace()`
 
-.seealso: `Mat`, `MatNullSpace`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatSetNullSpace()`, `MatGetTransposeNullSpace()`, `MatNullSpaceRemove()`, `KSPSetPCSide()`
+.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatSetNullSpace()`, `MatGetTransposeNullSpace()`, `MatNullSpaceRemove()`, `KSPSetPCSide()`
 @*/
 PetscErrorCode MatSetTransposeNullSpace(Mat mat, MatNullSpace nullsp)
 {
@@ -8894,7 +8892,7 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat, MatNullSpace nullsp)
 
    You can remove the null space by calling this routine with an nullsp of `NULL`
 
-.seealso: `Mat`, `MatNullSpace`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNullSpace()`, `MatNullSpaceCreateRigidBody()`, `MatGetNearNullSpace()`
+.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNullSpace()`, `MatNullSpaceCreateRigidBody()`, `MatGetNearNullSpace()`
 @*/
 PetscErrorCode MatSetNearNullSpace(Mat mat, MatNullSpace nullsp)
 {
@@ -8922,7 +8920,7 @@ PetscErrorCode MatSetNearNullSpace(Mat mat, MatNullSpace nullsp)
 
    Level: advanced
 
-.seealso: `Mat`, `MatNullSpace`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatNullSpaceCreate()`
+.seealso: [](chapter_matrices), `Mat`, `MatNullSpace`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatNullSpaceCreate()`
 @*/
 PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
 {
@@ -8943,8 +8941,9 @@ PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
    Input Parameters:
 +  mat - the matrix
 .  row - row/column permutation
-.  fill - expected fill factor >= 1.0
--  level - level of fill, for ICC(k)
+-  info - information on desired factorization process
+
+   Level: developer
 
    Notes:
    Probably really in-place only when level of fill is zero, otherwise allocates
@@ -8954,13 +8953,11 @@ PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
    Developer Note:
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, `MatGetFactor()`, `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatFactorInfo`, `MatGetFactor()`, `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`
 @*/
 PetscErrorCode MatICCFactor(Mat mat, IS row, const MatFactorInfo *info)
 {
@@ -8995,7 +8992,7 @@ PetscErrorCode MatICCFactor(Mat mat, IS row, const MatFactorInfo *info)
 
     This allows one to avoid during communication to perform the scaling that must be done with `MatDiagonalScale()`
 
-.seealso: `Mat`, `MatDiagonalScale()`
+.seealso: [](chapter_matrices), `Mat`, `MatDiagonalScale()`
 @*/
 PetscErrorCode MatDiagonalScaleLocal(Mat mat, Vec diag)
 {
@@ -9041,7 +9038,7 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat, Vec diag)
    Note:
     Matrix must have been factored by `MatCholeskyFactor()`
 
-.seealso: `Mat`, `MatGetFactor()`, `MatCholeskyFactor()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatCholeskyFactor()`
 @*/
 PetscErrorCode MatGetInertia(Mat mat, PetscInt *nneg, PetscInt *nzero, PetscInt *npos)
 {
@@ -9072,7 +9069,7 @@ PetscErrorCode MatGetInertia(Mat mat, PetscInt *nneg, PetscInt *nzero, PetscInt 
    The vectors `b` and `x` cannot be the same.  I.e., one cannot
    call `MatSolves`(A,x,x).
 
-.seealso: `Mat`, `Vecs`, `MatSolveAdd()`, `MatSolveTranspose()`, `MatSolveTransposeAdd()`, `MatSolve()`
+.seealso: [](chapter_matrices), `Mat`, `Vecs`, `MatSolveAdd()`, `MatSolveTranspose()`, `MatSolveTransposeAdd()`, `MatSolve()`
 @*/
 PetscErrorCode MatSolves(Mat mat, Vecs b, Vecs x)
 {
@@ -9099,7 +9096,7 @@ PetscErrorCode MatSolves(Mat mat, Vecs b, Vecs x)
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact transpose)
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -9112,7 +9109,7 @@ PetscErrorCode MatSolves(Mat mat, Vecs b, Vecs x)
     One can declare that a matrix is symmetric with `MatSetOption`(mat,`MAT_SYMMETRIC`,`PETSC_TRUE`) and if it is known to remain symmetric
     after changes to the matrices values one can call `MatSetOption`(mat,`MAT_SYMMETRY_ETERNAL`,`PETSC_TRUE`)
 
-.seealso: `Mat`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetricKnown()`,
+.seealso: [](chapter_matrices), `Mat`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetricKnown()`,
           `MAT_SYMMETRIC`, `MAT_SYMMETRY_ETERNAL`, `MatSetOption()`
 @*/
 PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
@@ -9138,13 +9135,13 @@ PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
 /*@
    MatIsHermitian - Test whether a matrix is Hermitian
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact Hermitian)
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -9157,7 +9154,7 @@ PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
     One can declare that a matrix is Hermitian with `MatSetOption`(mat,`MAT_HERMITIAN`,`PETSC_TRUE`) and if it is known to remain Hermitian
     after changes to the matrices values one can call `MatSetOption`(mat,`MAT_SYMEMTRY_ETERNAL`,`PETSC_TRUE`)
 
-.seealso: `Mat`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitianKnown()`, `MatIsStructurallySymmetric()`, `MatSetOption()`,
+.seealso: [](chapter_matrices), `Mat`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitianKnown()`, `MatIsStructurallySymmetric()`, `MatSetOption()`,
           `MatIsSymmetricKnown()`, `MatIsSymmetric()`, `MAT_HERMITIAN`, `MAT_SYMMETRY_ETERNAL`, `MatSetOption()`
 @*/
 PetscErrorCode MatIsHermitian(Mat A, PetscReal tol, PetscBool *flg)
@@ -9201,7 +9198,7 @@ PetscErrorCode MatIsHermitian(Mat A, PetscReal tol, PetscBool *flg)
     One can declare that a matrix is symmetric with `MatSetOption`(mat,`MAT_SYMMETRIC`,`PETSC_TRUE`) and if it is known to remain symmetric
     after changes to the matrices values one can call `MatSetOption`(mat,`MAT_SYMMETRY_ETERNAL`,`PETSC_TRUE`)
 
-.seealso: `Mat`, `MAT_SYMMETRY_ETERNAL`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitianKnown()`
+.seealso: [](chapter_matrices), `Mat`, `MAT_SYMMETRY_ETERNAL`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitianKnown()`
 @*/
 PetscErrorCode MatIsSymmetricKnown(Mat A, PetscBool *set, PetscBool *flg)
 {
@@ -9238,7 +9235,7 @@ PetscErrorCode MatIsSymmetricKnown(Mat A, PetscBool *set, PetscBool *flg)
    One can declare that a matrix is SPD with `MatSetOption`(mat,`MAT_SPD`,`PETSC_TRUE`) and if it is known to remain SPD
    after changes to the matrices values one can call `MatSetOption`(mat,`MAT_SPD_ETERNAL`,`PETSC_TRUE`)
 
-.seealso: `Mat`, `MAT_SPD_ETERNAL`, `MAT_SPD`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitianKnown()`
+.seealso: [](chapter_matrices), `Mat`, `MAT_SPD_ETERNAL`, `MAT_SPD`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitianKnown()`
 @*/
 PetscErrorCode MatIsSPDKnown(Mat A, PetscBool *set, PetscBool *flg)
 {
@@ -9276,7 +9273,7 @@ PetscErrorCode MatIsSPDKnown(Mat A, PetscBool *set, PetscBool *flg)
    One can declare that a matrix is Hermitian with `MatSetOption`(mat,`MAT_HERMITIAN`,`PETSC_TRUE`) and if it is known to remain Hermitian
    after changes to the matrices values one can call `MatSetOption`(mat,`MAT_SYMMETRY_ETERNAL`,`PETSC_TRUE`)
 
-.seealso: `Mat`, `MAT_SYMMETRY_ETERNAL`, `MAT_HERMITIAN`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`
+.seealso: [](chapter_matrices), `Mat`, `MAT_SYMMETRY_ETERNAL`, `MAT_HERMITIAN`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`
 @*/
 PetscErrorCode MatIsHermitianKnown(Mat A, PetscBool *set, PetscBool *flg)
 {
@@ -9296,12 +9293,12 @@ PetscErrorCode MatIsHermitianKnown(Mat A, PetscBool *set, PetscBool *flg)
 /*@
    MatIsStructurallySymmetric - Test whether a matrix is structurally symmetric
 
-   Collective on Mat
+   Collective
 
    Input Parameter:
 .  A - the matrix to test
 
-   Output Parameters:
+   Output Parameter:
 .  flg - the result
 
    Level: intermediate
@@ -9312,7 +9309,7 @@ PetscErrorCode MatIsHermitianKnown(Mat A, PetscBool *set, PetscBool *flg)
    One can declare that a matrix is structurally symmetric with `MatSetOption`(mat,`MAT_STRUCTURALLY_SYMMETRIC`,`PETSC_TRUE`) and if it is known to remain structurally
    symmetric after changes to the matrices values one can call `MatSetOption`(mat,`MAT_STRUCTURAL_SYMMETRY_ETERNAL`,`PETSC_TRUE`)
 
-.seealso: `Mat`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_STRUCTURAL_SYMMETRY_ETERNAL`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsSymmetric()`, `MatSetOption()`, `MatIsStructurallySymmetricKnown()`
+.seealso: [](chapter_matrices), `Mat`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_STRUCTURAL_SYMMETRY_ETERNAL`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsSymmetric()`, `MatSetOption()`, `MatIsStructurallySymmetricKnown()`
 @*/
 PetscErrorCode MatIsStructurallySymmetric(Mat A, PetscBool *flg)
 {
@@ -9348,7 +9345,7 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A, PetscBool *flg)
 
    Use `MatIsStructurallySymmetric()` to explicitly check if a matrix is structurally symmetric (this is an expensive operation)
 
-.seealso: `Mat`, `MAT_STRUCTURALLY_SYMMETRIC`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitianKnown()`
+.seealso: [](chapter_matrices), `Mat`, `MAT_STRUCTURALLY_SYMMETRIC`, `MatTranspose()`, `MatIsTranspose()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitianKnown()`
 @*/
 PetscErrorCode MatIsStructurallySymmetricKnown(Mat A, PetscBool *set, PetscBool *flg)
 {
@@ -9369,7 +9366,7 @@ PetscErrorCode MatIsStructurallySymmetricKnown(Mat A, PetscBool *set, PetscBool 
    MatStashGetInfo - Gets how many values are currently in the matrix stash, i.e. need
        to be communicated to other processors during the `MatAssemblyBegin()`/`MatAssemblyEnd()` process
 
-    Not collective
+    Not Collective
 
    Input Parameter:
 .   mat - the matrix
@@ -9382,7 +9379,7 @@ PetscErrorCode MatIsStructurallySymmetricKnown(Mat A, PetscBool *set, PetscBool 
 
    Level: advanced
 
-.seealso: `MatAssemblyBegin()`, `MatAssemblyEnd()`, `Mat`, `MatStashSetInitialSize()`
+.seealso: [](chapter_matrices), `MatAssemblyBegin()`, `MatAssemblyEnd()`, `Mat`, `MatStashSetInitialSize()`
 @*/
 PetscErrorCode MatStashGetInfo(Mat mat, PetscInt *nstash, PetscInt *reallocs, PetscInt *bnstash, PetscInt *breallocs)
 {
@@ -9412,7 +9409,7 @@ PetscErrorCode MatStashGetInfo(Mat mat, PetscInt *nstash, PetscInt *reallocs, Pe
 
     These are new vectors which are not owned by the mat, they should be destroyed in `VecDestroy()` when no longer needed
 
-.seealso: `Mat`, `Vec`, `VecCreate()`, `VecDestroy()`, `DMCreateGlobalVector()`
+.seealso: [](chapter_matrices), `Mat`, `Vec`, `VecCreate()`, `VecDestroy()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
 {
@@ -9462,7 +9459,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .    info - the `MatFactorInfo` data structure
 
    Level: developer
@@ -9477,7 +9474,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
    The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorInfo`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorInfo`
 @*/
 PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
 {
@@ -9504,7 +9501,7 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
 
    This functionality is only supported for `MATSOLVERMUMPS` and `MATSOLVERMKL_PARDISO`
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorGetSchurComplement()`, `MatFactorRestoreSchurComplement()`, `MatFactorCreateSchurComplement()`, `MatFactorSolveSchurComplement()`,
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorGetSchurComplement()`, `MatFactorRestoreSchurComplement()`, `MatFactorCreateSchurComplement()`, `MatFactorSolveSchurComplement()`,
           `MatFactorSolveSchurComplementTranspose()`, `MatFactorSolveSchurComplement()`, `MATSOLVERMUMPS`, `MATSOLVERMKL_PARDISO`
 @*/
 PetscErrorCode MatFactorSetSchurIS(Mat mat, IS is)
@@ -9555,7 +9552,7 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat, IS is)
     The reason this routine exists is because the representation of the Schur complement within the factor matrix may be different than a standard PETSc
    matrix representation and we normally do not want to use the time or memory to make a copy as a regular PETSc matrix.
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorGetSchurComplement()`, `MatFactorSchurStatus`, `MATSOLVERMUMPS`, `MATSOLVERMKL_PARDISO`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorGetSchurComplement()`, `MatFactorSchurStatus`, `MATSOLVERMUMPS`, `MATSOLVERMKL_PARDISO`
 @*/
 PetscErrorCode MatFactorCreateSchurComplement(Mat F, Mat *S, MatFactorSchurStatus *status)
 {
@@ -9604,7 +9601,7 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F, Mat *S, MatFactorSchurStatu
 
    See `MatCreateSchurComplement()` or `MatGetSchurComplement()` for ways to create virtual or approximate Schur complements.
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorRestoreSchurComplement()`, `MatFactorCreateSchurComplement()`, `MatFactorSchurStatus`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorRestoreSchurComplement()`, `MatFactorCreateSchurComplement()`, `MatFactorSchurStatus`
 @*/
 PetscErrorCode MatFactorGetSchurComplement(Mat F, Mat *S, MatFactorSchurStatus *status)
 {
@@ -9655,7 +9652,7 @@ static PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
 
    Level: advanced
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorRestoreSchurComplement()`, `MatFactorCreateSchurComplement()`, `MatFactorSchurStatus`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorRestoreSchurComplement()`, `MatFactorCreateSchurComplement()`, `MatFactorSchurStatus`
 @*/
 PetscErrorCode MatFactorRestoreSchurComplement(Mat F, Mat *S, MatFactorSchurStatus status)
 {
@@ -9687,7 +9684,7 @@ PetscErrorCode MatFactorRestoreSchurComplement(Mat F, Mat *S, MatFactorSchurStat
 
    Must be called after `MatFactorSetSchurIS()`
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorSolveSchurComplement()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorSolveSchurComplement()`
 @*/
 PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
 {
@@ -9731,7 +9728,7 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
 
    Must be called after `MatFactorSetSchurIS()`
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorSolveSchurComplementTranspose()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorSolveSchurComplementTranspose()`
 @*/
 PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
 {
@@ -9760,7 +9757,7 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
 
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 #if PetscDefined(HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat);
 #endif
 
 /* Schur status updated in the interface */
@@ -9783,9 +9780,10 @@ static PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
       PetscCall(MatSeqDenseInvertFactors_Private(S));
     } else if (isdensecuda) {
 #if defined(PETSC_HAVE_CUDA)
-      PetscCall(MatSeqDenseCUDAInvertFactors_Private(S));
+      PetscCall(MatSeqDenseCUDAInvertFactors_Internal(S));
 #endif
     }
+    // HIP??????????????
     PetscCall(PetscLogEventEnd(MAT_FactorInvS, F, 0, 0, 0));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -9794,9 +9792,9 @@ static PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
 /*@
   MatFactorInvertSchurComplement - Invert the Schur complement matrix computed during the factorization step
 
-   Logically Collective on F
+   Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  F - the factored matrix obtained by calling `MatGetFactor()`
 
    Level: advanced
@@ -9806,7 +9804,7 @@ static PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
 
    Call `MatFactorGetSchurComplement()` or  `MatFactorCreateSchurComplement()` AFTER this call to actually compute the inverse and get access to it.
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorGetSchurComplement()`, `MatFactorCreateSchurComplement()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorGetSchurComplement()`, `MatFactorCreateSchurComplement()`
 @*/
 PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 {
@@ -9825,7 +9823,7 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 
    Logically Collective
 
-   Input Parameters:
+   Input Parameter:
 .  F - the factored matrix obtained by calling `MatGetFactor()`
 
    Level: advanced
@@ -9833,7 +9831,7 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
    Note:
     Must be called after `MatFactorSetSchurIS()`
 
-.seealso: `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorInvertSchurComplement()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatFactorSetSchurIS()`, `MatFactorInvertSchurComplement()`
 @*/
 PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 {
@@ -9844,6 +9842,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   if (F->schur_status == MAT_FACTOR_SCHUR_INVERTED || F->schur_status == MAT_FACTOR_SCHUR_FACTORED) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(MAT_FactorFactS, F, 0, 0, 0));
+  PetscCall(PetscMemzero(&info, sizeof(MatFactorInfo)));
   if (F->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
     PetscCall(MatCholeskyFactor(F->schur, NULL, &info));
   } else {
@@ -9866,7 +9865,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P)), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -9879,7 +9878,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
    Developer Note:
    For matrix types without special implementation the function fallbacks to `MatMatMult()` followed by `MatTransposeMatMult()`.
 
-.seealso: `Mat`, `MatProductCreate()`, `MatMatMult()`, `MatRARt()`
+.seealso: [](chapter_matrices), `Mat`, `MatProductCreate()`, `MatMatMult()`, `MatRARt()`
 @*/
 PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
 {
@@ -9919,7 +9918,7 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
 -  fill - expected fill as ratio of nnz(C)/nnz(A), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -9934,7 +9933,7 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
    parallel MatRARt is implemented via explicit transpose of R, which could be very expensive.
    We recommend using MatPtAP().
 
-.seealso: `Mat`, `MatProductCreate()`, `MatMatMult()`, `MatPtAP()`
+.seealso: [](chapter_matrices), `Mat`, `MatProductCreate()`, `MatMatMult()`, `MatPtAP()`
 @*/
 PetscErrorCode MatRARt(Mat A, Mat R, MatReuse scall, PetscReal fill, Mat *C)
 {
@@ -10018,7 +10017,7 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Notes:
@@ -10046,7 +10045,7 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
 
    Level: intermediate
 
-.seealso: `Mat`, `MatProductType`, `MATPRODUCT_AB`, `MatTransposeMatMult()`, `MatMatTransposeMult()`, `MatPtAP()`, `MatProductCreate()`, `MatProductSymbolic()`, `MatProductReplaceMats()`, `MatProductNumeric()`
+.seealso: [](chapter_matrices), `Mat`, `MatProductType`, `MATPRODUCT_AB`, `MatTransposeMatMult()`, `MatMatTransposeMult()`, `MatPtAP()`, `MatProductCreate()`, `MatProductSymbolic()`, `MatProductReplaceMats()`, `MatProductNumeric()`
 @*/
 PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 {
@@ -10066,7 +10065,7 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 .  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if not known
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -10089,7 +10088,7 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
               first redundantly copies the transposed B matrix on each process and requiers O(log P) communication complexity;
               the second never stores more than one portion of the B matrix at a time by requires O(P) communication complexity.
 
-.seealso: `Mat`, `MatProductCreate()`, `MATPRODUCT_ABt`, `MatMatMult()`, `MatTransposeMatMult()` `MatPtAP()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`, `MATPRODUCT_ABt`
+.seealso: [](chapter_matrices), `Mat`, `MatProductCreate()`, `MATPRODUCT_ABt`, `MatMatMult()`, `MatTransposeMatMult()` `MatPtAP()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`, `MATPRODUCT_ABt`
 @*/
 PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 {
@@ -10110,7 +10109,7 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 .  scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if not known
 
-   Output Parameters:
+   Output Parameter:
 .  C - the product matrix
 
    Level: intermediate
@@ -10128,7 +10127,7 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
    This routine is currently implemented for pairs of `MATAIJ` matrices and pairs of `MATSEQDENSE` matrices and classes
    which inherit from `MATSEQAIJ`.  C will be of the same type as the input matrices.
 
-.seealso: `Mat`, `MatProductCreate()`, `MATPRODUCT_AtB`, `MatMatMult()`, `MatMatTransposeMult()`, `MatPtAP()`
+.seealso: [](chapter_matrices), `Mat`, `MatProductCreate()`, `MATPRODUCT_AtB`, `MatMatMult()`, `MatMatTransposeMult()`, `MatPtAP()`
 @*/
 PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 {
@@ -10150,7 +10149,7 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 -  fill - expected fill as ratio of nnz(D)/(nnz(A) + nnz(B)+nnz(C)), use `PETSC_DEFAULT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
-   Output Parameters:
+   Output Parameter:
 .  D - the product matrix
 
    Level: intermediate
@@ -10168,7 +10167,7 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
    If you have many matrices with the same non-zero structure to multiply, you
    should use `MAT_REUSE_MATRIX` in all calls but the first
 
-.seealso: `Mat`, `MatProductCreate()`, `MATPRODUCT_ABC`, `MatMatMult`, `MatPtAP()`, `MatMatTransposeMult()`, `MatTransposeMatMult()`
+.seealso: [](chapter_matrices), `Mat`, `MatProductCreate()`, `MATPRODUCT_ABC`, `MatMatMult`, `MatPtAP()`, `MatMatTransposeMult()`, `MatTransposeMatMult()`
 @*/
 PetscErrorCode MatMatMatMult(Mat A, Mat B, Mat C, MatReuse scall, PetscReal fill, Mat *D)
 {
@@ -10219,7 +10218,7 @@ PetscErrorCode MatMatMatMult(Mat A, Mat B, Mat C, MatReuse scall, PetscReal fill
 
    `PetscSubcommCreate()` can be used to manage the creation of the subcomm but need not be.
 
-.seealso: `Mat`, `MatDestroy()`, `PetscSubcommCreate()`, `PetscSubComm`
+.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `PetscSubcommCreate()`, `PetscSubComm`
 @*/
 PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm subcomm, MatReuse reuse, Mat *matredundant)
 {
@@ -10355,7 +10354,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
 
   This is used by `PCBJACOBI` when a single block spans multiple MPI ranks
 
-.seealso: `Mat`, `MatCreateRedundantMatrix()`, `MatCreateSubMatrices()`, `PCBJACOBI`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateRedundantMatrix()`, `MatCreateSubMatrices()`, `PCBJACOBI`
 @*/
 PetscErrorCode MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall, Mat *subMat)
 {
@@ -10400,7 +10399,7 @@ PetscErrorCode MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall, M
    `mat` must have had a `ISLocalToGlobalMapping` provided to it with `MatSetLocalToGlobalMapping()`.
    Matrices obtained with `DMCreateMatrix()` generally already have the local to global mapping provided.
 
-.seealso: `Mat`, `MatRestoreLocalSubMatrix()`, `MatCreateLocalRef()`, `MatSetLocalToGlobalMapping()`
+.seealso: [](chapter_matrices), `Mat`, `MatRestoreLocalSubMatrix()`, `MatCreateLocalRef()`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatGetLocalSubMatrix(Mat mat, IS isrow, IS iscol, Mat *submat)
 {
@@ -10433,7 +10432,7 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat, IS isrow, IS iscol, Mat *submat)
 
    Level: intermediate
 
-.seealso: `Mat`, `MatGetLocalSubMatrix()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetLocalSubMatrix()`
 @*/
 PetscErrorCode MatRestoreLocalSubMatrix(Mat mat, IS isrow, IS iscol, Mat *submat)
 {
@@ -10467,7 +10466,7 @@ PetscErrorCode MatRestoreLocalSubMatrix(Mat mat, IS isrow, IS iscol, Mat *submat
 
    Level: developer
 
-.seealso: `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
 @*/
 PetscErrorCode MatFindZeroDiagonals(Mat mat, IS *is)
 {
@@ -10515,7 +10514,7 @@ PetscErrorCode MatFindZeroDiagonals(Mat mat, IS *is)
 
    Level: developer
 
-.seealso: `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
+.seealso: [](chapter_matrices), `Mat`, `MatMultTranspose()`, `MatMultAdd()`, `MatMultTransposeAdd()`
 @*/
 PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
 {
@@ -10534,10 +10533,10 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
 
   Collective; No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . mat - the matrix
 
-  Output Parameters:
+  Output Parameter:
 . values - the block inverses in column major order (FORTRAN-like)
 
   Level: advanced
@@ -10549,7 +10548,7 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
 
    The blocks all have the same size, use `MatInvertVariableBlockDiagonal()` for variable block size
 
-.seealso: `Mat`, `MatInvertVariableBlockEnvelope()`, `MatInvertBlockDiagonalMat()`
+.seealso: [](chapter_matrices), `Mat`, `MatInvertVariableBlockEnvelope()`, `MatInvertBlockDiagonalMat()`
 @*/
 PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
 {
@@ -10571,7 +10570,7 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
 . nblocks - the number of blocks on the process, set with `MatSetVariableBlockSizes()`
 - bsizes - the size of each block on the process, set with `MatSetVariableBlockSizes()`
 
-  Output Parameters:
+  Output Parameter:
 . values - the block inverses in column major order (FORTRAN-like)
 
   Level: advanced
@@ -10581,7 +10580,7 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
 
   The blocks never overlap between two MPI ranks, use `MatInvertVariableBlockEnvelope()` for that case
 
-.seealso: `Mat`, `MatInvertBlockDiagonal()`, `MatSetVariableBlockSizes()`, `MatInvertVariableBlockEnvelope()`
+.seealso: [](chapter_matrices), `Mat`, `MatInvertBlockDiagonal()`, `MatSetVariableBlockSizes()`, `MatInvertVariableBlockEnvelope()`
 @*/
 PetscErrorCode MatInvertVariableBlockDiagonal(Mat mat, PetscInt nblocks, const PetscInt *bsizes, PetscScalar *values)
 {
@@ -10596,7 +10595,7 @@ PetscErrorCode MatInvertVariableBlockDiagonal(Mat mat, PetscInt nblocks, const P
 /*@
   MatInvertBlockDiagonalMat - set the values of matrix C to be the inverted block diagonal of matrix A
 
-  Collective on Mat
+  Collective
 
   Input Parameters:
 + A - the matrix
@@ -10607,7 +10606,7 @@ PetscErrorCode MatInvertVariableBlockDiagonal(Mat mat, PetscInt nblocks, const P
   Note:
   The blocksize of the matrix is used to determine the blocks on the diagonal of `C`
 
-.seealso: `Mat`, `MatInvertBlockDiagonal()`
+.seealso: [](chapter_matrices), `Mat`, `MatInvertBlockDiagonal()`
 @*/
 PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C)
 {
@@ -10637,14 +10636,14 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C)
     MatTransposeColoringDestroy - Destroys a coloring context for matrix product C=A*B^T that was created
     via `MatTransposeColoringCreate()`.
 
-    Collective on c
+    Collective
 
     Input Parameter:
 .   c - coloring context
 
     Level: intermediate
 
-.seealso: `Mat`, `MatTransposeColoringCreate()`
+.seealso: [](chapter_matrices), `Mat`, `MatTransposeColoringCreate()`
 @*/
 PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
 {
@@ -10672,12 +10671,11 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
     a `MatTransposeColoring` context has been created, computes a dense B^T by applying
     `MatTransposeColoring` to sparse B.
 
-    Collective on coloring
+    Collective
 
     Input Parameters:
-+   B - sparse matrix B
-.   Btdense - symbolic dense matrix B^T
--   coloring - coloring context created with `MatTransposeColoringCreate()`
++   coloring - coloring context created with `MatTransposeColoringCreate()`
+-   B - sparse matrix
 
     Output Parameter:
 .   Btdense - dense matrix B^T
@@ -10687,7 +10685,7 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
     Note:
     These are used internally for some implementations of `MatRARt()`
 
-.seealso: `Mat`, `MatTransposeColoringCreate()`, `MatTransposeColoringDestroy()`, `MatTransColoringApplyDenToSp()`
+.seealso: [](chapter_matrices), `Mat`, `MatTransposeColoringCreate()`, `MatTransposeColoringDestroy()`, `MatTransColoringApplyDenToSp()`
 @*/
 PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring, Mat B, Mat Btdense)
 {
@@ -10704,12 +10702,12 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring, Mat B
     MatTransColoringApplyDenToSp - Given a symbolic matrix product Csp=A*B^T for which
     a `MatTransposeColoring` context has been created and a dense matrix Cden=A*Btdense
     in which Btdens is obtained from `MatTransColoringApplySpToDen()`, recover sparse matrix
-    Csp from Cden.
+    `Csp` from `Cden`.
 
     Collective
 
     Input Parameters:
-+   coloring - coloring context created with `MatTransposeColoringCreate()`
++   matcoloring - coloring context created with `MatTransposeColoringCreate()`
 -   Cden - matrix product of a sparse matrix and a dense matrix Btdense
 
     Output Parameter:
@@ -10720,7 +10718,7 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring, Mat B
     Note:
     These are used internally for some implementations of `MatRARt()`
 
-.seealso: `Mat`, `MatTransposeColoringCreate()`, `MatTransposeColoringDestroy()`, `MatTransColoringApplySpToDen()`
+.seealso: [](chapter_matrices), `Mat`, `MatTransposeColoringCreate()`, `MatTransposeColoringDestroy()`, `MatTransColoringApplySpToDen()`
 @*/
 PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring, Mat Cden, Mat Csp)
 {
@@ -10749,7 +10747,7 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring, Ma
 
     Level: intermediate
 
-.seealso: `Mat`, `MatTransposeColoringDestroy()`, `MatTransColoringApplySpToDen()`,
+.seealso: [](chapter_matrices), `Mat`, `MatTransposeColoringDestroy()`, `MatTransColoringApplySpToDen()`,
           `MatTransColoringApplyDenToSp()`
 @*/
 PetscErrorCode MatTransposeColoringCreate(Mat mat, ISColoring iscoloring, MatTransposeColoring *color)
@@ -10793,7 +10791,7 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat, ISColoring iscoloring, MatTra
 
     Use the result of `PetscObjectGetId()` to compare if a previously checked matrix is the same as the current matrix, do not compare object pointers.
 
-.seealso: `Mat`, `PetscObjectStateGet()`, `PetscObjectGetId()`
+.seealso: [](chapter_matrices), `Mat`, `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/
 PetscErrorCode MatGetNonzeroState(Mat mat, PetscObjectState *state)
 {
@@ -10823,7 +10821,7 @@ PetscErrorCode MatGetNonzeroState(Mat mat, PetscObjectState *state)
    Note:
     The number of columns of the matrix in EACH processor MUST be the same.
 
-.seealso: `Mat`
+.seealso: [](chapter_matrices), `Mat`
 @*/
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm, Mat seqmat, PetscInt n, MatReuse reuse, Mat *mpimat)
 {
@@ -10866,7 +10864,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm, Mat seqmat, Petsc
     Note:
     The number of subdomains must be smaller than the communicator size
 
-.seealso: `Mat`, `IS`
+.seealso: [](chapter_matrices), `Mat`, `IS`
 @*/
 PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *iss[])
 {
@@ -10907,7 +10905,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *i
 .  reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
 -  fill - expected fill, use `PETSC_DEFAULT` if you do not have a good estimate
 
-   Output Parameters:
+   Output Parameter:
 .  A - the Galerkin coarse matrix
 
    Options Database Key:
@@ -10915,7 +10913,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *i
 
    Level: developer
 
-.seealso: `Mat`, `MatPtAP()`, `MatMatMatMult()`
+.seealso: [](chapter_matrices), `Mat`, `MatPtAP()`, `MatMatMatMult()`
 @*/
 PetscErrorCode MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse, PetscReal fill, Mat *A)
 {
@@ -10988,7 +10986,7 @@ PetscErrorCode MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse,
 
     This routine is distinct from `MatShellSetOperation()` in that it can be called on any matrix type.
 
-.seealso: `Mat`, `MatGetOperation()`, `MatCreateShell()`, `MatShellSetContext()`, `MatShellSetOperation()`
+.seealso: [](chapter_matrices), `Mat`, `MatGetOperation()`, `MatCreateShell()`, `MatShellSetContext()`, `MatShellSetOperation()`
 @*/
 PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
 {
@@ -11014,8 +11012,10 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
     Level: developer
 
     Usage:
-$      PetscErrorCode (*usermult)(Mat,Vec,Vec);
-$      MatGetOperation(A,MATOP_MULT,(void(**)(void))&usermult);
+.vb
+      PetscErrorCode (*usermult)(Mat, Vec, Vec);
+      MatGetOperation(A, MATOP_MULT, (void (**)(void))&usermult);
+.ve
 
     Notes:
     See the file include/petscmat.h for a complete list of matrix
@@ -11025,7 +11025,7 @@ $      MatGetOperation(A,MATOP_MULT,(void(**)(void))&usermult);
 
     This routine is distinct from `MatShellGetOperation()` in that it can be called on any matrix type.
 
-.seealso: `Mat`, `MatSetOperation()`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`
+.seealso: [](chapter_matrices), `Mat`, `MatSetOperation()`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`
 @*/
 PetscErrorCode MatGetOperation(Mat mat, MatOperation op, void (**f)(void))
 {
@@ -11052,7 +11052,7 @@ PetscErrorCode MatGetOperation(Mat mat, MatOperation op, void (**f)(void))
    Note:
    See `MatSetOperation()` for additional discussion on naming convention and usage of `op`.
 
-.seealso: `Mat`, `MatCreateShell()`, `MatGetOperation()`, `MatSetOperation()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateShell()`, `MatGetOperation()`, `MatSetOperation()`
 @*/
 PetscErrorCode MatHasOperation(Mat mat, MatOperation op, PetscBool *has)
 {
@@ -11081,7 +11081,7 @@ PetscErrorCode MatHasOperation(Mat mat, MatOperation op, PetscBool *has)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
@@ -11089,7 +11089,7 @@ PetscErrorCode MatHasOperation(Mat mat, MatOperation op, PetscBool *has)
 
    Level: beginner
 
-.seealso: `Mat`, `MatCreate()`, `MatSetSizes()`, `PetscLayout`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatSetSizes()`, `PetscLayout`
 @*/
 PetscErrorCode MatHasCongruentLayouts(Mat mat, PetscBool *cong)
 {
@@ -11135,7 +11135,7 @@ PetscErrorCode MatSetInf(Mat A)
 
    Level: advanced
 
-.seealso: `Mat`, `MatCreate()`, `PCGAMG`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `PCGAMG`
 @*/
 PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal filter, Mat *graph)
 {
@@ -11152,17 +11152,18 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
   MatEliminateZeros - eliminate the nondiagonal zero entries in place from the nonzero structure of a sparse `Mat` in place,
   meaning the same memory is used for the matrix, and no new memory is allocated.
 
-  Collective on mat
+  Collective
 
   Input Parameter:
 . A - the matrix
 
-  Output Parameter:
-. A - the matrix
-
   Level: intermediate
 
-.seealso: `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatChop()`
+  Developer Note:
+  The entries in the sparse matrix data structure are shifted to fill in the unneeded locations in the data. Thus the end
+  of the arrays in the data structure are unneeded.
+
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatChop()`
 @*/
 PetscErrorCode MatEliminateZeros(Mat A)
 {

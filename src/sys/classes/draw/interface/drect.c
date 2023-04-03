@@ -1,17 +1,16 @@
-
-/*
-       Provides the calling sequences for all the basic PetscDraw routines.
-*/
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@C
    PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a `PetscDraw`
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - a `PetscDraw`
-.  xmin,xmax,ymin,ymax - region to draw indicator function
+.  xmin - region to draw indicator function
+.  xmax - region to draw indicator function
+.  ymin - region to draw indicator function
+.  ymax - region to draw indicator function
 -  f - the indicator function
 
    Level: developer
@@ -50,7 +49,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
 /*@C
    PetscDrawCoordinateToPixel - given a coordinate in a `PetscDraw` returns the pixel location
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the draw where the coordinates are defined
@@ -76,7 +75,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal
 /*@C
    PetscDrawPixelToCoordinate - given a pixel in a `PetscDraw` returns the coordinate
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the draw where the coordinates are defined
@@ -100,14 +99,20 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw, int i, int j, PetscRea
 }
 
 /*@
-   PetscDrawRectangle - draws a rectangle  onto a drawable.
+   PetscDrawRectangle - draws a rectangle onto a `PetscDraw` object
 
    Not Collective
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl,xr,yr - the coordinates of the lower left, upper right corners
--  c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
+.  xl - coordinates of the lower left corner
+.  yl - coordinates of the lower left corner
+.  xr - coordinate of the upper right corner
+.  yr - coordinate of the upper right corner
+.  c1 - the color of the first corner
+.  c2 - the color of the second corner
+.  c3 - the color of the third corner
+-  c4 - the color of the fourth corner
 
    Level: beginner
 

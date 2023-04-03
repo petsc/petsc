@@ -30,14 +30,15 @@ PetscErrorCode MatDestroy_FFT(Mat A)
    Output Parameter:
 .   A  - the matrix
 
-   Options Database Keys:
+   Options Database Key:
 .   -mat_fft_type - set FFT type fft or seqcufft
-
-   Note: this serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
 
    Level: intermediate
 
-.seealso: `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
+   Note:
+   This serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
+
+.seealso: [](chapter_matrices), `Mat`, `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], MatType mattype, Mat *A)
 {

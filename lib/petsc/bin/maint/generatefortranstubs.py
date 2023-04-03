@@ -11,7 +11,7 @@
 #    These are then included by the petsc[[BFORT]SUB]MANSECmod.F90 files to create the Fortran module files
 #
 #    SUBMANSEC (but not BFORTSUBMANSEC) is also used (in the documentation generating part of PETSc) to determine what
-#    directory in doc/docs/manualpages/ the manual pages are deposited.
+#    directory in doc/manualpages/ the manual pages are deposited.
 #
 #    An example of when the BFORTSUBMANSEC may be different than SUBMANSEC is src/dm/label/impls/ephemeral/plex where we would like
 #    the documentation to be stored under DMLabel but the function interfaces need to go into the DMPLEX Fortran module
@@ -62,17 +62,17 @@ def FixFile(filename):
   data = re.subn('\00','',data)[0]
   data = re.subn('\nvoid ','\nPETSC_EXTERN void ',data)[0]
   data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void ',data)[0]
-  data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]
-  data = re.subn('PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(PetscFortranAddr *)(a))',data)[0]
-  data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (PetscFortranAddr)(a)',data)[0]
-  data = re.subn('PetscToPointer\( \*\(int\*\)','PetscToPointer(',data)[0]
+  data = re.subn(r'Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]
+  data = re.subn(r'PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(PetscFortranAddr *)(a))',data)[0]
+  data = re.subn(r'PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (PetscFortranAddr)(a)',data)[0]
+  data = re.subn(r'PetscToPointer\( \*\(int\*\)','PetscToPointer(',data)[0]
   data = re.subn('MPI_Comm comm','MPI_Comm *comm',data)[0]
-  data = re.subn('\(MPI_Comm\)PetscToPointer\( \(comm\) \)','MPI_Comm_f2c(*(MPI_Fint*)(comm))',data)[0]
-  data = re.subn('\(PetscInt\* \)PetscToPointer','',data)[0]
-  data = re.subn('\(Tao\* \)PetscToPointer','',data)[0]
-  data = re.subn('\(TaoConvergedReason\* \)PetscToPointer','',data)[0]
-  data = re.subn('\(TaoLineSearch\* \)PetscToPointer','',data)[0]
-  data = re.subn('\(TaoLineSearchConvergedReason\* \)PetscToPointer','',data)[0]
+  data = re.subn(r'\(MPI_Comm\)PetscToPointer\( \(comm\) \)','MPI_Comm_f2c(*(MPI_Fint*)(comm))',data)[0]
+  data = re.subn(r'\(PetscInt\* \)PetscToPointer','',data)[0]
+  data = re.subn(r'\(Tao\* \)PetscToPointer','',data)[0]
+  data = re.subn(r'\(TaoConvergedReason\* \)PetscToPointer','',data)[0]
+  data = re.subn(r'\(TaoLineSearch\* \)PetscToPointer','',data)[0]
+  data = re.subn(r'\(TaoLineSearchConvergedReason\* \)PetscToPointer','',data)[0]
   match = re.compile(r"""\b(PETSC|TAO)(_DLL|VEC_DLL|MAT_DLL|DM_DLL|KSP_DLL|SNES_DLL|TS_DLL|FORTRAN_DLL)(EXPORT)""")
   data = match.sub(r'',data)
 
@@ -128,14 +128,11 @@ def FixDir(petscdir,dir,verbose):
     fd.close()
     cppflags = ""
     libbase = ""
-    locdir = ""
     for line in inbuf.splitlines():
       if line.find('CPPFLAGS') >=0:
         cppflags = line
       if line.find('LIBBASE') >=0:
         libbase = line
-      elif line.find('LOCDIR') >=0:
-        locdir = line.rstrip() + 'ftn-auto/'
       elif line.find('SUBMANSEC') >=0:
         submansec = line.split('=')[1].lower().strip()
       elif line.find('BFORTSUBMANSEC') >=0:
@@ -151,19 +148,8 @@ def FixDir(petscdir,dir,verbose):
     # now assemble the makefile
     outbuf  =  '\n'
     outbuf +=  "#requiresdefine   'PETSC_HAVE_FORTRAN'\n"
-    outbuf +=  'ALL: lib\n'
     outbuf +=   cppflags + '\n'
-    outbuf +=  'CFLAGS   =\n'
-    outbuf +=  'FFLAGS   =\n'
-    outbuf +=  'SOURCEC  = ' +' '.join(cnames)+ '\n'
-    outbuf +=  'SOURCEF  =\n'
-    outbuf +=  'SOURCEH  = ' +' '.join(hnames)+ '\n'
-    outbuf +=  'DIRS     =\n'
     outbuf +=  libbase + '\n'
-    outbuf +=  locdir + '\n'
-    outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/variables\n'
-    outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/rules\n'
-    outbuf +=  'include ${PETSC_DIR}/lib/petsc/conf/test\n'
 
     ff = open(os.path.join(dir, 'makefile'), 'w')
     ff.write(outbuf)
@@ -252,8 +238,8 @@ def checkHandWrittenF90Interfaces(badSrc, path):
       with open(os.path.join(path,file),'r') as fdr:
         lineno = 1
         raw = fdr.read()
-        for ibuf in re.split('(?i)\n\s*interface',raw):
-          res = re.search('(.*)(\s+end\s+interface)',ibuf,flags=re.DOTALL|re.IGNORECASE)
+        for ibuf in re.split('(?i)\n\\s*interface',raw):
+          res = re.search(r'(.*)(\s+end\s+interface)',ibuf,flags=re.DOTALL|re.IGNORECASE)
           try:
             lines = res.group(0).split('\n')
             useLine = [(s.strip(),idx+lineno,os.path.join(path,file)) for idx,s in enumerate(lines) if 'use petsc' in s and 'only:' not in s]

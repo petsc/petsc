@@ -37,20 +37,17 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
-   Logically  Collective
+   Logically Collective
 
    Input Parameters:
 +  a - the scalar multiplier
 .  X - the first matrix
 .  Y - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, UNKNOWN_NONZERO_PATTERN, or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
-
-   Note:
-   No operation is performed when a is zero.
+-  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
 
    Level: intermediate
 
-.seealso: `MatAYPX()`
+.seealso: [](chapter_matrices), `Mat`, `MatAYPX()`
  @*/
 PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
@@ -266,26 +263,26 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
 }
 
 /*@
-   MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
+   MatShift - Computes `Y =  Y + a I`, where `a` is a `PetscScalar`
 
    Neighbor-wise Collective
 
    Input Parameters:
-+  Y - the matrices
--  a - the PetscScalar
++  Y - the matrix
+-  a - the `PetscScalar`
 
    Level: intermediate
 
    Notes:
-    If Y is a rectangular matrix, the shift is done on the main diagonal Y_{ii} of the matrix (https://en.wikipedia.org/wiki/Main_diagonal)
+    If `Y` is a rectangular matrix, the shift is done on the main diagonal of the matrix (https://en.wikipedia.org/wiki/Main_diagonal)
 
-    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+    If the matrix `Y` is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry). No operation is performed when a is zero.
 
-   To form Y = Y + diag(V) use MatDiagonalSet()
+   To form Y = Y + diag(V) use `MatDiagonalSet()`
 
-.seealso: `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
+.seealso: [](chapter_matrices), `Mat`, `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
  @*/
 PetscErrorCode MatShift(Mat Y, PetscScalar a)
 {
@@ -319,25 +316,25 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is)
 }
 
 /*@
-   MatDiagonalSet - Computes Y = Y + D, where D is a diagonal matrix
-   that is represented as a vector. Or Y[i,i] = D[i] if InsertMode is
-   INSERT_VALUES.
+   MatDiagonalSet - Computes `Y` = `Y` + `D`, where `D` is a diagonal matrix
+   that is represented as a vector. Or Y[i,i] = D[i] if `InsertMode` is
+   `INSERT_VALUES`.
 
    Neighbor-wise Collective
 
    Input Parameters:
 +  Y - the input matrix
 .  D - the diagonal matrix, represented as a vector
--  i - INSERT_VALUES or ADD_VALUES
-
-   Note:
-    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
-   fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
-   entry).
+-  i - `INSERT_VALUES` or `ADD_VALUES`
 
    Level: intermediate
 
-.seealso: `MatShift()`, `MatScale()`, `MatDiagonalScale()`
+   Note:
+    If the matrix `Y` is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+   fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
+   entry).
+
+.seealso: [](chapter_matrices), `Mat`, `MatShift()`, `MatScale()`, `MatDiagonalScale()`
 @*/
 PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 {
@@ -358,17 +355,17 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 /*@
    MatAYPX - Computes Y = a*Y + X.
 
-   Logically on Mat
+   Logically Collective
 
    Input Parameters:
-+  a - the PetscScalar multiplier
++  a - the `PetscScalar` multiplier
 .  Y - the first matrix
 .  X - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, UNKNOWN_NONZERO_PATTERN, or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
+-  str - either `SAME_NONZERO_PATTERN`, `DIFFERENT_NONZERO_PATTERN`, `UNKNOWN_NONZERO_PATTERN`, or `SUBSET_NONZERO_PATTERN` (nonzeros of `X` is a subset of `Y`'s)
 
    Level: intermediate
 
-.seealso: `MatAXPY()`
+.seealso: [](chapter_matrices), `Mat`, `MatAXPY()`
  @*/
 PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
@@ -390,13 +387,14 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
     Output Parameter:
 .   mat - the explicit  operator
 
+    Level: advanced
+
     Note:
     This computation is done by applying the operators to columns of the identity matrix.
     This routine is costly in general, and is recommended for use only with relatively small systems.
-    Currently, this routine uses a dense matrix format if mattype == NULL.
+    Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 
-    Level: advanced
-
+.seealso: [](chapter_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperatorTranspose()`
 @*/
 PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
 {
@@ -409,7 +407,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
 
 /*@
     MatComputeOperatorTranspose - Computes the explicit matrix representation of
-        a give matrix that can apply MatMultTranspose()
+        a give matrix that can apply `MatMultTranspose()`
 
     Collective
 
@@ -420,13 +418,14 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
     Output Parameter:
 .   mat - the explicit  operator transposed
 
+    Level: advanced
+
     Note:
     This computation is done by applying the transpose of the operator to columns of the identity matrix.
     This routine is costly in general, and is recommended for use only with relatively small systems.
-    Currently, this routine uses a dense matrix format if mattype == NULL.
+    Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 
-    Level: advanced
-
+.seealso: [](chapter_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperator()`
 @*/
 PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 {
@@ -448,12 +447,9 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 + A   - The matrix
 - tol - The zero tolerance
 
-  Output Parameters:
-. A - The chopped matrix
-
   Level: intermediate
 
-.seealso: `MatCreate()`, `MatZeroEntries()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`
  @*/
 PetscErrorCode MatChop(Mat A, PetscReal tol)
 {

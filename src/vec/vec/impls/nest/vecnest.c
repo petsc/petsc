@@ -800,20 +800,18 @@ PetscErrorCode VecNestGetSubVec_Nest(Vec X, PetscInt idxm, Vec *sx)
 /*@
  VecNestGetSubVec - Returns a single, sub-vector from a nest vector.
 
- Not collective
+ Not Collective
 
  Input Parameters:
 +  X  - nest vector
 -  idxm - index of the vector within the nest
 
  Output Parameter:
-.  sx - vector at index idxm within the nest
-
- Notes:
+.  sx - vector at index `idxm` within the nest
 
  Level: developer
 
-.seealso: `VecNestGetSize()`, `VecNestGetSubVecs()`
+.seealso: `VECNEST`,  [](chapter_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVecs()`
 @*/
 PetscErrorCode VecNestGetSubVec(Vec X, PetscInt idxm, Vec *sx)
 {
@@ -836,7 +834,7 @@ PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
 /*@C
  VecNestGetSubVecs - Returns the entire array of vectors defining a nest vector.
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .  X  - nest vector
@@ -845,15 +843,15 @@ PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
 +  N - number of nested vecs
 -  sx - array of vectors
 
- Notes:
- The user should not free the array sx.
-
- Fortran Notes:
- The caller must allocate the array to hold the subvectors.
-
  Level: developer
 
-.seealso: `VecNestGetSize()`, `VecNestGetSubVec()`
+ Note:
+ The user should not free the array `sx`.
+
+ Fortran Note:
+ The caller must allocate the array to hold the subvectors.
+
+.seealso: `VECNEST`,  [](chapter_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
 PetscErrorCode VecNestGetSubVecs(Vec X, PetscInt *N, Vec **sx)
 {
@@ -941,19 +939,19 @@ PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx)
 /*@
    VecNestSetSubVec - Set a single component vector in a nest vector at specified index.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  X  - nest vector
 .  idxm - index of the vector within the nest vector
--  sx - vector at index idxm within the nest vector
-
-   Notes:
-   The new vector sx does not have to be of same size as X[idxm]. Arbitrary vector layouts are allowed.
+-  sx - vector at index `idxm` within the nest vector
 
    Level: developer
 
-.seealso: `VecNestSetSubVecs()`, `VecNestGetSubVec()`
+   Note:
+   The new vector `sx` does not have to be of same size as X[idxm]. Arbitrary vector layouts are allowed.
+
+.seealso: `VECNEST`,  [](chapter_vectors), `Vec`, `VecType`, `VecNestSetSubVecs()`, `VecNestGetSubVec()`
 @*/
 PetscErrorCode VecNestSetSubVec(Vec X, PetscInt idxm, Vec sx)
 {
@@ -975,21 +973,21 @@ PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, Vec *sx
 /*@C
    VecNestSetSubVecs - Sets the component vectors at the specified indices in a nest vector.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  X  - nest vector
-.  N - number of component vecs in sx
-.  idxm - indices of component vecs that are to be replaced
+.  N - number of component vecs in `sx`
+.  idxm - indices of component vectors that are to be replaced
 -  sx - array of vectors
-
-   Notes:
-   The components in the vector array sx do not have to be of the same size as corresponding
-   components in X. The user can also free the array "sx" after the call.
 
    Level: developer
 
-.seealso: `VecNestGetSize()`, `VecNestGetSubVec()`
+   Note:
+   The components in the vector array `sx` do not have to be of the same size as corresponding
+   components in `X`. The user can also free the array `sx` after the call.
+
+.seealso: `VECNEST`,  [](chapter_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
 PetscErrorCode VecNestSetSubVecs(Vec X, PetscInt N, PetscInt *idxm, Vec *sx)
 {
@@ -1010,7 +1008,7 @@ PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N)
 /*@
  VecNestGetSize - Returns the size of the nest vector.
 
- Not collective
+ Not Collective
 
  Input Parameter:
 .  X  - nest vector
@@ -1018,11 +1016,9 @@ PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N)
  Output Parameter:
 .  N - number of nested vecs
 
- Notes:
-
  Level: developer
 
-.seealso: `VecNestGetSubVec()`, `VecNestGetSubVecs()`
+.seealso: `VECNEST`,  [](chapter_vectors), `Vec`, `VecType`, `VecNestGetSubVec()`, `VecNestGetSubVecs()`
 @*/
 PetscErrorCode VecNestGetSize(Vec X, PetscInt *N)
 {
@@ -1099,15 +1095,15 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[])
    Input Parameters:
 +  comm - Communicator for the new `Vec`
 .  nb - number of nested blocks
-.  is - array of nb index sets describing each nested block, or NULL to pack subvectors contiguously
--  x - array of nb sub-vectors
+.  is - array of `nb` index sets describing each nested block, or `NULL` to pack subvectors contiguously
+-  x - array of `nb` sub-vectors
 
    Output Parameter:
 .  Y - new vector
 
    Level: advanced
 
-.seealso: `VecCreate()`, `MatCreateNest()`, `DMSetVecType()`, `VECNEST`
+.seealso: `VECNEST`,  [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `MatCreateNest()`, `DMSetVecType()`, `VECNEST`
 @*/
 PetscErrorCode VecCreateNest(MPI_Comm comm, PetscInt nb, IS is[], Vec x[], Vec *Y)
 {
@@ -1159,7 +1155,7 @@ PetscErrorCode VecCreateNest(MPI_Comm comm, PetscInt nb, IS is[], Vec x[], Vec *
 
   Notes:
   This vector type reduces the number of copies for certain solvers applied to multi-physics problems.
-  It is usually used with MATNEST and DMComposite via DMSetVecType().
+  It is usually used with `MATNEST` and `DMCOMPOSITE` via `DMSetVecType()`.
 
-.seealso: `VecCreate()`, `VecType`, `VecCreateNest()`, `MatCreateNest()`
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecType`, `VecCreateNest()`, `MatCreateNest()`
 M*/

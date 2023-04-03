@@ -145,9 +145,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    PetscCall(PetscStrcpy(args, "pqezQ"));
-    if (createConvexHull) PetscCall(PetscStrcat(args, "c"));
-    if (constrained) PetscCall(PetscStrcpy(args, "zepDQ"));
+    PetscCall(PetscStrncpy(args, "pqezQ", sizeof(args)));
+    if (createConvexHull) PetscCall(PetscStrlcat(args, "c", sizeof(args)));
+    if (constrained) PetscCall(PetscStrncpy(args, "zepDQ", sizeof(args)));
     if (mesh->triangleOpts) {
       triangulate(mesh->triangleOpts, &in, &out, NULL);
     } else {
@@ -319,7 +319,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    PetscCall(PetscStrcpy(args, "pqezQra"));
+    PetscCall(PetscStrncpy(args, "pqezQra", sizeof(args)));
     triangulate(args, &in, &out, NULL);
   }
   PetscCall(PetscFree(in.pointlist));

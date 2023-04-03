@@ -22,6 +22,12 @@ if __name__ == '__main__':
     '--with-single-library=0',
     '--with-visibility=1',
     '--download-hpddm',
+    # 28/02/2023, nvc/nvc++ would produce strange segmentation violation errors in C++20
+    # mode that could not be reproduced with any other compiler. Normally the first
+    # response would be 'there must be a bug in the code' -- and that may still be true --
+    # but no less than 3 other CI jobs reproduce the same package/env without these seg
+    # faults. So limiting to C++17 because maybe it *is* the compilers fault this time.
+    '--with-cxx-dialect=17',
     # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang
     # on Mac OS X, MSVC on Windows), you must set -ccbin appropriately in CUDAFLAGS, as in the example for PGI below:
     # 'CUDAFLAGS=-ccbin pgc++',

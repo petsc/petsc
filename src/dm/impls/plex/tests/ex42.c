@@ -344,7 +344,6 @@ int main(int argc, char **argv)
   PetscScalar  area;
   CeedData     ceeddata;
 
-  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(ProcessOptions(comm, &ctx));

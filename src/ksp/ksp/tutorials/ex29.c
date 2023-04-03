@@ -287,6 +287,19 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
       suffix: 4
       args: -ksp_view -da_refine 2 -pc_type mg -pc_mg_distinct_smoothup -mg_levels_up_ksp_max_it 3 -mg_levels_ksp_max_it 4
 
+   testset:
+     suffix: aniso
+     args: -da_grid_x 10 -da_grid_y 2 -da_refine 2 -pc_type mg -ksp_monitor_short -mg_levels_ksp_max_it 6 -mg_levels_pc_type jacobi
+     test:
+       suffix: first
+       args: -mg_levels_ksp_chebyshev_kind first
+     test:
+       suffix: fourth
+       args: -mg_levels_ksp_chebyshev_kind fourth
+     test:
+       suffix: opt_fourth
+       args: -mg_levels_ksp_chebyshev_kind opt_fourth
+
    test:
       suffix: 5
       nsize: 2

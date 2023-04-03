@@ -319,20 +319,20 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
 /*@C
    DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
 
-   Collective on dm
+   Collective
 
    Input parameters:
-+  dm - the DMSwarm
++  dm - the `DMSWARM`
 .  filename - the file name of the XDMF file (must have the extension .xmf)
 .  nfields - the number of fields to write into the XDMF file
 -  field_name_list - array of length nfields containing the textual name of fields to write
 
    Level: beginner
 
-   Notes:
-   Only fields registered with data type PETSC_DOUBLE or PETSC_INT can be written into the file
+   Note:
+   Only fields registered with data type `PETSC_DOUBLE` or `PETSC_INT` can be written into the file
 
-.seealso: `DMSwarmViewXDMF()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmViewXDMF()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], PetscInt nfields, const char *field_name_list[])
 {
@@ -374,23 +374,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
 }
 
 /*@C
-   DMSwarmViewXDMF - Write DMSwarm fields to an XDMF3 file
+   DMSwarmViewXDMF - Write `DMSWARM` fields to an XDMF3 file
 
-   Collective on dm
+   Collective
 
    Input parameters:
-+  dm - the DMSwarm
++  dm - the `DMSWARM`
 -  filename - the file name of the XDMF file (must have the extension .xmf)
 
    Level: beginner
 
-   Notes:
-     Only fields user registered with data type PETSC_DOUBLE or PETSC_INT will be written into the file
+   Note:
+     Only fields user registered with data type `PETSC_DOUBLE` or `PETSC_INT` will be written into the file
 
-   Developer Notes:
-     This should be removed and replaced with the standard use of PetscViewer
+   Developer Note:
+     This should be removed and replaced with the standard use of `PetscViewer`
 
-.seealso: `DMSwarmViewFieldsXDMF()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmViewFieldsXDMF()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm, const char filename[])
 {

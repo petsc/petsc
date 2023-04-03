@@ -93,16 +93,16 @@ int main(int argc, char **args)
   switch (isolver) {
 #if defined(PETSC_HAVE_MUMPS)
   case 0:
-    PetscCall(PetscStrcpy(solver, MATSOLVERMUMPS));
+    PetscCall(PetscStrncpy(solver, MATSOLVERMUMPS, sizeof(solver)));
     break;
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
   case 1:
-    PetscCall(PetscStrcpy(solver, MATSOLVERMKL_PARDISO));
+    PetscCall(PetscStrncpy(solver, MATSOLVERMKL_PARDISO, sizeof(solver)));
     break;
 #endif
   default:
-    PetscCall(PetscStrcpy(solver, MATSOLVERPETSC));
+    PetscCall(PetscStrncpy(solver, MATSOLVERPETSC, sizeof(solver)));
     break;
   }
 

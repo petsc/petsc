@@ -50,7 +50,7 @@ all edges and vertices, a selectable number of dofs on vertices and edges. Inten
 . k          - order of the star graph (number of edges)
 . directin   - if true direction of edges is towards the center vertex, otherwise they are directed out of the center vertex
 
-  Output Parameters:
+  Output Parameter:
 . newdm       - The created and distributed simple Star Graph
 */
 PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numdofedge, PetscInt k, PetscBool directin, DM *newdm)
@@ -101,7 +101,7 @@ PetscErrorCode StarGraphSetCoordinates(DM dm)
   PetscCall(DMSetCoordinateDim(dm, 2));
   PetscCall(DMNetworkGetVertexRange(cdm, &vStart, &vEnd));
   PetscCall(DMNetworkRegisterComponent(cdm, "coordinates", 0, &compkey));
-  for (v = vStart; v < vEnd; v++) { PetscCall(DMNetworkAddComponent(cdm, v, compkey, NULL, 2)); }
+  for (v = vStart; v < vEnd; v++) PetscCall(DMNetworkAddComponent(cdm, v, compkey, NULL, 2));
   PetscCall(DMNetworkFinalizeComponents(cdm));
 
   PetscCall(DMCreateLocalVector(cdm, &Coord));

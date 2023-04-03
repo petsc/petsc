@@ -118,7 +118,7 @@ int UpdateJSON(const char *const inputjsonfile, PetscReal *spmv_times, PetscReal
 
 /*
   For GPU formats, we keep two copies of the matrix on CPU and one copy on GPU.
-  The extra CPU copy allows us to destroy the GPU matrix and recreate it effciently
+  The extra CPU copy allows us to destroy the GPU matrix and recreate it efficiently
   in each repetition. As a result,  each MatMult call is fresh, and we can capture
   the first-time overhead (e.g. of CuSparse SpMV), and avoids the cache effect
   during consecutive calls.

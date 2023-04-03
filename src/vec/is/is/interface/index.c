@@ -18,17 +18,18 @@ PetscLogEvent IS_Load;
 
    Input Parameters:
 +  subset - the index set
--  subset_mult - the multiplicity of each entry in subset (optional, can be NULL)
+-  subset_mult - the multiplicity of each entry in subset (optional, can be `NULL`)
 
    Output Parameters:
-+  N - one past the largest entry of the new IS
--  subset_n - the new IS
-
-   Notes: All negative entries are mapped to -1. Indices with non positive multiplicities are skipped.
++  N - one past the largest entry of the new `IS`
+-  subset_n - the new `IS`
 
    Level: intermediate
 
-.seealso:
+   Note:
+   All negative entries are mapped to -1. Indices with non positive multiplicities are skipped.
+
+.seealso: `IS`
 @*/
 PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 {
@@ -211,12 +212,10 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 
    Input Parameters:
 +  is - the index set
--  comps - which components we will extract from is
+-  comps - which components we will extract from `is`
 
    Output Parameters:
 .  subis - the new sub index set
-
-   Level: intermediate
 
    Example usage:
    We have an index set (is) living on 3 processes with the following values:
@@ -226,7 +225,9 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
    The output index set (subis) should look like:
    | 11 7 | 9 0 | 4 6|
 
-.seealso: `VecGetSubVector()`, `MatCreateSubMatrix()`
+   Level: intermediate
+
+.seealso: `IS`, `VecGetSubVector()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis)
 {
@@ -281,19 +282,19 @@ PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis)
 /*@
    ISClearInfoCache - clear the cache of computed index set properties
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  is - the index set
 -  clear_permanent_local - whether to remove the permanent status of local properties
 
-   NOTE: because all processes must agree on the global permanent status of a property,
-   the permanent status can only be changed with ISSetInfo(), because this routine is not collective
-
    Level: developer
 
-.seealso: `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
+   Note:
+   Because all processes must agree on the global permanent status of a property,
+   the permanent status can only be changed with `ISSetInfo()`, because this routine is not collective
 
+.seealso: `IS`, `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
 @*/
 PetscErrorCode ISClearInfoCache(IS is, PetscBool clear_permanent_local)
 {
@@ -416,33 +417,32 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
 /*@
    ISSetInfo - Set known information about an index set.
 
-   Logically Collective on IS if type is IS_GLOBAL
+   Logically Collective on `is` if `ISInfoType` is `IS_GLOBAL`
 
    Input Parameters:
 +  is - the index set
 .  info - describing a property of the index set, one of those listed below,
-.  type - IS_LOCAL if the information describes the local portion of the index set,
-          IS_GLOBAL if it describes the whole index set
-.  permanent - PETSC_TRUE if it is known that the property will persist through changes to the index set, PETSC_FALSE otherwise
+.  type - `IS_LOCAL` if the information describes the local portion of the index set,
+          `IS_GLOBAL` if it describes the whole index set
+.  permanent - `PETSC_TRUE` if it is known that the property will persist through changes to the index set, `PETSC_FALSE` otherwise
                If the user sets a property as permanently known, it will bypass computation of that property
--  flg - set the described property as true (PETSC_TRUE) or false (PETSC_FALSE)
+-  flg - set the described property as true (`PETSC_TRUE`) or false (`PETSC_FALSE`)
 
   Info Describing IS Structure:
-+    IS_SORTED - the [local part of the] index set is sorted in ascending order
-.    IS_UNIQUE - each entry in the [local part of the] index set is unique
-.    IS_PERMUTATION - the [local part of the] index set is a permutation of the integers {0, 1, ..., N-1}, where N is the size of the [local part of the] index set
-.    IS_INTERVAL - the [local part of the] index set is equal to a contiguous range of integers {f, f + 1, ..., f + N-1}
--    IS_IDENTITY - the [local part of the] index set is equal to the integers {0, 1, ..., N-1}
-
-   Notes:
-   If type is IS_GLOBAL, all processes that share the index set must pass the same value in flg
-
-   It is possible to set a property with ISSetInfo() that contradicts what would be previously computed with ISGetInfo()
++    `IS_SORTED` - the [local part of the] index set is sorted in ascending order
+.    `IS_UNIQUE` - each entry in the [local part of the] index set is unique
+.    `IS_PERMUTATION` - the [local part of the] index set is a permutation of the integers {0, 1, ..., N-1}, where N is the size of the [local part of the] index set
+.    `IS_INTERVAL` - the [local part of the] index set is equal to a contiguous range of integers {f, f + 1, ..., f + N-1}
+-    `IS_IDENTITY` - the [local part of the] index set is equal to the integers {0, 1, ..., N-1}
 
    Level: advanced
 
-.seealso: `ISInfo`, `ISInfoType`, `IS`
+   Notes:
+   If type is `IS_GLOBAL`, all processes that share the index set must pass the same value in flg
 
+   It is possible to set a property with `ISSetInfo()` that contradicts what would be previously computed with `ISGetInfo()`
+
+.seealso: `ISInfo`, `ISInfoType`, `IS`
 @*/
 PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanent, PetscBool flg)
 {
@@ -746,23 +746,25 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 /*@
    ISGetInfo - Determine whether an index set satisfies a given property
 
-   Collective or logically collective on IS if the type is IS_GLOBAL (logically collective if the value of the property has been permanently set with ISSetInfo())
+   Collective or Logically Collective if the type is `IS_GLOBAL` (logically collective if the value of the property has been permanently set with `ISSetInfo()`)
 
    Input Parameters:
 +  is - the index set
-.  info - describing a property of the index set, one of those listed in the documentation of ISSetInfo()
-.  compute - if PETSC_FALSE, the property will not be computed if it is not already known and the property will be assumed to be false
--  type - whether the property is local (IS_LOCAL) or global (IS_GLOBAL)
+.  info - describing a property of the index set, one of those listed in the documentation of `ISSetInfo()`
+.  compute - if `PETSC_FALSE`, the property will not be computed if it is not already known and the property will be assumed to be false
+-  type - whether the property is local (`IS_LOCAL`) or global (`IS_GLOBAL`)
 
    Output Parameter:
-.  flg - whether the property is true (PETSC_TRUE) or false (PETSC_FALSE)
-
-   Note: ISGetInfo uses cached values when possible, which will be incorrect if ISSetInfo() has been called with incorrect information.  To clear cached values, use ISClearInfoCache().
+.  flg - whether the property is true (`PETSC_TRUE`) or false (`PETSC_FALSE`)
 
    Level: advanced
 
-.seealso: `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
+   Notes:
+   `ISGetInfo()` uses cached values when possible, which will be incorrect if `ISSetInfo()` has been called with incorrect information.
 
+   To clear cached values, use `ISClearInfoCache()`.
+
+.seealso: `IS`, `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
 @*/
 PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute, PetscBool *flg)
 {
@@ -841,21 +843,22 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
-   Output Parameters:
-.  ident - PETSC_TRUE if an identity, else PETSC_FALSE
+   Output Parameter:
+.  ident - `PETSC_TRUE` if an identity, else `PETSC_FALSE`
 
    Level: intermediate
 
-   Note: If ISSetIdentity() (or ISSetInfo() for a permanent property) has been called,
-   ISIdentity() will return its answer without communication between processes, but
-   otherwise the output ident will be computed from ISGetInfo(),
-   which may require synchronization on the communicator of IS.  To avoid this computation,
-   call ISGetInfo() directly with the compute flag set to PETSC_FALSE, and ident will be assumed false.
+   Note:
+   If `ISSetIdentity()` (or `ISSetInfo()` for a permanent property) has been called,
+   `ISIdentity()` will return its answer without communication between processes, but
+   otherwise the output ident will be computed from `ISGetInfo()`,
+   which may require synchronization on the communicator of `is`.  To avoid this computation,
+   call `ISGetInfo()` directly with the compute flag set to `PETSC_FALSE`, and ident will be assumed false.
 
-.seealso: `ISSetIdentity()`, `ISGetInfo()`
+.seealso: `IS`, `ISSetIdentity()`, `ISGetInfo()`
 @*/
 PetscErrorCode ISIdentity(IS is, PetscBool *ident)
 {
@@ -876,11 +879,16 @@ PetscErrorCode ISIdentity(IS is, PetscBool *ident)
 
    Level: intermediate
 
-   Note: The IS will be considered the identity permanently, even if indices have been changes (for example, with
-   ISGeneralSetIndices()).  It's a good idea to only set this property if the IS will not change in the future.
-   To clear this property, use ISClearInfoCache().
+   Notes:
+   `is` will be considered the identity permanently, even if indices have been changes (for example, with
+   `ISGeneralSetIndices()`).  It's a good idea to only set this property if `is` will not change in the future.
 
-.seealso: `ISIdentity()`, `ISSetInfo()`, `ISClearInfoCache()`
+   To clear this property, use `ISClearInfoCache()`.
+
+   Developer Note:
+   Some of these info routines have statements about values changing in the `IS`, this seems to contradict the fact that `IS` cannot be changed?
+
+.seealso: `IS`, `ISIdentity()`, `ISSetInfo()`, `ISClearInfoCache()`
 @*/
 PetscErrorCode ISSetIdentity(IS is)
 {
@@ -901,12 +909,12 @@ PetscErrorCode ISSetIdentity(IS is)
 -  gend - global end
 
    Output Parameters:
-+  start - start of contiguous block, as an offset from gstart
--  contig - PETSC_TRUE if the index set refers to contiguous entries on this process, else PETSC_FALSE
++  start - start of contiguous block, as an offset from `gstart`
+-  contig - `PETSC_TRUE` if the index set refers to contiguous entries on this process, else `PETSC_FALSE`
 
    Level: developer
 
-.seealso: `ISGetLocalSize()`, `VecGetOwnershipRange()`
+.seealso: `IS`, `ISGetLocalSize()`, `VecGetOwnershipRange()`
 @*/
 PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt *start, PetscBool *contig)
 {
@@ -921,7 +929,7 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
 }
 
 /*@
-   ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the
+   ISPermutation - `PETSC_TRUE` or `PETSC_FALSE` depending on whether the
    index set has been declared to be a permutation.
 
    Logically Collective
@@ -930,17 +938,21 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
 .  is - the index set
 
    Output Parameter:
-.  perm - PETSC_TRUE if a permutation, else PETSC_FALSE
+.  perm - `PETSC_TRUE` if a permutation, else `PETSC_FALSE`
 
    Level: intermediate
 
-   Note: If it is not already known that the IS is a permutation (if ISSetPermutation()
-   or ISSetInfo() has not been called), this routine will not attempt to compute
-   whether the index set is a permutation and will assume perm is PETSC_FALSE.
-   To compute the value when it is not already known, use ISGetInfo() with
-   the compute flag set to PETSC_TRUE.
+   Note:
+   If it is not already known that `is` is a permutation (if `ISSetPermutation()`
+   or `ISSetInfo()` has not been called), this routine will not attempt to compute
+   whether the index set is a permutation and will assume `perm` is `PETSC_FALSE`.
+   To compute the value when it is not already known, use `ISGetInfo()` with
+   the compute flag set to `PETSC_TRUE`.
 
-.seealso: `ISSetPermutation()`, `ISGetInfo()`
+   Developer Note:
+   Perhaps some of these routines should use the `PetscBool3` enum to return appropriate values
+
+.seealso: `IS`, `ISSetPermutation()`, `ISGetInfo()`
 @*/
 PetscErrorCode ISPermutation(IS is, PetscBool *perm)
 {
@@ -961,14 +973,16 @@ PetscErrorCode ISPermutation(IS is, PetscBool *perm)
 
    Level: intermediate
 
+   Notes:
+   `is` will be considered a permutation permanently, even if indices have been changes (for example, with
+   `ISGeneralSetIndices()`).  It's a good idea to only set this property if `is` will not change in the future.
+
+   To clear this property, use `ISClearInfoCache()`.
+
    The debug version of the libraries (./configure --with-debugging=1) checks if the
   index set is actually a permutation. The optimized version just believes you.
 
-   Note: The IS will be considered a permutation permanently, even if indices have been changes (for example, with
-   ISGeneralSetIndices()).  It's a good idea to only set this property if the IS will not change in the future.
-   To clear this property, use ISClearInfoCache().
-
-.seealso: `ISPermutation()`, `ISSetInfo()`, `ISClearInfoCache().`
+.seealso: `IS`, `ISPermutation()`, `ISSetInfo()`, `ISClearInfoCache().`
 @*/
 PetscErrorCode ISSetPermutation(IS is)
 {
@@ -1001,12 +1015,12 @@ PetscErrorCode ISSetPermutation(IS is)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
    Level: beginner
 
-.seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlocked()`
+.seealso: `IS`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlocked()`
 @*/
 PetscErrorCode ISDestroy(IS *is)
 {
@@ -1041,17 +1055,18 @@ PetscErrorCode ISDestroy(IS *is)
    Input Parameters:
 +  is - the index set
 -  nlocal - number of indices on this processor in result (ignored for 1 processor) or
-            use PETSC_DECIDE
+            use `PETSC_DECIDE`
 
    Output Parameter:
 .  isout - the inverse permutation
 
    Level: intermediate
 
-   Notes:
+   Note:
     For parallel index sets this does the complete parallel permutation, but the
     code is not efficient for huge index sets (10,000,000 indices).
 
+.seealso: `IS`, `ISGetInfo()`, `ISSetPermutation()`, `ISGetPermutation()`
 @*/
 PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout)
 {
@@ -1095,6 +1110,7 @@ PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout)
 
    Level: beginner
 
+.seealso: `IS`, `ISSetSize()`
 @*/
 PetscErrorCode ISGetSize(IS is, PetscInt *size)
 {
@@ -1118,6 +1134,7 @@ PetscErrorCode ISGetSize(IS is, PetscInt *size)
 
    Level: beginner
 
+.seealso: `IS`, `ISGetSize()`
 @*/
 PetscErrorCode ISGetLocalSize(IS is, PetscInt *size)
 {
@@ -1129,7 +1146,7 @@ PetscErrorCode ISGetLocalSize(IS is, PetscInt *size)
 }
 
 /*@
-   ISGetLayout - get PetscLayout describing index set layout
+   ISGetLayout - get `PetscLayout` describing index set layout
 
    Not Collective
 
@@ -1141,7 +1158,7 @@ PetscErrorCode ISGetLocalSize(IS is, PetscInt *size)
 
    Level: developer
 
-.seealso: `ISSetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
+.seealso: `IS`, `PetscLayout`, `ISSetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
 @*/
 PetscErrorCode ISGetLayout(IS is, PetscLayout *map)
 {
@@ -1153,7 +1170,7 @@ PetscErrorCode ISGetLayout(IS is, PetscLayout *map)
 }
 
 /*@
-   ISSetLayout - set PetscLayout describing index set layout
+   ISSetLayout - set `PetscLayout` describing index set layout
 
    Collective
 
@@ -1164,12 +1181,12 @@ PetscErrorCode ISGetLayout(IS is, PetscLayout *map)
    Level: developer
 
    Notes:
-   Users should typically use higher level functions such as ISCreateGeneral().
+   Users should typically use higher level functions such as `ISCreateGeneral()`.
 
-   This function can be useful in some special cases of constructing a new IS, e.g. after ISCreate() and before ISLoad().
+   This function can be useful in some special cases of constructing a new `IS`, e.g. after `ISCreate()` and before `ISLoad()`.
    Otherwise, it is only valid to replace the layout with a layout known to be equivalent.
 
-.seealso: `ISCreate()`, `ISGetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
+.seealso: `IS`, `PetscLayout`, `ISCreate()`, `ISGetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
 @*/
 PetscErrorCode ISSetLayout(IS is, PetscLayout map)
 {
@@ -1198,7 +1215,7 @@ PetscErrorCode ISSetLayout(IS is, PetscLayout map)
    Fortran Note:
    `ISGetIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISGetIndicesF90()`
 
-.seealso: `ISRestoreIndices()`, `ISGetIndicesF90()`
+.seealso: `IS`, `ISRestoreIndices()`, `ISGetIndicesF90()`
 @*/
 PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
 {
@@ -1210,7 +1227,7 @@ PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
 }
 
 /*@C
-   ISGetMinMax - Gets the minimum and maximum values in an IS
+   ISGetMinMax - Gets the minimum and maximum values in an `IS`
 
    Not Collective
 
@@ -1224,10 +1241,11 @@ PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
    Level: intermediate
 
    Notes:
-    Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
-    In parallel, it returns the min and max of the local portion of the IS
+   Empty index sets return min=`PETSC_MAX_INT` and max=`PETSC_MIN_INT`.
 
-.seealso: `ISGetIndices()`, `ISRestoreIndices()`, `ISGetIndicesF90()`
+   In parallel, it returns the `min` and `max` of the local portion of `is`
+
+.seealso: `IS`, `ISGetIndices()`, `ISRestoreIndices()`, `ISGetIndicesF90()`
 @*/
 PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max)
 {
@@ -1251,7 +1269,9 @@ PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max)
 . location - if >= 0, a location within the index set that is equal to the key, otherwise the key is not in the index set
 
   Level: intermediate
-@*/
+
+ .seealso: `IS`
+ @*/
 PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 {
   PetscFunctionBegin;
@@ -1284,22 +1304,20 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 }
 
 /*@C
-   ISRestoreIndices - Restores an index set to a usable state after a call
-                      to `ISGetIndices()`.
+  ISRestoreIndices - Restores an index set to a usable state after a call to `ISGetIndices()`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  is - the index set
--  ptr - the pointer obtained by ISGetIndices()
+  Input Parameters:
++ is - the index set
+- ptr - the pointer obtained by `ISGetIndices()`
 
-   Note:
-   This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
+  Level: intermediate
 
-   Fortran Note:
-   `ISRestoreIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISRestoreIndicesF90()`
+  Fortran Note:
+  `ISRestoreIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISRestoreIndicesF90()`
 
-.seealso: `ISGetIndices()`, `ISRestoreIndicesF90()`
+.seealso: `IS`, `ISGetIndices()`, `ISRestoreIndicesF90()`
 @*/
 PetscErrorCode ISRestoreIndices(IS is, const PetscInt *ptr[])
 {
@@ -1351,19 +1369,19 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
 
    Output Parameter:
 .  indices - total indices with rank 0 indices first, and so on; total array size is
-             the same as returned with ISGetSize().
+             the same as returned with `ISGetSize()`.
 
    Level: intermediate
 
    Notes:
     this is potentially nonscalable, but depends on the size of the total index set
      and the size of the communicator. This may be feasible for index sets defined on
-     subcommunicators, such that the set size does not grow with PETSC_WORLD_COMM.
+     subcommunicators, such that the set size does not grow with `PETSC_WORLD_COMM`.
      Note also that there is no way to tell where the local part of the indices starts
-     (use ISGetIndices() and ISGetNonlocalIndices() to retrieve just the local and just
+     (use `ISGetIndices()` and `ISGetNonlocalIndices()` to retrieve just the local and just
       the nonlocal part (complement), respectively).
 
-.seealso: `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`, `ISGetSize()`
+.seealso: `IS`, `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`, `ISGetSize()`
 @*/
 PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 {
@@ -1383,17 +1401,17 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 }
 
 /*@C
-   ISRestoreTotalIndices - Restore the index array obtained with ISGetTotalIndices().
+   ISRestoreTotalIndices - Restore the index array obtained with `ISGetTotalIndices()`.
 
    Not Collective.
 
    Input Parameters:
 +  is - the index set
--  indices - index array; must be the array obtained with ISGetTotalIndices()
+-  indices - index array; must be the array obtained with `ISGetTotalIndices()`
 
    Level: intermediate
 
-.seealso: `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`
+.seealso: `IS`, `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`
 @*/
 PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 {
@@ -1423,17 +1441,17 @@ PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[])
    Output Parameter:
 .  indices - indices with rank 0 indices first, and so on,  omitting
              the current rank.  Total number of indices is the difference
-             total and local, obtained with ISGetSize() and ISGetLocalSize(),
+             total and local, obtained with `ISGetSize()` and `ISGetLocalSize()`,
              respectively.
 
    Level: intermediate
 
    Notes:
-    restore the indices using ISRestoreNonlocalIndices().
-          The same scalability considerations as those for ISGetTotalIndices
-          apply here.
+   Restore the indices using `ISRestoreNonlocalIndices()`.
 
-.seealso: `ISGetTotalIndices()`, `ISRestoreNonlocalIndices()`, `ISGetSize()`, `ISGetLocalSize().`
+   The same scalability considerations as those for `ISGetTotalIndices()` apply here.
+
+.seealso: `IS`, `ISGetTotalIndices()`, `ISRestoreNonlocalIndices()`, `ISGetSize()`, `ISGetLocalSize().`
 @*/
 PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 {
@@ -1458,17 +1476,17 @@ PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 }
 
 /*@C
-   ISRestoreNonlocalIndices - Restore the index array obtained with ISGetNonlocalIndices().
+   ISRestoreNonlocalIndices - Restore the index array obtained with `ISGetNonlocalIndices()`.
 
    Not Collective.
 
    Input Parameters:
 +  is - the index set
--  indices - index array; must be the array obtained with ISGetNonlocalIndices()
+-  indices - index array; must be the array obtained with `ISGetNonlocalIndices()`
 
    Level: intermediate
 
-.seealso: `ISGetTotalIndices()`, `ISGetNonlocalIndices()`, `ISRestoreTotalIndices()`
+.seealso: `IS`, `ISGetTotalIndices()`, `ISGetNonlocalIndices()`, `ISRestoreTotalIndices()`
 @*/
 PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 {
@@ -1480,7 +1498,7 @@ PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 }
 
 /*@
-   ISGetNonlocalIS - Gather all nonlocal indices for this IS and present
+   ISGetNonlocalIS - Gather all nonlocal indices for this `IS` and present
                      them as another sequential index set.
 
    Collective
@@ -1489,17 +1507,18 @@ PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 .  is - the index set
 
    Output Parameter:
-.  complement - sequential IS with indices identical to the result of
-                ISGetNonlocalIndices()
+.  complement - sequential `IS` with indices identical to the result of
+                `ISGetNonlocalIndices()`
 
    Level: intermediate
 
    Notes:
-    complement represents the result of ISGetNonlocalIndices as an IS.
-          Therefore scalability issues similar to ISGetNonlocalIndices apply.
-          The resulting IS must be restored using ISRestoreNonlocalIS().
+   Complement represents the result of `ISGetNonlocalIndices()` as an `IS`.
+   Therefore scalability issues similar to `ISGetNonlocalIndices()` apply.
 
-.seealso: `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`, `ISAllGather()`, `ISGetSize()`
+   The resulting `IS` must be restored using `ISRestoreNonlocalIS()`.
+
+.seealso: `IS`, `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`, `ISAllGather()`, `ISGetSize()`
 @*/
 PetscErrorCode ISGetNonlocalIS(IS is, IS *complement)
 {
@@ -1524,17 +1543,17 @@ PetscErrorCode ISGetNonlocalIS(IS is, IS *complement)
 }
 
 /*@
-   ISRestoreNonlocalIS - Restore the IS obtained with ISGetNonlocalIS().
+   ISRestoreNonlocalIS - Restore the `IS` obtained with `ISGetNonlocalIS()`.
 
    Not collective.
 
    Input Parameters:
 +  is         - the index set
--  complement - index set of is's nonlocal indices
+-  complement - index set of `is`'s nonlocal indices
 
    Level: intermediate
 
-.seealso: `ISGetNonlocalIS()`, `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`
+.seealso: `IS`, `ISGetNonlocalIS()`, `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`
 @*/
 PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
 {
@@ -1551,17 +1570,21 @@ PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
 }
 
 /*@C
-   ISViewFromOptions - View from Options
+   ISViewFromOptions - View an `IS` based on options in the options database
 
    Collective
 
    Input Parameters:
 +  A - the index set
-.  obj - Optional object
+.  obj - Optional object that provides the prefix for the options database
 -  name - command line option
 
    Level: intermediate
-.seealso: `IS`, `ISView`, `PetscObjectViewFromOptions()`, `ISCreate()`
+
+   Note:
+   See `PetscObjectViewFromOptions()` for possible `PetscViewer` and `PetscViewerFormat` values
+
+.seealso: `IS`, `ISView()`, `PetscObjectViewFromOptions()`, `ISCreate()`
 @*/
 PetscErrorCode ISViewFromOptions(IS A, PetscObject obj, const char name[])
 {
@@ -1578,11 +1601,11 @@ PetscErrorCode ISViewFromOptions(IS A, PetscObject obj, const char name[])
 
    Input Parameters:
 +  is - the index set
--  viewer - viewer used to display the set, for example PETSC_VIEWER_STDOUT_SELF.
+-  viewer - viewer used to display the set, for example `PETSC_VIEWER_STDOUT_SELF`.
 
    Level: intermediate
 
-.seealso: `PetscViewerASCIIOpen()`
+.seealso: `IS`, `PetscViewer`, `PetscViewerASCIIOpen()`, `ISViewFromOptions()`
 @*/
 PetscErrorCode ISView(IS is, PetscViewer viewer)
 {
@@ -1600,22 +1623,22 @@ PetscErrorCode ISView(IS is, PetscViewer viewer)
 }
 
 /*@
-  ISLoad - Loads a vector that has been stored in binary or HDF5 format with ISView().
+  ISLoad - Loads a vector that has been stored in binary or HDF5 format with `ISView()`.
 
   Collective
 
   Input Parameters:
-+ is - the newly loaded vector, this needs to have been created with ISCreate() or some related function before a call to ISLoad().
-- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or HDF5 file viewer, obtained from PetscViewerHDF5Open()
++ is - the newly loaded index set, this needs to have been created with `ISCreate()` or some related function before a call to `ISLoad()`.
+- viewer - binary file viewer, obtained from `PetscViewerBinaryOpen()` or HDF5 file viewer, obtained from `PetscViewerHDF5Open()`
 
   Level: intermediate
 
   Notes:
-  IF using HDF5, you must assign the IS the same name as was used in the IS
-  that was stored in the file using PetscObjectSetName(). Otherwise you will
+  IF using HDF5, you must assign the IS the same name as was used in `is`
+  that was stored in the file using `PetscObjectSetName()`. Otherwise you will
   get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
 
-.seealso: `PetscViewerBinaryOpen()`, `ISView()`, `MatLoad()`, `VecLoad()`
+.seealso: `IS`, `PetscViewerBinaryOpen()`, `ISView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 {
@@ -1640,12 +1663,12 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
    Level: intermediate
 
-.seealso: `ISSortRemoveDups()`, `ISSorted()`
+.seealso: `IS`, `ISSortRemoveDups()`, `ISSorted()`
 @*/
 PetscErrorCode ISSort(IS is)
 {
@@ -1661,12 +1684,12 @@ PetscErrorCode ISSort(IS is)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . is - the index set
 
   Level: intermediate
 
-.seealso: `ISSort()`, `ISSorted()`
+.seealso: `IS`, `ISSort()`, `ISSorted()`
 @*/
 PetscErrorCode ISSortRemoveDups(IS is)
 {
@@ -1680,16 +1703,16 @@ PetscErrorCode ISSortRemoveDups(IS is)
 }
 
 /*@
-   ISToGeneral - Converts an IS object of any type to ISGENERAL type
+   ISToGeneral - Converts an IS object of any type to `ISGENERAL` type
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  is - the index set
 
    Level: intermediate
 
-.seealso: `ISSorted()`
+.seealso: `IS`, `ISSorted()`
 @*/
 PetscErrorCode ISToGeneral(IS is)
 {
@@ -1702,21 +1725,21 @@ PetscErrorCode ISToGeneral(IS is)
 /*@
    ISSorted - Checks the indices to determine whether they have been sorted.
 
-   Collective
+   Not Collective
 
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
-.  flg - output flag, either PETSC_TRUE if the index set is sorted,
-         or PETSC_FALSE otherwise.
-
-   Notes:
-    For parallel IS objects this only indicates if the local part of the IS
-          is sorted. So some processors may return PETSC_TRUE while others may
-          return PETSC_FALSE.
+.  flg - output flag, either `PETSC_TRUE` if the index set is sorted,
+         or `PETSC_FALSE` otherwise.
 
    Level: intermediate
+
+   Note:
+    For parallel IS objects this only indicates if the local part of `is`
+          is sorted. So some processors may return `PETSC_TRUE` while others may
+          return `PETSC_FALSE`.
 
 .seealso: `ISSort()`, `ISSortRemoveDups()`
 @*/
@@ -1742,7 +1765,7 @@ PetscErrorCode ISSorted(IS is, PetscBool *flg)
 
    Level: beginner
 
-.seealso: `ISCreateGeneral()`, `ISCopy()`
+.seealso: `IS`, `ISCreateGeneral()`, `ISCopy()`
 @*/
 PetscErrorCode ISDuplicate(IS is, IS *newIS)
 {
@@ -1767,7 +1790,7 @@ PetscErrorCode ISDuplicate(IS is, IS *newIS)
 
    Level: beginner
 
-.seealso: `ISDuplicate()`, `ISShift()`
+.seealso: `IS`, `ISDuplicate()`, `ISShift()`
 @*/
 PetscErrorCode ISCopy(IS is, IS isy)
 {
@@ -1802,11 +1825,12 @@ PetscErrorCode ISCopy(IS is, IS isy)
    Output Parameter:
 .  isy - the shifted copy of the input index set
 
-   Notes:
-   The offset can be different across processes.
-   IS is and isy can be the same.
-
    Level: beginner
+
+   Notes:
+   The `offset` can be different across processes.
+
+  `is` and `isy` can be the same.
 
 .seealso: `ISDuplicate()`, `ISCopy()`
 @*/
@@ -1831,27 +1855,29 @@ PetscErrorCode ISShift(IS is, PetscInt offset, IS isy)
 }
 
 /*@
-   ISOnComm - Split a parallel IS on subcomms (usually self) or concatenate index sets on subcomms into a parallel index set
+   ISOnComm - Split a parallel `IS` on subcomms (usually self) or concatenate index sets on subcomms into a parallel index set
 
    Collective
 
    Input Parameters:
 + is - index set
 . comm - communicator for new index set
-- mode - copy semantics, PETSC_USE_POINTER for no-copy if possible, otherwise PETSC_COPY_VALUES
+- mode - copy semantics, `PETSC_USE_POINTER` for no-copy if possible, otherwise `PETSC_COPY_VALUES`
 
    Output Parameter:
-. newis - new IS on comm
+. newis - new `IS` on `comm`
 
    Level: advanced
 
    Notes:
-   It is usually desirable to create a parallel IS and look at the local part when necessary.
+   It is usually desirable to create a parallel `IS` and look at the local part when necessary.
 
-   This function is useful if serial ISs must be created independently, or to view many
-   logically independent serial ISs.
+   This function is useful if serial `IS`s must be created independently, or to view many
+   logically independent serial `IS`s.
 
-   The input IS must have the same type on every process.
+   The input `IS` must have the same type on every MPI process.
+
+.seealso: `IS`
 @*/
 PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
 {
@@ -1880,12 +1906,13 @@ PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
    Level: intermediate
 
    Notes:
-   This is much like the block size for Vecs. It indicates that one can think of the indices as
-   being in a collection of equal size blocks. For ISBlock() these collections of blocks are all contiquous
-   within a block but this is not the case for other IS.
-   ISBlockGetIndices() only works for ISBlock IS, not others.
+   This is much like the block size for `Vec`s. It indicates that one can think of the indices as
+   being in a collection of equal size blocks. For `ISBLOCK` these collections of blocks are all contiquous
+   within a block but this is not the case for other `IS`.
 
-.seealso: `ISGetBlockSize()`, `ISCreateBlock()`, `ISBlockGetIndices()`,
+   `ISBlockGetIndices()` only works for `ISBLOCK`, not others.
+
+.seealso: `IS`, `ISGetBlockSize()`, `ISCreateBlock()`, `ISBlockGetIndices()`,
 @*/
 PetscErrorCode ISSetBlockSize(IS is, PetscInt bs)
 {
@@ -1925,13 +1952,10 @@ PetscErrorCode ISSetBlockSize(IS is, PetscInt bs)
 
    Level: intermediate
 
-Notes:
-   This is much like the block size for Vecs. It indicates that one can think of the indices as
-   being in a collection of equal size blocks. For ISBlock() these collections of blocks are all contiquous
-   within a block but this is not the case for other IS.
-   ISBlockGetIndices() only works for ISBlock IS, not others.
+   Note:
+   See `ISSetBlockSize()`
 
-.seealso: `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISSetBlockSize()`
+.seealso: `IS`, `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISSetBlockSize()`
 @*/
 PetscErrorCode ISGetBlockSize(IS is, PetscInt *size)
 {
@@ -1954,8 +1978,8 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 }
 
 /*MC
-    ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.
-    The users should call ISRestoreIndicesF90() after having looked at the
+    ISGetIndicesF90 - Accesses the elements of an index set from Fortran.
+    The users should call `ISRestoreIndicesF90()` after having looked at the
     indices.  The user should NOT change the indices.
 
     Synopsis:
@@ -1967,7 +1991,7 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 .   x - index set
 
     Output Parameters:
-+   xx_v - the Fortran90 pointer to the array
++   xx_v - the Fortran pointer to the array
 -   ierr - error code
 
     Example of Usage:
@@ -1982,21 +2006,20 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
     Level: intermediate
 
 .seealso: `ISRestoreIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`
-
 M*/
 
 /*MC
     ISRestoreIndicesF90 - Restores an index set to a usable state after
-    a call to ISGetIndicesF90().
+    a call to `ISGetIndicesF90()`.
 
     Synopsis:
     ISRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameters:
 +   x - index set
--   xx_v - the Fortran90 pointer to the array
+-   xx_v - the Fortran pointer to the array
 
     Output Parameter:
 .   ierr - error code
@@ -2013,24 +2036,23 @@ M*/
     Level: intermediate
 
 .seealso: `ISGetIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`
-
 M*/
 
 /*MC
-    ISBlockGetIndicesF90 - Accesses the elements of an index set from Fortran90.
-    The users should call ISBlockRestoreIndicesF90() after having looked at the
+    ISBlockGetIndicesF90 - Accesses the elements of an index set from Fortran.
+    The users should call `ISBlockRestoreIndicesF90()` after having looked at the
     indices.  The user should NOT change the indices.
 
     Synopsis:
     ISBlockGetIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   x - index set
 
     Output Parameters:
-+   xx_v - the Fortran90 pointer to the array
++   xx_v - the Fortran pointer to the array
 -   ierr - error code
     Example of Usage:
 .vb
@@ -2045,12 +2067,11 @@ M*/
 
 .seealso: `ISBlockRestoreIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`,
           `ISRestoreIndices()`
-
 M*/
 
 /*MC
     ISBlockRestoreIndicesF90 - Restores an index set to a usable state after
-    a call to ISBlockGetIndicesF90().
+    a call to `ISBlockGetIndicesF90()`.
 
     Synopsis:
     ISBlockRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
@@ -2059,7 +2080,7 @@ M*/
 
     Input Parameters:
 +   x - index set
--   xx_v - the Fortran90 pointer to the array
+-   xx_v - the Fortran pointer to the array
 
     Output Parameter:
 .   ierr - error code
@@ -2073,11 +2094,7 @@ M*/
     call ISBlockRestoreIndicesF90(x,xx_v,ierr)
 .ve
 
-    Notes:
-    Not yet supported for all F90 compilers
-
     Level: intermediate
 
 .seealso: `ISBlockGetIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`, `ISRestoreIndicesF90()`
-
 M*/

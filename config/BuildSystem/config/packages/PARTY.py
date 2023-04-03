@@ -17,7 +17,7 @@ class Configure(config.package.Package):
 
   def versionToStandardForm(self,ver):
     import re
-    return re.compile('[=A-Za-z]([\.0-9]*),').search(ver).group(1)
+    return re.compile(r'[=A-Za-z]([\.0-9]*),').search(ver).group(1)
 
   def Install(self):
     import os

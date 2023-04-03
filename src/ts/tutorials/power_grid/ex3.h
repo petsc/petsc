@@ -43,7 +43,7 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
     if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
     else user->Pmax = 0.0;                         /* Going backward, reversal of event */
   }
-  PetscCall(TSRestartStep(ts)); /* Must set restart flag to ture, otherwise methods with FSAL will fail */
+  PetscCall(TSRestartStep(ts)); /* Must set restart flag to true, otherwise methods with FSAL will fail */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

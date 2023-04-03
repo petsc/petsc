@@ -1,14 +1,14 @@
 #include <petsc/private/snesimpl.h>
 
 /*MC
-    SNESObjectiveFunction - functional form used to convey an objective function to the nonlinear solver
+    SNESObjectiveFunction - functional form used to convey an objective function to the nonlinear solver, that will be used instead of the 2-norm of the residual
 
      Synopsis:
      #include <petscsnes.h>
        SNESObjectiveFunction(SNES snes,Vec x,PetscReal *obj,void *ctx);
 
      Input Parameters:
-+      snes - the SNES context
++      snes - the `SNES` context
 .      X - solution
 .      obj - real to hold the objective value
 -      ctx - optional user-defined objective context
@@ -19,7 +19,7 @@
 M*/
 
 /*@C
-   SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods.
+   SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods, used instead of the 2-norm of the residual
 
    Logically Collective
 
@@ -27,7 +27,7 @@ M*/
 +  snes - the `SNES` context
 .  obj - objective evaluation routine; see `SNESObjectiveFunction` for details
 -  ctx - [optional] user-defined context for private data for the
-         function evaluation routine (may be NULL)
+         function evaluation routine (may be `NULL`)
 
    Level: intermediate
 
@@ -52,7 +52,7 @@ PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, Pets
 }
 
 /*@C
-   SNESGetObjective - Returns the objective function.
+   SNESGetObjective - Returns the objective function set with `SNESSetObjective()`
 
    Not Collective
 
@@ -60,8 +60,8 @@ PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, Pets
 .  snes - the `SNES` context
 
    Output Parameters:
-+  obj - objective evaluation routine (or NULL); see `SNESObjectFunction` for details
--  ctx - the function context (or NULL)
++  obj - objective evaluation routine (or `NULL`); see `SNESObjectFunction` for details
+-  ctx - the function context (or `NULL`)
 
    Level: advanced
 
@@ -129,6 +129,8 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 +  -snes_fd_function_eps - Tolerance for including non-zero entries into the gradient, default is 1.e-6
 -  -snes_fd_function - Computes function from user provided objective function (set with `SNESSetObjective()`) with finite difference
 
+   Level: advanced
+
    Notes:
    This function can be used with `SNESSetFunction()` to have the nonlinear function solved for with `SNES` defined by the gradient of an objective function
    `SNESObjectiveComputeFunctionDefaultFD()` is similar in character to `SNESComputeJacobianDefault()`.
@@ -138,8 +140,6 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
    small problems.
 
    Note that this uses quadratic interpolation of the objective to form each value in the function.
-
-   Level: advanced
 
 .seealso: `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`
 @*/

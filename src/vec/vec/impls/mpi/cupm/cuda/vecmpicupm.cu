@@ -1,8 +1,9 @@
 #include "../vecmpicupm.hpp" /*I <petscvec.h> I*/
 
-using namespace Petsc::vec::cupm::impl;
+using namespace Petsc::vec::cupm;
+using Petsc::device::cupm::DeviceType;
 
-static constexpr auto VecMPI_CUDA = VecMPI_CUPM<::Petsc::device::cupm::DeviceType::CUDA>{};
+static constexpr auto VecMPI_CUDA = impl::VecMPI_CUPM<DeviceType::CUDA>{};
 
 /*MC
   VECCUDA - VECCUDA = "cuda" - A VECSEQCUDA on a single-process communicator, and VECMPICUDA
@@ -39,7 +40,7 @@ PetscErrorCode VecCreate_CUDA(Vec v)
 PetscErrorCode VecCreate_MPICUDA(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecMPI_CUDA.create(v));
+  PetscCall(VecMPI_CUDA.Create(v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -83,7 +84,7 @@ PetscErrorCode VecCreateMPICUDA(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 {
   PetscFunctionBegin;
   PetscValidPointer(v, 4);
-  PetscCall(VecMPI_CUDA.creatempicupm(comm, 0, n, N, v, PETSC_TRUE));
+  PetscCall(VecCreateMPICUPMAsync<DeviceType::CUDA>(comm, n, N, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -117,9 +118,7 @@ VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;
-  if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
-  PetscValidPointer(v, 7);
-  PetscCall(VecMPI_CUDA.creatempicupmwitharrays(comm, bs, n, N, cpuarray, gpuarray, v));
+  PetscCall(VecCreateMPICUPMWithArrays<DeviceType::CUDA>(comm, bs, n, N, cpuarray, gpuarray, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -151,6 +150,6 @@ VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;
-  PetscCall(VecCreateMPICUDAWithArrays(comm, bs, n, N, nullptr, gpuarray, v));
+  PetscCall(VecCreateMPICUPMWithArray<DeviceType::CUDA>(comm, bs, n, N, gpuarray, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

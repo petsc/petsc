@@ -81,13 +81,14 @@ Even with the use of ``clang-format`` there are still many decisions about code 
 
 #. All local variables of a particular type (for example, ``PetscInt``) should be listed
    on the same line if possible; otherwise, they should be listed on adjacent lines. Note
-   that pointers of different arity are considered to be different types
+   that pointers of different arity are considered to be different types. ``clang-format`` automatically
+   handles the indenting shown below.
 
    ::
 
       // Correct
-      PetscInt a,b,c;
-      PetscInt *d,*e;
+      PetscInt   a,b,c;
+      PetscInt  *d,*e;
       PetscInt **f;
 
       // Incorrect
@@ -597,14 +598,21 @@ where noted, add a newline after the section headings.
 #. If documenting a function with output parameters, a list of output
    parameter descriptions in an ``Output Parameter(s):`` section.
 
+#. If any input or output parameters are function pointers they should be documented in the style
+
+   :: code-block:: sh
+
+      Calling sequence of `func()`:
+      $ PetscErrorCode func(PetscInt arg);
+      . arg - the integer argument
+
 #. If documenting a function that interacts with the options database, a
    list of options database keys in an ``Options Database Key(s):``
    section.
 
 #. ``Level:`` (no newline) followed by ``beginner``,
    ``intermediate``, ``advanced``, ``developer``, or ``deprecated``. This
-   should be listed before the various ``Note(s):`` sections but it is ok
-   if it is listed after them.
+   should be listed before the various ``Note(s):`` sections.
 
 #. (Optional) a ``Note(s):`` section containing in-depth discussion,
    technical caveats, special cases, and so on. If it is ambiguous

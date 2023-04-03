@@ -26,7 +26,7 @@ def get_version():
     pardir = [os.path.pardir] * 2
     topdir = os.path.join(here, *pardir)
     srcdir = os.path.join(topdir, 'src')
-    with open(os.path.join(srcdir, '__init__.py')) as f:
+    with open(os.path.join(srcdir, 'petsc4py', '__init__.py')) as f:
         m = re.search(r"__version__\s*=\s*'(.*)'", f.read())
         return m.groups()[0]
 
@@ -54,12 +54,12 @@ source_suffix = '.rst'
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
 
-# The master toctree document.
-master_doc = 'index'
+# The main toctree document.
+main_doc = 'index'
 
 # General information about the project.
 project = u'PETSc for Python'
-copyright = u'2021, Lisandro Dalcin'
+copyright = u'2023, Lisandro Dalcin'
 author = u'Lisandro Dalcin'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -76,7 +76,7 @@ release = pkg_version
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -165,7 +165,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'petsc4py', project, [author], 1)
+    (main_doc, 'petsc4py', project, [author], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -177,7 +177,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'petsc4py', project, author,
+    (main_doc, 'petsc4py', project, author,
      'petsc4py', project+u'.', 'Miscellaneous'),
 ]
 

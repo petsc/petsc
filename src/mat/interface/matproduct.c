@@ -196,26 +196,26 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------- */
 /*@C
-   MatProductReplaceMats - Replace input matrices for a matrix product.
+   MatProductReplaceMats - Replace the input matrices for the matrix-matrix product operation inside the computed matrix
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
-+  A - the matrix or NULL if not being replaced
-.  B - the matrix or NULL if not being replaced
-.  C - the matrix or NULL if not being replaced
--  D - the matrix product
++  A - the matrix or `NULL` if not being replaced
+.  B - the matrix or `NULL` if not being replaced
+.  C - the matrix or `NULL` if not being replaced
+-  D - the matrix whose values are computed via a matrix-matrix product operation
 
    Level: intermediate
 
    Note:
      To reuse the symbolic phase, the input matrices must have exactly the same data structure as the replaced one.
      If the type of any of the input matrices is different than what was previously used, or their symmetry flag changed but
-     the symbolic phase took advantage of their symmetry, the product is cleared and `MatProductSetFromOptions()` and `MatProductSymbolic()` are invoked again.
+     the symbolic phase took advantage of their symmetry, the product is cleared and `MatProductSetFromOptions()`
+     and `MatProductSymbolic()` are invoked again.
 
-.seealso: `Mat`, `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
 @*/
 PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D)
 {
@@ -447,11 +447,9 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     }
     PetscCall(PetscStrlcat(mtypes, "_C", sizeof(mtypes)));
 #if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wformat-pedantic"
+    PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat-pedantic");
 #elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wformat"
+    PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wformat");
 #endif
     PetscCall(PetscObjectQueryFunction((PetscObject)A, mtypes, &f));
     PetscCall(PetscInfo(mat, "  querying %s from A? %p\n", mtypes, f));
@@ -482,11 +480,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     }
     if (f) PetscCall((*f)(mat));
   }
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__) || defined(__GNUG__)
-  #pragma GCC diagnostic pop
-#endif
+  PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END();
   /* We may have found f but it did not succeed */
   if (!mat->ops->productsymbolic) {
     /* we can still compute the product if B is of type dense */
@@ -513,19 +507,26 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 }
 
 /*@C
-   MatProductSetFromOptions - Sets the options for the computation of a matrix-matrix product where the type, the algorithm etc are determined from the options database.
+   MatProductSetFromOptions - Sets the options for the computation of a matrix-matrix product operation where the type,
+   the algorithm etc are determined from the options database.
 
-   Logically Collective on Mat
+   Logically Collective
 
    Input Parameter:
-.  mat - the matrix
+.  mat - the matrix whose values are computed via a matrix-matrix product operation
 
    Options Database Keys:
-.    -mat_product_clear - Clear intermediate data structures after `MatProductNumeric()` has been called
++    -mat_product_clear - Clear intermediate data structures after `MatProductNumeric()` has been called
+.    -mat_product_algorithm <algorithm> - Sets the algorithm, see `MatProductAlgorithm` for possible values
+-    -mat_product_algorithm_backend_cpu - Use the CPU to perform the computation even if the matrix is a GPU matrix
 
    Level: intermediate
 
-.seealso: `Mat`, `MatSetFromOptions()`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
+   Note:
+   The `-mat_product_clear` option reduces memory usage but means that the matrix cannot be re-used for a matrix-matrix product operation
+
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatSetFromOptions()`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductNumeric()`,
+          `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductAlgorithm`
 @*/
 PetscErrorCode MatProductSetFromOptions(Mat mat)
 {
@@ -543,17 +544,17 @@ PetscErrorCode MatProductSetFromOptions(Mat mat)
 }
 
 /*@C
-   MatProductView - View the private `Mat_Product` algorithm object within a matrix
+   MatProductView - View the private matrix-matrix algorithm object within a matrix
 
    Logically Collective
 
    Input Parameters:
 +  mat - the matrix obtained with `MatProductCreate()` or `MatProductCreateWithMat()`
--  viewer - where `mat` should be reviewed
+-  viewer - where the information on the matrix-matrix algorithm of `mat` should be reviewed
 
    Level: intermediate
 
-.seealso: `Mat`, `MatProductSetFromOptions()`, `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
+.seealso: [](chapter_matrices), `MatProductType`, `Mat`, `MatProductSetFromOptions()`, `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
 @*/
 PetscErrorCode MatProductView(Mat mat, PetscViewer viewer)
 {
@@ -567,7 +568,6 @@ PetscErrorCode MatProductView(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------- */
 /* these are basic implementations relying on the old function pointers
  * they are dangerous and should be removed in the future */
 PetscErrorCode MatProductNumeric_AB(Mat mat)
@@ -630,31 +630,31 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------- */
-
 /*@
-   MatProductNumeric - Compute a matrix product with numerical values.
+   MatProductNumeric - Compute a matrix-matrix product operation with the numerical values
 
    Collective
 
    Input/Output Parameter:
-.  mat - the matrix holding the product
+.  mat - the matrix whose values are computed via a matrix-matrix product operation
 
    Level: intermediate
 
    Note:
-   `MatProductSymbolic()` must have been called on mat before calling this function
+   `MatProductSymbolic()` must have been called on `mat` before calling this function
 
-.seealso: `Mat`, `MatProductSetAlgorithm()`, `MatProductSetType()`, `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductSetAlgorithm()`, `MatProductSetType()`, `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
 @*/
 PetscErrorCode MatProductNumeric(Mat mat)
 {
+#if defined(PETSC_USE_LOG)
   PetscLogEvent eventtype = -1;
-  PetscBool     missing   = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
+#if defined(PETSC_USE_LOG)
   switch (mat->product->type) {
   case MATPRODUCT_AB:
     eventtype = MAT_MatMultNumeric;
@@ -677,14 +677,13 @@ PetscErrorCode MatProductNumeric(Mat mat)
   default:
     SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[mat->product->type]);
   }
+#endif
 
   if (mat->ops->productnumeric) {
     PetscCall(PetscLogEventBegin(eventtype, mat, 0, 0, 0));
     PetscUseTypeMethod(mat, productnumeric);
     PetscCall(PetscLogEventEnd(eventtype, mat, 0, 0, 0));
-  } else missing = PETSC_TRUE;
-
-  if (missing || !mat->product) {
+  } else if (mat->product) {
     char errstr[256];
 
     if (mat->product->type == MATPRODUCT_ABC) {
@@ -692,16 +691,15 @@ PetscErrorCode MatProductNumeric(Mat mat)
     } else {
       PetscCall(PetscSNPrintf(errstr, 256, "%s with A %s, B %s", MatProductTypes[mat->product->type], ((PetscObject)mat->product->A)->type_name, ((PetscObject)mat->product->B)->type_name));
     }
-    PetscCheck(!missing, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Unspecified numeric phase for product %s", errstr);
-    PetscCheck(mat->product, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing struct after symbolic phase for product %s", errstr);
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Unspecified numeric phase for product %s", errstr);
   }
+  PetscCheck(mat->product, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing struct after numeric phase for product");
 
   if (mat->product->clear) PetscCall(MatProductClear(mat));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------- */
 /* these are basic implementations relying on the old function pointers
  * they are dangerous and should be removed in the future */
 PetscErrorCode MatProductSymbolic_AB(Mat mat)
@@ -748,33 +746,34 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------- */
-
 /*@
-   MatProductSymbolic - Perform the symbolic portion of a matrix product, this creates a data structure for use with the numerical product done with
-  `MatProductNumeric()`
+   MatProductSymbolic - Perform the symbolic portion of a matrix-matrix product operation, this creates a data structure for use with the numerical
+   product to be done with `MatProductNumeric()`
 
    Collective
 
    Input/Output Parameter:
-.  mat - the matrix to hold a product
+.  mat - the matrix whose values are to be computed via a matrix-matrix product operation
 
    Level: intermediate
 
    Note:
-   `MatProductSetFromOptions()` must have been called on mat before calling this function
+   `MatProductSetFromOptions()` must have been called on `mat` before calling this function
 
-.seealso: `Mat`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
 PetscErrorCode MatProductSymbolic(Mat mat)
 {
+#if defined(PETSC_USE_LOG)
   PetscLogEvent eventtype = -1;
-  PetscBool     missing   = PETSC_FALSE;
+#endif
+  PetscBool missing = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
   PetscCheck(!mat->product->data, PetscObjectComm((PetscObject)mat), PETSC_ERR_ORDER, "Cannot run symbolic phase. Product data not empty");
+#if defined(PETSC_USE_LOG)
   switch (mat->product->type) {
   case MATPRODUCT_AB:
     eventtype = MAT_MatMultSymbolic;
@@ -797,6 +796,7 @@ PetscErrorCode MatProductSymbolic(Mat mat)
   default:
     SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[mat->product->type]);
   }
+#endif
   mat->ops->productnumeric = NULL;
   if (mat->ops->productsymbolic) {
     PetscCall(PetscLogEventBegin(eventtype, mat, 0, 0, 0));
@@ -819,44 +819,44 @@ PetscErrorCode MatProductSymbolic(Mat mat)
 }
 
 /*@
-   MatProductSetFill - Set an expected fill of the matrix product.
+   MatProductSetFill - Set an expected fill of the matrix whose values are computed via a matrix-matrix product operation
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
-+  mat - the matrix product result matrix
--  fill - expected fill as ratio of nnz(mat)/(nnz(A) + nnz(B) + nnz(C)); use `PETSC_DEFAULT` if you do not have a good estimate. If the product is a dense matrix, this value is not used.
++  mat - the matrix whose values are to be computed via a matrix-matrix product operation
+-  fill - expected fill as ratio of nnz(mat)/(nnz(A) + nnz(B) + nnz(C)); use `PETSC_DEFAULT` if you do not have a good estimate.
+          If the product is a dense matrix, this value is not used.
 
    Level: intermediate
 
-.seealso: `Mat`, `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
-  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) mat->product->fill = 2.0;
+  if (fill == (PetscReal)PETSC_DEFAULT || fill == (PetscReal)PETSC_DECIDE) mat->product->fill = 2.0;
   else mat->product->fill = fill;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-   MatProductSetAlgorithm - Requests a particular algorithm for a matrix product computation that will perform to compute the given matrix
+   MatProductSetAlgorithm - Requests a particular algorithm for a matrix-matrix product operation that will perform to compute the given matrix
 
    Collective
 
    Input Parameters:
-+  mat - the matrix product
++  mat - the matrix whose values are computed via a matrix-matrix product operation
 -  alg - particular implementation algorithm of the matrix product, e.g., `MATPRODUCTALGORITHMDEFAULT`.
 
    Options Database Key:
-.  -mat_product_algorithm <algorithm> - Sets the algorithm; use -help for a list
-    of available algorithms (for instance, scalable, outerproduct, etc.)
+.  -mat_product_algorithm <algorithm> - Sets the algorithm, see `MatProductAlgorithm`
 
    Level: intermediate
 
-.seealso: `Mat`, `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductClear()`, `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`
 @*/
 PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
 {
@@ -869,20 +869,21 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
 }
 
 /*@
-   MatProductSetType - Sets a particular matrix product type to be used to compute the given matrix
+   MatProductSetType - Sets a particular matrix-matrix product operation to be used to compute the values of the given matrix
 
    Collective
 
    Input Parameters:
-+  mat - the matrix
--  productype   - matrix product type, e.g., `MATPRODUCT_AB`,`MATPRODUCT_AtB`,`MATPRODUCT_ABt`,`MATPRODUCT_PtAP`,`MATPRODUCT_RARt`,`MATPRODUCT_ABC`.
++  mat - the matrix whose values are computed via a matrix-matrix product operation
+-  productype   - matrix product type, e.g., `MATPRODUCT_AB`,`MATPRODUCT_AtB`,`MATPRODUCT_ABt`,`MATPRODUCT_PtAP`,`MATPRODUCT_RARt`,`MATPRODUCT_ABC`,
+                  see `MatProductType`
 
    Level: intermediate
 
    Note:
    The small t represents the transpose operation.
 
-.seealso: `Mat`, `MatProductCreate()`, `MatProductType`, `MatProductType`,
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductType`, `MatProductType`,
           `MATPRODUCT_AB`, `MATPRODUCT_AtB`, `MATPRODUCT_ABt`, `MATPRODUCT_PtAP`, `MATPRODUCT_RARt`, `MATPRODUCT_ABC`
 @*/
 PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
@@ -903,21 +904,24 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
 }
 
 /*@
-   MatProductClear - Clears matrix product internal datastructures.
+   MatProductClear - Clears from the matrix any internal data structures related to the computation of the values of the matrix from matrix-matrix product operations
 
    Collective
 
-   Input Parameters:
-.  mat - the product matrix
+   Input Parameter:
+.  mat - the matrix whose values are to be computed via a matrix-matrix product operation
+
+   Options Database Key:
+.    -mat_product_clear - Clear intermediate data structures after `MatProductNumeric()` has been called
 
    Level: intermediate
 
    Notes:
    This function should be called to remove any intermediate data used to compute the matrix to free up memory.
 
-   After having called this function, matrix-matrix operations can no longer be used on mat
+   After having called this function, matrix-matrix product operations can no longer be used on `mat`
 
-.seealso: `Mat`, `MatProductCreate()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductClear(Mat mat)
 {
@@ -967,26 +971,27 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D)
 }
 
 /*@
-   MatProductCreateWithMat - Setup a given matrix as a matrix product of other matrices
+   MatProductCreateWithMat - Set a given matrix to have its values computed via matrix-matrix operations on other matrices.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
 .  B - the second matrix
 .  C - the third matrix (optional, use `NULL` if not needed)
--  D - the matrix which will be used to hold the product
+-  D - the matrix whose values are to be computed via a matrix-matrix product operation
 
    Level: intermediate
 
    Notes:
-   Use `MatProductCreate()` if the matrix you wish computed (the D matrix) does not already exist
+   Use `MatProductCreate()` if the matrix you wish computed (the `D` matrix) does not already exist
 
-   See `MatProductCreate()` for details on the usage of the MatProduct routines
+   See `MatProductCreate()` for details on the usage of the matrix-matrix product operations
 
    Any product data currently attached to `D` will be cleared
 
-.seealso: `Mat`, `MatProductCreate()`, `MatProductClear()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductType`, `MatProductSetType()`, `MatProductAlgorithm`,
+          `MatProductSetAlgorithm`, `MatProductCreate()`, `MatProductClear()`
 @*/
 PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 {
@@ -1026,19 +1031,19 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 /*@
    MatProductCreate - create a matrix to hold the result of a matrix-matrix product operation
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the first matrix
 .  B - the second matrix
--  C - the third matrix (optional)
+-  C - the third matrix (or `NULL`)
 
-   Output Parameters:
-.  D - the product matrix
+   Output Parameter:
+.  D - the matrix whose values are to be computed via a matrix-matrix product operation
 
    Level: intermediate
 
-   Example of Usage:
+   Example:
 .vb
     MatProductCreate(A,B,C,&D); or MatProductCreateWithMat(A,B,C,D)
     MatProductSetType(D, MATPRODUCT_AB or MATPRODUCT_AtB or MATPRODUCT_ABt or MATPRODUCT_PtAP or MATPRODUCT_RARt or MATPRODUCT_ABC)
@@ -1052,7 +1057,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
 .ve
 
    Notes:
-   Use `MatProductCreateWithMat()` if the matrix you wish computed, the D matrix, already exists.
+   Use `MatProductCreateWithMat()` if the matrix you wish computed, the `D` matrix, already exists.
 
    The information computed during the symbolic stage can be reused for new numerical computations with the same non-zero structure
 
@@ -1060,7 +1065,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
    It is undocumented what happens if the nonzero structure of the input matrices changes. Is the symbolic stage automatically redone? Does it crash?
    Is there error checking for it?
 
-.seealso: `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`
 @*/
 PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
 {
@@ -1203,19 +1208,19 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
 }
 
 /*@
-   MatProductGetType - Returns the type of matrix-matrix product associated with the given matrix.
+   MatProductGetType - Returns the type of matrix-matrix product associated with computing values for the given matrix
 
-   Not collective
+   Not Collective
 
    Input Parameter:
-.  mat - the matrix
+.  mat - the matrix whose values are to be computed via a matrix-matrix product operation
 
    Output Parameter:
 .  mtype - the `MatProductType`
 
    Level: intermediate
 
-.seealso: `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`, `MatProductType`, `MatProductAlgorithm`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`, `MatProductType`, `MatProductAlgorithm`
 @*/
 PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
 {
@@ -1228,21 +1233,21 @@ PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
 }
 
 /*@
-   MatProductGetMats - Returns the matrices associated with the matrix-matrix product this matrix can receive
+   MatProductGetMats - Returns the matrices associated with the matrix-matrix product associated with computing values for the given matrix
 
-   Not collective
+   Not Collective
 
    Input Parameter:
-.  mat - the product matrix
+.  mat - the matrix whose values are to be computed via a matrix-matrix product operation
 
    Output Parameters:
 +  A - the first matrix
 .  B - the second matrix
--  C - the third matrix (optional)
+-  C - the third matrix (may be `NULL` for some `MatProductType`)
 
    Level: intermediate
 
-.seealso: `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
+.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
 {

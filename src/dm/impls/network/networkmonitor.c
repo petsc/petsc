@@ -6,15 +6,15 @@
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . network - network to monitor
 
-  Output Parameters:
-. monitorptr - Location to put network monitor context
+  Output Parameter:
+. monitorptr - the `DMNetworkMonitor` object
 
   Level: intermediate
 
-.seealso: `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
 PetscErrorCode DMNetworkMonitorCreate(DM network, DMNetworkMonitor *monitorptr)
 {
@@ -39,14 +39,14 @@ PetscErrorCode DMNetworkMonitorCreate(DM network, DMNetworkMonitor *monitorptr)
 /*@
   DMNetworkMonitorDestroy - Destroys a network monitor and all associated viewers
 
-  Collective on monitor
+  Collective
 
-  Input Parameters:
+  Input Parameter:
 . monitor - monitor to destroy
 
   Level: intermediate
 
-.seealso: `DMNetworkMonitorCreate`, `DMNetworkMonitorAdd`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate`, `DMNetworkMonitorAdd()`
 @*/
 PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 {
@@ -58,16 +58,16 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 }
 
 /*@
-  DMNetworkMonitorPop - Removes the most recently added viewer
+  DMNetworkMonitorPop - Removes the most recently added viewer to a `DMNetworkMonitor`
 
-  Collective on monitor
+  Collective
 
-  Input Parameters:
+  Input Parameter:
 . monitor - the monitor
 
   Level: intermediate
 
-.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
 @*/
 PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 {
@@ -88,9 +88,9 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 }
 
 /*@C
-  DMNetworkMonitorAdd - Adds a new viewer to monitor
+  DMNetworkMonitorAdd - Adds a new viewer to a `DMNetworkMonitor`
 
-  Collective on monitor
+  Collective
 
   Input Parameters:
 + monitor - the monitor
@@ -99,8 +99,8 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 . nodes - number of nodes
 . start - variable starting offset
 . blocksize - variable blocksize
-. xmin - xmin (or PETSC_DECIDE) for viewer
-. xmax - xmax (or PETSC_DECIDE) for viewer
+. xmin - xmin (or `PETSC_DECIDE`) for viewer
+. xmax - xmax (or `PETSC_DECIDE`) for viewer
 . ymin - ymin for viewer
 . ymax - ymax for viewer
 - hold - determines if plot limits should be held
@@ -114,7 +114,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   Precisely, the parameters nodes, start and blocksize allow you to select a general
   strided subarray of the variables to monitor.
 
-.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
 @*/
 PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, PetscInt element, PetscInt nodes, PetscInt start, PetscInt blocksize, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscBool hold)
 {
@@ -149,7 +149,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
   PetscCall(PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG_XRANGE));
   PetscCall(PetscViewerDrawGetDrawLG(node->viewer, 0, &drawlg));
   PetscCall(PetscDrawLGGetAxis(drawlg, &axis));
-  if (xmin != PETSC_DECIDE && xmax != PETSC_DECIDE) PetscCall(PetscDrawAxisSetLimits(axis, xmin, xmax, ymin, ymax));
+  if (xmin != (PetscReal)PETSC_DECIDE && xmax != (PetscReal)PETSC_DECIDE) PetscCall(PetscDrawAxisSetLimits(axis, xmin, xmax, ymin, ymax));
   else PetscCall(PetscDrawAxisSetLimits(axis, 0, nodes - 1, ymin, ymax));
   PetscCall(PetscDrawAxisSetHoldLimits(axis, hold));
 
@@ -167,17 +167,17 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
 }
 
 /*@
-  DMNetworkMonitorView - Monitor function for TSMonitorSet.
+  DMNetworkMonitorView - Monitor function for `TSMonitorSet()`
 
-  Collectiveon DMNetworkMonitor
+  Collective
 
   Input Parameters:
-+ monitor - DMNetworkMonitor object
-- x - TS solution vector
++ monitor - `DMNetworkMonitor` object
+- x - `TS` solution vector
 
   Level: intermediate
 
-.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
 
 PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor, Vec x)

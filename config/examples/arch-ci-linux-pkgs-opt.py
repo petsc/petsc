@@ -11,6 +11,7 @@ configure_options = [
   #'--with-fc=mpif90.openmpi',
   #'--with-mpiexec=mpiexec.openmpi',
   '--download-openmpi=1',
+  '--download-mpe=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-cmake=1',
@@ -51,6 +52,7 @@ configure_options = [
   '--download-egads=1',
   '--download-opencascade=1',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':

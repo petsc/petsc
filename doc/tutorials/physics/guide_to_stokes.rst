@@ -1,10 +1,12 @@
+:orphan:
+
 .. _tut_stokes:
 
-============================================================
-Guide to the Stokes Equations using Finite Elements in PETSc
-============================================================
+===================================================
+Guide to the Stokes Equations using Finite Elements
+===================================================
 
-This guide accompanies `SNES Example 62 <../../../src/snes/tutorials/ex62.c.html>`__ and `SNES Example 69 <../../../src/snes/tutorials/ex69.c.html>`__.
+This guide accompanies `SNES Example 62 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex62.c.html>`__ and `SNES Example 69 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex69.c.html>`__.
 
 The Stokes equations for a fluid, a steady-state form of the Navier-Stokes equations, start with the balance of momentum, just as in elastostatics,
 

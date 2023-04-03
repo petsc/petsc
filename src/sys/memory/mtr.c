@@ -95,12 +95,13 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 
     You should generally use `CHKMEMQ` as a short cut for calling this  routine.
 
-    The Fortran calling sequence is simply `PetscMallocValidate(ierr)`
-
    No output is generated if there are no problems detected.
 
+   Fortran Note:
+    The Fortran calling sequence is simply `PetscMallocValidate(ierr)`
+
    Developers Note:
-     Uses the flg TRdebugLevel (set as the first argument to `PetscMallocSetDebug()`) to determine if it should run
+     Uses the flg `TRdebugLevel` (set as the first argument to `PetscMallocSetDebug()`) to determine if it should run
 
 .seealso: `CHKMEMQ`
 @*/
@@ -553,7 +554,7 @@ PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[])
 
     Not Collective
 
-    Output Parameters:
+    Output Parameter:
 .   space - number of bytes currently allocated
 
     Level: intermediate
@@ -574,7 +575,7 @@ PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
 
     Not Collective
 
-    Output Parameters:
+    Output Parameter:
 .   space - maximum number of bytes ever allocated at one time
 
     Level: intermediate
@@ -683,16 +684,17 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 
    Level: intermediate
 
-   Fortran Note:
-   The calling sequence in Fortran is PetscMallocDump(integer ierr)
-   The fp defaults to stdout.
-
    Notes:
      Uses `MPI_COMM_WORLD` to display rank, because this may be called in `PetscFinalize()` after `PETSC_COMM_WORLD` has been freed.
 
      When called in `PetscFinalize()` dumps only the allocations that have not been properly freed
 
      `PetscMallocView()` prints a list of all memory ever allocated
+
+   Fortran Notes:
+   The calling sequence in Fortran is PetscMallocDump(integer ierr)
+
+   The `fp` defaults to stdout.
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocValidate()`
 @*/
@@ -849,14 +851,15 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 
     Level: advanced
 
-   Fortran Note:
-   The calling sequence in Fortran is PetscMallocView(integer ierr)
-   The fp defaults to stdout.
-
    Notes:
      `PetscMallocDump()` dumps only the currently unfreed memory, this dumps all memory ever allocated
 
      `PetscMemoryView()` gives a brief summary of current memory usage
+
+   Fortran Notes:
+   The calling sequence in Fortran is PetscMallocView(integer ierr)
+
+   The `fp` defaults to stdout.
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`
 @*/
@@ -864,7 +867,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
 {
   PetscInt       i, j, n, *perm;
   size_t        *shortlength;
-  int           *shortcount, err;
+  int           *shortcount;
   PetscMPIInt    rank;
   PetscBool      match;
   const char   **shortfunction;
@@ -872,8 +875,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
-  err = fflush(fp);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+  PetscCall(PetscFFlush(fp));
 
   PetscCheck(PetscLogMalloc >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
 
@@ -919,8 +921,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
     free(shortcount);
     free((char **)shortfunction);
   }
-  err = fflush(fp);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
+  PetscCall(PetscFFlush(fp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

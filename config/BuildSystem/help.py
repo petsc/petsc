@@ -2,6 +2,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import logger
+import sys
 
 class Info(logger.Logger):
   '''This basic class provides information independent of RDict'''
@@ -39,9 +40,9 @@ class Info(logger.Logger):
 
   def printBanner(self, f):
     '''Print a banner for the information screen'''
-    f.write(self.title+'\n')
-    for i in range(max(map(len, self.title.split('\n')))): f.write('-')
-    f.write('\n')
+    title   = self.title
+    divider = '-' * logger.get_global_divider_length()
+    f.write('{}\n{}\n'.format(title, divider))
     return
 
   def getTextSizes(self):
@@ -56,7 +57,6 @@ class Info(logger.Logger):
   def output(self, f = None):
     '''Print a help screen with all the argument information.'''
     if f is  None:
-      import sys
       f = sys.stdout
     self.printBanner(f)
     (nameLen, descLen) = self.getTextSizes()
@@ -116,27 +116,51 @@ class Help(Info):
 
   def output(self, f = None, sections = None):
     '''Print a help screen with all the argument information.'''
-    if f is  None:
-      import sys
+    def output_items(section_title, items):
+      f.write(
+        logger.build_multiline_message(
+          '***** {} *****'.format(section_title), '', divider_char='-'
+        ) + '\n'
+      )
+
+      for section, names in items:
+        if sections and not section.casefold() in sections:
+          continue
+
+        f.write(section + ':\n')
+        for name in names[1]:
+          arg_name = self.getArgName(name)
+          arg_type = self.argDB.getType(arg_name)
+          arg_help = arg_type.help
+          if arg_name in self.argDB:
+            f.write('  -{}\n       {}  current: {}\n'.format(name, arg_help, arg_type))
+          else:
+            f.write('  -{}\n       {}\n'.format(name, arg_help))
+      return
+
+    if f is None:
       f = sys.stdout
-    if sections: sections = [s.lower() for s in sections]
+    if sections:
+      sections = {s.casefold() for s in sections}
+
+    packages = []
+    modules  = []
+    for item in self.sections.items():
+      # Packages all have -- for whatever reason -- an uppercase section name, so use this
+      # to distinguish them. This is a vile hack.
+      if item[0].isupper():
+        packages.append(item)
+      else:
+        modules.append(item)
+
     self.printBanner(f)
-    (nameLen, descLen) = self.getTextSizes()
-#    format    = '  -%-'+str(nameLen)+'s: %s\n'
-#    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s\n'
-    format    = '  -%s\n       %s\n'
-    formatDef = '  -%s\n       %s  current: %s\n'
-    items = sorted(self.sections.items(), key=lambda a: a[1][0])
-    for section, names in items:
-      if sections and not section.lower() in sections: continue
-      f.write(section+':\n')
-      for name in names[1]:
-        argName = self.getArgName(name)
-        type    = self.argDB.getType(argName)
-        if argName in self.argDB:
-          f.write(formatDef % (name, type.help, str(self.argDB.getType(argName))))
-        else:
-          f.write(format % (name, type.help))
+    # sort the primary modules by their ordering, this happens to be nice and logical
+    output_items('CORE OPTIONS', sorted(modules, key=lambda a: a[1][0]))
+    # self.printBanner() will automatically append a '----' so we don't have to print a
+    # divider above, but we do have to here
+    f.write('-' * logger.get_global_divider_length() + '\n')
+    # sort packages by name
+    output_items('PACKAGE OPTIONS', sorted(packages, key=lambda a: a[0]))
     return
 
 
@@ -146,7 +170,6 @@ class Help(Info):
         If it does not find some needed packages then prints the packages that need to be downloaded and exits'''
     import nargs
     import os
-    import sys
     global _outputDownloadDone
     if _outputDownloadDone: return
     _outputDownloadDone = 1

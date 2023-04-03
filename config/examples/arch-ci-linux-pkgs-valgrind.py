@@ -23,7 +23,7 @@ configure_options = [
   '--download-scalapack=1',
   '--download-strumpack=1',
   '--download-mumps=1',
-  '--download-elemental=1',
+  # '--download-elemental=1', # disabled since its maxCxxVersion is c++14, but Kokkos-4.0's minCxxVersion is c++17
   #'--download-spai=1', valgrind leaks here will probably not get fixed in the near future
   '--download-parms=1',
   #'--download-moab=1',
@@ -39,6 +39,7 @@ configure_options = [
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
   '--with-strict-petscerrorcode',
+  '--with-coverage',
   ]
 
 if __name__ == '__main__':

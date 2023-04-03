@@ -1,30 +1,34 @@
   0 SNES Function norm 4.888635593992e-01 
-Norm of search step 0.201359
-  1 SNES Function norm 3.529815872906e-01 
-Norm of search step 0.402718
-  2 SNES Function norm 1.795666562179e-01 
-Norm of search step 0.530195
-  3 SNES Function norm 1.302982064238e-01 
-Norm of search step 0.604077
-Norm of search step 0.181223
-  4 SNES Function norm 1.182015558277e-01 
-Norm of search step 0.135917
-Norm of search step 0.0407752
-  5 SNES Function norm 1.156940848047e-01 
-Norm of search step 0.0815504
-Norm of search step 0.0244651
-Norm of search step 0.00733953
-Norm of search step 0.00220186
-Norm of search step 0.000660558
-Norm of search step 0.000198167
-Norm of search step 5.94502e-05
-Norm of search step 1.78351e-05
-Norm of search step 5.35052e-06
-Norm of search step 1.60516e-06
-Norm of search step 4.81547e-07
-Norm of search step 1.44464e-07
-Norm of search step 4.33392e-08
-Norm of search step 1.30018e-08
-  6 SNES Function norm 1.156940848047e-01 
-Nonlinear solve did not converge due to DIVERGED_INNER iterations 5
+Norm of search step 0.2
+  1 SNES Function norm 3.537933499432e-01 
+Norm of search step 0.4
+  2 SNES Function norm 1.806018499929e-01 
+Norm of search step 0.528382
+  3 SNES Function norm 1.291049622806e-01 
+Norm of search step 0.647348
+Norm of search step 0.2
+  4 SNES Function norm 1.200728775967e-01 
+Norm of search step 0.2
+Norm of search step 0.05
+  5 SNES Function norm 1.153774447071e-01 
+Norm of search step 0.1
+Norm of search step 0.025
+Norm of search step 0.00625
+Norm of search step 0.0015625
+Norm of search step 0.000390625
+Norm of search step 9.76562e-05
+Norm of search step 2.44141e-05
+Norm of search step 6.10352e-06
+Norm of search step 1.52588e-06
+Norm of search step 3.8147e-07
+Norm of search step 9.53674e-08
+Norm of search step 2.38419e-08
+Norm of search step 5.96046e-09
+Norm of search step 1.49012e-09
+Norm of search step 3.72529e-10
+Norm of search step 9.31322e-11
+Norm of search step 2.3283e-11
+Norm of search step 5.82079e-12
+Norm of search step 1.45519e-12
+Nonlinear solve did not converge due to DIVERGED_TR_DELTA iterations 5
 Number of SNES iterations = 5

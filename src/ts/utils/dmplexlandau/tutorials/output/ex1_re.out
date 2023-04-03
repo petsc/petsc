@@ -1,0 +1,81 @@
+masses:        e= 9.109e-31; ions in proton mass units:    2.000e+00  0.000e+00 ...
+charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  0.000e+00
+n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
+thermal T (K): e= 1.160e+07 i= 1.160e+07  0.000e+00. Normalization grid 0: v_0= 1.326e+07 ( 4.424e-02c) n_0= 1.000e+20 t_0= 7.343e-06 1 batched, view batch 0
+Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) , 1: par= 8.252e-02 perp= 8.252e-02 (2) 
+[0] <vec> adaptToleranceFEM(): 0) Refine phase: Z1
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec> adaptToleranceFEM(): 	0) Refined 4 cells
+[0] <vec> adaptToleranceFEM(): 				0) 28 cells, 252 total quadrature points
+[0] <vec> adaptToleranceFEM(): 0) Refine phase: Z2
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec> adaptToleranceFEM(): 	0) Refined 8 cells
+[0] <vec> adaptToleranceFEM(): 				0) 52 cells, 468 total quadrature points
+[0] <vec> adaptToleranceFEM(): 1) Refine phase: Origin
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=7.790860e-02, cell 0, qp 1/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=6.193682e-02, cell 0, qp 2/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=4.597125e-02, cell 0, qp 3/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=3.668556e-02, cell 4, qp 1/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=2.076166e-02, cell 4, qp 2/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=5.199202e-03, cell 4, qp 3/9
+[0] <vec> adaptToleranceFEM(): 			1) Found another inner r=5.199202e-03, cell 8, qp 1/9, d=0.000000e+00
+[0] <vec> adaptToleranceFEM(): 			1) Refined 2 origin cells 4,8 r=0.0051992
+[0] <vec> adaptToleranceFEM(): 				1) 22 cells, 198 total quadrature points
+[0] <vec> adaptToleranceFEM(): 1) Refine phase: Origin
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=7.790860e-02, cell 0, qp 1/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=6.193682e-02, cell 0, qp 2/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=4.597125e-02, cell 0, qp 3/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=3.895430e-02, cell 4, qp 1/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=3.096841e-02, cell 4, qp 2/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=2.298563e-02, cell 4, qp 3/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=1.834278e-02, cell 6, qp 1/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=1.038083e-02, cell 6, qp 2/9
+[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=2.599601e-03, cell 6, qp 3/9
+[0] <vec> adaptToleranceFEM(): 			1) Found another inner r=2.599601e-03, cell 11, qp 1/9, d=0.000000e+00
+[0] <vec> adaptToleranceFEM(): 			1) Refined 2 origin cells 6,11 r=0.0025996
+[0] <vec> adaptToleranceFEM(): 				1) 28 cells, 252 total quadrature points
+0) FormLandau 720 IPs, 80 cells total, Nb=9, Nq=9, dim=2, Tab: Nb=9 Nf=2 Np=9 cdim=2 N=354
+step    0) time= 5.000000e-02 temperature (eV): electron: T= 1.1735e+03 T_par= 9.1319e+02 T_perp= 1.3037e+03 ;ion: T= 1.2155e+03 T_par= 1.0862e+03 T_perp= 1.2801e+03 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0000e+02 NRL_e_perp= 3.9000e+02
+  0) species-0: charge density= -1.6277448139963e+01 z-momentum=  1.5336022555682e-03 energy=  4.1358808913097e+04
+  0) species-1: charge density=  1.5753159228459e+01 z-momentum= -1.6507817480134e-03 energy=  2.8725392964070e+04
+	  0) Total: charge density= -5.2428891150438e-01, momentum= -1.1717949244519e-04, energy=  7.0084201877168e+04 (m_i[0]/m_e = 3670.94, 52 cells on electron grid)
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 9
+step    1) time= 1.500000e-01 temperature (eV): electron: T= 1.1986e+03 T_par= 9.6515e+02 T_perp= 1.3153e+03 ;ion: T= 1.2155e+03 T_par= 1.0863e+03 T_perp= 1.2801e+03 NRL_i_par= 2.0016e+02 NRL_i_perp= 2.5995e+02 NRL_e_par= 3.1174e+02 NRL_e_perp= 3.8410e+02
+  1) species-0: charge density= -1.6277448139963e+01 z-momentum=  1.4961478325161e-03 energy=  4.1358788951693e+04
+  1) species-1: charge density=  1.5753159228459e+01 z-momentum= -1.6133273249613e-03 energy=  2.8725412925473e+04
+	  1) Total: charge density= -5.2428891150438e-01, momentum= -1.1717949244515e-04, energy=  7.0084201877167e+04 (m_i[0]/m_e = 3670.94, 52 cells on electron grid)
+nrl-step 0 time= 0.05 300. 390. 200. 260. 

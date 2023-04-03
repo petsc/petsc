@@ -5,7 +5,7 @@ Summary of Nonlinear Solvers Available In PETSc
 ===============================================
 
 See the paper `Composing Scalable Nonlinear Algebraic Solvers
-<https://www.mcs.anl.gov/papers/P2010-0112.pdf>`__ or the PETSc users manual for details
+<https://www.mcs.anl.gov/papers/P2010-0112.pdf>`__ for details
 on the algorithms.
 
 .. list-table::

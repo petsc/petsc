@@ -114,17 +114,13 @@ PetscErrorCode MatFactorGetSolverType_essl(Mat A, MatSolverType *type)
 }
 
 /*MC
-  MATSOLVERESSL - "essl" - Provides direct solvers, LU, for sequential matrices
-                              via the external package ESSL.
-
-  If ESSL is installed (see the manual for
-  instructions on how to declare the existence of external packages),
+  MATSOLVERESSL - "essl" - Provides direct solvers, LU, for sequential matrices via the external package ESSL.
 
   Works with `MATSEQAIJ` matrices
 
    Level: beginner
 
-.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A, MatFactorType ftype, Mat *F)

@@ -3,10 +3,12 @@ sphinxcontrib-bibtex>=1.0.0
 sphinxcontrib-katex
 sphinxcontrib-svg2pdfconverter
 sphinx-copybutton
-pydata-sphinx-theme
+pydata-sphinx-theme==0.12.0
 sphinx-design
-myst-parser
+myst-parser==0.18.1
 sphinx-remove-toctrees
 Jinja2==3.0.1
 # docutils 0.19.1 produces bad HTML from the references in PCFIELDSPLIT
 docutils==0.17.1
+numpy
+cython

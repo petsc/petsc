@@ -43,7 +43,7 @@
    Note:
    The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
 
-.seealso: `MatCreateKAIJ()`, `MATKAIJ`, `MATAIJ`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateKAIJ()`, `MATKAIJ`, `MATAIJ`
 @*/
 PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
 {
@@ -65,24 +65,24 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
 }
 
 /*@C
-   MatKAIJGetS - Get the S matrix describing the shift action of the `MATKAIJ` matrix
+   MatKAIJGetS - Get the `S` matrix describing the shift action of the `MATKAIJ` matrix
 
-   Not Collective; the entire S is stored and returned independently on all processes.
+   Not Collective; the entire `S` is stored and returned independently on all processes.
 
    Input Parameter:
 .  A - the `MATKAIJ` matrix
 
    Output Parameters:
-+  m - the number of rows in S
-.  n - the number of columns in S
++  m - the number of rows in `S`
+.  n - the number of columns in `S`
 -  S - the S matrix, in form of a scalar array in column-major format
-
-   Note:
-   All output parameters are optional (pass NULL if not desired)
 
    Level: advanced
 
-.seealso: `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+   Note:
+   All output parameters are optional (pass `NULL` if not desired)
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
 {
@@ -95,24 +95,24 @@ PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
 }
 
 /*@C
-   MatKAIJGetSRead - Get a read-only pointer to the S matrix describing the shift action of the `MATKAIJ` matrix
+   MatKAIJGetSRead - Get a read-only pointer to the `S` matrix describing the shift action of the `MATKAIJ` matrix
 
-   Not Collective; the entire S is stored and returned independently on all processes.
+   Not Collective; the entire `S` is stored and returned independently on all processes.
 
    Input Parameter:
 .  A - the `MATKAIJ` matrix
 
    Output Parameters:
-+  m - the number of rows in S
-.  n - the number of columns in S
++  m - the number of rows in `S`
+.  n - the number of columns in `S`
 -  S - the S matrix, in form of a scalar array in column-major format
-
-   Note:
-   All output parameters are optional (pass NULL if not desired)
 
    Level: advanced
 
-.seealso: `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+   Note:
+   All output parameters are optional (pass `NULL` if not desired)
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **S)
 {
@@ -127,21 +127,19 @@ PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
 /*@C
   MatKAIJRestoreS - Restore array obtained with `MatKAIJGetS()`
 
-  Not collective
+  Not Collective
 
-  Input Parameter:
-. A - the `MATKAIJ` matrix
-
-  Output Parameter:
-. S - location of pointer to array obtained with `MatKAIJGetS()`
-
-  Note:
-  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
-  If NULL is passed, it will not attempt to zero the array pointer.
+  Input Parameters:
++ A - the `MATKAIJ` matrix
+- S - location of pointer to array obtained with `MatKAIJGetS()`
 
   Level: advanced
 
-.seealso: `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
+  Note:
+  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If `NULL` is passed, it will not attempt to zero the array pointer.
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar **S)
 {
@@ -154,21 +152,19 @@ PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar **S)
 /*@C
   MatKAIJRestoreSRead - Restore array obtained with `MatKAIJGetSRead()`
 
-  Not collective
+  Not Collective
 
-  Input Parameter:
-. A - the `MATKAIJ` matrix
-
-  Output Parameter:
-. S - location of pointer to array obtained with `MatKAIJGetS()`
-
-  Note:
-  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
-  If NULL is passed, it will not attempt to zero the array pointer.
+  Input Parameters:
++ A - the `MATKAIJ` matrix
+- S - location of pointer to array obtained with `MatKAIJGetS()`
 
   Level: advanced
 
-.seealso: `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
+  Note:
+  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If `NULL` is passed, it will not attempt to zero the array pointer.
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
 {
@@ -178,24 +174,24 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
 }
 
 /*@C
-   MatKAIJGetT - Get the transformation matrix T associated with the `MATKAIJ` matrix
+   MatKAIJGetT - Get the transformation matrix `T` associated with the `MATKAIJ` matrix
 
-   Not Collective; the entire T is stored and returned independently on all processes
+   Not Collective; the entire `T` is stored and returned independently on all processes
 
    Input Parameter:
 .  A - the `MATKAIJ` matrix
 
    Output Parameters:
-+  m - the number of rows in T
-.  n - the number of columns in T
++  m - the number of rows in `T`
+.  n - the number of columns in `T`
 -  T - the T matrix, in form of a scalar array in column-major format
-
-   Note:
-   All output parameters are optional (pass NULL if not desired)
 
    Level: advanced
 
-.seealso: `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+   Note:
+   All output parameters are optional (pass `NULL` if not desired)
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
 {
@@ -208,23 +204,24 @@ PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
 }
 
 /*@C
-   MatKAIJGetTRead - Get a read-only pointer to the transformation matrix T associated with the `MATKAIJ` matrix
+   MatKAIJGetTRead - Get a read-only pointer to the transformation matrix `T` associated with the `MATKAIJ` matrix
 
-   Not Collective; the entire T is stored and returned independently on all processes
+   Not Collective; the entire `T` is stored and returned independently on all processes
 
    Input Parameter:
 .  A - the `MATKAIJ` matrix
 
    Output Parameters:
-+  m - the number of rows in T
-.  n - the number of columns in T
++  m - the number of rows in `T`
+.  n - the number of columns in `T`
 -  T - the T matrix, in form of a scalar array in column-major format
-
-   Note: All output parameters are optional (pass NULL if not desired)
 
    Level: advanced
 
-.seealso: `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+   Note:
+   All output parameters are optional (pass `NULL` if not desired)
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **T)
 {
@@ -239,21 +236,19 @@ PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
 /*@C
   MatKAIJRestoreT - Restore array obtained with `MatKAIJGetT()`
 
-  Not collective
+  Not Collective
 
-  Input Parameter:
-. A - the `MATKAIJ` matrix
-
-  Output Parameter:
-. T - location of pointer to array obtained with `MatKAIJGetS()`
-
-  Note:
-  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
-  If NULL is passed, it will not attempt to zero the array pointer.
+  Input Parameters:
++ A - the `MATKAIJ` matrix
+- T - location of pointer to array obtained with `MatKAIJGetS()`
 
   Level: advanced
 
-.seealso: `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
+  Note:
+  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If `NULL` is passed, it will not attempt to zero the array pointer.
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar **T)
 {
@@ -266,21 +261,19 @@ PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar **T)
 /*@C
   MatKAIJRestoreTRead - Restore array obtained with `MatKAIJGetTRead()`
 
-  Not collective
+  Not Collective
 
-  Input Parameter:
-. A - the `MATKAIJ` matrix
-
-  Output Parameter:
-. T - location of pointer to array obtained with `MatKAIJGetS()`
-
-  Note:
-  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
-  If NULL is passed, it will not attempt to zero the array pointer.
+  Input Parameters:
++ A - the `MATKAIJ` matrix
+- T - location of pointer to array obtained with `MatKAIJGetS()`
 
   Level: advanced
 
-.seealso: `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
+  Note:
+  This routine zeros the array pointer to prevent accidental reuse after it has been restored.
+  If `NULL` is passed, it will not attempt to zero the array pointer.
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar **T)
 {
@@ -298,14 +291,14 @@ PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar **T)
 +  A - the `MATKAIJ` matrix
 -  B - the `MATAIJ` matrix
 
+   Level: advanced
+
    Notes:
    This function increases the reference count on the `MATAIJ` matrix, so the user is free to destroy the matrix if it is not needed.
 
    Changes to the entries of the `MATAIJ` matrix will immediately affect the `MATKAIJ` matrix.
 
-   Level: advanced
-
-.seealso: `MATKAIJ`, `MatKAIJGetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`
 @*/
 PetscErrorCode MatKAIJSetAIJ(Mat A, Mat B)
 {
@@ -328,24 +321,24 @@ PetscErrorCode MatKAIJSetAIJ(Mat A, Mat B)
 }
 
 /*@C
-   MatKAIJSetS - Set the S matrix describing the shift action of the `MATKAIJ` matrix
+   MatKAIJSetS - Set the `S` matrix describing the shift action of the `MATKAIJ` matrix
 
-   Logically Collective; the entire S is stored independently on all processes.
+   Logically Collective; the entire `S` is stored independently on all processes.
 
    Input Parameters:
 +  A - the `MATKAIJ` matrix
-.  p - the number of rows in S
-.  q - the number of columns in S
+.  p - the number of rows in `S`
+.  q - the number of columns in `S`
 -  S - the S matrix, in form of a scalar array in column-major format
-
-   Notes:
-   The dimensions p and q must match those of the transformation matrix T associated with the `MATKAIJ` matrix.
-
-   The S matrix is copied, so the user can destroy this array.
 
    Level: advanced
 
-.seealso: `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJSetT()`, `MatKAIJSetAIJ()`
+   Notes:
+   The dimensions `p` and `q` must match those of the transformation matrix `T` associated with the `MATKAIJ` matrix.
+
+   The `S` matrix is copied, so the user can destroy this array.
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJSetT()`, `MatKAIJSetAIJ()`
 @*/
 PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 {
@@ -364,7 +357,7 @@ PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 }
 
 /*@C
-   MatKAIJGetScaledIdentity - Check if both S and T are scaled identities.
+   MatKAIJGetScaledIdentity - Check if both `S` and `T` are scaled identities.
 
    Logically Collective.
 
@@ -376,7 +369,7 @@ PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 
    Level: Advanced
 
-.seealso: `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetT()`
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetT()`
 @*/
 PetscErrorCode MatKAIJGetScaledIdentity(Mat A, PetscBool *identity)
 {
@@ -405,24 +398,24 @@ PetscErrorCode MatKAIJGetScaledIdentity(Mat A, PetscBool *identity)
 }
 
 /*@C
-   MatKAIJSetT - Set the transformation matrix T associated with the `MATKAIJ` matrix
+   MatKAIJSetT - Set the transformation matrix `T` associated with the `MATKAIJ` matrix
 
-   Logically Collective; the entire T is stored independently on all processes.
+   Logically Collective; the entire `T` is stored independently on all processes.
 
    Input Parameters:
 +  A - the `MATKAIJ` matrix
-.  p - the number of rows in S
-.  q - the number of columns in S
--  T - the T matrix, in form of a scalar array in column-major format
-
-   Notes:
-   The dimensions p and q must match those of the shift matrix S associated with the `MATKAIJ` matrix.
-
-   The T matrix is copied, so the user can destroy this array.
+.  p - the number of rows in `S`
+.  q - the number of columns in `S`
+-  T - the `T` matrix, in form of a scalar array in column-major format
 
    Level: Advanced
 
-.seealso: `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJSetS()`, `MatKAIJSetAIJ()`
+   Notes:
+   The dimensions `p` and `q` must match those of the shift matrix `S` associated with the `MATKAIJ` matrix.
+
+   The `T` matrix is copied, so the user can destroy this array.
+
+.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJSetS()`, `MatKAIJSetAIJ()`
 @*/
 PetscErrorCode MatKAIJSetT(Mat A, PetscInt p, PetscInt q, const PetscScalar T[])
 {
@@ -653,8 +646,6 @@ static PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------------------*/
-
 /* zz = yy + Axx */
 static PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 {
@@ -756,7 +747,7 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **
     if (values) *values = b->ibdiag;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (!b->ibdiag) { PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag)); }
+  if (!b->ibdiag) PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag));
   if (values) *values = b->ibdiag;
   diag = b->ibdiag;
 
@@ -1172,8 +1163,6 @@ static PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A, const PetscScalar **
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------*/
-
 static PetscErrorCode MatGetRow_SeqKAIJ(Mat A, PetscInt row, PetscInt *ncols, PetscInt **cols, PetscScalar **values)
 {
   Mat_SeqKAIJ *b    = (Mat_SeqKAIJ *)A->data;
@@ -1369,32 +1358,35 @@ static PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------- */
 /*@C
-  MatCreateKAIJ - Creates a matrix of type `MATKAIJ` to be used for matrices of the following form:
-
+  MatCreateKAIJ - Creates a matrix of type `MATKAIJ` to be used for matrices of the following form
+.vb
     [I \otimes S + A \otimes T]
-
+.ve
   where
+.vb
     S is a dense (p \times q) matrix
     T is a dense (p \times q) matrix
-    A is an `MATAIJ`  (n \times n) matrix
+    A is a `MATAIJ`  (n \times n) matrix
     I is the identity matrix
+.ve
   The resulting matrix is (np \times nq)
 
-  S and T are always stored independently on all processes as `PetscScalar` arrays in column-major format.
+  `S` and `T` are always stored independently on all processes as `PetscScalar` arrays in column-major format.
 
   Collective
 
   Input Parameters:
 + A - the `MATAIJ` matrix
-. p - number of rows in S and T
-. q - number of columns in S and T
-. S - the S matrix (can be NULL), stored as a `PetscScalar` array (column-major)
-- T - the T matrix (can be NULL), stored as a `PetscScalar` array (column-major)
+. p - number of rows in `S` and `T`
+. q - number of columns in `S` and `T`
+. S - the `S` matrix (can be `NULL`), stored as a `PetscScalar` array (column-major)
+- T - the `T` matrix (can be `NULL`), stored as a `PetscScalar` array (column-major)
 
   Output Parameter:
 . kaij - the new `MATKAIJ` matrix
+
+  Level: advanced
 
   Notes:
   This function increases the reference count on the `MATAIJ` matrix, so the user is free to destroy the matrix if it is not needed.
@@ -1403,13 +1395,11 @@ static PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatRe
 
   Developer Note:
   In the `MATMPIKAIJ` case, the internal 'AIJ' and 'OAIJ' sequential KAIJ matrices are kept up to date by tracking the object state
-  of the AIJ matrix 'A' that describes the blockwise action of the MATMPIKAIJ matrix and, if the object state has changed, lazily
-  rebuilding 'AIJ' and 'OAIJ' just before executing operations with the MATMPIKAIJ matrix. If new types of operations are added,
+  of the AIJ matrix 'A' that describes the blockwise action of the `MATMPIKAIJ` matrix and, if the object state has changed, lazily
+  rebuilding 'AIJ' and 'OAIJ' just before executing operations with the `MATMPIKAIJ` matrix. If new types of operations are added,
   routines implementing those must also ensure these are rebuilt when needed (by calling the internal MatKAIJ_build_AIJ_OAIJ() routine).
 
-  Level: advanced
-
-.seealso: `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MATKAIJ`
+.seealso: [](chapter_matrices), `Mat`, `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MATKAIJ`
 @*/
 PetscErrorCode MatCreateKAIJ(Mat A, PetscInt p, PetscInt q, const PetscScalar S[], const PetscScalar T[], Mat *kaij)
 {
@@ -1427,21 +1417,23 @@ PetscErrorCode MatCreateKAIJ(Mat A, PetscInt p, PetscInt q, const PetscScalar S[
   MATKAIJ - MATKAIJ = "kaij" - A matrix type to be used to evaluate matrices of form
     [I \otimes S + A \otimes T],
   where
+.vb
     S is a dense (p \times q) matrix,
     T is a dense (p \times q) matrix,
     A is an AIJ  (n \times n) matrix,
     and I is the identity matrix.
+.ve
   The resulting matrix is (np \times nq).
 
   S and T are always stored independently on all processes as `PetscScalar` arrays in column-major format.
+
+  Level: advanced
 
   Note:
   A linear system with multiple right-hand sides, AX = B, can be expressed in the KAIJ-friendly form of (A \otimes I) x = b,
   where x and b are column vectors containing the row-major representations of X and B.
 
-  Level: advanced
-
-.seealso: `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MatCreateKAIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MatCreateKAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)

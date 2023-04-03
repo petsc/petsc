@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '3.7.01'
-    self.minversion       = '3.5.00'
+    self.gitcommit        = '4.0.00'
+    self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git']
     self.downloaddirnames = ['kokkos']
@@ -15,7 +15,11 @@ class Configure(config.package.CMakePackage):
                              ['libkokkoscontainers.a','libkokkoscore.a']]
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
-    self.minCxxVersion    = 'c++14'
+    self.minCxxVersion    = 'c++17'
+    # nvcc_wrapper in Kokkos-4.0.00 does not handle -std=c++20 correctly (it wrongly passes that to -Xcompiler).
+    # Though Kokkos/develop fixed the problem, we set maxCxxVersion to c++17 here to lower the standard petsc would use as a workaround.
+    # TODO: remove this line once we use newer Kokkos versions
+    self.maxCxxVersion    = 'c++17'
     self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is available, it will be modified.
     self.hastests         = 1
     self.requiresrpath    = 1
@@ -146,12 +150,12 @@ class Configure(config.package.CMakePackage):
           os.environ['PATH'] = nvccpath+':'+path
       if hasattr(self.cuda,'cudaArch'):
         genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
-        generation = self.cuda.cudaArch[:-1] # cudaArch is a number 'nn', such as '75'
+        generation = self.cuda.cudaArchSingle()[:-1]  # cudaArchSingle() returns a number 'nn', such as '75'
         try:
           # Kokkos uses names like VOLTA75, AMPERE86
-          deviceArchName = genToName[generation] + self.cuda.cudaArch
+          deviceArchName = genToName[generation] + self.cuda.cudaArchSingle()
         except KeyError:
-          raise RuntimeError('Could not find an arch name for CUDA gen number '+ self.cuda.cudaArch)
+          raise RuntimeError('Could not find an arch name for CUDA gen number '+ self.cuda.cudaArchSingle())
       else:
         raise RuntimeError('You must set --with-cuda-arch=60, 70, 75, 80 etc.')
     elif self.hip.found:
@@ -179,12 +183,9 @@ class Configure(config.package.CMakePackage):
       args.append('-DKokkos_ENABLE_SYCL=ON')
       with self.Language('SYCL'):
         petscSyclc = self.getCompiler()
-        syclFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
       self.getExecutable(petscSyclc,getFullPath=1,resultName='systemSyclc')
       if not hasattr(self,'systemSyclc'):
         raise RuntimeError('SYCL error: could not find path of the sycl compiler')
-      args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
-      args.append('-DCMAKE_CXX_FLAGS="' + syclFlags.replace('"','\\"') + '"')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.systemSyclc)
       args.append('-DCMAKE_CXX_EXTENSIONS=OFF')

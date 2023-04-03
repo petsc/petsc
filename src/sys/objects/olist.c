@@ -115,7 +115,7 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
   olist->obj  = obj;
 
   PetscCall(PetscObjectReference(obj));
-  PetscCall(PetscStrcpy(olist->name, name));
+  PetscCall(PetscStrncpy(olist->name, name, sizeof(olist->name)));
 
   if (!*fl) *fl = olist;
   else { /* go to end of list */ nlist = *fl;
@@ -159,7 +159,7 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 +   fl   - pointer to list
 -   name - name string
 
-    Output Parameters:
+    Output Parameter:
 .   obj - the PETSc object
 
     Level: developer
@@ -228,10 +228,10 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
 /*@C
     PetscObjectListDuplicate - Creates a new list from a given object list.
 
-    Input Parameters:
+    Input Parameter:
 .   fl   - pointer to list
 
-    Output Parameters:
+    Output Parameter:
 .   nl - the new list (should point to 0 to start, otherwise appends)
 
     Level: developer

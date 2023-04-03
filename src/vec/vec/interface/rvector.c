@@ -41,7 +41,8 @@ PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin
    Logically Collective
 
    Input Parameters:
-.  x, y  - the vectors
++  x - the numerators
+-  y - the denominators
 
    Output Parameter:
 .  max - the result
@@ -81,7 +82,8 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
    Collective
 
    Input Parameters:
-.  x, y - the vectors
++  x - first vector
+-  y - second vector
 
    Output Parameter:
 .  val - the dot product
@@ -137,7 +139,8 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
    Collective
 
    Input Parameters:
-.  x, y - the vectors
++  x - first vector
+-  y - second vector
 
    Output Parameter:
 .  val - the real part of the dot product;
@@ -201,7 +204,7 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
       people expect the former.
 
       This routine stashes the computed norm value, repeated calls before the vector entries are changed are then rapid since the
-      precomputed value is immediately available. Certain vector operations such as VecSet() store the norms so the value is
+      precomputed value is immediately available. Certain vector operations such as `VecSet()` store the norms so the value is
       immediately available and does not need to be explicitly computed. `VecScale()` updates any stashed norm values, thus calls after `VecScale()`
       do not need to explicitly recompute the norm.
 
@@ -211,7 +214,7 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 .    number of ranks - the time for the result will grow with the log base 2 of the number of ranks sharing the vector
 -    work load imbalance - the rank with the largest number of vector entries will limit the speed up
 
-.seealso: [](chapter_vectors), `Vec`, `VecDot()`, `VecTDot()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
+.seealso: [](chapter_vectors), `Vec`, `NormType`, `VecDot()`, `VecTDot()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
           `VecNormBegin()`, `VecNormEnd()`, `NormType()`
 @*/
 PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
@@ -240,7 +243,7 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 }
 
 /*@
-   VecNormAvailable  - Returns the vector norm if it is already known.
+   VecNormAvailable  - Returns the vector norm if it is already known. That is, it has been previously computed and cached in the vector
 
    Not Collective
 
@@ -264,9 +267,9 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 .ve
 
    Developer Note:
-   PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
+   `PETSC_HAVE_SLOW_BLAS_NORM2` will cause a C (loop unrolled) version of the norm to be used, rather
    than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
-   (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow.
+   (as opposed to vendor provided) because the FORTRAN BLAS `NRM2()` routine is very slow.
 
 .seealso: [](chapter_vectors), `Vec`, `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`,
           `VecNormBegin()`, `VecNormEnd()`
@@ -300,7 +303,7 @@ PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, Pets
 
    Level: intermediate
 
-.seealso: [](chapter_vectors), `Vec`, `VecNorm()`
+.seealso: [](chapter_vectors), `Vec`, `VecNorm()`, `NORM_2`, `NormType`
 @*/
 PetscErrorCode VecNormalize(Vec x, PetscReal *val)
 {
@@ -332,13 +335,13 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
 .  x - the vector
 
    Output Parameters:
-+  p - the location of val (pass `NULL` if you don't want this)
++  p - the index of `val` (pass `NULL` if you don't want this) in the vector
 -  val - the maximum component
 
    Level: intermediate
 
  Notes:
-   Returns the value `PETSC_MIN_REAL` and negative p if the vector is of length 0.
+   Returns the value `PETSC_MIN_REAL` and negative `p` if the vector is of length 0.
 
    Returns the smallest index with the maximum value
 
@@ -369,13 +372,13 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
 .  x - the vector
 
    Output Parameters:
-+  p - the location of val (pass `NULL` if you don't want this location)
++  p - the index of `val` (pass `NULL` if you don't want this location) in the vector
 -  val - the minimum component
 
    Level: intermediate
 
    Notes:
-   Returns the value `PETSC_MAX_REAL` and negative p if the vector is of length 0.
+   Returns the value `PETSC_MAX_REAL` and negative `p` if the vector is of length 0.
 
    This returns the smallest index with the minimum value
 
@@ -404,7 +407,8 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
    Collective
 
    Input Parameters:
-.  x, y - the vectors
++  x - first vector
+-  y - second vector
 
    Output Parameter:
 .  val - the dot product
@@ -448,7 +452,7 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
 /*@
    VecScale - Scales a vector.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  x - the vector
@@ -457,8 +461,7 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
    Level: intermediate
 
  Note:
-   For a vector with n components, `VecScale()` computes
-$      x[i] = alpha * x[i], for i=1,...,n.
+   For a vector with n components, `VecScale()` computes  x[i] = alpha * x[i], for i=1,...,n.
 
 .seealso: [](chapter_vectors), `Vec`, `VecSet()`
 @*/
@@ -498,16 +501,12 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 +  x  - the vector
 -  alpha - the scalar
 
-   Output Parameter:
-.  x  - the vector
-
    Level: beginner
 
    Notes:
-   For a vector of dimension n, `VecSet()` computes
-$     x[i] = alpha, for i=1,...,n,
+   For a vector of dimension n, `VecSet()` sets x[i] = alpha, for i=1,...,n,
    so that all vector entries then equal the identical
-   scalar value, alpha.  Use the more general routine
+   scalar value, `alpha`.  Use the more general routine
    `VecSetValues()` to set different vector entries.
 
    You CANNOT call this after you have called `VecSetValues()` but before you call
@@ -560,7 +559,8 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 
    Input Parameters:
 +  alpha - the scalar
--  x, y  - the vectors
+.  x - vector scale by `alpha`
+-  y - vector accumulated into
 
    Output Parameter:
 .  y - output vector
@@ -623,7 +623,7 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
    Level: intermediate
 
    Developer Note:
-    The implementation is optimized for beta of -1.0, 0.0, and 1.0
+    The implementation is optimized for `beta` of -1.0, 0.0, and 1.0
 
 .seealso: [](chapter_vectors), `Vec`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
@@ -663,7 +663,8 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
    Logically Collective
 
    Input Parameters:
-+  alpha,beta - the scalars
++  alpha - first scalar
+.  beta - second scalar
 .  x - the first scaled vector
 -  y - the second scaled vector
 
@@ -673,7 +674,7 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
    Level: intermediate
 
    Developer Note:
-   The implementation is optimized for alpha and/or beta values of 0.0 and 1.0
+   The implementation is optimized for `alpha` and/or `beta` values of 0.0 and 1.0
 
 .seealso: [](chapter_vectors), `Vec`, `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`
 @*/
@@ -712,8 +713,12 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
    Logically Collective
 
    Input Parameters:
-+  alpha,beta, gamma - the scalars
--  x, y, z  - the vectors
++  alpha - first scalar
+.  beta - second scalar
+.  gamma - third scalar
+.  x  - first vector
+.  y  - second vector
+-  z  - third vector
 
    Output Parameter:
 .  z - output vector
@@ -724,7 +729,7 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
    `x`, `y` and `z` must be different vectors
 
    Developer Note:
-    The implementation is optimized for alpha of 1.0 and gamma of 1.0 or 0.0
+    The implementation is optimized for `alpha` of 1.0 and `gamma` of 1.0 or 0.0
 
 .seealso: [](chapter_vectors), `Vec`, `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBY()`
 @*/
@@ -770,7 +775,8 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
 
    Input Parameters:
 +  alpha - the scalar
--  x, y  - the vectors
+.  x  - first vector, multiplied by `alpha`
+-  y  - second vector
 
    Output Parameter:
 .  w - the result
@@ -830,14 +836,14 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
--  iora - either `INSERT_VALUES` or `ADD_VALUES`, where
-   `ADD_VALUES` adds values to any existing entries, and
-   `INSERT_VALUES` replaces existing entries with new values
+-  iora - either `INSERT_VALUES` to replace the current values or `ADD_VALUES` to add values to any existing entries
 
    Level: beginner
 
    Notes:
+.vb
    `VecSetValues()` sets x[ix[i]] = y[i], for i=0,...,ni-1.
+.ve
 
    Calls to `VecSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
    options cannot be mixed without intervening calls to the assembly
@@ -875,7 +881,7 @@ PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const Petsc
 
 /*@C
    VecGetValues - Gets values from certain locations of a vector. Currently
-          can only get values on the same processor
+          can only get values on the same processor on which they are owned
 
     Not Collective
 
@@ -927,9 +933,7 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
 .  ni - number of blocks to add
 .  ix - indices where to add in block count, rather than element count
 .  y - array of values
--  iora - either `INSERT_VALUES` or `ADD_VALUES`, where
-   `ADD_VALUES` adds values to any existing entries, and
-   `INSERT_VALUES` replaces existing entries with new values
+-  iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES`, adds values to any existing entries
 
    Level: intermediate
 
@@ -981,9 +985,7 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
--  iora - either `INSERT_VALUES` or `ADD_VALUES`, where
-   `ADD_VALUES` adds values to any existing entries, and
-   `INSERT_VALUES` replaces existing entries with new values
+-  iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
 
    Level: intermediate
 
@@ -1038,9 +1040,7 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
 .  ni - number of blocks to add
 .  ix - indices where to add in block count, not element count
 .  y - array of values
--  iora - either `INSERT_VALUES` or `ADD_VALUES`, where
-   `ADD_VALUES` adds values to any existing entries, and
-   `INSERT_VALUES` replaces existing entries with new values
+-  iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
 
    Level: intermediate
 
@@ -1149,7 +1149,7 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 }
 
 /*@
-   VecMDot - Computes vector multiple dot products.
+   VecMDot - Computes multiple vector dot products.
 
    Collective
 
@@ -1250,7 +1250,7 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
 
    Output Parameters:
 +  Y    - concatenated vector
--  x_is - array of index sets corresponding to the concatenated components of Y (`NULL` if not needed)
+-  x_is - array of index sets corresponding to the concatenated components of `Y` (pass `NULL` if not needed)
 
    Level: advanced
 
@@ -1366,7 +1366,7 @@ PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X, IS is, PetscBool *c
 .   is - the index set of the subvector
 -   bs - the block size of the subvector, gotten from VecGetSubVectorContiguityAndBS_Private()
 
-    Output Parameters:
+    Output Parameter:
 .   Z  - the subvector, which will compose the VecScatter context on output
 */
 PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt bs, Vec *Z)
@@ -1398,10 +1398,10 @@ PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt b
 
    Input Parameters:
 +  X - vector from which to extract a subvector
--  is - index set representing portion of X to extract
+-  is - index set representing portion of `X` to extract
 
    Output Parameter:
-.  Y - subvector corresponding to is
+.  Y - subvector corresponding to `is`
 
    Level: advanced
 
@@ -1411,7 +1411,8 @@ PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt b
 
    This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
    modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
-   The resulting subvector inherits the block size from the IS if greater than one. Otherwise, the block size is guessed from the block size of the original vec.
+
+   The resulting subvector inherits the block size from `is` if greater than one. Otherwise, the block size is guessed from the block size of the original `X`.
 
 .seealso: [](chapter_vectors), `Vec`, `IS`, `VECNEST`, `MatCreateSubMatrix()`
 @*/
@@ -1630,7 +1631,7 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y)
    VecCreateLocalVector - Creates a vector object suitable for use with `VecGetLocalVector()` and friends. You must call `VecDestroy()` when the
    vector is no longer needed.
 
-   Not collective.
+   Not Collective.
 
    Input parameter:
 .  v - The vector for which the local vector is desired.
@@ -1669,10 +1670,9 @@ PetscErrorCode VecCreateLocalVector(Vec v, Vec *w)
 
 /*@
    VecGetLocalVectorRead - Maps the local portion of a vector into a
-   vector.  You must call `VecRestoreLocalVectorRead()` when the local
-   vector is no longer needed.
+   vector.
 
-   Not collective.
+   Not Collective.
 
    Input parameter:
 .  v - The vector for which the local vector is desired.
@@ -1683,6 +1683,9 @@ PetscErrorCode VecCreateLocalVector(Vec v, Vec *w)
    Level: beginner
 
    Notes:
+   You must call `VecRestoreLocalVectorRead()` when the local
+   vector is no longer needed.
+
    This function is similar to `VecGetArrayRead()` which maps the local
    portion into a raw pointer.  `VecGetLocalVectorRead()` is usually
    almost as efficient as `VecGetArrayRead()` but in certain circumstances
@@ -1722,11 +1725,11 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w)
    VecRestoreLocalVectorRead - Unmaps the local portion of a vector
    previously mapped into a vector using `VecGetLocalVectorRead()`.
 
-   Not collective.
+   Not Collective.
 
    Input parameter:
-+  v - The local portion of this vector was previously mapped into w using `VecGetLocalVectorRead()`.
--  w - The vector into which the local portion of v was mapped.
++  v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVectorRead()`.
+-  w - The vector into which the local portion of `v` was mapped.
 
    Level: beginner
 
@@ -1756,7 +1759,7 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w)
    VecGetLocalVector - Maps the local portion of a vector into a
    vector.
 
-   Collective on v, not collective on w.
+   Collective
 
    Input parameter:
 .  v - The vector for which the local vector is desired.
@@ -1767,6 +1770,9 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w)
    Level: beginner
 
    Notes:
+   You must call `VecRestoreLocalVector()` when the local
+   vector is no longer needed.
+
    This function is similar to `VecGetArray()` which maps the local
    portion into a raw pointer.  `VecGetLocalVector()` is usually about as
    efficient as `VecGetArray()` but in certain circumstances
@@ -1801,11 +1807,11 @@ PetscErrorCode VecGetLocalVector(Vec v, Vec w)
    VecRestoreLocalVector - Unmaps the local portion of a vector
    previously mapped into a vector using `VecGetLocalVector()`.
 
-   Logically collective.
+   Logically Collective.
 
    Input parameter:
 +  v - The local portion of this vector was previously mapped into `w` using `VecGetLocalVector()`.
--  w - The vector into which the local portion of v was mapped.
+-  w - The vector into which the local portion of `v` was mapped.
 
    Level: beginner
 
@@ -1832,7 +1838,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 /*@C
    VecGetArray - Returns a pointer to a contiguous array that contains this
    processor's portion of the vector data. For the standard PETSc
-   vectors, VecGetArray() returns a pointer to the local data array and
+   vectors, `VecGetArray()` returns a pointer to the local data array and
    does not use any copies. If the underlying vector data is not stored
    in a contiguous array this routine will copy the data to a contiguous
    array and return a pointer to that. You MUST call `VecRestoreArray()`
@@ -1868,7 +1874,7 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArray - Restores a vector after `VecGetArray()` has been called.
+   VecRestoreArray - Restores a vector after `VecGetArray()` has been called and the array is no longer needed
 
    Logically Collective
 
@@ -2000,6 +2006,8 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
    Level: intermediate
 
    Note:
+   The array must be returned using a matching call to `VecRestoreArrayRead()`.
+
    For vectors associated with GPUs, the host and device vectors are not synchronized before giving access. If you need correct
    values in the array use `VecGetArray()`
 
@@ -2057,8 +2065,7 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
-   that were created by a call to `VecDuplicateVecs()`.  You MUST call
-   `VecRestoreArrays()` when you no longer need access to the array.
+   that were created by a call to `VecDuplicateVecs()`.
 
    Logically Collective; No Fortran Support
 
@@ -2070,6 +2077,9 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 .  a - location to put pointer to the array
 
    Level: intermediate
+
+   Note:
+   You MUST call `VecRestoreArrays()` when you no longer need access to the arrays.
 
 .seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrays()`
 @*/
@@ -2144,6 +2154,9 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 
    Level: beginner
 
+   Note:
+   Use `VecRestoreArrayAndMemType()` when the array access is no longer needed
+
 .seealso: [](chapter_vectors), `Vec`, `VecRestoreArrayAndMemType()`, `VecGetArrayReadAndMemType()`, `VecGetArrayWriteAndMemType()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`,
           `VecPlaceArray()`, `VecGetArray2d()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
@@ -2199,7 +2212,8 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer. The returned pointer is guaranteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
+   VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer.
+   The returned pointer is guaranteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
 
    Not Collective; No Fortran Support
 
@@ -2273,7 +2287,7 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will aways return
+   VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will always return
     a device pointer to the device memory that contains this processor's portion of the vector data.
 
    Not Collective; No Fortran Support
@@ -2357,13 +2371,17 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a)
 +  vec - the vector
 -  array - the array
 
+   Level: developer
+
    Notes:
+   Use `VecReplaceArray()` instead to permanently replace the array
+
    You can return to the original array with a call to `VecResetArray()`. `vec` does not take
-   ownership of `array` in any way. The user must free `array` themselves but be careful not to
+   ownership of `array` in any way.
+
+   The user must free `array` themselves but be careful not to
    do so before the vector has either been destroyed, had its original array restored with
    `VecResetArray()` or permanently replaced with `VecReplaceArray()`.
-
-   Level: developer
 
 .seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 @*/
@@ -2393,7 +2411,7 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
 
    Notes:
    This permanently replaces the array and frees the memory associated
-   with the old array.
+   with the old array. Use `VecPlaceArray()` to temporarily replace the array.
 
    The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
    freed by the user. It will be freed when the vector is destroyed.
@@ -3745,7 +3763,7 @@ PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
 .  state - greater than zero indicates the vector is locked for read; less then zero indicates the vector is
            locked for write; equal to zero means the vector is unlocked, that is, it is free to read or write.
 
-   Level: beginner
+   Level: advanced
 
 .seealso: [](chapter_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockReadPop()`
 @*/
@@ -3782,17 +3800,17 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
 }
 
 /*@
-   VecLockReadPush  - Pushes a read-only lock on a vector to prevent it from writing
+   VecLockReadPush  - Pushes a read-only lock on a vector to prevent it from being written to
 
    Logically Collective
 
    Input Parameter:
 .  x - the vector
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
-    If this is set then calls to `VecGetArray()` or `VecSetValues()` or any other routines that change the vectors values will fail.
+    If this is set then calls to `VecGetArray()` or `VecSetValues()` or any other routines that change the vectors values will generate an error.
 
     The call can be nested, i.e., called multiple times on the same vector, but each `VecLockReadPush()` has to have one matching
     `VecLockReadPop()`, which removes the latest read-only lock.
@@ -3835,7 +3853,7 @@ PetscErrorCode VecLockReadPush(Vec x)
    Input Parameter:
 .  x - the vector
 
-   Level: beginner
+   Level: intermediate
 
 .seealso: [](chapter_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockGet()`
 @*/
@@ -3861,9 +3879,9 @@ PetscErrorCode VecLockReadPop(Vec x)
 
    Input Parameters:
 +  x   - the vector
--  flg - PETSC_TRUE to lock the vector for exclusive read/write access; PETSC_FALSE to unlock it.
+-  flg - `PETSC_TRUE` to lock the vector for exclusive read/write access; `PETSC_FALSE` to unlock it.
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
     The function is useful in split-phase computations, which usually have a begin phase and an end phase.
@@ -3902,7 +3920,7 @@ PetscErrorCode VecLockWriteSet(Vec x, PetscBool flg)
 }
 
 /*@
-   VecLockPush  - Pushes a read-only lock on a vector to prevent it from writing
+   VecLockPush  - Pushes a read-only lock on a vector to prevent it from being written to
 
    Level: deprecated
 

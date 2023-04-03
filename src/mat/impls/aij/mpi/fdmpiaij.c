@@ -211,7 +211,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   }
 
   /* (3) Loop over each color */
-  if (!coloring->w3) { PetscCall(VecDuplicate(x1, &coloring->w3)); }
+  if (!coloring->w3) PetscCall(VecDuplicate(x1, &coloring->w3));
   w3 = coloring->w3;
 
   PetscCall(VecGetOwnershipRange(x1, &cstart, &cend)); /* used by ghosted vscale */
@@ -709,15 +709,16 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 +    J - the sparse matrix
 .    coloring - created with `MatFDColoringCreate()` and a local coloring
 -    y - column major storage of matrix values with one color of values per column, the number of rows of y should match
-         the number of local rows of J and the number of columns is the number of colors.
+         the number of local rows of `J` and the number of columns is the number of colors.
 
    Level: intermediate
 
-   Notes: the matrix in compressed color format may come from an automatic differentiation code
+   Notes:
+   The matrix in compressed color format may come from an automatic differentiation code
 
    The code will be slightly faster if `MatFDColoringSetBlockSize`(coloring,`PETSC_DEFAULT`,nc); is called immediately after creating the coloring
 
-.seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
+.seealso: [](chapter_matrices), `Mat`, `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
 @*/
 PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y)
 {

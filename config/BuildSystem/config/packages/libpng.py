@@ -20,7 +20,7 @@ class Configure(config.package.GNUPackage):
 
   def versionToStandardForm(self,ver):
     import re
-    return re.compile('[=A-Za-z]([\.0-9]*)-[A-Za-z]*').search(ver).group(1)
+    return re.compile(r'[=A-Za-z]([\.0-9]*)-[A-Za-z]*').search(ver).group(1)
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)

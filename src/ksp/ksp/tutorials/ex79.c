@@ -11,12 +11,11 @@ PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
 
 int main(int argc, char **args)
 {
-  Mat       X, B; /* computed solutions and RHS */
-  Mat       A;    /* linear system matrix */
-  KSP       ksp;  /* linear solver context */
-  PC        pc;   /* preconditioner context */
+  Mat       A, X, B; /* computed solutions and RHS */
+  KSP       ksp;     /* linear solver context */
+  PC        pc;      /* preconditioner context */
   PetscInt  m = 10;
-  PetscBool flg;
+  PetscBool flg, transpose = PETSC_FALSE;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent event;
 #endif
@@ -27,11 +26,17 @@ int main(int argc, char **args)
   PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, m, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, m, NULL, &A));
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &B));
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &X));
   PetscCall(MatSetRandom(A, NULL));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
+  if (transpose) {
+    PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &B));
+    PetscCall(MatAXPY(A, 1.0, B, DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatDestroy(&B));
+  }
   PetscCall(MatShift(A, 10.0));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &B));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &X));
   PetscCall(MatSetRandom(B, NULL));
   PetscCall(MatSetFromOptions(A));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
@@ -46,6 +51,11 @@ int main(int argc, char **args)
   PetscCall(PCShellSetMatApply(pc, MatApply));
   PetscCall(KSPMatSolve(ksp, B, X));
   PetscCall(PCMatApply(pc, B, X));
+  if (transpose) {
+    PetscCall(KSPMatSolveTranspose(ksp, B, X));
+    PetscCall(PCMatApply(pc, B, X));
+    PetscCall(KSPMatSolve(ksp, B, X));
+  }
   PetscCall(MatDestroy(&X));
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&A));
@@ -163,5 +173,22 @@ int main(int argc, char **args)
       test:
          suffix: 8_hpddm
          output_file: output/ex77_preonly.out
+      test:
+         suffix: 8_hpddm_transpose
+         output_file: output/ex77_preonly.out
+         args: -pc_type icc -transpose
+
+   testset:
+      nsize: 1
+      args: -pc_type {{cholesky icc none}shared output} -transpose
+      test:
+         suffix: 1_transpose
+         output_file: output/ex77_preonly.out
+         args: -ksp_type preonly
+      test:
+         suffix: 1_hpddm_transpose
+         output_file: output/ex77_preonly.out
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_type preonly
 
 TEST*/

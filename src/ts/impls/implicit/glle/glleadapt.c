@@ -28,8 +28,10 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
    Not Collective
 
    Input Parameters:
-+  name_scheme - name of user-defined adaptivity scheme
--  routine_create - routine to create method context
++  sname - name of user-defined adaptivity scheme
+-  function - routine to create method context
+
+   Level: advanced
 
    Note:
    `TSGLLEAdaptRegister()` may be called multiple times to add several user-defined families.
@@ -43,8 +45,6 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 $     TSGLLEAdaptSetType(ts,"my_scheme")
    or at runtime via the option
 $     -ts_adapt_type my_scheme
-
-   Level: advanced
 
 .seealso: [](chapter_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
 @*/

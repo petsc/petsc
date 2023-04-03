@@ -464,7 +464,7 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw, unsigned char pale
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _PetscDrawOps DvOps = {PetscDrawSetDoubleBuffer_Image, PetscDrawFlush_Image, PetscDrawLine_Image, PetscDrawLineSetWidth_Image, PetscDrawLineGetWidth_Image, PetscDrawPoint_Image, PetscDrawPointSetSize_Image, PetscDrawString_Image, PetscDrawStringVertical_Image, PetscDrawStringSetSize_Image, PetscDrawStringGetSize_Image, PetscDrawSetViewport_Image, PetscDrawClear_Image, PetscDrawRectangle_Image, PetscDrawTriangle_Image, PetscDrawEllipse_Image, PetscDrawGetMouseButton_Image, PetscDrawPause_Image, PetscDrawBeginPage_Image, PetscDrawEndPage_Image, PetscDrawGetPopup_Image, PetscDrawSetTitle_Image, PetscDrawCheckResizedWindow_Image, PetscDrawResizeWindow_Image, PetscDrawDestroy_Image, PetscDrawView_Image, PetscDrawGetSingleton_Image, PetscDrawRestoreSingleton_Image, PetscDrawSave_Image, PetscDrawGetImage_Image, PetscDrawSetCoordinates_Image, PetscDrawArrow_Image, PetscDrawCoordinateToPixel_Image, PetscDrawPixelToCoordinate_Image, PetscDrawPointPixel_Image, PetscDrawStringBoxed_Image};
+static struct _PetscDrawOps DvOps = {PetscDrawSetDoubleBuffer_Image, PetscDrawFlush_Image, PetscDrawLine_Image, PetscDrawLineSetWidth_Image, PetscDrawLineGetWidth_Image, PetscDrawPoint_Image, PetscDrawPointSetSize_Image, PetscDrawString_Image, PetscDrawStringVertical_Image, PetscDrawStringSetSize_Image, PetscDrawStringGetSize_Image, PetscDrawSetViewport_Image, PetscDrawClear_Image, PetscDrawRectangle_Image, PetscDrawTriangle_Image, PetscDrawEllipse_Image, PetscDrawGetMouseButton_Image, PetscDrawPause_Image, PetscDrawBeginPage_Image, PetscDrawEndPage_Image, PetscDrawGetPopup_Image, PetscDrawSetTitle_Image, PetscDrawCheckResizedWindow_Image, PetscDrawResizeWindow_Image, PetscDrawDestroy_Image, PetscDrawView_Image, PetscDrawGetSingleton_Image, PetscDrawRestoreSingleton_Image, PetscDrawSave_Image, PetscDrawGetImage_Image, PetscDrawSetCoordinates_Image, PetscDrawArrow_Image, PetscDrawCoordinateToPixel_Image, PetscDrawPixelToCoordinate_Image, PetscDrawPointPixel_Image, PetscDrawStringBoxed_Image, NULL};
 
 static const unsigned char BasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
   {255, 255, 255}, /* white */
@@ -582,10 +582,11 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 
    Input Parameters:
 +  comm - the communicator that will share image
--  filename - optional name of the file where the image will be stored
--  w, h - the image width and height in pixels
+.  filename - optional name of the file where the image will be stored
+.  w - the image width in pixels
+-  h - the image height in pixels
 
-   Output Parameters:
+   Output Parameter:
 .  draw - the drawing context.
 
    Level: beginner

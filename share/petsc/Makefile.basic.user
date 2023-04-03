@@ -5,11 +5,11 @@
 #  See also $PETSC_DIR/share/petsc/Makefile.user for the preferred approach
 #  You must set the environmental variable(s) PETSC_DIR (and PETSC_ARCH if PETSc was not configured with the --prefix option)
 #
-#   You can set specific values below but that should rarely need to
-CFLAGS		 =
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
+#   You can set specific values below but that should be rarely needed
+CFLAGS   =
+FFLAGS   =
+CPPFLAGS =
+FPPFLAGS =
 
 #  For example - a single source file (ex1.c or ex1.F90) can be compiled with:
 #
@@ -40,5 +40,4 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 #  manage the build rules yourself (rarely needed) comment out the next lines
 #
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 

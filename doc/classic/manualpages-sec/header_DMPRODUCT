@@ -1,4 +1,3 @@
-# DMProduct Manual Pages
+# Tensor products of meshes (DMProduct)
 
 The DMProduct class represents a (local) Cartesian product of other `DM` objects.
-

@@ -385,7 +385,6 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ********************************************************************** */
 /* edge for priority queue */
 typedef struct edge_tag {
   PetscReal weight;
@@ -398,7 +397,6 @@ static int gamg_hem_compare(const void *a, const void *b)
   return (va < vb) ? 1 : (va == vb) ? 0 : -1; /* 0 for equal */
 }
 
-/* -------------------------------------------------------------------------- */
 /*
   MatCoarsenApply_HEM_private - parallel heavy edge matching
 

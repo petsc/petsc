@@ -1272,7 +1272,7 @@ int main(int argc, char *argv[])
 
   /* create index for slow parts and fast parts,
      count_slow + count_fast = Mx, counts_slow*hs = 0.5, counts_fast*hf = 0.5 */
-  count_slow = Mx / (1.0 + ctx.hratio / 3.0);
+  count_slow = Mx * 3 / (3 + ctx.hratio); // compute Mx / (1.0 + ctx.hratio / 3.0);
   PetscCheck(count_slow % 2 == 0, PETSC_COMM_WORLD, PETSC_ERR_USER, "Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hratio/3) is even");
   count_fast = Mx - count_slow;
   ctx.sf     = count_slow / 2;

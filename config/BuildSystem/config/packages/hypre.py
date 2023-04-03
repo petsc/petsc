@@ -4,12 +4,12 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.27.0'
+    self.version         = '2.28.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
-    self.gitcommit       = '6907852618b972fe0b5c416d79cc3dea74864734' # master feb-16-2023
+    self.gitcommit       = 'v'+self.version
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
@@ -105,6 +105,8 @@ class Configure(config.package.GNUPackage):
       devflags = devflags.replace('-fvisibility=hidden','')
       self.popLanguage()
     elif self.cuda.found:
+      if self.cuda.version_tuple[0] >= 12:
+        raise RuntimeError('Package '+self.PACKAGE+' cannot be used with CUDA 12 or higher')
       stdflag   = '-std=c++11'
       cudabuild = True
       args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')
@@ -112,7 +114,7 @@ class Configure(config.package.GNUPackage):
       if not hasharch:
         if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
           if hasattr(self.cuda,'cudaArch'):
-            args.append('--with-gpu-arch=' + self.cuda.cudaArch)
+            args.append('--with-gpu-arch="' + ' '.join(self.cuda.cudaArchList()) + '"')
           else:
             args.append('--with-gpu-arch=70') # default
         else:

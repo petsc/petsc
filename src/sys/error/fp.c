@@ -55,7 +55,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
   PetscFunctionBegin;
   PetscCall(PetscNew(&link));
 #if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-  #pragma omp critical
+  PetscPragmaOMP(critical)
 #endif
   {
     link->trapmode = _trapmode;
@@ -82,7 +82,7 @@ PetscErrorCode PetscFPTrapPop(void)
   PetscFunctionBegin;
   if (_trapstack->trapmode != _trapmode) PetscCall(PetscSetFPTrap(_trapstack->trapmode));
 #if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-  #pragma omp critical
+  PetscPragmaOMP(critical)
 #endif
   {
     link       = _trapstack;
@@ -139,7 +139,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  flag - values are
 .vb
     PETSC_FP_TRAP_OFF   - do not trap any exceptions
@@ -152,7 +152,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
     PETSC_FP_TRAP_FLTINEX - inexact floating point result
 .ve
 
-   Options Database Keys:
+   Options Database Key:
 .  -fp_trap <off,on> - turn on or off trapping of floating point exceptions
 
    Level: advanced

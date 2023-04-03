@@ -513,10 +513,10 @@ configure time. For example:
 
 .. code-block:: console
 
-   $ ./configure --prefix=/opt/petsc/petsc-3.18.0-mpich --with-mpi-dir=/opt/mpich
+   $ ./configure --prefix=/opt/petsc/petsc-3.19.0-mpich --with-mpi-dir=/opt/mpich
    $ make
    $ make install [DESTDIR=/tmp/petsc-pkg]
-   $ ./configure --prefix=/opt/petsc/petsc-3.18.0-openmpi --with-mpi-dir=/opt/openmpi
+   $ ./configure --prefix=/opt/petsc/petsc-3.19.0-openmpi --with-mpi-dir=/opt/openmpi
    $ make
    $ make install [DESTDIR=/tmp/petsc-pkg]
 
@@ -677,7 +677,7 @@ Applications may be compiled with, for example,
 
    $  make ex19.html
 
-The rule for linking may be found in `lib/petsc/conf/test <PETSC_DOC_OUT_ROOT_PLACEHOLDER/lib/petsc/conf/test>`__
+The rule for linking may be found in `lib/petsc/conf/rules <PETSC_DOC_OUT_ROOT_PLACEHOLDER/lib/petsc/conf/rules>`__
 
 .. _doc_config_hpc:
 

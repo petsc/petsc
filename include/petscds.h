@@ -19,6 +19,8 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormCopy(PetscWeakForm, PetscWeakForm);
 PETSC_EXTERN PetscErrorCode PetscWeakFormClear(PetscWeakForm);
 PETSC_EXTERN PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDSGetForceQuad(PetscDS, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscDSSetForceQuad(PetscDS, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscFormKeySort(PetscInt, PetscFormKey[]);
 PETSC_EXTERN PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm, DMLabel, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscWeakFormReplaceLabel(PetscWeakForm, DMLabel);
@@ -128,6 +130,7 @@ PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffsets(PetscDS, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS, PetscInt, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS, PetscInt, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscDSPermuteQuadPoint(PetscDS, PetscInt, PetscInt, PetscInt, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakForm(PetscDS, PetscWeakForm *);
 PETSC_EXTERN PetscErrorCode PetscDSSetWeakForm(PetscDS, PetscWeakForm);
@@ -183,6 +186,7 @@ PETSC_EXTERN PetscErrorCode PetscDSGetWorkspace(PetscDS, PetscReal **, PetscScal
 PETSC_EXTERN PetscErrorCode PetscDSCopyConstants(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopyExactSolutions(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSCopy(PetscDS, DM, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSelectDiscretizations(PetscDS, PetscInt, const PetscInt[], PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSelectEquations(PetscDS, PetscInt, const PetscInt[], PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *, PetscInt *);

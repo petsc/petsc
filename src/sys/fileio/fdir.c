@@ -49,7 +49,7 @@ PetscErrorCode PetscMkdir(const char dir[])
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dir - file name template, the last six characters must be 'XXXXXX', and they will be modified upon return
 
   Level: developer
@@ -128,10 +128,10 @@ PetscErrorCode PetscRMTree(const char dir[])
 PetscErrorCode PetscRMTree(const char dir[])
 {
   struct dirent *data;
-  char loc[PETSC_MAX_PATH_LEN];
-  PetscBool flg1, flg2;
-  DIR *dirp;
-  struct stat statbuf;
+  char           loc[PETSC_MAX_PATH_LEN];
+  PetscBool      flg1, flg2;
+  DIR           *dirp;
+  struct stat    statbuf;
 
   PetscFunctionBegin;
   dirp = opendir(dir);

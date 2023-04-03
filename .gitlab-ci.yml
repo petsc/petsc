@@ -50,6 +50,7 @@ check-ci-settings:
     - gce-stage1
   script:
     - lib/petsc/bin/maint/check-ci-settings.sh
+
 #
 #  This provides the basic order of operations and options template for cloud based stage 1 tests.
 #  Not all test-short need to follow this template but most will.
@@ -75,10 +76,10 @@ check-ci-settings:
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
-    - if [ ! -z ${ENABLE_CHECK+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check; fi
-    - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native' CXXOPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}"
+    - if [ ! -z ${ENABLE_CHECK+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" check; fi
+    - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   variables:
     PYTHON: python3
     MAKE_CFLAGS: -Werror
@@ -122,14 +123,14 @@ mpich-cxx-py3:
   variables:
     CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11 --with-strict-petscerrorcode
     TEST_SEARCH: snes_tutorials-ex48%
-    LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
 uni-complex-float-int64:
   extends: .stage-1
   variables:
     CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
-    LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
 c99-mlib-static-py:
   extends: .stage-1
@@ -138,7 +139,7 @@ c99-mlib-static-py:
     ENABLE_CHECK: 1
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
-    LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
 petsc4py-install:
   extends: .stage-2
@@ -202,7 +203,7 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - vermin --version
     - make vermin
-    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack/opt/spack/linux-ubuntu22.04-ivybridge/gcc-11.2.0/llvm-15.0.0-m7mrrtynenjytkmiib2moeqk6kfcifmv/bin:$PATH make checkclangformat SHELL=bash
+    - PATH=/nfs/gce/projects/petsc/soft/clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04/bin:$PATH make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash
@@ -234,16 +235,35 @@ pause-for-approval:
   allow_failure: false
 
 #
+# Basic template for code coverage generation. Tests should additionally inherit from the more
+# specialized OS-specific versions instead of this one.
+#
+
+.coverage-generate:
+  variables:
+    RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
+
+.coverage-disable:
+  variables:
+    RUN_GCOV: 0
+
+#
 # This provides the basic order of operations and options template for stage-2,3 tests.
 # Not all stage-2,3 need to follow this template, but most will.
 #
 .stage-23:
-  extends: .test
+  extends:
+    - .test
+    - .coverage-generate
   script:
     - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
     - if [ ! -z ${GCOV_MODULES+x} ]; then module --trace load ${GCOV_MODULES}; module list; fi
     - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then gcovr --version; fi
+    - if [ "${RUN_GCOV}" == 1 ]; then
+        printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n";
+        gcovr --version;
+      fi
     - if [ -d ${HOME}/petsc-hash-pkgs/ ]; then find ${HOME}/petsc-hash-pkgs/ -maxdepth 1 -mindepth 1 -type d -mtime +25 -exec rm -rf {} \; ; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -252,13 +272,12 @@ pause-for-approval:
     - printf "./config/examples/${TEST_ARCH}.py\n"
     - cat ./config/examples/${TEST_ARCH}.py
     - ./config/examples/${TEST_ARCH}.py || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
-    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" check || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
     - make updatedatafiles
     - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
-    - if [ -z ${DISABLE_TESTS+x} ]; then make cleantest && make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS} || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi; fi
-    - if [ ! -z ${RUN_GCOV_OPTIONS+x} ]; then printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n"; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov PETSC_GCOV_OPTIONS="${RUN_GCOV_OPTIONS}"; fi
+    - if [ -z ${DISABLE_TESTS+x} ]; then make cleantest && make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS} || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi; fi
+    - if [ "${RUN_GCOV}" == 1 ]; then make gcov PETSC_GCOV_OPTIONS="${RUN_GCOV_OPTIONS}"; fi
   artifacts:
     reports:
       junit: arch-*/tests/testresults.xml
@@ -270,7 +289,7 @@ pause-for-approval:
     - arch-*/tests/testresults.xml
     - arch-*/tests/test_arch-*_tap.log
     - arch-*/tests/test_arch-*_err.log
-    - arch-*/arch-*-gcovr-report.json.tar.gz
+    - arch-*/arch-*-gcovr-report.json.tar.bz2
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
@@ -312,22 +331,9 @@ pause-for-approval:
     MAKE_CXXFLAGS: -Werror
     MAKE_FFLAGS: -Werror
 
-.coverage-generate:
-  variables:
-    RUN_GCOV: 1
-    RUN_GCOV_OPTIONS: --decisions
-
-.coverage-generate-u18:
-  extends: .coverage-generate
-  variables:
-    GCOV_MODULES: py-gcovr-5.2-gcc-7.5.0-o7fu4xq python-3.9.13-gcc-7.5.0-fq67pdh
-
-.coverage-generate-u22:
-  extends: .coverage-generate
-  variables:
-    GCOV_MODULES: py-gcovr-5.2-gcc-11.2.0-wcsmyet
-
 .freebsd_test:
+  extends:
+    - .coverage-disable
   variables:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
@@ -357,17 +363,9 @@ pause-for-approval:
     - date
     - ccache --show-stats
 
-.opensolaris_test:
-  before_script:
-    - date
-    - hostname
-    - uname -a
-    - nproc
-    - isainfo -x
-  after_script:
-    - date
-
 .mswin_test:
+  extends:
+    - .coverage-disable
   before_script:
     - date
     - hostname
@@ -381,7 +379,7 @@ pause-for-approval:
 #
 # The tags variable used in the tests below connects the particular test with the runners
 # listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
-# For example the test linux-sycl-double any runner that has the tags 'gce-nfs, linux-fast'
+# For example the test 'linux-sycl-double' any runner that has the tags 'gce-u22-stage3, linux-fast'
 # (in a blue box beneath it)
 #
 
@@ -389,6 +387,7 @@ osx-m1:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos-m1
   variables:
@@ -455,6 +454,7 @@ linux-emcc:
   extends:
     - .stage-2
     - .linux_test
+    - .coverage-disable
   tags:
     - gce-stage2
   variables:
@@ -498,6 +498,7 @@ linux-hip-double:
   extends:
     - .stage-3
     - .linux_test_noflags
+    - .coverage-disable
   tags:
     - gpu:amd, os:linux
   variables:
@@ -507,23 +508,24 @@ linux-hip-double:
 linux-sycl-double:
   extends:
     - .stage-3
-    - .linux_test_noflags
+    - .linux_test_nofflags
+    - .coverage-disable
   tags:
-    - gce-nfs, linux-fast
+    - gce-u22-stage3, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-sycl-double
-    LOAD_MODULES: compiler/latest mpi/latest cmake/3.20.5-yjp2hz6
+    LOAD_MODULES: intel-oneapi-compilers/2022.2.1 intel-oneapi-mpi/2021.5.1
     TEST_OPTS: query=requires queryval=kokkos_kernels
+    MAKE_CFLAGS: -Wno-expected-file-type -Werror
 
-linux-cuda-pkgs-gcov:
+linux-cuda-pkgs:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-generate-u22
   tags:
     - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda-pkgs-gcov
+    TEST_ARCH: arch-ci-linux-cuda-pkgs
     # run all tests that:
     # 1. require cuda, OR
     # 2. require device, OR
@@ -532,11 +534,13 @@ linux-cuda-pkgs-gcov:
     # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
     # shell, and I could not manage to escape it enough times...
     TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='requires,requires,requires%OR%name'
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda112-omp:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-disable
   tags:
     - cuda-stage3
   variables:
@@ -545,6 +549,7 @@ linux-cuda112-omp:
     LOAD_MODULES: cuda/11.2.2 u-gcc-9/9.4.0
     OMP_PROC_BIND: "false"
     OMP_NUM_THREADS: 1
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-cmplx:
   extends:
@@ -554,21 +559,24 @@ linux-cuda-cmplx:
     - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-cmplx
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-double-64idx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - cuda-stage3
+    - cuda12
   variables:
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
-    TEST_OPTS: -j15 query=requires queryval=cuda
+    TEST_OPTS: -j3 query=requires queryval=cuda
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-single-cxx:
   extends:
     - .stage-3
     - .linux_test_noflags
+    - .coverage-disable
   tags:
     - cuda-stage3
   variables:
@@ -586,11 +594,13 @@ linux-cuda-uni-pkgs:
   variables:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
     TEST_OPTS: -j20 query=requires queryval=cuda
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-clang-cuda:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-disable
   tags:
     - cuda-stage3
   variables:
@@ -598,6 +608,7 @@ linux-clang-cuda:
     TEST_OPTS: -j 1  queryval='cuda*,snes*' query='requires%OR%name'
     MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
     LOAD_MODULES: llvm-15.0.7-gcc-11.3.0-pjldtxf cuda-11.5.2-gcc-11.3.0-jkoottx gcc-11.3.0-gcc-11.3.0-pgrvke5
+    MAKE_CUDAFLAGS: -Wall,-Werror
 
 linux-viennacl:
   extends:
@@ -615,7 +626,7 @@ linux-without-fc:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
@@ -623,6 +634,7 @@ linux-cmplx-single:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-disable
   tags:
     - name:si
   variables:
@@ -651,6 +663,7 @@ linux-knl:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-disable
   tags:
     - name:petsc-knl-01
   variables:
@@ -662,33 +675,32 @@ linux-intel-mkl-single:
   extends:
     - .stage-3
     - .linux_test_nofflags
+    - .coverage-disable
   tags:
     - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-intel-mkl-single
     LOAD_MODULES: intel-oneapi-compilers/2022.0.2 intel-oneapi-mkl/2022.0.2 intel-oneapi-mpi/2021.5.1
 
-linux-cxx-cmplx-pkgs-64idx-gcov:
+linux-cxx-cmplx-pkgs-64idx:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-generate-u18
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx-gcov
-    LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
+    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-disable
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
-    LOAD_MODULES: cmake/3.20.5-yjp2hz6
     OMP_PROC_BIND: "false"
     OMP_NUM_THREADS: 4
 
@@ -718,43 +730,44 @@ linux-pkgs-opt:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-disable
   tags:
-    - gce-nfs, linux-fast
+    - gce-u22-stage3, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-opt
-    LOAD_MODULES: gcc/10.1.0-5hiqhdh
+    LOAD_MODULES: gcc/12.1.0
+    MAKE_CXXFLAGS: -Wno-deprecated-declarations -Werror
 
-linux-pkgs-gcov:
+linux-pkgs-dbg:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-generate-u18
   tags:
-    - gce-nfs, linux-gcov
+    - gce-u22-stage3, linux-gcov
   variables:
-    TEST_ARCH: arch-ci-linux-pkgs-gcov
+    TEST_ARCH: arch-ci-linux-pkgs-dbg
 
-linux-matlab-ilp64-gcov:
+linux-matlab-ilp64:
   extends:
     - .stage-3
     - .linux_test
-    - .coverage-generate-u18
   tags:
-    - gce-nfs, linux-gcov
+    - gce-u22-stage3, linux-gcov
   variables:
-    TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
-    LOAD_MODULES: matlab/R2018a
+    TEST_ARCH: arch-ci-linux-matlab-ilp64
+    LOAD_MODULES: gcc/9.4.0 matlab/R2022a
   allow_failure: true
 
 linux-pgi:
   extends:
     - .stage-3
     - .linux_test_noflags
+    - .coverage-disable
   tags:
-    - gce-nfs, linux-mcpu
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pgi
-    LOAD_MODULES: hpc_sdk/20.9
+    LOAD_MODULES: nvhpc/22.3
 
 # If the Nag license server fails then ${PETSC_DIR}/naglicenseproblem is created and the job is marked as failed but allow_failure
 linux-nagfor:
@@ -762,7 +775,7 @@ linux-nagfor:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - gce-nfs, linux-mcpu
+    - gce-stage2, linux-mcpu
   variables:
     LOAD_MODULES: nag/6.1
     TEST_ARCH: arch-ci-linux-nagfor
@@ -773,27 +786,28 @@ linux-intel-cmplx:
   extends:
     - .stage-3
     - .linux_test_nofflags
+    - .coverage-disable
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-intel-cmplx
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib cmake/3.20.5-yjp2hz6
-    ENABLE_PETSC4PY_LDPRELOAD: 1
+    LOAD_MODULES: intel-oneapi-compilers/2023.0.0 intel-oneapi-mkl/2022.0.2
 
 linux-xsdk-dbg:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-xsdk-dbg
-    LOAD_MODULES: gcc/8.3.0-fjpc5ys
+    LOAD_MODULES: gcc/12.1.0
 
 linux-analyzer:
   extends:
     - .stage-3
     - .linux_test
+    - .coverage-disable
   tags:
     - gce-u22-stage2
   script:
@@ -822,38 +836,39 @@ linux-intel:
   extends:
     - .stage-3
     - .linux_test_nofflags
+    - .coverage-disable
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-intel
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
+    LOAD_MODULES: intel-oneapi-compilers/2023.0.0 intel-oneapi-mkl/2022.0.2
 
 linux-opt-misc:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-u22-stage3, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
-    LOAD_MODULES: gcc/6.5.0-57usejd
+    LOAD_MODULES: gcc/8.5.0
 
 linux-pkgs-64idx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-mcpu
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
-    LOAD_MODULES: cmake/3.20.5-yjp2hz6 intel-mkl/19.5
+    LOAD_MODULES: intel-oneapi-mkl/2022.0.2
 
 linux-64idx-i8:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8
 
@@ -862,17 +877,17 @@ linux-gcc-ifc-cmplx:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
-    LOAD_MODULES: intel/19.0-nompilib cmake/3.20.0-vov726r
+    LOAD_MODULES: intel-oneapi-compilers/2022.2.1
 
 linux-opt-cxx-quad:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-opt-cxx-quad
 
@@ -881,19 +896,29 @@ linux-ILP64:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
-    LOAD_MODULES: mpich/2-1.5-gcc750
+    LOAD_MODULES: gcc/8.5.0 mpich/2-1.5-gcc-8.5.0
+    MAKE_CFLAGS: -Wno-discarded-qualifiers -Werror
 
 linux-64idx-i8-uni:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-64idx-i8-uni
+
+linux-misc-32bit:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - gce-u22-stage3
+  variables:
+    TEST_ARCH: arch-ci-linux-misc-32bit
 
 mswin-intel-cxx-cmplx:
   extends:
@@ -936,37 +961,11 @@ mswin-gnu:
 #  variables:
 #    TEST_ARCH: arch-ci-mswin-intel
 
-opensolaris-pkgs-opt:
-  extends:
-    - .stage-3
-    - .opensolaris_test
-  tags:
-    - name:n-gage
-  variables:
-    TEST_ARCH: arch-ci-opensolaris-pkgs-opt
-
-opensolaris-cmplx-pkgs-dbg:
-  extends:
-    - .stage-3
-    - .opensolaris_test
-  tags:
-    - name:n-gage
-  variables:
-    TEST_ARCH: arch-ci-opensolaris-cmplx-pkgs-dbg
-
-opensolaris-misc:
-  extends:
-    - .stage-3
-    - .opensolaris_test
-  tags:
-    - name:n-gage
-  variables:
-    TEST_ARCH: arch-ci-opensolaris-misc
-
 osx-cxx-cmplx-pkgs-dbg:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos
   variables:
@@ -988,35 +987,61 @@ osx-dbg:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-dbg
+    ASAN_OPTIONS: log_path=stdout
 
 osx-xsdk-opt:
   extends:
     - .stage-3
     - .osx_test
+    - .coverage-disable
   tags:
     - os:macos, opt
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
 
 # job for analyzing the coverage results and generating the various reports
-analyze-coverage:
+coverage-analyze:
   extends: .test
   stage: stage-4
   tags:
-    - gce-nfs-short
+    - gce-u22-short
   dependencies:
-    - linux-pkgs-gcov
-    - linux-matlab-ilp64-gcov
-    - linux-cuda-pkgs-gcov
-    - linux-cxx-cmplx-pkgs-64idx-gcov
+    # stage-2
+    - linux-gcc-quad-64idx-dbg
+    - linux-gcc-pkgs-opt
+    - linux-gcc-complex-opt-32bit
+    # stage-3
+    - linux-pkgs-dbg
+    - linux-matlab-ilp64
+    - linux-cuda-pkgs
+    - linux-cxx-cmplx-pkgs-64idx
+    - linux-cuda-cmplx
+    - linux-cuda-double-64idx
+    - linux-cuda-uni-pkgs
+    - linux-viennacl
+    - linux-without-fc
+    - linux-gcc-cxx-avx2
+    - linux-clang-avx
+    - linux-pkgs-cxx-mlib
+    - linux-pkgs-valgrind
+    - linux-nagfor
+    - linux-xsdk-dbg
+    - linux-opt-misc
+    - linux-pkgs-64idx
+    - linux-64idx-i8
+    - linux-gcc-ifc-cmplx
+    - linux-opt-cxx-quad
+    - linux-ILP64
+    - linux-64idx-i8-uni
+    - osx-cxx-pkgs-opt
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline
-    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
   before_script:
     - date
     - hostname
@@ -1048,9 +1073,9 @@ analyze-coverage:
   extends: .test
   stage: .post
   tags:
-    - gce-nfs-short
+    - gce-u22-short
   dependencies:
-    - analyze-coverage
+    - coverage-analyze
   script:
     - date
     - hostname
@@ -1091,18 +1116,20 @@ analyze-pipeline:
       fi
 
 #
-# Base job for a documentation build
+# Base job for a documentation build (runs in venv to allow installing additional packages without root)
 #
 .docs:
   stage: stage-3
   tags:
     - gce-stage2
   before_script:
+    - printf "PATH:$PATH\n"
+    - printf "PYTHONPATH:$PYTHONPATH\n"
     - VENV=venv-petsc-docs &&
       python3 -m venv $VENV &&
       . $VENV/bin/activate &&
       cd doc &&
-      pip install -r requirements.txt
+      python3 -m pip install -r requirements.txt
 
 #
 # Build documentation and make available for review using GitLab pages
@@ -1114,10 +1141,12 @@ docs-review:
   script:
     - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 1") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - (make latexpdf SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
-    - cp _build/latex/manual.pdf ../public/html/docs/manual/
+    - cp _build/latex/manual.pdf ../public/html/manual/
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/html/index.html
+    auto_stop_in: one week
+    deployment_tier: development
   artifacts:
     paths:
       - public
@@ -1135,9 +1164,9 @@ pages:  # this job name has special meaning to GitLab
   script:
     - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
-    - make clean BUILDDIR="../public/release"
-    - git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
+    - (git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - git clean -fdxq && rm -rf images ../arch-classic-docs
+    - (git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - rm -rf ../public/*/.doctrees
   only:
     variables:

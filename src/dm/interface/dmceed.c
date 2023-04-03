@@ -4,19 +4,19 @@
   #include <petscdmceed.h>
 
 /*@C
-  DMGetCeed - Get the LibCEED context associated with this DM
+  DMGetCeed - Get the LibCEED context associated with this `DM`
 
-  Not collective
+  Not Collective
 
   Input Parameter:
-. DM   - The DM
+. DM   - The `DM`
 
   Output Parameter:
 . ceed - The LibCEED context
 
   Level: intermediate
 
-.seealso: `DMCreate()`
+.seealso: `DM`, `DMCreate()`
 @*/
 PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
 {
@@ -27,7 +27,7 @@ PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
     char        ceedresource[PETSC_MAX_PATH_LEN]; /* libCEED resource specifier */
     const char *prefix;
 
-    PetscCall(PetscStrcpy(ceedresource, "/cpu/self"));
+    PetscCall(PetscStrncpy(ceedresource, "/cpu/self", sizeof(ceedresource)));
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
     PetscCall(PetscOptionsGetString(NULL, prefix, "-dm_ceed", ceedresource, sizeof(ceedresource), NULL));
     PetscCallCEED(CeedInit(ceedresource, &dm->ceed));

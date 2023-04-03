@@ -540,8 +540,8 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat)
   /* Compare to similar and perhaps superior logic in DMCreateMatrix_DA, which creates
      the matrix first and then performs this logic by checking for preallocation functions */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATAIJ, &is_aij));
-  if (!is_aij) { PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATSEQAIJ, &is_aij)); }
-  if (!is_aij) { PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATMPIAIJ, &is_aij)); }
+  if (!is_aij) PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATSEQAIJ, &is_aij));
+  if (!is_aij) PetscCall(PetscObjectBaseTypeCompare((PetscObject)*mat, MATMPIAIJ, &is_aij));
   PetscCall(PetscStrcmp(mat_type, MATSHELL, &is_shell));
   if (is_aij) {
     Mat             preallocator;

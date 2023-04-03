@@ -301,21 +301,12 @@ static inline PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Internal(Pet
 #if PetscDefined(HAVE_CXX)
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscDeviceContextGetNullContext_Internal(PetscDeviceContext *);
 
-static inline PetscErrorCode PetscDeviceContextGetHandle_Private(PetscDeviceContext dctx, void *handle, PetscErrorCode (*gethandle_op)(PetscDeviceContext, void *))
-{
-  PetscFunctionBegin;
-  PetscValidPointer(handle, 2);
-  PetscValidFunction(gethandle_op, 3);
-  PetscCall((*gethandle_op)(dctx, handle));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static inline PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
-  PetscCall(PetscDeviceContextGetHandle_Private(dctx, handle, dctx->ops->getblashandle));
+  PetscUseTypeMethod(dctx, getblashandle, handle);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -324,7 +315,7 @@ static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDev
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
-  PetscCall(PetscDeviceContextGetHandle_Private(dctx, handle, dctx->ops->getsolverhandle));
+  PetscUseTypeMethod(dctx, getsolverhandle, handle);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -333,7 +324,7 @@ static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDev
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
-  PetscCall(PetscDeviceContextGetHandle_Private(dctx, handle, dctx->ops->getstreamhandle));
+  PetscUseTypeMethod(dctx, getstreamhandle, handle);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -375,7 +366,7 @@ static inline PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Inter
     PetscValidDeviceType(type, 2);
     PetscCall(PetscDeviceContextGetDeviceType(*dctx, &dtype));
     PetscCheckCompatibleDeviceTypes(dtype, 1, type, 2);
-  }
+  } else (void)type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

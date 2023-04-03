@@ -31,14 +31,17 @@ PETSC_EXTERN const char    *PetscBasename(const char[]);
 PETSC_EXTERN PetscErrorCode PetscEListFind(PetscInt, const char *const *, const char *, PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const *, const char *, PetscEnum *, PetscBool *);
 
+PETSC_EXTERN PetscErrorCode PetscStrcat(char[], const char[]);
+PETSC_EXTERN PetscErrorCode PetscStrcpy(char[], const char[]);
+
 #define PetscAssertPointer_Private(ptr, arg) PetscAssert((ptr), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter '" PetscStringize(ptr) "' # " PetscStringize(arg))
 
 /*@C
   PetscStrtolower - Converts string to lower case
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . a - pointer to string
 
   Level: intermediate
@@ -59,9 +62,9 @@ static inline PetscErrorCode PetscStrtolower(char a[])
 /*@C
   PetscStrtoupper - Converts string to upper case
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . a - pointer to string
 
   Level: intermediate
@@ -82,9 +85,9 @@ static inline PetscErrorCode PetscStrtoupper(char a[])
 /*@C
   PetscStrlen - Gets length of a string
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . s - pointer to string
 
   Output Parameter:
@@ -114,48 +117,11 @@ static inline PetscErrorCode PetscStrlen(const char s[], size_t *len)
 }
 
 /*@C
-  PetscStrcpy - Copies a string
-
-  Not Collective, Not for use in Fortran
-
-  Input Parameters:
-. t - pointer to string
-
-  Output Parameter:
-. s - the copied string
-
-  Level: intermediate
-
-  Notes:
-  `NULL` strings returns a string starting with zero. It is recommended you use
-  `PetscStrncpy()` (equivelently `PetscArraycpy()` or `PetscMemcpy()`) instead of this routine.
-
-.seealso: `PetscStrncpy()`, `PetscStrcat()`, `PetscStrlcat()`, `PetscStrallocpy()`,
-`PetscArrycpy()`, `PetscMemcpy()`
-@*/
-static inline PetscErrorCode PetscStrcpy(char s[], const char t[])
-{
-  PetscFunctionBegin;
-  if (t) {
-    PetscAssertPointer_Private(s, 1);
-    PetscAssertPointer_Private(t, 2);
-#if PetscHasBuiltin(__builtin_strcpy)
-    __builtin_strcpy(s, t);
-#else
-    strcpy(s, t);
-#endif
-  } else if (s) {
-    s[0] = '\0';
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
   PetscStrallocpy - Allocates space to hold a copy of a string then copies the string in the new space
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
-  Input Parameters:
+  Input Parameter:
 . s - pointer to string
 
   Output Parameter:
@@ -169,7 +135,7 @@ static inline PetscErrorCode PetscStrcpy(char s[], const char t[])
   If `t` has previously been allocated then that memory is lost, you may need to `PetscFree()`
   the array before calling this routine.
 
-.seealso: `PetscStrArrayallocpy()`, `PetscStrcpy()`, `PetscStrNArrayallocpy()`
+.seealso: `PetscStrArrayallocpy()`, `PetscStrNArrayallocpy()`
 @*/
 static inline PetscErrorCode PetscStrallocpy(const char s[], char *t[])
 {
@@ -212,7 +178,7 @@ static inline void PetscStrcmpNoError(const char a[], const char b[], PetscBool 
 /*@C
   PetscStrcmp - Compares two strings,
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - pointer to string first string
@@ -232,6 +198,22 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   PetscStrcmpNoError(a, b, flg);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+  #if __GNUC__ >= 8
+    #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN \
+      do { \
+        _Pragma("GCC diagnostic push"); \
+        _Pragma("GCC diagnostic ignored \"-Wstringop-truncation\""); \
+      } while (0)
+    #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_END _Pragma("GCC diagnostic pop")
+  #endif
+#endif
+
+#ifndef PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN
+  #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN (void)0
+  #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_END   (void)0
+#endif
 
 /*@C
   PetscStrncpy - Copies a string up to a certain length
@@ -258,7 +240,7 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   Should this be `PetscStrlcpy()` to reflect its behavior which is like `strlcpy()` not
   `strncpy()`?
 
-.seealso: `PetscStrcpy()`, `PetscStrcat()`, `PetscStrlcat()`, `PetscStrallocpy()`
+.seealso: `PetscStrlcat()`, `PetscStrallocpy()`
 @*/
 static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
 {
@@ -266,22 +248,13 @@ static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
   if (s) PetscAssert(n, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Requires an output string of length at least 1 to hold the termination character");
   if (t) {
     PetscAssertPointer_Private(s, 1);
-#if defined(__GNUC__) && !defined(__clang__)
-  #if __GNUC__ >= 8
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-truncation"
-  #endif
-#endif
+    PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN;
 #if PetscHasBuiltin(__builtin_strncpy)
     __builtin_strncpy(s, t, n);
 #else
     strncpy(s, t, n);
 #endif
-#if defined(__GNUC__) && !defined(__clang__)
-  #if __GNUC__ >= 8
-    #pragma GCC diagnostic pop
-  #endif
-#endif
+    PETSC_SILENCE_WSTRINGOP_TRUNCATION_END;
     s[n - 1] = '\0';
   } else if (s) {
     s[0] = '\0';
@@ -290,38 +263,9 @@ static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
 }
 
 /*@C
-  PetscStrcat - Concatenates a string onto a given string
-
-  Not Collective, Not for use in Fortran
-
-  Input Parameters:
-+ s - string to be added to
-- t - pointer to string to be added to end
-
-  Level: intermediate
-
-  Notes:
-  It is recommended you use `PetscStrlcat()` instead of this routine.
-
-.seealso: `PetscStrcpy()`, `PetscStrncpy()`, `PetscStrlcat()`
-@*/
-static inline PetscErrorCode PetscStrcat(char s[], const char t[])
-{
-  PetscFunctionBegin;
-  if (!t) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscAssertPointer_Private(s, 1);
-#if PetscHasBuiltin(__builtin_strcat)
-  __builtin_strcat(s, t);
-#else
-  strcat(s, t);
-#endif
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
   PetscStrlcat - Concatenates a string onto a given string, up to a given length
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + s - pointer to string to be added to at end
@@ -335,7 +279,7 @@ static inline PetscErrorCode PetscStrcat(char s[], const char t[])
   original allocated space, not the length of the left-over space. This is
   similar to the BSD system call `strlcat()`.
 
-.seealso: `PetscStrcpy()`, `PetscStrncpy()`, `PetscStrcat()`
+.seealso: `PetscStrncpy()`
 @*/
 static inline PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
 {
@@ -344,20 +288,25 @@ static inline PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
   PetscFunctionBegin;
   if (!t) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssert(n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "String buffer length must be positive");
-  PetscCall(PetscStrlen(t, &len));
+  PetscCall(PetscStrlen(s, &len));
+  PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN;
 #if PetscHasBuiltin(__builtin_strncat)
   __builtin_strncat(s, t, n - len);
 #else
   strncat(s, t, n - len);
 #endif
+  PETSC_SILENCE_WSTRINGOP_TRUNCATION_END;
   s[n - 1] = '\0';
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#undef PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN
+#undef PETSC_SILENCE_WSTRINGOP_TRUNCATION_END
+
 /*@C
   PetscStrncmp - Compares two strings, up to a certain length
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - pointer to first string
@@ -394,7 +343,7 @@ static inline PetscErrorCode PetscStrncmp(const char a[], const char b[], size_t
 /*@C
   PetscStrrstr - Locates last occurrence of string in another string
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - pointer to string
@@ -406,8 +355,8 @@ static inline PetscErrorCode PetscStrncmp(const char a[], const char b[], size_t
   Level: intermediate
 
 .seealso: `PetscStrbeginswithwhich()`, `PetscStrendswith()`, `PetscStrtoupper`,
-`PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
-`PetscStrcmp()`
+          `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
+          `PetscStrcmp()`
 @*/
 static inline PetscErrorCode PetscStrrstr(const char a[], const char b[], char *tmp[])
 {
@@ -432,7 +381,7 @@ static inline PetscErrorCode PetscStrrstr(const char a[], const char b[], char *
 /*@C
   PetscStrstr - Locates first occurrence of string in another string
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + haystack - string to search
@@ -444,8 +393,8 @@ static inline PetscErrorCode PetscStrrstr(const char a[], const char b[], char *
   Level: intermediate
 
 .seealso: `PetscStrbeginswithwhich()`, `PetscStrendswith()`, `PetscStrtoupper`,
-`PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
-`PetscStrcmp()`
+          `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
+          `PetscStrcmp()`
 @*/
 static inline PetscErrorCode PetscStrstr(const char haystack[], const char needle[], char *tmp[])
 {
@@ -464,7 +413,7 @@ static inline PetscErrorCode PetscStrstr(const char haystack[], const char needl
 /*@C
   PetscStrgrt - If first string is greater than the second
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - pointer to first string
@@ -504,7 +453,7 @@ static inline PetscErrorCode PetscStrgrt(const char a[], const char b[], PetscBo
 /*@C
   PetscStrchr - Locates first occurrence of a character in a string
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - pointer to string
@@ -534,41 +483,38 @@ static inline PetscErrorCode PetscStrchr(const char a[], char b, char *c[])
   PetscStrrchr - Locates one location past the last occurrence of a character in a string, if
   the character is not found then returns entire string
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - pointer to string
 - b - character
 
   Output Parameter:
-. tmp - one past location of `b` in `a`, or `a` if `b` was not found
+. c - one past location of `b` in `a`, or `a` if `b` was not found
 
   Level: intermediate
 
 .seealso: `PetscStrchr()`, `PetscTokenCreate()`, `PetscStrendswith()`, `PetscStrbeginsswith()`
 @*/
-static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *tmp[])
+static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *c[])
 {
   PetscFunctionBegin;
   PetscAssertPointer_Private(a, 1);
-  PetscAssertPointer_Private(tmp, 3);
+  PetscAssertPointer_Private(c, 3);
 #if PetscHasBuiltin(__builtin_strrchr)
-  *tmp = (char *)__builtin_strrchr(a, b);
+  *c = (char *)__builtin_strrchr(a, b);
 #else
-  *tmp = (char *)strrchr(a, b);
+  *c = (char *)strrchr(a, b);
 #endif
-  if (!*tmp) {
-    *tmp = (char *)a;
-  } else {
-    *tmp = *tmp + 1;
-  }
+  if (!*c) *c = (char *)a;
+  else *c = *c + 1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
   PetscStrendswith - Determines if a string ends with a certain string
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - string to search
@@ -583,8 +529,8 @@ static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *tmp[])
   Both `a` and `b` may be `NULL` (in which case `flg` is set to `PETSC_FALSE`) bot not either.
 
 .seealso: `PetscStrendswithwhich()`, `PetscStrbeginswith()`, `PetscStrtoupper`,
-`PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
-`PetscStrcmp()`
+          `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
+          `PetscStrcmp()`
 @*/
 static inline PetscErrorCode PetscStrendswith(const char a[], const char b[], PetscBool *flg)
 {
@@ -609,7 +555,7 @@ static inline PetscErrorCode PetscStrendswith(const char a[], const char b[], Pe
 /*@C
   PetscStrbeginswith - Determines if a string begins with a certain string
 
-  Not Collective, Not for use in Fortran
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + a - string to search
@@ -625,8 +571,8 @@ static inline PetscErrorCode PetscStrendswith(const char a[], const char b[], Pe
   either. Both `a` and `b` may point to the same string.
 
 .seealso: `PetscStrendswithwhich()`, `PetscStrendswith()`, `PetscStrtoupper`,
-`PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
-`PetscStrcmp()`
+          `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
+          `PetscStrcmp()`
 @*/
 static inline PetscErrorCode PetscStrbeginswith(const char a[], const char b[], PetscBool *flg)
 {
@@ -678,21 +624,21 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
   memmove((char *)a, (const char *)b, n);
 #else
   if (a < b) {
-    if (a <= b - n) {
+    if ((char *)a <= (char *)b - n) {
       memcpy(a, b, n);
     } else {
-      const size_t ptr_diff = (size_t)(b - a);
+      const size_t ptr_diff = (size_t)((char *)b - (char *)a);
 
       memcpy(a, b, ptr_diff);
-      PetscCall(PetscMemmove((void *)b, b + ptr_diff, n - ptr_diff));
+      PetscCall(PetscMemmove((void *)b, (char *)b + ptr_diff, n - ptr_diff));
     }
   } else {
-    if (b <= a - n) {
+    if ((char *)b <= (char *)a - n) {
       memcpy(a, b, n);
     } else {
-      const size_t ptr_diff = (size_t)(a - b);
+      const size_t ptr_diff = (size_t)((char *)a - (char *)b);
 
-      memcpy((void *)(b + n), b + (n - ptr_diff), ptr_diff);
+      memcpy((void *)((char *)b + n), (char *)b + (n - ptr_diff), ptr_diff);
       PetscCall(PetscMemmove(a, b, n - ptr_diff));
     }
   }
@@ -838,7 +784,7 @@ static inline PetscErrorCode PetscMemzero(void *a, size_t n)
 .  str2 - Second array
 -  cnt  - Count of the array, not in bytes, but number of entries in the arrays
 
-   Output Parameters:
+   Output Parameter:
 .   e - `PETSC_TRUE` if equal else `PETSC_FALSE`.
 
    Level: intermediate

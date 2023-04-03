@@ -72,7 +72,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
     Not Collective
 
     Input Parameters:
-+    slice - the DM object
++    slice - the `DMSLICED` object
 .    bs - block size
 .    nlocal - number of local (owned, non-ghost) blocks
 .    Nghosts - number of ghost blocks on this process
@@ -80,8 +80,7 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`
-
+.seealso: `DM`, `DMSLICED`, `DMDestroy()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[])
 {
@@ -99,32 +98,31 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
 }
 
 /*@C
-    DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by DMSliced
+    DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by `DMSLICED`
 
     Not Collective
 
     Input Parameters:
-+    slice - the DM object
++    slice - the `DM` object
 .    d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix  (same for all local rows)
 .    d_nnz - array containing the number of block nonzeros in the various block rows
            of the in diagonal portion of the local (possibly different for each block
-           row) or NULL.
+           row) or `NULL`.
 .    o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -    o_nnz - array containing the number of nonzeros in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
-           each block row) or NULL.
-
-    Notes:
-    See MatMPIBAIJSetPreallocation() for more details on preallocation.  If a scalar matrix (AIJ) is
-    obtained with DMSlicedGetMatrix(), the correct preallocation will be set, respecting DMSlicedSetBlockFills().
+           each block row) or `NULL`.
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `MatMPIAIJSetPreallocation()`,
-         `MatMPIBAIJSetPreallocation()`, `DMSlicedGetMatrix()`, `DMSlicedSetBlockFills()`
+    Note:
+    See `MatMPIBAIJSetPreallocation()` for more details on preallocation.  If a scalar matrix (`MATAIJ`) is
+    obtained with `DMSlicedGetMatrix()`, the correct preallocation will be set, respecting `DMSlicedSetBlockFills()`.
 
+.seealso: `DM`, `DMSLICED`, `DMDestroy()`, `DMCreateGlobalVector()`, `MatMPIAIJSetPreallocation()`,
+         `MatMPIBAIJSetPreallocation()`, `DMSlicedGetMatrix()`, `DMSlicedSetBlockFills()`
 @*/
 PetscErrorCode DMSlicedSetPreallocation(DM dm, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
@@ -167,22 +165,22 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
 
 /*@C
     DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by DMSlicedGetMatrix().
+    of the matrix returned by `DMSlicedGetMatrix()`.
 
-    Logically Collective on dm
+    Logically Collective
 
     Input Parameters:
-+   sliced - the DM object
-.   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
++   sliced - the `DM` object
+.   dfill - the fill pattern in the diagonal block (may be `NULL`, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
-
-    Notes:
-    This only makes sense for multicomponent problems using scalar matrix formats (AIJ).
-    See DMDASetBlockFills() for example usage.
 
     Level: advanced
 
-.seealso `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
+    Note:
+    This only makes sense for multicomponent problems using scalar matrix formats (AIJ).
+    See `DMDASetBlockFills()` for example usage.
+
+.seealso: `DM`, `DMSLICED`, `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
 @*/
 PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
 {
@@ -245,9 +243,9 @@ static PetscErrorCode DMGlobalToLocalEnd_Sliced(DM da, Vec g, InsertMode mode, V
 }
 
 /*MC
-   DMSLICED = "sliced" - A DM object that is used to manage data for a general graph. Uses VecCreateGhost() ghosted vectors for storing the fields
+   DMSLICED = "sliced" - A `DM` object that is used to manage data for a general graph. Uses `VecCreateGhost()` ghosted vectors for storing the fields
 
-   See DMCreateSliced() for details.
+   See `DMCreateSliced()` for details.
 
   Level: intermediate
 
@@ -271,7 +269,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 }
 
 /*@C
-    DMSlicedCreate - Creates a DM object, used to manage data for a unstructured problem
+    DMSlicedCreate - Creates a `DM` object, used to manage data for a unstructured problem
 
     Collective
 
@@ -284,21 +282,21 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 .   d_nnz - matrix preallocation information representing coupling within this process
 -   o_nnz - matrix preallocation information representing coupling between this process and other processes
 
-    Output Parameters:
+    Output Parameter:
 .   slice - the slice object
-
-    Notes:
-        This DM does not support DMCreateLocalVector(), DMGlobalToLocalBegin(), and DMGlobalToLocalEnd() instead one directly uses
-        VecGhostGetLocalForm() and VecGhostRestoreLocalForm() to access the local representation and VecGhostUpdateBegin() and VecGhostUpdateEnd() to update
-        the ghost points.
-
-        One can use DMGlobalToLocalBegin(), and DMGlobalToLocalEnd() instead of VecGhostUpdateBegin() and VecGhostUpdateEnd().
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMSetType()`, `DMSLICED`, `DMSlicedSetGhosts()`, `DMSlicedSetPreallocation()`, `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`,
-         `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`
+    Notes:
+        This `DM` does not support `DMCreateLocalVector()`, `DMGlobalToLocalBegin()`, and `DMGlobalToLocalEnd()` instead one directly uses
+        `VecGhostGetLocalForm()` and `VecGhostRestoreLocalForm()` to access the local representation and `VecGhostUpdateBegin()` and `VecGhostUpdateEnd()` to update
+        the ghost points.
 
+        One can use `DMGlobalToLocalBegin()`, and `DMGlobalToLocalEnd()` instead of `VecGhostUpdateBegin()` and `VecGhostUpdateEnd()`.
+
+.seealso: `DM`, `DMSLICED`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMSetType()`, `DMSLICED`, `DMSlicedSetGhosts()`, `DMSlicedSetPreallocation()`,
+          `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`,
+          `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`
 @*/
 PetscErrorCode DMSlicedCreate(MPI_Comm comm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[], const PetscInt d_nnz[], const PetscInt o_nnz[], DM *dm)
 {

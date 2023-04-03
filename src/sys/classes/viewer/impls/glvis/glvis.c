@@ -112,16 +112,16 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 .  ctx        - User context to store the relevant data to apply g2lfields
 -  destroyctx - Destroy function for userctx
 
+  Level: intermediate
+
   Notes:
-    g2lfields is called on the vector V to be visualized in order to extract the relevant dofs to be put in Vfield[], as
+    `g2lfields` is called on the vector V to be visualized in order to extract the relevant dofs to be put in `Vfield`, as
 .vb
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
 
-  For vector spaces, the block size of Vfield[i] represents the vector dimension.
-  The names of the Vfield vectors will be displayed in the window title.
-
-  Level: intermediate
+  For vector spaces, the block size of `Vfield`[i] represents the vector dimension.
+  The names of the `Vfield` vectors will be displayed in the window title.
 
 .seealso: [](sec_viewers), `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectSetName()`
 @*/
@@ -596,8 +596,8 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 .  name      - either the hostname where the GLVis server is running or the base filename for dumping the data for subsequent visualizations
 -  port      - socket port where the GLVis server is listening. Not referenced when type is `PETSC_VIEWER_GLVIS_DUMP`
 
-  Output Parameters:
--  viewer    - the `PetscViewer` object
+  Output Parameter:
+.  viewer    - the `PetscViewer` object
 
   Options Database Keys:
 +  -glvis_precision <precision> - Sets number of digits for floating point values
@@ -676,7 +676,7 @@ PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
       PetscFunctionReturn(NULL);
     }
     if (!flg) {
-      ierr = PetscStrcpy(fname, "localhost");
+      ierr = PetscStrncpy(fname, "localhost", sizeof(fname));
       if (ierr) {
         ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
         PetscFunctionReturn(NULL);

@@ -29,7 +29,7 @@ PETSc newbie user lightning tutorial:
 
 PETSc newbie developer workshop:
 
-* Tuesday June 6: 9 am to 10 pm
+* Tuesday June 6: 9 am to 10 am
 
 
 Registration

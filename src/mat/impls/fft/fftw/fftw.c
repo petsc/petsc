@@ -37,15 +37,6 @@ extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat, Vec, Vec);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
 #endif
 
-/*
-   MatMult_SeqFFTW performs forward DFT
-   Input parameter:
-     A - the matrix
-     x - the vector on which FDFT will be performed
-
-   Output parameter:
-     y - vector that stores result of FDFT
-*/
 PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
@@ -139,15 +130,6 @@ PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* MatMultTranspose_SeqFFTW performs serial backward DFT
-   Input parameter:
-     A - the matrix
-     x - the vector on which BDFT will be performed
-
-   Output parameter:
-     y - vector that stores result of BDFT
-*/
-
 PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
@@ -221,14 +203,6 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
 }
 
 #if !PetscDefined(HAVE_MPIUNI)
-/* MatMult_MPIFFTW performs forward DFT in parallel
-   Input parameter:
-     A - the matrix
-     x - the vector on which FDFT will be performed
-
-   Output parameter:
-   y   - vector that stores result of FDFT
-*/
 PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
@@ -290,15 +264,6 @@ PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   MatMultTranspose_MPIFFTW performs parallel backward DFT
-   Input parameter:
-     A - the matrix
-     x - the vector on which BDFT will be performed
-
-   Output parameter:
-     y - vector that stores result of BDFT
-*/
 PetscErrorCode MatMultTranspose_MPIFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
@@ -440,6 +405,9 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
 .   y - (optional) output vector of forward FFTW
 -   z - (optional) output vector of backward FFTW
 
+   Options Database Key:
+.  -mat_fftw_plannerflags - set FFTW planner flags
+
   Level: advanced
 
   Notes:
@@ -461,7 +429,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
   Developer Note:
   How come `MatCreateVecs()` doesn't produce the correctly padded vectors automatically?
 
-.seealso: `MATFFTW`, `MatCreateFFT()`, `MatCreateVecs()`
+.seealso: [](chapter_matrices), `Mat`, `MATFFTW`, `MatCreateFFT()`, `MatCreateVecs()`
 @*/
 PetscErrorCode MatCreateVecsFFTW(Mat A, Vec *x, Vec *y, Vec *z)
 {
@@ -718,7 +686,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
 +  A - FFTW matrix
 -  x - the PETSc vector
 
-   Output Parameters:
+   Output Parameter:
 .  y - the FFTW vector
 
    Level: intermediate
@@ -728,7 +696,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
    one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra
    zeros. This routine does that job by scattering operation.
 
-.seealso: `MATFFTW`, `VecScatterFFTWToPetsc()`, `MatCreateVecsFFTW()`
+.seealso: [](chapter_matrices), `Mat`, `MATFFTW`, `VecScatterFFTWToPetsc()`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode VecScatterPetscToFFTW(Mat A, Vec x, Vec y)
 {
@@ -953,7 +921,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
 +   A - `MATFFTW` matrix
 -   x - FFTW vector
 
-   Output Parameters:
+   Output Parameter:
 .  y - PETSc vector
 
    Level: intermediate
@@ -962,7 +930,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
    While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
    `VecScatterFFTWToPetsc()` removes those extra zeros.
 
-.seealso: `VecScatterPetscToFFTW()`, `MATFFTW`, `MatCreateVecsFFTW()`
+.seealso: [](chapter_matrices), `Mat`, `VecScatterPetscToFFTW()`, `MATFFTW`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode VecScatterFFTWToPetsc(Mat A, Vec x, Vec y)
 {
@@ -1169,15 +1137,6 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    MatCreate_FFTW - Creates a matrix object that provides FFT via the external package FFTW
-
-  Options Database Keys:
-+ -mat_fftw_plannerflags - set FFTW planner flags
-
-   Level: intermediate
-
-*/
 PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 {
   MPI_Comm    comm;

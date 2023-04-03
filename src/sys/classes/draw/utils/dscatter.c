@@ -18,7 +18,7 @@ PetscClassId PETSC_DRAWSP_CLASSID = 0;
 + win - the window where the graph will be made.
 - dim - the number of sets of points which will be drawn
 
-  Output Parameters:
+  Output Parameter:
 . drawsp - the scatter plot context
 
   Level: intermediate
@@ -69,7 +69,7 @@ PetscErrorCode PetscDrawSPCreate(PetscDraw draw, int dim, PetscDrawSP *drawsp)
 /*@
   PetscDrawSPSetDimension - Change the number of points that are added at each  `PetscDrawSPAddPoint()`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp  - the scatter plot context.
@@ -94,9 +94,9 @@ PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP sp, int dim)
 /*@
   PetscDrawSPGetDimension - Get the number of sets of points that are to be drawn at each `PetscDrawSPAddPoint()`
 
-  Not collective
+  Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . sp  - the scatter plot context.
 
   Output Parameter:
@@ -118,7 +118,7 @@ PetscErrorCode PetscDrawSPGetDimension(PetscDrawSP sp, int *dim)
 /*@
   PetscDrawSPReset - Clears scatter plot to allow for reuse with new data.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sp - the scatter plot context.
@@ -174,7 +174,7 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP *sp)
 /*@
   PetscDrawSPAddPoint - Adds another point to each of the scatter plot point curves.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - the scatter plot data structure
@@ -222,11 +222,12 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp, PetscReal *x, PetscReal *y)
 /*@C
   PetscDrawSPAddPoints - Adds several points to each of the scatter plot point curves.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - the scatter plot context
-. xx,yy - points to two arrays of pointers that point to arrays containing the new x and y points for each curve.
+. xx - array of pointers that point to arrays containing the new x coordinates for each curve.
+. yy - array of pointers that point to arrays containing the new y points for each curve.
 - n - number of points being added, each represents a subarray of length dim where dim is the value from `PetscDrawSPGetDimension()`
 
   Level: intermediate
@@ -282,16 +283,18 @@ PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp, int n, PetscReal **xx, Petsc
 /*@
   PetscDrawSPAddPointColorized - Adds another point to each of the scatter plots as well as a numeric value to be used to colorize the scatter point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + sp - the scatter plot data structure
-. x, y - two arrays of length dim containing the new x and y coordinate values for each of the point curves. Here  dim is the number of point curves passed to `PetscDrawSPCreate()`
+. x - array of length dim containing the new x coordinate values for each of the point curves.
+. y - array of length dim containing the new y coordinate values for each of the point curves.
 - z - array of length dim containing the numeric values that will be mapped to [0,255] and used for scatter point colors.
 
   Level: intermediate
 
   Note:
+  The dimensions of the arrays is the number of point curves passed to `PetscDrawSPCreate()`.
   The new points will not be displayed until a call to `PetscDrawSPDraw()` is made
 
 .seealso: `PetscDrawSPAddPoints()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`
@@ -414,11 +417,14 @@ PetscErrorCode PetscDrawSPSave(PetscDrawSP sp)
 /*@
   PetscDrawSPSetLimits - Sets the axis limits for a scatter plot. If more points are added after this call, the limits will be adjusted to include those additional points.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + xsp - the line graph context
-- x_min,x_max,y_min,y_max - the limits
+. x_min - the horizontal lower limit
+. x_max - the horizontal upper limit
+. y_min - the vertical lower limit
+- y_max - the vertical upper limit
 
   Level: intermediate
 
@@ -446,10 +452,10 @@ PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP sp, PetscReal x_min, PetscReal x
   Output Parameter:
 . axis - the axis context
 
+  Level: intermediate
+
   Note:
   This is useful if one wants to change some axis property, such as labels, color, etc. The axis context should not be destroyed by the application code.
-
-  Level: intermediate
 
 .seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawAxis`, `PetscDrawAxisCreate()`
 @*/

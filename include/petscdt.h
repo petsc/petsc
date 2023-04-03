@@ -5,6 +5,8 @@
 #define PETSCDT_H
 
 #include <petscsys.h>
+#include <petscdmtypes.h>
+#include <petscistypes.h>
 
 /* SUBMANSEC = DT */
 
@@ -92,6 +94,8 @@ PETSC_EXTERN const char *const *const PetscDTSimplexQuadratureTypes;
 
 PETSC_EXTERN PetscErrorCode PetscQuadratureCreate(MPI_Comm, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscQuadratureGetCellType(PetscQuadrature, DMPolytopeType *);
+PETSC_EXTERN PetscErrorCode PetscQuadratureSetCellType(PetscQuadrature, DMPolytopeType);
 PETSC_EXTERN PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature, PetscInt *);
@@ -104,6 +108,7 @@ PETSC_EXTERN PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature, PetscQuadrature, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature, PetscInt *, IS *[]);
 
 PETSC_EXTERN PetscErrorCode PetscQuadraturePushForward(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, PetscQuadrature *);
 
@@ -122,6 +127,7 @@ PETSC_EXTERN PetscErrorCode PetscDTReconstructPoly(PetscInt, PetscInt, const Pet
 PETSC_EXTERN PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTSimplexQuadrature(PetscInt, PetscInt, PetscDTSimplexQuadratureType, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType, PetscInt, PetscQuadrature *, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
@@ -308,7 +314,7 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 
    Output Parameters:
 +  perm - the permuted list of the integers [0, ..., n-1]
--  isOdd - if not NULL, returns whether the permutation used an even or odd number of swaps.
+-  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
    Note:
    Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
@@ -352,7 +358,7 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 
    Output Parameters:
 +  k - an integer in [0, n!)
--  isOdd - if not NULL, returns whether the permutation used an even or odd number of swaps.
+-  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
    Note:
    Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
@@ -483,7 +489,7 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 
    Output Parameters:
 +  perm - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
--  isOdd - if not NULL, return whether perm is an even or odd permutation.
+-  isOdd - if not `NULL`, return whether perm is an even or odd permutation.
 
    Note:
    Limited by arguments such that n choose k can be represented by `PetscInt`

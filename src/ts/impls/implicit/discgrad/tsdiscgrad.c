@@ -456,14 +456,14 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 . Gfunc - constructor for the gradient of F from the formulation
 - ctx   - the user context
 
-  Calling sequence of Sfunc:
-$ PetscErrorCode func(TS ts, PetscReal time, Vec u, Mat S, void *)
+  Calling sequence of `Sfunc`:
+$ PetscErrorCode Sfunc(TS ts, PetscReal time, Vec u, Mat S, void *ctx)
 
-  Calling sequence of Ffunc:
-$ PetscErrorCode func(TS ts, PetscReal time, Vec u, PetscScalar *F, void *)
+  Calling sequence of `Ffunc`:
+$ PetscErrorCode Ffunc(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx)
 
-  Calling sequence of Gfunc:
-$ PetscErrorCode func(TS ts, PetscReal time, Vec u, Vec G, void *)
+  Calling sequence of `Gfunc`:
+$ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
 
   Level: intermediate
 
@@ -489,15 +489,17 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 + ts    - timestepping context
 . Sfunc - constructor for the S matrix from the formulation
 . Ffunc - functional F from the formulation
-- Gfunc - constructor for the gradient of F from the formulation
-  Calling sequence of Sfunc:
-$ PetscErrorCode func(TS ts, PetscReal time, Vec u, Mat S, void *)
+. Gfunc - constructor for the gradient of F from the formulation
+- ctx - optional context for the functions
 
-  Calling sequence of Ffunc:
-$ PetscErrorCode func(TS ts, PetscReal time, Vec u, PetscScalar *F, void *)
+  Calling sequence of `Sfunc`:
+$ PetscErrorCode Sfunc(TS ts, PetscReal time, Vec u, Mat S, void *ctx)
 
-  Calling sequence of Gfunc:
-$ PetscErrorCode func(TS ts, PetscReal time, Vec u, Vec G, void *)
+  Calling sequence of `Ffunc`:
+$ PetscErrorCode Ffunc(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx)
+
+  Calling sequence of `Gfunc`:
+$ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
 
   Level: Intermediate
 
@@ -539,7 +541,8 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 }
 
 /*@
-  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
+  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional conservative terms.
+  Without the flag, the discrete gradients timestepper is just backwards Euler
 
   Not Collective
 

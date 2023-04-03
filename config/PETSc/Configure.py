@@ -291,6 +291,8 @@ prepend-path PATH "%s"
       self.addMakeMacro('CXX_LINKER',cxx_linker)
       self.addMakeMacro('CXX_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
+    else:
+      self.addMakeMacro('CXX','')
 
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
@@ -311,7 +313,11 @@ prepend-path PATH "%s"
     self.setCompilers.pushLanguage(self.languages.clanguage)
     pcc_linker = self.setCompilers.getLinker()
     self.addMakeMacro('PCC_LINKER',pcc_linker)
-    self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    # We need to add sycl flags when linking petsc. See more in sycl.py.
+    if hasattr(self.compilers, 'SYCLC'):
+      self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags()+' '+self.setCompilers.SYCLFLAGS+' '+self.setCompilers.SYCLC_LINKER_FLAGS)
+    else:
+      self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
@@ -362,8 +368,24 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'SYCLC'):
       self.setCompilers.pushLanguage('SYCL')
       self.addMakeMacro('SYCLC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('SYCLC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.addMakeMacro('SYCLPP_FLAGS',self.setCompilers.SYCLPPFLAGS)
       self.setCompilers.popLanguage()
+
+    # Avoid picking CFLAGS etc from env - but support 'make CFLAGS=-Werror' etc..
+    self.addMakeMacro('CFLAGS','')
+    self.addMakeMacro('CPPFLAGS','')
+    self.addMakeMacro('CXXFLAGS','')
+    self.addMakeMacro('CXXPPFLAGS','')
+    self.addMakeMacro('FFLAGS','')
+    self.addMakeMacro('FPPFLAGS','')
+    self.addMakeMacro('CUDAFLAGS','')
+    self.addMakeMacro('CUDAPPFLAGS','')
+    self.addMakeMacro('HIPFLAGS','')
+    self.addMakeMacro('HIPPPFLAGS','')
+    self.addMakeMacro('SYCLFLAGS','')
+    self.addMakeMacro('SYCLPPFLAGS','')
+    self.addMakeMacro('LDFLAGS','')
 
     # shared library linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -875,7 +897,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.addDefine('ARCH','"'+self.installdir.petscArch+'"')
     return
 
-  def configureCoverage(self, lang, extra_coverage_flags=None, extra_debug_flags=None):
+  def configureCoverageForLang(self, log_printer_cls, lang, extra_coverage_flags=None, extra_debug_flags=None):
     """
     Check that a compiler accepts code-coverage flags. If the compiler does accept code-coverage flags
     try to set debugging flags equivalent to -Og.
@@ -888,9 +910,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     On success:
     - defines PETSC_USE_COVERAGE to 1
     """
-    def log_print(msg, *args, **kwargs):
-      self.logPrint('checkCoverage: '+str(msg), *args, **kwargs)
-      return
+    log_print = log_printer_cls(self)
 
     def quoted(string):
       return string.join(("'", "'"))
@@ -903,12 +923,14 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       return ret
 
     log_print('Checking coverage flag for language {}'.format(lang))
-    if not self.argDB['with-coverage']:
-      log_print('coverage was disabled from command line or default')
-      return
 
-    compiler  = self.getCompiler(lang=lang)
-    is_gnuish = self.setCompilers.isGNU(compiler, self.log) or self.setCompilers.isClang(compiler, self.log)
+    compiler = self.getCompiler(lang=lang)
+    if self.setCompilers.isGNU(compiler, self.log):
+      is_gnuish = True
+    elif self.setCompilers.isClang(compiler, self.log):
+      is_gnuish = True
+    else:
+      is_gnuish = False
 
     # if not gnuish and we don't have a set of extra flags, bail
     if not is_gnuish and extra_coverage_flags is None:
@@ -918,22 +940,36 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     coverage_flags = make_flag_list('--coverage', extra_coverage_flags)
     log_print('Checking set of coverage flags: {}'.format(coverage_flags))
 
-    found = 0
+    found = None
     with self.Language(lang):
       with self.setCompilers.Language(lang):
         for flag in coverage_flags:
-          if self.setCompilers.checkCompilerFlag(flag) and self.checkLink():
-            # compilerOnly = False, the linker also needs to see the coverage flag
-            self.setCompilers.insertCompilerFlag(flag, False)
-            found = 1
-            break
+          # the linker also needs to see the coverage flag
+          with self.setCompilers.extraCompilerFlags([flag], compilerOnly=False) as skip_flags:
+            if not skip_flags and self.checkRun():
+              # flag was accepted
+              found = flag
+              break
+
           log_print(
             'Compiler {} did not accept coverage flag {}'.format(quoted(compiler), quoted(flag))
           )
 
-    if not found:
-      log_print('Compiler {} did not accept ANY coverage flags: {}, bailing!'.format(quoted(compiler), coverage_flags))
-      return
+        if found is None:
+          log_print(
+            'Compiler {} did not accept ANY coverage flags: {}, bailing!'.format(
+              quoted(compiler), coverage_flags
+            )
+          )
+          return
+
+        # must do this exactly here since:
+        #
+        # 1. setCompilers.extraCompilerFlags() will reset the compiler flags on __exit__()
+        #    (so cannot do it in the loop)
+        # 2. we need to set the compiler flag while setCompilers.Language() is still in
+        #    effect (so cannot do it outside the with statements)
+        self.setCompilers.insertCompilerFlag(flag, False)
 
     if not self.functions.haveFunction('__gcov_dump'):
       self.functions.checkClassify(['__gcov_dump'])
@@ -957,7 +993,9 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           user_set = 1
           break
 
-    if not user_set:
+    # disable this for now, the warning should be sufficient. If the user still chooses to
+    # ignore it, then that's on them
+    if 0 and not user_set:
       debug_flags = make_flag_list('-Og', extra_debug_flags)
       with self.setCompilers.Language(lang):
         for flag in debug_flags:
@@ -968,6 +1006,144 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           break
 
     self.addDefine('USE_COVERAGE', 1)
+    return
+
+  def configureCoverage(self):
+    """
+    Configure coverage for all available languages.
+
+    If user did not request coverage, this function does nothing and returns immediatel.
+    Therefore the following only apply to the case where the user requested coverage.
+
+    On success:
+    - defines PETSC_USE_COVERAGE to 1
+
+    On failure:
+    - If no compilers supported the coverage flag, throws RuntimeError
+    -
+    """
+    class LogPrinter:
+      def __init__(self, cfg):
+        self.cfg = cfg
+        try:
+          import inspect
+
+          calling_func_stack = inspect.stack()[1]
+          if sys.version_info >= (3, 5):
+            func_name = calling_func_stack.function
+          else:
+            func_name = calling_func_stack[3]
+        except:
+          func_name = 'Unknown'
+        self.fmt_str = func_name + '(): {}'
+
+      def __call__(self, msg, *args, **kwargs):
+        return self.cfg.logPrint(self.fmt_str.format(msg), *args, **kwargs)
+
+    argdb_flag = 'with-coverage'
+    log_print  = LogPrinter(self)
+    if not self.argDB[argdb_flag]:
+      log_print('coverage was disabled from command line or default')
+      return
+
+    tested_langs = []
+    for LANG in ['C', 'Cxx', 'CUDA', 'HIP', 'SYCL', 'FC']:
+      compilerName = LANG.upper() if LANG in {'Cxx', 'FC'} else LANG + 'C'
+      if hasattr(self.setCompilers, compilerName):
+        kwargs = {}
+        if LANG in {'CUDA'}:
+          # nvcc preprocesses the base file into a bunch of intermediate files, which are
+          # then compiled by the host compiler. Why is this a problem?  Because the
+          # generated coverage data is based on these preprocessed source files! So gcov
+          # tries to read it later, but since its in the tmp directory it cannot. Thus we
+          # need to keep them around (in a place we know about).
+          nvcc_tmp_dir = os.path.join(self.petscdir.dir, self.arch.arch, 'nvcc_tmp')
+          try:
+            os.mkdir(nvcc_tmp_dir)
+          except FileExistsError:
+            pass
+          kwargs['extra_coverage_flags'] = [
+            '-Xcompiler --coverage -Xcompiler -fPIC --keep --keep-dir={}'.format(nvcc_tmp_dir)
+          ]
+          if self.kokkos.found:
+            # yet again the kokkos nvcc_wrapper goes out of its way to be as useless as
+            # possible. Its default arch (sm_35) is actually too low to compile kokkos,
+            # for whatever reason this works if you dont use the --keep and --keep-dir
+            # flags above.
+            kwargs['extra_coverage_flags'].append('-arch=native')
+            kwargs['extra_debug_flags'] = ['-Xcompiler -Og']
+        tested_langs.append(LANG)
+        self.executeTest(self.configureCoverageForLang, args=[LogPrinter, LANG], kargs=kwargs)
+
+    if not self.defines.get('USE_COVERAGE'):
+      # coverage was requested but no compilers accepted it, this is an error
+      raise RuntimeError(
+        'Coverage was requested (--{}={}) but none of the compilers supported it:\n{}\n'.format(
+          argdb_flag, self.argDB[argdb_flag],
+          '\n'.join(['  - {} ({})'.format(self.getCompiler(lang=lang), lang) for lang in tested_langs])
+        )
+      )
+
+    return
+    # Disabled for now, since this does not really work. It solves the problem of
+    # "undefined reference to __gcov_flush()" but if we add -lgcov we get:
+    #
+    # duplicate symbol '___gcov_reset' in:
+    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
+    #     /opt/.../libgcov.a(_gcov_reset.o)
+    # duplicate symbol '___gcov_dump' in:
+    #     /opt/.../libgcov.a(_gcov_dump.o)
+    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
+    # duplicate symbol '___gcov_fork' in:
+    #     /opt/.../libgcov.a(_gcov_fork.o)
+    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
+    #
+    # I don't know how to solve this.
+
+    log_print('Checking if compilers can cross-link disparate coverage libraries')
+    # At least one of the compilers has coverage enabled. Now need to make sure multiple
+    # code coverage impls work together, specifically when using clang C/C++ compiler with
+    # gfortran.
+    if not hasattr(self.setCompilers, 'FC'):
+      log_print('No fortran compiler detected. No need to check cross-linking!')
+      return
+
+    c_lang = self.languages.clanguage
+    if not self.setCompilers.isClang(self.getCompiler(lang=c_lang), self.log):
+      # must be GCC
+      log_print('C-language ({}) compiler is not clang, assuming it is GCC, so cross-linking with FC ({}) assumed to be OK'.format(c_lang, self.getCompiler(lang='FC')))
+      return
+
+    # If we are here we:
+    #   1. Have both C/C++ compiler and fortran compiler
+    #   2. The C/C++ compiler is *not* the same as the fortran compiler (unless we start
+    #      using flang)
+    #
+    # Now we check if we can cross-link
+    def can_cross_link(**kwargs):
+      f_body = "      subroutine foo()\n      print*,'testing'\n      return\n      end\n"
+      c_body = "int main() { }"
+
+      return self.compilers.checkCrossLink(
+        f_body, c_body, language1='FC', language2=c_lang, extralibs=self.compilers.flibs, **kwargs
+      )
+
+    log_print('Trying to cross-link WITHOUT extra libs')
+    if can_cross_link():
+      log_print('Successfully cross-linked WITHOUT extra libs')
+      # success, we already can cross-link
+      return
+
+    extra_libs = ['-lgcov']
+    log_print('Trying to cross-link with extra libs: {}'.format(extra_libs))
+    if can_cross_link(extraObjs=extra_libs):
+      log_print(
+        'Successfully cross-linked using extra libs: {}, adding them to LIBS'.format(extra_libs)
+      )
+      self.setCompilers.LIBS += ' ' + ' '.join(extra_libs)
+    else:
+      # maybe should be an error?
+      self.logPrintWarning("Could not successfully cross-link covered code between {} and FC. Sometimes this is a false positive. Assuming this does eventually end up working when the full link-line is assembled when building PETSc. If you later encounter linker errors about missing __gcov_exit(), __gcov_init(), __llvm_cov_flush() etc. this is why!".format(c_lang))
     return
 
   def configureCoverageExecutable(self):
@@ -997,12 +1173,15 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     log_print('{} to find an executable'.format('REQUIRED' if required else 'NOT required'))
     if arg_opt in {'auto', 'default-auto', '1'}:
       # detect it based on the C language compiler, hopefully this does not clash!
-      compiler = self.getCompiler(lang=self.setCompilers.languages.clanguage)
+      lang     = self.setCompilers.languages.clanguage
+      compiler = self.getCompiler(lang=lang)
       log_print('User did not explicitly set coverage exec (got {}), trying to auto-detect based on compiler {}'.format(quoted(arg_opt), quoted(compiler)))
       if self.setCompilers.isGNU(compiler, self.log):
-        exec_names = ['gcov']
+        compiler_version_re = re.compile(r'[gG][cC\+\-]+[0-9]* \(.+\) (\d+)\.(\d+)\.(\d+)')
+        exec_names          = ['gcov']
       elif self.setCompilers.isClang(compiler, self.log):
-        exec_names = ['llvm-cov']
+        compiler_version_re = re.compile(r'clang version (\d+)\.(\d+)\.(\d+)')
+        exec_names          = ['llvm-cov']
         if self.setCompilers.isDarwin(self.log):
           # macOS masquerades llvm-cov as just 'gcov', so we add this to the list in case
           # bare llvm-cov does not work
@@ -1015,6 +1194,24 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
         # implies 'auto' explicitly set by user, or we were required to find
         # something. either way we should error
         raise RuntimeError('Could not auto-detect coverage tool for {}, please set coverage tool name explicitly'.format(quoted(compiler)))
+
+      try:
+        compiler_version_str = self.compilerFlags.version[lang]
+      except KeyError:
+        compiler_version_str = 'Unknown'
+
+      log_print('Searching version string {} (for compiler {}) using pattern {}'.format(quoted(compiler_version_str), quoted(compiler), quoted(compiler_version_re.pattern)))
+      compiler_version = compiler_version_re.search(compiler_version_str)
+      if compiler_version is not None:
+        log_print('Found major = {}, minor = {}, patch = {}'.format(compiler_version.group(1), compiler_version.group(2), compiler_version.group(3)))
+        # form [llvm-cov-14, llvm-cov-14.0, llvm-cov, etc.]
+        cov_exec_name = exec_names[0]
+        exec_names    = [
+          # llvm-cov-14
+          '{}-{}'.format(cov_exec_name, compiler_version.group(1)),
+           # llvm-cov-14.0
+          '{}-{}.{}'.format(cov_exec_name, compiler_version.group(1), compiler_version.group(2))
+        ] + exec_names
     else:
       log_print('User explicitly set coverage exec as {}'.format(quoted(arg_opt)))
       par_dir = os.path.dirname(arg_opt)
@@ -1218,32 +1415,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureAtoll)
-    for LANG in ['C', 'Cxx', 'CUDA', 'HIP', 'SYCL', 'FC']:
-      compilerName = LANG.upper() if LANG in {'Cxx', 'FC'} else LANG+'C'
-      if hasattr(self.setCompilers, compilerName):
-        kwargs = {}
-        if LANG in {'CUDA'}:
-          # nvcc preprocesses the base file into a bunch of intermediate files, which are
-          # then compiled by the host compiler. Why is this a problem?  Because the
-          # generated coverage data is based on these preprocessed source files! So gcov
-          # tries to read it later, but since its in the tmp directory it cannot. Thus we
-          # need to keep them around (in a place we know about).
-          nvcc_tmp_dir = os.path.join(self.petscdir.dir, self.arch.arch, 'nvcc_tmp')
-          try:
-            os.mkdir(nvcc_tmp_dir)
-          except FileExistsError:
-            pass
-          kwargs['extra_coverage_flags'] = [
-            '-Xcompiler --coverage -Xcompiler -fPIC --keep --keep-dir={}'.format(nvcc_tmp_dir)
-          ]
-          if self.kokkos.found:
-            # yet again the kokkos nvcc_wrapper goes out of its way to be as useless as
-            # possible. Its default arch (sm_35) is actually too low to compile kokkos,
-            # for whatever reason this works if you dont use the --keep and --keep-dir
-            # flags above.
-            kwargs['extra_coverage_flags'].append('-arch=native')
-          kwargs['extra_debug_flags'] = ['-Xcompiler -Og']
-        self.executeTest(self.configureCoverage, args=[LANG], kargs=kwargs)
+    self.executeTest(self.configureCoverage)
     self.executeTest(self.configureCoverageExecutable)
     self.executeTest(self.configureStrictPetscErrorCode)
 

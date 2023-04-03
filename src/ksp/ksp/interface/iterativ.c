@@ -1268,10 +1268,62 @@ PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConverg
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+   KSPSetConvergedNegativeCurvature - Allows to declare convergence and return `KSP_CONVERGED_NEG_CURVE` when negative curvature is detected
+
+   Collective
+
+   Input Parameters:
++  ksp   - iterative context
+-  flg   - the Boolean value
+
+   Options Database Key:
+.   -ksp_converged_neg_curve <bool> - Declare convergence if negative curvature is detected
+
+   Level: advanced
+
+   Notes:
+   This is currently used only by a subset of the Krylov solvers, namely `KSPCG`, `KSPSTCG`, `KSPQCG`, `KSPGLTR`, `KSPNASH`, and `KSPMINRES`.
+
+.seealso: [](chapter_ksp), `KSP`, `KSPConvergedReason`, `KSPGetConvergedNegativeCurvature()`
+@*/
+PetscErrorCode KSPSetConvergedNegativeCurvature(KSP ksp, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(ksp, flg, 2);
+  ksp->converged_neg_curve = flg;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   KSPGetConvergedNegativeCurvature - Get the flag to declare convergence if negative curvature is detected
+
+   Collective
+
+   Input Parameter:
+.  ksp   - iterative context
+
+   Output Parameter:
+.  flg   - the Boolean value
+
+   Level: advanced
+
+.seealso: [](chapter_ksp), `KSP`, `KSPConvergedReason`, `KSPSetConvergedNegativeCurvature()`
+@*/
+PetscErrorCode KSPGetConvergedNegativeCurvature(KSP ksp, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidBoolPointer(flg, 2);
+  *flg = ksp->converged_neg_curve;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
    KSPConvergedDefaultCreate - Creates and initializes the context used by the `KSPConvergedDefault()` function
 
-   Note Collective
+   Not Collective
 
    Output Parameter:
 .  ctx - convergence context
@@ -1549,7 +1601,7 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ctx - convergence context
 
    Level: intermediate

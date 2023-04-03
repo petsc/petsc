@@ -36,6 +36,7 @@ class Configure(config.package.GNUPackage):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.installDir]
+    args.append('CPPFLAGS=-O2')
     if 'download-sowing-cc' in self.argDB and self.argDB['download-sowing-cc']:
       args.append('CC="'+self.argDB['download-sowing-cc']+'"')
     if 'download-sowing-cxx' in self.argDB and self.argDB['download-sowing-cxx']:
@@ -55,7 +56,7 @@ class Configure(config.package.GNUPackage):
     try:
       import re
       (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)
-      ver = re.compile('bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
+      ver = re.compile(r'bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
       foundversion = tuple(map(int,ver.groups()))
       self.foundversion = ".".join(map(str,foundversion))
     except (RuntimeError,AttributeError) as e:

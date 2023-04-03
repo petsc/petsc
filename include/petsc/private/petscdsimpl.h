@@ -97,6 +97,9 @@ struct _p_PetscDS {
   PetscObject *disc;       /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscBool   *cohesive;   /* Flag for cohesive discretization */
   PetscBool    isCohesive; /* We are on a cohesive cell, meaning lower dimensional FE used on a 0-volume cell. Normal fields appear on both endcaps, whereas cohesive field only appear once in the middle */
+  /* Quadrature */
+  PetscBool forceQuad;                  /* Flag to force matching quadratures in discretizations */
+  IS       *quadPerm[DM_NUM_POLYTOPES]; /* qP[ct][o]: q point permutation for orientation o of integ domain */
   /* Equations */
   DSBoundary            boundary;     /* Linked list of boundary conditions */
   PetscBool             useJacPre;    /* Flag for using the Jacobian preconditioner */

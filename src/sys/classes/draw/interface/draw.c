@@ -1,7 +1,4 @@
 
-/*
-       Provides the calling sequences for all the basic PetscDraw routines.
-*/
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 #include <petscviewer.h>
 
@@ -88,7 +85,8 @@ PetscErrorCode PetscDrawInitializePackage(void)
 
    Input Parameters:
 +  draw - the window
--  w,h - the new width and height of the window
+.  w - the new width of the window
+-  h - the new height of the window
 
    Level: intermediate
 
@@ -107,13 +105,14 @@ PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h)
 /*@
    PetscDrawGetWindowSize - Gets the size of the window.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the window
 
    Output Parameters:
-.  w,h - the window width and height
++  w - the window width
+-  h - the window height
 
    Level: intermediate
 
@@ -153,7 +152,7 @@ PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw)
 /*@C
    PetscDrawGetTitle - Gets pointer to title of a `PetscDraw` context.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
 .  draw - the graphics context
@@ -216,11 +215,11 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
 +  draw - the graphics context
 -  title - the title
 
+   Level: advanced
+
    Note:
    A copy of the string is made, so you may destroy the
    title string after calling this routine.
-
-   Level: advanced
 
 .seealso: `PetscDraw`, `PetscDrawSetTitle()`, `PetscDrawGetTitle()`
 @*/
@@ -232,15 +231,12 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
   if (!title || !title[0]) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (draw->title) {
-    size_t len1, len2;
-    char  *newtitle;
-    PetscCall(PetscStrlen(title, &len1));
-    PetscCall(PetscStrlen(draw->title, &len2));
-    PetscCall(PetscMalloc1(len1 + len2 + 1, &newtitle));
-    PetscCall(PetscStrcpy(newtitle, draw->title));
-    PetscCall(PetscStrcat(newtitle, title));
-    PetscCall(PetscFree(draw->title));
-    draw->title = newtitle;
+    size_t len1, len2, new_len;
+    PetscCall(PetscStrlen(draw->title, &len1));
+    PetscCall(PetscStrlen(title, &len2));
+    new_len = len1 + len2 + 1;
+    PetscCall(PetscRealloc(new_len * sizeof(*(draw->title)), &draw->title));
+    PetscCall(PetscStrncpy(draw->title + len1, title, len2 + 1));
   } else {
     PetscCall(PetscStrallocpy(title, &draw->title));
   }
@@ -267,7 +263,7 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  draw - the drawing context
 
    Level: beginner
@@ -445,11 +441,13 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
 }
 
 /*@C
-   PetscDrawSetVisible - Sets if the drawing surface (the 'window') is visible on its display.
+  PetscDrawSetVisible - Sets if the drawing surface (the 'window') is visible on its display.
 
-   Input Parameters:
-+  draw - the drawing window
--  visible - if the surface should be visible
+  Input Parameters:
++ draw - the drawing window
+- visible - if the surface should be visible
+
+  Level: intermediate
 
 .seealso: `PetscDraw`
 @*/

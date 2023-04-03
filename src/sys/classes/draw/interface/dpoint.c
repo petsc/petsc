@@ -1,17 +1,15 @@
 
-/*
-       Provides the calling sequences for all the basic PetscDraw routines.
-*/
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 /*@
    PetscDrawPoint - draws a point onto a drawable.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl - the coordinates of the point
+.  xl - horizatonal coordinate of the point
+.  yl - vertical coordinate of the point
 -  cl - the color of the point
 
    Level: beginner
@@ -30,11 +28,12 @@ PetscErrorCode PetscDrawPoint(PetscDraw draw, PetscReal xl, PetscReal yl, int cl
 /*@
    PetscDrawPointPixel - draws a point onto a drawable, in pixel coordinates
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context
-.  x,y - the pixel coordinates of the point
+.  x - horizontal pixel coordinates of the point
+.  y - vertical pixel coordinates of the point
 -  c - the color of the point
 
    Level: beginner
@@ -54,7 +53,7 @@ PetscErrorCode PetscDrawPointPixel(PetscDraw draw, int x, int y, int c)
    relative to the user coordinates of the window; 0.0 denotes the natural
    width, 1.0 denotes the entire viewport.
 
-   Not collective
+   Not Collective
 
    Input Parameters:
 +  draw - the drawing context

@@ -464,7 +464,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
         PetscCall(PetscBTSet(bte, i));
         for (j = ii[i]; j < ii[i + 1]; j++) PetscCall(PetscBTSet(btv, jj[j]));
       } else {
-        /* every edge dofs should be connected trough a certain number of nodal dofs
+        /* every edge dofs should be connected through a certain number of nodal dofs
            to other edge dofs belonging to coarse edges
            - at most 2 endpoints
            - order-1 interior nodal dofs
@@ -3294,14 +3294,14 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               PetscCall(PetscLogFlops((4.0 * subset_size * subset_size * subset_size) / 3.0));
             } else {
               PetscBLASInt B_neigs2 = 0;
-              PetscBool    import   = PETSC_FALSE;
+              PetscBool    do_copy  = PETSC_FALSE;
 
               lthresh = PetscMax(lthresh, 0.0);
               if (lthresh > 0.0) {
                 bb[0] = PETSC_MIN_REAL;
                 bb[1] = lthresh * lthresh;
 
-                import = PETSC_TRUE;
+                do_copy = PETSC_TRUE;
 #if defined(PETSC_USE_COMPLEX)
                 PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "V", "L", &B_N, St, &B_N, S, &B_N, &bb[0], &bb[1], &B_IL, &B_IU, &eps, &B_neigs, eigs, eigv, &B_N, work, &B_lwork, rwork, B_iwork, B_ifail, &B_ierr));
 #else
@@ -3311,7 +3311,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               }
               bb[0] = PetscMax(lthresh * lthresh, uthresh);
               bb[1] = PETSC_MAX_REAL;
-              if (import) {
+              if (do_copy) {
                 PetscCall(PetscArraycpy(S, Sarray + cumarray, subset_size * subset_size));
                 PetscCall(PetscArraycpy(St, Starray + cumarray, subset_size * subset_size));
               }
@@ -5234,8 +5234,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   }
 
   /* compute prefixes */
-  PetscCall(PetscStrcpy(dir_prefix, ""));
-  PetscCall(PetscStrcpy(neu_prefix, ""));
+  PetscCall(PetscStrncpy(dir_prefix, "", sizeof(dir_prefix)));
+  PetscCall(PetscStrncpy(neu_prefix, "", sizeof(neu_prefix)));
   if (!pcbddc->current_level) {
     PetscCall(PetscStrncpy(dir_prefix, ((PetscObject)pc)->prefix, sizeof(dir_prefix)));
     PetscCall(PetscStrncpy(neu_prefix, ((PetscObject)pc)->prefix, sizeof(neu_prefix)));
@@ -8132,8 +8132,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, PetscScalar *coarse_submat_vals)
       /* TODO is this logic correct? should check for coarse_mat type */
       PetscCall(PCSetType(pc_temp, coarse_pc_type));
       /* prefix */
-      PetscCall(PetscStrcpy(prefix, ""));
-      PetscCall(PetscStrcpy(str_level, ""));
+      PetscCall(PetscStrncpy(prefix, "", sizeof(prefix)));
+      PetscCall(PetscStrncpy(str_level, "", sizeof(str_level)));
       if (!pcbddc->current_level) {
         PetscCall(PetscStrncpy(prefix, ((PetscObject)pc)->prefix, sizeof(prefix)));
         PetscCall(PetscStrlcat(prefix, "pc_bddc_coarse_", sizeof(prefix)));

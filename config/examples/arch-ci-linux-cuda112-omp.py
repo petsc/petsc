@@ -19,9 +19,8 @@ if __name__ == '__main__':
     '--with-threadsafety',
     '--download-kokkos',
     '--download-kokkos-kernels',
-    '--download-kokkos-commit=36f65d03f48e504e63ad124f7f5cf74dd46af130', # release-candidate-4.0.0, Feb. 7 2023.  Remove it once we upgrade the default Kokkos version to 4.0
-    '--download-kokkos-kernels-commit=697c4169f73ec9b316a30d7e0060013c86672d59', # release-candidate-4.0.0, Feb. 7 2023.
     '--with-strict-petscerrorcode',
+    #'--with-coverage',
   ]
 
   configure.petsc_configure(configure_options)

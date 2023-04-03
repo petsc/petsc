@@ -9,7 +9,7 @@
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  draw - the drawing context
 
    Level: intermediate

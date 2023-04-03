@@ -1,10 +1,8 @@
 -include ../../../../petscdir.mk
 
 DIRS   = chaco party pmetis scotch hierarchical
-LOCDIR = src/mat/partition/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/rules.doc
 
 

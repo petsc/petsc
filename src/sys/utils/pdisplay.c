@@ -13,7 +13,7 @@
 -    len - amount of space allocated to hold variable
 
    Output Parameters:
-+    flag - if not NULL tells if variable found or not
++    flag - if not `NULL` indicates if the variable was found
 -    env - value of variable
 
   Level: advanced
@@ -24,10 +24,9 @@
     discarded before checking the database. For example, `PETSC_VIEWER_SOCKET_PORT` would
     be given as -viewer_socket_port 9000
 
-    If comm does not contain the 0th process in the MPIEXEC it is likely on
+    If comm does not contain the 0th process in the `MPI_COMM_WORLD` it is likely on
     many systems that the environmental variable will not be set unless you
     put it in a universal location like a .chsrc file
-
 @*/
 PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], size_t len, PetscBool *flag)
 {
@@ -39,7 +38,7 @@ PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], 
   /* first check options database */
   PetscCall(PetscStrncmp(name, "PETSC_", 6, &spetsc));
 
-  PetscCall(PetscStrcpy(work, "-"));
+  PetscCall(PetscStrncpy(work, "-", sizeof(work)));
   if (spetsc) {
     PetscCall(PetscStrlcat(work, name + 6, sizeof(work)));
   } else {
@@ -142,10 +141,10 @@ PetscErrorCode PetscSetDisplay(void)
 /*@C
      PetscGetDisplay - Gets the X windows display variable for all processors.
 
-  Input Parameters:
+  Input Parameter:
 .   n - length of string display
 
-  Output Parameters:
+  Output Parameter:
 .   display - the display string
 
   Options Database Keys:

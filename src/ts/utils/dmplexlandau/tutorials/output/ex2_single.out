@@ -1,0 +1,25 @@
+masses:        e= 9.109e-31; ions in proton mass units:    0.000e+00  0.000e+00 ...
+charges:       e=-1.602e-19; charges in elementary units:  0.000e+00  0.000e+00
+n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
+thermal T (K): e= 1.160e+07 i= 0.000e+00  0.000e+00. Normalization grid 0: v_0= 1.326e+07 ( 4.424e-02c) n_0= 1.000e+20 t_0= 5.787e-06 1 batched, view batch 0
+Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) 
+0) FormLandau 512 IPs, 32 cells total, Nb=16, Nq=16, dim=2, Tab: Nb=16 Nf=1 Np=16 cdim=2 N=325
+DM Object: half-plane 1 MPI process
+  type: plex
+half-plane in 2 dimensions:
+  Number of 0-cells per rank: 45
+  Number of 1-cells per rank: 76
+  Number of 2-cells per rank: 32
+Labels:
+  celltype: 3 strata with value/size (0 (45), 1 (76), 4 (32))
+  depth: 3 strata with value/size (0 (45), 1 (76), 2 (32))
+  marker: 1 strata with value/size (1 (48))
+  Face Sets: 4 strata with value/size (4 (14), 2 (14), 1 (7), 3 (7))
+Field e:
+  adjacency FEM
+  0) species-0: charge density= -3.2040454979710e+01 z-momentum=  1.5094540325730e-03 energy=  6.0557536691318e+04 -- 32 cells
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 12
+  1) species-0: charge density= -3.2040454979710e+01 z-momentum=  1.5094540325730e-03 energy=  6.0557536691318e+04 -- 32 cells
+  0) species-0: charge density= -3.2040454979710e+01 z-momentum=  1.5094540325730e-03 energy=  6.0557536691318e+04 -- 32 cells
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 12
+  1) species-0: charge density= -3.2040454979710e+01 z-momentum=  1.5094540325730e-03 energy=  6.0557536691318e+04 -- 32 cells

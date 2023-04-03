@@ -134,7 +134,7 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
 /*@
   DMPlexOrient - Give a consistent orientation to the input mesh
 
-  Input Parameters:
+  Input Parameter:
 . dm - The `DM`
 
   Note:

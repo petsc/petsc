@@ -181,7 +181,7 @@ class generateExamples(Petsc):
   def getLanguage(self,srcfile):
     """
     Based on the source, determine associated language as found in gmakegen.LANGS
-    Can we just return srcext[1:\] now?
+    Can we just return srcext[1:] now?
     """
     langReq=None
     srcext = getlangext(srcfile)
@@ -291,9 +291,9 @@ class generateExamples(Petsc):
     argStr=re.sub('{{(.*?)}}',"",argStr)
     argStr=re.sub('-'," ",argStr)
     for digit in string.digits: argStr=re.sub(digit," ",argStr)
-    argStr=re.sub("\.","",argStr)
+    argStr=re.sub(r"\.","",argStr)
     argStr=re.sub(",","",argStr)
-    argStr=re.sub('\+',' ',argStr)
+    argStr=re.sub(r'\+',' ',argStr)
     argStr=re.sub(' +',' ',argStr)  # Remove repeated white space
     return argStr.strip()
 
@@ -391,6 +391,7 @@ class generateExamples(Petsc):
       subst['mpiexec']='petsc_mpiexec_valgrind ' + self.conf['MPIEXEC']
     else:
       subst['mpiexec']=self.conf['MPIEXEC']
+    subst['mpiexec_tail']=self.conf['MPIEXEC_TAIL']
     subst['pkg_name']=self.pkg_name
     subst['pkg_dir']=self.pkg_dir
     subst['pkg_arch']=self.petsc_arch
@@ -720,6 +721,16 @@ class generateExamples(Petsc):
         isNull=False
         if requirement.startswith("!"):
           requirement=requirement[1:]; isNull=True
+        # 32bit vs 64bit pointers
+        if requirement == "64bitptr":
+          if self.conf['PETSC_SIZEOF_VOID_P']==8:
+            if isNull:
+              testDict['SKIP'].append("not 64bit-ptr required")
+              continue
+            continue  # Success
+          elif not isNull:
+            testDict['SKIP'].append("64bit-ptr required")
+            continue
         # Precision requirement for reals
         if requirement in self.precision_types:
           if self.conf['PETSC_PRECISION']==requirement:
