@@ -167,7 +167,7 @@ def print_banner(options):
         writeln(getpackageinfo('numpy'))
         for entry in components:
             writeln(getlibraryinfo(entry))
-            writeln(getpackageinfo('%s4py' % entry))
+            writeln(getpackageinfo('%s4py' % entry.lower()))
 
 
 def load_tests(options, args):
