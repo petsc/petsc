@@ -284,13 +284,13 @@ class PetscConfig:
         confdict = makefile(StringIO(confstr))
         return confdict
 
-    def _configure_ext(self, ext, dct, preppend=False):
+    def _configure_ext(self, ext, dct, append=False):
         extdict = ext.__dict__
         for key, values in dct.items():
             if key in extdict:
                 for value in values:
                     if value not in extdict[key]:
-                        if preppend:
+                        if not append:
                             extdict[key].insert(0, value)
                         else:
                             extdict[key].append(value)
@@ -315,8 +315,7 @@ class PetscConfig:
         if self['BUILDSHAREDLIB'] != 'yes':
             petsc_ext_lib = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
             petsc_lib['extra_link_args'].extend(petsc_ext_lib)
-
-        self._configure_ext(extension, petsc_inc, preppend=True)
+        self._configure_ext(extension, petsc_inc, append=True)
         self._configure_ext(extension, petsc_lib)
 
     def configure_compiler(self, compiler):
