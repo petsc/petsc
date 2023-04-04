@@ -684,7 +684,7 @@ How do I access the values of a remote parallel PETSc Vec?
 For example, assuming we have distributed a vector ``vecGlobal`` of size :math:`N` to
 :math:`R` ranks and each remote rank holds :math:`N/R = m` values (similarly assume that
 :math:`N` is cleanly divisible by :math:`R`). We want each rank :math:`r` to gather the
-first :math:`n` (also assume :math:`n \leq m`) values from it's immediately superior neighbor
+first :math:`n` (also assume :math:`n \leq m`) values from its immediately superior neighbor
 :math:`r+1` (final rank will retrieve from rank 0).
 
 .. code-block::
@@ -706,8 +706,8 @@ first :math:`n` (also assume :math:`n \leq m`) values from it's immediately supe
    /* Compute the global indices */
    PetscCall(VecGetSize(vecGlobal, &N));
    PetscCall(PetscObjectGetComm((PetscObject) vecGlobal, &comm));
-   CHKERRMPI(MPI_Comm_rank(comm, &r));
-   CHKERRMPI(MPI_Comm_size(comm, &R));
+   PetscCallMPI(MPI_Comm_rank(comm, &r));
+   PetscCallMPI(MPI_Comm_size(comm, &R));
    firstGlobalIndex = r == R-1 ? 0 : (N/R)*(r+1);
 
    /* Create IS that describes where we want to scatter from */
@@ -1159,7 +1159,7 @@ provided by Rolf Kuiper:
    PetscMPIInt MPI_Rank, NewRank;
 
    // get rank from MPI ordering:
-   CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank));
+   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank));
 
    // calculate coordinates of cpus in MPI ordering:
    x = MPI_rank / (z_procs*y_procs);
@@ -1170,7 +1170,7 @@ provided by Rolf Kuiper:
    NewRank = z*y_procs*x_procs + y*x_procs + x;
 
    // create communicator with new ranks according to PETSc ordering
-   CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm));
+   PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm));
 
    // override the default communicator (was MPI_COMM_WORLD as default)
    PETSC_COMM_WORLD = NewComm;
