@@ -127,6 +127,11 @@ int main(int argc, char **argv)
     args: -dm_plex_simplex 0 -dm_plex_transform_extrude_symmetric \
           -dm_view -adapt_dm_view -dm_plex_check_all
 
+  test:
+    suffix: quad_label
+    args: -dm_plex_simplex 0 -dm_plex_transform_label_replica_inc {{0 100}separate output} \
+          -dm_view -adapt_dm_view -dm_plex_check_all
+
   testset:
     args: -dm_adaptor cellrefiner -dm_plex_transform_type extrude \
           -dm_view -adapt_dm_view

@@ -74,6 +74,10 @@ int main(int argc, char **argv)
     args: -dm_plex_box_faces 3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
+    suffix: box_quad_label
+    args: -dm_plex_box_faces 3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all -dm_plex_transform_label_match_strata {{0 1}separate output} -dm_view
+
+  test:
     suffix: ref_tet
     args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_refine 2 -dm_plex_check_all
 
