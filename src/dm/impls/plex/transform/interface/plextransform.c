@@ -310,8 +310,10 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
   Input Parameter:
 . tr - the `DMPlexTransform` object to set options for
 
-  Options Database Key:
-. -dm_plex_transform_type - Set the transform type, e.g. refine_regular
+  Options Database Keys:
++ -dm_plex_transform_type - Set the transform type, e.g. refine_regular
+. -dm_plex_transform_label_match_strata - Only label points of the same stratum as the producing point
+- -dm_plex_transform_label_replica_inc <inc> - Increment for the label value to be multiplied by the replica number, so that the new label value is oldValue + r * inc
 
   Level: intermediate
 
@@ -329,6 +331,8 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
   PetscCall(PetscOptionsFList("-dm_plex_transform_type", "DMPlexTransform", "DMPlexTransformSetType", DMPlexTransformList, defName, typeName, 1024, &flg));
   if (flg) PetscCall(DMPlexTransformSetType(tr, typeName));
   else if (!((PetscObject)tr)->type_name) PetscCall(DMPlexTransformSetType(tr, defName));
+  PetscCall(PetscOptionsBool("-dm_plex_transform_label_match_strata", "Only label points of the same stratum as the producing point", "", tr->labelMatchStrata, &tr->labelMatchStrata, NULL));
+  PetscCall(PetscOptionsInt("-dm_plex_transform_label_replica_inc", "Increment for the label value to be multiplied by the replica number", "", tr->labelReplicaInc, &tr->labelReplicaInc, NULL));
   PetscTryTypeMethod(tr, setfromoptions, PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)tr, PetscOptionsObject));
@@ -1595,6 +1599,33 @@ PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  DMPlexTransformLabelProducedPoint_Private - Label a produced point based on its parent label
+
+  Not Collective
+
+  Input Parameters:
++ tr    - The `DMPlexTransform`
+. label - The label in the transformed mesh
+. pp    - The parent point in the original mesh
+. pct   - The cell type of the parent point
+. p     - The point in the transformed mesh
+. ct    - The cell type of the point
+. r     - The replica number of the point
+- val   - The label value of the parent point
+
+  Level: developer
+
+.seealso: `DMPlexTransformCreateLabels()`, `RefineLabel_Internal()`
+*/
+static PetscErrorCode DMPlexTransformLabelProducedPoint_Private(DMPlexTransform tr, DMLabel label, PetscInt pp, DMPolytopeType pct, PetscInt p, DMPolytopeType ct, PetscInt r, PetscInt val)
+{
+  PetscFunctionBeginHot;
+  if (tr->labelMatchStrata && pct != ct) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMLabelSetValue(label, p, val + tr->labelReplicaInc * r));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode RefineLabel_Internal(DMPlexTransform tr, DMLabel label, DMLabel labelNew)
 {
   DM              dm;
@@ -1632,7 +1663,7 @@ static PetscErrorCode RefineLabel_Internal(DMPlexTransform tr, DMLabel label, DM
       for (n = 0; n < Nct; ++n) {
         for (r = 0; r < rsize[n]; ++r) {
           PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], point, r, &pNew));
-          PetscCall(DMLabelSetValue(labelNew, pNew, values[val]));
+          PetscCall(DMPlexTransformLabelProducedPoint_Private(tr, labelNew, point, ct, pNew, rct[n], r, values[val]));
         }
       }
     }
