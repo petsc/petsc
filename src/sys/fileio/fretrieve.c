@@ -265,7 +265,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
     PetscCall(PetscMalloc1(1, &tagvalp));
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_SharedWD_keyval, tagvalp));
 
-    PetscCall(PetscGetWorkingDirectory(filename, 240));
+    PetscCall(PetscGetWorkingDirectory(filename, sizeof(filename) - 16));
     PetscCall(PetscStrlcat(filename, "/petsctestshared", sizeof(filename)));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
 

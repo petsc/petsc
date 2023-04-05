@@ -372,7 +372,7 @@ static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"backgr
     PetscOptionsSAWsInput - Presents all the PETSc Options processed by the program so the user may change them at runtime using the SAWs
 
     Bugs:
-+    All processes must traverse through the exact same set of option queries do to the call to PetscScanString()
++    All processes must traverse through the exact same set of option queries due to the call to PetscScanString()
 .    Internal strings have arbitrary length and string copies are not checked that they fit into string space
 -    Only works for PetscInt == int, PetscReal == double etc
 

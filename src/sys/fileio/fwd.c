@@ -20,6 +20,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
   #include <sys/systeminfo.h>
 #endif
+#include <errno.h>
 
 /*@C
    PetscGetWorkingDirectory - Gets the current working directory.
@@ -41,7 +42,7 @@ PetscErrorCode PetscGetWorkingDirectory(char path[], size_t len)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCWD)
-  PetscCheck(getcwd(path, len), PETSC_COMM_SELF, PETSC_ERR_LIB, "getcwd()");
+  PetscCheck(getcwd(path, len), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in getcwd() due to \"%s\"", strerror(errno));
 #elif defined(PETSC_HAVE__GETCWD)
   _getcwd(path, len);
 #elif defined(PETSC_HAVE_GETWD)

@@ -21,6 +21,7 @@
 
 #if defined(PETSC_HAVE__ACCESS) || defined(PETSC_HAVE_ACCESS)
 
+  #include <errno.h>
 static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool *flg)
 {
   int m = R_OK;
@@ -35,7 +36,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
     PetscCall(PetscInfo(NULL, "System call access() succeeded on file %s\n", fname));
     *flg = PETSC_TRUE;
   } else {
-    PetscCall(PetscInfo(NULL, "System call access() failed on file %s\n", fname));
+    PetscCall(PetscInfo(NULL, "System call access() failed on file %s due to \"%s\"\n", fname, strerror(errno)));
     *flg = PETSC_FALSE;
   }
   #else
@@ -63,7 +64,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   /* Get the number of supplementary group IDs */
   #if !defined(PETSC_MISSING_GETGROUPS)
   numGroups = getgroups(0, gid);
-  PetscCheck(numGroups >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to count supplementary group IDs");
+  PetscCheck(numGroups >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to count supplementary group IDs due to \"%s\"", strerror(errno));
   PetscCall(PetscMalloc1(numGroups + 1, &gid));
   #else
   numGroups = 0;
@@ -76,7 +77,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   /* Get supplementary group IDs */
   #if !defined(PETSC_MISSING_GETGROUPS)
   err = getgroups(numGroups, gid + 1);
-  PetscCheck(err >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to obtain supplementary group IDs");
+  PetscCheck(err >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to obtain supplementary group IDs due to \"%s\"", strerror(errno));
   #endif
 
   /* Test for accessibility */
@@ -127,7 +128,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 #if defined(EOVERFLOW)
     PetscCheck(errno != EOVERFLOW, PETSC_COMM_SELF, PETSC_ERR_SYS, "EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
 #endif
-    PetscCall(PetscInfo(NULL, "System call stat() failed on file %s\n", fname));
+    PetscCall(PetscInfo(NULL, "System call stat() failed on file %s due to \"%s\"\n", fname, strerror(errno)));
     *exists = PETSC_FALSE;
   } else {
     PetscCall(PetscInfo(NULL, "System call stat() succeeded on file %s\n", fname));
