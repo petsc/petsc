@@ -37,6 +37,8 @@ Changes: Development
 
 .. rubric:: Mat:
 
+- Add ``VecCreateMatDense()``
+
 .. rubric:: MatCoarsen:
 
 .. rubric:: PC:

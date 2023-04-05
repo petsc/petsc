@@ -2473,4 +2473,6 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat, const PetscInt **, co
 
 PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat, PetscBool, PetscBool, PetscReal, Mat *);
 PETSC_EXTERN PetscErrorCode MatEliminateZeros(Mat);
+
+PETSC_EXTERN PetscErrorCode VecCreateMatDense(Vec, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar *, Mat *);
 #endif
