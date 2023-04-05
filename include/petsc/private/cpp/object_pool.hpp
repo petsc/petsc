@@ -560,7 +560,7 @@ inline PetscErrorCode PoolAllocator::deallocate(void **in_ptr, size_type size, a
       PetscCall(PetscPoisonMemoryRegion(ptr, size));
     } else {
       // This is necessary if an object is "reclaimed" within another PetscFinalize()
-      // registered cleanup after this pool has returned from it's finalizer. In this case,
+      // registered cleanup after this pool has returned from its finalizer. In this case,
       // instead of pushing onto the stack we just delete the pointer directly.
       //
       // However this path is *only* valid if we have already finalized!

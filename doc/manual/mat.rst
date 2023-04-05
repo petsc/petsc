@@ -528,7 +528,7 @@ code that one would use to actually compute the matrices numerical values, calls
 preallocation information (one need not provide the matrix numerical values). Once this is complete one uses ``MatPreallocatorPreallocate()`` to
 provide the accumulated preallocation information to
 the actual matrix one will use for the computations. We hope to simplify this process in the future, allowing the removal of ``MATPREALLOCATOR``,
-instead simply allowing the use of it's efficient insertion process automatically during the first assembly of any matrix type directly without
+instead simply allowing the use of its efficient insertion process automatically during the first assembly of any matrix type directly without
 requiring the detailed preallocation information.
 
 See :any:`doc_matrix` for a table of the matrix types available in PETSc.

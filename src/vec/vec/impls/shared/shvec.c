@@ -14,7 +14,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win, Vec *v)
   PetscScalar *array;
 
   PetscFunctionBegin;
-  /* first processor allocates entire array and sends it's address to the others */
+  /* first processor allocates entire array and sends its address to the others */
   PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)win), win->map->n * sizeof(PetscScalar), win->map->N * sizeof(PetscScalar), (void **)&array));
 
   PetscCall(VecCreate(PetscObjectComm((PetscObject)win), v));
