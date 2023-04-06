@@ -27,6 +27,18 @@ PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscMkdir - Create a directory
+
+  Not Collective
+
+  Input Parameter:
+. dir - the directory name
+
+  Level: advanced
+
+.seealso: `PetscMktemp()`, `PetscRMTree()`
+@*/
 PetscErrorCode PetscMkdir(const char dir[])
 {
   int       err;
@@ -47,14 +59,12 @@ PetscErrorCode PetscMkdir(const char dir[])
 /*@C
   PetscMkdtemp - Create a folder with a unique name given a filename template.
 
-  Not Collective
-
   Input Parameter:
 . dir - file name template, the last six characters must be 'XXXXXX', and they will be modified upon return
 
-  Level: developer
+  Level: advanced
 
-.seealso: `PetscMkdir()`
+.seealso: `PetscMkdir()`, `PetscRMTree()`
 @*/
 PetscErrorCode PetscMkdtemp(char dir[])
 {
@@ -125,6 +135,17 @@ PetscErrorCode PetscRMTree(const char dir[])
 #else
   #include <dirent.h>
   #include <unistd.h>
+
+/*@C
+  PetscRMTree - delete a directory and all of its children
+
+  Input Parameter:
+.  dir - the name of the directory
+
+  Level: advanced
+
+.seealso: `PetscMkdtemp()`, `PetscMkdir()`
+@*/
 PetscErrorCode PetscRMTree(const char dir[])
 {
   struct dirent *data;

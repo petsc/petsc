@@ -15,7 +15,7 @@
     Input Parameters:
 +   comm - the communicator
 .   name - the filename
--   mode - the mode for fopen(), usually "w"
+-   mode - the mode for `fopen()`, usually "w"
 
     Output Parameter:
 .   fp - the file pointer
@@ -23,7 +23,7 @@
     Level: developer
 
     Note:
-       NULL (0), "stderr" or "stdout" may be passed in as the filename
+       `NULL`, "stderr" or "stdout" may be passed in as the filename
 
 .seealso: `PetscFClose()`, `PetscSynchronizedFGets()`, `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
           `PetscFPrintf()`
@@ -91,16 +91,16 @@ static char PetscPOpenMachine[128] = "";
 /*@C
       PetscPClose - Closes (ends) a program on processor zero run with `PetscPOpen()`
 
-     Collective, but only process 0 runs the command
+     Collective, but only MPI rank 0 runs the command
 
    Input Parameters:
-+   comm - MPI communicator, only processor zero runs the program
--   fp - the file pointer where program input or output may be read or NULL if don't care
++   comm - MPI communicator, only rank 0 runs the program
+-   fp - the file pointer where program input or output may be read or `NULL` if don't care
 
    Level: intermediate
 
    Note:
-       Does not work under Windows
+   Does not work under Microsoft Windows
 
 .seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPOpen()`
 @*/
@@ -123,23 +123,23 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
       PetscPOpen - Runs a program on processor zero and sends either its input or output to
           a file.
 
-     Logically Collective, but only process 0 runs the command
+     Logically Collective, but only MPI rank 0 runs the command
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
-.   machine - machine to run command on or NULL, or string with 0 in first location
+.   machine - machine to run command on or `NULL`, or string with 0 in first location
 .   program - name of program to run
--   mode - either r or w
+-   mode - either "r" or "w"
 
    Output Parameter:
-.   fp - the file pointer where program input or output may be read or NULL if don't care
+.   fp - the file pointer where program input or output may be read or `NULL` if don't care
 
    Level: intermediate
 
    Notes:
        Use `PetscPClose()` to close the file pointer when you are finished with it
 
-       Does not work under Windows
+       Does not work under Microsoft Windows
 
        If machine is not provided will use the value set with `PetsPOpenSetMachine()` if that was provided, otherwise
        will use the machine running node zero of the communicator
@@ -196,10 +196,10 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
 /*@C
       PetscPOpenSetMachine - Sets the name of the default machine to run `PetscPOpen()` calls on
 
-     Logically Collective, but only process 0 runs the command
+     Logically Collective, but only MPI rank 0 runs the command
 
    Input Parameter:
-.   machine - machine to run command on or NULL for the current machine
+.   machine - machine to run command on or `NULL` for the current machine
 
    Options Database Key:
 .   -popen_machine <machine> - run the process on this machine

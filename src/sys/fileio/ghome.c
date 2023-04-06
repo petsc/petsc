@@ -18,9 +18,9 @@
    Level: developer
 
    Notes:
-   If PETSc cannot determine the home directory it makes dir a null string
+   If PETSc cannot determine the home directory it makes `dir` an empty string
 
-   On Windows machines the environmental variable `HOME` specifies the home directory.
+   On Microsoft Windows machines the environmental variable `HOME` specifies the home directory.
 
 .seealso: `PetscGetTmp()`, `PetscSharedTmp()`, `PetscGetWorkingDirectory()`
 @*/
@@ -38,7 +38,7 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
 
 /*@C
     PetscFixFilename - Fixes a file name so that it is correct for both Unix and
-    Windows by using the correct / or \ to separate directories.
+    Microsoft Windows by using the correct / or \ to separate directories.
 
    Not Collective
 
@@ -51,7 +51,7 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
    Level: advanced
 
    Note:
-   Call `PetscFixFilename()` just before calling fopen().
+   Call `PetscFixFilename()` just before calling `fopen()`.
 @*/
 PetscErrorCode PetscFixFilename(const char filein[], char fileout[])
 {
