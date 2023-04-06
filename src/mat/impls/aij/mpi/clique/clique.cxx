@@ -44,7 +44,7 @@ PetscErrorCode MatView_SparseElemental(Mat A, PetscViewer viewer)
 PetscErrorCode MatDestroy_SparseElemental(Mat A)
 {
   PetscFunctionBegin;
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

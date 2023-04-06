@@ -753,7 +753,7 @@ static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, Pet
   case DM_POLYTOPE_PYRAMID:
     return &pyrArr[(o + 4) * 5 * 2];
   default:
-    return NULL;
+    return PETSC_NULLPTR;
   }
 }
 
@@ -924,7 +924,7 @@ static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType c
   case DM_POLYTOPE_PYRAMID:
     return &pyrVerts[(o + 4) * 5];
   default:
-    return NULL;
+    return PETSC_NULLPTR;
   }
 }
 

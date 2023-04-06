@@ -10,9 +10,20 @@ extern "C" int EGlite_inTopology(const ego, const double *);
 #if defined(PETSC_HAVE_TETGEN_TETLIBRARY_NEEDED)
   #define TETLIBRARY
 #endif
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wunused-parameter")
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-parameter"
+  #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include <tetgen.h>
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic pop
+#endif
 
 /* This is to fix the tetrahedron orientation from TetGen */
 static PetscErrorCode DMPlexInvertCells_Tetgen(PetscInt numCells, PetscInt numCorners, PetscInt cells[])
@@ -103,12 +114,12 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     in.facetmarkerlist = new int[in.numberoffacets];
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt idx    = f - fStart;
-      PetscInt      *points = NULL, numPoints, p, numVertices = 0, v, val = -1;
+      PetscInt      *points = nullptr, numPoints, p, numVertices = 0, v, val = -1;
 
       in.facetlist[idx].numberofpolygons = 1;
       in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
       in.facetlist[idx].numberofholes    = 0;
-      in.facetlist[idx].holelist         = NULL;
+      in.facetlist[idx].holelist         = nullptr;
 
       PetscCall(DMPlexGetTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints * 2; p += 2) {
@@ -148,8 +159,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
-    PetscReal     *meshCoords  = NULL;
-    PetscInt      *cells       = NULL;
+    PetscReal     *meshCoords  = nullptr;
+    PetscInt      *cells       = nullptr;
 
     if (sizeof(PetscReal) == sizeof(out.pointlist[0])) {
       meshCoords = (PetscReal *)out.pointlist;
@@ -219,14 +230,14 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADS Model", (PetscObject *)&modelObj));
       if (modelObj) {
         PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
-        PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+        PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
         /* Transfer EGADS Model to Volumetric Mesh */
         PetscCall(PetscObjectCompose((PetscObject)*dm, "EGADS Model", (PetscObject)modelObj));
       } else {
         PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADSLite Model", (PetscObject *)&modelObj));
         if (modelObj) {
           PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
-          PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+          PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
           /* Transfer EGADS Model to Volumetric Mesh */
           PetscCall(PetscObjectCompose((PetscObject)*dm, "EGADSLite Model", (PetscObject)modelObj));
           islite = PETSC_TRUE;
@@ -248,7 +259,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
         if (!interpolate) {
           PetscSection coordSection;
           Vec          coordinates;
-          PetscScalar *coords = NULL;
+          PetscScalar *coords = nullptr;
           PetscInt     coordSize, s, d;
 
           PetscCall(DMGetCoordinatesLocal(*dm, &coordinates));
@@ -257,7 +268,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           for (s = 0; s < coordSize; ++s)
             for (d = 0; d < dim; ++d) centroid[d] += coords[s * dim + d];
           PetscCall(DMPlexVecRestoreClosure(*dm, coordSection, coordinates, c, &coordSize, &coords));
-        } else PetscCall(DMPlexComputeCellGeometryFVM(*dm, c, NULL, centroid, NULL));
+        } else PetscCall(DMPlexComputeCellGeometryFVM(*dm, c, nullptr, centroid, nullptr));
         for (b = 0; b < Nb; ++b) {
           if (islite) {
             if (EGlite_inTopology(bodies[b], centroid) == EGADS_SUCCESS) break;
@@ -267,7 +278,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
         }
         if (b < Nb) {
           PetscInt  cval    = b, eVal, fVal;
-          PetscInt *closure = NULL, Ncl, cl;
+          PetscInt *closure = nullptr, Ncl, cl;
 
           PetscCall(DMLabelSetValue(bodyLabel, c, cval));
           PetscCall(DMPlexGetTransitiveClosure(*dm, c, PETSC_TRUE, &Ncl, &closure));
@@ -367,12 +378,12 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     in.facetmarkerlist = new int[in.numberoffacets];
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt idx    = f - fStart;
-      PetscInt      *points = NULL, numPoints, p, numVertices = 0, v, val;
+      PetscInt      *points = nullptr, numPoints, p, numVertices = 0, v, val;
 
       in.facetlist[idx].numberofpolygons = 1;
       in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
       in.facetlist[idx].numberofholes    = 0;
-      in.facetlist[idx].holelist         = NULL;
+      in.facetlist[idx].holelist         = nullptr;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints * 2; p += 2) {
@@ -403,7 +414,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     in.tetrahedronlist = new int[in.numberoftetrahedra * in.numberofcorners];
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt idx     = c - cStart;
-      PetscInt      *closure = NULL;
+      PetscInt      *closure = nullptr;
       PetscInt       closureSize;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
@@ -421,13 +432,13 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     ::tetrahedralize(args, &in, &out);
   }
 
-  in.tetrahedronvolumelist = NULL;
+  in.tetrahedronvolumelist = nullptr;
   {
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
-    PetscReal     *meshCoords  = NULL;
-    PetscInt      *cells       = NULL;
+    PetscReal     *meshCoords  = nullptr;
+    PetscInt      *cells       = nullptr;
     PetscBool      interpolate = isInterpolated == DMPLEX_INTERPOLATED_FULL ? PETSC_TRUE : PETSC_FALSE;
 
     if (sizeof(PetscReal) == sizeof(out.pointlist[0])) {
@@ -500,14 +511,14 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
       if (modelObj) {
         PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
-        PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+        PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
         /* Transfer EGADS Model to Volumetric Mesh */
         PetscCall(PetscObjectCompose((PetscObject)*dmRefined, "EGADS Model", (PetscObject)modelObj));
       } else {
         PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSLite Model", (PetscObject *)&modelObj));
         if (modelObj) {
           PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
-          PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+          PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, nullptr, &Nb, &bodies, &senses));
           /* Transfer EGADS Model to Volumetric Mesh */
           PetscCall(PetscObjectCompose((PetscObject)*dmRefined, "EGADSLite Model", (PetscObject)modelObj));
           islite = PETSC_TRUE;
@@ -529,7 +540,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
         if (!interpolate) {
           PetscSection coordSection;
           Vec          coordinates;
-          PetscScalar *coords = NULL;
+          PetscScalar *coords = nullptr;
           PetscInt     coordSize, s, d;
 
           PetscCall(DMGetCoordinatesLocal(*dmRefined, &coordinates));
@@ -538,7 +549,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           for (s = 0; s < coordSize; ++s)
             for (d = 0; d < dim; ++d) centroid[d] += coords[s * dim + d];
           PetscCall(DMPlexVecRestoreClosure(*dmRefined, coordSection, coordinates, c, &coordSize, &coords));
-        } else PetscCall(DMPlexComputeCellGeometryFVM(*dmRefined, c, NULL, centroid, NULL));
+        } else PetscCall(DMPlexComputeCellGeometryFVM(*dmRefined, c, nullptr, centroid, nullptr));
         for (b = 0; b < Nb; ++b) {
           if (islite) {
             if (EGlite_inTopology(bodies[b], centroid) == EGADS_SUCCESS) break;
@@ -548,7 +559,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
         }
         if (b < Nb) {
           PetscInt  cval    = b, eVal, fVal;
-          PetscInt *closure = NULL, Ncl, cl;
+          PetscInt *closure = nullptr, Ncl, cl;
 
           PetscCall(DMLabelSetValue(bodyLabel, c, cval));
           PetscCall(DMPlexGetTransitiveClosure(*dmRefined, c, PETSC_TRUE, &Ncl, &closure));
