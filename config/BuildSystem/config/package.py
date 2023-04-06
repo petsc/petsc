@@ -61,6 +61,7 @@ class Package(config.base.Configure):
     self.linkedbypetsc          = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
     self.gitcommit              = None # Git commit to use for downloads
     self.gitcommitmain          = None # Git commit to use for petsc/main or similar non-release branches
+    self.gcommfile              = None # File within the git clone - that has the gitcommit for the current build - saved
     self.gitsubmodules          = []   # List of git submodues that should be cloned along with the repo
     self.download               = []   # list of URLs where repository or tarballs may be found (git is tested before tarballs)
     self.deps                   = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
@@ -697,7 +698,6 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
   def installNeeded(self, mkfile):
     makefile       = os.path.join(self.packageDir, mkfile)
     makefileSaved  = os.path.join(self.confDir, 'lib','petsc','conf','pkg.conf.'+self.package)
-    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
     gcommfileSaved = os.path.join(self.confDir,'lib','petsc','conf', 'pkg.gitcommit.'+self.package)
     if self.downloaded:
       self.log.write(self.PACKAGE+' was just downloaded, forcing a rebuild because cannot determine if package has changed\n')
@@ -707,9 +707,9 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       return 1
     else:
       self.log.write('Makefile '+makefileSaved+' has correct checksum\n')
-    if os.path.isfile(gcommfile):
-      if not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile)):
-        self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
+    if self.gcommfile and os.path.isfile(self.gcommfile):
+      if not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(self.gcommfile)):
+        self.log.write('Have to rebuild '+self.PACKAGE+', '+self.gcommfile+' != '+gcommfileSaved+'\n')
         return 1
       else:
         self.log.write('Commit file '+gcommfileSaved+' has correct checksum\n')
@@ -726,12 +726,11 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       os.makedirs(subconfDir)
     makefile       = os.path.join(self.packageDir, mkfile)
     makefileSaved  = os.path.join(subconfDir, 'pkg.conf.'+self.package)
-    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
     gcommfileSaved = os.path.join(subconfDir, 'pkg.gitcommit.'+self.package)
     import shutil
     shutil.copyfile(makefile,makefileSaved)
-    if os.path.exists(gcommfile):
-      shutil.copyfile(gcommfile,gcommfileSaved)
+    if self.gcommfile and os.path.exists(self.gcommfile):
+      shutil.copyfile(self.gcommfile,gcommfileSaved)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.PACKAGE+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
@@ -816,9 +815,9 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         except:
           raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\nPerhaps its a git error!')
       # write a commit-tag file
-      fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
-      fd.write(gitcommit_hash)
-      fd.close()
+      self.gcommfile = os.path.join(self.packageDir,'pkg.gitcommit')
+      with open(self.gcommfile,'w') as fd:
+        fd.write(gitcommit_hash)
     return
 
   def getDir(self):
