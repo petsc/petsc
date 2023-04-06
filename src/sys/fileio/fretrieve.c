@@ -110,7 +110,7 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len)
    This will be very slow on runs with a large number of processors since
    it requires O(p*p) file opens.
 
-   If the environmental variable PETSC_TMP is set it will use this directory
+   If the environmental variable `PETSC_TMP` is set it will use this directory
   as the "/tmp" directory.
 
 .seealso: `PetscGetTmp()`, `PetscSharedWorkingDirectory()`, `PetscGetWorkingDirectory()`, `PetscGetHomeDirectory()`
@@ -221,8 +221,10 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
   Stores the status as a MPI attribute so it does not have to be redetermined each time.
 
   Assumes that all processors in a communicator either
-$   1) have a common working directory or
-$   2) each has a separate working directory
+.vb
+   1) have a common working directory or
+   2) each has a separate working directory
+.ve
   eventually we can write a fancier one that determines which processors share a common working directory.
 
   This will be very slow on runs with a large number of processors since it requires O(p*p) file opens.
@@ -305,7 +307,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
 }
 
 /*@C
-    PetscFileRetrieve - Obtains a file from a URL or compressed
+    PetscFileRetrieve - Obtains a file from a URL or a compressed file
         and copies into local disk space as uncompressed.
 
     Collective

@@ -22,7 +22,7 @@ FILE *PETSC_STDOUT = NULL;
 FILE *PETSC_STDERR = NULL;
 
 /*@C
-     PetscFormatConvertGetSize - Gets the length of a string needed to hold format converted with `PetscFormatConvert()`
+     PetscFormatConvertGetSize - Gets the length of a string needed to hold data converted with `PetscFormatConvert()` based on format
 
    No Fortran Support
 
@@ -419,8 +419,6 @@ PetscErrorCode PetscSNPrintfCount(char *str, size_t len, const char format[], si
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------------- */
-
 PrintfQueue petsc_printfqueue = NULL, petsc_printfqueuebase = NULL;
 int         petsc_printfqueuelength = 0;
 
@@ -621,8 +619,6 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------------------*/
-
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -662,7 +658,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
 
     Input Parameters:
 +   comm - the communicator
--   format - the usual printf() format string
+-   format - the usual `printf()` format string
 
     Level: intermediate
 
@@ -697,8 +693,6 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
   va_end(Argp);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------------------------------*/
 
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.

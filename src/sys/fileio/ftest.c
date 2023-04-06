@@ -196,7 +196,7 @@ PetscErrorCode PetscTestFile(const char fname[], char mode, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: `PetscTestFile()`, `PetscLs()`
+.seealso: `PetscTestFile()`, `PetscLs()`, `PetscRMTree()`
 @*/
 PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *flg)
 {
@@ -227,7 +227,7 @@ PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *fl
    Input Parameters:
 +  comm - the MPI communicator
 .  dirname - the directory name
--  tlen - the length of the buffer found[]
+-  tlen - the length of the buffer `found`
 
    Output Parameters:
 +  found - listing of files
@@ -235,7 +235,7 @@ PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *fl
 
    Level: intermediate
 
-.seealso: `PetscTestFile()`, `PetscLs()`
+.seealso: `PetscTestFile()`, `PetscRMTree()`, `PetscTestDirectory()`
 @*/
 PetscErrorCode PetscLs(MPI_Comm comm, const char dirname[], char found[], size_t tlen, PetscBool *flg)
 {
