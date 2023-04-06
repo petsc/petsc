@@ -124,7 +124,7 @@ typedef enum {
   NUM_TEMPS
 } TemperatureIDX;
 
-/* --------------------  Evaluate Function F(x) --------------------- */
+/* --------------------  Evaluate NRL Function F(x) (analytical solutions exist for this) --------------------- */
 static PetscReal n_cm3[2] = {0, 0};
 PetscErrorCode   FormFunction(TS ts, PetscReal tdummy, Vec X, Vec F, void *ptr)
 {
@@ -405,8 +405,7 @@ int main(int argc, char **argv)
   PetscCall(TSSolve(ts, X));
   /* test add field method & output */
   PetscCall(DMPlexLandauAccess(pack, X, landau_field_print_access_callback, NULL));
-  //PetscCall(Monitor(ts, -1, 1.0, X, ctx));
-  /* clean up */
+  // run NRL in separate TS
   ts_nrl = (TS)ctx->data;
   if (print_nrl) {
     PetscReal    finalTime, dt_real, tstart = dt0 * ctx->t_0 / 2; // hack
@@ -429,6 +428,7 @@ int main(int argc, char **argv)
     PetscCall(TSMonitorSet(ts_nrl, Monitor_nrl, ctx, NULL));
     PetscCall(TSSolve(ts_nrl, NULL));
   }
+  /* clean up */
   PetscCall(TSDestroy(&ts));
   PetscCall(TSDestroy(&ts_nrl));
   PetscCall(VecDestroy(&X));
@@ -457,13 +457,13 @@ int main(int argc, char **argv)
 
   testset:
     requires: !complex defined(PETSC_USE_DMLANDAU_2D) p4est
-    args: -dm_landau_type p4est -dm_landau_amr_levels_max 3,3 -dm_landau_num_species_grid 1,1 -dm_landau_n 1,1 -dm_landau_thermal_temps 1,1 -dm_landau_ion_charges 1 -dm_landau_ion_masses 2 -petscspace_degree 2 -ts_type beuler -ts_dt .1 -ts_max_steps 0 -dm_landau_verbose 2 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -use_nrl false -print_nrl -snes_rtol 1.e-14 -snes_stol 1.e-14 -dm_landau_device_type cpu
+    args: -dm_landau_type p4est -dm_landau_num_species_grid 1,1 -dm_landau_n 1,1 -dm_landau_thermal_temps 2,1 -dm_landau_ion_charges 1 -dm_landau_ion_masses 2 -petscspace_degree 2 -ts_type beuler -ts_dt .1 -ts_max_steps 1 -dm_landau_verbose 2 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -use_nrl false -print_nrl -snes_rtol 1.e-14 -snes_stol 1.e-14 -snes_converged_reason -dm_landau_device_type cpu
     nsize: 1
     test:
       suffix: sphere
-      args: -dm_landau_sphere -ts_max_steps 1 -dm_landau_sphere_inner_radius_90degree_scale .55 -dm_landau_sphere_inner_radius_45degree_scale .5
+      args: -dm_landau_sphere -dm_landau_amr_levels_max 1,1 -dm_landau_sphere_inner_radius_90degree_scale .55 -dm_landau_sphere_inner_radius_45degree_scale .5
     test:
       suffix: re
-      args: -dm_landau_num_cells 4,4 -dm_landau_amr_levels_max 0,2 -dm_landau_z_radius_pre 2.5 -dm_landau_z_radius_post 3.75 -dm_landau_amr_z_refine_pre 1 -dm_landau_amr_z_refine_post 1 -dm_landau_electron_shift 1.25 -ts_max_steps 1 -snes_converged_reason -info :vec
+      args: -dm_landau_num_cells 4,4 -dm_landau_amr_levels_max 0,2 -dm_landau_z_radius_pre 2.5 -dm_landau_z_radius_post 3.75 -dm_landau_amr_z_refine_pre 1 -dm_landau_amr_z_refine_post 1 -dm_landau_electron_shift 1.25 -info :vec
 
 TEST*/

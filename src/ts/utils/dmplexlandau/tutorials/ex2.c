@@ -756,4 +756,17 @@ int main(int argc, char **argv)
     nsize: 1
     args: -dm_refine 2 -dm_landau_num_species_grid 1 -dm_landau_thermal_temps 1 -dm_landau_electron_shift 1.25 -petscspace_degree 3 -snes_converged_reason -ts_type beuler -ts_dt .1 -ex2_plot_dt .1 -ts_max_steps 1 -ex2_grid_view_idx 0 -ex2_dm_view -snes_rtol 1.e-13 -snes_stol 1.e-13 -dm_landau_verbose 2 -ex2_print_period 1 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -dm_landau_use_relativistic_corrections
 
+  testset:
+    requires: !complex double defined(PETSC_USE_DMLANDAU_2D)
+    nsize: 1
+    output_file: output/ex2_simplex.out
+    args: -dim 2 -dm_landau_num_species_grid 1,1 -petscspace_degree 2 -dm_landau_simplex -dm_landau_ion_masses 2 -dm_landau_ion_charges 1 -dm_landau_thermal_temps 2,1 -dm_landau_n 1,1 -snes_rtol 1e-15 -snes_stol 1e-15 -snes_monitor -ts_type beuler -snes_converged_reason -ts_exact_final_time stepover -ts_dt .1 -ts_max_steps 1 -ts_max_snes_failures -1 -ksp_type preonly -pc_type lu -dm_landau_verbose 2 -ex2_grid_view_idx 0 -ex2_dm_view -dm_refine 1 -ksp_type bicg -pc_type jacobi
+    test:
+      suffix: simplex
+      args: -dm_landau_device_type cpu
+    test:
+      suffix: simplexkokkos
+      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
+      args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos
+
 TEST*/
