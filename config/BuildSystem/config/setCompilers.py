@@ -626,10 +626,14 @@ class Configure(config.base.Configure):
         if log: log.write('Detected Darwin')
         isDarwin_value = True
         import platform
-        v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
-        if v >= (10,15,0):
-          if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
-          isDarwinCatalina_value = True
+        try:
+          v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
+          if v >= (10,15,0):
+            if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
+            isDarwinCatalina_value = True
+        except:
+          if log: log.write('MacOS version detecton failed!\n')
+          pass
       if output.find('freebsd') >= 0:
         if log: log.write('Detected FreeBSD')
         isFreeBSD_value = True

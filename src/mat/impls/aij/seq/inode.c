@@ -790,7 +790,7 @@ static PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A, Vec bb, Vec xx)
     nz  = ad[row] - aii;
     if (i < node_max - 1) {
       /* Prefetch the block after the current one, the prefetch itself can't cause a memory error,
-      * but our indexing to determine it's size could. */
+      * but our indexing to determine its size could. */
       PetscPrefetchBlock(aj + ai[row + nsz], ad[row + nsz] - ai[row + nsz], 0, PETSC_PREFETCH_HINT_NTA); /* indices */
       /* In my tests, it seems to be better to fetch entire rows instead of just the lower-triangular part */
       PetscPrefetchBlock(aa + ai[row + nsz], ad[row + nsz + ns[i + 1] - 1] - ai[row + nsz], 0, PETSC_PREFETCH_HINT_NTA);

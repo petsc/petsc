@@ -96,7 +96,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
   (*device)->type   = type;
   (*device)->refcnt = 1;
   /*
-    if you are adding a device, you also need to add it's initialization in
+    if you are adding a device, you also need to add its initialization in
     PetscDeviceInitializeTypeFromOptions_Private() below
   */
   switch (type) {

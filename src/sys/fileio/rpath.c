@@ -19,7 +19,7 @@
    PetscGetRelativePath - Given a filename, returns the relative path (removes
    all directory specifiers).
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input parameters:
 +  fullpath  - full pathname
