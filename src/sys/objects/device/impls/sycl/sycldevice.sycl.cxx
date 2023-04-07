@@ -143,7 +143,7 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   PetscOptionsBegin(comm, nullptr, "PetscDevice sycl Options", "Sys");
   PetscCall(base_type::PetscOptionDeviceInitialize(PetscOptionsObject, &initType, nullptr));
   PetscCall(base_type::PetscOptionDeviceSelect(PetscOptionsObject, "Which sycl device to use? Pass -2 for host, PETSC_DECIDE (" PetscStringize(PETSC_DECIDE) ") to let PETSc decide, 0 and up for GPUs", "PetscDeviceCreate()", id, &id, nullptr, -2, std::numeric_limits<decltype(ngpus)>::max()));
-  static_assert(PETSC_DECIDE - 1 == -2, "");
+  static_assert(PETSC_DECIDE == -1, "Expect PETSC_DECIDE to be -1");
   PetscCall(base_type::PetscOptionDeviceView(PetscOptionsObject, &view, &flg));
   PetscOptionsEnd();
 

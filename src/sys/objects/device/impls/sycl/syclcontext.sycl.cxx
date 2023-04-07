@@ -1,5 +1,6 @@
 #include "sycldevice.hpp"
 #include <CL/sycl.hpp>
+#include <Kokkos_Core.hpp>
 
 namespace Petsc
 {
@@ -15,13 +16,16 @@ namespace impl
 
 class DeviceContext {
 public:
-  struct PetscDeviceContext_IMPLS {
+  struct PetscDeviceContext_SYCL {
     ::sycl::event event;
-    ::sycl::event begin; // timer-only
-    ::sycl::event end;   // timer-only
+    ::sycl::event begin;   // timer-only
+    ::sycl::event end;     // timer-only
+    Kokkos::Timer timer{}; // use cpu time since sycl events are return value of queue submission and we have no infrastructure to store them
+    double        timeBegin{};
 #if PetscDefined(USE_DEBUG)
-    PetscBool timerInUse;
+    PetscBool timerInUse{};
 #endif
+    ::sycl::queue queue;
   };
 
 private:
@@ -34,7 +38,7 @@ private:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  static PetscErrorCode initialize_(PetscInt id, DeviceContext *dci) noexcept
+  static PetscErrorCode initialize_(PetscInt id, PetscDeviceContext dctx) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscDeviceCheckDeviceCount_Internal(id));
@@ -56,7 +60,7 @@ public:
   static PetscErrorCode destroy(PetscDeviceContext dctx) noexcept
   {
     PetscFunctionBegin;
-    delete static_cast<PetscDeviceContext_IMPLS *>(dctx->data);
+    delete static_cast<PetscDeviceContext_SYCL *>(dctx->data);
     dctx->data = nullptr;
     PetscFunctionReturn(PETSC_SUCCESS);
   };
@@ -129,15 +133,9 @@ public:
   };
 
   static PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode setUp(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }; // Nothing to setup
-  static PetscErrorCode query(PetscDeviceContext, PetscBool *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
   static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode synchronize(PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
   static PetscErrorCode getBlasHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
   static PetscErrorCode getSolverHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode getStreamHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode beginTimer(PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
 };
 
 } // namespace impl
@@ -155,7 +153,7 @@ PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext dctx)
   static const DeviceContext syclctx;
 
   PetscFunctionBegin;
-  dctx->data = new DeviceContext::PetscDeviceContext_IMPLS();
+  PetscCallCXX(dctx->data = new DeviceContext::PetscDeviceContext_SYCL());
   PetscCall(PetscMemcpy(dctx->ops, &syclctx.ops, sizeof(syclctx.ops)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
