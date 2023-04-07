@@ -62,11 +62,11 @@ public:
 
     constexpr PetscDeviceContext_IMPLS() noexcept = default;
 
-    PETSC_NODISCARD cupmStream_t get(stream_tag) const noexcept { return this->stream.get_stream(); }
+    PETSC_NODISCARD const cupmStream_t &get(stream_tag) const noexcept { return this->stream.get_stream(); }
 
-    PETSC_NODISCARD cupmBlasHandle_t get(blas_tag) const noexcept { return this->blas; }
+    PETSC_NODISCARD const cupmBlasHandle_t &get(blas_tag) const noexcept { return this->blas; }
 
-    PETSC_NODISCARD cupmSolverHandle_t get(solver_tag) const noexcept { return this->solver; }
+    PETSC_NODISCARD const cupmSolverHandle_t &get(solver_tag) const noexcept { return this->solver; }
   };
 
 private:
@@ -205,6 +205,8 @@ public:
   static PetscErrorCode synchronize(PetscDeviceContext) noexcept;
   template <typename Handle_t>
   static PetscErrorCode getHandle(PetscDeviceContext, void *) noexcept;
+  template <typename Handle_t>
+  static PetscErrorCode getHandlePtr(PetscDeviceContext, void *) noexcept;
   static PetscErrorCode beginTimer(PetscDeviceContext) noexcept;
   static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept;
   static PetscErrorCode memAlloc(PetscDeviceContext, PetscBool, PetscMemType, std::size_t, std::size_t, void **) noexcept;
@@ -228,7 +230,7 @@ public:
     PetscDesignatedInitializer(synchronize, synchronize),
     PetscDesignatedInitializer(getblashandle, getHandle<blas_tag>),
     PetscDesignatedInitializer(getsolverhandle, getHandle<solver_tag>),
-    PetscDesignatedInitializer(getstreamhandle, getHandle<stream_tag>),
+    PetscDesignatedInitializer(getstreamhandle, getHandlePtr<stream_tag>),
     PetscDesignatedInitializer(begintimer, beginTimer),
     PetscDesignatedInitializer(endtimer, endTimer),
     PetscDesignatedInitializer(memalloc, memAlloc),
@@ -358,6 +360,18 @@ inline PetscErrorCode DeviceContext<T>::getHandle(PetscDeviceContext dctx, void 
   PetscFunctionBegin;
   PetscCall(initialize_handle_(handle_t{}, dctx));
   *static_cast<typename handle_t::type *>(handle) = impls_cast_(dctx)->get(handle_t{});
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <DeviceType T>
+template <typename handle_t>
+inline PetscErrorCode DeviceContext<T>::getHandlePtr(PetscDeviceContext dctx, void *handle) noexcept
+{
+  using handle_type = typename handle_t::type;
+
+  PetscFunctionBegin;
+  PetscCall(initialize_handle_(handle_t{}, dctx));
+  *static_cast<handle_type **>(handle) = const_cast<handle_type *>(std::addressof(impls_cast_(dctx)->get(handle_t{})));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

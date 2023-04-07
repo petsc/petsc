@@ -15,6 +15,8 @@ Changes: Development
 
 .. rubric:: Sys:
 
+- Add `PetscDeviceContextGetStreamHandle()` to return a handle to the stream the current device context is using
+
 .. rubric:: Event Logging:
 
 .. rubric:: PetscViewer:
