@@ -16,7 +16,6 @@
   #define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
 #endif
 
-#define PETSC_THREAD_SYNC
 #include "land_tensors.h"
 
 #if defined(PETSC_HAVE_OPENMP)
@@ -1043,12 +1042,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscFunctionBegin;
   PetscCall(DMCreate(ctx->comm, &dummy));
   /* get options - initialize context */
-  ctx->verbose = 1; // should be 0 for silent compliance
-#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-  ctx->batch_sz = PetscNumOMPThreads;
-#else
-  ctx->batch_sz = 1;
-#endif
+  ctx->verbose        = 1; // should be 0 for silent compliance
+  ctx->batch_sz       = 1;
   ctx->batch_view_idx = 0;
   ctx->interpolate    = PETSC_TRUE;
   ctx->gpu_assembly   = PETSC_TRUE;
