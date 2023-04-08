@@ -66,14 +66,14 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     lastcol1 = col; \
     while (high1 - low1 > 5) { \
       t = (low1 + high1) / 2; \
-      if (*(cp1 + sliceheight * t) > col) high1 = t; \
+      if (cp1[sliceheight * t] > col) high1 = t; \
       else low1 = t; \
     } \
     for (_i = low1; _i < high1; _i++) { \
-      if (*(cp1 + sliceheight * _i) > col) break; \
-      if (*(cp1 + sliceheight * _i) == col) { \
-        if (addv == ADD_VALUES) *(vp1 + sliceheight * _i) += value; \
-        else *(vp1 + sliceheight * _i) = value; \
+      if (cp1[sliceheight * _i] > col) break; \
+      if (cp1[sliceheight * _i] == col) { \
+        if (addv == ADD_VALUES) vp1[sliceheight * _i] += value; \
+        else vp1[sliceheight * _i] = value; \
         inserted = PETSC_TRUE; \
         goto a_noinsert; \
       } \
@@ -92,11 +92,11 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     MatSeqXSELLReallocateSELL(A, am, 1, nrow1, a->sliidx, a->sliceheight, row / sliceheight, row, col, a->colidx, a->val, cp1, vp1, nonew, MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii = nrow1 - 1; ii >= _i; ii--) { \
-      *(cp1 + sliceheight * (ii + 1)) = *(cp1 + sliceheight * ii); \
-      *(vp1 + sliceheight * (ii + 1)) = *(vp1 + sliceheight * ii); \
+      cp1[sliceheight * (ii + 1)] = cp1[sliceheight * ii]; \
+      vp1[sliceheight * (ii + 1)] = vp1[sliceheight * ii]; \
     } \
-    *(cp1 + sliceheight * _i) = col; \
-    *(vp1 + sliceheight * _i) = value; \
+    cp1[sliceheight * _i] = col; \
+    vp1[sliceheight * _i] = value; \
     a->nz++; \
     nrow1++; \
     A->nonzerostate++; \
@@ -111,14 +111,14 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     lastcol2 = col; \
     while (high2 - low2 > 5) { \
       t = (low2 + high2) / 2; \
-      if (*(cp2 + sliceheight * t) > col) high2 = t; \
+      if (cp2[sliceheight * t] > col) high2 = t; \
       else low2 = t; \
     } \
     for (_i = low2; _i < high2; _i++) { \
-      if (*(cp2 + sliceheight * _i) > col) break; \
-      if (*(cp2 + sliceheight * _i) == col) { \
-        if (addv == ADD_VALUES) *(vp2 + sliceheight * _i) += value; \
-        else *(vp2 + sliceheight * _i) = value; \
+      if (cp2[sliceheight * _i] > col) break; \
+      if (cp2[sliceheight * _i] == col) { \
+        if (addv == ADD_VALUES) vp2[sliceheight * _i] += value; \
+        else vp2[sliceheight * _i] = value; \
         inserted = PETSC_TRUE; \
         goto b_noinsert; \
       } \
@@ -137,11 +137,11 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     MatSeqXSELLReallocateSELL(B, bm, 1, nrow2, b->sliidx, b->sliceheight, row / sliceheight, row, col, b->colidx, b->val, cp2, vp2, nonew, MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii = nrow2 - 1; ii >= _i; ii--) { \
-      *(cp2 + sliceheight * (ii + 1)) = *(cp2 + sliceheight * ii); \
-      *(vp2 + sliceheight * (ii + 1)) = *(vp2 + sliceheight * ii); \
+      cp2[sliceheight * (ii + 1)] = cp2[sliceheight * ii]; \
+      vp2[sliceheight * (ii + 1)] = vp2[sliceheight * ii]; \
     } \
-    *(cp2 + sliceheight * _i) = col; \
-    *(vp2 + sliceheight * _i) = value; \
+    cp2[sliceheight * _i] = col; \
+    vp2[sliceheight * _i] = value; \
     b->nz++; \
     nrow2++; \
     B->nonzerostate++; \
