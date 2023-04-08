@@ -366,7 +366,7 @@ M*/
 
   Notes:
   Equivalent to `NULL` in C source, and nullptr in C++ source. Note that for the purposes of
-  interoperability between C and C++, setting a pointer to `PETSC_NULLPTR` in C++ is functonially
+  interoperability between C and C++, setting a pointer to `PETSC_NULLPTR` in C++ is functionally
   equivalent to setting the same pointer to `NULL` in C. That is to say that the following
   expressions are equivalent\:
 

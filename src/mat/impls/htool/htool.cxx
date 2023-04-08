@@ -44,7 +44,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only congruent layouts supported");
   PetscCall(PetscObjectQuery((PetscObject)A, "DiagonalBlock", (PetscObject *)&B)); /* same logic as in MatGetDiagonalBlock_MPIDense() */
   if (!B) {
-    PetscCall(MatCreateDense(PETSC_COMM_SELF, A->rmap->n, A->rmap->n, A->rmap->n, A->rmap->n, NULL, &B));
+    PetscCall(MatCreateDense(PETSC_COMM_SELF, A->rmap->n, A->rmap->n, A->rmap->n, A->rmap->n, nullptr, &B));
     PetscCall(MatDenseGetArrayWrite(B, &ptr));
     a->hmatrix->copy_local_diagonal_block(ptr);
     PetscCall(MatDenseRestoreArrayWrite(B, &ptr));
@@ -166,7 +166,7 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
     PetscCall(ISGetLocalSize(icol[i], &m));
     PetscCall(ISGetIndices(irow[i], &idxr));
     PetscCall(ISGetIndices(icol[i], &idxc));
-    if (scall != MAT_REUSE_MATRIX) PetscCall(MatCreateDense(PETSC_COMM_SELF, nrow, m, nrow, m, NULL, (*submat) + i));
+    if (scall != MAT_REUSE_MATRIX) PetscCall(MatCreateDense(PETSC_COMM_SELF, nrow, m, nrow, m, nullptr, (*submat) + i));
     PetscCall(MatDenseGetArrayWrite((*submat)[i], &ptr));
     if (irow[i] == icol[i]) { /* same row and column IS? */
       PetscCall(MatHasCongruentLayouts(A, &flg));
@@ -255,23 +255,23 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   MatHtoolKernelTranspose *kernelt;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_seqdense_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_mpidense_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_htool_seqdense_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_htool_mpidense_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetHierarchicalMat_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetKernel_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationSource_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", NULL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A, nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_seqdense_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_mpidense_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_htool_seqdense_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_htool_mpidense_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetHierarchicalMat_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolSetKernel_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationSource_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", nullptr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", nullptr));
   PetscCall(PetscObjectQuery((PetscObject)A, "KernelTranspose", (PetscObject *)&container));
   if (container) { /* created in MatTranspose_Htool() */
     PetscCall(PetscContainerGetPointer(container, (void **)&kernelt));
     PetscCall(MatDestroy(&kernelt->A));
     PetscCall(PetscFree(kernelt));
     PetscCall(PetscContainerDestroy(&container));
-    PetscCall(PetscObjectCompose((PetscObject)A, "KernelTranspose", NULL));
+    PetscCall(PetscObjectCompose((PetscObject)A, "KernelTranspose", nullptr));
   }
   if (a->gcoords_source != a->gcoords_target) PetscCall(PetscFree(a->gcoords_source));
   PetscCall(PetscFree(a->gcoords_target));
@@ -369,12 +369,12 @@ static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOpti
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Htool options");
-  PetscCall(PetscOptionsInt("-mat_htool_min_cluster_size", "Minimal leaf size in cluster tree", NULL, a->bs[0], a->bs, NULL));
-  PetscCall(PetscOptionsInt("-mat_htool_max_block_size", "Maximal number of coefficients in a dense block", NULL, a->bs[1], a->bs + 1, NULL));
-  PetscCall(PetscOptionsReal("-mat_htool_epsilon", "Relative error in Frobenius norm when approximating a block", NULL, a->epsilon, &a->epsilon, NULL));
-  PetscCall(PetscOptionsReal("-mat_htool_eta", "Admissibility condition tolerance", NULL, a->eta, &a->eta, NULL));
-  PetscCall(PetscOptionsInt("-mat_htool_min_target_depth", "Minimal cluster tree depth associated with the rows", NULL, a->depth[0], a->depth, NULL));
-  PetscCall(PetscOptionsInt("-mat_htool_min_source_depth", "Minimal cluster tree depth associated with the columns", NULL, a->depth[1], a->depth + 1, NULL));
+  PetscCall(PetscOptionsInt("-mat_htool_min_cluster_size", "Minimal leaf size in cluster tree", nullptr, a->bs[0], a->bs, nullptr));
+  PetscCall(PetscOptionsInt("-mat_htool_max_block_size", "Maximal number of coefficients in a dense block", nullptr, a->bs[1], a->bs + 1, nullptr));
+  PetscCall(PetscOptionsReal("-mat_htool_epsilon", "Relative error in Frobenius norm when approximating a block", nullptr, a->epsilon, &a->epsilon, nullptr));
+  PetscCall(PetscOptionsReal("-mat_htool_eta", "Admissibility condition tolerance", nullptr, a->eta, &a->eta, nullptr));
+  PetscCall(PetscOptionsInt("-mat_htool_min_target_depth", "Minimal cluster tree depth associated with the rows", nullptr, a->depth[0], a->depth, nullptr));
+  PetscCall(PetscOptionsInt("-mat_htool_min_source_depth", "Minimal cluster tree depth associated with the columns", nullptr, a->depth[1], a->depth + 1, nullptr));
   n = 0;
   PetscCall(PetscOptionsEList("-mat_htool_compressor", "Type of compression", "MatHtoolCompressorType", MatHtoolCompressorTypes, PETSC_STATIC_ARRAY_LENGTH(MatHtoolCompressorTypes), MatHtoolCompressorTypes[MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA], &n, &flg));
   if (flg) a->compressor = MatHtoolCompressorType(n);
@@ -424,7 +424,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
   t->build(A->rmap->N, a->gcoords_target, offset);
   if (a->kernel) a->wrapper = new WrapperHtool(A->rmap->N, A->cmap->N, a->dim, a->kernel, a->kernelctx);
   else {
-    a->wrapper = NULL;
+    a->wrapper = nullptr;
     generator  = reinterpret_cast<htool::VirtualGenerator<PetscScalar> *>(a->kernelctx);
   }
   if (a->gcoords_target != a->gcoords_source) {
@@ -481,7 +481,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
-  PetscCall(MatGetSize(C, NULL, &N));
+  PetscCall(MatGetSize(C, nullptr, &N));
   PetscCall(MatDenseGetLDA(C, &lda));
   PetscCheck(lda == C->rmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")", lda, C->rmap->n);
   PetscCall(MatDenseGetArrayRead(product->B, &in));
@@ -529,7 +529,7 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
   PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-  C->ops->productsymbolic = NULL;
+  C->ops->productsymbolic = nullptr;
   C->ops->productnumeric  = MatProductNumeric_Htool;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -909,8 +909,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   A->ops->restorerow        = MatRestoreRow_Htool;
   A->ops->assemblyend       = MatAssemblyEnd_Htool;
   a->dim                    = 0;
-  a->gcoords_target         = NULL;
-  a->gcoords_source         = NULL;
+  a->gcoords_target         = nullptr;
+  a->gcoords_source         = nullptr;
   a->s                      = 1.0;
   a->bs[0]                  = 10;
   a->bs[1]                  = 1000000;

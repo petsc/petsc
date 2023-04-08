@@ -24,7 +24,7 @@ typedef struct _PetscHashAuxKey {
 
 #define PetscHashAuxKeyEqual(k1, k2) (((k1).label == (k2).label) ? (((k1).value == (k2).value) ? ((k1).part == (k2).part) : 0) : 0)
 
-PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, NULL)
+PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, PETSC_NULLPTR)
 
 struct _n_DMGeneratorFunctionList {
   PetscErrorCode (*generate)(DM, PetscBool, DM *);
