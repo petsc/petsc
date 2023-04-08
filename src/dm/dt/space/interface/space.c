@@ -204,7 +204,6 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   }
   {
     PetscCall(PetscOptionsDeprecated("-petscspace_order", "-petscspace_degree", "3.11", NULL));
-    PetscCall(PetscOptionsBoundedInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL, 0));
   }
   PetscCall(PetscOptionsBoundedInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL, 0));
