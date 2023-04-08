@@ -981,9 +981,9 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   if (ksp->errorifnotconverged && ksp->reason < 0 && ((level == 1) || (ksp->reason != KSP_DIVERGED_ITS))) {
     PCFailedReason reason;
 
-    PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged, reason %s", KSPConvergedReasons[ksp->reason]);
+    PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve%s() has not converged, reason %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason]);
     PetscCall(PCGetFailedReason(ksp->pc, &reason));
-    SETERRQ(comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged, reason %s PC failed due to %s", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
+    SETERRQ(comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve%s() has not converged, reason %s PC failed due to %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
   }
   level--;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1181,6 +1181,7 @@ PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
   PetscCall(KSPSetUp(ksp));
   PetscCall(KSPSetUpOnBlocks(ksp));
   if (ksp->ops->matsolve) {
+    level++;
     if (ksp->guess_zero) PetscCall(MatZeroEntries(X));
     PetscCall(PetscLogEventBegin(!ksp->transpose_solve ? KSP_MatSolve : KSP_MatSolveTranspose, ksp, B, X, 0));
     PetscCall(KSPGetMatSolveBatchSize(ksp, &Bbn));
@@ -1224,6 +1225,14 @@ PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
     if (ksp->viewSol) PetscCall(ObjectView((PetscObject)X, ksp->viewerSol, ksp->formatSol));
     if (ksp->view) PetscCall(KSPView(ksp, ksp->viewer));
     PetscCall(PetscLogEventEnd(!ksp->transpose_solve ? KSP_MatSolve : KSP_MatSolveTranspose, ksp, B, X, 0));
+    if (ksp->errorifnotconverged && ksp->reason < 0 && (level == 1 || ksp->reason != KSP_DIVERGED_ITS)) {
+      PCFailedReason reason;
+
+      PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged, reason %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason]);
+      PetscCall(PCGetFailedReason(ksp->pc, &reason));
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged, reason %s PC failed due to %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
+    }
+    level--;
   } else {
     PetscCall(PetscInfo(ksp, "KSP type %s solving column by column\n", ((PetscObject)ksp)->type_name));
     for (n2 = 0; n2 < N2; ++n2) {
