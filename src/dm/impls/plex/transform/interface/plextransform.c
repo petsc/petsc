@@ -2144,6 +2144,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidPointer(tdm, 3);
+  PetscCall(PetscLogEventBegin(DMPLEX_Transform, tr, dm, 0, 0));
   PetscCall(DMPlexTransformSetDM(tr, dm));
 
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &rdm));
@@ -2170,7 +2171,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, rdm));
   // If the original DM was configured from options, the transformed DM should be as well
   rdm->setfromoptionscalled = dm->setfromoptionscalled;
-
+  PetscCall(PetscLogEventEnd(DMPLEX_Transform, tr, dm, 0, 0));
   *tdm = rdm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
