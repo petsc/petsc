@@ -38,6 +38,7 @@ Changes: Development
 .. rubric:: Mat:
 
 - Add ``VecCreateMatDense()``
+- Remove ``MATSOLVERSPARSEELEMENTAL`` since it is no longer functional
 
 .. rubric:: MatCoarsen:
 

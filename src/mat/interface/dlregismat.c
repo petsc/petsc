@@ -103,9 +103,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void);
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void);
 #endif
-#if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void);
-#endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_Pardiso(void);
 #endif
@@ -417,9 +414,6 @@ PetscErrorCode MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   PetscCall(MatSolverTypeRegister_SuperLU_DIST());
-#endif
-#if defined(PETSC_HAVE_ELEMENTAL)
-  PetscCall(MatSolverTypeRegister_SparseElemental());
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
   PetscCall(MatSolverTypeRegister_MKL_Pardiso());

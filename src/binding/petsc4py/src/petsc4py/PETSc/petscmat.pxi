@@ -104,7 +104,6 @@ cdef extern from * nogil:
     PetscMatSolverType MATSOLVERUMFPACK
     PetscMatSolverType MATSOLVERCHOLMOD
     PetscMatSolverType MATSOLVERKLU
-    PetscMatSolverType MATSOLVERSPARSEELEMENTAL
     PetscMatSolverType MATSOLVERELEMENTAL
     PetscMatSolverType MATSOLVERSCALAPACK
     PetscMatSolverType MATSOLVERESSL
