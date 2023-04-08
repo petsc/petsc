@@ -572,7 +572,6 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
   if (PetscLogPrintInfo) lu->options.PrintStat = YES;
   else lu->options.PrintStat = NO;
   PetscCall(PetscOptionsDeprecated("-mat_superlu_dist_statprint", "-mat_superlu_dist_printstat", "3.19", NULL));
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_statprint", "DEPRECATED: Print factorization information", "None", (PetscBool)lu->options.PrintStat, (PetscBool *)&lu->options.PrintStat, NULL));
   PetscCall(PetscOptionsBool("-mat_superlu_dist_printstat", "Print factorization information", "None", (PetscBool)lu->options.PrintStat, (PetscBool *)&lu->options.PrintStat, NULL));
 
   /* Additional options for special cases */
