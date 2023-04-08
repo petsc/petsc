@@ -870,7 +870,7 @@ PETSC_DEPRECATED_FUNCTION("Use KSPConvergedSkip() (since version 3.5)") static i
 PETSC_EXTERN PetscErrorCode KSPComputeOperator(KSP, MatType, Mat *);
 PETSC_DEPRECATED_FUNCTION("Use KSPComputeOperator() (since version 3.12)") static inline PetscErrorCode KSPComputeExplicitOperator(KSP A, Mat *B)
 {
-  return KSPComputeOperator(A, NULL, B);
+  return KSPComputeOperator(A, PETSC_NULLPTR, B);
 }
 
 /*E
