@@ -54,16 +54,16 @@ static PetscErrorCode MatSeqSELLCUDACopyToGPU(Mat A)
       cudastruct->totalentries = a->sliidx[a->totalslices];
       cudastruct->totalslices  = a->totalslices;
       cudastruct->totalchunks  = a->totalchunks;
-      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->colidx), a->maxallocmat * sizeof(PetscInt)));
-      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->val), a->maxallocmat * sizeof(MatScalar)));
+      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->colidx), a->maxallocmat * sizeof(*(cudastruct->colidx))));
+      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->val), a->maxallocmat * sizeof(*(cudastruct->val))));
       /* copy values, nz or maxallocmat? */
-      PetscCallCUDA(cudaMemcpy(cudastruct->colidx, a->colidx, a->sliidx[a->totalslices] * sizeof(PetscInt), cudaMemcpyHostToDevice));
-      PetscCallCUDA(cudaMemcpy(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMemcpy(cudastruct->colidx, a->colidx, a->sliidx[a->totalslices] * sizeof(*(a->colidx)), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMemcpy(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(*(a->val)), cudaMemcpyHostToDevice));
 
-      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->sliidx), (a->totalslices + 1) * sizeof(PetscInt)));
-      PetscCallCUDA(cudaMemcpy(cudastruct->sliidx, a->sliidx, (a->totalslices + 1) * sizeof(PetscInt), cudaMemcpyHostToDevice));
-      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->chunk_slice_map), a->totalchunks * sizeof(PetscInt)));
-      PetscCallCUDA(cudaMemcpy(cudastruct->chunk_slice_map, a->chunk_slice_map, a->totalchunks * sizeof(PetscInt), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->sliidx), (a->totalslices + 1) * sizeof(*(cudastruct->sliidx))));
+      PetscCallCUDA(cudaMemcpy(cudastruct->sliidx, a->sliidx, (a->totalslices + 1) * sizeof(*(a->sliidx)), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMalloc((void **)&(cudastruct->chunk_slice_map), a->totalchunks * sizeof(*(cudastruct->chunk_slice_map))));
+      PetscCallCUDA(cudaMemcpy(cudastruct->chunk_slice_map, a->chunk_slice_map, a->totalchunks * sizeof(*(a->chunk_slice_map)), cudaMemcpyHostToDevice));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar) + sizeof(PetscInt)) + (a->totalslices + 1 + a->totalchunks) * sizeof(PetscInt)));
     }
     PetscCallCUDA(WaitForCUDA());
@@ -910,12 +910,30 @@ static PetscErrorCode MatAssemblyEnd_SeqSELLCUDA(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatZeroEntries_SeqSELLCUDA(Mat A)
+{
+  PetscBool    both = PETSC_FALSE;
+  Mat_SeqSELL *a    = (Mat_SeqSELL *)A->data;
+
+  PetscFunctionBegin;
+  if (A->factortype == MAT_FACTOR_NONE) {
+    Mat_SeqSELLCUDA *cudastruct = (Mat_SeqSELLCUDA *)A->spptr;
+    if (cudastruct->val) {
+      both = PETSC_TRUE;
+      PetscCallCUDA(cudaMemset(cudastruct->val, 0, a->sliidx[a->totalslices] * sizeof(*(cudastruct->val))));
+    }
+  }
+  PetscCall(PetscArrayzero(a->val, a->sliidx[a->totalslices]));
+  PetscCall(MatSeqSELLInvalidateDiagonal(A));
+  if (both) A->offloadmask = PETSC_OFFLOAD_BOTH;
+  else A->offloadmask = PETSC_OFFLOAD_CPU;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDestroy_SeqSELLCUDA(Mat A)
 {
   PetscFunctionBegin;
-  if (A->factortype == MAT_FACTOR_NONE) {
-    if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) { PetscCall(MatSeqSELLCUDA_Destroy((Mat_SeqSELLCUDA **)&A->spptr)); }
-  }
+  if (A->factortype == MAT_FACTOR_NONE && A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) PetscCall(MatSeqSELLCUDA_Destroy((Mat_SeqSELLCUDA **)&A->spptr));
   PetscCall(MatDestroy_SeqSELL(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -929,7 +947,7 @@ static PetscErrorCode       MatDuplicate_SeqSELLCUDA(Mat A, MatDuplicateOption c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatConvert_SeqSELL_SeqSELLCUDA(Mat B)
+PETSC_INTERN PetscErrorCode MatConvert_SeqSELL_SeqSELLCUDA(Mat B)
 {
   Mat_SeqSELLCUDA *cudastruct;
 
@@ -950,6 +968,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSELL_SeqSELLCUDA(Mat B)
   B->ops->mult           = MatMult_SeqSELLCUDA;
   B->ops->multadd        = MatMultAdd_SeqSELLCUDA;
   B->ops->duplicate      = MatDuplicate_SeqSELLCUDA;
+  B->ops->zeroentries    = MatZeroEntries_SeqSELLCUDA;
 
   /* No need to assemble SeqSELL, but need to do the preprocessing for SpMV */
   PetscCall(MatAssemblyEnd_SpMV_Preprocessing_Private(B));
@@ -964,5 +983,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELLCUDA(Mat B)
   PetscFunctionBegin;
   PetscCall(MatCreate_SeqSELL(B));
   PetscCall(MatConvert_SeqSELL_SeqSELLCUDA(B));
+  PetscCall(MatSetFromOptions(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

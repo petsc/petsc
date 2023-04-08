@@ -1,4 +1,5 @@
 #include <petscconf.h>
+#include <petscdevice.h>
 #include <../src/mat/impls/sell/mpi/mpisell.h> /*I "petscmat.h" I*/
 
 PetscErrorCode MatMPISELLSetPreallocation_MPISELLCUDA(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
@@ -43,6 +44,16 @@ PetscErrorCode MatMult_MPISELLCUDA(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode MatZeroEntries_MPISELLCUDA(Mat A)
+{
+  Mat_MPISELL *l = (Mat_MPISELL *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatZeroEntries(l->A));
+  PetscCall(MatZeroEntries(l->B));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatMultAdd_MPISELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
@@ -66,30 +77,23 @@ PetscErrorCode MatMultTranspose_MPISELLCUDA(Mat A, Vec xx, Vec yy)
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(xx, &nt));
   PetscCheck(nt == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", A->rmap->n, nt);
-  PetscCall((*a->B->ops->multtranspose)(a->B, xx, a->lvec));
-  PetscCall((*a->A->ops->multtranspose)(a->A, xx, yy));
+  PetscUseTypeMethod(a->B, multtranspose, xx, a->lvec);
+  PetscUseTypeMethod(a->A, multtranspose, xx, yy);
   PetscCall(VecScatterBegin(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_MPISELLCUDA(PetscOptionItems *PetscOptionsObject, Mat A)
+PetscErrorCode MatSetFromOptions_MPISELLCUDA(Mat, PetscOptionItems *)
 {
-  PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "MPISELLCUDA options");
-  if (A->factortype == MAT_FACTOR_NONE) { }
-  PetscOptionsHeadEnd();
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode MatAssemblyEnd_MPISELLCUDA(Mat A, MatAssemblyType mode)
 {
-  Mat_MPISELL *mpisell;
-
   PetscFunctionBegin;
-  mpisell = (Mat_MPISELL *)A->data;
   PetscCall(MatAssemblyEnd_MPISELL(A, mode));
-  if (!A->was_assembled && mode == MAT_FINAL_ASSEMBLY) { PetscCall(VecSetType(mpisell->lvec, VECSEQCUDA)); }
+  if (!A->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(VecSetType(((Mat_MPISELL *)A->data)->lvec, VECSEQCUDA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -97,27 +101,48 @@ PetscErrorCode MatDestroy_MPISELLCUDA(Mat A)
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy_MPISELL(A));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpisellcuda_mpiaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPISELLCUDA(Mat B, MatType, MatReuse reuse, Mat *newmat)
+{
+  Mat_MPISELL *a;
+  Mat          A;
+
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(B, MAT_COPY_VALUES, newmat));
+  else if (reuse == MAT_REUSE_MATRIX) PetscCall(MatCopy(B, *newmat, SAME_NONZERO_PATTERN));
+  A             = *newmat;
+  A->boundtocpu = PETSC_FALSE;
+  PetscCall(PetscFree(A->defaultvectype));
+  PetscCall(PetscStrallocpy(VECCUDA, &A->defaultvectype));
+
+  a = (Mat_MPISELL *)A->data;
+  if (a->A) PetscCall(MatSetType(a->A, MATSEQSELLCUDA));
+  if (a->B) PetscCall(MatSetType(a->B, MATSEQSELLCUDA));
+  if (a->lvec) PetscCall(VecSetType(a->lvec, VECSEQCUDA));
+
+  A->ops->assemblyend    = MatAssemblyEnd_MPISELLCUDA;
+  A->ops->mult           = MatMult_MPISELLCUDA;
+  A->ops->multadd        = MatMultAdd_MPISELLCUDA;
+  A->ops->multtranspose  = MatMultTranspose_MPISELLCUDA;
+  A->ops->setfromoptions = MatSetFromOptions_MPISELLCUDA;
+  A->ops->destroy        = MatDestroy_MPISELLCUDA;
+  A->ops->zeroentries    = MatZeroEntries_MPISELLCUDA;
+
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPISELLCUDA));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", MatMPISELLSetPreallocation_MPISELLCUDA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELLCUDA(Mat A)
 {
   PetscFunctionBegin;
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
   PetscCall(MatCreate_MPISELL(A));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", MatMPISELLSetPreallocation_MPISELLCUDA));
-  PetscCall(PetscFree(A->defaultvectype));
-  PetscCall(PetscStrallocpy(VECCUDA, &A->defaultvectype));
-
-  A->ops->assemblyend   = MatAssemblyEnd_MPISELLCUDA;
-  A->ops->mult          = MatMult_MPISELLCUDA;
-  A->ops->multadd       = MatMultAdd_MPISELLCUDA;
-  A->ops->multtranspose = MatMultTranspose_MPISELLCUDA;
-  A->ops->destroy       = MatDestroy_MPISELLCUDA;
-
-  PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPISELLCUDA));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpisellcuda_mpiaij_C", MatConvert_MPISELL_MPIAIJ));
+  PetscCall(MatConvert_MPISELL_MPISELLCUDA(A, MATMPISELLCUDA, MAT_INPLACE_MATRIX, &A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
