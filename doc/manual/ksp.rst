@@ -2333,10 +2333,6 @@ To use these solvers, one may:
      - ``cholesky``
      - ``MATSOLVERCHOLMOD``
      - ``cholmod``
-   * - ``aij``
-     - ``lu``
-     - ``MATSOLVERSPARSEELEMENTAL``
-     - ``sparseelemental``
    * - ``seqaij``
      - ``lu``
      - ``MATSOLVERKLU``

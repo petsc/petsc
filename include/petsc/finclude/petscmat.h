@@ -189,7 +189,6 @@
 #define MATSOLVERSTRUMPACK       'strumpack'
 #define MATSOLVERUMFPACK         'umfpack'
 #define MATSOLVERCHOLMOD         'cholmod'
-#define MATSOLVERSPARSEELEMENTAL 'sparseelemental'
 #define MATSOLVERKLU             'klu'
 #define MATSOLVERELEMENTAL       'elemental'
 #define MATSOLVERSCALAPACK       'scalapack'
