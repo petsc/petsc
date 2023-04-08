@@ -534,19 +534,20 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
+  PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues", "-ksp_view_eigenvalues", "3.9", NULL));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues", &ksp->viewerEV, &ksp->formatEV, &ksp->viewEV));
+  PetscCall(PetscOptionsDeprecated("-ksp_compute_singularvalues", "-ksp_view_singularvalues", "3.9", NULL));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_singularvalues", &ksp->viewerSV, &ksp->formatSV, &ksp->viewSV));
+  PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues_explicitly", "-ksp_view_eigenvalues_explicit", "3.9", NULL));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues_explicit", &ksp->viewerEVExp, &ksp->formatEVExp, &ksp->viewEVExp));
+  PetscCall(PetscOptionsDeprecated("-ksp_final_residual", "-ksp_view_final_residual", "3.9", NULL));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
 
   /* Deprecated options */
   if (!ksp->viewEV) {
-    PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues", NULL, "3.9", "Use -ksp_view_eigenvalues"));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_compute_eigenvalues", &ksp->viewerEV, &ksp->formatEV, &ksp->viewEV));
-  }
-  if (!ksp->viewEV) {
+    /* Cannot remove the what otherwise would be redundant call to PetscOptionsName("-ksp_plot_eigenvalues",...) below because the argument handling is different */
     PetscCall(PetscOptionsDeprecated("-ksp_plot_eigenvalues", NULL, "3.9", "Use -ksp_view_eigenvalues draw"));
     PetscCall(PetscOptionsName("-ksp_plot_eigenvalues", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw]", "KSPView", &ksp->viewEV));
     if (ksp->viewEV) {
@@ -556,7 +557,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     }
   }
   if (!ksp->viewEV) {
-    PetscCall(PetscOptionsDeprecated("-ksp_plot_eigencontours", NULL, "3.9", "Use -ksp_view_eigenvalues draw::draw_contour"));
+    PetscCall(PetscOptionsDeprecated("-ksp_plot_eigenvalues_explicitly", NULL, "3.9", "Use -ksp_view_eigenvalues_explicit draw"));
+    /* Cannot remove the what otherwise would be redundant call to PetscOptionsName("-ksp_plot_eigencontours",...) below because the argument handling is different */
     PetscCall(PetscOptionsName("-ksp_plot_eigencontours", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw::draw_contour]", "KSPView", &ksp->viewEV));
     if (ksp->viewEV) {
       ksp->formatEV = PETSC_VIEWER_DRAW_CONTOUR;
@@ -565,25 +567,13 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     }
   }
   if (!ksp->viewEVExp) {
-    PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues_explicitly", NULL, "3.9", "Use -ksp_view_eigenvalues_explicit"));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_compute_eigenvalues_explicitly", &ksp->viewerEVExp, &ksp->formatEVExp, &ksp->viewEVExp));
-  }
-  if (!ksp->viewEVExp) {
-    PetscCall(PetscOptionsDeprecated("-ksp_plot_eigenvalues_explicitly", NULL, "3.9", "Use -ksp_view_eigenvalues_explicit draw"));
+    /* Cannot remove the what otherwise would be redundant call to PetscOptionsName("-ksp_plot_eigencontours_explicitly",...) below because the argument handling is different */
     PetscCall(PetscOptionsName("-ksp_plot_eigenvalues_explicitly", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw]", "KSPView", &ksp->viewEVExp));
     if (ksp->viewEVExp) {
       ksp->formatEVExp = PETSC_VIEWER_DEFAULT;
       ksp->viewerEVExp = PETSC_VIEWER_DRAW_(comm);
       PetscCall(PetscObjectReference((PetscObject)ksp->viewerEVExp));
     }
-  }
-  if (!ksp->viewSV) {
-    PetscCall(PetscOptionsDeprecated("-ksp_compute_singularvalues", NULL, "3.9", "Use -ksp_view_singularvalues"));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_compute_singularvalues", &ksp->viewerSV, &ksp->formatSV, &ksp->viewSV));
-  }
-  if (!ksp->viewFinalRes) {
-    PetscCall(PetscOptionsDeprecated("-ksp_final_residual", NULL, "3.9", "Use -ksp_view_final_residual"));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
   }
 
 #if defined(PETSC_HAVE_SAWS)
