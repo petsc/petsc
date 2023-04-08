@@ -588,7 +588,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
     PetscInt *closure = NULL;
     PetscInt  closureSize, cl;
 
-    PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
     for (cl = 0; cl < closureSize * 2; cl += 2) {
       if ((closure[cl] >= cStart) && (closure[cl] < cEnd)) {
