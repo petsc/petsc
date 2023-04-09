@@ -90,10 +90,11 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, Mat N, Mat *B, const char *pcpre)
+static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, Mat N, Mat *B, const char *pcpre, Vec *diagonal = nullptr)
 {
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
   Mat      *splitting, *sub, aux;
+  Vec       d;
   IS        is, cols[2], rows;
   PetscReal norm;
   PetscBool flg;
@@ -129,9 +130,30 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
     if (PetscDefined(USE_COMPLEX)) PetscCall(MatDestroy(&conjugate));
     PetscCall(MatNorm(aux, NORM_FROBENIUS, &norm));
     PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
-    PetscCall(MatShift(aux, PETSC_SMALL * norm));
+    if (diagonal) {
+      PetscCall(VecNorm(*diagonal, NORM_INFINITY, &norm));
+      if (norm > PETSC_SMALL) {
+        VecScatter scatter;
+        PetscInt   n;
+        PetscCall(ISGetLocalSize(*cols, &n));
+        PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)pc), n, PETSC_DECIDE, &d));
+        PetscCall(VecScatterCreate(*diagonal, *cols, d, nullptr, &scatter));
+        PetscCall(VecScatterBegin(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
+        PetscCall(VecScatterEnd(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
+        PetscCall(VecScatterDestroy(&scatter));
+        PetscCall(MatScale(aux, -1.0));
+        PetscCall(MatDiagonalSet(aux, d, ADD_VALUES));
+        PetscCall(VecDestroy(&d));
+      } else PetscCall(VecDestroy(diagonal));
+    }
+    if (!diagonal) PetscCall(MatShift(aux, PETSC_SMALL * norm));
   } else {
     PetscBool flg;
+    if (diagonal) {
+      PetscCall(VecNorm(*diagonal, NORM_INFINITY, &norm));
+      PetscCheck(norm < PETSC_SMALL, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Nonzero diagonal A11 block");
+      PetscCall(VecDestroy(diagonal));
+    }
     PetscCall(PetscObjectTypeCompare((PetscObject)N, MATNORMAL, &flg));
     if (flg) PetscCall(MatCreateNormal(*splitting, &aux));
     else PetscCall(MatCreateNormalHermitian(*splitting, &aux));
@@ -1150,14 +1172,14 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(PetscObjectTypeCompare((PetscObject)P, MATSCHURCOMPLEMENT, &flg));
         if (flg) {
           Mat                        A00, P00, A01, A10, A11, B, N;
+          Vec                        diagonal = nullptr;
           const PetscScalar         *array;
-          PetscReal                  norm;
           MatSchurComplementAinvType type;
 
           PetscCall(MatSchurComplementGetSubMatrices(P, &A00, &P00, &A01, &A10, &A11));
           if (A11) {
-            PetscCall(MatNorm(A11, NORM_INFINITY, &norm));
-            PetscCheck(norm < PETSC_SMALL, PetscObjectComm((PetscObject)P), PETSC_ERR_SUP, "Nonzero A11 block");
+            PetscCall(MatCreateVecs(A11, &diagonal, nullptr));
+            PetscCall(MatGetDiagonal(A11, diagonal));
           }
           if (PetscDefined(USE_DEBUG)) {
             Mat T, U = nullptr;
@@ -1209,15 +1231,21 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(MatDiagonalScale(B, v, nullptr));
           PetscCall(VecDestroy(&v));
           PetscCall(MatCreateNormalHermitian(B, &N));
-          PetscCall(PCHPDDMSetAuxiliaryMatNormal_Private(pc, B, N, &P, pcpre));
+          PetscCall(PCHPDDMSetAuxiliaryMatNormal_Private(pc, B, N, &P, pcpre, &diagonal));
           PetscCall(PetscObjectTypeCompare((PetscObject)data->aux, MATSEQAIJ, &flg));
           if (!flg) {
             PetscCall(MatDestroy(&P));
             P = N;
             PetscCall(PetscObjectReference((PetscObject)P));
           } else PetscCall(MatScale(P, -1.0));
-          PetscCall(MatScale(N, -1.0));
-          PetscCall(PCSetOperators(pc, N, P)); /* replace P by -A01' inv(diag(P00)) A01 */
+          if (diagonal) {
+            PetscCall(MatDiagonalSet(P, diagonal, ADD_VALUES));
+            PetscCall(PCSetOperators(pc, P, P)); /* replace P by diag(P11) - A01' inv(diag(P00)) A01 */
+            PetscCall(VecDestroy(&diagonal));
+          } else {
+            PetscCall(MatScale(N, -1.0));
+            PetscCall(PCSetOperators(pc, N, P)); /* replace P by - A01' inv(diag(P00)) A01 */
+          }
           PetscCall(MatDestroy(&N));
           PetscCall(MatDestroy(&P));
           PetscCall(MatDestroy(&B));
