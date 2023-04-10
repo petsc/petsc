@@ -16,7 +16,7 @@ configure_options = [
 
   #'--prefix=petsc-install', temporarily disable for gitlab-ci
 
-  #'-download-fblaslapack=1',
+  '--download-netlib-lapack=1',
   #'--download-mpich=1',
   #'--download-mpich-device=ch3:sock',
   #'--download-mpich-configure-arguments=--disable-two-level-namespace', # workaround for AMREX build failure with MPICH 4.0.1 and above
