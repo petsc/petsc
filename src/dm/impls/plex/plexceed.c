@@ -67,6 +67,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(PetscLogEventBegin(DMPLEX_GetLocalOffsets, dm, 0, 0, 0));
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(DMGetDimension(dm, &dim));
   {
@@ -158,6 +159,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
   *offsets = restr_indices;
   PetscCall(PetscSectionGetStorageSize(section, l_size));
+  PetscCall(PetscLogEventEnd(DMPLEX_GetLocalOffsets, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

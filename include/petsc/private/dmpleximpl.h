@@ -43,6 +43,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_IntegralFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalanceSharedPoints;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromFile;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromOptions;
 PETSC_EXTERN PetscLogEvent DMPLEX_BuildFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_BuildCoordinatesFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_LocatePoints;
@@ -65,6 +66,8 @@ PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
 PETSC_EXTERN PetscLogEvent DMPLEX_Generate;
+PETSC_EXTERN PetscLogEvent DMPLEX_Transform;
+PETSC_EXTERN PetscLogEvent DMPLEX_GetLocalOffsets;
 
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalBuildGraph;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
