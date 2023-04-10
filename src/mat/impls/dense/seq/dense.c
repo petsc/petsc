@@ -2191,7 +2191,7 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  if (array) PetscValidPointer(array, 2);
   PetscUseMethod(A, "MatDenseRestoreArray_C", (Mat, PetscScalar **), (A, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
@@ -2241,7 +2241,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  if (array) PetscValidPointer(array, 2);
   PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, const PetscScalar **), (A, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2287,7 +2287,7 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(array, 2);
+  if (array) PetscValidPointer(array, 2);
   PetscUseMethod(A, "MatDenseRestoreArrayWrite_C", (Mat, PetscScalar **), (A, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
