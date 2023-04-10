@@ -286,6 +286,12 @@ PetscErrorCode InitialConditions(DM da, Vec U)
       output_file: output/ex5adj_sell_6.out
 
    test:
+      suffix: sell7
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -dm_mat_type sellcuda -dm_vec_type cuda -pc_type jacobi
+      output_file: output/ex5adj_sell_6.out
+      requires: cuda
+
+   test:
       suffix: gamg1
       args: -pc_type gamg -pc_gamg_esteig_ksp_type gmres -pc_gamg_esteig_ksp_max_it 10 -pc_mg_levels 2 -ksp_monitor_short -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_rtol 1e-2 -pc_gamg_use_sa_esteig 0
       output_file: output/ex5adj_gamg.out

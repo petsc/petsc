@@ -53,11 +53,11 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A)
    */
   Bnew->nonzerostate = B->nonzerostate;
 
-  totalslices = B->rmap->n / 8 + ((B->rmap->n & 0x07) ? 1 : 0); /* floor(n/8) */
-  for (i = 0; i < totalslices; i++) {                           /* loop over slices */
-    for (j = Bsell->sliidx[i], row = 0; j < Bsell->sliidx[i + 1]; j++, row = ((row + 1) & 0x07)) {
-      isnonzero = (PetscBool)((j - Bsell->sliidx[i]) / 8 < Bsell->rlen[8 * i + row]);
-      if (isnonzero) PetscCall(MatSetValue(Bnew, 8 * i + row, sell->garray[Bsell->colidx[j]], Bsell->val[j], B->insertmode));
+  totalslices = PetscCeilInt(B->rmap->n, Bsell->sliceheight);
+  for (i = 0; i < totalslices; i++) { /* loop over slices */
+    for (j = Bsell->sliidx[i], row = 0; j < Bsell->sliidx[i + 1]; j++, row = (row + 1) % Bsell->sliceheight) {
+      isnonzero = (PetscBool)((j - Bsell->sliidx[i]) / Bsell->sliceheight < Bsell->rlen[Bsell->sliceheight * i + row]);
+      if (isnonzero) { PetscCall(MatSetValue(Bnew, Bsell->sliceheight * i + row, sell->garray[Bsell->colidx[j]], Bsell->val[j], B->insertmode)); }
     }
   }
 
@@ -87,7 +87,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
 #endif
 
   PetscFunctionBegin;
-  totalslices = sell->B->rmap->n / 8 + ((sell->B->rmap->n & 0x07) ? 1 : 0); /* floor(n/8) */
+  totalslices = PetscCeilInt(sell->B->rmap->n, B->sliceheight);
 
   /* ec counts the number of columns that contain nonzeros */
 #if defined(PETSC_USE_CTABLE)
@@ -95,7 +95,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   PetscCall(PetscHMapICreateWithSize(sell->B->rmap->n, &gid1_lid1));
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     for (j = B->sliidx[i]; j < B->sliidx[i + 1]; j++) {
-      isnonzero = (PetscBool)((j - B->sliidx[i]) / 8 < B->rlen[(i << 3) + (j & 0x07)]);
+      isnonzero = (PetscBool)((j - B->sliidx[i]) / B->sliceheight < B->rlen[i * B->sliceheight + j % B->sliceheight]);
       if (isnonzero) { /* check the mask bit */
         PetscInt data, gid1 = bcolidx[j] + 1;
 
@@ -124,7 +124,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   /* compact out the extra columns in B */
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     for (j = B->sliidx[i]; j < B->sliidx[i + 1]; j++) {
-      isnonzero = (PetscBool)((j - B->sliidx[i]) / 8 < B->rlen[(i << 3) + (j & 0x07)]);
+      isnonzero = (PetscBool)((j - B->sliidx[i]) / B->sliceheight < B->rlen[i * B->sliceheight + j % B->sliceheight]);
       if (isnonzero) {
         PetscInt gid1 = bcolidx[j] + 1;
         PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &lid));
@@ -142,7 +142,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   /* mark those columns that are in sell->B */
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     for (j = B->sliidx[i]; j < B->sliidx[i + 1]; j++) {
-      isnonzero = (PetscBool)((j - B->sliidx[i]) / 8 < B->rlen[(i << 3) + (j & 0x07)]);
+      isnonzero = (PetscBool)((j - B->sliidx[i]) / B->sliceheight < B->rlen[i * B->sliceheight + j % B->sliceheight]);
       if (isnonzero) {
         if (!indices[bcolidx[j]]) ec++;
         indices[bcolidx[j]] = 1;
@@ -163,7 +163,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   /* compact out the extra columns in B */
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     for (j = B->sliidx[i]; j < B->sliidx[i + 1]; j++) {
-      isnonzero = (PetscBool)((j - B->sliidx[i]) / 8 < B->rlen[(i << 3) + (j & 0x07)]);
+      isnonzero = (PetscBool)((j - B->sliidx[i]) / B->sliceheight < B->rlen[i * B->sliceheight + j % B->sliceheight]);
       if (isnonzero) bcolidx[j] = indices[bcolidx[j]];
     }
   }

@@ -1,4 +1,3 @@
-
 #include <petsc/private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
 #include <petscmat.h>
 #include <petscbt.h>
@@ -552,12 +551,13 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
 {
   DM                da;
   const char       *prefix;
-  Mat               Anatural;
+  Mat               AA, Anatural;
   AO                ao;
   PetscInt          rstart, rend, *petsc, i;
   IS                is;
   MPI_Comm          comm;
   PetscViewerFormat format;
+  PetscBool         flag;
 
   PetscFunctionBegin;
   /* Check whether we are just printing info, in which case MatView() already viewed everything we wanted to view */
@@ -576,6 +576,11 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(ISCreateGeneral(comm, rend - rstart, petsc, PETSC_OWN_POINTER, &is));
 
   /* call viewer on natural ordering */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPISELL, &flag));
+  if (flag) {
+    PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &AA));
+    A = AA;
+  }
   PetscCall(MatCreateSubMatrix(A, is, is, MAT_INITIAL_MATRIX, &Anatural));
   PetscCall(ISDestroy(&is));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)A, &prefix));
@@ -585,6 +590,7 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(MatView(Anatural, viewer));
   ((PetscObject)Anatural)->donotPetscObjectPrintClassNamePrefixType = PETSC_FALSE;
   PetscCall(MatDestroy(&Anatural));
+  if (flag) PetscCall(MatDestroy(&AA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
