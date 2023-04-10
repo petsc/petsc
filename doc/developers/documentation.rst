@@ -28,37 +28,20 @@ We use `Sphinx <https://www.sphinx-doc.org/en/master/>`__ to build our web page 
 Building the HTML docs locally
 ------------------------------
 
-.. admonition:: Note
-
-    The documentation build with Sphinx involves configuring a minimal build
-    of PETSc and building some of the :any:`classic docs <classic_docs_build>`,
-    which requires local working ``flex``, ``gcc``, and  ``g++`` before
-    you follow the instructions below.
-
-We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__  [#venv_footnote]_.
+We use a a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__  [#venv_footnote]_ to build the documentation since not all developers can trivially install the needed Python modules directly.
 
 .. code-block:: console
 
    $ cd $PETSC_DIR
-   $ python3 -m venv petsc-doc-env
-   $ . petsc-doc-env/bin/activate
-   $ python3 -m pip install -r doc/requirements.txt
+   $ make docs
 
-Then,
+or
 
 .. code-block:: console
 
-   $ cd doc
-   $ make html                      # may take several minutes
-   $ browse _build/html/index.html  # or otherwise open in browser
-
-
-to turn off the Python virtual environment once you have built the documentation use
-
-.. code-block:: console
-
-   $ deactivate
-
+   $ cd $PETSC_DIR/doc
+   $ make sphinxhtml
+   $ open _build/html/index.html
 
 .. _sec_local_docs_latex:
 
@@ -67,7 +50,7 @@ Building the manual locally as a PDF via LaTeX
 
 .. admonition:: Note
 
-   Before following these instructions, you should have a working
+   Before following these instructions, you need to have a working
    local LaTeX installation and the ability to install additional packages,
    if need be, to resolve LaTeX errors.
 
@@ -76,7 +59,7 @@ Set up your local Python environment (e.g. :ref:`as above <sec_local_html_docs>`
 .. code-block:: console
 
    $ cd doc
-   $ make latexpdf
+   $ make sphinxpdf
    $ open _build/latex/manual.pdf  # or otherwise open in PDF viewer
 
 .. _sphinx_guidelines:
@@ -259,33 +242,16 @@ If the size of the image repository grows too large,
 Building Classic Documentation
 ==============================
 
-Some of the documentation is built by a "classic" process as described below.
-
-The documentation tools listed below can be
-automatically downloaded and installed by ``configure``.
+Some of the documentation is built by a "classic" process as described below using the documentation tools listed below which are
+automatically downloaded and installed if needed while building the PETSc documentation./
 
 * `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
 * `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
 
-Note that Sowing and C2html are build tools that do not use the compilers specified to PETSc's ``configure``, as they
+Sowing and C2html are build tools that do not use the compilers specified to PETSc's ``configure``, as they
 need to work in cross-compilation environments. Thus, they default to using ``gcc``, ``g++``, and ``flex`` from
 the user's environment (or ``configure`` options like ``--download-sowing-cxx``). Microsoft Windows users should install ``gcc``
-etc. from Cygwin as these tools don't build with MS compilers.
-
-One can run this process in-tree with
-
-.. code-block:: console
-
-    $ make alldoc12 LOC=${PETSC_DIR}
-
-For debugging, a quick preview of manual pages from a single source directory can be obtained, e.g.
-
-.. code-block:: console
-
-    $ cd $PETSC_DIR/src/snes/interface
-    $ make LOC=$PETSC_DIR manualpages_buildcite
-    $ browse $PETSC_DIR/manualpages/SNES/SNESCreate.html  # or otherwise open in browser
-
+etc. from Cygwin as these tools don't build with Microsoft or Intel Windows compilers.
 
 .. rubric:: Footnotes
 
