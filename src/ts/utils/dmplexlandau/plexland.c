@@ -16,7 +16,6 @@
   #define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
 #endif
 
-#define PETSC_THREAD_SYNC
 #include "land_tensors.h"
 
 #if defined(PETSC_HAVE_OPENMP)
@@ -126,7 +125,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   // get dynamic data (Eq is odd, for quench and Spitzer test) for CPU assembly and raw data for Jacobian GPU assembly. Get host numCells[], Nq (yuck)
   PetscCall(PetscFEGetQuadrature(ctx->fe[0], &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL));
-  Nb = Nq;
+  PetscCall(PetscFEGetDimension(ctx->fe[0], &Nb));
+  PetscCheck(Nb == Nq, ctx->comm, PETSC_ERR_ARG_WRONG, "Nb (%d) != Nq (%d) - not true for some simplex elements (use P2)", (int)Nb, (int)Nq);
   PetscCheck(Nq <= LANDAU_MAX_NQ, ctx->comm, PETSC_ERR_ARG_WRONG, "Order too high. Nq = %" PetscInt_FMT " > LANDAU_MAX_NQ (%d)", Nq, LANDAU_MAX_NQ);
   // get metadata for collecting dynamic data
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
@@ -621,7 +621,7 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
     /* Create plex mesh of Landau domain */
     for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
       PetscReal par_radius = ctx->radius_par[grid], perp_radius = ctx->radius_perp[grid];
-      if (!ctx->sphere) {
+      if (!ctx->sphere && !ctx->simplex) { // 2 or 3D (only 3D option)
         PetscReal      lo[] = {-perp_radius, -par_radius, -par_radius}, hi[] = {perp_radius, par_radius, par_radius};
         DMBoundaryType periodicity[3] = {DM_BOUNDARY_NONE, dim == 2 ? DM_BOUNDARY_NONE : DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
         if (dim == 2) lo[0] = 0;
@@ -634,25 +634,44 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
         if (dim == 3) PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "cube"));
         else PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "half-plane"));
       } else if (dim == 2) {
-        PetscInt   numCells    = 6, cells[11][4], i, j;
-        PetscInt   numVerts    = 11;
-        PetscReal *flatCoords  = NULL;
-        PetscInt  *flatCells   = NULL, *pcell;
-        int        cells2[][4] = {
-          {0,  1, 6, 5 },
-          {1,  2, 7, 6 },
-          {2,  3, 8, 7 },
-          {3,  4, 9, 8 },
-          {5,  6, 7, 10},
-          {10, 7, 8, 9 },
-        };
-        for (i = 0; i < numCells; i++)
-          for (j = 0; j < 4; j++) cells[i][j] = cells2[i][j];
-        PetscCall(PetscMalloc2(numVerts * 2, &flatCoords, numCells * 4, &flatCells));
-        {
-          PetscReal(*coords)[2] = (PetscReal(*)[2])flatCoords;
-          PetscReal rad         = ctx->radius[grid];
-          for (j = 0; j < 5; j++) {
+        char      filename[PETSC_MAX_PATH_LEN];
+        PetscBool flg;
+        PetscCall(PetscOptionsGetString(NULL, NULL, "-dm_landau_filename", filename, sizeof(filename), &flg));
+        if (flg) {
+          char str[] = "-dm_landau_view_file_0";
+          str[21] += grid;
+          PetscCall(DMPlexCreateFromFile(comm_self, filename, "plexland.c", PETSC_TRUE, &ctx->plex[grid]));
+          PetscCall(PetscInfo(ctx->plex[grid], "%d) Read %s mesh file (%s)", (int)grid, filename, str));
+          PetscCall(DMViewFromOptions(ctx->plex[grid], NULL, str));
+        } else {
+          PetscInt       numCells = ctx->simplex ? 12 : 6, cell_size = ctx->simplex ? 3 : 4, j;
+          const PetscInt numVerts    = 11;
+          PetscInt       cellsT[][4] = {
+            {0,  1, 6, 5 },
+            {1,  2, 7, 6 },
+            {2,  3, 8, 7 },
+            {3,  4, 9, 8 },
+            {5,  6, 7, 10},
+            {10, 7, 8, 9 }
+          };
+          PetscInt cellsS[][3] = {
+            {0,  1, 6 },
+            {1,  2, 6 },
+            {6,  2, 7 },
+            {7,  2, 8 },
+            {8,  2, 3 },
+            {8,  3, 4 },
+            {0,  6, 5 },
+            {5,  6, 7 },
+            {5,  7, 10},
+            {10, 7, 9 },
+            {9,  7, 8 },
+            {9,  8, 4 }
+          };
+          const PetscInt *pcell = (const PetscInt *)(ctx->simplex ? &cellsS[0][0] : &cellsT[0][0]);
+          PetscReal       coords[11][2], *flatCoords = (PetscReal *)&coords[0][0];
+          PetscReal       rad = ctx->radius[grid];
+          for (j = 0; j < 5; j++) { // outside edge
             PetscReal z, r, theta = -PETSC_PI / 2 + (j % 5) * PETSC_PI / 4;
             r            = rad * PetscCosReal(theta);
             coords[j][0] = r;
@@ -671,18 +690,14 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
           coords[j++][1] = rad * ctx->sphere_inner_radius_90degree;
           coords[j][0]   = 0;
           coords[j++][1] = 0;
+          PetscCall(DMPlexCreateFromCellListPetsc(comm_self, 2, numCells, numVerts, cell_size, ctx->interpolate, pcell, 2, flatCoords, &ctx->plex[grid]));
+          PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "semi-circle"));
+          PetscCall(PetscInfo(ctx->plex[grid], "\t%" PetscInt_FMT ") Make circle %s mesh", grid, ctx->simplex ? "simplex" : "tensor"));
         }
-        for (j = 0, pcell = flatCells; j < numCells; j++, pcell += 4) {
-          for (int jj = 0; jj < 4; jj++) pcell[jj] = cells[j][jj];
-        }
-        PetscCall(DMPlexCreateFromCellListPetsc(comm_self, 2, numCells, numVerts, 4, ctx->interpolate, flatCells, 2, flatCoords, &ctx->plex[grid]));
-        PetscCall(PetscFree2(flatCoords, flatCells));
-        PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "semi-circle"));
-      } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Velocity space meshes does not support 3V cubed sphere");
+      } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Velocity space meshes does not support 3V cubed sphere or simplex");
       PetscCall(DMSetFromOptions(ctx->plex[grid]));
     } // grid loop
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pack, prefix));
-
     { /* convert to p4est (or whatever), wait for discretization to create pack */
       char      convType[256];
       PetscBool flg;
@@ -727,7 +742,7 @@ static PetscErrorCode SetupDS(DM pack, PetscInt dim, PetscInt grid, LandauCtx *c
     if (ii == 0) PetscCall(PetscSNPrintf(buf, sizeof(buf), "e"));
     else PetscCall(PetscSNPrintf(buf, sizeof(buf), "i%" PetscInt_FMT, ii));
     /* Setup Discretization - FEM */
-    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DECIDE, &ctx->fe[ii]));
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, ctx->simplex, NULL, PETSC_DECIDE, &ctx->fe[ii]));
     PetscCall(PetscObjectSetName((PetscObject)ctx->fe[ii], buf));
     PetscCall(DMSetField(ctx->plex[grid], i0, NULL, (PetscObject)ctx->fe[ii]));
   }
@@ -1043,12 +1058,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscFunctionBegin;
   PetscCall(DMCreate(ctx->comm, &dummy));
   /* get options - initialize context */
-  ctx->verbose = 1; // should be 0 for silent compliance
-#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-  ctx->batch_sz = PetscNumOMPThreads;
-#else
-  ctx->batch_sz = 1;
-#endif
+  ctx->verbose        = 1; // should be 0 for silent compliance
+  ctx->batch_sz       = 1;
   ctx->batch_view_idx = 0;
   ctx->interpolate    = PETSC_TRUE;
   ctx->gpu_assembly   = PETSC_TRUE;
@@ -1059,6 +1070,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   /* geometry and grids */
   ctx->sphere    = PETSC_FALSE;
   ctx->use_p4est = PETSC_FALSE;
+  ctx->simplex   = PETSC_FALSE;
   for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
     ctx->radius[grid]             = 5.; /* thermal radius (velocity) */
     ctx->radius_perp[grid]        = 5.; /* thermal radius (velocity) */
@@ -1143,6 +1155,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscCall(PetscOptionsReal("-dm_landau_n_0", "Normalization constant for number density", "plexland.c", ctx->n_0, &ctx->n_0, NULL));
   PetscCall(PetscOptionsBool("-dm_landau_use_mataxpy_mass", "Use fast but slightly fragile MATAXPY to add mass term", "plexland.c", ctx->use_matrix_mass, &ctx->use_matrix_mass, NULL));
   PetscCall(PetscOptionsBool("-dm_landau_use_relativistic_corrections", "Use relativistic corrections", "plexland.c", ctx->use_relativistic_corrections, &ctx->use_relativistic_corrections, NULL));
+  PetscCall(PetscOptionsBool("-dm_landau_simplex", "Use simplex elements", "plexland.c", ctx->simplex, &ctx->simplex, NULL));
   if (LANDAU_DIM == 2 && ctx->use_relativistic_corrections) ctx->use_relativistic_corrections = PETSC_FALSE; // should warn
   PetscCall(PetscOptionsBool("-dm_landau_use_energy_tensor_trick", "Use Eero's trick of using grad(v^2/2) instead of v as args to Landau tensor to conserve energy with relativistic corrections and Q1 elements", "plexland.c", ctx->use_energy_tensor_trick,
                              &ctx->use_energy_tensor_trick, NULL));
@@ -1247,9 +1260,9 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscCall(PetscOptionsReal("-dm_landau_z_radius_post", "velocity range to refine r=0 axis (for electrons) after origin AMR", "plexland.c", ctx->vperp0_radius2, &ctx->vperp0_radius2, &flg));
   /* spherical domain (not used) */
   PetscCall(PetscOptionsBool("-dm_landau_sphere", "use sphere/semi-circle domain instead of rectangle", "plexland.c", ctx->sphere, &ctx->sphere, NULL));
-  if (ctx->sphere) {
-    ctx->sphere_inner_radius_90degree = 0.50;
-    ctx->sphere_inner_radius_45degree = 0.45;
+  if (ctx->sphere || ctx->simplex) {
+    ctx->sphere_inner_radius_90degree = 0.40;
+    ctx->sphere_inner_radius_45degree = 0.35;
     PetscCall(PetscOptionsReal("-dm_landau_sphere_inner_radius_90degree_scale", "Scaling of radius for inner circle on 90 degree grid", "plexland.c", ctx->sphere_inner_radius_90degree, &ctx->sphere_inner_radius_90degree, NULL));
     PetscCall(PetscOptionsReal("-dm_landau_sphere_inner_radius_45degree_scale", "Scaling of radius for inner circle on 45 degree grid", "plexland.c", ctx->sphere_inner_radius_45degree, &ctx->sphere_inner_radius_45degree, NULL));
   } else {
@@ -1428,6 +1441,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     for (PetscInt grid = 0, glb_elem_idx = 0; grid < ctx->num_grids; grid++) {
       PetscInt cStart, cEnd, Nfloc = Nf[grid], totDim = Nfloc * Nq;
       if (grid_batch_is_inv[grid]) PetscCall(ISGetIndices(grid_batch_is_inv[grid], &plex_batch));
+      PetscCheck(!plex_batch, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_jacobian_field_major_order DEPRECATED");
       PetscCall(DMPlexGetHeightStratum(ctx->plex[grid], 0, &cStart, &cEnd));
       // make maps
       maps[grid].d_self       = NULL;
@@ -1449,7 +1463,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
             PetscCall(PetscArrayzero(elMat, totDim * totDim));
             elMat[(fieldA * Nb + q) * totDim + fieldA * Nb + q] = 1;
             PetscCall(DMPlexGetClosureIndices(ctx->plex[grid], section[grid], globsection[grid], ej, PETSC_TRUE, &numindices, &indices, NULL, (PetscScalar **)&elMat));
-            for (PetscInt f = 0; f < numindices; ++f) { // look for a non-zero on the diagonal
+            for (PetscInt f = 0; f < numindices; ++f) { // look for a non-zero on the diagonal (is this too complicated for simplices?)
               if (PetscAbs(PetscRealPart(elMat[f * numindices + f])) > PETSC_MACHINE_EPSILON) {
                 // found it
                 if (PetscAbs(PetscRealPart(elMat[f * numindices + f] - 1.)) < PETSC_MACHINE_EPSILON) { // normal vertex 1.0
@@ -1464,7 +1478,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
                   PetscReal      sum               = 0;
                   const PetscInt ff                = f;
                   maps[grid].gIdx[eidx][fieldA][q] = -maps[grid].num_reduced - 1; // store (-)index: id = -(idx+1): idx = -id - 1
-
+                  PetscCheck(!ctx->simplex, ctx->comm, PETSC_ERR_ARG_WRONG, "No constraints with simplex");
                   do {                                                                                              // constraints are continuous in Plex - exploit that here
                     int ii;                                                                                         // get 'scale'
                     for (ii = 0, pointMaps[maps[grid].num_reduced][jj].scale = 0; ii < maps[grid].num_face; ii++) { // sum row of outer product to recover vector value
@@ -1638,7 +1652,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     PetscCall(PetscMalloc4(nip_glb, &ww, nip_glb, &xx, nip_glb, &yy, nip_glb * dim * dim, &invJ_a));
     if (dim == 3) PetscCall(PetscMalloc1(nip_glb, &zz));
     if (ctx->use_energy_tensor_trick) {
-      PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DECIDE, &fe));
+      PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, ctx->simplex, NULL, PETSC_DECIDE, &fe));
       PetscCall(PetscObjectSetName((PetscObject)fe, "energy"));
     }
     /* init each grids static data - no batch */
