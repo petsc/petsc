@@ -876,7 +876,7 @@ PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
 }
 
 /*@
-  PetscDSGetNumCohesive - Returns the numer of cohesive fields, meaning those defined on the interior of a cohesive cell
+  PetscDSGetNumCohesive - Returns the number of cohesive fields, meaning those defined on the interior of a cohesive cell
 
   Not Collective
 

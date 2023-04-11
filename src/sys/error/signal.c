@@ -220,7 +220,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
       struct sigaction action;
       sigaction(SIGHUP, NULL, &action);
       if (action.sa_handler == SIG_IGN) {
-        PetscCall(PetscInfo(NULL, "SIGHUP previously set to ignore, therefor not changing its signal handler\n"));
+        PetscCall(PetscInfo(NULL, "SIGHUP previously set to ignore, therefore not changing its signal handler\n"));
       } else {
         signal(SIGHUP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
       }

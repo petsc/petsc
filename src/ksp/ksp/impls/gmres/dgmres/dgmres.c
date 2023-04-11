@@ -675,7 +675,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   PetscInt     *perm;    /* Permutation vector to sort eigenvalues */
   PetscInt      i, j;
   PetscBLASInt  NbrEig;          /* Number of eigenvalues really extracted */
-  PetscReal    *wr, *wi, *modul; /* Real and imaginary part and modul of the eigenvalues of A */
+  PetscReal    *wr, *wi, *modul; /* Real and imaginary part and modulus of the eigenvalues of A */
   PetscBLASInt *select;
   PetscBLASInt *iwork;
   PetscBLASInt  liwork;
@@ -862,7 +862,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   PetscReal    *work;                   /* working vector */
   PetscBLASInt  lwork;                  /* size of the working vector */
   PetscInt     *perm;                   /* Permutation vector to sort eigenvalues */
-  PetscReal    *wr, *wi, *beta, *modul; /* Real and imaginary part and modul of the eigenvalues of A*/
+  PetscReal    *wr, *wi, *beta, *modul; /* Real and imaginary part and modulus of the eigenvalues of A*/
   PetscBLASInt  NbrEig = 0, nr, bm;
   PetscBLASInt *select;
   PetscBLASInt  liwork, *iwork;
