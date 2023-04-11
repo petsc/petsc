@@ -2,13 +2,13 @@
 #include <petscdmswarm.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmswarmcreateglobalvectorfromfield_   DMSWARMCREATEGLOBALVECTORFROMFIELD
-#define dmswarmdestroyglobalvectorfromfield_  DMSWARMDESTROYGLOBALVECTORFROMFIELD
-#define dmswarmregisterpetscdatatypefield_    DMSWARMREGISTERPETSCDATATYPEFIELD
+  #define dmswarmcreateglobalvectorfromfield_  DMSWARMCREATEGLOBALVECTORFROMFIELD
+  #define dmswarmdestroyglobalvectorfromfield_ DMSWARMDESTROYGLOBALVECTORFROMFIELD
+  #define dmswarmregisterpetscdatatypefield_   DMSWARMREGISTERPETSCDATATYPEFIELD
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dmswarmcreateglobalvectorfromfield_   dmswarmcreateglobalvectorfromfield
-#define dmswarmdestroyglobalvectorfromfield_  dmswarmdestroyglobalvectorfromfield
-#define dmswarmregisterpetscdatatypefield_    dmswarmregisterpetscdatatypefield
+  #define dmswarmcreateglobalvectorfromfield_  dmswarmcreateglobalvectorfromfield
+  #define dmswarmdestroyglobalvectorfromfield_ dmswarmdestroyglobalvectorfromfield
+  #define dmswarmregisterpetscdatatypefield_   dmswarmregisterpetscdatatypefield
 #endif
 
 /* Definitions of Fortran Wrapper routines */

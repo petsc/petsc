@@ -3,15 +3,14 @@
 #include <petscdmda.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmdagetscatter_                DMDAGETSCATTER
+  #define dmdagetscatter_ DMDAGETSCATTER
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dmdagetscatter_                dmdagetscatter
+  #define dmdagetscatter_ dmdagetscatter
 #endif
 
-PETSC_EXTERN void dmdagetscatter_(DM *da,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
+PETSC_EXTERN void dmdagetscatter_(DM *da, VecScatter *gtol, VecScatter *ltol, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(gtol);
   CHKFORTRANNULLOBJECT(ltol);
-  *ierr = DMDAGetScatter(*da,gtol,ltol);
+  *ierr = DMDAGetScatter(*da, gtol, ltol);
 }
-

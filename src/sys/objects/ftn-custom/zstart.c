@@ -14,55 +14,55 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscinitializef_             PETSCINITIALIZEF
-#define petscfinalize_                PETSCFINALIZE
-#define petscend_                     PETSCEND
-#define iargc_                        IARGC
-#define getarg_                       GETARG
-#define mpi_init_                     MPI_INIT
-#define petscgetcomm_                 PETSCGETCOMM
-#define petsccommandargumentcount_    PETSCCOMMANDARGUMENTCOUNT
-#define petscgetcommandargument_      PETSCGETCOMMANDARGUMENT
+  #define petscinitializef_          PETSCINITIALIZEF
+  #define petscfinalize_             PETSCFINALIZE
+  #define petscend_                  PETSCEND
+  #define iargc_                     IARGC
+  #define getarg_                    GETARG
+  #define mpi_init_                  MPI_INIT
+  #define petscgetcomm_              PETSCGETCOMM
+  #define petsccommandargumentcount_ PETSCCOMMANDARGUMENTCOUNT
+  #define petscgetcommandargument_   PETSCGETCOMMANDARGUMENT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscinitializef_             petscinitializef
-#define petscfinalize_                petscfinalize
-#define petscend_                     petscend
-#define mpi_init_                     mpi_init
-#define iargc_                        iargc
-#define getarg_                       getarg
-#define petscgetcomm_                 petscgetcomm
-#define petsccommandargumentcount_    petsccommandargumentcount
-#define petscgetcommandargument_      petscgetcommandargument
+  #define petscinitializef_          petscinitializef
+  #define petscfinalize_             petscfinalize
+  #define petscend_                  petscend
+  #define mpi_init_                  mpi_init
+  #define iargc_                     iargc
+  #define getarg_                    getarg
+  #define petscgetcomm_              petscgetcomm
+  #define petsccommandargumentcount_ petsccommandargumentcount
+  #define petscgetcommandargument_   petscgetcommandargument
 #endif
 
 #if defined(PETSC_HAVE_NAGF90)
-#undef iargc_
-#undef getarg_
-#define iargc_  f90_unix_MP_iargc
-#define getarg_ f90_unix_MP_getarg
+  #undef iargc_
+  #undef getarg_
+  #define iargc_  f90_unix_MP_iargc
+  #define getarg_ f90_unix_MP_getarg
 #endif
 #if defined(PETSC_USE_NARGS) /* Digital Fortran */
-#undef iargc_
-#undef getarg_
-#define iargc_  NARGS
-#define getarg_ GETARG
-#elif defined(PETSC_HAVE_PXFGETARG_NEW)  /* cray x1 */
-#undef iargc_
-#undef getarg_
-#define iargc_  ipxfargc_
-#define getarg_ pxfgetarg_
+  #undef iargc_
+  #undef getarg_
+  #define iargc_  NARGS
+  #define getarg_ GETARG
+#elif defined(PETSC_HAVE_PXFGETARG_NEW) /* cray x1 */
+  #undef iargc_
+  #undef getarg_
+  #define iargc_  ipxfargc_
+  #define getarg_ pxfgetarg_
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003 */
-#undef iargc_
-#undef getarg_
-#define iargc_ petsccommandargumentcount_
-#define getarg_ petscgetcommandargument_
+  #undef iargc_
+  #undef getarg_
+  #define iargc_  petsccommandargumentcount_
+  #define getarg_ petscgetcommandargument_
 #elif defined(PETSC_HAVE_BGL_IARGC) /* bgl g77 has different external & internal name mangling */
-#undef iargc_
-#undef getarg_
-#define iargc  iargc_
-#define getarg getarg_
+  #undef iargc_
+  #undef getarg_
+  #define iargc  iargc_
+  #define getarg getarg_
 #endif
 
 /*
@@ -71,56 +71,56 @@
   contained any _.
 */
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-#define mpi_init_             mpi_init__
+  #define mpi_init_ mpi_init__
 #endif
 
 #if defined(PETSC_HAVE_MPIUNI)
-#if defined(mpi_init_)
-#undef mpi_init_
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define mpi_init_             PETSC_MPI_INIT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define mpi_init_             petsc_mpi_init
-#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-#define mpi_init_             petsc_mpi_init__
-#endif
-#else    /* mpi_init_ */
-#define mpi_init_             petsc_mpi_init_
-#endif   /* mpi_init_ */
+  #if defined(mpi_init_)
+    #undef mpi_init_
+    #if defined(PETSC_HAVE_FORTRAN_CAPS)
+      #define mpi_init_ PETSC_MPI_INIT
+    #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+      #define mpi_init_ petsc_mpi_init
+    #elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+      #define mpi_init_ petsc_mpi_init__
+    #endif
+  #else /* mpi_init_ */
+    #define mpi_init_ petsc_mpi_init_
+  #endif /* mpi_init_ */
 #endif   /* PETSC_HAVE_MPIUNI */
 
-PETSC_EXTERN void mpi_init_(int*);
-PETSC_EXTERN void petscgetcomm_(PetscMPIInt*);
+PETSC_EXTERN void mpi_init_(int *);
+PETSC_EXTERN void petscgetcomm_(PetscMPIInt *);
 
 /*
      Different Fortran compilers handle command lines in different ways
 */
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003  - same as 'else' case */
-PETSC_EXTERN int iargc_(void);
-PETSC_EXTERN void getarg_(int*,char*,int);
+PETSC_EXTERN int  iargc_(void);
+PETSC_EXTERN void getarg_(int *, char *, int);
 #elif defined(PETSC_USE_NARGS)
 PETSC_EXTERN short __stdcall NARGS(void);
-PETSC_EXTERN void __stdcall GETARG(short*,char*,int,short *);
+PETSC_EXTERN void __stdcall GETARG(short *, char *, int, short *);
 
 #elif defined(PETSC_HAVE_PXFGETARG_NEW)
-PETSC_EXTERN int iargc_(void);
-PETSC_EXTERN void getarg_(int*,char*,int*,int*,int);
+PETSC_EXTERN int  iargc_(void);
+PETSC_EXTERN void getarg_(int *, char *, int *, int *, int);
 
 #else
-PETSC_EXTERN int iargc_(void);
-PETSC_EXTERN void getarg_(int*,char*,int);
-/*
+PETSC_EXTERN int  iargc_(void);
+PETSC_EXTERN void getarg_(int *, char *, int);
+  /*
       The Cray T3D/T3E use the PXFGETARG() function
 */
-#if defined(PETSC_HAVE_PXFGETARG)
-PETSC_EXTERN void PXFGETARG(int*,_fcd,int*,int*);
-#endif
+  #if defined(PETSC_HAVE_PXFGETARG)
+PETSC_EXTERN void PXFGETARG(int *, _fcd, int *, int *);
+  #endif
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,PetscBool,int,const char[],const char[],void**);
-PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
-PETSC_INTERN int  PetscGlobalArgc;
-PETSC_INTERN char **PetscGlobalArgs;
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t, PetscBool, int, const char[], const char[], void **);
+PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *, int, const char[], const char[]);
+PETSC_INTERN int            PetscGlobalArgc;
+PETSC_INTERN char         **PetscGlobalArgs;
 
 /*
     Reads in Fortran command line arguments and sends them to
@@ -169,7 +169,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc, char ***argv)
 #elif defined(PETSC_USE_NARGS)
       GETARG(&i, (*argv)[i], warg, &flg);
 #else
-    getarg_(&i, (*argv)[i], warg);
+      getarg_(&i, (*argv)[i], warg);
 #endif
       /* zero out garbage at end of each argument */
       p = (*argv)[i] + warg - 1;
@@ -190,20 +190,20 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc, char ***argv)
 
 PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void);
 
-PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments,const char *filename,PetscInt len)
+PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments, const char *filename, PetscInt len)
 {
-  char           *tmp = NULL;
+  char *tmp = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscInitializeFortran());
   if (readarguments) {
-    PetscCall(PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs));
-    if (filename != PETSC_NULL_CHARACTER_Fortran) {  /* FIXCHAR */
-      while ((len > 0) && (filename[len-1] == ' ')) len--;
-      PetscCall(PetscMalloc1(len+1,&tmp));
-      PetscCall(PetscStrncpy(tmp,filename,len+1));
+    PetscCall(PETScParseFortranArgs_Private(&PetscGlobalArgc, &PetscGlobalArgs));
+    if (filename != PETSC_NULL_CHARACTER_Fortran) { /* FIXCHAR */
+      while ((len > 0) && (filename[len - 1] == ' ')) len--;
+      PetscCall(PetscMalloc1(len + 1, &tmp));
+      PetscCall(PetscStrncpy(tmp, filename, len + 1));
     }
-    PetscCall(PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,tmp));
+    PetscCall(PetscOptionsInsert(NULL, &PetscGlobalArgc, &PetscGlobalArgs, tmp));
     PetscCall(PetscFree(tmp)); /* FREECHAR */
   }
   PetscFunctionReturn(PETSC_SUCCESS);

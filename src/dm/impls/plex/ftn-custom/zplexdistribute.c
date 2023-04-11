@@ -2,9 +2,9 @@
 #include <petscdmplex.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmplexdistribute_ DMPLEXDISTRIBUTE
+  #define dmplexdistribute_ DMPLEXDISTRIBUTE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dmplexdistribute_ dmplexdistribute
+  #define dmplexdistribute_ dmplexdistribute
 #endif
 
 /* Definitions of Fortran Wrapper routines */

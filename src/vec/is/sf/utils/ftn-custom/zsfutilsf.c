@@ -2,11 +2,11 @@
 #include <petscsf.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscsfdistributesection_          PETSCSFDISTRIBUTESECTION
-#define petscsfgetgraphlayout_             PETSCSFGETGRAPHLAYOUT
+  #define petscsfdistributesection_ PETSCSFDISTRIBUTESECTION
+  #define petscsfgetgraphlayout_    PETSCSFGETGRAPHLAYOUT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscsfdistributesection_          petscsfdistributesection
-#define petscsfgetgraphlayout_             petscsfgetgraphlayout
+  #define petscsfdistributesection_ petscsfdistributesection
+  #define petscsfgetgraphlayout_    petscsfgetgraphlayout
 #endif
 
 PETSC_EXTERN void petscsfdistributesection_(PetscSF *sf, PetscSection *rootSection, PetscInt **remoteOffsets, PetscSection *leafSection, PetscErrorCode *__ierr)

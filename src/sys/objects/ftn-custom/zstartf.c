@@ -2,31 +2,31 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscinitializefortran_       PETSCINITIALIZEFORTRAN
-#define petscsetmoduleblock_          PETSCSETMODULEBLOCK
-#define petscsetmoduleblockmpi_       PETSCSETMODULEBLOCKMPI
-#define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
-#define petsc_null_function_          PETSC_NULL_FUNCTION
-#define petscsetmoduleblocknumeric_   PETSCSETMODULEBLOCKNUMERIC
-#define petscsetcomm_                 PETSCSETCOMM
+  #define petscinitializefortran_      PETSCINITIALIZEFORTRAN
+  #define petscsetmoduleblock_         PETSCSETMODULEBLOCK
+  #define petscsetmoduleblockmpi_      PETSCSETMODULEBLOCKMPI
+  #define petscsetfortranbasepointers_ PETSCSETFORTRANBASEPOINTERS
+  #define petsc_null_function_         PETSC_NULL_FUNCTION
+  #define petscsetmoduleblocknumeric_  PETSCSETMODULEBLOCKNUMERIC
+  #define petscsetcomm_                PETSCSETCOMM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscinitializefortran_       petscinitializefortran
-#define petscsetmoduleblock_          petscsetmoduleblock
-#define petscsetmoduleblockmpi_       petscsetmoduleblockmpi
-#define petscsetfortranbasepointers_  petscsetfortranbasepointers
-#define petsc_null_function_          petsc_null_function
-#define petscsetmoduleblocknumeric_   petscsetmoduleblocknumeric
-#define petscsetcomm_                 petscsetcomm
+  #define petscinitializefortran_      petscinitializefortran
+  #define petscsetmoduleblock_         petscsetmoduleblock
+  #define petscsetmoduleblockmpi_      petscsetmoduleblockmpi
+  #define petscsetfortranbasepointers_ petscsetfortranbasepointers
+  #define petsc_null_function_         petsc_null_function
+  #define petscsetmoduleblocknumeric_  petscsetmoduleblocknumeric
+  #define petscsetcomm_                petscsetcomm
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-#define petsc_null_function_  petsc_null_function__
+  #define petsc_null_function_ petsc_null_function__
 #endif
 
 PETSC_EXTERN void petscsetmoduleblock_(void);
-PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*,MPI_Fint*);
-PETSC_EXTERN void petscsetmoduleblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
-PETSC_EXTERN void petscsetcomm_(MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint *, MPI_Fint *, MPI_Fint *, MPI_Fint *);
+PETSC_EXTERN void petscsetmoduleblocknumeric_(PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN void petscsetcomm_(MPI_Fint *, MPI_Fint *);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -83,10 +83,7 @@ PETSC_EXTERN void petscinitializefortran_(int *ierr)
   *ierr = PetscInitializeFortran();
 }
 
-PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character,
-                                  void *fnull_integer,void *fnull_scalar,void * fnull_double,
-                                  void *fnull_real,
-                                  void* fnull_truth,void (*fnull_function)(void),void *fnull_mpi_comm,PETSC_FORTRAN_CHARLEN_T len)
+PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character, void *fnull_integer, void *fnull_scalar, void *fnull_double, void *fnull_real, void *fnull_truth, void (*fnull_function)(void), void *fnull_mpi_comm, PETSC_FORTRAN_CHARLEN_T len)
 {
   PETSC_NULL_CHARACTER_Fortran = fnull_character;
   PETSC_NULL_INTEGER_Fortran   = fnull_integer;
@@ -105,4 +102,3 @@ PETSC_EXTERN void petsc_null_function_(void)
 {
   return;
 }
-
