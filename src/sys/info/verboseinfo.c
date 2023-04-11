@@ -125,7 +125,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
 }
 
 /*@C
-    PetscInfoGetFile - Gets the name and FILE pointer of the file where `PetscInfo()` prints to
+    PetscInfoGetFile - Gets the `filename` and `FILE` pointer of the file where `PetscInfo()` prints to
 
     Not Collective; No Fortran Support
 
@@ -270,6 +270,9 @@ PetscErrorCode PetscInfoGetInfo(PetscBool *infoEnabled, PetscBool *classesSet, P
 .   numClassID - Number of entries in `classIDs`
 -   classIDs - Array containing all of the `PetscClassId`s associated with `classname`
 
+      Options Database Key:
+.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, see `PetscInfo()`.
+
     Level: developer
 
 .seealso: `PetscInfo()`, `PetscInfoActivateClass()`, `PetscInfoDeactivateClass()`, `PetscInfoSetFromOptions()`
@@ -284,7 +287,7 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
   PetscAssert(numClassID > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of classids %" PetscInt_FMT " <= 0", numClassID);
   if (numClassID) PetscValidPointer(classIDs, 3);
   PetscCall(PetscInfoGetInfo(&enabled, NULL, &exclude, NULL, NULL));
-  /* -info_exclude is DEPRECATED */
+  PetscCall(PetscOptionsDeprecated_Private(NULL, "-info_exclude", NULL, "3.13", "Use ~ with -info to indicate classes to exclude"));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-info_exclude", logList, sizeof(logList), &opt));
   if (opt) {
     PetscBool pkg;
@@ -320,6 +323,9 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
     Input Parameter:
 .   commSelfFlag - Enum value indicating method with which to filter `PetscInfo()` based on the size of the communicator of the object calling `PetscInfo()`
 
+    Options Database Key:
+.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+
     Level: advanced
 
 .seealso: `PetscInfo()`, `PetscInfoGetInfo()`
@@ -340,7 +346,7 @@ PetscErrorCode PetscInfoSetFilterCommSelf(PetscInfoCommFlag commSelfFlag)
 .   options - Options database, use `NULL` for default global database
 
     Options Database Key:
-.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See PetscInfo().
+.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
     Level: advanced
 
@@ -355,7 +361,6 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
   PetscBool set;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsDeprecated_Private(NULL, "-info_exclude", NULL, "3.13", "Use -info instead"));
   PetscCall(PetscOptionsGetString(options, NULL, "-info", optstring, PETSC_STATIC_ARRAY_LENGTH(optstring), &set));
   if (set) {
     size_t            size_loc0_, size_loc1_, size_loc2_;
@@ -458,6 +463,9 @@ static PetscErrorCode PetscInfoSetClassActivation_Private(PetscClassId classid, 
   Input Parameter:
 . classid - The object class,  e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
 
+    Options Database Key:
+.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+
   Level: developer
 
   Note:
@@ -479,6 +487,9 @@ PetscErrorCode PetscInfoDeactivateClass(PetscClassId classid)
 
   Input Parameter:
 . classid - The object class, e.g., `MAT_CLASSID`, `SNES_CLASSID`, etc.
+
+    Options Database Key:
+.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
 
   Level: developer
 
@@ -519,25 +530,22 @@ PETSC_INTERN FILE *petsc_history;
 .   formatmessage - logging message using standard "printf" format
 -   arg1, arg2, ... - arguments of the format
 
+      Options Database Key:
+.   -info [filename][:[~]<list,of,classnames>[:[~]self]] - specify which informative messages are printed, See `PetscInfo()`.
+
     Level: intermediate
 
     Notes:
     `PetscInfo()` prints only from the first processor in the communicator of obj.
     If obj is NULL, the `PETSC_COMM_SELF` communicator is used, i.e. every rank of `PETSC_COMM_WORLD` prints the message.
 
-    Extent of the printed messages can be controlled using the option database key -info as follows.
-
-$   -info [filename][:[~]<list,of,classnames>[:[~]self]]
-
-    No filename means standard output `PETSC_STDOUT` is used.
-
     The optional <list,of,classnames> is a comma separated list of enabled classes, e.g. vec,mat,ksp.
     If this list is not specified, all classes are enabled.
     Prepending the list with ~ means inverted selection, i.e. all classes except the listed are enabled.
-    A special classname sys relates to PetscInfo() with obj being NULL.
+    A special classname `sys` relates to `PetscInfo()` with obj being `NULL`.
 
-    The optional self keyword specifies that PetscInfo() is enabled only for communicator size = 1 (e.g. `PETSC_COMM_SELF`), i.e. only `PetscInfo()` calls which print from every rank of `PETSC_COMM_WORLD` are enabled.
-    By contrast, ~self means that PetscInfo() is enabled only for communicator size > 1 (e.g. `PETSC_COMM_WORLD`), i.e. those `PetscInfo()` calls which print from every rank of `PETSC_COMM_WORLD` are disabled.
+    The optional keyword `self` specifies that `PetscInfo()` is enabled only for a communicator size of 1 (e.g. `PETSC_COMM_SELF`).
+    By contrast, ~self means that `PetscInfo()` is enabled only for communicator size > 1 (e.g. `PETSC_COMM_WORLD`), i.e. those `PetscInfo()` calls which print from every rank of `PETSC_COMM_WORLD` are disabled.
 
     All classname/self matching is case insensitive. Filename is case sensitive.
 
@@ -565,7 +573,7 @@ $   -info [filename][:[~]<list,of,classnames>[:[~]self]]
     -info :sys:~self deactivates all info messages because sys means obj = NULL which implies PETSC_COMM_SELF but ~self filters out everything on PETSC_COMM_SELF.
 .ve
     Fortran Note:
-    This function does not take the obj argument, there is only the `PetscInfo()`
+    This function does not take the `obj` argument, there is only the `PetscInfo()`
      version, not `PetscInfo()` etc.
 
 .seealso: `PetscInfoAllow()`, `PetscInfoSetFromOptions()`
