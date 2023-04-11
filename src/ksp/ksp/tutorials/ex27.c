@@ -224,17 +224,21 @@ int main(int argc, char **args)
   if (solve_normal) {
     PetscCall(KSPSetOperators(ksp, N, N));
   } else if (solve_augmented) {
-    Mat      array[4], C;
-    Vec      view;
-    PetscInt M;
+    Mat       array[4], C;
+    Vec       view;
+    PetscInt  M, n;
+    PetscReal diag;
 
     PetscCall(MatDestroy(&N));
     PetscCall(MatGetSize(A, &M, NULL));
+    PetscCall(MatGetLocalSize(A, NULL, &n));
     PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD, m, m, M, M, -1.0, array));
     array[1] = A;
     if (!explicit_transpose) PetscCall(MatCreateHermitianTranspose(A, array + 2));
     else PetscCall(MatHermitianTranspose(A, MAT_INITIAL_MATRIX, array + 2));
-    array[3] = NULL;
+    PetscCall(PetscOptionsGetReal(NULL, NULL, "-nonzero_A11", &diag, &has));
+    if (has) PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD, n, n, PETSC_DECIDE, PETSC_DECIDE, diag, array + 3));
+    else array[3] = NULL;
     PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, array, &C));
     PetscCall(MatNestSetVecType(C, VECNEST));
     PetscCall(MatCreateVecs(C, v + 1, v));
@@ -248,6 +252,7 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&C));
     PetscCall(MatDestroy(array));
     PetscCall(MatDestroy(array + 2));
+    PetscCall(MatDestroy(array + 3));
   } else {
     PC pc;
     PetscCall(KSPSetType(ksp, KSPLSQR));
@@ -427,6 +432,22 @@ int main(int argc, char **args)
         args: -solve_augmented -ksp_type gmres -ksp_view -explicit_transpose {{false true}shared output}
         args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
         args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
+     test:
+        suffix: 4f_nonzero
+        nsize: 4
+        requires: hpddm slepc suitesparse defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+        args: -solve_augmented -nonzero_A11 {{0.0 1e-14}shared output} -ksp_type gmres
+        args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
+     test:
+        suffix: 4f_nonzero_shift
+        nsize: 4
+        output_file: output/ex27_4f_nonzero.out
+        requires: hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+        filter: sed -e "s/Number of iterations =   6/Number of iterations =   5/g"
+        args: -solve_augmented -nonzero_A11 {{0.0 1e-6}shared output} -ksp_type gmres
+        args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -prefix_pop
      test:
         suffix: 4g
         nsize: 4
