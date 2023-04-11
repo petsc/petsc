@@ -8,7 +8,7 @@ SNES Object: 1 MPI process
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=4
-  total number of function evaluations=22
+  total number of function evaluations=27
   norm schedule ALWAYS
   Jacobian is built using colored finite differences on a DMDA
   SNESLineSearch Object: 1 MPI process
