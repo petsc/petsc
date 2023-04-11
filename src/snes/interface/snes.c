@@ -452,7 +452,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  %sJacobian is built using a DMDA local Jacobian\n", pre));
       }
-    } else if (snes->mf) {
+    } else if (snes->mf && !snes->mf_operator) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Jacobian is applied matrix-free with differencing, no explicit Jacobian\n"));
     }
   } else if (isstring) {
