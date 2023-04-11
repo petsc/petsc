@@ -474,7 +474,8 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
 @*/
 PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 {
-  PetscInt nfull, nreduced;
+  PetscInt  nfull, nreduced;
+  PetscBool sorted = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
@@ -482,10 +483,9 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
-
-  if (nfull == nreduced) { /* Also takes care of masked vectors */
-    PetscCall(VecAXPY(vfull, alpha, vreduced));
-  } else {
+  if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
+  if (sorted) PetscCall(VecAXPY(vfull, alpha, vreduced));
+  else {
     PetscScalar       *y;
     const PetscScalar *x;
     PetscInt           i, n, m, rstart, rend;
@@ -496,7 +496,7 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     PetscCall(ISGetIndices(is, &id));
     PetscCall(ISGetLocalSize(is, &n));
     PetscCall(VecGetLocalSize(vreduced, &m));
-    PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length not equal to Vec local length");
+    PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %" PetscInt_FMT " not equal to Vec local length %" PetscInt_FMT, n, m);
     PetscCall(VecGetOwnershipRange(vfull, &rstart, &rend));
     y -= rstart;
     if (alpha == 1.0) {
@@ -546,7 +546,8 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 @*/
 PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 {
-  PetscInt nfull, nreduced;
+  PetscInt  nfull, nreduced;
+  PetscBool sorted = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
@@ -554,8 +555,8 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
-
-  if (nfull == nreduced) { /* Also takes care of masked vectors */
+  if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
+  if (sorted) {
     if (mode == SCATTER_FORWARD) {
       PetscCall(VecCopy(vreduced, vfull));
     } else {
