@@ -70,7 +70,7 @@ PetscErrorCode PetscSFReset_Basic_NVSHMEM(PetscSF sf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Set up NVSHMEM related fields for an SF of type SFBASIC (only after PetscSFSetup_Basic() already set up dependant fields */
+/* Set up NVSHMEM related fields for an SF of type SFBASIC (only after PetscSFSetup_Basic() already set up dependent fields) */
 static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
 {
   cudaError_t    cerr;
