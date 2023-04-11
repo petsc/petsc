@@ -2439,7 +2439,13 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *ival)
   Mat_MUMPS *mumps = (Mat_MUMPS *)F->data;
 
   PetscFunctionBegin;
-  *ival = mumps->id.ICNTL(icntl);
+  if (mumps->id.job == JOB_NULL) {
+    PetscInt i, nICNTL_pre = mumps->ICNTL_pre ? mumps->ICNTL_pre[0] : 0;
+    *ival = 0;
+    for (i = 0; i < nICNTL_pre; ++i) {
+      if (mumps->ICNTL_pre[1 + 2 * i] == icntl) *ival = mumps->ICNTL_pre[2 + 2 * i];
+    }
+  } else *ival = mumps->id.ICNTL(icntl);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2531,7 +2537,13 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *val)
   Mat_MUMPS *mumps = (Mat_MUMPS *)F->data;
 
   PetscFunctionBegin;
-  *val = mumps->id.CNTL(icntl);
+  if (mumps->id.job == JOB_NULL) {
+    PetscInt i, nCNTL_pre = mumps->CNTL_pre ? mumps->CNTL_pre[0] : 0;
+    *val = 0.0;
+    for (i = 0; i < nCNTL_pre; ++i) {
+      if (mumps->CNTL_pre[1 + 2 * i] == icntl) *val = mumps->CNTL_pre[2 + 2 * i];
+    }
+  } else *val = mumps->id.CNTL(icntl);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

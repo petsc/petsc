@@ -188,7 +188,12 @@ int main(int argc, char **args)
     PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
     PetscCall(PCFactorGetMatrix(pc, &F));
-
+    PetscCall(MatMumpsSetIcntl(F, 24, 1));
+    PetscCall(MatMumpsGetIcntl(F, 24, &ival));
+    PetscCheck(ival == 1, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "ICNTL(24) = %" PetscInt_FMT " (!= 1)", ival);
+    PetscCall(MatMumpsSetCntl(F, 3, 1e-6));
+    PetscCall(MatMumpsGetCntl(F, 3, &val));
+    PetscCheck(PetscEqualReal(val, 1e-6), PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "CNTL(3) = %g (!= %g)", (double)val, 1e-6);
     if (flg_mumps) {
       /* Zero the first and last rows in the rank, they should then show up in corresponding null pivot rows output via
          MatMumpsGetNullPivots */
@@ -215,10 +220,11 @@ int main(int argc, char **args)
     PetscCall(MatMumpsSetIcntl(F, icntl, ival));
 
     /* threshold for row pivot detection */
-    PetscCall(MatMumpsSetIcntl(F, 24, 1));
+    PetscCall(MatMumpsGetIcntl(F, 24, &ival));
+    PetscCheck(ival == 1, PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "ICNTL(24) = %" PetscInt_FMT " (!= 1)", ival);
     icntl = 3;
-    val   = 1.e-6;
-    PetscCall(MatMumpsSetCntl(F, icntl, val));
+    PetscCall(MatMumpsGetCntl(F, icntl, &val));
+    PetscCheck(PetscEqualReal(val, 1e-6), PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "CNTL(3) = %g (!= %g)", (double)val, 1e-6);
 
     /* compute determinant of A */
     PetscCall(MatMumpsSetIcntl(F, 33, 1));
