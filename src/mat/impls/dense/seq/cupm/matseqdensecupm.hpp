@@ -413,7 +413,6 @@ struct MatDense_Seq_CUPM<T>::SolveLU : SolveCommon<SolveLU> {
     const auto         mcu       = MatCUPMCast(A);
     const auto         fact_info = mcu->d_fact_info;
     const auto         fact_ipiv = mcu->d_fact_ipiv;
-    const auto         lda       = static_cast<cupmBlasInt_t>(MatIMPLCast(A)->lda);
     cupmSolverHandle_t handle;
 
     PetscFunctionBegin;
