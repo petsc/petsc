@@ -10,9 +10,9 @@ class Configure(config.package.GNUPackage):
     self.includes          = ['egads.h']
     self.hastests          = 1
     self.buildLanguages    = ['Cxx']
-    self.requirescxx11     = 1
     self.hasegadslite      = 1
     self.hasegads          = 1
+    self.skippackagelibincludedirs = 1
     return
 
   def setupDependencies(self, framework):
@@ -186,10 +186,6 @@ clean:
       raise RuntimeError('egads does not support --with-egads; only --download-egads')
     if 'with-egads-dir' in self.framework.clArgDB:
       self.egadsDir = self.framework.argDB['with-egads-dir']
-    if 'with-egads-include' in self.framework.clArgDB:
-      raise RuntimeError('egads does not support --with-egads-include; only --download-egads')
-    if 'with-egads-lib' in self.framework.clArgDB:
-      raise RuntimeError('egads does not support --with-egads-lib; only --download-egads')
     if 'with-egads-shared' in self.framework.clArgDB:
       raise RuntimeError('egads does not support --with-egads-shared')
 

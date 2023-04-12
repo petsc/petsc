@@ -49,7 +49,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
     }
   } else iflags_local = (PetscMPIInt *)iflags;
 
-  /* Post an allreduce to determine the numer of messages the current node will receive */
+  /* Post an allreduce to determine the number of messages the current MPI rank will receive */
   PetscCall(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 
@@ -155,7 +155,7 @@ PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPI
     }
   } else iflags_local = (PetscMPIInt *)iflags;
 
-  /* Post an allreduce to determine the numer of messages the current node will receive */
+  /* Post an allreduce to determine the number of messages the current MPI rank will receive */
   PetscCall(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 

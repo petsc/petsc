@@ -131,17 +131,17 @@ PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err)
 }
 #endif
 
-PETSC_EXTERN void petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viwer,v);
+  PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscRealView(*n,d,v);
 }
 
-PETSC_EXTERN void petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viwer,v);
+  PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscIntView(*n,d,v);
 }
 
@@ -151,9 +151,9 @@ PETSC_EXTERN void petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,Petsc
 #define petscscalarview_             petscscalarview
 #endif
 
-PETSC_EXTERN void petscscalarview_(PetscInt *n,PetscScalar *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void petscscalarview_(PetscInt *n,PetscScalar *d,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viwer,v);
+  PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscScalarView(*n,d,v);
 }

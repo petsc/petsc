@@ -10,6 +10,7 @@ class Configure(config.package.GNUPackage):
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
+    self.skippackagelibincludedirs = 1
     return
 
   def setupDependencies(self, framework):
@@ -27,10 +28,6 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('Ctetgen does not support --with-ctetgen; only --download-ctetgen')
     if 'with-ctetgen-dir' in self.framework.clArgDB:
       self.ctetgenDir = self.framework.argDB['with-ctetgen-dir']
-    if 'with-ctetgen-include' in self.framework.clArgDB:
-      raise RuntimeError('Ctetgen does not support --with-ctetgen-include; only --download-ctetgen')
-    if 'with-ctetgen-lib' in self.framework.clArgDB:
-      raise RuntimeError('Ctetgen does not support --with-ctetgen-lib; only --download-ctetgen')
     if 'with-ctetgen-shared' in self.framework.clArgDB:
       raise RuntimeError('Ctetgen does not support --with-ctetgen-shared')
 

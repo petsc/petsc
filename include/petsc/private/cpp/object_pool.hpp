@@ -21,6 +21,34 @@ namespace Petsc
 namespace memory
 {
 
+enum class align_val_t : std::size_t {
+};
+
+} // namespace memory
+
+} // namespace Petsc
+
+namespace std
+{
+
+template <>
+struct hash<::Petsc::memory::align_val_t> {
+  #if PETSC_CPP_VERSION < 17
+  using argument_type = ::Petsc::memory::align_val_t;
+  using result_type   = size_t;
+  #endif
+
+  constexpr size_t operator()(const ::Petsc::memory::align_val_t &x) const noexcept { return static_cast<size_t>(x); }
+};
+
+} // namespace std
+
+namespace Petsc
+{
+
+namespace memory
+{
+
 // ==========================================================================================
 // PoolAllocator
 //
@@ -35,10 +63,9 @@ class PoolAllocator : public RegisterFinalizeable<PoolAllocator> {
 public:
   // define the size and alignment as separate types, this helps to disambiguate them at the
   // callsite!
-  using size_type = std::size_t;
-  enum class align_type : std::size_t {
-  };
-  using pool_type = Petsc::UnorderedMap<align_type, Petsc::UnorderedMap<size_type, std::deque<void *>>>;
+  using size_type  = std::size_t;
+  using align_type = align_val_t;
+  using pool_type  = UnorderedMap<align_type, UnorderedMap<size_type, std::deque<void *>>>;
 
   PoolAllocator() noexcept                            = default;
   PoolAllocator(PoolAllocator &&) noexcept            = default;
