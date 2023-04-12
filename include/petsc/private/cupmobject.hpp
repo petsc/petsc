@@ -252,13 +252,13 @@ inline constexpr PetscRandomType CUPMObject<T>::PETSCDEVICERAND() noexcept
 }
 
 template <DeviceType T>
-inline PetscErrorCode CUPMObject<T>::GetFromHandleDispatch_(PetscDeviceContext dctx, cupmBlasHandle_t *blas_handle, cupmSolverHandle_t *solver_handle, cupmStream_t *stream) noexcept
+inline PetscErrorCode CUPMObject<T>::GetFromHandleDispatch_(PetscDeviceContext dctx, cupmBlasHandle_t *blas_handle, cupmSolverHandle_t *solver_handle, cupmStream_t *stream_handle) noexcept
 {
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
   if (blas_handle) PetscValidPointer(blas_handle, 2);
   if (solver_handle) PetscValidPointer(solver_handle, 3);
-  if (stream) PetscValidPointer(stream, 4);
+  if (stream_handle) PetscValidPointer(stream_handle, 4);
   if (PetscDefined(USE_DEBUG)) {
     PetscDeviceType dtype;
 
@@ -267,7 +267,12 @@ inline PetscErrorCode CUPMObject<T>::GetFromHandleDispatch_(PetscDeviceContext d
   }
   if (blas_handle) PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx, blas_handle));
   if (solver_handle) PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx, solver_handle));
-  if (stream) PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, stream));
+  if (stream_handle) {
+    cupmStream_t *stream;
+
+    PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, &stream));
+    *stream_handle = *stream;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

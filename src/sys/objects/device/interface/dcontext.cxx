@@ -1050,3 +1050,57 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
   PetscCall(PetscObjectViewFromOptions(PetscObjectCast(dctx), obj, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@C
+  PetscDeviceContextGetStreamHandle - Return a handle to the underlying stream of the current device context
+
+  Input Parameters:
++ dctx   - The `PetscDeviceContext` to get the stream from
+- handle - A handle to the stream
+
+  Level: developer
+
+  Note:
+  This routine is dangerous. It exists only for the most experienced users and
+  internal PETSc developement.
+
+  There is no way for PETSc's auto-dependency system to track what the caller does with the
+  stream.
+
+  If the user uses the stream to copy memory that was previously modified by PETSc, or launches
+  kernels that modify memory with the stream, it is the users responsibility to inform PETSc of
+  their actions via `PetscDeviceContextMarkIntentFromID()`. Failure to do so may introduce a
+  race condition. This race condition may manifest in nondeterministic ways.
+
+  Alternatively, the user may synchronize the stream immediately before and after use. This is
+  the safest option.
+
+  Example Usage:
+.vb
+  PetscDeviceContext dctx;
+  PetscDeviceType    type;
+  void               *handle;
+
+  PetscDeviceContextGetCurrentContext(&dctx);
+  PetscDeviceContextGetStreamHandle(dctx, &handle);
+  PetscDeviceContextGetDeviceType(dctx, &type);
+
+  if (type == PETSC_DEVICE_CUDA) {
+    cudsStream_t stream = *(cudaStream_t*)handle;
+
+    my_cuda_kernel<<<1, 2, 3, stream>>>();
+  }
+.ve
+
+.N ASYNC_API
+
+.seealso: `PetscDeviceContext`
+@*/
+PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext dctx, void *handle)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscValidPointer(handle, 2);
+  PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, handle));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
