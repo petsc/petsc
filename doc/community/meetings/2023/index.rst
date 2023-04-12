@@ -15,7 +15,7 @@ Easy access from the hotels via the Chicago Elevated `Green <https://www.transit
 Please test for Covid before attending the meeting and
 mask while traveling to the meeting.
 
-In addition to a newbie user tutorial and newbie developer workshop the meeting will include a "speed dating" session where users can ask questions of developers (and each other) about technical details of their particular simulations. Finally the meeting will be interspersed with short mini tutorials that will dive down into particular aspects of PETSc that users may not be familiar with.
+In addition to a newbie user tutorial and newbie developer workshop, the meeting will include a "speed dating" session where users can ask questions of developers (and each other) about technical details of their particular simulations. Finally the meeting will be interspersed with short mini tutorials that will dive down into particular aspects of PETSc that users may not be familiar with.
 
 Meeting times
 -------------
@@ -34,7 +34,7 @@ PETSc newbie developer workshop:
 
 Registration
 ------------
-Please register at `EventBrite <https://www.eventbrite.com/e/petsc-2023-user-meeting-tickets-494165441137>`__ to save your seat. 100 dollar registration fee for breaks and lunchs; this can be skipped if you cannot afford it.
+Please register at `EventBrite <https://www.eventbrite.com/e/petsc-2023-user-meeting-tickets-494165441137>`__ to save your seat. 100 dollar registration fee for breaks and lunches; this can be skipped if you cannot afford it.
 
 Submit a presentation
 ---------------------
