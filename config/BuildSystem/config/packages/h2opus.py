@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.precisions             = ['single','double']
     self.skippackagewithoptions = 1
     self.buildLanguages         = ['Cxx']
-    self.requirescxx14          = 1
+    self.minCxxVersion          = 'c++14'
     self.liblist                = [['libh2opus.a']]
     self.includes               = ['h2opusconf.h']
     self.functionsCxx           = [1,'','h2opusCreateHandle']

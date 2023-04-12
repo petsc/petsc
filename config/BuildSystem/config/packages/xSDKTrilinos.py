@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.hastests          = 1
     self.linkedbypetsc     = 0
     self.useddirectly      = 0
+    self.skippackagelibincludedirs = 1
     return
 
   def setupDependencies(self, framework):
@@ -38,10 +39,6 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos; only --download-xsdktrilinos')
     if 'with-xsdktrilinos-dir' in self.framework.clArgDB:
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos-dir; only --download-xsdktrilinos')
-    if 'with-xsdktrilinos-include' in self.framework.clArgDB:
-      raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos-include; only --download-xsdktrilinos')
-    if 'with-xsdktrilinos-lib' in self.framework.clArgDB:
-      raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos-lib; only --download-xsdktrilinos')
 
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]

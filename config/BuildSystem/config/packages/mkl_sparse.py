@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.precisions       = ['single','double']
     self.lookforbydefault = 1
     self.requires32bitintblas   = 0
+    self.skippackagewithoptions = 1
     return
 
   def setupDependencies(self, framework):
