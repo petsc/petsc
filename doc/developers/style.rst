@@ -469,7 +469,10 @@ Usage of PETSc Functions and Macros
    ``PETSC_DEPRECATED_XXX()`` should be used in the relevant header file
    to indicate the new, correct usage and the version number where the
    deprecation will first appear. The old function or type, with the
-   deprecation warning, should remain for at least one major release.
+   deprecation warning, should remain for at least one major release. We do not remove support for the
+   deprecated functionality unless there is a specific reason to remove it; it is not removed simply because
+   it has been deprecated for "a long time."
+
    The function or type’s manual page should be updated (see :ref:`manual_page_format`).
    For example,
 
@@ -496,7 +499,9 @@ Usage of PETSc Functions and Macros
 
 #. Before removing or renaming an options database key,
    ``PetscOptionsDeprecated()`` should be used for at least one major
-   release.
+   release. We do not remove support for the
+   deprecated functionality unless there is a specific reason to remove it; it is not removed simply because
+   it has been deprecated for "a long time."
 
 #. The format strings in PETSc ASCII output routines, such as
    ``PetscPrintf``, take a ``%" PetscInt_FMT "`` for all PETSc variables of type ``PetscInt``,
