@@ -133,7 +133,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESSetSolution(PetscSNES,PetscVec)
     PetscErrorCode SNESGetSolutionUpdate(PetscSNES,PetscVec*)
 
-    PetscErrorCode SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
+    PetscErrorCode SNESSetComputeInitialGuess(PetscSNES,PetscSNESInitialGuessFunction,void*)
     PetscErrorCode SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
     PetscErrorCode SNESGetFunction(PetscSNES,PetscVec*,void*,void**)
     PetscErrorCode SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)

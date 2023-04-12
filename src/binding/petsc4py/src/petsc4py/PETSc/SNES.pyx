@@ -1,6 +1,13 @@
 # --------------------------------------------------------------------
 
 class SNESType(object):
+    """SNES solver type.
+
+    See Also
+    --------
+    petsc.SNESType
+
+    """
     NEWTONLS         = S_(SNESNEWTONLS)
     NEWTONTR         = S_(SNESNEWTONTR)
     PYTHON           = S_(SNESPYTHON)
@@ -23,6 +30,13 @@ class SNESType(object):
     PATCH            = S_(SNESPATCH)
 
 class SNESNormSchedule(object):
+    """SNES norm schedule.
+
+    See Also
+    --------
+    petsc.SNESNormSchedule
+
+    """
     # native
     NORM_DEFAULT            = SNES_NORM_DEFAULT
     NORM_NONE               = SNES_NORM_NONE
@@ -38,7 +52,15 @@ class SNESNormSchedule(object):
     FINAL_ONLY         = NORM_FINAL_ONLY
     INITIAL_FINAL_ONLY = NORM_INITIAL_FINAL_ONLY
 
+# FIXME Missing reference petsc.SNESConvergedReason
 class SNESConvergedReason(object):
+    """SNES solver termination reason.
+
+    See Also
+    --------
+    petsc.SNESGetConvergedReason
+
+    """
     # iterating
     CONVERGED_ITERATING      = SNES_CONVERGED_ITERATING
     ITERATING                = SNES_CONVERGED_ITERATING
@@ -63,6 +85,15 @@ class SNESConvergedReason(object):
 # --------------------------------------------------------------------
 
 cdef class SNES(Object):
+    """Nonlinear equations solver.
+
+    SNES is described in the `PETSc manual <petsc:manual/snes>`.
+
+    See Also
+    --------
+    petsc.SNES
+
+    """
 
     Type = SNESType
     NormSchedule = SNESNormSchedule
@@ -76,53 +107,150 @@ cdef class SNES(Object):
 
     # --- xxx ---
 
-    def view(self, Viewer viewer=None):
+    def view(self, Viewer viewer=None) -> None:
+        """View the solver.
+
+        Collective.
+
+        Parameters
+        ----------
+        viewer
+            A `Viewer` instance or `None` for the default viewer.
+
+        See Also
+        --------
+        petsc.SNESView
+
+        """
         cdef PetscViewer cviewer = NULL
         if viewer is not None: cviewer = viewer.vwr
         CHKERR( SNESView(self.snes, cviewer) )
 
-    def destroy(self):
+    def destroy(self) -> Self:
+        """Destroy the solver.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESDestroy
+
+        """
         CHKERR( SNESDestroy(&self.snes) )
         return self
 
-    def create(self, comm=None):
+    def create(self, comm: Comm | None = None) -> Self:
+        """Create a SNES solver.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        Sys.getDefaultComm, petsc.SNESCreate
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSNES newsnes = NULL
         CHKERR( SNESCreate(ccomm, &newsnes) )
         PetscCLEAR(self.obj); self.snes = newsnes
         return self
 
-    def setType(self, snes_type):
+    def setType(self, snes_type: Type | str) -> None:
+        """Set the type of the solver.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        snes_type
+            The type of the solver.
+
+        See Also
+        --------
+        getType, petsc.SNESSetType
+
+        """
         cdef PetscSNESType cval = NULL
         snes_type = str2bytes(snes_type, &cval)
         CHKERR( SNESSetType(self.snes, cval) )
 
-    def getType(self):
+    def getType(self) -> str:
+        """Return the type of the solver.
+
+        Not collective.
+
+        See Also
+        --------
+        setType, petsc.SNESGetType
+
+        """
         cdef PetscSNESType cval = NULL
         CHKERR( SNESGetType(self.snes, &cval) )
         return bytes2str(cval)
 
-    def setOptionsPrefix(self, prefix):
+    def setOptionsPrefix(self, prefix: str) -> None:
+        """Set the prefix used for searching for options in the database.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc_options, petsc.SNESSetOptionsPrefix
+
+        """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( SNESSetOptionsPrefix(self.snes, cval) )
 
-    def getOptionsPrefix(self):
+    def getOptionsPrefix(self) -> str:
+        """Return the prefix used for searching for options in the database.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc_options, setOptionsPrefix, petsc.SNESGetOptionsPrefix
+
+        """
         cdef const char *cval = NULL
         CHKERR( SNESGetOptionsPrefix(self.snes, &cval) )
         return bytes2str(cval)
 
-    def appendOptionsPrefix(self, prefix):
+    def appendOptionsPrefix(self, prefix: str) -> None:
+        """Append to the prefix used for searching for options in the database.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc_options, setOptionsPrefix, petsc.SNESAppendOptionsPrefix
+
+        """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
         CHKERR( SNESAppendOptionsPrefix(self.snes, cval) )
 
-    def setFromOptions(self):
+    def setFromOptions(self) -> None:
+        """Configure the solver from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.SNESSetFromOptions
+
+        """
         CHKERR( SNESSetFromOptions(self.snes) )
 
     # --- application context ---
 
-    def setApplicationContext(self, appctx):
+    def setApplicationContext(self, appctx: Any) -> None:
+        """Set the application context."""
         self.set_attr('__appctx__', appctx)
         if appctx is not None:
             registerAppCtx(<void*>appctx)
@@ -130,7 +258,8 @@ cdef class SNES(Object):
         else:
             CHKERR( SNESSetApplicationContext(self.snes, NULL) )
 
-    def getApplicationContext(self):
+    def getApplicationContext(self) -> Any:
+        """Return the application context."""
         cdef void *ctx
         appctx = self.get_attr('__appctx__')
         if appctx is None:
@@ -144,7 +273,16 @@ cdef class SNES(Object):
 
     # --- discretization space ---
 
-    def getDM(self):
+    def getDM(self) -> DM:
+        """Return the `DM` associated with the solver.
+
+        Not collective.
+
+        See Also
+        --------
+        setDM, petsc.SNESGetDM
+
+        """
         cdef PetscDM newdm = NULL
         CHKERR( SNESGetDM(self.snes, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
@@ -152,49 +290,140 @@ cdef class SNES(Object):
         PetscINCREF(dm.obj)
         return dm
 
-    def setDM(self, DM dm):
+    def setDM(self, DM dm) -> None:
+        """Associate a `DM` with the solver.
+
+        Not collective.
+
+        See Also
+        --------
+        getDM, petsc.SNESSetDM
+
+        """
         CHKERR( SNESSetDM(self.snes, dm.dm) )
 
     # --- FAS ---
 
-    def setFASInterpolation(self, level, Mat mat):
+    def setFASInterpolation(self, level: int, Mat mat) -> None:
+        """Set the `Mat` to be used to apply the interpolation from level-1 to level.
+
+        Collective.
+
+        See Also
+        --------
+        getFASInterpolation, setFASRestriction, setFASInjection
+        petsc.SNESFASSetInterpolation, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetInterpolation(self.snes, clevel, mat.mat) )
 
-    def getFASInterpolation(self, level):
+    def getFASInterpolation(self, level: int) -> Mat:
+        """Return the `Mat` used to apply the interpolation from level-1 to level.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASInterpolation, petsc.SNESFASGetInterpolation, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         cdef Mat mat = Mat()
         CHKERR( SNESFASGetInterpolation(self.snes, clevel, &mat.mat) )
         PetscINCREF(mat.obj)
         return mat
 
-    def setFASRestriction(self, level, Mat mat):
+    def setFASRestriction(self, level: int, Mat mat) -> None:
+        """Set the `Mat` to be used to apply the restriction from level-1 to level.
+
+        Collective.
+
+        See Also
+        --------
+        setFASRScale, getFASRestriction, setFASInterpolation, setFASInjection
+        petsc.SNESFASSetRestriction, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetRestriction(self.snes, clevel, mat.mat) )
 
-    def getFASRestriction(self, level):
+    def getFASRestriction(self, level: int) -> Mat:
+        """Return the `Mat` used to apply the restriction from level-1 to level.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASRestriction, petsc.SNESFASGetRestriction, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         cdef Mat mat = Mat()
         CHKERR( SNESFASGetRestriction(self.snes, clevel, &mat.mat) )
         PetscINCREF(mat.obj)
         return mat
 
-    def setFASInjection(self, level, Mat mat):
+    def setFASInjection(self, level: int, Mat mat) -> None:
+        """Set the `Mat` to be used to apply the injection from level-1 to level.
+
+        Collective.
+
+        See Also
+        --------
+        getFASInjection, setFASInterpolation, setFASRestriction
+        petsc.SNESFASSetInjection, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetInjection(self.snes, clevel, mat.mat) )
 
-    def getFASInjection(self, level):
+    def getFASInjection(self, level: int) -> Mat:
+        """Return the `Mat` used to apply the injection from level-1 to level.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASInjection, petsc.SNESFASGetInjection, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         cdef Mat mat = Mat()
         CHKERR( SNESFASGetInjection(self.snes, clevel, &mat.mat) )
         PetscINCREF(mat.obj)
         return mat
 
-    def setFASRScale(self, level, Vec vec):
+    def setFASRScale(self, level: int, Vec vec) -> None:
+        """Set the scaling factor of the restriction operator from level to level-1.
+
+        Collective.
+
+        See Also
+        --------
+        setFASRestriction, petsc.SNESFASSetRScale, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetRScale(self.snes, clevel, vec.vec) )
 
-    def setFASLevels(self, levels, comms=None):
+    def setFASLevels(self, levels: int, comms: Sequence[Comm] = None) -> None:
+        """Set the number of levels to use with FAS.
+
+        Collective.
+
+        Parameters
+        ----------
+        levels
+            The number of levels
+        comms
+            An optional sequence of communicators of length `levels`, or `None` for the default communicator `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        getFASLevels, petsc.SNESFASSetLevels, petsc.SNESFAS
+
+        """
         cdef PetscInt clevels = asInt(levels)
         cdef MPI_Comm *ccomms = NULL
         cdef Py_ssize_t i = 0
@@ -211,39 +440,97 @@ cdef class SNES(Object):
         else:
             CHKERR( SNESFASSetLevels(self.snes, clevels, ccomms) )
 
-    def getFASLevels(self):
+    def getFASLevels(self) -> int:
+        """Return the number of levels used.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASLevels, petsc.SNESFASGetLevels, petsc.SNESFAS
+
+        """
         cdef PetscInt levels = 0
         CHKERR( SNESFASGetLevels(self.snes, &levels) )
         return toInt(levels)
 
-    def getFASCycleSNES(self, level):
+    def getFASCycleSNES(self, level: int) -> SNES:
+        """Return the `SNES` corresponding to a particular level of the FAS hierarchy.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASLevels, getFASCoarseSolve, getFASSmoother
+        petsc.SNESFASGetCycleSNES, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         cdef SNES lsnes = SNES()
         CHKERR( SNESFASGetCycleSNES(self.snes, clevel, &lsnes.snes) )
         PetscINCREF(lsnes.obj)
         return lsnes
 
-    def getFASCoarseSolve(self):
+    def getFASCoarseSolve(self) -> SNES:
+        """Return the `SNES` used at the coarsest level of the FAS hierarchy.
+
+        Not collective.
+
+        See Also
+        --------
+        getFASSmoother, petsc.SNESFASGetCoarseSolve, petsc.SNESFAS
+
+        """
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetCoarseSolve(self.snes, &smooth.snes) )
         PetscINCREF(smooth.obj)
         return smooth
 
-    def getFASSmoother(self, level):
+    def getFASSmoother(self, level: int) -> SNES:
+        """Return the smoother used at a given level of the FAS hierarchy.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASLevels, getFASCoarseSolve, getFASSmootherDown, getFASSmootherUp
+        petsc.SNESFASGetSmoother, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetSmoother(self.snes, clevel, &smooth.snes) )
         PetscINCREF(smooth.obj)
         return smooth
 
-    def getFASSmootherDown(self, level):
+    def getFASSmootherDown(self, level: int) -> SNES:
+        """Return the downsmoother used at a given level of the FAS hierarchy.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASLevels, getFASCoarseSolve, getFASSmoother, getFASSmootherUp
+        petsc.SNESFASGetSmootherDown, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetSmootherDown(self.snes, clevel, &smooth.snes) )
         PetscINCREF(smooth.obj)
         return smooth
 
-    def getFASSmootherUp(self, level):
+    def getFASSmootherUp(self, level: int) -> SNES:
+        """Return the upsmoother used at a given level of the FAS hierarchy.
+
+        Not collective.
+
+        See Also
+        --------
+        setFASLevels, getFASCoarseSolve, getFASSmoother, getFASSmootherDown
+        petsc.SNESFASGetSmootherUp, petsc.SNESFAS
+
+        """
         cdef PetscInt clevel = asInt(level)
         cdef SNES smooth = SNES()
         CHKERR( SNESFASGetSmootherUp(self.snes, clevel, &smooth.snes) )
@@ -252,31 +539,96 @@ cdef class SNES(Object):
 
     # --- nonlinear preconditioner ---
 
-    def getNPC(self):
+    def getNPC(self) -> SNES:
+        """Return the nonlinear preconditioner associated with the solver.
+
+        Not collective.
+
+        See Also
+        --------
+        setNPC, hasNPC, setNPCSide, getNPCSide, petsc.SNESGetNPC
+
+        """
         cdef SNES snes = SNES()
         CHKERR( SNESGetNPC(self.snes, &snes.snes) )
         PetscINCREF(snes.obj)
         return snes
 
-    def hasNPC(self):
+    def hasNPC(self) -> bool:
+        """Return a boolean indicating whether the solver has a nonlinear preconditioner.
+
+        Not collective.
+
+        See Also
+        --------
+        setNPC, getNPC, setNPCSide, getNPCSide, petsc.SNESHasNPC
+
+        """
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESHasNPC(self.snes, &flag) )
         return toBool(flag)
 
-    def setNPC(self, SNES snes):
+    def setNPC(self, SNES snes) -> None:
+        """Set the nonlinear preconditioner.
+
+        Logically collective.
+
+        See Also
+        --------
+        getNPC, hasNPC, setNPCSide, getNPCSide, petsc.SNESSetNPC
+
+        """
         CHKERR( SNESSetNPC(self.snes, snes.snes) )
 
-    def setNPCSide(self, side):
+    def setNPCSide(self, side: PC.Side) -> None:
+        """Set the nonlinear preconditioning side.
+
+        Collective.
+
+        See Also
+        --------
+        setNPC, getNPC, hasNPC, getNPCSide, petsc.SNESSetNPCSide
+
+        """
         CHKERR( SNESSetNPCSide(self.snes, side) )
 
-    def getNPCSide(self):
+    def getNPCSide(self) -> PC.Side:
+        """Return the nonlinear preconditioning side.
+
+        Not collective.
+
+        See Also
+        --------
+        setNPC, getNPC, hasNPC, setNPCSide, petsc.SNESGetNPCSide
+
+        """
         cdef PetscPCSide side = PC_RIGHT
         CHKERR( SNESGetNPCSide(self.snes, &side) )
         return side
 
     # --- user Function/Jacobian routines ---
 
-    def setLineSearchPreCheck(self, precheck, args=None, kargs=None):
+    def setLineSearchPreCheck(self, precheck: SNESLSPreFunction,
+                              args: tuple[Any, ...] | None = None,
+                              kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback that will be called before applying the linesearch.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        precheck
+            The callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        petsc.SNESLineSearchSetPreCheck
+
+        """
         cdef PetscSNESLineSearch snesls = NULL
         CHKERR( SNESGetLineSearch(self.snes, &snesls) )
         if precheck is not None:
@@ -284,26 +636,76 @@ cdef class SNES(Object):
             if kargs is None: kargs = {}
             context = (precheck, args, kargs)
             self.set_attr('__precheck__', context)
+            # FIXME callback
             CHKERR( SNESLineSearchSetPreCheck(snesls, SNES_PreCheck, <void*> context) )
         else:
             self.set_attr('__precheck__', None)
             CHKERR( SNESLineSearchSetPreCheck(snesls, NULL, NULL) )
 
-    def setInitialGuess(self, initialguess, args=None, kargs=None):
+    def setInitialGuess(self, initialguess: SNESGuessFunction,
+                        args: tuple[Any, ...] | None = None,
+                        kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to compute the initial guess.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        initialguess
+            The callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getInitialGuess, petsc.SNESSetComputeInitialGuess
+
+        """
         if initialguess is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
             context = (initialguess, args, kargs)
             self.set_attr('__initialguess__', context)
-            CHKERR( SNESSetInitialGuess(self.snes, SNES_InitialGuess, <void*>context) )
+            CHKERR( SNESSetComputeInitialGuess(self.snes, SNES_InitialGuess, <void*>context) )
         else:
             self.set_attr('__initialguess__', None)
-            CHKERR( SNESSetInitialGuess(self.snes, NULL, NULL) )
+            CHKERR( SNESSetComputeInitialGuess(self.snes, NULL, NULL) )
 
-    def getInitialGuess(self):
+    def getInitialGuess(self) -> SNESGuessFunction:
+        """Return the callback to compute the initial guess.
+
+        See Also
+        --------
+        setInitialGuess
+
+        """
         return self.get_attr('__initialguess__')
 
-    def setFunction(self, function, Vec f or None, args=None, kargs=None):
+    def setFunction(self, function: SNESFunction, Vec f=None,
+                    args: tuple[Any, ...] | None = None,
+                    kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to compute the nonlinear function.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        function
+            The callback.
+        f
+            An optional vector to store the result.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getFunction, petsc.SNESSetFunction
+
+        """
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
@@ -315,7 +717,16 @@ cdef class SNES(Object):
         else:
             CHKERR( SNESSetFunction(self.snes, fvec, NULL, NULL) )
 
-    def getFunction(self):
+    def getFunction(self) -> SNESFunction:
+        """Return the callback to compute the nonlinear function.
+
+        Not collective.
+
+        See Also
+        --------
+        setFunction, petsc.SNESGetFunction
+
+        """
         cdef Vec f = Vec()
         cdef void* ctx
         cdef PetscErrorCode (*fun)(PetscSNES,PetscVec,PetscVec,void*)
@@ -335,7 +746,27 @@ cdef class SNES(Object):
 
         return (f, None)
 
-    def setUpdate(self, update, args=None, kargs=None):
+    def setUpdate(self, update: SNESUpdateFunction,
+                  args: tuple[Any, ...] | None = None,
+                  kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to compute update at the beginning of the nonlinear step.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        update
+            The callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getUpdate, petsc.SNESSetUpdate
+
+        """
         if update is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -346,10 +777,42 @@ cdef class SNES(Object):
             self.set_attr('__update__', None)
             CHKERR( SNESSetUpdate(self.snes, NULL) )
 
-    def getUpdate(self):
+    def getUpdate(self) -> SNESUpdateFunction:
+        """Return the callback to compute the update at the beginning of the nonlinear step.
+
+        Not collective.
+
+        See Also
+        --------
+        setUpdate
+
+        """
         return self.get_attr('__update__')
 
-    def setJacobian(self, jacobian, Mat J=None, Mat P=None, args=None, kargs=None):
+    def setJacobian(self, jacobian: SNESJacobianFunction, Mat J=None, Mat P=None,
+                    args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to compute the Jacobian.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        jacobian
+            The Jacobian callback.
+        J
+            The matrix to store the Jacobian.
+        P
+            The matrix to construct the preconditioner.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getJacobian, petsc.SNESSetJacobian
+
+        """
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat=Jmat
@@ -363,7 +826,25 @@ cdef class SNES(Object):
         else:
             CHKERR( SNESSetJacobian(self.snes, Jmat, Pmat, NULL, NULL) )
 
-    def getJacobian(self):
+    def getJacobian(self) -> tuple[Mat, Mat, SNESJacobianFunction]:
+        """Return the matrices used to compute the Jacobian and the callback tuple.
+
+        Not collective.
+
+        Returns
+        -------
+        J : Mat
+            The matrix to store the Jacobian.
+        P : Mat
+            The matrix to construct the preconditioner.
+        callback : SNESJacobianFunction
+            callback, positional and keyword arguments.
+
+        See Also
+        --------
+        setJacobian, petsc.SNESGetJacobian
+
+        """
         cdef Mat J = Mat()
         cdef Mat P = Mat()
         CHKERR( SNESGetJacobian(self.snes, &J.mat, &P.mat, NULL, NULL) )
@@ -372,7 +853,27 @@ cdef class SNES(Object):
         cdef object jacobian = self.get_attr('__jacobian__')
         return (J, P, jacobian)
 
-    def setObjective(self, objective, args=None, kargs=None):
+    def setObjective(self, objective: SNESObjFunction,
+                     args: tuple[Any, ...] | None = None,
+                     kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to compute the objective function.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        objective
+            The Jacobian callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getObjective, petsc.SNESSetObjective
+
+        """
         if objective is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -382,44 +883,166 @@ cdef class SNES(Object):
         else:
             CHKERR( SNESSetObjective(self.snes, NULL, NULL) )
 
-    def getObjective(self):
+    def getObjective(self) -> SNESObjFunction:
+        """Return the objective callback tuple.
+
+        Not collective.
+
+        See Also
+        --------
+        setObjective
+
+        """
         CHKERR( SNESGetObjective(self.snes, NULL, NULL) )
         cdef object objective = self.get_attr('__objective__')
         return objective
 
-    def computeFunction(self, Vec x, Vec f):
+    def computeFunction(self, Vec x, Vec f) -> None:
+        """Compute the function.
+
+        Collective.
+
+        Parameters
+        ----------
+        x
+            The input state vector.
+        f
+            The output vector.
+
+        See Also
+        --------
+        setFunction, petsc.SNESComputeFunction
+
+        """
         CHKERR( SNESComputeFunction(self.snes, x.vec, f.vec) )
 
-    def computeJacobian(self, Vec x, Mat J, Mat P=None):
+    def computeJacobian(self, Vec x, Mat J, Mat P=None) -> None:
+        """Compute the Jacobian.
+
+        Collective.
+
+        Parameters
+        ----------
+        x
+            The input state vector.
+        J
+            The output Jacobian matrix.
+        P
+            The output Jacobian matrix used to construct the preconditioner.
+
+        See Also
+        --------
+        setJacobian, petsc.SNESComputeJacobian
+
+        """
         cdef PetscMat jmat = J.mat, pmat = J.mat
         if P is not None: pmat = P.mat
         CHKERR( SNESComputeJacobian(self.snes, x.vec, jmat, pmat) )
 
-    def computeObjective(self, Vec x):
+    def computeObjective(self, Vec x) -> float:
+        """Compute the value of the objective function.
+
+        Collective.
+
+        Parameters
+        ----------
+        x
+            The input state vector.
+
+        See Also
+        --------
+        setObjective, petsc.SNESComputeObjective
+
+        """
         cdef PetscReal o = 0
         CHKERR( SNESComputeObjective(self.snes, x.vec, &o) )
         return toReal(o)
 
-    def setNGS(self, ngs, args=None, kargs=None):
+    def setNGS(self, ngs: SNESNGSFunction,
+               args: tuple[Any, ...] | None = None,
+               kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to compute nonlinear Gauss-Seidel.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        ngs
+            The nonlinear Gauss-Seidel callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getNGS, computeNGS, petsc.SNESSetNGS
+
+        """
         if args  is None: args  = ()
         if kargs is None: kargs = {}
         context = (ngs, args, kargs)
         self.set_attr('__ngs__', context)
         CHKERR( SNESSetNGS(self.snes, SNES_NGS, <void*>context) )
 
-    def getNGS(self):
+    def getNGS(self) -> SNESNGSFunction:
+        """Return the nonlinear Gauss-Seidel callback tuple.
+
+        Not collective.
+
+        See Also
+        --------
+        setNGS, computeNGS
+
+        """
         CHKERR( SNESGetNGS(self.snes, NULL, NULL) )
         cdef object ngs = self.get_attr('__ngs__')
         return ngs
 
-    def computeNGS(self, Vec x, Vec b=None):
+    def computeNGS(self, Vec x, Vec b=None) -> None:
+        """Compute a nonlinear Gauss-Seidel step.
+
+        Collective.
+
+        Parameters
+        ----------
+        x
+            The input/output state vector.
+        b
+            The input right-hand side vector.
+
+        See Also
+        --------
+        setNGS, getNGS, petsc.SNESComputeNGS
+
+        """
         cdef PetscVec bvec = NULL
         if b is not None: bvec = b.vec
         CHKERR( SNESComputeNGS(self.snes, bvec, x.vec) )
 
     # --- tolerances and convergence ---
 
-    def setTolerances(self, rtol=None, atol=None, stol=None, max_it=None):
+    def setTolerances(self, rtol: float = None, atol: float = None, stol: float = None, max_it: int = None) -> None:
+        """Set the tolerance parameters used in the solver convergence tests.
+
+        Collective.
+
+        Parameters
+        ----------
+        rtol
+            The relative norm of the residual. Defaults to `DEFAULT`.
+        atol
+            The absolute norm of the residual. Defaults to `DEFAULT`.
+        stol
+            The absolute norm of the step. Defaults to `DEFAULT`.
+        max_it
+            The maximum allowed number of iterations. Defaults to `DEFAULT`
+
+        See Also
+        --------
+        getTolerances, petsc.SNESSetTolerances
+
+        """
         cdef PetscReal crtol, catol, cstol
         crtol = catol = cstol = PETSC_DEFAULT
         cdef PetscInt cmaxit = PETSC_DEFAULT
@@ -430,22 +1053,80 @@ cdef class SNES(Object):
         CHKERR( SNESSetTolerances(self.snes, catol, crtol, cstol,
                                   cmaxit, PETSC_DEFAULT) )
 
-    def getTolerances(self):
+    def getTolerances(self) -> tuple[float, float, float, int]:
+        """Return the tolerance parameters used in the solver convergence tests.
+
+        Collective.
+
+        Returns
+        -------
+        rtol : float
+            The relative norm of the residual.
+        atol : float
+            The absolute norm of the residual.
+        stol : float
+            The absolute norm of the step.
+        max_it : int
+            The maximum allowed number of iterations.
+
+        See Also
+        --------
+        setTolerances, petsc.SNESGetTolerances
+
+        """
         cdef PetscReal crtol=0, catol=0, cstol=0
         cdef PetscInt cmaxit=0
         CHKERR( SNESGetTolerances(self.snes, &catol, &crtol, &cstol,
                                   &cmaxit, NULL) )
         return (toReal(crtol), toReal(catol), toReal(cstol), toInt(cmaxit))
 
-    def setNormSchedule(self, normsched):
+    def setNormSchedule(self, normsched: NormSchedule) -> None:
+        """Set the norm schedule.
+
+        Collective.
+
+        See Also
+        --------
+        getNormSchedule, petsc.SNESSetNormSchedule
+
+        """
         CHKERR( SNESSetNormSchedule(self.snes, normsched) )
 
-    def getNormSchedule(self):
+    def getNormSchedule(self) -> NormSchedule:
+        """Return the norm schedule.
+
+        Not collective.
+
+        See Also
+        --------
+        setNormSchedule, petsc.SNESGetNormSchedule
+
+        """
         cdef PetscSNESNormSchedule normsched = SNES_NORM_NONE
         CHKERR( SNESGetNormSchedule(self.snes, &normsched) )
         return normsched
 
-    def setConvergenceTest(self, converged, args=None, kargs=None):
+    def setConvergenceTest(self, converged: SNESConvergedFunction | Literal["skip", "default"],
+                           args: tuple[Any, ...] | None = None,
+                           kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to use as convergence test.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        converged
+            The convergence testing callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getConvergenceTest, callConvergenceTest, petsc.SNESSetConvergenceTest
+
+        """
         if converged == "skip":
             self.set_attr('__converged__', None)
             CHKERR( SNESSetConvergenceTest(self.snes, SNESConvergedSkip, NULL, NULL) )
@@ -460,10 +1141,39 @@ cdef class SNES(Object):
             self.set_attr('__converged__', context)
             CHKERR( SNESSetConvergenceTest(self.snes, SNES_Converged, <void*>context, NULL) )
 
-    def getConvergenceTest(self):
+    def getConvergenceTest(self) -> SNESConvergedFunction:
+        """Return the callback to used as convergence test.
+
+        Not collective.
+
+        See Also
+        --------
+        setConvergenceTest, callConvergenceTest
+
+        """
         return self.get_attr('__converged__')
 
-    def callConvergenceTest(self, its, xnorm, ynorm, fnorm):
+    def callConvergenceTest(self, its: int, xnorm: float, ynorm: float, fnorm: float) -> ConvergedReason:
+        """Compute the convergence test.
+
+        Collective.
+
+        Parameters
+        ----------
+        its
+            Iteration number.
+        xnorm
+            Solution norm.
+        ynorm
+            Update norm.
+        fnorm
+            Function norm.
+
+        See Also
+        --------
+        setConvergenceTest, getConvergenceTest
+
+        """
         cdef PetscInt  ival  = asInt(its)
         cdef PetscReal rval1 = asReal(xnorm)
         cdef PetscReal rval2 = asReal(ynorm)
@@ -473,11 +1183,21 @@ cdef class SNES(Object):
                                         rval1, rval2, rval3, &reason) )
         return reason
 
-    def setConvergenceHistory(self, length=None, reset=False):
+    def setConvergenceHistory(self, length=None, reset=False) -> None:
+        """Set the convergence history.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc.SNESSetConvergenceHistory
+
+        """
         cdef PetscReal *rdata = NULL
         cdef PetscInt  *idata = NULL
         cdef PetscInt   size = 1000
         cdef PetscBool flag = PETSC_FALSE
+        #FIXME
         if   length is True:     pass
         elif length is not None: size = asInt(length)
         if size < 0: size = 1000
@@ -487,7 +1207,16 @@ cdef class SNES(Object):
         self.set_attr('__history__', (rhist, ihist))
         CHKERR( SNESSetConvergenceHistory(self.snes, rdata, idata, size, flag) )
 
-    def getConvergenceHistory(self):
+    def getConvergenceHistory(self) -> tuple[ArrayReal, ArrayInt]:
+        """Return the convergence history.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.SNESGetConvergenceHistory
+
+        """
         cdef PetscReal *rdata = NULL
         cdef PetscInt  *idata = NULL
         cdef PetscInt   size = 0
@@ -496,18 +1225,46 @@ cdef class SNES(Object):
         cdef object ihist = array_i(size, idata)
         return (rhist, ihist)
 
-    def logConvergenceHistory(self, norm, linear_its=0):
+    def logConvergenceHistory(self, norm: float, linear_its: int = 0) -> None:
+        """Log residual norm and linear iterations."""
         cdef PetscReal rval = asReal(norm)
         cdef PetscInt  ival = asInt(linear_its)
         CHKERR( SNESLogConvergenceHistory(self.snes, rval, ival) )
 
-    def setResetCounters(self, reset=True):
+    def setResetCounters(self, reset: bool = True) -> None:
+        """Set the flag to reset the counters.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESSetCountersReset
+
+        """
         cdef PetscBool flag = reset
         CHKERR( SNESSetCountersReset(self.snes, flag) )
 
     # --- monitoring ---
 
-    def setMonitor(self, monitor, args=None, kargs=None):
+    def setMonitor(self, monitor: SNESMonitorFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback used to monitor solver convergence.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        monitor
+            The callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getMonitor, petsc.SNESMonitorSet
+
+        """
         if monitor is None: return
         cdef object monitorlist = self.get_attr('__monitor__')
         if monitorlist is None:
@@ -519,64 +1276,179 @@ cdef class SNES(Object):
         context = (monitor, args, kargs)
         monitorlist.append(context)
 
-    def getMonitor(self):
+    def getMonitor(self) -> list[tuple[SNESMonitorFunction, tuple[Any, ...], dict[str, Any]]]:
+        """Return the callback used to monitor solver convergence.
+
+        Not collective.
+
+        See Also
+        --------
+        setMonitor
+
+        """
         return self.get_attr('__monitor__')
 
-    def monitorCancel(self):
+    def monitorCancel(self) -> None:
+        """Cancel all the monitors of the solver.
+
+        Logically collective.
+
+        See Also
+        --------
+        setMonitor, petsc.SNESMonitorCancel
+
+        """
         CHKERR( SNESMonitorCancel(self.snes) )
         self.set_attr('__monitor__', None)
 
     cancelMonitor = monitorCancel
 
-    def monitor(self, its, rnorm):
+    def monitor(self, its, rnorm) -> None:
+        """Monitor the solver.
+
+        Collective.
+
+        Parameters
+        ----------
+        its
+            Current number of iterations.
+        rnorm
+            Current value of the residual norm.
+
+        See Also
+        --------
+        setMonitor, petsc.SNESMonitor
+
+        """
         cdef PetscInt  ival = asInt(its)
         cdef PetscReal rval = asReal(rnorm)
         CHKERR( SNESMonitor(self.snes, ival, rval) )
 
     # --- more tolerances ---
 
-    def setMaxFunctionEvaluations(self, max_funcs):
+    def setMaxFunctionEvaluations(self, max_funcs: int) -> None:
+        """Set the maximum allowed number of function evaluations.
+
+        Collective.
+
+        See Also
+        --------
+        getMaxFunctionEvaluations, petsc.SNESSetTolerances
+
+        """
         cdef PetscReal r = PETSC_DEFAULT
         cdef PetscInt  i = PETSC_DEFAULT
         cdef PetscInt ival = asInt(max_funcs)
         CHKERR( SNESSetTolerances(self.snes, r, r, r, i, ival) )
 
-    def getMaxFunctionEvaluations(self):
+    def getMaxFunctionEvaluations(self) -> int:
+        """Return the maximum allowed number of function evaluations.
+
+        Not collective.
+
+        See Also
+        --------
+        setMaxFunctionEvaluations, petsc.SNESSetTolerances
+
+        """
         cdef PetscReal *r = NULL
         cdef PetscInt  *i = NULL
         cdef PetscInt ival = 0
         CHKERR( SNESGetTolerances(self.snes, r, r, r, i, &ival) )
         return toInt(ival)
 
-    def getFunctionEvaluations(self):
+    def getFunctionEvaluations(self) -> int:
+        """Return the current number of function evaluations.
+
+        Not collective.
+
+        See Also
+        --------
+        setMaxFunctionEvaluations, petsc.SNESGetNumberFunctionEvals
+
+        """
         cdef PetscInt ival = 0
         CHKERR( SNESGetNumberFunctionEvals(self.snes, &ival) )
         return toInt(ival)
 
-    def setMaxStepFailures(self, max_fails):
+    def setMaxStepFailures(self, max_fails: int) -> None:
+        """Set the maximum allowed number of step failures.
+
+        Collective.
+
+        See Also
+        --------
+        getMaxStepFailures, petsc.SNESSetMaxNonlinearStepFailures
+
+        """
         cdef PetscInt ival = asInt(max_fails)
         CHKERR( SNESSetMaxNonlinearStepFailures(self.snes, ival) )
 
-    def getMaxStepFailures(self):
+    def getMaxStepFailures(self) -> int:
+        """Return the maximum allowed number of step failures.
+
+        Not collective.
+
+        See Also
+        --------
+        setMaxStepFailures, petsc.SNESGetMaxNonlinearStepFailures
+
+        """
         cdef PetscInt ival = 0
         CHKERR( SNESGetMaxNonlinearStepFailures(self.snes, &ival) )
         return toInt(ival)
 
-    def getStepFailures(self):
+    def getStepFailures(self) -> int:
+        """Return the current number of step failures.
+
+        Not collective.
+
+        See Also
+        --------
+        getMaxStepFailures, petsc.SNESGetNonlinearStepFailures
+
+        """
         cdef PetscInt ival = 0
         CHKERR( SNESGetNonlinearStepFailures(self.snes, &ival) )
         return toInt(ival)
 
-    def setMaxKSPFailures(self, max_fails):
+    def setMaxKSPFailures(self, max_fails: int) -> None:
+        """Set the maximum allowed number of linear solve failures.
+
+        Collective.
+
+        See Also
+        --------
+        getMaxKSPFailures, petsc.SNESSetMaxLinearSolveFailures
+
+        """
         cdef PetscInt ival = asInt(max_fails)
         CHKERR( SNESSetMaxLinearSolveFailures(self.snes, ival) )
 
-    def getMaxKSPFailures(self):
+    def getMaxKSPFailures(self) -> int:
+        """Return the maximum allowed number of linear solve failures.
+
+        Not collective.
+
+        See Also
+        --------
+        setMaxKSPFailures, petsc.SNESGetMaxLinearSolveFailures
+
+        """
         cdef PetscInt ival = 0
         CHKERR( SNESGetMaxLinearSolveFailures(self.snes, &ival) )
         return toInt(ival)
 
-    def getKSPFailures(self):
+    def getKSPFailures(self) -> int:
+        """Return the current number of linear solve failures.
+
+        Not collective.
+
+        See Also
+        --------
+        getMaxKSPFailures, petsc.SNESGetLinearSolveFailures
+
+        """
         cdef PetscInt ival = 0
         CHKERR( SNESGetLinearSolveFailures(self.snes, &ival) )
         return toInt(ival)
@@ -590,81 +1462,240 @@ cdef class SNES(Object):
 
     # --- solving ---
 
-    def setUp(self):
+    def setUp(self) -> None:
+        """Set up the internal data structures for using the solver.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESSetUp
+
+        """
         CHKERR( SNESSetUp(self.snes) )
 
-    def reset(self):
+    def reset(self) -> None:
+        """Reset the solver.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESReset
+
+        """
         CHKERR( SNESReset(self.snes) )
 
-    def solve(self, Vec b = None, Vec x = None):
+    def solve(self, Vec b = None, Vec x = None) -> None:
+        """Solve the nonlinear equations.
+
+        Collective.
+
+        Parameters
+        ----------
+        b
+            The affine right-hand side or `None` to use zero.
+        x
+            The starting vector or `None` to use the vector stored internally.
+
+        See Also
+        --------
+        setSolution, getSolution, petsc.SNESSolve
+
+        """
         cdef PetscVec rhs = NULL
         cdef PetscVec sol = NULL
         if b is not None: rhs = b.vec
         if x is not None: sol = x.vec
         CHKERR( SNESSolve(self.snes, rhs, sol) )
 
-    def setConvergedReason(self, reason):
+    def setConvergedReason(self, reason: ConvergedReason) -> None:
+        """Set the termination flag.
+
+        Collective.
+
+        See Also
+        --------
+        getConvergedReason, petsc.SNESSetConvergedReason
+
+        """
         cdef PetscSNESConvergedReason eval = reason
         CHKERR( SNESSetConvergedReason(self.snes, eval) )
 
-    def getConvergedReason(self):
+    def getConvergedReason(self) -> ConvergedReason:
+        """Return the termination flag.
+
+        Not collective.
+
+        See Also
+        --------
+        setConvergedReason, petsc.SNESGetConvergedReason
+
+        """
         cdef PetscSNESConvergedReason reason = SNES_CONVERGED_ITERATING
         CHKERR( SNESGetConvergedReason(self.snes, &reason) )
         return reason
 
-    def setErrorIfNotConverged(self, bint flag):
-        cdef PetscBool ernc = PETSC_FALSE
-        if flag: ernc = PETSC_TRUE
+    def setErrorIfNotConverged(self, flag: bool) -> None:
+        """Immediately generate an error if the solver has not converged.
+
+        Collective.
+
+        See Also
+        --------
+        getErrorIfNotConverged, petsc.SNESSetErrorIfNotConverged
+
+        """
+        cdef PetscBool ernc = asBool(flag)
         CHKERR( SNESSetErrorIfNotConverged(self.snes, ernc) )
 
-    def getErrorIfNotConverged(self):
+    def getErrorIfNotConverged(self) -> bool:
+        """Return the flag indicating error on divergence.
+
+        Not collective.
+
+        See Also
+        --------
+        setErrorIfNotConverged, petsc.SNESGetErrorIfNotConverged
+
+        """
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESGetErrorIfNotConverged(self.snes, &flag) )
         return toBool(flag)
 
-    def setIterationNumber(self, its):
+    def setIterationNumber(self, its: int) -> None:
+        """Set the current iteration number. This is only of use to implementers of custom SNES types.
+
+        Collective.
+
+        See Also
+        --------
+        getIterationNumber, petsc.SNESSetIterationNumber
+
+        """
         cdef PetscInt ival = asInt(its)
         CHKERR( SNESSetIterationNumber(self.snes, ival) )
 
-    def getIterationNumber(self):
+    def getIterationNumber(self) -> int:
+        """Return the current iteration number.
+
+        Not collective.
+
+        See Also
+        --------
+        setIterationNumber, petsc.SNESGetIterationNumber
+
+        """
         cdef PetscInt ival = 0
         CHKERR( SNESGetIterationNumber(self.snes, &ival) )
         return toInt(ival)
 
-    def setForceIteration(self, force):
+    def setForceIteration(self, force: bool) -> None:
+        """Force solve to take at least one iteration.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESSetForceIteration
+
+        """
         cdef PetscBool bval = asBool(force)
         CHKERR( SNESSetForceIteration(self.snes, bval) )
 
-    def setFunctionNorm(self, norm):
+    def setFunctionNorm(self, norm: float) -> None:
+        """Set the function norm value. This is only of use to implementers of custom SNES types.
+
+        Collective.
+
+        See Also
+        --------
+        getFunctionNorm, petsc.SNESSetFunctionNorm
+
+        """
         cdef PetscReal rval = asReal(norm)
         CHKERR( SNESSetFunctionNorm(self.snes, rval) )
 
-    def getFunctionNorm(self):
+    def getFunctionNorm(self) -> float:
+        """Return the function norm.
+
+        Not collective.
+
+        See Also
+        --------
+        setFunctionNorm, petsc.SNESGetFunctionNorm
+
+        """
         cdef PetscReal rval = 0
         CHKERR( SNESGetFunctionNorm(self.snes, &rval) )
         return toReal(rval)
 
-    def getLinearSolveIterations(self):
+    def getLinearSolveIterations(self) -> int:
+        """Return the total number of linear iterations.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.SNESGetLinearSolveIterations
+
+        """
         cdef PetscInt ival = 0
         CHKERR( SNESGetLinearSolveIterations(self.snes, &ival) )
         return toInt(ival)
 
-    def getRhs(self):
+    def getRhs(self) -> Vec:
+        """Return the vector holding the right-hand side.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.SNESGetRhs
+
+        """
         cdef Vec vec = Vec()
         CHKERR( SNESGetRhs(self.snes, &vec.vec) )
         PetscINCREF(vec.obj)
         return vec
 
-    def getSolution(self):
+    def getSolution(self) -> Vec:
+        """Return the vector holding the solution.
+
+        Not collective.
+
+        See Also
+        --------
+        setSolution, petsc.SNESGetSolution
+
+        """
         cdef Vec vec = Vec()
         CHKERR( SNESGetSolution(self.snes, &vec.vec) )
         PetscINCREF(vec.obj)
         return vec
 
-    def setSolution(self, Vec vec):
+    def setSolution(self, Vec vec) -> None:
+        """Set the vector used to store the solution.
+
+        Collective.
+
+        See Also
+        --------
+        getSolution, petsc.SNESSetSolution
+
+        """
         CHKERR( SNESSetSolution(self.snes, vec.vec) )
 
-    def getSolutionUpdate(self):
+    def getSolutionUpdate(self) -> Vec:
+        """Return the vector holding the solution update.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.SNESGetSolutionUpdate
+
+        """
         cdef Vec vec = Vec()
         CHKERR( SNESGetSolutionUpdate(self.snes, &vec.vec) )
         PetscINCREF(vec.obj)
@@ -672,29 +1703,102 @@ cdef class SNES(Object):
 
     # --- linear solver ---
 
-    def setKSP(self, KSP ksp):
+    def setKSP(self, KSP ksp) -> None:
+        """Set the linear solver that will be used by the nonlinear solver.
+
+        Logically collective.
+
+        See Also
+        --------
+        getKSP, petsc.SNESSetKSP
+
+        """
         CHKERR( SNESSetKSP(self.snes, ksp.ksp) )
 
-    def getKSP(self):
+    def getKSP(self) -> KSP:
+        """Return the linear solver used by the nonlinear solver.
+
+        Not collective.
+
+        See Also
+        --------
+        setKSP, petsc.SNESGetKSP
+
+        """
         cdef KSP ksp = KSP()
         CHKERR( SNESGetKSP(self.snes, &ksp.ksp) )
         PetscINCREF(ksp.obj)
         return ksp
 
-    def setUseEW(self, flag=True, *targs, **kargs):
+    def setUseEW(self, flag: bool = True, *targs: Any, **kargs: Any) -> None:
+        """Tell the solver to use the Eisenstat-Walker trick.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        flag
+            Whether or not to use the Eisenstat-Walker trick.
+        *targs
+            Positional arguments for `setParamsEW`.
+        **kargs
+            Keyword arguments for `setParamsEW`.
+
+        See Also
+        --------
+        getUseEW, setParamsEW, petsc.SNESKSPSetUseEW
+
+        """
         cdef PetscBool bval = flag
         CHKERR( SNESKSPSetUseEW(self.snes, bval) )
         if targs or kargs: self.setParamsEW(*targs, **kargs)
 
-    def getUseEW(self):
+    def getUseEW(self) -> bool:
+        """Return the boolean flag indicating if the solver uses the Eisenstat-Walker trick.
+
+        See Also
+        --------
+        setUseEW, setParamsEW, petsc.SNESKSPGetUseEW
+
+        """
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESKSPGetUseEW(self.snes, &flag) )
         return toBool(flag)
 
-    def setParamsEW(self, version=None,
-                    rtol_0=None, rtol_max=None,
-                    gamma=None, alpha=None, alpha2=None,
-                    threshold=None):
+    def setParamsEW(self,
+                    version: int = None,
+                    rtol_0: float = None,
+                    rtol_max: float = None,
+                    gamma: float = None,
+                    alpha: float = None,
+                    alpha2: float = None,
+                    threshold: float = None) -> None:
+        """Set the parameters for the Eisenstat and Walker trick.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        version
+            The version of the algorithm. Defaults to `DEFAULT`.
+        rtol_0
+            The initial relative residual norm. Defaults to `DEFAULT`.
+        rtol_max
+            The maximum relative residual norm. Defaults to `DEFAULT`.
+        gamma
+            Parameter. Defaults to `DEFAULT`.
+        alpha
+            Parameter. Defaults to `DEFAULT`.
+        alpha2
+            Parameter. Defaults to `DEFAULT`.
+        threshold
+            Parameter. Defaults to `DEFAULT`.
+
+        See Also
+        --------
+        setUseEW, getParamsEW, petsc.SNESKSPSetParametersEW
+
+        """
         cdef PetscInt  cversion   = PETSC_DEFAULT
         cdef PetscReal crtol_0    = PETSC_DEFAULT
         cdef PetscReal crtol_max  = PETSC_DEFAULT
@@ -713,7 +1817,16 @@ cdef class SNES(Object):
             self.snes, cversion, crtol_0, crtol_max,
             cgamma, calpha, calpha2, cthreshold) )
 
-    def getParamsEW(self):
+    def getParamsEW(self) -> dict[str, int | float]:
+        """Get the parameters of the Eisenstat and Walker trick.
+
+        Not collective.
+
+        See Also
+        --------
+        setUseEW, setParamsEW, petsc.SNESKSPGetParametersEW
+
+        """
         cdef PetscInt  version=0
         cdef PetscReal rtol_0=0, rtol_max=0
         cdef PetscReal gamma=0, alpha=0, alpha2=0
@@ -731,30 +1844,84 @@ cdef class SNES(Object):
 
     # --- matrix free / finite differences ---
 
-    def setUseMF(self, flag=True):
+    def setUseMF(self, flag=True) -> None:
+        """Set the boolean flag indicating to use matrix-free finite-differencing.
+
+        Logically collective.
+
+        See Also
+        --------
+        getUseMF
+
+        """
         cdef PetscBool bval = flag
         CHKERR( SNESSetUseMFFD(self.snes, bval) )
 
-    def getUseMF(self):
+    def getUseMF(self) -> bool:
+        """Return the boolean flag indicating whether the solver uses matrix-free finite-differencing.
+
+        Not collective.
+
+        See Also
+        --------
+        setUseMF
+
+        """
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESGetUseMFFD(self.snes, &flag) )
         return toBool(flag)
 
-    def setUseFD(self, flag=True):
+    def setUseFD(self, flag=True) -> None:
+        """Set the boolean flag indicating to use coloring finite-differencing for Jacobian assembly.
+
+        Logically collective.
+
+        See Also
+        --------
+        getUseFD
+
+        """
         cdef PetscBool bval = flag
         CHKERR( SNESSetUseFDColoring(self.snes, bval) )
 
-    def getUseFD(self):
+    def getUseFD(self) -> False:
+        """Return the boolean flag indicating whether the solver uses color finite-differencing assembly of the Jacobian.
+
+        Not collective.
+
+        See Also
+        --------
+        setUseFD
+
+        """
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESGetUseFDColoring(self.snes, &flag) )
         return toBool(flag)
 
     # --- VI ---
 
-    def setVariableBounds(self, Vec xl, Vec xu):
+    def setVariableBounds(self, Vec xl, Vec xu) -> None:
+        """Set the vector for the variable bounds.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESVISetVariableBounds
+
+        """
         CHKERR( SNESVISetVariableBounds(self.snes, xl.vec, xu.vec) )
 
-    def getVIInactiveSet(self):
+    def getVIInactiveSet(self) -> IS:
+        """Return the index set for the inactive set.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.SNESVIGetInactiveSet
+
+        """
         cdef IS inact = IS()
         CHKERR( SNESVIGetInactiveSet(self.snes, &inact.iset) )
         PetscINCREF(inact.obj)
@@ -762,7 +1929,23 @@ cdef class SNES(Object):
 
     # --- Python ---
 
-    def createPython(self, context=None, comm=None):
+    def createPython(self, context: Any = None, comm: Comm | None = None) -> Self:
+        """Create a nonlinear solver of Python type.
+
+        Collective.
+
+        Parameters
+        ----------
+        context
+            An instance of the Python class implementing the required methods.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        petsc_python_snes, setType, setPythonContext, Type.PYTHON
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSNES newsnes = NULL
         CHKERR( SNESCreate(ccomm, &newsnes) )
@@ -771,28 +1954,75 @@ cdef class SNES(Object):
         CHKERR( SNESPythonSetContext(self.snes, <void*>context) )
         return self
 
-    def setPythonContext(self, context):
+    def setPythonContext(self, context: Any) -> None:
+        """Set the instance of the Python class implementing the required Python methods.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc_python_snes, getPythonContext
+
+        """
         CHKERR( SNESPythonSetContext(self.snes, <void*>context) )
 
-    def getPythonContext(self):
+    def getPythonContext(self) -> Any:
+        """Return the instance of the Python class implementing the required Python methods.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc_python_snes, setPythonContext
+
+        """
         cdef void *context = NULL
         CHKERR( SNESPythonGetContext(self.snes, &context) )
         if context == NULL: return None
         else: return <object> context
 
-    def setPythonType(self, py_type):
+    def setPythonType(self, py_type: str) -> None:
+        """Set the fully qualified Python name of the class to be used.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_python_snes, setPythonContext, getPythonType
+        petsc.SNESPythonSetType
+
+        """
         cdef const char *cval = NULL
         py_type = str2bytes(py_type, &cval)
         CHKERR( SNESPythonSetType(self.snes, cval) )
 
-    def getPythonType(self):
+    def getPythonType(self) -> str:
+        """Return the fully qualified Python name of the class used by the solver.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc_python_snes, setPythonContext, setPythonType
+        petsc.SNESPythonGetType
+
+        """
         cdef const char *cval = NULL
         CHKERR( SNESPythonGetType(self.snes, &cval) )
         return bytes2str(cval)
 
     # --- Composite ---
 
-    def getCompositeSNES(self, n):
+    def getCompositeSNES(self, int n) -> SNES:
+        """Return the n-th solver in the composite.
+
+        Not collective.
+
+        See Also
+        --------
+        getCompositeNumber, petsc.SNESCompositeGetSNES, petsc.SNESCOMPOSITE
+
+        """
         cdef PetscInt cn
         cdef SNES snes = SNES()
         cn = asInt(n)
@@ -800,35 +2030,64 @@ cdef class SNES(Object):
         PetscINCREF(snes.obj)
         return snes
 
-    def getCompositeNumber(self):
+    def getCompositeNumber(self) -> int:
+        """Return the number of solvers in the composite.
+
+        Not collective.
+
+        See Also
+        --------
+        getCompositeSNES, petsc.SNESCompositeGetNumber, petsc.SNESCOMPOSITE
+
+        """
         cdef PetscInt cn = 0
         CHKERR( SNESCompositeGetNumber(self.snes, &cn) )
         return toInt(cn)
 
     # --- NASM ---
 
-    def getNASMSNES(self, n):
+    def getNASMSNES(self, n: int) -> SNES:
+        """Return the n-th solver in NASM.
+
+        Not collective.
+
+        See Also
+        --------
+        getNASMNumber, petsc.SNESNASMGetSNES, petsc.SNESNASM
+
+        """
         cdef PetscInt cn = asInt(n)
         cdef SNES snes = SNES()
         CHKERR( SNESNASMGetSNES(self.snes, cn, &snes.snes) )
         PetscINCREF(snes.obj)
         return snes
 
-    def getNASMNumber(self):
+    def getNASMNumber(self) -> int:
+        """Return the number of solvers in NASM.
+
+        Not collective.
+
+        See Also
+        --------
+        getNASMSNES, petsc.SNESNASMGetNumber, petsc.SNESNASM
+
+        """
         cdef PetscInt cn = 0
         CHKERR( SNESNASMGetNumber(self.snes, &cn) )
         return toInt(cn)
 
     # --- Patch ---
 
-    def setPatchCellNumbering(self, Section sec not None):
+    def setPatchCellNumbering(self, Section sec) -> None:
+        """Set cell patch numbering."""
         CHKERR( SNESPatchSetCellNumbering(self.snes, sec.sec) )
 
     def setPatchDiscretisationInfo(self, dms, bs,
                                    cellNodeMaps,
                                    subspaceOffsets,
                                    ghostBcNodes,
-                                   globalBcNodes):
+                                   globalBcNodes) -> None:
+        """Set patch discretisation information."""
         cdef PetscInt numSubSpaces = 0
         cdef PetscInt numGhostBcs = 0, numGlobalBcs = 0
         cdef PetscInt *nodesPerCell = NULL
@@ -864,21 +2123,24 @@ cdef class SNES(Object):
         CHKERR( PetscFree(cdms) )
         CHKERR( PetscFree(ccellNodeMaps) )
 
-    def setPatchComputeOperator(self, operator, args=None, kargs=None):
+    def setPatchComputeOperator(self, operator, args=None, kargs=None) -> None:
+        """Set patch compute operator."""
         if args is  None: args  = ()
         if kargs is None: kargs = {}
         context = (operator, args, kargs)
         self.set_attr("__patch_compute_operator__", context)
         CHKERR( SNESPatchSetComputeOperator(self.snes, PCPatch_ComputeOperator, <void*>context) )
 
-    def setPatchComputeFunction(self, function, args=None, kargs=None):
+    def setPatchComputeFunction(self, function, args=None, kargs=None) -> None:
+        """Set patch compute function."""
         if args is  None: args  = ()
         if kargs is None: kargs = {}
         context = (function, args, kargs)
         self.set_attr("__patch_compute_function__", context)
         CHKERR( SNESPatchSetComputeFunction(self.snes, PCPatch_ComputeFunction, <void*>context) )
 
-    def setPatchConstructType(self, typ, operator=None, args=None, kargs=None):
+    def setPatchConstructType(self, typ, operator=None, args=None, kargs=None) -> None:
+        """Set patch construct type."""
         if args is  None: args  = ()
         if kargs is None: kargs = {}
 
@@ -894,7 +2156,8 @@ cdef class SNES(Object):
     # --- application context ---
 
     property appctx:
-        def __get__(self):
+        """Application context."""
+        def __get__(self) -> Any:
             return self.getAppCtx()
         def __set__(self, value):
             self.setAppCtx(value)
@@ -902,7 +2165,8 @@ cdef class SNES(Object):
     # --- discretization space ---
 
     property dm:
-        def __get__(self):
+        """`DM`."""
+        def __get__(self) -> DM:
             return self.getDM()
         def __set__(self, value):
             self.setDM(value)
@@ -910,7 +2174,8 @@ cdef class SNES(Object):
     # --- nonlinear preconditioner ---
 
     property npc:
-        def __get__(self):
+        """Nonlinear preconditioner."""
+        def __get__(self) -> SNES:
             return self.getNPC()
         def __set__(self, value):
             self.setNPC(value)
@@ -918,21 +2183,25 @@ cdef class SNES(Object):
     # --- vectors ---
 
     property vec_sol:
-        def __get__(self):
+        """Solution vector."""
+        def __get__(self) -> Vec:
             return self.getSolution()
 
     property vec_upd:
-        def __get__(self):
+        """Update vector."""
+        def __get__(self) -> Vec:
             return self.getSolutionUpdate()
 
     property vec_rhs:
-        def __get__(self):
+        """Right-hand side vector."""
+        def __get__(self) -> Vec:
             return self.getRhs()
 
     # --- linear solver ---
 
     property ksp:
-        def __get__(self):
+        """Linear solver."""
+        def __get__(self) -> KSP:
             return self.getKSP()
         def __set__(self, value):
             self.setKSP(value)
@@ -946,25 +2215,29 @@ cdef class SNES(Object):
     # --- tolerances ---
 
     property rtol:
-        def __get__(self):
+        """Relative residual tolerance."""
+        def __get__(self) -> float:
             return self.getTolerances()[0]
         def __set__(self, value):
             self.setTolerances(rtol=value)
 
     property atol:
-        def __get__(self):
+        """Absolute residual tolerance."""
+        def __get__(self) -> float:
             return self.getTolerances()[1]
         def __set__(self, value):
             self.setTolerances(atol=value)
 
     property stol:
-        def __get__(self):
+        """Solution update tolerance."""
+        def __get__(self) -> float:
             return self.getTolerances()[2]
         def __set__(self, value):
             self.setTolerances(stol=value)
 
     property max_it:
-        def __get__(self):
+        """Maximum number of iterations."""
+        def __get__(self) -> int:
             return self.getTolerances()[3]
         def __set__(self, value):
             self.setTolerances(max_it=value)
@@ -972,7 +2245,8 @@ cdef class SNES(Object):
     # --- more tolerances ---
 
     property max_funcs:
-        def __get__(self):
+        """Maximum number of function evaluations."""
+        def __get__(self) -> int:
             return self.getMaxFunctionEvaluations()
         def __set__(self, value):
             self.setMaxFunctionEvaluations(value)
@@ -980,51 +2254,60 @@ cdef class SNES(Object):
     # --- iteration ---
 
     property its:
-        def __get__(self):
+        """Number of iterations."""
+        def __get__(self) -> int:
             return self.getIterationNumber()
         def __set__(self, value):
             self.setIterationNumber(value)
 
     property norm:
-        def __get__(self):
+        """Function norm."""
+        def __get__(self) -> float:
             return self.getFunctionNorm()
         def __set__(self, value):
             self.setFunctionNorm(value)
 
     property history:
-        def __get__(self):
+        """Convergence history."""
+        def __get__(self) -> tuple[ArrayReal, ArrayInt]:
             return self.getConvergenceHistory()
 
     # --- convergence ---
 
     property reason:
-        def __get__(self):
+        """Converged reason."""
+        def __get__(self) -> ConvergedReason:
             return self.getConvergedReason()
         def __set__(self, value):
             self.setConvergedReason(value)
 
     property iterating:
-        def __get__(self):
+        """Boolean indicating if the solver has not converged yet."""
+        def __get__(self) -> bool:
             return self.reason == 0
 
     property converged:
-        def __get__(self):
+        """Boolean indicating if the solver has converged."""
+        def __get__(self) -> bool:
             return self.reason > 0
 
     property diverged:
-        def __get__(self):
+        """Boolean indicating if the solver has failed."""
+        def __get__(self) -> bool:
             return self.reason < 0
 
     # --- matrix free / finite differences ---
 
     property use_mf:
-        def __get__(self):
+        """Boolean indicating if the solver uses matrix-free finite-differencing."""
+        def __get__(self) -> bool:
             return self.getUseMF()
         def __set__(self, value):
             self.setUseMF(value)
 
     property use_fd:
-        def __get__(self):
+        """Boolean indicating if the solver uses coloring finite-differencing."""
+        def __get__(self) -> bool:
             return self.getUseFD()
         def __set__(self, value):
             self.setUseFD(value)

@@ -1,22 +1,102 @@
 cdef class DMShell(DM):
+    """A shell DM object, used to manage user-defined problem data."""
 
-    def create(self, comm=None):
+    def create(self, comm: Comm | None = None) -> Self:
+        """Creates a shell DM object.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        petsc.DMShellCreate
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newdm = NULL
         CHKERR( DMShellCreate(ccomm, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def setMatrix(self, Mat mat):
+    def setMatrix(self, Mat mat) -> None:
+        """Set a template matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        mat
+            The template matrix.
+
+        See Also
+        --------
+        petsc.DMShellSetMatrix
+
+        """
         CHKERR( DMShellSetMatrix(self.dm, mat.mat) )
 
-    def setGlobalVector(self, Vec gv):
+    def setGlobalVector(self, Vec gv) -> None:
+        """Set a template global vector.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        gv
+            Template vector.
+
+        See Also
+        --------
+        setLocalVector, petsc.DMShellSetGlobalVector
+
+        """
         CHKERR( DMShellSetGlobalVector(self.dm, gv.vec) )
 
-    def setLocalVector(self, Vec lv):
+    def setLocalVector(self, Vec lv) -> None:
+        """Set a template local vector.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        lv
+            Template vector.
+
+        See Also
+        --------
+        setGlobalVector, petsc.DMShellSetLocalVector
+
+        """
         CHKERR( DMShellSetLocalVector(self.dm, lv.vec) )
 
-    def setCreateGlobalVector(self, create_gvec, args=None, kargs=None):
+    def setCreateGlobalVector(
+        self,
+        create_gvec: Callable[[DM], Vec] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine to create a global vector.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        create_gvec
+            The creation routine.
+        args
+            Additional positional arguments for ``create_gvec``.
+        kargs
+            Additional keyword arguments for ``create_gvec``.
+
+        See Also
+        --------
+        setCreateLocalVector, petsc.DMShellSetCreateGlobalVector
+
+        """
         if create_gvec is not None:
             if args  is None: args = ()
             if kargs is None: kargs = {}
@@ -26,7 +106,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateGlobalVector(self.dm, NULL) )
 
-    def setCreateLocalVector(self, create_lvec, args=None, kargs=None):
+    def setCreateLocalVector(
+        self,
+        create_lvec: Callable[[DM], Vec] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine to create a local vector.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        create_lvec
+            The creation routine.
+        args
+            Additional positional arguments for ``create_lvec``.
+        kargs
+            Additional keyword arguments for ``create_lvec``.
+
+        See Also
+        --------
+        setCreateGlobalVector, petsc.DMShellSetCreateLocalVector
+
+        """
         if create_lvec is not None:
             if args  is None: args = ()
             if kargs is None: kargs = {}
@@ -36,8 +139,41 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateLocalVector(self.dm, NULL) )
 
-    def setGlobalToLocal(self, begin, end, begin_args=None, begin_kargs=None,
-                         end_args=None, end_kargs=None):
+    def setGlobalToLocal(
+        self,
+        begin: Callable[[DM, Vec, InsertMode, Vec], None] | None,
+        end: Callable[[DM, Vec, InsertMode, Vec], None] | None,
+        begin_args: tuple[Any, ...] | None = None,
+        begin_kargs: dict[str, Any] | None = None,
+        end_args: tuple[Any, ...] | None = None,
+        end_kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routines used to perform a global to local scatter.
+
+        Logically collective on the DM.
+
+        Parameters
+        ----------
+        dm
+            The `DMShell`.
+        begin
+            The routine which begins the global to local scatter.
+        end
+            The routine which ends the global to local scatter.
+        begin_args
+            Additional positional arguments for ``begin``.
+        begin_kargs
+            Additional keyword arguments for ``begin``.
+        end_args
+            Additional positional arguments for ``end``.
+        end_kargs
+            Additional keyword arguments for ``end``.
+
+        See Also
+        --------
+        petsc.DMShellSetGlobalToLocal
+
+        """
         cdef PetscDMShellXToYFunction cbegin = NULL, cend = NULL
         if begin is not None:
             if begin_args  is None: begin_args = ()
@@ -53,11 +189,56 @@ cdef class DMShell(DM):
             cend = &DMSHELL_GlobalToLocalEnd
         CHKERR( DMShellSetGlobalToLocal(self.dm, cbegin, cend) )
 
-    def setGlobalToLocalVecScatter(self, Scatter gtol):
+    def setGlobalToLocalVecScatter(self, Scatter gtol) -> None:
+        """Set a `Scatter` context for global to local communication.
+
+        Logically collective on the DM.
+
+        Parameters
+        ----------
+        gtol
+            The global to local `Scatter` context.
+
+        See Also
+        --------
+        petsc.DMShellSetGlobalToLocalVecScatter
+
+        """
         CHKERR( DMShellSetGlobalToLocalVecScatter(self.dm, gtol.sct) )
 
-    def setLocalToGlobal(self, begin, end, begin_args=None, begin_kargs=None,
-                         end_args=None, end_kargs=None):
+    def setLocalToGlobal(
+        self,
+        begin: Callable[[DM, Vec, InsertMode, Vec], None] | None,
+        end: Callable[[DM, Vec, InsertMode, Vec], None] | None,
+        begin_args: tuple[Any, ...] | None = None,
+        begin_kargs: dict[str, Any] | None = None,
+        end_args: tuple[Any, ...] | None = None,
+        end_kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routines used to perform a local to global scatter.
+
+        Logically collective on the DM.
+
+        Parameters
+        ----------
+        begin
+            The routine which begins the local to global scatter.
+        end
+            The routine which ends the local to global scatter.
+        begin_args
+            Additional positional arguments for ``begin``.
+        begin_kargs
+            Additional keyword arguments for ``begin``.
+        end_args
+            Additional positional arguments for ``end``.
+        end_kargs
+            Additional keyword arguments for ``end``.
+
+        See Also
+        --------
+        petsc.DMShellSetLocalToGlobal
+
+        """
         cdef PetscDMShellXToYFunction cbegin = NULL, cend = NULL
         if begin is not None:
             if begin_args  is None: begin_args = ()
@@ -73,11 +254,56 @@ cdef class DMShell(DM):
             cend = &DMSHELL_LocalToGlobalEnd
         CHKERR( DMShellSetLocalToGlobal(self.dm, cbegin, cend) )
 
-    def setLocalToGlobalVecScatter(self, Scatter ltog):
+    def setLocalToGlobalVecScatter(self, Scatter ltog) -> None:
+        """Set a `Scatter` context for local to global communication.
+
+        Logically collective on the DM.
+
+        Parameters
+        ----------
+        ltog
+            The local to global `Scatter` context.
+
+        See Also
+        --------
+        petsc.DMShellSetLocalToGlobalVecScatter
+
+        """
         CHKERR( DMShellSetLocalToGlobalVecScatter(self.dm, ltog.sct) )
 
-    def setLocalToLocal(self, begin, end, begin_args=None, begin_kargs=None,
-                        end_args=None, end_kargs=None):
+    def setLocalToLocal(
+        self,
+        begin: Callable[[DM, Vec, InsertMode, Vec], None] | None,
+        end: Callable[[DM, Vec, InsertMode, Vec], None] | None,
+        begin_args: tuple[Any, ...] | None = None,
+        begin_kargs: dict[str, Any] | None = None,
+        end_args: tuple[Any, ...] | None = None,
+        end_kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routines used to perform a local to local scatter.
+
+        Logically collective on the DM.
+
+        Parameters
+        ----------
+        begin
+            The routine which begins the local to local scatter.
+        end
+            The routine which ends the local to local scatter.
+        begin_args
+            Additional positional arguments for ``begin``.
+        begin_kargs
+            Additional keyword arguments for ``begin``.
+        end_args
+            Additional positional arguments for ``end``.
+        end_kargs
+            Additional keyword arguments for ``end``.
+
+        See Also
+        --------
+        petsc.DMShellSetLocalToLocal
+
+        """
         cdef PetscDMShellXToYFunction cbegin = NULL, cend = NULL
         cbegin = NULL
         cend = NULL
@@ -95,10 +321,47 @@ cdef class DMShell(DM):
             cend = &DMSHELL_LocalToLocalEnd
         CHKERR( DMShellSetLocalToLocal(self.dm, cbegin, cend) )
 
-    def setLocalToLocalVecScatter(self, Scatter ltol):
+    def setLocalToLocalVecScatter(self, Scatter ltol) -> None:
+        """Set a ``Scatter`` context for local to local communication.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        ltol
+            The local to local ``Scatter`` context.
+
+        See Also
+        --------
+        petsc.DMShellSetLocalToLocalVecScatter
+
+        """
         CHKERR( DMShellSetLocalToLocalVecScatter(self.dm, ltol.sct) )
 
-    def setCreateMatrix(self, create_matrix, args=None, kargs=None):
+    def setCreateMatrix(
+        self,
+        create_matrix: Callable[[DM], Mat] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine to create a matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        create_matrix
+            The function to create a matrix.
+        args
+            Additional positional arguments for ``create_matrix``.
+        kargs
+            Additional keyword arguments for ``create_matrix``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateMatrix
+
+        """
         if create_matrix is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -108,7 +371,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateMatrix(self.dm, NULL) )
 
-    def setCoarsen(self, coarsen, args=None, kargs=None):
+    def setCoarsen(
+        self,
+        coarsen: Callable[[DM, Comm], DM] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to coarsen the `DMShell`.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        coarsen
+            The routine which coarsens the DM.
+        args
+            Additional positional arguments for ``coarsen``.
+        kargs
+            Additional keyword arguments for ``coarsen``.
+
+        See Also
+        --------
+        setRefine, petsc.DMShellSetCoarsen
+
+        """
         if coarsen is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -118,7 +404,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCoarsen(self.dm, NULL) )
 
-    def setRefine(self, refine, args=None, kargs=None):
+    def setRefine(
+        self,
+        refine: Callable[[DM, Comm], DM] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to refine the `DMShell`.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        refine
+            The routine which refines the DM.
+        args
+            Additional positional arguments for ``refine``.
+        kargs
+            Additional keyword arguments for ``refine``.
+
+        See Also
+        --------
+        setCoarsen, petsc.DMShellSetRefine
+
+        """
         if refine is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -128,7 +437,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetRefine(self.dm, NULL) )
 
-    def setCreateInterpolation(self, create_interpolation, args=None, kargs=None):
+    def setCreateInterpolation(
+        self,
+        create_interpolation: Callable[[DM, DM], tuple[Mat, Vec]] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to create the interpolation operator.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        create_interpolation
+            The routine to create the interpolation.
+        args
+            Additional positional arguments for ``create_interpolation``.
+        kargs
+            Additional keyword arguments for ``create_interpolation``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateInterpolation
+
+        """
         if create_interpolation is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -138,7 +470,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateInterpolation(self.dm, NULL) )
 
-    def setCreateInjection(self, create_injection, args=None, kargs=None):
+    def setCreateInjection(
+        self,
+        create_injection: Callable[[DM, DM], Mat] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to create the injection operator.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        create_injection
+            The routine to create the injection.
+        args
+            Additional positional arguments for ``create_injection``.
+        kargs
+            Additional keyword arguments for ``create_injection``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateInjection
+
+        """
         if create_injection is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -148,7 +503,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateInjection(self.dm, NULL) )
 
-    def setCreateRestriction(self, create_restriction, args=None, kargs=None):
+    def setCreateRestriction(
+        self,
+        create_restriction: Callable[[DM, DM], Mat] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to create the restriction operator.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        create_restriction
+            The routine to create the restriction
+        args
+            Additional positional arguments for ``create_restriction``.
+        kargs
+            Additional keyword arguments for ``create_restriction``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateRestriction
+
+        """
         if create_restriction is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -158,7 +536,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateRestriction(self.dm, NULL) )
 
-    def setCreateFieldDecomposition(self, decomp, args=None, kargs=None):
+    def setCreateFieldDecomposition(
+        self,
+        decomp: Callable[[DM], tuple[list[str] | None, list[IS] | None, list[DM] | None]] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to create a field decomposition.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        decomp
+            The routine to create the decomposition.
+        args
+            Additional positional arguments for ``decomp``.
+        kargs
+            Additional keyword arguments for ``decomp``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateFieldDecomposition
+
+        """
         if decomp is not None:
             if args  is None: args = ()
             if kargs is None: kargs = {}
@@ -168,7 +569,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateFieldDecomposition(self.dm, NULL) )
 
-    def setCreateDomainDecomposition(self, decomp, args=None, kargs=None):
+    def setCreateDomainDecomposition(
+        self,
+        decomp: Callable[[DM], tuple[list[str] | None, list[IS] | None, list[IS] | None, list[DM] | None]] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to create a domain decomposition.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        decomp
+            The routine to create the decomposition.
+        args
+            Additional positional arguments for ``decomp``.
+        kargs
+            Additional keyword arguments for ``decomp``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateDomainDecomposition
+
+        """
         if decomp is not None:
             if args  is None: args = ()
             if kargs is None: kargs = {}
@@ -178,7 +602,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateDomainDecomposition(self.dm, NULL) )
 
-    def setCreateDomainDecompositionScatters(self, scatter, args=None, kargs=None):
+    def setCreateDomainDecompositionScatters(
+        self,
+        scatter: Callable[[DM, list[DM]], tuple[list[Scatter], list[Scatter], list[Scatter]]] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to create the scatter contexts for domain decomposition.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        scatter
+            The routine to create the scatters.
+        args
+            Additional positional arguments for ``scatter``.
+        kargs
+            Additional keyword arguments for ``scatter``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateDomainDecompositionScatters
+
+        """
         if scatter is not None:
             if args  is None: args = ()
             if kargs is None: kargs = {}
@@ -188,7 +635,30 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateDomainDecompositionScatters(self.dm, NULL) )
 
-    def setCreateSubDM(self, create_subdm, args=None, kargs=None):
+    def setCreateSubDM(
+        self,
+        create_subdm: Callable[[DM, Sequence[int]], tuple[IS, DM]] | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Set the routine used to create a sub DM from the `DMShell`.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        subdm
+            The routine to create the decomposition.
+        args
+            Additional positional arguments for ``subdm``.
+        kargs
+            Additional keyword arguments for ``subdm``.
+
+        See Also
+        --------
+        petsc.DMShellSetCreateSubDM
+
+        """
         if create_subdm is not None:
             if args  is None: args = ()
             if kargs is None: kargs = {}

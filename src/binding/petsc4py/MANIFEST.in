@@ -16,6 +16,9 @@ include docs/*.pdf
 include docs/*.info
 include docs/*.[137]
 include docs/*.rst
-recursive-include docs/usrman *
-recursive-include docs/apiref *
-recursive-include docs/source *
+include docs/*.bib
+graft   docs/html
+graft   docs/source
+prune   docs/source/demo
+prune   docs/source/reference
+prune   docs/source/_build

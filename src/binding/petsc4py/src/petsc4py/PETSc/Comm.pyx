@@ -1,6 +1,22 @@
 # --------------------------------------------------------------------
 
 cdef class Comm:
+    """Communicator object.
+
+    Predefined instances:
+
+    `COMM_NULL`
+        The *null* (or invalid) communicator.
+    `COMM_SELF`
+        The *self* communicator.
+    `COMM_WORLD`
+        The *world* communicator.
+
+    See Also
+    --------
+    Sys.setDefaultComm, Sys.getDefaultComm
+
+    """
 
     #
 
@@ -37,12 +53,21 @@ cdef class Comm:
             if eq: return (comm1 == comm2)
             else:  return (comm1 != comm2)
 
-    def __nonzero__(self):
+    def __bool__(self) -> bool:
         return self.comm != MPI_COMM_NULL
 
     #
 
-    def destroy(self):
+    def destroy(self) -> None:
+        """Destroy the communicator.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscCommDestroy
+
+        """
         if self.comm == MPI_COMM_NULL: return
         if not self.isdup:
             raise ValueError("communicator not owned")
@@ -51,7 +76,16 @@ cdef class Comm:
         self.isdup = 0
         self.base = None
 
-    def duplicate(self):
+    def duplicate(self) -> Self:
+        """Duplicate the communicator.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscCommDuplicate
+
+        """
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef MPI_Comm newcomm = MPI_COMM_NULL
@@ -62,45 +96,70 @@ cdef class Comm:
         comm.base = self.base
         return comm
 
-    def getSize(self):
+    def getSize(self) -> int:
+        """Return the number of processes in the communicator.
+
+        Not collective.
+
+        """
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef int size=0
-        MPI_Comm_size(self.comm, &size)
+        CHKERRMPI( MPI_Comm_size(self.comm, &size) )
         return size
 
-    def getRank(self):
+    def getRank(self) -> int:
+        """Return the rank of the calling processes in the communicator.
+
+        Not collective.
+
+        """
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef int rank=0
-        MPI_Comm_rank(self.comm, &rank)
+        CHKERRMPI( MPI_Comm_rank(self.comm, &rank) )
         return rank
 
-    def barrier(self):
+    def barrier(self) -> None:
+        """Barrier synchronization.
+
+        Collective.
+
+        """
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
-        MPI_Barrier(self.comm)
+        CHKERRMPI( MPI_Barrier(self.comm) )
 
     # --- properties ---
 
     property size:
-        def __get__(self):
+        """Communicator size."""
+        def __get__(self) -> int:
             return self.getSize()
 
     property rank:
-        def __get__(self):
+        """Communicator rank."""
+        def __get__(self) -> int:
             return self.getRank()
 
     # --- Fortran support ---
 
     property fortran:
-        def __get__(self):
+        """Fortran handle."""
+        def __get__(self) -> int:
             cdef MPI_Comm comm = self.comm
             return MPI_Comm_c2f(comm)
 
     # --- mpi4py support ---
 
-    def tompi4py(self):
+    def tompi4py(self) -> Intracomm:
+        """Convert communicator to `mpi4py`.
+
+        See Also
+        --------
+        mpi4py.MPI.Comm, mpi4py.MPI.Intracomm
+
+        """
         cdef MPI_Comm comm = self.comm
         return mpi4py_Comm_New(comm)
 

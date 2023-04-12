@@ -383,6 +383,8 @@ cdef extern from * nogil:
     PetscErrorCode MatMultAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     PetscErrorCode MatMultTranspose(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+
+    # FIXME: Why?
     PetscErrorCode MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
 
@@ -1133,33 +1135,8 @@ cdef PetscErrorCode mat_setitem(Mat self, object ij, object v) except PETSC_ERR_
 
 # -----------------------------------------------------------------------------
 
-#@cython.internal
-cdef class _Mat_Stencil:
-   cdef PetscMatStencil stencil
-   property i:
-       def __set__(self, value):
-           self.stencil.i = asInt(value)
-   property j:
-       def __set__(self, value):
-           self.stencil.j = asInt(value)
-   property k:
-       def __set__(self, value):
-           self.stencil.k = asInt(value)
-   property c:
-       def __set__(self, value):
-           self.stencil.c = asInt(value)
-   property index:
-       def __set__(self, value):
-           cdef PetscMatStencil *s = &self.stencil
-           s.k = s.j = s.i = 0
-           asDims(value, &s.i, &s.j, &s.k)
-   property field:
-       def __set__(self, value):
-           cdef PetscMatStencil *s = &self.stencil
-           s.c = asInt(value)
-
 cdef matsetvaluestencil(PetscMat A,
-                        _Mat_Stencil r, _Mat_Stencil c, object value,
+                        MatStencil r, MatStencil c, object value,
                         PetscInsertMode im, int blocked):
     # block size
     cdef PetscInt rbs=1, cbs=1

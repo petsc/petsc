@@ -25,7 +25,7 @@ cdef extern from * nogil:
                      PetscDMDAStencilType,             # stencil type
                      PetscInt,                         # stencil width
                      PetscDM*)
-    
+
     PetscErrorCode DMDASetDof(PetscDM,PetscInt)
     PetscErrorCode DMDASetSizes(PetscDM,PetscInt,PetscInt,PetscInt)
     PetscErrorCode DMDASetNumProcs(PetscDM,PetscInt,PetscInt,PetscInt)
@@ -160,7 +160,7 @@ cdef inline tuple asOwnershipRanges(object ownership_ranges,
     elif dim != rdim: raise ValueError(
         "number of dimensions %d and number ownership ranges %d" %
         (toInt(dim), toInt(rdim)))
-    if dim >= 1: 
+    if dim >= 1:
         ranges[0] = iarray_i(ranges[0], &nlx, _x)
         if m[0] == PETSC_DECIDE: m[0] = nlx
         elif m[0] != nlx: raise ValueError(

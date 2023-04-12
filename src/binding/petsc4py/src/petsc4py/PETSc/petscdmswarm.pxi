@@ -69,6 +69,6 @@ cdef extern from * nogil:
     PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(PetscDM,PetscInt,PetscInt*)
     PetscErrorCode DMSwarmSortGetIsValid(PetscDM,PetscBool*)
     PetscErrorCode DMSwarmSortGetSizes(PetscDM,PetscInt*,PetscInt*)
- 
+
     PetscErrorCode DMSwarmProjectFields(PetscDM,PetscInt,const char**,PetscVec**,PetscBool)
 

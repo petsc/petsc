@@ -1,6 +1,14 @@
 # --------------------------------------------------------------------
 
 class Error(RuntimeError):
+    """PETSc Error.
+
+    Attributes
+    ----------
+    ierr : int
+        PETSc error code.
+
+    """
 
     _traceback_ = []
 
@@ -8,7 +16,7 @@ class Error(RuntimeError):
         self.ierr = ierr
         RuntimeError.__init__(self, self.ierr)
 
-    def __nonzero__(self):
+    def __bool__(self):
         cdef int ierr = self.ierr
         return ierr != 0
 

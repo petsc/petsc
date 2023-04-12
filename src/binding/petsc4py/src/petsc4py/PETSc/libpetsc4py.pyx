@@ -374,6 +374,7 @@ cdef PetscErrorCode MatPythonGetType_PYTHON(PetscMat mat, const char *name[]) \
     name[0] = PyMat(mat).getname()
     return FunctionEnd()
 
+#FIXME: view and setFromOptions?
 cdef dict dMatOps = {   3 : 'mult',
                         4 : 'multAdd',
                         5 : 'multTranspose',
@@ -395,7 +396,7 @@ cdef dict dMatOps = {   3 : 'mult',
                        47 : 'setDiagonal',
                        48 : 'zeroRowsColumns',
                        59 : 'createSubMatrix',
-                       88 : 'getVecs',
+                       88 : 'getVecs', #FIXME -> createVecs
                       102 : 'conjugate',
                       105 : 'realPart',
                       106 : 'imagPart',
@@ -1828,7 +1829,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
         if ksp.reason: break
         KSPPreStep_Python(ksp)
         #
-        KSPStep_Python(ksp, B, X)
+        KSPStep_Python(ksp, B, X) # FIXME? B?
         CHKERR( KSPBuildResidual(ksp, t, v, &R) )
         CHKERR( VecNorm(R, PETSC_NORM_2, &rnorm) )
         ksp.iter += 1

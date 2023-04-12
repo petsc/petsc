@@ -154,6 +154,7 @@ include "dlpack.pxi"
 
 # --------------------------------------------------------------------
 
+include "typing.pxi"
 include "petscdef.pxi"
 include "petscmem.pxi"
 include "petscopt.pxi"
@@ -196,8 +197,8 @@ include "petscpyappctx.pxi"
 
 # --------------------------------------------------------------------
 
-__doc__ = u"""
-Portable, Extensible Toolkit for Scientific Computation
+__doc__ = """
+Portable, Extensible Toolkit for Scientific Computation.
 """
 
 include "Const.pyx"
