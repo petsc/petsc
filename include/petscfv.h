@@ -6,6 +6,8 @@
 
 #include <petscdm.h>
 #include <petscdt.h>
+#include <petscspace.h>
+#include <petscdualspace.h>
 #include <petscfvtypes.h>
 #include <petscdstypes.h>
 
