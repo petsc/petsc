@@ -1,5 +1,4 @@
 # Function Spaces (PetscSpace)
 
-<A HREF="PETSC_DIRsrc/dm/dt/space/tutorials/index.html">Examples</A><BR>
+The `PetscSpace` class encapsulates a function space useful for finite element computations with `PetscFE`. The dual spaces are managed with `PetscDualSpace`.
 
-The PetscSpace class encapsulates a function space.

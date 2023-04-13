@@ -46,7 +46,7 @@ use ``MatSetValuesStencil()`` and for ``DMSTAG`` with ``DMStagMatSetValuesStenci
 A given ``DM`` can be refined for certain ``DMType``\s with ``DMRefine()`` or coarsened with ``DMCoarsen()``.
 Mappings between ``DM``\s may be obtained with routines such as ``DMCreateInterpolation()``, ``DMCreateRestriction()`` and ``DMCreateInjection()``.
 
-One can attach a `DM` to a solver object with
+One can attach a ``DM`` to a solver object with
 
 .. code-block::
 

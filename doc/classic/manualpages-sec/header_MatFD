@@ -1,4 +1,3 @@
 # Finite difference computation of Jacobians (MatFD)
 
-The MatFD tools handle the approximation of Jacobians via sparse
-finite differences.
+The `MatFD` tools handle the approximation of Jacobians via sparse finite differences.

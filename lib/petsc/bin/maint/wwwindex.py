@@ -38,7 +38,6 @@ def printindex(outfilename, headfilename, levels, titles, tables):
           fd.write(':html_theme.sidebar_secondary.remove: true\n')
           fd.write(headbuf)
           fd.write('\n')
-          fd.write('[Manual Pages Table of Contents](/manualpages/index.md)\n')
           all_names = []
           fd.write('\n## Manual Pages by Level\n')
           for i, level in enumerate(levels):

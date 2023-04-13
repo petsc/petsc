@@ -1,4 +1,4 @@
 # PETSc Options, IO, and System Utilities
 
 PETSc provides a variety of "system" level routines, including parallel file
-access, synchronized printing to screen.
+access, graphics, options management, and synchronized printing to screen.

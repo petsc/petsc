@@ -1,10 +1,14 @@
 # Finite Elements (PetscFE)
 
-There are many <A HREF="PETSC_DIRsrc/snes/tutorials/index.html">SNES Examples</A> using PetscFE, such ex12, ex17, and ex62.
-
-The PetscFE class encapsulates a finite element discretization. Each PetscFE object contains a PetscSpace, PetscDualSpace, and DMPlex in the classic Ciarlet triple representation.
+The `PetscFE` class encapsulates a finite element discretization. Each `PetscFE` object contains a `PetscSpace`, its dual `PetscDualSpace`, and a `DMPLEX`
+in the classic Ciarlet triple representation (<a href="https://finite-element.github.io/2_finite_elements.html" target=_blank>https://finite-element.github.io/2_finite_elements.html</a>).
 
 <ul>
   <li><a href="http://arxiv.org/abs/1309.1204">Achieving High Performance with Unified Residual Evaluation</a>, Matthew G. Knepley, Jed Brown, Karl Rupp, Barry F. Smith, 2013.</li>
   <li><a href="http://arxiv.org/abs/1607.04245">Finite Element Integration with Quadrature on the GPU</a>, Matthew G. Knepley, Karl Rupp, Andy R. Terrel, 2016.</li>
 </ul>
+
+There are many <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/index.html">SNES Examples</A> using `PetscFE`, such ex12, ex17, and ex62.
+
+Developer Note:
+Using an entire `DMPLEX` object to provide the cell information seems unnecessary and complicated. Why not have a simple `PetscCell` object that could encapsulate this information. It could then be used by a variety of `DM` etc.
