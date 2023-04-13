@@ -513,8 +513,9 @@ linux-sycl-double:
   tags:
     - gce-u22-stage3, linux-fast
   variables:
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/oneapi/modulefiles
     TEST_ARCH: arch-ci-linux-sycl-double
-    LOAD_MODULES: intel-oneapi-compilers/2022.2.1 intel-oneapi-mpi/2021.5.1
+    LOAD_MODULES: compiler/latest mpi/latest
     TEST_OPTS: query=requires queryval=kokkos_kernels
     MAKE_CFLAGS: -Wno-expected-file-type -Werror
 
