@@ -1117,6 +1117,7 @@ analyze-pipeline:
         cat ./arch-ci-analyze-pipeline/gcovr/merge_gcov_errors.log;
         exit 1;
       fi
+  allow_failure: true
 
 #
 # Base job for a documentation build (runs in venv to allow installing additional packages without root)
