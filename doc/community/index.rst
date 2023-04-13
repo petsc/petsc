@@ -7,6 +7,8 @@ Community
 .. toctree::
    :maxdepth: 2
 
+   roadmap
+   governance
    bugs
    mailing
    meetings/meeting
