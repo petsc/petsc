@@ -2,22 +2,21 @@
 #include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define matcreateseqaij_                 MATCREATESEQAIJ
-#define matseqaijsetpreallocation_       MATSEQAIJSETPREALLOCATION
+  #define matcreateseqaij_           MATCREATESEQAIJ
+  #define matseqaijsetpreallocation_ MATSEQAIJSETPREALLOCATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matcreateseqaij_                 matcreateseqaij
-#define matseqaijsetpreallocation_       matseqaijsetpreallocation
+  #define matcreateseqaij_           matcreateseqaij
+  #define matseqaijsetpreallocation_ matseqaijsetpreallocation
 #endif
 
-PETSC_EXTERN void matcreateseqaij_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *nz,PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
+PETSC_EXTERN void matcreateseqaij_(MPI_Comm *comm, PetscInt *m, PetscInt *n, PetscInt *nz, PetscInt *nnz, Mat *newmat, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
-  *ierr = MatCreateSeqAIJ(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*m,*n,*nz,nnz,newmat);
+  *ierr = MatCreateSeqAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm), *m, *n, *nz, nnz, newmat);
 }
 
-PETSC_EXTERN void matseqaijsetpreallocation_(Mat *mat,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)
+PETSC_EXTERN void matseqaijsetpreallocation_(Mat *mat, PetscInt *nz, PetscInt *nnz, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
-  *ierr = MatSeqAIJSetPreallocation(*mat,*nz,nnz);
+  *ierr = MatSeqAIJSetPreallocation(*mat, *nz, nnz);
 }
-
