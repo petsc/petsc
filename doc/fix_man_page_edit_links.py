@@ -8,6 +8,9 @@ import fileinput
 EDIT_URL_PATTERN = re.compile(
     r'^<p><a.*href="(.*)">Edit on GitLab</a></p>')  # very brittle
 
+SHOW_SOURCE_PATTERN = re.compile(
+    r'(?s)<div class="toc-item">\s*<div class="tocsection sourcelink">.*<a href=.*>.*<i class="fa-solid fa-file-lines"></i> Show Source\s*</a>\s*</div>\s*</div>')
+
 
 def _get_edit_url(filename):
     """ Get the edit URL for the source code for a manual page that was added by lib/petsc/bin/maint/wwwindex.py"""
@@ -47,7 +50,6 @@ def _update_edit_link(filename, url):
                 elif not 'Edit on GitLab' in line:
                     print(line, end="")  # prints to file
 
-
 def fix_man_page_edit_links(root):
     base = os.path.join(root, "manualpages")
     for root, dirs, filenames in os.walk(base):
@@ -57,3 +59,9 @@ def fix_man_page_edit_links(root):
                 url = _get_edit_url(filename_full)
                 if url is not None and _check_edit_link(filename_full):
                     _update_edit_link(filename_full, url)
+            # remove Show Source line
+            with open(filename_full) as f:
+                str = f.read()
+                newstr = re.sub(SHOW_SOURCE_PATTERN,'',str)
+            with open(filename_full,'w') as f:
+                f.write(newstr)
