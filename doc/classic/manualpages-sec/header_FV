@@ -1,5 +1,6 @@
 # Finite Volumes (PetscFV)
 
-<H2><A HREF="PETSC_DIRsrc/ts/tutorials/ex11.c.html">TS ex11</A> demonstrates some hyperbolic solvers using PetscFV<BR>
+The `PetscFV` class encapsulates a finite volume space.
 
-The PetscFV class encapsulates a finite volume space.
+<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex11.c.html">TS ex11</A> demonstrates some hyperbolic solvers using PetscFV<BR>
+

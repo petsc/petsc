@@ -1,18 +1,8 @@
 # Linear Solvers and Krylov Methods (KSP)
 
-<A HREF="PETSC_DIRsrc/ksp/ksp/tutorials/index.html">Examples</A><BR>
+The `KSP` class provides an easy-to-use interface to the combination of
+a Krylov subspace iterative method and a preconditioner `PC`.
 
-The
-<A HREF="PETSC_DIRmanualpages/KSP/index.html">scalable linear equations solvers (KSP)</A>
-component provides an easy-to-use interface to the combination of
-a Krylov subspace iterative method and a preconditioner (in the KSP and
-<A HREF="PETSC_DIRmanualpages/PC/index.html">PC</A>
-components, respectively) or a sequential direct solver.  KSP users can set various Krylov
-subspace options at runtime via the options database (e.g., `-ksp_type cg`).
-KSP users can also set KSP options directly in application
-by directly calling the KSP routines listed below (e.g.,
-<A HREF="PETSC_DIRmanualpages/KSP/KSPSetType.html">KSPSetType()</A>
-).
-KSP components can be used directly to create and
-destroy solvers; this is not needed for users but
-is intended for library developers.
+
+<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/index.html">Examples</A><BR>
+

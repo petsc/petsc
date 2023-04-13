@@ -1,4 +1,4 @@
 # Viewing Objects (Viewer)
 
 
-PETSc viewers export information and data from PETSc objects.
+PETSc viewers `PetscViewer` print, display, and export information and data from PETSc objects in a large variety of formats.
