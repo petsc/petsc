@@ -8,19 +8,19 @@
 
    Level: beginner
 
-.seealso: [](sec_pc), `PCCreate()`, `PCSetType()`, `PCType`
+.seealso: [](doc_linsolve), [](sec_pc), `PCCreate()`, `PCSetType()`, `PCType`
 S*/
 typedef struct _p_PC *PC;
 
 /*J
-    PCType - String with the name of a PETSc preconditioner method.
+    PCType - String with the name of a PETSc preconditioner
 
    Level: beginner
 
    Note:
    `PCRegister()` is used to register preconditioners that are then accessible via `PCSetType()`
 
-.seealso: [](sec_pc), `PCSetType()`, `PC`, `PCCreate()`, `PCRegister()`, `PCSetFromOptions()`, `PCLU`, `PCJACOBI`, `PCBJACOBI`
+.seealso: [](doc_linsolve), [](sec_pc), `PCSetType()`, `PC`, `PCCreate()`, `PCRegister()`, `PCSetFromOptions()`, `PCLU`, `PCJACOBI`, `PCBJACOBI`
 J*/
 typedef const char *PCType;
 #define PCNONE               "none"
@@ -82,9 +82,17 @@ typedef const char *PCType;
     PCSide - If the preconditioner is to be applied to the left, right
      or symmetrically around the operator.
 
+   Values:
++  `PC_LEFT` - applied after the operator is applied
+.  `PC_RIGHT` - applied before the operator is applied
+-  `PC_SYMMETRIC` - a portion of the preconditioner is applied before the operator and the transpose of this portion is applied after the operator is applied.
+
    Level: beginner
 
-.seealso: [](sec_pc), `PC`
+   Note:
+   Certain `KSPType` support only a subset of `PCSide` values
+
+.seealso: [](sec_pc), `PC`, `KSPSetPCSide()`
 E*/
 typedef enum {
   PC_SIDE_DEFAULT = -1,
@@ -100,7 +108,7 @@ typedef enum {
    Level: advanced
 
    Developer Note:
-    this must match petsc/finclude/petscpc.h and the `KSPConvergedReason` values in petscksp.h
+  This must match `include/petsc/finclude/petscpc.h` and the `KSPConvergedReason` values in `include/petscksp.h
 
 .seealso: [](sec_pc), `PCRICHARDSON`, `PC`, `PCApplyRichardson()`
 E*/
@@ -112,7 +120,7 @@ typedef enum {
 } PCRichardsonConvergedReason;
 
 /*E
-    PCJacobiType - What elements are used to form the Jacobi preconditioner
+    PCJacobiType - What elements of the matrix are used to form the Jacobi preconditioner
 
    Values:
 +  `PC_JACOBI_DIAGONAL` - use the diagonal entry, if it is zero use one
@@ -147,7 +155,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: [](sec_pc), `PC`, `PCASM`, `PCASMSetType()`
+.seealso: [](sec_pc), `PC`, `PCASM`, `PCASMSetType()`, `PCGASMType`
 E*/
 typedef enum {
   PC_ASM_BASIC       = 3,
@@ -158,11 +166,6 @@ typedef enum {
 
 /*E
     PCGASMType - Type of generalized additive Schwarz method to use (differs from `PCASM` in allowing multiple processors per subdomain).
-
-   Each subdomain has nested inner and outer parts.  The inner subdomains are assumed to form a non-overlapping covering of the computational
-   domain, while the outer subdomains contain the inner subdomains and overlap with each other.  This preconditioner will compute
-   a subdomain correction over each *outer* subdomain from a residual computed there, but its different variants will differ in
-   (a) how the outer subdomain residual is computed, and (b) how the outer subdomain correction is computed.
 
    Values:
 +  `PC_GASM_BASIC`      - Symmetric version where the full from the outer subdomain is used, and the resulting correction is applied
@@ -177,13 +180,18 @@ typedef enum {
 .  `PC_GASM_INTERPOLATE` - Residual is zeroed out over the overlap portion of the outer subdomain, but the resulting correction is
                         applied over the outer subdomain. As a result, points in the overlap will receive the sum of the corrections
                         from neighboring subdomains.
-
 -  `PC_GASM_NONE`       - Residuals and corrections are zeroed out outside the local subdomains.
                         Not very good.
 
    Level: beginner
 
-.seealso: [](sec_pc), `PCGASM`, `PCASM`, `PC`, `PCGASMSetType()`
+   Note:
+     Each subdomain has nested inner and outer parts.  The inner subdomains are assumed to form a non-overlapping covering of the computational
+   domain, while the outer subdomains contain the inner subdomains and overlap with each other.  This preconditioner will compute
+   a subdomain correction over each *outer* subdomain from a residual computed there, but its different variants will differ in
+   (a) how the outer subdomain residual is computed, and (b) how the outer subdomain correction is computed.
+
+.seealso: [](sec_pc), `PCGASM`, `PCASM`, `PC`, `PCGASMSetType()`, `PCASMType`
 E*/
 typedef enum {
   PC_GASM_BASIC       = 3,
@@ -193,7 +201,7 @@ typedef enum {
 } PCGASMType;
 
 /*E
-    PCCompositeType - Determines how two or more preconditioner are composed
+    PCCompositeType - Determines how two or more preconditioner are composed with the `PCType` of `PCCOMPOSITE`
 
   Values:
 +  `PC_COMPOSITE_ADDITIVE` - results from application of all preconditioners are added together
@@ -223,6 +231,19 @@ typedef enum {
 /*E
     PCFieldSplitSchurPreType - Determines how to precondition a Schur complement
 
+    Values:
++  `PC_FIELDSPLIT_SCHUR_PRE_SELF` - the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
+          The only preconditioner that currently works with this symbolic representation matrix object is `PCLSC`
+.  `PC_FIELDSPLIT_SCHUR_PRE_SELFP` - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
+          This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
+          lumped before extracting the diagonal using the additional option `-fieldsplit_1_mat_schur_complement_ainv_type lump`
+.  `PC_FIELDSPLIT_SCHUR_PRE_A11` - the preconditioner for the Schur complement is generated from the block diagonal part of the matrix used to define the preconditioner,
+                                 associated with the Schur complement (i.e. A11), not the Schur complement matrix
+.  `PC_FIELDSPLIT_SCHUR_PRE_USER` - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
+          to this function).
+-  `PC_FIELDSPLIT_SCHUR_PRE_FULL` -  the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation
+      computed internally by `PCFIELDSPLIT` (this is expensive) useful mostly as a test that the Schur complement approach can work for your problem
+
     Level: intermediate
 
 .seealso: [](sec_pc), `PCFIELDSPLIT`, `PCFieldSplitSetSchurPre()`, `PC`
@@ -238,9 +259,21 @@ typedef enum {
 /*E
     PCFieldSplitSchurFactType - determines which off-diagonal parts of the approximate block factorization to use
 
+    Values:
++   `PC_FIELDSPLIT_SCHUR_FACT_DIAG` - the preconditioner is solving `D`
+.   `PC_FIELDSPLIT_SCHUR_FACT_LOWER` - the preconditioner is solving `L D`
+.   `PC_FIELDSPLIT_SCHUR_FACT_UPPER` - the preconditioner is solving `D U`
+-   `PC_FIELDSPLIT_SCHUR_FACT_FULL` - the preconditioner is solving `L(D U)`
+
+    where the matrix is factorized as
+.vb
+   (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
+   (C   E)    (C*Ainv  1) (0   S) (0       1)
+.ve
+
     Level: intermediate
 
- .seealso: [](sec_pc), `PCFIELDSPLIT`, `PCFieldSplitSetSchurFactType()`, `PC`
+.seealso: [](sec_pc), `PCFIELDSPLIT`, `PCFieldSplitSetSchurFactType()`, `PC`
 E*/
 typedef enum {
   PC_FIELDSPLIT_SCHUR_FACT_DIAG,
@@ -254,7 +287,7 @@ typedef enum {
 
     Level: intermediate
 
- .seealso: [](sec_pc), `PCPARMS`, `PCPARMSSetGlobal()`, `PC`
+.seealso: [](sec_pc), `PCPARMS`, `PCPARMSSetGlobal()`, `PC`
 E*/
 typedef enum {
   PC_PARMS_GLOBAL_RAS,
@@ -300,8 +333,6 @@ typedef const char *PCGAMGClassicalType;
 /*E
     PCMGType - Determines the type of multigrid method that is run.
 
-   Level: beginner
-
    Values:
 +  `PC_MG_MULTIPLICATIVE` (default) - traditional V or W cycle as determined by `PCMGSetCycleType()`
 .  `PC_MG_ADDITIVE` - the additive multigrid preconditioner where all levels are
@@ -312,8 +343,9 @@ typedef const char *PCGAMGClassicalType;
             to the next, performs a cycle etc. This is much like the F-cycle presented in "Multigrid" by Trottenberg, Oosterlee, Schuller page 49, but that
             algorithm supports smoothing on before the restriction on each level in the initial restriction to the coarsest stage. In addition that algorithm
             calls the V-cycle only on the coarser level and has a post-smoother instead.
--  `PC_MG_KASKADE` - like full multigrid except one never goes back to a coarser level
-               from a finer
+-  `PC_MG_KASKADE` - like full multigrid except one never goes back to a coarser level from a finer
+
+   Level: beginner
 
 .seealso: [](sec_pc), `PCMG`, `PC`, `PCMGSetType()`, `PCMGSetCycleType()`, `PCMGSetCycleTypeOnLevel()`
 E*/
@@ -328,11 +360,11 @@ typedef enum {
 /*E
     PCMGCycleType - Use V-cycle or W-cycle
 
-   Level: beginner
-
    Values:
 +  `PC_MG_V_CYCLE` - use the v cycle
 -  `PC_MG_W_CYCLE` - use the w cycle
+
+   Level: beginner
 
 .seealso: [](sec_pc), `PCMG`, `PC`, `PCMGSetCycleType()`
 E*/
@@ -380,11 +412,11 @@ typedef enum {
 /*E
    PCBDDCInterfaceExtType - Defines how interface balancing is extended into the interior of subdomains.
 
-   Level: intermediate
-
    Values:
 +  `PC_BDDC_INTERFACE_EXT_DIRICHLET` - solves Dirichlet interior problem; this is the standard BDDC algorithm
 -  `PC_BDDC_INTERFACE_EXT_LUMP` - skips interior solve; sometimes called M_1 and associated with "lumped FETI-DP"
+
+   Level: intermediate
 
 .seealso: [](sec_pc), `PCBDDC`, `PC`
 E*/
@@ -410,7 +442,7 @@ typedef enum {
 } PCMGCoarseSpaceType;
 
 /*E
-    PCPatchConstructType - The algorithm used to construct patches for the preconditioner
+    PCPatchConstructType - The algorithm used to construct patches for the `PCPATCH` preconditioner
 
    Level: beginner
 
@@ -460,12 +492,12 @@ typedef enum {
 /*E
     PCHPDDMCoarseCorrectionType - Type of coarse correction used by `PCHPDDM`
 
-    Level: intermediate
-
     Values:
 +   `PC_HPDDM_COARSE_CORRECTION_DEFLATED` (default) - eq. (1) in `PCHPDDMShellApply()`
 .   `PC_HPDDM_COARSE_CORRECTION_ADDITIVE` - eq. (2)
 -   `PC_HPDDM_COARSE_CORRECTION_BALANCED` - eq. (3)
+
+    Level: intermediate
 
 .seealso: [](sec_pc), `PCHPDDM`, `PC`, `PCSetType()`, `PCHPDDMShellApply()`
 E*/
@@ -481,7 +513,7 @@ typedef enum {
     Level: beginner
 
     Developer Note:
-    Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
+    Any additions/changes here MUST also be made in `include/petsc/finclude/petscpc.h`
 
 .seealso: [](sec_pc), `PC`
 E*/
@@ -502,7 +534,7 @@ typedef enum {
     Level: intermediate
 
     Developer Note:
-    Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
+    Any additions/changes here MUST also be made in `include/petsc/finclude/petscpc.h`
 
 .seealso: [](sec_pc), `PCGAMG`, `PC`, `PCGAMGSetCoarseGridLayoutType()`
 E*/

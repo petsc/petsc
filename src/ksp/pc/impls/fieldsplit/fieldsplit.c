@@ -2459,10 +2459,11 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 
 .vb
    (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
-   (C   E)    (C*Ainv  1) (0   S) (0     1)
+   (C   E)    (C*Ainv  1) (0   S) (0       1)
 .vb
     where S = E - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping L*(D*U). UPPER uses D*U, LOWER uses L*D,
-    and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES). Sign flipping of S can be turned off with PCFieldSplitSetSchurScale().
+    and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations, thus allowing the use of `KSPMINRES)`.
+    Sign flipping of S can be turned off with `PCFieldSplitSetSchurScale()`.
 
     If A and S are solved exactly
 .vb

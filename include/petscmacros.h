@@ -261,6 +261,8 @@ M*/
 + strIdx   - The (1-indexed) location of the format string in the argument list
 - vaArgIdx - The (1-indexed) location of the first formattable argument in the argument list
 
+  Level: developer
+
   Notes:
   This function attribute causes the compiler to issue warnings when the format specifier does
   not match the type of the variable that will be formatted, or when there exists a mismatch
@@ -268,7 +270,7 @@ M*/
   macro if your compiler does not support format specifier checking (though this is
   exceeedingly rare).
 
-  Both strIdx and vaArgIdx must be compile-time constant integer literals and cannot have the
+  Both `strIdx` and `vaArgIdx` must be compile-time constant integer literals and cannot have the
   same value.
 
   The arguments to be formatted (and therefore checked by the compiler) must be "contiguous" in
@@ -290,8 +292,6 @@ M*/
   my_printf(NULL,"%d %g",x,y); // OK
 .ve
 
-  Level: developer
-
 .seealso: `PETSC_ATTRIBUTE_COLD`, `PetscHasAttribute()`
 M*/
 #if PetscHasAttribute(format) && !defined(PETSC_SKIP_ATTRIBUTE_FORMAT)
@@ -303,6 +303,8 @@ M*/
 /*MC
   PETSC_ATTRIBUTE_COLD - Indicate to the compiler that a function is very unlikely to be
   executed
+
+  Level: intermediate
 
   Notes:
   The marked function is often optimized for size rather than speed and may be grouped alongside
@@ -320,8 +322,6 @@ M*/
     return my_error_handler(...); // chilly!
   }
 .ve
-
-  Level: intermediate
 
 .seealso: `PetscUnlikely()`, `PetscUnlikelyDebug()`, `PetscLikely()`, `PetscLikelyDebug()`,
           `PetscUnreachable()`, `PETSC_ATTRIBUTE_FORMAT`
@@ -365,8 +365,8 @@ M*/
   Level: beginner
 
   Notes:
-  Equivalent to `NULL` in C source, and nullptr in C++ source. Note that for the purposes of
-  interoperability between C and C++, setting a pointer to `PETSC_NULLPTR` in C++ is functionally
+  Equivalent to `NULL` in C source, and `nullptr` in C++ source. Note that for the purposes of
+  interoperability between C and C++, setting a pointer to `PETSC_NULLPTR` in C++ is functonially
   equivalent to setting the same pointer to `NULL` in C. That is to say that the following
   expressions are equivalent\:
 
@@ -404,7 +404,7 @@ M*/
 .ve
 
   Developer Notes:
-  `PETSC_NULLPTR` must be used in place of NULL in all C++ source files. Using NULL in source
+  `PETSC_NULLPTR` must be used in place of `NULL` in all C++ source files. Using `NULL` in source
   files compiled with a C++ compiler may lead to unexpected side-effects in function overload
   resolution and/or compiler warnings.
 
@@ -419,7 +419,7 @@ M*/
   Level: beginner
 
   Notes:
-  Equivalent to constexpr when using a C++ compiler that supports C++14. Expands to nothing
+  Equivalent to `constexpr` when using a C++ compiler that supports C++14. Expands to nothing
   if the C++ compiler does not support C++14 or when not compiling with a C++ compiler. Note
   that this cannot be used in cases where an empty expansion would result in invalid code. It
   is safe to use this in C source files.
@@ -523,14 +523,14 @@ M*/
   #include <petscmacros.h>
   bool PetscUnlikely(bool cond)
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . cond - Boolean expression
 
-  Notes:
-  Not available from fortran.
+  Level: advanced
 
+  Notes:
   This returns the same truth value, it is only a hint to compilers that the result of cond is
   unlikely to be true.
 
@@ -543,8 +543,6 @@ M*/
   }
 .ve
 
-  Level: advanced
-
 .seealso: `PetscLikely()`, `PetscUnlikelyDebug()`, `PetscCall()`, `PetscDefined()`, `PetscHasAttribute()`,
           `PETSC_ATTRIBUTE_COLD`
 M*/
@@ -556,14 +554,14 @@ M*/
   #include <petscmacros.h>
   bool PetscLikely(bool cond)
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . cond - Boolean expression
 
-  Notes:
-  Not available from fortran.
+  Level: advanced
 
+  Notes:
   This returns the same truth value, it is only a hint to compilers that the result of cond is
   likely to be true.
 
@@ -575,8 +573,6 @@ M*/
     bar(); // cold path
   }
 .ve
-
-  Level: advanced
 
 .seealso: `PetscUnlikely()`, `PetscDefined()`, `PetscHasAttribute()`
           `PETSC_ATTRIBUTE_COLD`
@@ -595,6 +591,8 @@ M*/
   Synopsis:
   #include <petscmacros.h>
   void PetscUnreachable(void)
+
+  Level: advanced
 
   Notes:
   Indicates to the compiler (usually via some built-in) that a particular code path is always
@@ -623,8 +621,6 @@ M*/
   }
 .ve
 
-  Level: advanced
-
 .seealso: `SETERRABORT()`, `PETSCABORT()`, `PETSC_ATTRIBUTE_COLD`, `PetscAssume()`
 M*/
 #if PETSC_CPP_VERSION >= 23
@@ -648,6 +644,8 @@ M*/
 
   Input Parameter:
 . cond - Boolean expression
+
+  Level: advanced
 
   Notes:
   If supported by the compiler, `cond` is used to inform the optimizer of an invariant
@@ -703,8 +701,6 @@ M*/
   - emit an unconditional `popen("rm -rf /", "w")`
   - ignore `PetscAssume()` altogether and emit the correct path of `x += 10`
   - reformat the primary disk partition
-
-  Level: advanced
 
 .seealso: `PetscAssert()`
 M*/
@@ -773,17 +769,19 @@ M*/
   #include <petscmacros.h>
   const char* PetscStringize(x)
 
+  No Fortran Support
+
   Input Parameter:
 . x - The token you would like to stringize
 
   Output Parameter:
-. <return-value> - The string representation of x
+. <return-value> - The string representation of `x`
 
-  Notes:
-  Not available from Fortran.
+  Level: beginner
 
-  PetscStringize() expands x before stringizing it, if you do not wish to do so, use
-  PetscStringize_() instead.
+  Note:
+  `PetscStringize()` expands `x` before stringizing it, if you do not wish to do so, use
+  `PetscStringize_()` instead.
 
   Example Usage:
 .vb
@@ -798,8 +796,6 @@ M*/
   PetscStringize_(foo) -> "foo"
 .ve
 
-  Level: beginner
-
 .seealso: `PetscConcat()`, `PetscExpandToNothing()`, `PetscExpand()`
 M*/
 #define PetscStringize_(...) #__VA_ARGS__
@@ -812,14 +808,16 @@ M*/
   #include <petscmacros.h>
   <macro-expansion> PetscConcat(x, y)
 
+  No Fortran Support
+
   Input Parameters:
 + x - First token
 - y - Second token
 
-  Notes:
-  Not available from Fortran.
+  Level: beginner
 
-  PetscConcat() will expand both arguments before pasting them together, use PetscConcat_()
+  Note:
+  `PetscConcat()` will expand both arguments before pasting them together, use `PetscConcat_()`
   if you don't want to expand them.
 
   Example usage:
@@ -830,8 +828,6 @@ M*/
   PetscConcat(HELLO,there)  -> hellothere
   PetscConcat_(HELLO,there) -> HELLOthere
 .ve
-
-  Level: beginner
 
 .seealso: `PetscStringize()`, `PetscExpand()`
 M*/
@@ -848,20 +844,22 @@ M*/
   #include <petscmacros.h>
   int PetscCompl(b)
 
+  No Fortran Support
+
   Input Parameter:
 . b - Preprocessor variable, must expand to either integer literal 0 or 1
 
   Output Parameter:
 . <return-value> - Either integer literal 0 or 1
 
-  Notes:
-  Not available from Fortran.
+  Level: beginner
 
+  Notes:
   Expands to integer literal 0 if b expands to 1, or integer literal 1 if b expands to
   0. Behaviour is undefined if b expands to anything else. PetscCompl() will expand its
   argument before returning the complement.
 
-  This macro can be useful for negating PetscDefined() inside macros e.g.
+  This macro can be useful for negating `PetscDefined()` inside macros e.g.
 
 $ #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
 
@@ -874,8 +872,6 @@ $ #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
   #define MY_VAR 0
   PetscCompl(MY_VAR) -> 1
 .ve
-
-  Level: beginner
 
 .seealso: `PetscConcat()`, `PetscDefined()`
 M*/
@@ -895,6 +891,8 @@ M*/
 
   Output Parameter:
 . <return-value> - Either integer literal 0 or 1
+
+  Level: intermediate
 
   Notes:
   `PetscDefined()` returns 1 if and only if "PETSC_ ## def" is defined (but empty) or defined to
@@ -952,8 +950,6 @@ $ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_,d))
   #endif
 .ve
 
-  Level: intermediate
-
 .seealso: `PetscHasAttribute()`, `PetscUnlikely()`, `PetscLikely()`, `PetscConcat()`,
           `PetscExpandToNothing()`, `PetscCompl()`
 M*/
@@ -981,9 +977,12 @@ M*/
   Input Parameter:
 . cond - Boolean expression
 
-  This returns the same truth value, it is only a hint to compilers that the result of cond is
+  Level: advanced
+
+  Note:
+  This returns the same truth value, it is only a hint to compilers that the result of `cond` is
   likely to be false. When PETSc is compiled in optimized mode this will always return
-  false. Additionally, cond is guaranteed to not be evaluated when PETSc is compiled in
+  false. Additionally, `cond` is guaranteed to not be evaluated when PETSc is compiled in
   optimized mode.
 
   Example usage:
@@ -1012,8 +1011,6 @@ M*/
   }
 .ve
 
-  Level: advanced
-
 .seealso: `PetscUnlikely()`, `PetscLikely()`, `PetscCall()`, `SETERRQ`
 M*/
 #define PetscUnlikelyDebug(cond) (PetscDefined(USE_DEBUG) && PetscUnlikely(cond))
@@ -1035,7 +1032,7 @@ M*/
 #endif
 
 /*MC
-  PetscExpandToNothing - Expands to absolutely nothing at all
+  PetscExpandToNothing - Expands to absolutely nothing
 
   No Fortran Support
 
@@ -1046,15 +1043,15 @@ M*/
   Input Parameter:
 . __VA_ARGS__ - Anything at all
 
-  Notes:
+  Level: beginner
+
+  Note:
   Must have at least 1 parameter.
 
   Example usage:
 .vb
   PetscExpandToNothing(a,b,c) -> *nothing*
 .ve
-
-  Level: beginner
 
 .seealso: `PetscConcat()`, `PetscDefined()`, `PetscStringize()`, `PetscExpand()`
 M*/
@@ -1070,6 +1067,8 @@ M*/
   Input Parameters:
 + retexpr     - The value or expression that the macro should return
 - __VA_ARGS__ - The body of the macro
+
+  Level: intermediate
 
   Notes:
   Due to limitations of the C-preprocessor retexpr cannot depend on symbols declared in the
@@ -1130,8 +1129,6 @@ M*/
   int z = MY_COMPLEX_RETEXPR_MACRO_2(); // OK, y = 0, x = 20
 .ve
 
-  Level: intermediate
-
 .seealso: `PetscExpand()`, `PetscConcat()`, `PetscStringize()`
 M*/
 #define PetscMacroReturns(retexpr, ...) PetscMacroReturns_(retexpr, __VA_ARGS__)
@@ -1140,6 +1137,23 @@ M*/
 
 /*MC
   PETSC_STATIC_ARRAY_LENGTH - Return the length of a static array
+
+  Synopsis:
+  #include <petscmacros.h>
+  size_t PETSC_STATIC_ARRAY_LENGTH(a)
+
+  Input Parameter:
+. a - a static array of any type
+
+  Output Parameter:
+. <return-value> -  the length of the array
+
+  Example:
+.vb
+  PetscInt a[22];
+  size_t sa = PETSC_STATIC_ARRAY_LENGTH(a)
+.ve
+  `sa` will have a value of 22
 
   Level: intermediate
 M*/

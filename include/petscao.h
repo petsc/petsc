@@ -6,22 +6,21 @@
 /* SUBMANSEC = AO */
 
 /*S
-     AO - Abstract PETSc object that manages mapping between different global numbering
+     AO - Abstract PETSc object that manages mapping between different global numberings
 
    Level: intermediate
 
    Notes:
-   An application ordering is mapping between an application-centric
-   ordering (the ordering that is "natural" for the application) and
-   the parallel ordering that PETSc uses.
+   An application ordering is usually mapping between an application-centric
+   numbering (the ordering that is "natural" for the application) and
+   the parallel numbering that PETSc uses.
 
 .seealso: `AOCreateBasic()`, `AOCreateBasicIS()`, `AOPetscToApplication()`, `AOView()`, `AOApplicationToPetsc()`, `AOType`, `AOSetType()`
 S*/
 typedef struct _p_AO *AO;
 
 /*J
-    AOType - String with the name of a PETSc application ordering or the creation function
-       with an optional dynamic library name.
+    AOType - String with the name of a PETSc application ordering type
 
    Level: beginner
 
@@ -73,5 +72,4 @@ PETSC_EXTERN PetscErrorCode AOApplicationToPetscPermuteReal(AO, PetscInt, PetscR
 PETSC_EXTERN PetscErrorCode AOMappingHasApplicationIndex(AO, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode AOMappingHasPetscIndex(AO, PetscInt, PetscBool *);
 
-/* ----------------------------------------------------*/
 #endif

@@ -45,7 +45,7 @@
 
     Experienced users can set the error handler with `PetscPushErrorHandler()`.
 
-   Fortran Notes:
+   Fortran Note:
    `SETERRQ()` may be called from Fortran subroutines but `SETERRA()` must be called from the
    Fortran main program.
 

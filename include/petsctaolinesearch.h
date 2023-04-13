@@ -61,7 +61,6 @@ typedef enum {
 
   Options Database Key:
 .  -tao_ls_type <type> - select which method Tao should use at runtime
-  Values:
 
   Level: beginner
 

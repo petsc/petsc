@@ -1,6 +1,6 @@
 /*
       This file deals with the BLAS/LAPACK naming convention on
-      non-Microsoft systems, which may append an underscore, use
+      non-Microsoft Windows systems, which may append an underscore, use
       upper or lower case, and/or use a configurable symbol suffix.
 */
 #ifndef _BLASLAPACK_MANGLE_H
