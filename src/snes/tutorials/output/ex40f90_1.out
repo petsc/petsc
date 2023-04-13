@@ -1,14 +1,14 @@
-  0 SNES Function norm 53.7401 
-  1 SNES Function norm 21.1059 
-  2 SNES Function norm 1.48791 
-  3 SNES Function norm 0.0100216 
-  4 SNES Function norm 4.67479e-07 
+  0 SNES Function norm 26.8701 
+  1 SNES Function norm 6.71751 
+  2 SNES Function norm 0.186598 
+  3 SNES Function norm 0.000161417 
+  4 SNES Function norm 1.212e-10 
 SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=4
-  total number of function evaluations=22
+  total number of function evaluations=5
   norm schedule ALWAYS
   Jacobian is built using colored finite differences on a DMDA
   SNESLineSearch Object: 1 MPI process
@@ -40,7 +40,7 @@ SNES Object: 1 MPI process
       PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
-          tolerance for zero pivot 2.22045e-14
+          tolerance for zero pivot 1.92593e-32
           using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
           matrix ordering: nd
           factor fill ratio given 5., needed 2.38265
@@ -52,7 +52,7 @@ SNES Object: 1 MPI process
                 total: nonzeros=7472, allocated nonzeros=7472
                   using I-node routines: found 82 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object:  1 MPI process
+        Mat Object: 1 MPI process
           type: seqaij
           rows=200, cols=200, bs=2
           total: nonzeros=3136, allocated nonzeros=3136

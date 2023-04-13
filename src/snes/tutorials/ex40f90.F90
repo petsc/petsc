@@ -20,12 +20,15 @@
       PetscErrorCode   ierr
       DM               da
       PetscInt         ten,two,one
+      PetscScalar      sone
+      Vec              x
       external         FormFunctionLocal
 
       PetscCallA(PetscInitialize(ierr))
       ten = 10
       one = 1
       two = 2
+      sone = 1.0
 
       PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,ten,ten,PETSC_DECIDE,PETSC_DECIDE,two,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
       PetscCallA(DMSetFromOptions(da,ierr))
@@ -41,8 +44,11 @@
 
 !      Solve the nonlinear system
 !
-      PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr))
+      PetscCallA(DMCreateGlobalVector(da,x,ierr))
+      PetscCallA(VecSet(x,sone,ierr))
+      PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
 
+      PetscCallA(VecDestroy(x,ierr))
       PetscCallA(SNESDestroy(snes,ierr))
       PetscCallA(DMDestroy(da,ierr))
       PetscCallA(PetscFinalize(ierr))
