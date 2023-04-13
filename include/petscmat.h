@@ -15,9 +15,9 @@
    Level: beginner
 
    Note:
-   See [](doc_matrix) and `MatType` for available matrix types
+   See [](doc_matrix), [](chapter_matrices) and `MatType` for available matrix types
 
-.seealso: [](chapter_matrices), [](doc_matrix), `MatCreate()`, `MatType`, `MatSetType()`, `MatDestroy()`
+.seealso: [](doc_matrix), [](chapter_matrices), `MatCreate()`, `MatType`, `MatSetType()`, `MatDestroy()`
 S*/
 typedef struct _p_Mat *Mat;
 
@@ -29,7 +29,7 @@ typedef struct _p_Mat *Mat;
    Note:
    [](doc_matrix) for a table of available matrix types
 
-.seealso: [](chapter_matrices), `MatSetType()`, `Mat`, `MatSolverType`, `MatRegister()`
+.seealso: [](doc_matrix), [](chapter_matrices), `MatSetType()`, `Mat`, `MatSolverType`, `MatRegister()`
 J*/
 typedef const char *MatType;
 #define MATSAME                      "same"
@@ -131,14 +131,15 @@ typedef const char *MatType;
 #define MATH2OPUS                    "h2opus"
 
 /*J
-    MatSolverType - String with the name of a PETSc matrix solver type.
+    MatSolverType - String with the name of a PETSc factorization based matrix solver type.
 
     For example: "petsc" indicates what PETSc provides, "superlu_dist" the parallel SuperLU_DIST package etc
 
    Level: beginner
 
    Note:
-   `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `MATSOLVERKLU`, `MATSOLVERSPQR` form the SuiteSparse package for which you can use --download-suitesparse
+   `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `MATSOLVERKLU`, `MATSOLVERSPQR` form the SuiteSparse package; you can use `--download-suitesparse` as
+   a ./configure option to install them
 
 .seealso: [](sec_matfactor), [](chapter_matrices), `MatGetFactor()`, `PCFactorSetMatSolverType()`, `PCFactorGetMatSolverType()`
 J*/
@@ -174,8 +175,6 @@ typedef const char *MatSolverType;
 /*E
     MatFactorType - indicates what type of factorization is requested
 
-    Level: beginner
-
     Values:
 +  `MAT_FACTOR_LU` - LU factorization
 .  `MAT_FACTOR_CHOLESKY` - Cholesky factorization
@@ -183,6 +182,8 @@ typedef const char *MatSolverType;
 .  `MAT_FACTOR_ICC` - incomplete Cholesky factorization
 .  `MAT_FACTOR_ILUDT` - ILU factorization with drop tolerance
 -  `MAT_FACTOR_QR` - QR factorization
+
+    Level: beginner
 
 .seealso: [](chapter_matrices), `MatSolverType`, `MatGetFactor()`, `MatGetFactorAvailable()`, `MatSolverTypeRegister()`
 E*/
@@ -224,8 +225,6 @@ PETSC_DEPRECATED_FUNCTION("Use MatSolverTypeGet() (since version 3.9)") static i
 /*E
     MatProductType - indicates what type of matrix product is requested
 
-    Level: beginner
-
     Values:
 +  `MATPRODUCT_AB` - product of two matrices
 .  `MATPRODUCT_AtB` - product of the transpose of a given matrix with a matrix
@@ -233,6 +232,8 @@ PETSC_DEPRECATED_FUNCTION("Use MatSolverTypeGet() (since version 3.9)") static i
 .  `MATPRODUCT_PtAP` - the triple product of the transpose of a matrix with another matrix and itself
 .  `MATPRODUCT_RARt` - the triple product of a matrix, another matrix and the transpose of the first matrix
 -  `MATPRODUCT_ABC` - the product of three matrices
+
+    Level: beginner
 
 .seealso: [](sec_matmatproduct), [](chapter_matrices), `MatProductSetType()`
 E*/
@@ -370,14 +371,14 @@ PETSC_EXTERN PetscFunctionList MatPartitioningList;
 /*E
     MatStructure - Indicates if two matrices have the same nonzero structure
 
-    Level: beginner
-
    Values:
 +  `SAME_NONZERO_PATTERN`  - the two matrices have identical nonzero patterns
 .  `DIFFERENT_NONZERO_PATTERN` - the two matrices may have different nonzero patterns
 .  `SUBSET_NONZERO_PATTERN` - the nonzero pattern of the second matrix is a subset of the nonzero pattern of the first matrix
 -  `UNKNOWN_NONZERO_PATTERN` - there is no known relationship between the nonzero patterns. In this case the implementations
                                may try to detect a relationship to optimize the operation
+
+    Level: beginner
 
 .seealso: [](chapter_matrices), `Mat`, `MatCopy()`, `MatAXPY()`, `MatAYPX()`
 E*/
@@ -498,7 +499,6 @@ PETSC_EXTERN PetscErrorCode MatInvertVariableBlockDiagonal(Mat, PetscInt, const 
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonalMat(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatInvertVariableBlockEnvelope(Mat, MatReuse, Mat *);
 
-/* ------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode MatSetValues(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesIS(Mat, IS, IS, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesBlocked(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
@@ -538,11 +538,11 @@ PETSC_EXTERN PetscErrorCode MatSetStencil(Mat, PetscInt, const PetscInt[], const
 /*E
     MatAssemblyType - Indicates if the process of setting values into the matrix is complete, and the matrix is ready for use
 
-    Level: beginner
-
     Values:
 +   `MAT_FLUSH_ASSEMBLY` - you will continue to put values into the matrix
 -   `MAT_FINAL_ASSEMBLY` - you wish to use the matrix with the values currently inserted
+
+    Level: beginner
 
 .seealso: [](chapter_matrices), `Mat`, `MatSetValues`, `MatAssemblyBegin()`, `MatAssemblyEnd()`
 E*/
@@ -680,8 +680,6 @@ PETSC_EXTERN PetscErrorCode MatResidual(Mat, Vec, Vec, Vec);
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
   its numerical values copied over or just its nonzero structure.
 
-    Level: beginner
-
     Values:
 +   `MAT_DO_NOT_COPY_VALUES`    - Create a matrix using the same nonzero pattern as the original matrix,
                                with zeros for the numerical values
@@ -691,6 +689,8 @@ PETSC_EXTERN PetscErrorCode MatResidual(Mat, Vec, Vec, Vec);
                                and does not copy it, using zeros for the numerical values. The parent and
                                child matrices will share their index (i and j) arrays, and you cannot
                                insert new nonzero entries into either matrix
+
+    Level: beginner
 
   Note:
   Many matrix types (including `MATSEQAIJ`) do not support the `MAT_SHARE_NONZERO_PATTERN` optimization; in
@@ -748,12 +748,12 @@ typedef struct {
     MatInfoType - Indicates if you want information about the local part of the matrix,
      the entire parallel matrix or the maximum over all the local parts.
 
-    Level: beginner
-
     Values:
 +   `MAT_LOCAL` - values for each MPI process part of the matrix
 .   `MAT_GLOBAL_MAX` - maximum of each value over all MPI processes
 -   `MAT_GLOBAL_SUM` - sum of each value over all MPI processes
+
+    Level: beginner
 
 .seealso: [](chapter_matrices), `MatGetInfo()`, `MatInfo`
 E*/
@@ -914,9 +914,9 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 
    Input Parameters:
 +  m - the matrix
-.  row - the row location of the entry
-.  col - the column location of the entry
-.  value - the value to insert
+.  i - the row location of the entry
+.  j - the column location of the entry
+.  va - the value to insert
 -  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Level: beginner
@@ -927,9 +927,9 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 .seealso: [](chapter_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd`, `InsertMode`, `MatGetValue()`, `MatSetValues()`,
           `MatSetValueLocal()`, `MatSetValuesLocal()`
 M*/
-static inline PetscErrorCode MatSetValue(Mat v, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
+static inline PetscErrorCode MatSetValue(Mat m, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
 {
-  return MatSetValues(v, 1, &i, 1, &j, &va, mode);
+  return MatSetValues(m, 1, &i, 1, &j, &va, mode);
 }
 
 /*@C
@@ -968,9 +968,9 @@ static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, Pe
 
    Input Parameters:
 +  m - the matrix
-.  row - the row location of the entry
-.  col - the column location of the entry
-.  value - the value to insert
+.  i - the row location of the entry
+.  j - the column location of the entry
+.  va - the value to insert
 -  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Level: intermediate
@@ -982,9 +982,9 @@ static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, Pe
 
 .seealso: [](chapter_matrices), `MatSetValue()`, `MatSetValuesLocal()`
 M*/
-static inline PetscErrorCode MatSetValueLocal(Mat v, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
+static inline PetscErrorCode MatSetValueLocal(Mat m, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
 {
-  return MatSetValuesLocal(v, 1, &i, 1, &j, &va, mode);
+  return MatSetValuesLocal(m, 1, &i, 1, &j, &va, mode);
 }
 
 /*MC
@@ -1375,8 +1375,8 @@ PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat, IS *);
    Level: beginner
 
    Notes:
-   If `MATORDERINGEXTERNAL` is used then PETSc does not compute an ordering and instead the external package called utilizes one
-   in the external the factorization package
+   If `MATORDERINGEXTERNAL` is used then PETSc does not compute an ordering and instead the external factorization solver package called utilizes one
+   of its own.
 
    There is no `MatOrdering` object, the ordering is obtained directly from the matrix with `MatGetOrdering()`
 
@@ -2113,6 +2113,10 @@ typedef struct _p_MatMFFD *MatMFFD;
 /*J
     MatMFFDType - algorithm used to compute the `h` used in computing matrix-vector products via differencing of a function
 
+   Values:
++   `MATMFFD_DS` - an algorithm described by Dennis and Schnabel
+-   `MATMFFD_WP` - the Walker-Pernice strategy.
+
    Level: beginner
 
 .seealso: [](chapter_matrices), `MatMFFDSetType()`, `MatMFFDRegister()`, `MatMFFDSetFunction()`, `MatCreateMFFD()`
@@ -2157,12 +2161,12 @@ PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat, PetscBool);
 /*E
      MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`
 
-   Level: intermediate
-
     Values:
 +   `MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA` (default) - symmetric partial adaptive cross approximation
 .   `MAT_HTOOL_COMPRESSOR_FULL_ACA` - full adaptive cross approximation
 -   `MAT_HTOOL_COMPRESSOR_SVD` - singular value decomposition
+
+   Level: intermediate
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolClusteringType`
 E*/
@@ -2175,13 +2179,13 @@ typedef enum {
 /*E
      MatHtoolClusteringType - Indicates the type of clustering used by a `MATHTOOL`
 
-   Level: intermediate
-
     Values:
 +   `MAT_HTOOL_CLUSTERING_PCA_REGULAR` (default) - axis computed via principle component analysis, split uniformly
 .   `MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC` - axis computed via principle component analysis, split barycentrically
 .   `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR` - axis along the largest extent of the bounding box, split uniformly
 -   `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC` - axis along the largest extent of the bounding box, split barycentrically
+
+   Level: intermediate
 
     Note:
     Higher-dimensional clustering is not yet supported in Htool, but once it is, one should add BOUNDING_BOX_{2,3} types
@@ -2231,8 +2235,6 @@ PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat, PetscScalar *);
 /*E
     MatSTRUMPACKReordering - sparsity reducing ordering to be used in `MATSOLVERSTRUMPACK``
 
-    Level: intermediate
-
     Values:
 +  `MAT_STRUMPACK_NATURAL` - use the current ordering
 .  `MAT_STRUMPACK_METIS` - use MeTis to compute an ordering
@@ -2240,6 +2242,8 @@ PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat, PetscScalar *);
 .  `MAT_STRUMPACK_SCOTCH` - use Scotch to compute an ordering
 .  `MAT_STRUMPACK_PTSCOTCH` - use parallel Scotch to compute an ordering
 -  `MAT_STRUMPACK_RCM` - use an RCM ordering
+
+    Level: intermediate
 
     Developer Note:
     Should be called `MatSTRUMPACKReorderingType`
@@ -2366,12 +2370,12 @@ PETSC_EXTERN PetscErrorCode MatDenseCUDAResetArray(Mat);
     MatHIPSPARSEStorageFormat - indicates the storage format for `MATAIJHIPSPARSE` (GPU)
     matrices.
 
-    Level: intermediate
-
     Values:
 +   `MAT_HIPSPARSE_CSR` - Compressed Sparse Row
 .   `MAT_HIPSPARSE_ELL` - Ellpack
 -   `MAT_HIPSPARSE_HYB` - Hybrid, a combination of Ellpack and Coordinate format
+
+    Level: intermediate
 
 .seealso: [](chapter_matrices), `MatHIPSPARSESetFormat()`, `MatHIPSPARSEFormatOperation`
 E*/
@@ -2389,13 +2393,13 @@ PETSC_EXTERN const char *const MatHIPSPARSEStorageFormats[];
     MatHIPSPARSEFormatOperation - indicates the operation of `MATAIJHIPSPARSE` (GPU)
     matrices whose operation should use a particular storage format.
 
-    Level: intermediate
-
     Values:
 +   `MAT_HIPSPARSE_MULT_DIAG` - sets the storage format for the diagonal matrix in the parallel `MatMult()`
 .   `MAT_HIPSPARSE_MULT_OFFDIAG` - sets the storage format for the offdiagonal matrix in the parallel `MatMul()t`
 .   `MAT_HIPSPARSE_MULT` - sets the storage format for the entire matrix in the serial (single GPU) `MatMult()`
 -   `MAT_HIPSPARSE_ALL` - sets the storage format for all HIPSPARSE (GPU) matrices
+
+    Level: intermediate
 
 .seealso: [](chapter_matrices), `MatHIPSPARSESetFormat()`, `MatHIPSPARSEStorageFormat`
 E*/

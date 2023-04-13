@@ -126,6 +126,14 @@ static PetscErrorCode KSPChebyshevSetKind_Chebyshev(KSP ksp, KSPChebyshevKind ki
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode KSPChebyshevGetKind_Chebyshev(KSP ksp, KSPChebyshevKind *kind)
+{
+  KSP_Chebyshev *cheb = (KSP_Chebyshev *)ksp->data;
+
+  PetscFunctionBegin;
+  *kind = cheb->chebykind;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 /*@
    KSPChebyshevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
@@ -274,6 +282,8 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
   Options Database Key:
 . -ksp_chebyshev_kind <kind> - which kind of Chebyshev polynomial to use
 
+  Level: intermediate
+
   Note:
   When using multigrid methods for problems with a poor quality coarse space (e.g., due to anisotropy or aggressive
   coarsening), it is necessary for the smoother to handle smaller eigenvalues. With first-kind Chebyshev smoothing, this
@@ -286,9 +296,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 +  * - Malachi Phillips and Paul Fischer, Optimal Chebyshev Smoothers and One-sided V-cycles, https://arxiv.org/abs/2210.03179.
 -  * - James Lottes, Optimal Polynomial Smoothers for Multigrid V-cycles, https://arxiv.org/abs/2202.08830.
 
-  Level: intermediate
-
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevGetKind()`
 @*/
 PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
 {
@@ -296,6 +304,27 @@ PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, kind, 2);
   PetscUseMethod(ksp, "KSPChebyshevSetKind_C", (KSP, KSPChebyshevKind), (ksp, kind));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  KSPChebyshevGetKind - get the kind of Chebyshev polynomial to use
+
+  Logically Collective
+
+  Input Parameters:
++ ksp  - Linear solver context
+- kind - The kind of Chebyshev polynomial to use
+
+  Level: intermediate
+
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevSetKind()`
+@*/
+PetscErrorCode KSPChebyshevGetKind(KSP ksp, KSPChebyshevKind *kind)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscUseMethod(ksp, "KSPChebyshevGetKind_C", (KSP, KSPChebyshevKind *), (ksp, kind));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -844,6 +873,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigSet_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigSetUseNoisy_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevSetKind_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevGetKind_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigGetKSP_C", NULL));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -912,6 +942,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigSet_C", KSPChebyshevEstEigSet_Chebyshev));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigSetUseNoisy_C", KSPChebyshevEstEigSetUseNoisy_Chebyshev));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevSetKind_C", KSPChebyshevSetKind_Chebyshev));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevGetKind_C", KSPChebyshevGetKind_Chebyshev));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigGetKSP_C", KSPChebyshevEstEigGetKSP_Chebyshev));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

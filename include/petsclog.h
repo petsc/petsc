@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const c
 #define PetscInfo9(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
 
 /*E
-  PetscInfoCommFlag - Describes the method by which to filter `PetscInfo()` by communicator size
+  PetscInfoCommFlag - Describes the method by which to filter information displayed by `PetscInfo()` by communicator size
 
   Values:
 + `PETSC_INFO_COMM_ALL` - Default uninitialized value. `PetscInfo()` will not filter based on
@@ -112,7 +112,6 @@ PETSC_EXTERN PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *, PetscLogDoubl
 */
 typedef struct _n_PetscIntStack *PetscIntStack;
 
-/* -----------------------------------------------------------------------------------------------------*/
 /*
     PetscClassRegInfo, PetscClassPerfInfo - Each class has two data structures associated with it. The first has
        static information about it, the second collects statistics on how many objects of the class are created,
@@ -146,7 +145,7 @@ struct _n_PetscClassPerfLog {
   int                 maxClasses; /* The maximum number of classes */
   PetscClassPerfInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
 };
-/* -----------------------------------------------------------------------------------------------------*/
+
 /*
     PetscEventRegInfo, PetscEventPerfInfo - Each event has two data structures associated with it. The first has
        static information about it, the second collects statistics on how many times the event is used, how
@@ -214,7 +213,7 @@ struct _n_PetscEventPerfLog {
   int                 maxEvents; /* The maximum number of events */
   PetscEventPerfInfo *eventInfo; /* The performance information for each event */
 };
-/* ------------------------------------------------------------------------------------------------------------*/
+
 /*
    PetscStageInfo - Contains all the information about a particular stage.
 
@@ -241,7 +240,6 @@ struct _n_PetscStageLog {
   PetscEventRegLog eventLog;  /* The registered events */
   PetscClassRegLog classLog;  /* The registered classes */
 };
-/* -----------------------------------------------------------------------------------------------------*/
 
 PETSC_DEPRECATED_FUNCTION("PetscLogObjectParent() is deprecated (since version 3.18)") static inline PetscErrorCode PetscLogObjectParent(PetscObject o, PetscObject p)
 {

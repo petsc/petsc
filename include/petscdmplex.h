@@ -84,11 +84,13 @@ PETSC_EXTERN const char *const DMPlexInterpolatedFlags[];
 
    Local or collective property depending on whether it is returned by `DMPlexIsInterpolated()` or `DMPlexIsInterpolatedCollective()`.
 
-$  DMPLEX_INTERPOLATED_INVALID - Uninitialized value (internal use only; never returned by `DMPlexIsInterpolated()` or `DMPlexIsInterpolatedCollective()`)
-$  DMPLEX_INTERPOLATED_NONE    - Mesh is not interpolated
-$  DMPLEX_INTERPOLATED_PARTIAL - Mesh is partially interpolated. This can e.g. mean `DMPLEX` with cells, faces and vertices but no edges represented, or a mesh with mixed cones (see `DMPlexStratify()` for an example)
-$  DMPLEX_INTERPOLATED_MIXED   - Can be returned only by `DMPlexIsInterpolatedCollective()`, meaning that `DMPlexIsInterpolated()` returns different interpolatedness on different ranks
-$  DMPLEX_INTERPOLATED_FULL    - Mesh is fully interpolated
+   Values:
++  `DMPLEX_INTERPOLATED_INVALID` - Uninitialized value (internal use only; never returned by `DMPlexIsInterpolated()` or `DMPlexIsInterpolatedCollective()`)
+.  `DMPLEX_INTERPOLATED_NONE`    - Mesh is not interpolated
+.  `DMPLEX_INTERPOLATED_PARTIAL` - Mesh is partially interpolated. This can e.g. mean `DMPLEX` with cells, faces and vertices but no edges represented,
+                                   or a mesh with mixed cones (see `DMPlexStratify()` for an example)
+.  `DMPLEX_INTERPOLATED_MIXED`   - Can be returned only by `DMPlexIsInterpolatedCollective()`, meaning that `DMPlexIsInterpolated()` returns different interpolatedness on different ranks
+-  `DMPLEX_INTERPOLATED_FULL`    - Mesh is fully interpolated
 
    Level: intermediate
 
@@ -149,15 +151,16 @@ PETSC_EXTERN PetscErrorCode DMPlexRestoreCompressedClosure(DM, PetscSection, Pet
 /*E
    DMPlexTPSType - Type of triply-periodic surface for a `DMPLEX`
 
-$  DMPLEX_TPS_SCHWARZ_P - Schwarz Primitive surface, defined by the equation cos(x) + cos(y) + cos(z) = 0.
-$  DMPLEX_TPS_GYROID    - Gyroid surface, defined by the equation sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = 0
+   Values:
++  `DMPLEX_TPS_SCHWARZ_P` - Schwarz Primitive surface, defined by the equation cos(x) + cos(y) + cos(z) = 0.
+-  `DMPLEX_TPS_GYROID`    - Gyroid surface, defined by the equation sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = 0
 
    Level: intermediate
 
    Developer Note:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
 
-.seealso: `DMPlexCreateTPSMesh()`
+.seealso: `DMPLEX`, `DMPlexCreateTPSMesh()`
 E*/
 typedef enum {
   DMPLEX_TPS_SCHWARZ_P,
@@ -259,9 +262,10 @@ PETSC_EXTERN PetscErrorCode DMPlexDistributionGetName(DM, const char *[]);
 /*E
    DMPlexReorderDefaultFlag - Flag indicating whether the `DMPLEX` should be reordered by default
 
-$  DMPLEX_REORDER_DEFAULT_NOTSET - Flag not set.
-$  DMPLEX_REORDER_DEFAULT_FALSE  - Do not reorder by default.
-$  DMPLEX_REORDER_DEFAULT_TRUE   - Reorder by default.
+   Values:
++  `DMPLEX_REORDER_DEFAULT_NOTSET` - Flag not set.
+.  `DMPLEX_REORDER_DEFAULT_FALSE`  - Do not reorder by default.
+-  `DMPLEX_REORDER_DEFAULT_TRUE`   - Reorder by default.
 
    Level: intermediate
 

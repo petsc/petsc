@@ -10,7 +10,10 @@
 
   Level: intermediate
 
-.seealso: `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscPartitionerType`
+  Note:
+  Also consider `MatPartitioning` which provides an alternative API for partitioning.
+
+.seealso: `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscPartitionerType`, `MatPartitioning`, `MatPartitioningCreate()`
 S*/
 typedef struct _p_PetscPartitioner *PetscPartitioner;
 

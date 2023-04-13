@@ -116,12 +116,12 @@ static
 .   v - the values to insert or add to the matrix (treated as a  by n row oriented dense array
 -   is - either `INSERT_VALUES` or `ADD_VALUES`
 
+   Level: advanced
+
     Notes:
     Any row or column indices that are outside the bounds of the matrix on the rank are discarded
 
     It is recommended that `MatSetValuesCOO()` be used instead of this routine for efficiency
-
-   Level: advanced
 
 .seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
           `MatCUSPARSEGetDeviceMatWrite()`, `MatSetValuesCOO()`

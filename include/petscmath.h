@@ -485,7 +485,6 @@ M*/
    Level: beginner
 
 .seealso: `PetscScalar`, `PetscImaginaryPart()`, `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
-
 M*/
   #define PetscRealPart(a) PetscRealPartComplex(a)
 
@@ -507,7 +506,6 @@ M*/
        If PETSc was configured for real numbers then this always returns the value 0
 
 .seealso: `PetscScalar`, `PetscRealPart()`, `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
-
 M*/
   #define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
 
@@ -568,8 +566,6 @@ typedef enum {
   PETSC_SCALAR_HALF
 } PetscScalarPrecision;
 
-/* --------------------------------------------------------------------------*/
-
 /*MC
    PetscAbs - Returns the absolute value of a number
 
@@ -582,13 +578,12 @@ typedef enum {
    Input Parameter:
 .  v - the number
 
+   Level: beginner
+
    Note:
    The type can be integer or real floating point value, but cannot be complex
 
-   Level: beginner
-
-.seealso: `PetscAbsInt()`, `PetscAbsReal()`, `PetscAbsScalar()`
-
+.seealso: `PetscAbsInt()`, `PetscAbsReal()`, `PetscAbsScalar()`, `PetscSign()`
 M*/
 #define PetscAbs(a) (((a) >= 0) ? (a) : (-(a)))
 
@@ -604,11 +599,12 @@ M*/
    Input Parameter:
 .  v - the number
 
+   Level: beginner
+
    Note:
    The type can be integer or real floating point value
 
-   Level: beginner
-
+.seealso: `PetscAbsInt()`, `PetscAbsReal()`, `PetscAbsScalar()`
 M*/
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
 
@@ -625,13 +621,12 @@ M*/
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
+   Level: beginner
+
    Note:
    The type can be integer or floating point value
 
-   Level: beginner
-
 .seealso: `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
-
 M*/
 #define PetscMin(a, b) (((a) < (b)) ? (a) : (b))
 
@@ -648,13 +643,12 @@ M*/
 +  v1 - first value to find maximum of
 -  v2 - second value to find maximum of
 
+   Level: beginner
+
    Note:
    The type can be integer or floating point value
 
-   Level: beginner
-
 .seealso: `PetscMin()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
-
 M*/
 #define PetscMax(a, b) (((a) < (b)) ? (b) : (a))
 
@@ -672,13 +666,12 @@ M*/
 .  a - lower end of interval
 -  b - upper end of interval
 
+   Level: beginner
+
    Note:
    The type can be integer or floating point value
 
-   Level: beginner
-
 .seealso: `PetscMin()`, `PetscMax()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
-
 M*/
 #define PetscClipInterval(x, a, b) (PetscMax((a), PetscMin((x), (b))))
 
@@ -695,7 +688,6 @@ M*/
    Level: beginner
 
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsReal()`, `PetscSqr()`
-
 M*/
 #define PetscAbsInt(a) (((a) < 0) ? (-(a)) : (a))
 
@@ -707,12 +699,11 @@ M*/
    Real abs PetscAbsReal(PetscReal v1)
 
    Input Parameter:
-.   v1 - the double
+.   v1 - the `PetscReal` value
 
    Level: beginner
 
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscSqr()`
-
 M*/
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PetscAbsReal(a) fabsf(a)
@@ -736,17 +727,14 @@ M*/
    Input Parameter:
 .   v1 - the value
 
+   Level: beginner
+
    Note:
    The type can be integer or floating point value
 
-   Level: beginner
-
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`
-
 M*/
 #define PetscSqr(a) ((a) * (a))
-
-/* ----------------------------------------------------------------------------*/
 
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PetscRealConstant(constant) constant##F
@@ -943,7 +931,9 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base, PetscReal power)
 
    Input Parameters:
 +   x - the variable
--   b - the constant float it is checking if x is less than or equal to
+-   b - the constant float it is checking if `x` is less than or equal to
+
+   Level: advanced
 
    Notes:
      The fudge factor is the value `PETSC_SMALL`
@@ -953,10 +943,7 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base, PetscReal power)
      This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
      floating point results.
 
-   Level: advanced
-
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateGTE()`
-
 M*/
 #define PetscApproximateLTE(x, b) ((x) <= (PetscRealConstant(b) + PETSC_SMALL))
 
@@ -971,7 +958,9 @@ M*/
 
    Input Parameters:
 +   x - the variable
--   b - the constant float it is checking if x is greater than or equal to
+-   b - the constant float it is checking if `x` is greater than or equal to
+
+   Level: advanced
 
    Notes:
      The fudge factor is the value `PETSC_SMALL`
@@ -981,10 +970,7 @@ M*/
      This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
      floating point results.
 
-   Level: advanced
-
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateLTE()`
-
 M*/
 #define PetscApproximateGTE(x, b) ((x) >= (PetscRealConstant(b) - PETSC_SMALL))
 
@@ -1004,7 +990,6 @@ M*/
    Level: advanced
 
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateLTE()`
-
 M*/
 #define PetscCeilInt(x, y) ((((PetscInt)(x)) / ((PetscInt)(y))) + ((((PetscInt)(x)) % ((PetscInt)(y))) ? 1 : 0))
 

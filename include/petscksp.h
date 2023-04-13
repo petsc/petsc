@@ -12,15 +12,15 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
-         linear solves in PETSc (even those such as direct solvers that do no use Krylov accelerators).
+         linear solves in PETSc (even those such as direct factorization-based solvers that do no use Krylov accelerators).
 
    Level: beginner
 
    Note:
     When a direct solver is used, but no Krylov solver is used, the `KSP` object is still used but with a
-    `KSPType` of `KSPPREONLY`, meaning that only application of the preconditioner is used as the linear solver.
+    `KSPType` of `KSPPREONLY` (or equivalently `KSPNONE`), meaning that only application of the preconditioner is used as the linear solver.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `SNES`, `TS`, `PC`, `KSP`, `KSPDestroy()`, `KSPCG`, `KSPGMRES`
+.seealso: [](doc_linsolve), [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `SNES`, `TS`, `PC`, `KSP`, `KSPDestroy()`, `KSPCG`, `KSPGMRES`
 S*/
 typedef struct _p_KSP *KSP;
 
@@ -29,7 +29,7 @@ typedef struct _p_KSP *KSP;
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSPSetType()`, `KSP`, `KSPRegister()`, `KSPCreate()`, `KSPSetFromOptions()`
+.seealso: [](doc_linsolve), [](chapter_ksp), `KSPSetType()`, `KSP`, `KSPRegister()`, `KSPCreate()`, `KSPSetFromOptions()`
 J*/
 typedef const char *KSPType;
 #define KSPRICHARDSON "richardson"
@@ -194,7 +194,7 @@ PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP, Vec, Vec, Vec *);
 
 /*E
-  KSPChebyshevKind - Which Chebyshev polynomial to use
+  KSPChebyshevKind - Which kind of Chebyshev polynomial to use
 
   Values:
 + `KSP_CHEBYSHEV_FIRST`      - "classic" first-kind Chebyshev polynomial
@@ -203,7 +203,7 @@ PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP, Vec, Vec, Vec *);
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevSetKind`
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevSetKind()`, `KSPChebyshevGetKind()`
 E*/
 typedef enum {
   KSP_CHEBYSHEV_FIRST,
@@ -217,6 +217,7 @@ PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP, PetscReal, PetscReal
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetKind(KSP, KSPChebyshevKind);
+PETSC_EXTERN PetscErrorCode KSPChebyshevGetKind(KSP, KSPChebyshevKind *);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP, KSP *);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP, PetscInt, PetscReal[], PetscReal[], PetscInt *);
@@ -312,8 +313,6 @@ PETSC_DEPRECATED_FUNCTION("Use KSPMatSolve() (since version 3.14)") static inlin
 /*E
     KSPHPDDMType - Type of Krylov method used by `KSPHPDDM`
 
-    Level: intermediate
-
     Values:
 +   `KSP_HPDDM_TYPE_GMRES` (default) - Generalized Minimal Residual method
 .   `KSP_HPDDM_TYPE_BGMRES` - block GMRES
@@ -323,6 +322,8 @@ PETSC_DEPRECATED_FUNCTION("Use KSPMatSolve() (since version 3.14)") static inlin
 .   `KSP_HPDDM_TYPE_BGCRODR` - block GCRODR
 .   `KSP_HPDDM_TYPE_BFBCG` - breakdown-free BCG
 -   `KSP_HPDDM_TYPE_PREONLY` - apply the preconditioner only
+
+    Level: intermediate
 
 .seealso: [](chapter_ksp), `KSPHPDDM`, `KSPHPDDMSetType()`
 E*/
@@ -341,13 +342,13 @@ PETSC_EXTERN const char *const KSPHPDDMTypes[];
 /*E
     KSPHPDDMPrecision - Precision of Krylov bases used by `KSPHPDDM`
 
-    Level: intermediate
-
     Values:
 +   `KSP_HPDDM_PRECISION_HALF` - default when PETSc is configured `--with-precision=__fp16`
 .   `KSP_HPDDM_PRECISION_SINGLE` - default when PETSc is configured `--with-precision=single`
 .   `KSP_HPDDM_PRECISION_DOUBLE` - default when PETSc is configured `--with-precision=double`
 -   `KSP_HPDDM_PRECISION_QUADRUPLE` - default when PETSc is configured `--with-precision=__float128`
+
+    Level: intermediate
 
 .seealso: [](chapter_ksp), `KSP`, `KSPHPDDM`
 E*/
@@ -361,14 +362,14 @@ PETSC_EXTERN PetscErrorCode KSPHPDDMSetType(KSP, KSPHPDDMType);
 PETSC_EXTERN PetscErrorCode KSPHPDDMGetType(KSP, KSPHPDDMType *);
 
 /*E
-    KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
-
-   Level: advanced
+    KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed in the GMRES solvers
 
     Values:
 +   `KSP_GMRES_CGS_REFINE_NEVER` - one step of classical Gram-Schmidt
 .   `KSP_GMRES_CGS_REFINE_IFNEEDED` - a second step is performed if the first step does not satisfy some criteria
 -   `KSP_GMRES_CGS_REFINE_ALWAYS` - always perform two steps
+
+   Level: advanced
 
 .seealso: [](chapter_ksp), `KSP`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSPGMRESGetOrthogonalization()`,
@@ -380,6 +381,7 @@ typedef enum {
   KSP_GMRES_CGS_REFINE_ALWAYS
 } KSPGMRESCGSRefinementType;
 PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
+
 /*MC
     KSP_GMRES_CGS_REFINE_NEVER - Do the classical (unmodified) Gram-Schmidt process
 
@@ -412,7 +414,7 @@ M*/
 M*/
 
 /*MC
-    KSP_GMRES_CGS_REFINE_NEVER - Do two steps of the classical (unmodified) Gram-Schmidt process.
+    KSP_GMRES_CGS_REFINE_ALWAYS - Do two steps of the classical (unmodified) Gram-Schmidt process.
 
    Level: advanced
 
@@ -555,7 +557,7 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC, KSP *);
 
    Note:
    Each solver only supports a subset of these and some may support different ones
-   depending on left or right preconditioning, see `KSPSetPCSide()`
+   depending on whether left or right preconditioning is used, see `KSPSetPCSide()`
 
    Developer Note:
    This must match the values in petsc/finclude/petscksp.h
@@ -625,8 +627,6 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 /*E
     KSPConvergedReason - reason a Krylov method was determined to have converged or diverged
 
-   Level: beginner
-
    Values:
 +  `KSP_CONVERGED_RTOL_NORMAL` - requested decrease in the residual for the normal equations
 .  `KSP_CONVERGED_ATOL_NORMAL` - requested absolute value in the residual for the normal equations
@@ -646,6 +646,8 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_DIVERGED_NANORINF` - a not a number of infinity was detected in a vector during the computation
 .  `KSP_DIVERGED_INDEFINITE_MAT` - the operator was indefinite for a `KSPType` that requires it be definite
 -  `KSP_DIVERGED_PC_FAILED` - the action of the preconditioner failed for some reason
+
+   Level: beginner
 
    Note:
    The values  `KSP_CONVERGED_NEG_CURVE`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by the special `KSPNASH`,
@@ -699,7 +701,6 @@ PETSC_EXTERN const char *const *KSPConvergedReasons;
    See also `KSP_CONVERGED_ATOL` which may apply before this tolerance.
 
 .seealso: [](chapter_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_DTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -714,7 +715,6 @@ M*/
    See also `KSP_CONVERGED_RTOL` which may apply before this tolerance.
 
 .seealso: [](chapter_ksp), `KSPNormType`, `KSP_CONVERGED_RTOL`, `KSP_DIVERGED_DTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -729,7 +729,6 @@ M*/
    Level: beginner
 
 .seealso: [](chapter_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_RTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -739,7 +738,6 @@ M*/
    Level: beginner
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -750,7 +748,6 @@ M*/
    Level: beginner
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -762,7 +759,6 @@ M*/
    Level: beginner
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -772,7 +768,6 @@ M*/
    Level: beginner
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -782,7 +777,6 @@ M*/
    Level: beginner
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -797,7 +791,6 @@ M*/
   the `PCICC` preconditioner to generate a positive definite preconditioner
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -811,7 +804,6 @@ M*/
     Run with `-ksp_error_if_not_converged` to stop the program when the error is detected and print an error message with details.
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 /*MC
@@ -821,7 +813,6 @@ M*/
    Level: beginner
 
 .seealso: [](chapter_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), void *, PetscErrorCode (*)(void *));
@@ -876,13 +867,13 @@ PETSC_DEPRECATED_FUNCTION("Use KSPComputeOperator() (since version 3.12)") stati
 /*E
     KSPCGType - Determines what type of `KSPCG` to use
 
-   Level: beginner
-
    Values:
  + `KSP_CG_SYMMETRIC` - the matrix is complex symmetric
  - `KSP_CG_HERMITIAN` - the matrix is complex Hermitian
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCGSetType()`
+   Level: beginner
+
+.seealso: [](chapter_ksp), `KSPCG`, `KSP`, `KSPCGSetType()`
 E*/
 typedef enum {
   KSP_CG_SYMMETRIC = 0,
@@ -930,14 +921,15 @@ PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC, PetscErrorCode (*)(PC, KSP, 
 .seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetGuessType()`, `KSPGuessType`
 S*/
 typedef struct _p_KSPGuess *KSPGuess;
+
 /*J
     KSPGuessType - String with the name of a PETSc initial guess approach for Krylov methods.
-
-   Level: intermediate
 
    Values:
  + `KSPGUESSFISCHER` - methodology developed by Paul Fischer
  - `KSPGUESSPOD` - methodology based on proper orthogonal decomposition
+
+   Level: intermediate
 
 .seealso: [](chapter_ksp), `KSP`, `KSPGuess`
 J*/

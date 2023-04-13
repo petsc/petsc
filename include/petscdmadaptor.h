@@ -14,7 +14,7 @@
 
   Level: developer
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorSetSolver()`, `DMAdaptorGetSolver()`, `DMAdaptorSetSequenceLength()`, `DMAdaptorGetSequenceLength()`, `DMAdaptorSetFromOptions()`,
+.seealso: `DM`, `DMAdaptorCreate()`, `DMAdaptorSetSolver()`, `DMAdaptorGetSolver()`, `DMAdaptorSetSequenceLength()`, `DMAdaptorGetSequenceLength()`, `DMAdaptorSetFromOptions()`,
           `DMAdaptorSetUp()`, `DMAdaptorAdapt()`, `DMAdaptorDestroy()`, `DMAdaptorGetTransferFunction()`, `PetscConvEstCreate()`, `PetscConvEstDestroy()`
 S*/
 typedef struct _p_DMAdaptor *DMAdaptor;

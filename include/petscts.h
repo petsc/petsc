@@ -15,7 +15,7 @@
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TSType`, `SNES`, `KSP`, `PC`, `TSDestroy()`
+.seealso: [](integrator_table), [](chapter_ts), `TSCreate()`, `TSSetType()`, `TSType`, `SNES`, `KSP`, `PC`, `TSDestroy()`
 S*/
 typedef struct _p_TS *TS;
 
@@ -24,7 +24,7 @@ typedef struct _p_TS *TS;
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSetType()`, `TS`, `TSRegister()`
+.seealso: [](integrator_table), [](chapter_ts), `TSSetType()`, `TS`, `TSRegister()`
 J*/
 typedef const char *TSType;
 #define TSEULER           "euler"
@@ -74,8 +74,8 @@ typedef enum {
 
    Values:
 +  `TS_EQ_UNSPECIFIED` - (default)
-.  `TS_EQ_EXPLICIT` - {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) := M(t) U_t - G(U,t) = 0
--  `TS_EQ_IMPLICIT` - {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) = 0
+.  `TS_EQ_EXPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) := M(t) U_t - G(U,t) = 0
+-  `TS_EQ_IMPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) = 0
 
 .seealso: [](chapter_ts), `TS`, `TSGetEquationType()`, `TSSetEquationType()`
 E*/
@@ -97,7 +97,7 @@ typedef enum {
 PETSC_EXTERN const char *const *TSEquationTypes;
 
 /*E
-   TSConvergedReason - reason a `TS` method has converged or not
+   TSConvergedReason - reason a `TS` method has converged (integrated to the requested time) or not
 
    Values:
 +  `TS_CONVERGED_ITERATING`          - this only occurs if `TSGetConvergedReason()` is called during the `TSSolve()`
@@ -219,9 +219,9 @@ M*/
    TSExactFinalTimeOption - option for handling of final time step
 
    Values:
-+  `TS_EXACTFINALTIME_STEPOVER`    - Don't do anything if final time is exceeded
++  `TS_EXACTFINALTIME_STEPOVER`    - Don't do anything if requested final time is exceeded
 .  `TS_EXACTFINALTIME_INTERPOLATE` - Interpolate back to final time
--  `TS_EXACTFINALTIME_MATCHSTEP` - Adapt final time step to match the final time
+-  `TS_EXACTFINALTIME_MATCHSTEP` - Adapt final time step to match the final time requested
 
    Level: beginner
 
@@ -944,6 +944,7 @@ typedef const char *TSGLEEType;
 #define TSGLEEEXRK2A  "exrk2a"
 #define TSGLEERK32G1  "rk32g1"
 #define TSGLEERK285EX "rk285ex"
+
 /*J
     TSGLEEMode - String with the mode of error estimation for a General Linear with Error Estimation `TSGLEE` type
 

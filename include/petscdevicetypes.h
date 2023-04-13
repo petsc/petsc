@@ -16,22 +16,7 @@
 /*E
   PetscMemType - Memory type of a pointer
 
-  Developer Note:
-  Encoding of the bitmask in binary: xxxxyyyz
-
-$ z = 0                - Host memory
-$ z = 1                - Device memory
-$ yyy = 000            - CUDA-related memory
-$ yyy = 001            - HIP-related memory
-$ yyy = 010            - SYCL-related memory
-$ xxxxyyy1 = 0000,0001 - CUDA memory
-$ xxxxyyy1 = 0001,0001 - CUDA NVSHMEM memory
-$ xxxxyyy1 = 0000,0011 - HIP memory
-$ xxxxyyy1 = 0000,0101 - SYCL memory
-
-  Other types of memory, e.g., CUDA managed memory, can be added when needed.
-
-  Level: beginner
+  Level: intermediate
 
   Notes:
   `PETSC_MEMTYPE_KOKKOS` depends on the Kokkos backend configuration
@@ -39,6 +24,22 @@ $ xxxxyyy1 = 0000,0101 - SYCL memory
   Developer Notes:
   This enum uses a function (`PetscMemTypeToString()`) to convert to string representation so
   cannot be used in `PetscOptionsEnum()`.
+
+  Developer Note:
+  Encoding of the bitmask in binary: xxxxyyyz
+.vb
+ z = 0                - Host memory
+ z = 1                - Device memory
+ yyy = 000            - CUDA-related memory
+ yyy = 001            - HIP-related memory
+ yyy = 010            - SYCL-related memory
+ xxxxyyy1 = 0000,0001 - CUDA memory
+ xxxxyyy1 = 0001,0001 - CUDA NVSHMEM memory
+ xxxxyyy1 = 0000,0011 - HIP memory
+ xxxxyyy1 = 0000,0101 - SYCL memory
+.ve
+
+  Other types of memory, e.g., CUDA managed memory, can be added when needed.
 
 .seealso: `PetscMemTypeToString()`, `VecGetArrayAndMemType()`,
 `PetscSFBcastWithMemTypeBegin()`, `PetscSFReduceWithMemTypeBegin()`
@@ -121,17 +122,18 @@ case v: \
 /*E
   PetscOffloadMask - indicates which memory (CPU, GPU, or none) contains valid data
 
-$ PETSC_OFFLOAD_UNALLOCATED - no memory contains valid matrix entries; NEVER used for vectors
-$ PETSC_OFFLOAD_GPU         - GPU has valid vector/matrix entries
-$ PETSC_OFFLOAD_CPU         - CPU has valid vector/matrix entries
-$ PETSC_OFFLOAD_BOTH        - Both GPU and CPU have valid vector/matrix entries and they match
-$ PETSC_OFFLOAD_KOKKOS      - Reserved for Kokkos matrix and vector. It means the offload is managed by Kokkos, thus this flag itself cannot tell you where the valid data is.
+  Values:
++ `PETSC_OFFLOAD_UNALLOCATED` - no memory contains valid matrix entries; NEVER used for vectors
+. `PETSC_OFFLOAD_GPU`         - GPU has valid vector/matrix entries
+. `PETSC_OFFLOAD_CPU`         - CPU has valid vector/matrix entries
+. `PETSC_OFFLOAD_BOTH`        - Both GPU and CPU have valid vector/matrix entries and they match
+- `PETSC_OFFLOAD_KOKKOS`      - Reserved for Kokkos matrix and vector. It means the offload is managed by Kokkos, thus this flag itself cannot tell you where the valid data is.
+
+  Level: developer
 
   Developer Notes:
   This enum uses a function (`PetscOffloadMaskToString()`) to convert to string representation so
   cannot be used in `PetscOptionsEnum()`.
-
-  Level: developer
 
 .seealso: `PetscOffloadMaskToString()`, `PetscOffloadMaskToMemType()`, `PetscOffloadMaskToDeviceCopyMode()`
 E*/
@@ -213,15 +215,16 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscMemType PetscOffloadMaskTo
 /*E
   PetscDeviceInitType - Initialization strategy for `PetscDevice`
 
-$ PETSC_DEVICE_INIT_NONE  - PetscDevice is never initialized
-$ PETSC_DEVICE_INIT_LAZY  - PetscDevice is initialized on demand
-$ PETSC_DEVICE_INIT_EAGER - PetscDevice is initialized as soon as possible
+  Values:
++ `PETSC_DEVICE_INIT_NONE`  - PetscDevice is never initialized
+. `PETSC_DEVICE_INIT_LAZY`  - PetscDevice is initialized on demand
+- `PETSC_DEVICE_INIT_EAGER` - PetscDevice is initialized as soon as possible
+
+  Level: beginner
 
   Notes:
   `PETSC_DEVICE_INIT_NONE` implies that any initialization of `PetscDevice` is disallowed and
   doing so results in an error. Useful to ensure that no accelerator is used in a program.
-
-  Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceType`, `PetscDeviceInitialize()`,
 `PetscDeviceInitialized()`, `PetscDeviceCreate()`
@@ -236,16 +239,17 @@ PETSC_EXTERN const char *const PetscDeviceInitTypes[];
 /*E
   PetscDeviceType - Kind of accelerator device backend
 
-$ PETSC_DEVICE_HOST - Host, no accelerator backend found
-$ PETSC_DEVICE_CUDA - CUDA enabled GPU
-$ PETSC_DEVICE_HIP  - ROCM/HIP enabled GPU
-$ PETSC_DEVICE_SYCL - SYCL enabled device
-$ PETSC_DEVICE_MAX  - Always 1 greater than the largest valid PetscDeviceType, invalid type, do not use
+  Values:
++ `PETSC_DEVICE_HOST` - Host, no accelerator backend found
+. `PETSC_DEVICE_CUDA` - CUDA enabled GPU
+. `PETSC_DEVICE_HIP`  - ROCM/HIP enabled GPU
+. `PETSC_DEVICE_SYCL` - SYCL enabled device
+- `PETSC_DEVICE_MAX`  - Always 1 greater than the largest valid `PetscDeviceType`, invalid type, do not use
+
+  Level: beginner
 
   Notes:
   One can also use the `PETSC_DEVICE_DEFAULT()` routine to get the current default `PetscDeviceType`.
-
-  Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceCreate()`, `PETSC_DEVICE_DEFAULT()`
 E*/
@@ -261,9 +265,9 @@ PETSC_EXTERN const char *const PetscDeviceTypes[];
 /*E
   PetscDeviceAttribute - Attribute detailing a property or feature of a `PetscDevice`
 
-$ PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK - The maximum amount of shared memory per block in a
-device kernel
-$ PETSC_DEVICE_ATTR_MAX                         - Invalid attribute, do not use
+  Values:
++ `PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK` - The maximum amount of shared memory per block in a device kernel
+- `PETSC_DEVICE_ATTR_MAX`                         - Invalid attribute, do not use
 
   Level: beginner
 
@@ -278,12 +282,12 @@ PETSC_EXTERN const char *const PetscDeviceAttributes[];
 /*S
   PetscDevice - Object to manage an accelerator "device" (usually a GPU)
 
+  Level: beginner
+
   Notes:
   This object is used to house configuration and state of a device, but does not offer any
   ability to interact with or drive device computation. This functionality is facilitated
   instead by the `PetscDeviceContext` object.
-
-  Level: beginner
 
 .seealso: `PetscDeviceType`, `PetscDeviceInitType`, `PetscDeviceCreate()`,
 `PetscDeviceConfigure()`, `PetscDeviceDestroy()`, `PetscDeviceContext`,
@@ -293,12 +297,13 @@ typedef struct _n_PetscDevice *PetscDevice;
 
 /*E
   PetscStreamType - Stream blocking mode, indicates how a stream implementation will interact
-  with the default "NULL" stream, which is usually blocking.
+  with the default `NULL` stream, which is usually blocking.
 
-$ PETSC_STREAM_GLOBAL_BLOCKING    - Alias for NULL stream. Any stream of this type will block the host for all other streams to finish work before starting its operations.
-$ PETSC_STREAM_DEFAULT_BLOCKING   - Stream will act independent of other streams, but will still be blocked by actions on the NULL stream.
-$ PETSC_STREAM_GLOBAL_NONBLOCKING - Stream is truly asynchronous, and is blocked by nothing, not even the NULL stream.
-$ PETSC_STREAM_MAX                - Always 1 greater than the largest PetscStreamType, do not use
+  Values:
++ `PETSC_STREAM_GLOBAL_BLOCKING`    - Alias for `NULL` stream. Any stream of this type will block the host for all other streams to finish work before starting its operations.
+. `PETSC_STREAM_DEFAULT_BLOCKING`   - Stream will act independent of other streams, but will still be blocked by actions on the `NULL` stream.
+. `PETSC_STREAM_GLOBAL_NONBLOCKING` - Stream is truly asynchronous, and is blocked by nothing, not even the `NULL` stream.
+- `PETSC_STREAM_MAX`                - Always 1 greater than the largest `PetscStreamType`, do not use
 
   Level: intermediate
 
@@ -316,9 +321,10 @@ PETSC_EXTERN const char *const PetscStreamTypes[];
   PetscDeviceContextJoinMode - Describes the type of join operation to perform in
   `PetscDeviceContextJoin()`
 
-$ PETSC_DEVICE_CONTEXT_JOIN_DESTROY - Destroy all incoming sub-contexts after join.
-$ PETSC_DEVICE_CONTEXT_JOIN_SYNC    - Synchronize incoming sub-contexts after join.
-$ PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC - Do not synchronize incoming sub-contexts after join.
+  Values:
++ `PETSC_DEVICE_CONTEXT_JOIN_DESTROY` - Destroy all incoming sub-contexts after join.
+. `PETSC_DEVICE_CONTEXT_JOIN_SYNC`    - Synchronize incoming sub-contexts after join.
+- `PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC` - Do not synchronize incoming sub-contexts after join.
 
   Level: beginner
 
@@ -343,13 +349,14 @@ S*/
 typedef struct _p_PetscDeviceContext *PetscDeviceContext;
 
 /*E
-  PetscDeviceCopyMode - Describes the copy direction of a device-aware memcpy
+  PetscDeviceCopyMode - Describes the copy direction of a device-aware `memcpy`
 
-$ PETSC_DEVICE_COPY_HTOH - Copy from host memory to host memory
-$ PETSC_DEVICE_COPY_DTOH - Copy from device memory to host memory
-$ PETSC_DEVICE_COPY_HTOD - Copy from host memory to device memory
-$ PETSC_DEVICE_COPY_DTOD - Copy from device memory to device memory
-$ PETSC_DEVICE_COPY_AUTO - Infer the copy direction from the pointers
+  Values:
++ `PETSC_DEVICE_COPY_HTOH` - Copy from host memory to host memory
+. `PETSC_DEVICE_COPY_DTOH` - Copy from device memory to host memory
+. `PETSC_DEVICE_COPY_HTOD` - Copy from host memory to device memory
+. `PETSC_DEVICE_COPY_DTOD` - Copy from device memory to device memory
+- `PETSC_DEVICE_COPY_AUTO` - Infer the copy direction from the pointers
 
   Level: beginner
 
@@ -392,9 +399,12 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscDeviceCopyMode PetscMemTyp
 /*E
   PetscMemoryAccessMode - Describes the intended usage of a memory region
 
-+ PETSC_MEMORY_ACCESS_READ       - Read only
-. PETSC_MEMORY_ACCESS_WRITE      - Write only
-- PETSC_MEMORY_ACCESS_READ_WRITE - Read and write
+  Values:
++ `PETSC_MEMORY_ACCESS_READ`       - Read only
+. `PETSC_MEMORY_ACCESS_WRITE`      - Write only
+- `PETSC_MEMORY_ACCESS_READ_WRITE` - Read and write
+
+  Level: beginner
 
   Notes:
   This `enum` is a bitmask with the following encoding (assuming 2 bit)\:
@@ -410,14 +420,12 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscDeviceCopyMode PetscMemTyp
 
   The following convenience macros are also provided\:
 
-  - `PetscMemoryAccessRead(mode)`\: `true` if `mode` is any kind of read, `false` otherwise
-  - `PetscMemoryAccessWrite(mode)`\: `true` if `mode` is any kind of write, `false` otherwise
++ `PetscMemoryAccessRead(mode)` - `true` if `mode` is any kind of read, `false` otherwise
+- `PetscMemoryAccessWrite(mode)` - `true` if `mode` is any kind of write, `false` otherwise
 
   Developer Notes:
   This enum uses a function (`PetscMemoryAccessModeToString()`) to convert values to string
   representation, so cannot be used in `PetscOptionsEnum()`.
-
-  Level: beginner
 
 .seealso: `PetscMemoryAccessModeToString()`, `PetscDevice`, `PetscDeviceContext`
 E*/

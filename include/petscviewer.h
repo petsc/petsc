@@ -79,11 +79,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm, const char[], PetscF
 /*E
     PetscViewerGLVisType - indicates what type of `PETSCVIEWERGLVIS` viewer to use
 
-    Level: beginner
-
     Values:
 +   `PETSC_VIEWER_GLVIS_DUMP` - save the data to a file
 -   `PETSC_VIEWER_GLVIS_SOCKET` - communicate the data to another program via a socket
+
+    Level: beginner
 
 .seealso: [](sec_viewers), `PETSCVIEWERGLVIS`, `PetscViewerGLVisOpen()`
 E*/
@@ -121,8 +121,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 /*E
     PetscViewerFormat - Way a viewer presents the object
 
-   Level: beginner
-
    Values:
 +    `PETSC_VIEWER_DEFAULT` - default format for the specific object being viewed
 .    `PETSC_VIEWER_ASCII_MATLAB` - MATLAB format
@@ -148,6 +146,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 .    `PETSC_VIEWER_DRAW_BASIC` - views the vector with a simple 1d plot
 .    `PETSC_VIEWER_DRAW_LG` - views the vector with a line graph
 -    `PETSC_VIEWER_DRAW_CONTOUR` - views the vector with a contour plot
+
+   Level: beginner
 
    Note:
    A variety of specialized formats also exist
