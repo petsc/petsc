@@ -144,7 +144,7 @@ c99-mlib-static-py:
 petsc4py-install:
   extends: .stage-2
   tags:
-    - gce-stage2
+    - gce-u22-stage1
   variables:
     PYTHON: python3
     T_PREFIX: petsc-install
@@ -182,7 +182,7 @@ petsc4py-install:
 petsc4py-pip:
   extends: .stage-2
   tags:
-    - gce-stage2
+    - gce-u22-stage1
   variables:
     PETSC_CONFIGURE_OPTIONS: --with-mpi=0 --with-fc=0
     CFLAGS: -O0
@@ -1124,7 +1124,7 @@ analyze-pipeline:
 .docs:
   stage: stage-3
   tags:
-    - gce-stage2
+    - linux-docs
   before_script:
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
     - printf "PATH:$PATH\n"
