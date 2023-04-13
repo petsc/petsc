@@ -1,5 +1,6 @@
 # MOAB Mesh Representation (DMMOAB)
 
-<A HREF="PETSC_DIRsrc/dm/impls/moab/tests/index.html">Examples</A><BR>
+The `DMMOAB` class is a wrapper for the MOAB mesh and discretization package.
 
-The DMMOAB class is a wrapper for the MOAB mesh and discretization package.
+<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/impls/moab/tests/index.html">Examples</A><BR>
+

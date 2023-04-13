@@ -258,7 +258,7 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
    Level: beginner
 
    Notes:
-   Do not USE/access or set this variable before PetscInitialize() has been called.
+   Do not USE/access or set this variable before `PetscInitialize()` has been called.
 
 .seealso: `PETSC_COMM_WORLD`
 M*/
@@ -325,7 +325,7 @@ PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
    Notes:
    Memory is always allocated at least double aligned
 
-   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be NULL) to `PetscFree()`.
+   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
 
 .seealso: `PetscFree()`, `PetscNew()`
 M*/
@@ -394,7 +394,7 @@ M*/
    Notes:
    Memory is always allocated at least double aligned. This macro is useful in allocating memory pointed by void pointers
 
-   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be NULL) to PetscFree().
+   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
 
 .seealso: `PetscFree()`, `PetscNew()`
 M*/
@@ -415,18 +415,22 @@ M*/
    Output Parameter:
 .  r1 - memory allocated
 
+   Level: beginner
+
    Note:
    This uses the sizeof() of the memory type requested to determine the total memory to be allocated, therefore you should not
          multiply the number of elements requested by the `sizeof()` the type. For example use
-$  PetscInt *id;
-$  PetscMalloc1(10,&id);
-        not
-$  PetscInt *id;
-$  PetscMalloc1(10*sizeof(PetscInt),&id);
+.vb
+  PetscInt *id;
+  PetscMalloc1(10,&id);
+.ve
+       not
+.vb
+  PetscInt *id;
+  PetscMalloc1(10*sizeof(PetscInt),&id);
+.ve
 
         Does not zero the memory allocated, use `PetscCalloc1()` to obtain memory that has been zeroed.
-
-   Level: beginner
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc2()`
 M*/
@@ -447,10 +451,10 @@ M*/
    Output Parameter:
 .  r1 - memory allocated
 
+   Level: beginner
+
    Notes:
    See `PetsMalloc1()` for more details on usage.
-
-   Level: beginner
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc2()`
 M*/
@@ -832,14 +836,14 @@ M*/
    Not Collective
 
    Input Parameter:
-.   memory - memory to free (the pointer is ALWAYS set to NULL upon success)
+.   memory - memory to free (the pointer is ALWAYS set to `NULL` upon success)
 
    Level: beginner
 
-   Notes:
+   Note:
    Do not free memory obtained with `PetscMalloc2()`, `PetscCalloc2()` etc, they must be freed with `PetscFree2()` etc.
 
-   It is safe to call `PetscFree()` on a NULL pointer.
+   It is safe to call `PetscFree()` on a `NULL` pointer.
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc1()`
 M*/
@@ -860,7 +864,7 @@ M*/
 
    Level: developer
 
-   Notes:
+   Note:
     Memory must have been obtained with `PetscMalloc2()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`
@@ -883,7 +887,7 @@ M*/
 
    Level: developer
 
-   Notes:
+   Note:
     Memory must have been obtained with `PetscMalloc3()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`
@@ -907,7 +911,7 @@ M*/
 
    Level: developer
 
-   Notes:
+   Note:
     Memory must have been obtained with `PetscMalloc4()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`
@@ -932,7 +936,7 @@ M*/
 
    Level: developer
 
-   Notes:
+   Note:
     Memory must have been obtained with `PetscMalloc5()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`
@@ -958,7 +962,7 @@ M*/
 
    Level: developer
 
-   Notes:
+   Note:
     Memory must have been obtained with `PetscMalloc6()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`, `PetscMalloc6()`
@@ -985,7 +989,7 @@ M*/
 
    Level: developer
 
-   Notes:
+   Note:
     Memory must have been obtained with `PetscMalloc7()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`, `PetscMalloc6()`,
@@ -1059,8 +1063,8 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, 
 
 #if (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
 /*MC
-    MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for MPI_SUM with
-    custom MPI_Datatype `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
+    MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for `MPI_SUM` with
+    custom `MPI_Datatype` `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
 
    Level: advanced
 
@@ -1297,7 +1301,7 @@ M*/
 /*MC
     PetscHelpPrintf - Prints help messages.
 
-    Not Collective, only applies on rank 0; No Fortran Support
+    Not Collective, only applies on MPI rank 0; No Fortran Support
 
    Synopsis:
     #include <petscsys.h>
@@ -1314,17 +1318,19 @@ M*/
      You can change how help messages are printed by replacing the function pointer with a function that does not simply write to stdout.
 
       To use, write your own function, for example,
-$PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
-${
-$ PetscFunctionReturn(PETSC_SUCCESS);
-$}
+.vb
+   PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
+   {
+     PetscFunctionReturn(PETSC_SUCCESS);
+   }
+.ve
 then do the assignment
 $    PetscHelpPrintf = mypetschelpprintf;
    You can do the assignment before `PetscInitialize()`.
 
   The default routine used is called `PetscHelpPrintfDefault()`.
 
-.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscErrorPrintf()`
+.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscErrorPrintf()`, `PetscHelpPrintfDefault()`
 M*/
 PETSC_EXTERN PetscErrorCode (*PetscHelpPrintf)(MPI_Comm, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 
@@ -1411,7 +1417,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
    Not Collective
 
    Input Parameters:
-+  a - pointer to first element to fetch (any type but usually PetscInt or PetscScalar)
++  a - pointer to first element to fetch (any type but usually `PetscInt` or `PetscScalar`)
 .  n - number of elements to fetch
 .  rw - 1 if the memory will be written to, otherwise 0 (ignored by many processors)
 -  t - temporal locality (PETSC_PREFETCH_HINT_{NTA,T0,T1,T2}), see note
@@ -1419,7 +1425,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
    Level: developer
 
    Notes:
-   The last two arguments (rw and t) must be compile-time constants.
+   The last two arguments (`rw` and `t`) must be compile-time constants.
 
    Adopting Intel's x86/x86-64 conventions, there are four levels of temporal locality.  Not all architectures offer
    equivalent locality hints, but the following macros are always defined to their closest analogue.
@@ -1520,15 +1526,14 @@ M*/
   #define EXTERN_C_END
 #endif
 
-/* --------------------------------------------------------------------*/
-
 /*MC
     MPI_Comm - the basic object used by MPI to determine which processes are involved in a
         communication
 
    Level: beginner
 
-   Note: This manual page is a place-holder because MPICH does not have a manual page for MPI_Comm
+   Note:
+   This manual page is a place-holder because MPICH does not have a manual page for `MPI_Comm`
 
 .seealso: `PETSC_COMM_WORLD`, `PETSC_COMM_SELF`
 M*/
@@ -1557,7 +1562,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
    Level: advanced
 
    Notes:
-   If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make `PetscInt` use 64 bit ints
+   If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64 bit ints
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
 @*/
@@ -1586,7 +1591,7 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
    Level: advanced
 
    Note:
-     If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make `PetscInt` use 64 bit ints
+     If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64 bit ints
 
 .seealso: `PetscCount`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`, `PetscIntCast()`
 @*/
@@ -1834,7 +1839,7 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 -     b - the second value
 
    Output Parameter:
-.     result - the result as a `PetscInt` value, or NULL if you do not want the result, you just want to check if it overflows
+.     result - the result as a `PetscInt` value, or `NULL` if you do not want the result, you just want to check if it overflows
 
    Level: advanced
 
@@ -1844,7 +1849,8 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
    Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
    Developers Note:
-   We currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
+   In most places in the source code we currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
+   `PetscIntSumError()` can be used to check for this situation.
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscIntMult64()`, `PetscIntSumError()`
 @*/
@@ -1871,12 +1877,12 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
 -     b - the second value
 
    Output Parameter:
-.     c - the result as a `PetscInt` value,  or NULL if you do not want the result, you just want to check if it overflows
+.     c - the result as a `PetscInt` value,  or `NULL` if you do not want the result, you just want to check if it overflows
 
    Level: advanced
 
    Notes:
-   Use `PetscInt64Mult()` to compute the product of two 32 bit PetscInt and store in a `PetscInt64`
+   Use `PetscInt64Mult()` to compute the product of two 32 bit `PetscInt` and store in a `PetscInt64`
 
    Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
@@ -1914,7 +1920,7 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
 /*MC
 
     PETSC_VERSION - This manual page provides information about how PETSc documents and uses its version information. This information is available to both C/C++
-                    and Fortran compilers when petscsys.h is included.
+                    and Fortran compilers when `petscsys.h` is included.
 
     The current PETSc version and the API for accessing it are defined in <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscversion.h.html">include/petscverson.html</A>
 
@@ -2009,7 +2015,7 @@ PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[], size_t);
 
    Note:
    To use `PETSCSPRNG` or `PETSCRANDOM123` you must have ./configure PETSc
-   with the option --download-sprng or --download-random123
+   with the option `--download-sprng` or `--download-random123`. We recommend the default provided with PETSc.
 
 .seealso: `PetscRandomSetType()`, `PetscRandom`, `PetscRandomCreate()`
 J*/

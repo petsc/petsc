@@ -23,7 +23,7 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 
    Level: beginner
 
-.seealso: `DMSetType()`, `DM`
+.seealso: [](chapter_dmbase), `DMSetType()`, `DMCreate()`, `DM`
 J*/
 typedef const char *DMType;
 #define DMDA        "da"
@@ -322,8 +322,6 @@ PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
 /*MC
   DMInterpolationInfo - Structure for holding information about interpolation on a mesh
 
-  Level: intermediate
-
   Synopsis:
     comm   - The communicator
     dim    - The spatial dimension of points
@@ -334,7 +332,9 @@ PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
     coords - The point coordinates
     dof    - The number of components to interpolate
 
-.seealso: `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+  Level: intermediate
+
+.seealso: `DM`, `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 M*/
 struct _DMInterpolationInfo {
   MPI_Comm   comm;
@@ -378,12 +378,14 @@ PETSC_EXTERN PetscErrorCode DMGetFirstLabeledPoint(DM, DM, DMLabel, PetscInt, co
 /*E
    DMCopyLabelsMode - Determines how `DMCopyLabels()` behaves when there is a `DMLabel` in the source and destination DMs with the same name
 
+   Values:
++  `DM_COPY_LABELS_REPLACE`  - replace label in destination by label from source
+.  `DM_COPY_LABELS_KEEP`     - keep destination label
+-  `DM_COPY_LABELS_FAIL`     - throw error
+
    Level: advanced
 
-$ DM_COPY_LABELS_REPLACE  - replace label in destination by label from source
-$ DM_COPY_LABELS_KEEP     - keep destination label
-$ DM_COPY_LABELS_FAIL     - throw error
-
+.seealso: `DMLabel`, `DM`, `DMCompareLabels()`, `DMRemoveLabel()`
 E*/
 typedef enum {
   DM_COPY_LABELS_REPLACE,

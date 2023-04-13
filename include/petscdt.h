@@ -13,7 +13,7 @@
 PETSC_EXTERN PetscClassId PETSCQUADRATURE_CLASSID;
 
 /*S
-  PetscQuadrature - Quadrature rule for integration.
+  PetscQuadrature - Quadrature rule for numerical integration.
 
   Level: beginner
 
@@ -24,11 +24,13 @@ typedef struct _p_PetscQuadrature *PetscQuadrature;
 /*E
   PetscGaussLobattoLegendreCreateType - algorithm used to compute the Gauss-Lobatto-Legendre nodes and weights
 
+  Values:
++  `PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA` - compute the nodes via linear algebra
+-  `PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON` - compute the nodes by solving a nonlinear equation with Newton's method
+
   Level: intermediate
 
-$  `PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA` - compute the nodes via linear algebra
-$  `PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON` - compute the nodes by solving a nonlinear equation with Newton's method
-
+.seealso: `PetscQuadrature`
 E*/
 typedef enum {
   PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,
@@ -39,18 +41,20 @@ typedef enum {
   PetscDTNodeType - A description of strategies for generating nodes (both
   quadrature nodes and nodes for Lagrange polynomials)
 
-  Level: intermediate
+   Values:
++  `PETSCDTNODES_DEFAULT` - Nodes chosen by PETSc
+.  `PETSCDTNODES_GAUSSJACOBI` - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
+.  `PETSCDTNODES_EQUISPACED` - Nodes equispaced either including the endpoints or excluding them
+-  `PETSCDTNODES_TANHSINH` - Nodes at Tanh-Sinh quadrature points
 
-$  `PETSCDTNODES_DEFAULT` - Nodes chosen by PETSc
-$  `PETSCDTNODES_GAUSSJACOBI` - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
-$  `PETSCDTNODES_EQUISPACED` - Nodes equispaced either including the endpoints or excluding them
-$  `PETSCDTNODES_TANHSINH` - Nodes at Tanh-Sinh quadrature points
+  Level: intermediate
 
   Note:
   A `PetscDTNodeType` can be paired with a `PetscBool` to indicate whether
   the nodes include endpoints or not, and in the case of `PETSCDT_GAUSSJACOBI`
   with exponents for the weight function.
 
+.seealso: `PetscQuadrature`
 E*/
 typedef enum {
   PETSCDTNODES_DEFAULT = -1,
@@ -64,10 +68,9 @@ PETSC_EXTERN const char *const *const PetscDTNodeTypes;
 /*E
   PetscDTSimplexQuadratureType - A description of classes of quadrature rules for simplices
 
-  Level: intermediate
-
-$  `PETSCDTSIMPLEXQUAD_DEFAULT` - Quadrature rule chosen by PETSc
-$  `PETSCDTSIMPLEXQUAD_CONIC`   - Quadrature rules constructed as
+  Values:
++  `PETSCDTSIMPLEXQUAD_DEFAULT` - Quadrature rule chosen by PETSc
+.  `PETSCDTSIMPLEXQUAD_CONIC`   - Quadrature rules constructed as
                                 conically-warped tensor products of 1D
                                 Gauss-Jacobi quadrature rules.  These are
                                 explicitly computable in any dimension for any
@@ -75,14 +78,16 @@ $  `PETSCDTSIMPLEXQUAD_CONIC`   - Quadrature rules constructed as
                                 exploited by sum-factorization methods, but
                                 they are not efficient in terms of nodes per
                                 polynomial degree.
-$  `PETSCDTSIMPLEXQUAD_MINSYM`  - Quadrature rules that are fully symmetric
+-  `PETSCDTSIMPLEXQUAD_MINSYM`  - Quadrature rules that are fully symmetric
                                 (symmetries of the simplex preserve the nodes
                                 and weights) with minimal (or near minimal)
                                 number of nodes.  In dimensions higher than 1
                                 these are not simple to compute, so lookup
                                 tables are used.
 
-.seealso: `PetscDTSimplexQuadrature()`
+  Level: intermediate
+
+.seealso: `PetscQuadrature`, `PetscDTSimplexQuadrature()`
 E*/
 typedef enum {
   PETSCDTSIMPLEXQUAD_DEFAULT = -1,
@@ -176,6 +181,8 @@ PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt, PetscInt, PetscI
 .  factorial - n!
 
    Level: beginner
+
+.seealso: `PetscDTFactorialInt()`, `PetscDTBinomialInt()`, `PetscDTBinomial()`
 M*/
 static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
 {
@@ -200,7 +207,10 @@ static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
 
    Level: beginner
 
-   Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
+   Note:
+   This is limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+
+.seealso: `PetscDTFactorial()`, `PetscDTBinomialInt()`, `PetscDTBinomial()`
 M*/
 static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial)
 {
@@ -232,6 +242,8 @@ static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial
 .  binomial - approximation of the binomial coefficient n choose k
 
    Level: beginner
+
+.seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`
 M*/
 static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial)
 {
@@ -267,9 +279,14 @@ static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *
    Output Parameter:
 .  binomial - the binomial coefficient n choose k
 
-   Note: this is limited by integers that can be represented by `PetscInt`
-
    Level: beginner
+
+   Note:
+   This is limited by integers that can be represented by `PetscInt`.
+
+   Use `PetscDTBinomial()` for real number approximations of larger values
+
+.seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTEnumPerm()`
 M*/
 static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial)
 {
@@ -300,13 +317,7 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 }
 
 /*MC
-   PetscDTEnumPerm - Get a permutation of n integers from its encoding into the integers [0, n!) as a sequence of swaps.
-
-   A permutation can be described by the operations that convert the lists [0, 1, ..., n-1] into the permutation,
-   by a sequence of swaps, where the ith step swaps whatever number is in ith position with a number that is in
-   some position j >= i.  This swap is encoded as the difference (j - i).  The difference d_i at step i is less than
-   (n - i).  This sequence of n-1 differences [d_0, ..., d_{n-2}] is encoded as the number
-   (n-1)! * d_0 + (n-2)! * d_1 + ... + 1! * d_{n-2}.
+   PetscDTEnumPerm - Get a permutation of `n` integers from its encoding into the integers [0, n!) as a sequence of swaps.
 
    Input Parameters:
 +  n - a non-negative integer (see note about limits below)
@@ -316,10 +327,18 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 +  perm - the permuted list of the integers [0, ..., n-1]
 -  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
-   Note:
-   Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+   Level: intermediate
 
-   Level: beginner
+   Notes:
+   A permutation can be described by the operations that convert the lists [0, 1, ..., n-1] into the permutation,
+   by a sequence of swaps, where the ith step swaps whatever number is in ith position with a number that is in
+   some position j >= i.  This swap is encoded as the difference (j - i).  The difference d_i at step i is less than
+   (n - i).  This sequence of n-1 differences [d_0, ..., d_{n-2}] is encoded as the number
+   (n-1)! * d_0 + (n-2)! * d_1 + ... + 1! * d_{n-2}.
+
+   Limited to `n` such that `n`! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+
+.seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTPermIndex()`
 M*/
 static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd)
 {
@@ -350,7 +369,7 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 }
 
 /*MC
-   PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts `PetscDTEnumPerm`.
+   PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts `PetscDTEnumPerm()`.
 
    Input Parameters:
 +  n - a non-negative integer (see note about limits below)
@@ -360,10 +379,12 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 +  k - an integer in [0, n!)
 -  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
-   Note:
-   Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
-
    Level: beginner
+
+   Note:
+   Limited to `n` such that `n`! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+
+.seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`
 M*/
 static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
 {
@@ -409,12 +430,12 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
    Output Parameter:
 .  subset - the jth subset of size k of the integers [0, ..., n - 1]
 
-   Note:
-   Limited by arguments such that n choose k can be represented by `PetscInt`
-
    Level: beginner
 
-.seealso: `PetscDTSubsetIndex()`
+   Note:
+   Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
+
+.seealso: `PetscDTSubsetIndex()`, `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`, `PetscDTPermIndex()`
 M*/
 static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset)
 {
@@ -449,12 +470,12 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
    Output Parameter:
 .  index - the rank of the subset in lexicographic order
 
-   Note:
-   Limited by arguments such that n choose k can be represented by `PetscInt`
-
    Level: beginner
 
-.seealso: `PetscDTEnumSubset()`
+   Note:
+   Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
+
+.seealso: `PetscDTEnumSubset()`, `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`, `PetscDTPermIndex()`
 M*/
 static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index)
 {
@@ -491,12 +512,13 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 +  perm - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
 -  isOdd - if not `NULL`, return whether perm is an even or odd permutation.
 
-   Note:
-   Limited by arguments such that n choose k can be represented by `PetscInt`
-
    Level: beginner
 
-.seealso: `PetscDTEnumSubset()`, `PetscDTSubsetIndex()`
+   Note:
+   Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
+
+.seealso: `PetscDTEnumSubset()`, `PetscDTSubsetIndex()`, `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`,
+          `PetscDTPermIndex()`
 M*/
 static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
 {

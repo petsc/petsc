@@ -58,10 +58,10 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
   in terms of a global element index in each of up to three directions, a "location" as defined by `DMStagStencilLocation`,
   and a component number. Primarily for use with `DMStagMatSetValuesStencil()` (compare with use of `MatStencil` with `MatSetValuesStencil()`).
 
+  Level: beginner
+
   Note:
   The component (c) field must always be set, even if there is a single component at a given location (in which case c should be set to 0).
-
-Level: beginner
 
 .seealso: [](chapter_stag), `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
           `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`, `DMStagStencilLocation`

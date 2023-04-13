@@ -12,7 +12,7 @@ PETSC_EXTERN PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec
 PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 
 /*E
-  TaoSubsetType - Type representing the way Tao handles active sets
+  TaoSubsetType - Type representing the way TAO handles active sets
 
   Values:
 + `TAO_SUBSET_SUBVEC` - Tao uses `MatCreateSubMatrix()` and `VecGetSubVector()`
@@ -20,11 +20,11 @@ PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 - `TAO_SUBSET_MATRIXFREE` - Same as `TAO_SUBSET_MASK` but it can be applied to matrix-free operators
 
   Options database Key:
-. -different_hessian - Tao will use a copy of the Hessian operator for masking.  By default Tao will directly alter the Hessian operator.
+. -different_hessian - Tao will use a copy of the Hessian operator for masking.  By default TAO will directly alter the Hessian operator.
 
   Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
+.seealso: [](chapter_tao), `TaoVecGetSubVec()`, `TaoMatGetSubMat()`, `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 E*/
 typedef enum {
   TAO_SUBSET_SUBVEC,
@@ -38,7 +38,7 @@ PETSC_EXTERN const char *const TaoSubsetTypes[];
 
    Level: advanced
 
-.seealso: [](chapter_tao), `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
+.seealso: [](doc_taosolve), [](chapter_tao), `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
 typedef struct _p_Tao *Tao;
 
@@ -156,11 +156,11 @@ PETSC_EXTERN const char *const TaoALMMTypes[];
 .    `TAOGPCG` - gpcg Newton Trust Region method for quadratic bound constrained minimization
 .    `TAOBLMVM` - blmvm Limited memory variable metric method for bound constrained minimization
 .    `TAOLCL` - lcl Linearly constrained Lagrangian method for pde-constrained minimization
--    `TAOPOUNDERS` - pounders Model-based algorithm for nonlinear least squares
+-    `TAOPOUNDERS` - Pounders Model-based algorithm for nonlinear least squares
 
        Level: beginner
 
-.seealso: [](chapter_tao), `Tao`, `TaoCreate()`, `TaoSetType()`
+.seealso: [](doc_taosolve), [](chapter_tao), `Tao`, `TaoCreate()`, `TaoSetType()`
 J*/
 typedef const char *TaoType;
 #define TAOLMVM     "lmvm"
@@ -202,7 +202,7 @@ PETSC_EXTERN PetscClassId      TAO_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoList;
 
 /*E
-    TaoConvergedReason - reason a Tao method was said to have converged or diverged
+    TaoConvergedReason - reason a `Tao` optimizer was said to have converged or diverged
 
    Values:
 +  `TAO_CONVERGED_GATOL` - ||g(X)|| < gatol

@@ -39,19 +39,23 @@ typedef const char *PetscSFType;
    Level: beginner
 
   Sample Usage:
-$      PetscSFNode    *remote;
-$    PetscCall(PetscMalloc1(nleaves,&remote));
-$    for (i=0; i<size; i++) {
-$      remote[i].rank = i;
-$      remote[i].index = rank;
-$    }
+.vb
+    PetscSFNode    *remote;
+    PetscCall(PetscMalloc1(nleaves,&remote));
+    for (i=0; i<size; i++) {
+      remote[i].rank = i;
+      remote[i].index = rank;
+    }
+.ve
 
   Sample Fortran Usage:
-$     type(PetscSFNode) remote(6)
-$      remote(1)%rank  = modulo(rank+size-1,size)
-$      remote(1)%index = 1 * stride
+.vb
+    type(PetscSFNode) remote(6)
+    remote(1)%rank  = modulo(rank+size-1,size)
+    remote(1)%index = 1 * stride
+.ve
 
-.seealso: `PetscSFSetGraph()`
+.seealso: `PetscSF`, `PetscSFSetGraph()`
 S*/
 typedef struct {
   PetscInt rank;  /* Rank of owner */

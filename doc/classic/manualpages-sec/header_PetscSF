@@ -1,3 +1,3 @@
 # Star Forest Communication (PetscSF)
 
-PetscSF provides a simple interface to "star forest" communication patterns.
+`PetscSF` provides an interface to "star forest" communication patterns that form much of the distributed memory communication in PETSc.

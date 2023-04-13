@@ -1,4 +1,3 @@
 # Matrix-Free Nonlinear Solves (SNESMF)
 
-The MatSNESMF routines provide a mechanism for solving nonlinear equations
-using <A HREF="PETSC_DIRmanualpages/SNES/index.html">SNES</A> and "matrix-free" methods.
+The `MatSNESMF` routines provide "matrix-free" Newton nonlinear solver via `SNES`. Users guide section: [](sec-nlmatrixfree).

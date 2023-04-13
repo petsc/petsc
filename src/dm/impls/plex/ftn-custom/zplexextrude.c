@@ -2,9 +2,9 @@
 #include <petscdmplex.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmplexextrude_        DMPLEXEXTRUDE
+  #define dmplexextrude_ DMPLEXEXTRUDE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dmplexextrude_        dmplexextrude
+  #define dmplexextrude_ dmplexextrude
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -12,5 +12,5 @@ PETSC_EXTERN void dmplexextrude_(DM *dm, PetscInt *layers, PetscReal *thickness,
 {
   CHKFORTRANNULLREAL(normal);
   CHKFORTRANNULLREAL(thicknesses);
-  *ierr = DMPlexExtrude(*dm,*layers,*thickness,*tensor,*symmetric,normal,thicknesses,edm);
+  *ierr = DMPlexExtrude(*dm, *layers, *thickness, *tensor, *symmetric, normal, thicknesses, edm);
 }

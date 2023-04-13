@@ -9,7 +9,7 @@
 /* SUBMANSEC = DMPatch */
 
 /*S
-  DMPATCH - DM object that encapsulates a domain divided into many patches
+  DMPATCH - `DM` object that encapsulates a domain divided into many patches
 
   Level: intermediate
 

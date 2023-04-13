@@ -19,14 +19,12 @@
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `VecCreate()`, `VecType`, `VecSetType()`
+.seealso: [](doc_vector), [](chapter_vectors), `VecCreate()`, `VecType`, `VecSetType()`
 S*/
 typedef struct _p_Vec *Vec;
 
 /*E
   ScatterMode - Determines the direction of a scatter
-
-  Level: beginner
 
   Values:
 +  `SCATTER_FORWARD` - Scatters the values as dictated by the `VecScatterCreate()` call
@@ -34,6 +32,8 @@ typedef struct _p_Vec *Vec;
 .  `SCATTER_FORWARD_LOCAL` - Scatters the values as dictated by the `VecScatterCreate()` call except NO MPI communication is done
 -  `SCATTER_REVERSE_LOCAL` - Moves the values in the opposite direction than the directions indicated in the `VecScatterCreate()` call
                              except NO MPI communication is done
+
+  Level: beginner
 
 .seealso: [](chapter_vectors), `VecScatter`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_REVERSE`, `SCATTER_FORWARD_LOCAL`, `SCATTER_REVERSE_LOCAL`
 E*/
@@ -89,7 +89,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `VecSetType()`, `Vec`, `VecCreate()`, `VecDestroy()`
+.seealso: [](doc_vector), [](chapter_vectors), `VecSetType()`, `Vec`, `VecCreate()`, `VecDestroy()`
 J*/
 typedef const char *VecType;
 #define VECSEQ         "seq"
@@ -159,14 +159,14 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt, const Vec[], Vec *, IS *[])
 /*E
     NormType - determines what type of norm to compute
 
-    Level: beginner
-
     Values:
 +    `NORM_1` - the one norm, ||v|| = sum_i | v_i |. ||A|| = max_j || v_*j ||, maximum column sum
 .    `NORM_2` - the two norm, ||v|| = sqrt(sum_i |v_i|^2) (vectors only)
 .    `NORM_FROBENIUS` - ||A|| = sqrt(sum_ij |A_ij|^2), same as `NORM_2` for vectors
 .    `NORM_INFINITY` - ||v|| = max_i |v_i|. ||A|| = max_i || v_i* ||, maximum row sum
 -    `NORM_1_AND_2` - computes both the 1 and 2 norm of a vector
+
+    Level: beginner
 
   Note:
   The `v` above represents a `Vec` while the `A` represents a `Mat`
@@ -238,13 +238,13 @@ M*/
 /*E
     ReductionType - determines what type of column reduction (one that is not a type of norm defined in `NormType`) to compute
 
-    Level: beginner
-
     Values:
 +  `REDUCTION_SUM_REALPART` - sum of real part of each matrix column
 .  `REDUCTION_SUM_IMAGINARYPART` - sum of imaginary part of each matrix column
 .  `REDUCTION_MEAN_REALPART` - arithmetic mean of real part of each matrix column
 -  `REDUCTION_MEAN_IMAGINARYPART` - arithmetic mean of imaginary part of each matrix column
+
+    Level: beginner
 
     Developer Note:
   The constants defined in `ReductionType` MUST BE DISTINCT from those defined in `NormType`.
@@ -812,14 +812,14 @@ PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec,
               motivating application is the selection of cells for refinement or coarsening based on vector containing
               the values in an error indicator metric.
 
-  Level: advanced
-
   Values:
-+  `VECTAGGERABSOLUTE` - "absolute" values are in a box of explicitly defined values
-.  `VECTAGGERRELATIVE` - "relative" values are in a box of values relative to the set of all values in the vector
++  `VECTAGGERABSOLUTE` - "absolute" values are in a interval (box for complex values) of explicitly defined values
+.  `VECTAGGERRELATIVE` - "relative" values are in a interval (box for complex values) of values relative to the set of all values in the vector
 .  `VECTAGGERCDF` - "cdf" values are in a relative range of the *cumulative distribution* of values in the vector
 .  `VECTAGGEROR` - "or" values are in the union of other tags
 -  `VECTAGGERAND` - "and" values are in the intersection of other tags
+
+  Level: advanced
 
   Developer Note:
   Why not use a `DMLabel` or similar object
@@ -860,8 +860,8 @@ PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger, Vec, IS *, PetscBool *
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
 
 /*S
-   VecTaggerBox - A box range used to tag values.  For real scalars, this is just a closed interval; for complex scalars, the box is the closed region in the complex plane
-   such that real(min) <= real(z) <= real(max) and imag(min) <= imag(z) <= imag(max).  `INF` is an acceptable endpoint.
+   VecTaggerBox - A interval (box for complex numbers) range used to tag values.  For real scalars, this is just a closed interval; for complex scalars,
+   the box is the closed region in the complex plane such that real(min) <= real(z) <= real(max) and imag(min) <= imag(z) <= imag(max).  `INF` is an acceptable endpoint.
 
    Level: beginner
 
@@ -885,11 +885,11 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger, const VecTaggerBox **)
 /*E
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).
 
-  Level: advanced
-
    Values:
 +  `VECTAGGER_CDF_GATHER` - gather results to rank 0, perform the computation and broadcast the result
 -  `VECTAGGER_CDF_ITERATIVE` - compute the results on all ranks iteratively using `MPI_Allreduce()`
+
+  Level: advanced
 
   Note:
   Relevant only in parallel: in serial it is directly computed.

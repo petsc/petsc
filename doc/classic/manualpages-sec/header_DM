@@ -1,6 +1,8 @@
 # Data Management (DM)
 
-<A HREF="PETSC_DIRsrc/dm/tutorials/index.html">Examples</A><BR>
+`DM` objects are used to manage communication between the algebraic structures in PETSc (`Vec` and `Mat`) and mesh data structures
+in PDE-based (or other) simulations. See, for structured grids `DMDA`, for staggered grids `DMSTAG`, and for unstructured grids `DMPLEX`.
+Users guide chapter: [](part_dm).
 
-DM objects are used to manage communication between the algebraic structures in PETSc (Vec and Mat) and mesh data structures
-in PDE-based (or other) simulations. See, for example, `DMDACreate()`.
+<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/tutorials/index.html">Examples</A><BR>
+

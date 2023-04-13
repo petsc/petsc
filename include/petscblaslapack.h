@@ -31,7 +31,7 @@
 /* SUBMANSEC = Sys */
 
 /*MC
-    PetscCallBLAS - Calls a BLAS or LAPACK routine with error check handling
+    PetscCallBLAS - Calls a BLAS or LAPACK routine and catches exceptions
 
     Not Collective
 
@@ -46,7 +46,7 @@
    Level: developer
 
    Developer Note:
-   This is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+   This is so that when a BLAS/LAPACK routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 .seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscStackCallExternalVoid()`
 M*/

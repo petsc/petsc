@@ -1,3 +1,3 @@
-# Particle Discretizations (DMSwarm)
+# Particle Discretizations (DMSWARM)
 
-The DMSWARM class encapsulates a particle cloud, with interfaces for particle data, movement, and interface with meshes.
+The `DMSWARM` subclass of `DM` encapsulates a particle cloud, with interfaces for particle data, movement, and interface with meshes. It also can conservatively project fields between the particle basis and an FEM basis on a `DMPLEX`.

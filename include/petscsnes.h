@@ -12,20 +12,20 @@
 /* SUBMANSEC = SNES */
 
 /*S
-     SNES - Abstract PETSc object that manages all nonlinear solves
+     SNES - Abstract PETSc object that manages nonlinear solves
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNESCreate()`, `SNESSetType()`, `SNESType`, `TS`, `SNES`, `KSP`, `PC`, `SNESDestroy()`
+.seealso: [](doc_nonlinsolve), [](chapter_snes), `SNESCreate()`, `SNESSetType()`, `SNESType`, `TS`, `SNES`, `KSP`, `PC`, `SNESDestroy()`
 S*/
 typedef struct _p_SNES *SNES;
 
 /*J
-    SNESType - String with the name of a PETSc SNES method.
+    SNESType - String with the name of a PETSc `SNES` method.
 
    Level: beginner
 
-.seealso: [](chapter_snes), `SNESSetType()`, `SNES`, `SNESCreate()`, `SNESDestroy()`, `SNESSetFromOptions()`
+.seealso: [](doc_nonlinsolve), [](chapter_snes), `SNESSetType()`, `SNES`, `SNESCreate()`, `SNESDestroy()`, `SNESSetFromOptions()`
 J*/
 typedef const char *SNESType;
 #define SNESNEWTONLS         "newtonls"
@@ -154,12 +154,14 @@ PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES, PetscInt);
 /*E
     SNESNewtonTRFallbackType - type of fallback in case the solution of the trust-region subproblem is outside of the radius
 
-   Level: intermediate
-
    Values:
 +  `SNES_TR_FALLBACK_NEWTON` - use scaled Newton step
 .  `SNES_TR_FALLBACK_CAUCHY` - use Cauchy direction
 -  `SNES_TR_FALLBACK_DOGLEG` - use dogleg method
+
+   Level: intermediate
+
+.seealso: [](chapter_snes), `SNES`, `SNESNEWTONTR`, `SNESNEWTONTRDC`
 E*/
 typedef enum {
   SNES_TR_FALLBACK_NEWTON,
@@ -230,8 +232,6 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 /*E
     SNESConvergedReason - reason a `SNESSolve()` was determined to have converged or diverged
 
-   Level: beginner
-
    Values:
 +  `SNES_CONVERGED_FNORM_ABS` - 2-norm(F) <= abstol
 .  `SNES_CONVERGED_FNORM_RELATIVE` - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
@@ -244,6 +244,8 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 .  `SNES_DIVERGED_LINE_SEARCH` - The line search has failed. This only occurs for `SNES` solvers that use a line search
 .  `SNES_DIVERGED_LOCAL_MIN` - the algorithm seems to have stagnated at a local minimum that is not zero.
 -  `SNES_CONERGED_ITERATING` - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
+
+   Level: beginner
 
     Notes:
    The two most common reasons for divergence are an incorrectly coded or computed Jacobian or failure or lack of convergence in the linear system (in this case we recommend
@@ -429,9 +431,7 @@ PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES, PetscErrorCode (**)(SNES, Vec
 PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
 
 /*E
-    SNESNormSchedule - Frequency with which the norm is computed
-
-   Level: advanced
+    SNESNormSchedule - Frequency with which the norm is computed during a nonliner solve
 
    Values:
 +   `SNES_NORM_DEFAULT` - use the default behavior for the current `SNESType`
@@ -440,6 +440,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
 .   `SNES_NORM_INITIAL_ONLY` - compute the norm only when the algorithm starts
 .   `SNES_NORM_FINAL_ONLY` - compute the norm only when the algorithm finishes
 -   `SNES_NORM_INITIAL_FINAL_ONLY` - compute the norm at the start and end of the algorithm
+
+   Level: advanced
 
    Notes:
    Support for these is highly dependent on the solver.
@@ -465,7 +467,7 @@ typedef enum {
 PETSC_EXTERN const char *const *const SNESNormSchedules;
 
 /*MC
-    SNES_NORM_NONE - Don't compute function and its L2 norm.
+    SNES_NORM_NONE - Don't compute function and its L2 norm when possible
 
    Level: advanced
 
@@ -536,12 +538,12 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionNorm(SNES, PetscReal *);
 /*E
     SNESFunctionType - Type of function computed
 
-   Level: advanced
-
    Values:
 +  `SNES_FUNCTION_DEFAULT` - the default behavior for the current `SNESType`
 .  `SNES_FUNCTION_UNPRECONDITIONED` - the original function provided
 -  `SNES_FUNCTION_PRECONDITIONED` - the modification of the function by the preconditioner
+
+   Level: advanced
 
    Note:
    Support for these is dependent on the solver.
@@ -665,8 +667,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch, PetscInt orde
 /*E
     SNESLineSearchReason - indication if the line search has succeeded or failed and why
 
-   Level: intermediate
-
   Values:
 +  `SNES_LINESEARCH_SUCCEEDED` - the line search succeeded
 .  `SNES_LINESEARCH_FAILED_NANORINF` - a not a number of infinity appeared in the computions
@@ -675,6 +675,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch, PetscInt orde
 .  `SNES_LINESEARCH_FAILED_USER` - used by `SNESLINESEARCHNLEQERR` to indicate the user changed the search direction inappropriately
 -  `SNES_LINESEARCH_FAILED_FUNCTION` - indicates the maximum number of function evaluations allowed has been surpassed, `SNESConvergedReason` is also
                                      set to `SNES_DIVERGED_FUNCTION_COUNT`
+
+   Level: intermediate
 
    Developer Note:
    Some of these reasons overlap with values of `SNESConvergedReason`
@@ -934,13 +936,13 @@ PETSC_EXTERN PetscErrorCode SNESPatchSetCellNumbering(SNES, PetscSection);
 /*E
     SNESFASType - Determines the type of nonlinear multigrid method that is run.
 
-   Level: beginner
-
    Values:
 +  `SNES_FAS_MULTIPLICATIVE` (default) - traditional V or W cycle as determined by `SNESFASSetCycles()`
 .  `SNES_FAS_ADDITIVE`                 - additive FAS cycle
 .  `SNES_FAS_FULL`                     - full FAS cycle
 -  `SNES_FAS_KASKADE`                  - Kaskade FAS cycle
+
+   Level: beginner
 
 .seealso: [](chapter_snes), `SNESFAS`, `PCMGSetType()`, `PCMGType`
 E*/

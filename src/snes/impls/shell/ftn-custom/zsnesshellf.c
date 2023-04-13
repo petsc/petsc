@@ -2,9 +2,9 @@
 #include <petscsnes.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define snesshellsetsolve_               SNESSHELLSETSOLVE
+  #define snesshellsetsolve_ SNESSHELLSETSOLVE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define snesshellsetsolve_               snesshellsetsolve
+  #define snesshellsetsolve_ snesshellsetsolve
 #endif
 
 static PetscErrorCode oursnesshellsolve(SNES snes, Vec x)

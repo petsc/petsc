@@ -15,6 +15,7 @@
 
      Level: beginner
 
+     Note:
      Determines what ghost point values are brought over to each process; in this case the "corner" values are not
      brought over and hence should not be accessed locally
 
@@ -141,8 +142,6 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM, MatStencil *, MatStencil *, IS
 /*MC
       DMDACoor2d - Structure for holding 2d (x and y) coordinates when working with `DMDA`
 
-    Level: intermediate
-
     Synopsis:
 .vb
       DMDACoor2d **coors;
@@ -162,6 +161,8 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM, MatStencil *, MatStencil *, IS
       DMDAVecRestoreArray(dac,vcoors,&coors);
 .ve
 
+    Level: intermediate
+
 .seealso: `DMDACoor3d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {
@@ -170,8 +171,6 @@ typedef struct {
 
 /*MC
       DMDACoor3d - Structure for holding 3d (x, y and z) coordinates  coordinates when working with `DMDA`
-
-    Level: intermediate
 
     Synopsis:
 .vb
@@ -193,6 +192,8 @@ typedef struct {
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 .ve
+
+    Level: intermediate
 
 .seealso: `DMDACoor2d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/

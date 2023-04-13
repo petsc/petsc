@@ -11,7 +11,7 @@
 
    Level: beginner
 
-.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`, `DMDASetStencilType()`
+.seealso: `DMDA`,  `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`, `DMDASetStencilType()`
 E*/
 typedef enum {
   DMDA_STENCIL_STAR,
@@ -24,7 +24,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateInterpolation()`, `DMDASetInterpolationType()`, `DMDACreate()`
+.seealso: `DMDA`,  `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateInterpolation()`, `DMDASetInterpolationType()`, `DMDACreate()`
 E*/
 typedef enum {
   DMDA_Q0,
@@ -37,7 +37,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateInterpolation()`, `DMDASetInterpolationType()`,
+.seealso: `DMDA`,  `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateInterpolation()`, `DMDASetInterpolationType()`,
           `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`, `DMDACreate()`
 E*/
 typedef enum {
@@ -51,7 +51,8 @@ typedef enum {
 
    Level: beginner
 
-  Fortran Notes - This should be declared as
+  Fortran Note:
+  This should be declared as
 $    `DMDALocalInfo` :: info(DMDA_LOCAL_INFO_SIZE)
      and the entries accessed via
 .vb
@@ -60,7 +61,7 @@ $    `DMDALocalInfo` :: info(DMDA_LOCAL_INFO_SIZE)
 .ve
    The entries bx,by,bz, st, and da are not accessible from Fortran.
 
-.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DM`, `DMDAGetLocalInfo()`, `DMDAGetInfo()`
+.seealso: `DMDA`,  `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DM`, `DMDAGetLocalInfo()`, `DMDAGetInfo()`
 S*/
 typedef struct {
   PetscInt        dim, dof, sw;

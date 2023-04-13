@@ -6,17 +6,17 @@
 /*E
   DMPlexShape - The domain shape used for automatic mesh creation.
 
-  Existing shapes include
-$ DM_SHAPE_BOX         - The tensor product of intervals in dimension d
-$ DM_SHAPE_BOX_SURFACE - The surface of a box in dimension d+1
-$ DM_SHAPE_BALL        - The d-dimensional ball
-$ DM_SHAPE_SPHERE      - The surface of the (d+1)-dimensional ball
-$ DM_SHAPE_CYLINDER    - The tensor product of the interval and disk
-$ DM_SHAPE_SCHWARZ_P   - The Schwarz-P triply periodic minimal surface
-$ DM_SHAPE_GYROID      - The Gyroid triply periodic minimal surface
-$ DM_SHAPE_DOUBLET     - The mesh of two cells of a specified type
-$ DM_SHAPE_ANNULUS     - The area between two concentric spheres in dimension d
-$ DM_SHAPE_HYPERCUBIC  - The skeleton of the tensor product of the intervals
+  Values:
++ `DM_SHAPE_BOX`         - The tensor product of intervals in dimension d
+. `DM_SHAPE_BOX_SURFACE` - The surface of a box in dimension d+1
+. `DM_SHAPE_BALL`        - The d-dimensional ball
+. `DM_SHAPE_SPHERE`      - The surface of the (d+1)-dimensional ball
+. `DM_SHAPE_CYLINDER`    - The tensor product of the interval and disk
+. `DM_SHAPE_SCHWARZ_P`   - The Schwarz-P triply periodic minimal surface
+. `DM_SHAPE_GYROID`      - The Gyroid triply periodic minimal surface
+. `DM_SHAPE_DOUBLET`     - The mesh of two cells of a specified type
+. `DM_SHAPE_ANNULUS`     - The area between two concentric spheres in dimension d
+- `DM_SHAPE_HYPERCUBIC`  - The skeleton of the tensor product of the intervals
 
   Level: beginner
 
@@ -41,10 +41,10 @@ PETSC_EXTERN const char *const DMPlexShapes[];
 /*E
   DMPlexCSRAlgorithm - The algorithm for building the adjacency graph in CSR format, usually for a mesh partitioner
 
-  Existing shapes include
-$ DM_PLEX_CSR_MAT     - Use `MatPartitioning` by first making a matrix
-$ DM_PLEX_CSR_GRAPH   - Use the original `DMPLEX` and communicate along the boundary
-$ DM_PLEX_CSR_OVERLAP - Build an overlapped `DMPLEX` and then locally compute
+  Values:
++ `DM_PLEX_CSR_MAT`     - Use `MatPartitioning` by first making a matrix
+. `DM_PLEX_CSR_GRAPH`   - Use the original `DMPLEX` and communicate along the boundary
+- `DM_PLEX_CSR_OVERLAP` - Build an overlapped `DMPLEX` and then locally compute
 
   Level: beginner
 
