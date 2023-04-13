@@ -1101,6 +1101,6 @@ PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext dctx, void *
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscValidPointer(handle, 2);
-  PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, handle));
+  PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, (void **)handle));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

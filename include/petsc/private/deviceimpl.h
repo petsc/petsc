@@ -212,7 +212,7 @@ struct _DeviceContextOps {
   PetscErrorCode (*synchronize)(PetscDeviceContext);
   PetscErrorCode (*getblashandle)(PetscDeviceContext, void *);
   PetscErrorCode (*getsolverhandle)(PetscDeviceContext, void *);
-  PetscErrorCode (*getstreamhandle)(PetscDeviceContext, void *);
+  PetscErrorCode (*getstreamhandle)(PetscDeviceContext, void **);
   PetscErrorCode (*begintimer)(PetscDeviceContext);
   PetscErrorCode (*endtimer)(PetscDeviceContext, PetscLogDouble *);
   PetscErrorCode (*memalloc)(PetscDeviceContext, PetscBool, PetscMemType, size_t, size_t, void **);                             // optional
@@ -319,11 +319,12 @@ static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDev
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDeviceContext dctx, void *handle)
+static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDeviceContext dctx, void **handle)
 {
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
+  PetscValidPointer(handle, 2);
   PetscUseTypeMethod(dctx, getstreamhandle, handle);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

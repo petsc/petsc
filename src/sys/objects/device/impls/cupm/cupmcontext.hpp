@@ -206,7 +206,7 @@ public:
   template <typename Handle_t>
   static PetscErrorCode getHandle(PetscDeviceContext, void *) noexcept;
   template <typename Handle_t>
-  static PetscErrorCode getHandlePtr(PetscDeviceContext, void *) noexcept;
+  static PetscErrorCode getHandlePtr(PetscDeviceContext, void **) noexcept;
   static PetscErrorCode beginTimer(PetscDeviceContext) noexcept;
   static PetscErrorCode endTimer(PetscDeviceContext, PetscLogDouble *) noexcept;
   static PetscErrorCode memAlloc(PetscDeviceContext, PetscBool, PetscMemType, std::size_t, std::size_t, void **) noexcept;
@@ -365,13 +365,13 @@ inline PetscErrorCode DeviceContext<T>::getHandle(PetscDeviceContext dctx, void 
 
 template <DeviceType T>
 template <typename handle_t>
-inline PetscErrorCode DeviceContext<T>::getHandlePtr(PetscDeviceContext dctx, void *handle) noexcept
+inline PetscErrorCode DeviceContext<T>::getHandlePtr(PetscDeviceContext dctx, void **handle) noexcept
 {
   using handle_type = typename handle_t::type;
 
   PetscFunctionBegin;
   PetscCall(initialize_handle_(handle_t{}, dctx));
-  *static_cast<handle_type **>(handle) = const_cast<handle_type *>(std::addressof(impls_cast_(dctx)->get(handle_t{})));
+  *reinterpret_cast<handle_type **>(handle) = const_cast<handle_type *>(std::addressof(impls_cast_(dctx)->get(handle_t{})));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

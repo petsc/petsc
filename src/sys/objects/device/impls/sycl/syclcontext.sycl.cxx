@@ -98,10 +98,10 @@ public:
     PetscFunctionReturn(PETSC_SUCCESS);
   };
 
-  static PetscErrorCode getStreamHandle(PetscDeviceContext dctx, void *handle) noexcept
+  static PetscErrorCode getStreamHandle(PetscDeviceContext dctx, void **handle) noexcept
   {
     PetscFunctionBegin;
-    *static_cast<::sycl::queue **>(handle) = &(static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue);
+    *reinterpret_cast<::sycl::queue **>(handle) = &(static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue);
     PetscFunctionReturn(PETSC_SUCCESS);
   };
 
