@@ -423,7 +423,25 @@ static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePolynomialGetTensor_C", PetscSpacePolynomialGetTensor_Subspace));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+/*@
+    PetscSpaceCreateSubspace - creates a subspace from a an `origSpace` and its dual `dualSubspace`
 
+    Input Parameters:
++   origSpace - the original `PetscSpace`
+.   dualSubspace - no idea
+.   x - no idea
+.   Jx - no idea
+.   u - no idea
+.   Ju - no idea
+-   copymode - whether to copy, borrow, or own some of the input arrays I guess
+
+    Output Parameter:
+.   subspace - the subspace
+
+    Level: advanced
+
+.seealso: `PetscSpace`, `PetscDualSpace`, `PetscCopyMode`, `PetscSpaceType`
+@*/
 PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dualSubspace, PetscReal *x, PetscReal *Jx, PetscReal *u, PetscReal *Ju, PetscCopyMode copymode, PetscSpace *subspace)
 {
   PetscSpace_Subspace *subsp;

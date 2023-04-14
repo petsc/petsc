@@ -13,7 +13,7 @@
 
   Level: beginner
 
-.seealso: `PetscSpaceCreate()`, `PetscDualSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceType`
+.seealso: `PetscSpaceCreate()`, `PetscDualSpace`, `PetscDualSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceType`, PetscFE`
 S*/
 typedef struct _p_PetscSpace *PetscSpace;
 
@@ -24,9 +24,18 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 /*J
   PetscSpaceType - String with the name of a PETSc linear space
 
+  Values:
++  `PETSCSPACEPOLYNOMIAL` - a polynomial space, e.g. P1 is the space of linear polynomials
+.  `PETSCSPACEPTRIMMED` - a trimmed polynomial space
+.  `PETSCSPACETENSOR` - a space consisting of the tensor product of two or more spaces
+.  `PETSCSPACESUM` - a direct or a concatenation sum
+.  `PETSCSPACEPOINT` - functions defined by values on a set of quadrature points
+.  `PETSCSPACESUBSPACE` - some kind of subspace, no idea what
+-  `PETSCSPACEWXY` - space that encapsulates the Wheeler-Xu-Yotov enrichments
+
   Level: beginner
 
-.seealso: `PetscSpaceSetType()`, `PetscSpace`
+.seealso: `PetscSpaceSetType()`, `PetscSpace`, `PetscSpaceType`
 J*/
 typedef const char *PetscSpaceType;
 #define PETSCSPACEPOLYNOMIAL "poly"

@@ -2867,7 +2867,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpac
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetContinuity()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeSetContinuity()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool *continuous)
 {
@@ -2892,7 +2892,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetContinuity()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeGetContinuity()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool continuous)
 {
@@ -3011,7 +3011,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder_Lagrange(PetscDualSpa
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetTensor()`, `PetscDualSpaceCreate()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeSetTensor()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *tensor)
 {
@@ -3033,7 +3033,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetTensor()`, `PetscDualSpaceCreate()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeGetTensor()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tensor)
 {
@@ -3056,7 +3056,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tens
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetTrimmed()`, `PetscDualSpaceCreate()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeSetTrimmed()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *trimmed)
 {
@@ -3078,7 +3078,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *tr
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetTrimmed()`, `PetscDualSpaceCreate()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeGetTrimmed()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool trimmed)
 {
@@ -3106,7 +3106,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool tri
 
   Level: advanced
 
-.seealso: `PetscDualSpace`, `PetscDTNodeType`, `PetscDualSpaceLagrangeSetNodeType()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDTNodeType`, `PetscDualSpaceLagrangeSetNodeType()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeType *nodeType, PetscBool *boundary, PetscReal *exponent)
 {
@@ -3135,7 +3135,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeT
 
   Level: advanced
 
-.seealso: `PetscDualSpace`, `PetscDTNodeType`, `PetscDualSpaceLagrangeGetNodeType()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDTNodeType`, `PetscDualSpaceLagrangeGetNodeType()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeType nodeType, PetscBool boundary, PetscReal exponent)
 {
@@ -3158,7 +3158,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeT
 
   Level: advanced
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetUseMoments()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeSetUseMoments()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool *useMoments)
 {
@@ -3180,7 +3180,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool 
 
   Level: advanced
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetUseMoments()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeGetUseMoments()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool useMoments)
 {
@@ -3203,7 +3203,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool 
 
   Level: advanced
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetMomentOrder()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeSetMomentOrder()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt *order)
 {
@@ -3225,7 +3225,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt 
 
   Level: advanced
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetMomentOrder()`
+.seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDualSpaceLagrangeGetMomentOrder()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder(PetscDualSpace sp, PetscInt order)
 {
@@ -3259,7 +3259,14 @@ static PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
+  Developer Note:
+  This `PetscDualSpace` seems to manage directly trimmed and untrimmed polynomials as well as tensor and non-tensor polynomials while for `PetscSpace` there seems to
+  be different `PetscSpaceType` for them.
+
+.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`,
+          `PetscDualSpaceLagrangeSetMomentOrder()`, `PetscDualSpaceLagrangeGetMomentOrder()`, `PetscDualSpaceLagrangeSetUseMoments()`, `PetscDualSpaceLagrangeGetUseMoments()`,
+          `PetscDualSpaceLagrangeSetNodeType, PetscDualSpaceLagrangeGetNodeType, PetscDualSpaceLagrangeGetContinuity, PetscDualSpaceLagrangeSetContinuity,
+          `PetscDualSpaceLagrangeGetTensor()`, `PetscDualSpaceLagrangeSetTensor()`, `PetscDualSpaceLagrangeGetTrimmed()`, `PetscDualSpaceLagrangeSetTrimmed()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 {

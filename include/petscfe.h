@@ -18,7 +18,7 @@
     Level: intermediate
 
 .seealso: `PetscFE`, `PetscFEGeomCreate()`, `PetscFEGeomDestroy()`, `PetscFEGeomGetChunk()`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomGetPoint()`, `PetscFEGeomGetCellPoint()`,
-          `PetscFEGeomComplete()`
+          `PetscFEGeomComplete()`, `PetscSpace`, `PetscDualSpace`
 M*/
 typedef struct _n_PetscFEGeom {
   const PetscReal *xi;
@@ -40,7 +40,6 @@ typedef struct _n_PetscFEGeom {
 } PetscFEGeom;
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
-
 
 PETSC_EXTERN PetscErrorCode PetscFEGeomCreate(PetscQuadrature, PetscInt, PetscInt, PetscBool, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode PetscFEGeomGetQuadrature(PetscFEGeom *, PetscQuadrature *);

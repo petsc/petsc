@@ -16,7 +16,7 @@
 
   Level: beginner
 
-.seealso: `PetscDualSpaceCreate()`, `PetscSpaceCreate()`, `PetscDualSpaceSetType()`, `PetscDualSpaceType`
+.seealso: `PetscDualSpaceCreate()`, `PetscSpace`, `PetscSpaceCreate()`, `PetscDualSpaceSetType()`, `PetscDualSpaceType`
 S*/
 typedef struct _p_PetscDualSpace *PetscDualSpace;
 
@@ -28,7 +28,7 @@ typedef struct _p_PetscDualSpace *PetscDualSpace;
   Note:
   This is used only for automatic creation of reference cells. A `PetscDualSpace` can accept an arbitrary `DM` for a reference cell.
 
-.seealso: `PetscSpace`
+.seealso: `PetscSpace`, `PetscDualSpaceCreate()`, `PetscDualSpaceType`
 M*/
 typedef enum {
   PETSCDUALSPACE_REFCELL_SIMPLEX,
@@ -39,17 +39,17 @@ PETSC_EXTERN const char *const PetscDualSpaceReferenceCells[];
 /*MC
   PetscDualSpaceTransformType - The type of function transform
 
-  Level: beginner
+  Level: intermediate
+
+  Values:
++  `IDENTITY_TRANSFORM` - make no changes in the function
+.  `COVARIANT_PIOLA_TRANSFORM` - Covariant Piola: $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$
+-  `CONTRAVARIANT_PIOLA_TRANSFORM` - Contravariant Piola: $\sigma^*(F) = 1/|J| J F \circ \phi^{-1)$
 
   Notes:
   These transforms, and their inverses, are used to move functions and functionals between the reference element and real space.
   Suppose that we have a mapping $\phi$ which maps the reference cell to real space, and its Jacobian $J$. If we want to transform function $F$ on the reference element,
   so that it acts on real space, we use the pushforward transform $\sigma^*$. The pullback $\sigma_*$ is the inverse transform.
-
-.vb
-  Covariant Piola: $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$
-  Contravariant Piola: $\sigma^*(F) = 1/|J| J F \circ \phi^{-1)$
-.ve
 
   References:
 .    Rognes, Kirby, and Logg, Efficient Assembly of Hdiv and Hrot Conforming Finite Elements, SISC, 31(6), 4130-4151, arXiv 1205.3085, 2010
@@ -67,9 +67,15 @@ PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 /*J
   PetscDualSpaceType - String with the name of a PETSc dual space
 
+  Values:
++ PETSCDUALSPACELAGRANGE  - a dual space of pointwise evaluation functionals
+. PETSCDUALSPACESIMPLE -  a dual space defined by functionals provided with `PetscDualSpaceSimpleSetFunctional()`
+. PETSCDUALSPACEREFINED - the joint dual space defined by a group of cells, usually refined from one larger cell
+- PETSCDUALSPACEBDM - a dual space for Brezzi-Douglas-Marini elements
+
   Level: beginner
 
-.seealso: `PetscDualSpaceSetType()`, `PetscDualSpace`
+.seealso: `PetscDualSpaceSetType()`, `PetscDualSpace`, `PetscSpace`
 J*/
 typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACELAGRANGE "lagrange"
