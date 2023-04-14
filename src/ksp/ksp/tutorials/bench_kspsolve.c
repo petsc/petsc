@@ -364,8 +364,10 @@ int main(int argc, char **argv)
 
   PetscCall(PreallocateCOO(A, &user)); /* Determine local number of nonzeros */
   PetscCall(FillCOO(A, &user));        /* Fill COO Matrix */
+#if !defined(PETSC_HAVE_HIP)           /* Due to errors in MatSolve_SeqAIJHIPSPARSE_ICC0() */
   PetscCall(MatSetOption(A, MAT_SPD, PETSC_TRUE));
   PetscCall(MatSetOption(A, MAT_SPD_ETERNAL, PETSC_TRUE));
+#endif
   PetscCall(MatCreateVecs(A, &u, &b));
   if (!user.matmult) PetscCall(VecDuplicate(b, &x));
   PetscCall(VecSet(u, 1.0));   /* Exact solution */
