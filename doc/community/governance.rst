@@ -49,27 +49,29 @@ PETSc Council
 When a decision cannot be made by community consensus, community members may request a formal vote by the **PETSc Council**.
 The role of the council is as follows.
 
-* Vote on decisions that cannot be made by consensus; with a simple majority vote of all council members.
+* Vote on decisions that cannot be made by consensus; with a simple majority vote of all council members being binding.
 
-* Vote on :any:`numfocus_committee` members with a 2/3 majority vote of all council members.
+* Vote on changes to the NumFOCUS signatories which will be conducted by the council using the Schulze Method of ranked choice voting.
+
+* Vote on the addition and removal of PETSc Council members; with a 2/3 majority vote of all council members. Anyone in the PETSc community can
+  be on the PETSc Council, one need not be a contributor. The initial council will consist of the 15 most active code contributors,
+  plus two long-term contributors who now play important non-coding roles in the community. The initial high bias in the council towards contributors
+  is simply due to the few non-contributors who are heavily actively engaged in the community.
 
 * Vote on :any:`changes to the governance policy<governance_changes>` (this document) with a 2/3 majority vote of all council members.
 
-* Vote on the addition and removal of PETSc Council members; with a 2/3 majority vote of all council members.
+Votes are public, presented in the usual discussion venues, and the voting period must remain open for at least seven days or until a required majority has been achieved.
 
-Anyone in the PETSc community can be on the PETSc Council, but there is a bias towards active PETSc contributors.
-
-
-.. _numfocus_committee:
+.. _numfocus_signatories:
 
 
-NumFOCUS Committee
-=====================
+NumFOCUS signatories
+====================
 
-As a requirement of fiscal sponsorship by PETSc's planned membership in **NumFOCUS** there is a five person PETSc NumFOCUS committee with members
-from five different organizations. It's role is to manage interactions with NumFOCUS and project funding that comes through NumFOCUS.
-It is expected that such funds will be spent in a manner that is consistent with the non-profit mission of NumFOCUS. Members of the NumFOCUS committee
-are likely to be, but need not be, members of the PETSc Council.
+As a requirement of fiscal sponsorship by PETSc's planned membership in **NumFOCUS** there are five initial NumFOCUS signatories from five institutions.
+Their role is to manage interactions with NumFOCUS and any project funding that comes through NumFOCUS.
+It is expected that such funds will be spent in a manner that is consistent with the non-profit mission of NumFOCUS. Changes in the signatories will
+be done by a vote of the PETSc Council.
 
 .. _governance_changes:
 
@@ -81,5 +83,5 @@ After a community discussion of the proposed changes, the PETSc Council can pass
 
 .. rubric:: Footnotes
 
-.. [#source_footnote] Material in this document, including occasionally exact wording, is based on https://github.com/dask/governance/blob/main/governance.md and https://numpy.org/doc/stable/dev/governance/governance.html#consensus-based-decision-making-by-the-community.
+.. [#source_footnote] Material in this document, including occasionally exact wording, is partially based on https://github.com/dask/governance/blob/main/governance.md and https://numpy.org/doc/stable/dev/governance/governance.html.
 
