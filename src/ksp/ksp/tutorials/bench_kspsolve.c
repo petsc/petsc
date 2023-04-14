@@ -10,9 +10,9 @@ With exact solution:
 Exampe usage:
 
   Run on GPU (requires respective backends installed):
-    ./bench_kspsolve -vec_type cuda   -mat_type aijcusparse
-    ./bench_kspsolve -vec_type hip    -mat_type aijhipsparse
-    ./bench_kspsolve -vec_type kokkos -mat_type aijkokkos
+    ./bench_kspsolve -mat_type aijcusparse
+    ./bench_kspsolve -mat_type aijhipsparse
+    ./bench_kspsolve -mat_type aijkokkos
 
   Test only MatMult:
     ./bench_kspsolve -matmult
@@ -352,12 +352,6 @@ int main(int argc, char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nStep1  - creating Vecs and Mat...\n"));
   PetscCall(PetscLogStageRegister("Step1  - Vecs and Mat", &stage));
   PetscCall(PetscLogStagePush(stage));
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
-  PetscCall(VecSetSizes(u, PETSC_DECIDE, user.dim));
-  PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u, &b));
-  if (!user.matmult) PetscCall(VecDuplicate(b, &x));
-  PetscCall(VecSet(u, 1.0)); /* Exact solution */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, user.dim, user.dim));
   PetscCall(MatSetFromOptions(A));
@@ -370,7 +364,14 @@ int main(int argc, char **argv)
 
   PetscCall(PreallocateCOO(A, &user)); /* Determine local number of nonzeros */
   PetscCall(FillCOO(A, &user));        /* Fill COO Matrix */
-  PetscCall(MatMult(A, u, b));         /* Compute RHS based on exact solution */
+#if !defined(PETSC_HAVE_HIP)           /* Due to errors in MatSolve_SeqAIJHIPSPARSE_ICC0() */
+  PetscCall(MatSetOption(A, MAT_SPD, PETSC_TRUE));
+  PetscCall(MatSetOption(A, MAT_SPD_ETERNAL, PETSC_TRUE));
+#endif
+  PetscCall(MatCreateVecs(A, &u, &b));
+  if (!user.matmult) PetscCall(VecDuplicate(b, &x));
+  PetscCall(VecSet(u, 1.0));   /* Exact solution */
+  PetscCall(MatMult(A, u, b)); /* Compute RHS based on exact solution */
   PetscCall(PetscLogStagePop());
 
   if (user.matmult) {
@@ -391,7 +392,7 @@ int main(int argc, char **argv)
     floprate = 2 * global_nnz / time_avg * 1e-9;
     if (printTiming) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n%-15s%-7.5f seconds\n", "Average time:", time_avg));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-9.3e Gflops/sec\n", "FOM:", floprate));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-9.3e Gflops/sec\n", "FOM:", floprate)); /* figure of merit */
     }
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "===========================================\n"));
   } else {
@@ -459,7 +460,7 @@ int main(int argc, char **argv)
       } else {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-7.5f seconds\n", "KSPSolve:", time_end - time_start));
       }
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-1.3e DoFs/sec\n", "FOM:", user.dim / (time_end - time_start)));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-15s%-1.3e DoFs/sec\n", "FOM:", user.dim / (time_end - time_start))); /* figure of merit */
     }
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "===========================================\n"));
   }
@@ -490,17 +491,17 @@ int main(int argc, char **argv)
     test:
       suffix: hip_matmult
       requires: hip
-      args: -vec_type hip -mat_type aijhipsparse
+      args: -mat_type aijhipsparse
 
     test:
       suffix: cuda_matmult
       requires: cuda
-      args: -vec_type cuda -mat_type aijcusparse
+      args: -mat_type aijcusparse
 
     test:
       suffix: kok_matmult
       requires: kokkos_kernels
-      args: -vec_type kokkos -mat_type aijkokkos
+      args: -mat_type aijkokkos
 
   testset:
     args: -print_timing false -its 10 -n 8
@@ -513,15 +514,15 @@ int main(int argc, char **argv)
     test:
       suffix: hip_ksp
       requires: hip
-      args: -vec_type hip -mat_type aijhipsparse
+      args: -mat_type aijhipsparse
 
     test:
       suffix: cuda_ksp
       requires: cuda
-      args: -vec_type cuda -mat_type aijcusparse
+      args: -mat_type aijcusparse
 
     test:
       suffix: kok_ksp
       requires: kokkos_kernels
-      args: -vec_type kokkos -mat_type aijkokkos
+      args: -mat_type aijkokkos
 TEST*/
