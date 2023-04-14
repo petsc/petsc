@@ -256,9 +256,18 @@ inline PetscErrorCode CUPMObject<T>::GetFromHandleDispatch_(PetscDeviceContext d
 {
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx, 1);
-  if (blas_handle) PetscValidPointer(blas_handle, 2);
-  if (solver_handle) PetscValidPointer(solver_handle, 3);
-  if (stream_handle) PetscValidPointer(stream_handle, 4);
+  if (blas_handle) {
+    PetscValidPointer(blas_handle, 2);
+    *blas_handle = nullptr;
+  }
+  if (solver_handle) {
+    PetscValidPointer(solver_handle, 3);
+    *solver_handle = nullptr;
+  }
+  if (stream_handle) {
+    PetscValidPointer(stream_handle, 4);
+    *stream_handle = nullptr;
+  }
   if (PetscDefined(USE_DEBUG)) {
     PetscDeviceType dtype;
 
