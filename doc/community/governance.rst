@@ -53,7 +53,7 @@ The role of the council is as follows.
 
 * Vote on :any:`numfocus_committee` members with a 2/3 majority vote of all council members.
 
-* Vote on :any:`changes to the goverance policy<governance_changes>` (this document) with a 2/3 majority vote of all council members.
+* Vote on :any:`changes to the governance policy<governance_changes>` (this document) with a 2/3 majority vote of all council members.
 
 * Vote on the addition and removal of PETSc Council members; with a 2/3 majority vote of all council members.
 
@@ -76,7 +76,7 @@ are likely to be, but need not be, members of the PETSc Council.
 Changes to the Governance Document
 ==================================
 
-Merge requests to https://gitlab.com/petsc/petsc on this file (doc/community/goverance.rst) constitute proposed changes to the goverance document.
+Merge requests to https://gitlab.com/petsc/petsc on this file (``doc/community/governance.rst``) constitute proposed changes to the governance document.
 After a community discussion of the proposed changes, the PETSc Council can pass changes to the document with a 2/3 majority vote of all members.
 
 .. rubric:: Footnotes

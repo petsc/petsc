@@ -68,7 +68,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
 
   PetscFunctionBegin;
   PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, &G));
-  PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm));
+  PetscCall(SNESLineSearchGetNorms(linesearch, NULL, &fnorm, NULL));
   PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
   PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
   PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
@@ -176,8 +176,8 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
   } else {
-    /* Since the full step didn't work and the step is tiny, quit */
     if (stol * xnorm > ynorm) {
+      /* Since the full step didn't give sufficient decrease and the step is tiny, exit */
       PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm));
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
       if (monitor) {

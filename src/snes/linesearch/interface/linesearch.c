@@ -1069,7 +1069,7 @@ PetscErrorCode SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lamb
 .  linesearch - linesearch context
 
    Output Parameters:
-+  steptol - The minimum steplength
++  steptol - The minimum steplength, this is the value set by `SNESLineSearchGetTolerances()` scaled by the current norm of the function value
 .  maxstep - The maximum steplength
 .  rtol    - The relative tolerance for iterative line searches
 .  atol    - The absolute tolerance for iterative line searches
@@ -1094,7 +1094,7 @@ PetscErrorCode SNESLineSearchGetTolerances(SNESLineSearch linesearch, PetscReal 
   }
   if (maxstep) {
     PetscValidRealPointer(maxstep, 3);
-    *maxstep = linesearch->maxstep;
+    *maxstep = linesearch->maxstep * linesearch->fnorm;
   }
   if (rtol) {
     PetscValidRealPointer(rtol, 4);
@@ -1302,10 +1302,16 @@ PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch linesearch, PetscInt order)
 
    Output Parameters:
 +  xnorm - The norm of the current solution
-.  fnorm - The norm of the current function
+.  fnorm - The norm of the current function, this is the `norm(function(X))` where `X` is the current solution.
 -  ynorm - The norm of the current update
 
    Level: developer
+
+   Note:
+   Some values may not be up to date at particular points in the code.
+
+   This, in combination with `SNESLineSearchSetNorms()`, allow the line search and the `SNESSolve_XXX()` to share
+   computed values.
 
 .seealso: `SNESLineSearch`, `SNESLineSearchSetNorms()` `SNESLineSearchGetVecs()`
 @*/
@@ -1327,7 +1333,7 @@ PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal *xnor
    Input Parameters:
 +  linesearch - linesearch context
 .  xnorm - The norm of the current solution
-.  fnorm - The norm of the current function
+.  fnorm - The norm of the current function, this is the `norm(function(X))` where `X` is the current solution
 -  ynorm - The norm of the current update
 
    Level: developer
