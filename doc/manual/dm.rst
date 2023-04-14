@@ -9,6 +9,6 @@ DM: Interfacing Between Solvers and Models/Discretizations
    dmbase
    dmplex
    dmstag
+   dmnetwork
    dt
    fe
-   dmnetwork
