@@ -421,7 +421,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
     t = std::make_shared<htool::Cluster<htool::PCA<htool::SplittingTypes::RegularSplitting>>>(a->dim);
   }
   t->set_minclustersize(a->bs[0]);
-  t->build(A->rmap->N, a->gcoords_target, offset);
+  t->build(A->rmap->N, a->gcoords_target, offset, -1, PetscObjectComm((PetscObject)A));
   if (a->kernel) a->wrapper = new WrapperHtool(A->rmap->N, A->cmap->N, a->dim, a->kernel, a->kernelctx);
   else {
     a->wrapper = nullptr;
@@ -447,7 +447,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
       s = std::make_shared<htool::Cluster<htool::PCA<htool::SplittingTypes::RegularSplitting>>>(a->dim);
     }
     s->set_minclustersize(a->bs[0]);
-    s->build(A->cmap->N, a->gcoords_source, offset);
+    s->build(A->cmap->N, a->gcoords_source, offset, -1, PetscObjectComm((PetscObject)A));
     S = uplo = 'N';
   }
   PetscCall(PetscFree(offset));
@@ -461,7 +461,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
   default:
     compressor = std::make_shared<htool::sympartialACA<PetscScalar>>();
   }
-  a->hmatrix = dynamic_cast<htool::VirtualHMatrix<PetscScalar> *>(new htool::HMatrix<PetscScalar>(t, s ? s : t, a->epsilon, a->eta, S, uplo));
+  a->hmatrix = dynamic_cast<htool::VirtualHMatrix<PetscScalar> *>(new htool::HMatrix<PetscScalar>(t, s ? s : t, a->epsilon, a->eta, S, uplo, -1, PetscObjectComm((PetscObject)A)));
   a->hmatrix->set_compression(compressor);
   a->hmatrix->set_maxblocksize(a->bs[1]);
   a->hmatrix->set_mintargetdepth(a->depth[0]);
