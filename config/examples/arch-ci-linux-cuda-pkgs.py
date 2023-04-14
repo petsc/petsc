@@ -41,7 +41,6 @@ if __name__ == '__main__':
     '--download-kokkos-kernels',
     '--download-hwloc',
     '--download-hypre',
-    '--download-hypre-configure-arguments=--enable-unified-memory',
     '--download-raja',
     '--download-amgx',
     '--with-strict-petscerrorcode',
