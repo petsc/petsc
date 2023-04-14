@@ -1,39 +1,43 @@
 .. _chapter_stag:
 
-DMSTAG: Staggered, Structured Grids in PETSc
---------------------------------------------
+DMSTAG: Staggered, Structured Grid
+----------------------------------
 
 For structured (aka "regular") grids with staggered data (living on elements, faces, edges,
 and/or vertices), the ``DMSTAG`` object is available. This can
 be useful for problems in many domains, including fluid flow, MHD, and seismology.
 
-It is possible, though cumbersome, to implement a staggered-grid code using multiple ``DMDA`` objects, or a single multi-component ``DMDA`` object where some degrees of freedom are unused. ``DMSTAG`` was developed for two main purposes:
+It is possible, though cumbersome, to implement a staggered-grid code using multiple ``DMDA`` objects, or a single multi-component ``DMDA`` object where some degrees of freedom are unused.
+``DMSTAG`` was developed for two main purposes:
 
-1. To help manage some of the burden of choosing and adhering to indexing conventions (in parallel)
+1. To help manage some of the burden of choosing and adhering to the complex indexing conventions needed for staggered grids (in parallel)
 2. To provide a uniform abstraction for which scalable solvers and preconditioners may be developed (in particular, using ``PCFIELDSPLIT`` and ``PCMG``).
 
 ``DMSTAG`` is design to behave much
 like :ref:`DMDA <sec_struct>`, with a couple of important distinctions, and borrows some terminology
-from :doc:`DMPlex <dmplex>`.
+from :doc:`DMPLEX <dmplex>`.
 
 Terminology
 ~~~~~~~~~~~
 
-Like a DMPlex object, a ``DMSTAG`` represents a `cell complex <https://en.wikipedia.org/wiki/CW_complex>`__,
+Like a ``DMPLEX`` object, a ``DMSTAG`` represents a `cell complex <https://en.wikipedia.org/wiki/CW_complex>`__,
 distributed in parallel over the ranks of an ``MPI_Comm``. It is, however,
 a very regular complex, consisting of a structured grid of :math:`d`-dimensional cells, with :math:`d \in \{1,2,3\}`,
 which are referred to as *elements*, :math:`d-1` dimensional cells defining boundaries between these elements,
 and the boundaries of the domain, and in 2 or more dimensions, boundaries of *these* cells,
 all the way down to 0 dimensional cells referred to as *vertices*. In 2 dimensions, the 1-dimensional
-element boundaries are referred to as *faces*. In 3 dimensions, the 2-dimensional element boundaries
+element boundaries are referred to as *edges* or *faces*. In 3 dimensions, the 2-dimensional element boundaries
 are referred to as *faces* and the 1-dimensional boundaries between faces are referred to as *edges*
-The set of cells of a given dimension is referred to as a *stratum*; a ``DMSTAG`` object of dimension :math:`d`
-represents a complete cell complex with :math:`d+1` strata.
+The set of cells of a given dimension is referred to as a *stratum* (which one can think of as a level in DAG representation of the mesh); a ``DMSTAG`` object of dimension :math:`d`
+represents a complete cell complex with :math:`d+1` *strata* (levels).
 
-Each stratum has a constant number of unknowns (which may be zero) associated with each cell.
-The distinct unknowns associated with each cell are referred to as *components*.
+In the description of any:`chapter_unstructured` the cells at each level are referred to as *points*. Thus we adopt that terminology uniformly in PETSc and so furthermore in this document, 
+point will refer to a cell.
 
-The structured grid, is like with DMDA, decomposed via a Cartesian product of decompositions in each dimension,
+Each stratum has a constant number of unknowns (which may be zero) associated with each point (cell) on that level.
+The distinct unknowns associated with each point are referred to as *components*.
+
+The structured grid, is like with ``DMDA``, decomposed via a Cartesian product of decompositions in each dimension,
 giving a rectangular local subdomain on each rank. This is extended by an element-wise stencil width
 of *ghost* elements to create an atlas of overlapping patches.
 
@@ -46,7 +50,7 @@ back, bottom, left corner of the domain. For instance, element :math:`(1,2,3)`, 
 is the element second from the left, third from the bottom, and fourth from the back
 (regardless of how many MPI ranks are used).
 
-To refer to cells (elements, faces, edges, and vertices), a value of
+To refer to points (elements, faces, edges, and vertices), a value of
 ``DMStagStencilLocation`` is used, relative to the element index. The element
 itself is referred to with ``DMSTAG_ELEMENT``, the top right vertex (in 2D)
 or the top right edge (in 3D) with ``DMSTAG_UP_RIGHT``, the back bottom left
@@ -61,7 +65,7 @@ corner in 3D with ``DMSTAG_BACK_DOWN_LEFT``, and so on.
 
 Crucially, this global indexing scheme does not include any "ghost" or "padding" unknowns outside the physical domain.
 This is useful for higher-level operations such as computing norms or developing physics-based solvers. However
-(unlike ``DMDA``), this implies that the global ``Vec``\s do not have a natural block structure, as different
+(unlike ``DMDA``), this implies that the global ``Vec`` do not have a natural block structure, as different
 strata have different numbers of points (e.g. in 1D there is an "extra" vertex on the right). This regular block
 structure is, however, very useful for the *local* representation of the data, so in that case *dummy* DOF
 are included, drawn as grey in  :numref:`figure_dmstag_local_global`.
@@ -90,7 +94,7 @@ the idea. For more, see the manual page for ``DMStagMatSetValuesStencil()``.
   :start-at: /* Velocity is either a BC
   :end-at: PetscCall(DMStagMatSetValuesStencil
 
-The array-based approach is likely to be more efficient when working with ``Vec``\s.
+The array-based approach for ``Vec`` is likely to be more efficient than the stencil-based method just introduced above.
 
 Coordinates
 ~~~~~~~~~~~
@@ -99,13 +103,13 @@ Coordinates
 is used to represent the coordinates. No default is imposed, so the user must directly or indirectly call
 ``DMStagSetCoordinateDMType()``.
 
-If a second ``DMSTAG`` object is used to represent coordinates in "explicit" form, behavior is much like DMDA - the coordinate DM
-has :math:`d` DOF on each stratum corresponding to coordinates associated with each cell.
+If a second ``DMSTAG`` object is used to represent coordinates in "explicit" form, behavior is much like with ``DMDA`` - the coordinate ``DM``
+has :math:`d` DOF on each stratum corresponding to coordinates associated with each point.
 
 If ``DMPRODUCT`` is used instead,  coordinates are represented by a ``DMPRODUCT`` object referring to a
 Cartesian product of 1D ``DMSTAG`` objects, each of which features explicit coordinates as just mentioned.
 
-Navigating these nested ``DM``\s can be tedious, but note the existence of helper functions like
+Navigating these nested ``DM`` in ``DMPRODUCT`` can be tedious, but note the existence of helper functions like
 ``DMStagSetUniformCoordinatesProduct()`` and ``DMStagGetProductCoordinateArrays()``.
 
 .. _sec_dmstag_numbering:
@@ -116,14 +120,14 @@ Numberings and internal data layout
 While ``DMSTAG`` aims to hide the details of its internal data layout, for debugging, optimization, and
 customization purposes, it can be important to know how ``DMSTAG`` internally numbers unknowns.
 
-Internally, each cell is canonically associated with an element (top-level cell). For purposes of local,
-regular-blocked storage, an element is grouped with lower-dimensional cells left of, below ("down"), and behind ("back") it.
+Internally, each point is canonically associated with an element (top-level point (cell)). For purposes of local,
+regular-blocked storage, an element is grouped with lower-dimensional points left of, below ("down"), and behind ("back") it.
 This means that "canonical" values of ``DMStagStencilLocation`` are ``DMSTAG_ELEMENT``, plus all entries consisting only of "LEFT", "DOWN", and "BACK". In general, these are the most efficient values to use, unless convenience dictates otherwise, as they are the ones used internally.
 
 When creating the decomposition of the domain to local ranks, and extending these local domains to handle overlapping halo regions and boundary ghost unknowns, this same per-element association is used. This has the advantage of maintaining a regular blocking, but may not be optimal in some situations in terms of data movement.
 
-Numberings are, like ``DMDA``, based on a local "x-fastest, z-slowest" or "PETSc" ordering of elements (see :ref:`sec_ao`), with ordering of locations canonically associated with each element decided by considering unknowns on each cell
-to be located at the center of their cell, and using a nested ordering of the same style. Thus, in 3-D, the ordering of the 8 canonical ``DMStagStencilLocation`` values associated
+Numberings are, like ``DMDA``, based on a local "x-fastest, z-slowest" or "PETSc" ordering of elements (see :ref:`sec_ao`), with ordering of locations canonically associated with each element decided by considering unknowns on each point
+to be located at the center of their point, and using a nested ordering of the same style. Thus, in 3-D, the ordering of the 8 canonical ``DMStagStencilLocation`` values associated
 with an element is
 
 .. code-block::
@@ -137,7 +141,7 @@ with an element is
    DMSTAG_LEFT
    DMSTAG_ELEMENT
 
-Multiple DOF associated with a given point are stored sequentially (as with DMDA).
+Multiple DOF associated with a given point are stored sequentially (as with ``DMDA``).
 
 For local ``Vec``\s, this gives a regular-blocked numbering, with the same number of unknowns associated with each element, including some "dummy" unknowns which to not correspond to any (local or global) unknown in the global representation. See :numref:`figure_dmstag_numbering_local` for an example.
 

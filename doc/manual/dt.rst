@@ -17,7 +17,7 @@ A probability distribution function (PDF) returns the probability density at a g
 
     \int_\Omega P(x) dx = 1.
 
-where :math:`Omega` is the domain for :math:`x`. In plain language, this means that something must happen in our domain. It also requires that the PDF must have units which are the inverse of the volume form :math:`dx`, meaning that it is homogeneous of order :math:`d` under scaling
+where :math:\Omega is the domain for :math:`x`. This requires that the PDF must have units which are the inverse of the volume form :math:`dx`, meaning that it is homogeneous of order :math:`d` under scaling
 
 .. math::
 
