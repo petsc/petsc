@@ -1,12 +1,15 @@
 #include <petsc/private/deviceimpl.h>
 #include <petscpkg_version.h>
-#include <Kokkos_Core.hpp>
+#include <petsc_kokkos.hpp>
 
 PetscBool PetscKokkosInitialized = PETSC_FALSE;
+
+Kokkos::DefaultExecutionSpace *PetscKokkosExecutionSpacePtr = nullptr;
 
 PetscErrorCode PetscKokkosFinalize_Private(void)
 {
   PetscFunctionBegin;
+  PetscCallCXX(delete PetscKokkosExecutionSpacePtr);
   Kokkos::finalize();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -63,6 +66,15 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
   #endif
 #endif
     PetscCallCXX(Kokkos::initialize(args));
+#if defined(PETSC_HAVE_CUDA)
+    extern cudaStream_t PetscDefaultCudaStream;
+    PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultCudaStream));
+#elif defined(PETS_HAVE_HIP)
+    extern hipStream_t PetscDefaultHipStream;
+    PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultHipStream));
+#else
+    PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace());
+#endif
     PetscBeganKokkos = PETSC_TRUE;
   }
   PetscKokkosInitialized = PETSC_TRUE;
