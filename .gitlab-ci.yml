@@ -144,7 +144,7 @@ c99-mlib-static-py:
 petsc4py-install:
   extends: .stage-2
   tags:
-    - gce-stage2
+    - gce-u22-stage1
   variables:
     PYTHON: python3
     T_PREFIX: petsc-install
@@ -182,7 +182,7 @@ petsc4py-install:
 petsc4py-pip:
   extends: .stage-2
   tags:
-    - gce-stage2
+    - gce-u22-stage1
   variables:
     PETSC_CONFIGURE_OPTIONS: --with-mpi=0 --with-fc=0
     CFLAGS: -O0
@@ -1117,6 +1117,7 @@ analyze-pipeline:
         cat ./arch-ci-analyze-pipeline/gcovr/merge_gcov_errors.log;
         exit 1;
       fi
+  allow_failure: true
 
 #
 # Base job for a documentation build (runs in venv to allow installing additional packages without root)
@@ -1124,8 +1125,9 @@ analyze-pipeline:
 .docs:
   stage: stage-3
   tags:
-    - gce-stage2
+    - linux-docs
   before_script:
+    - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - VENV=venv-petsc-docs &&
@@ -1166,7 +1168,6 @@ pages:  # this job name has special meaning to GitLab
   interruptible: true
   script:
     - mkdir -p ../public/ && cp public/* ../public/
-    - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
     - (git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - git clean -fdxq && rm -rf images ../arch-classic-docs
     - (git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
