@@ -1,7 +1,7 @@
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-  
+
     ctypedef const char* PetscFEType
     PetscFEType PETSCFEBASIC
     PetscFEType PETSCFEOPENCL
@@ -32,4 +32,4 @@ cdef extern from * nogil:
 
     PetscErrorCode PetscFEView(PetscFE, PetscViewer)
     PetscErrorCode PetscFEViewFromOptions(PetscFE, PetscObject, char[])
-    
+

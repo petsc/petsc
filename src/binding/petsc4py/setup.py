@@ -247,6 +247,9 @@ def run_setup():
                 F('{Name}*.h'),
                 F('include/{pyname}/*.h'),
                 F('include/{pyname}/*.i'),
+                'py.typed',
+                '*.pyi',
+                '*/*.pyi',
             ],
             F('{pyname}.lib'): [
                 F('{name}.cfg'),

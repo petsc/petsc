@@ -130,6 +130,8 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
     configrc = parse_rc(rcfile)
     arch_cfg = arch_list(configrc.get(rcvar, ''))
     for arch in arch_cfg:
+        if arch.startswith('%(') and arch.endswith(')s'):
+            arch = arch % os.environ
         if os.path.isdir(os.path.join(path, arch)):
             if arch_env:
                 warnings.warn(

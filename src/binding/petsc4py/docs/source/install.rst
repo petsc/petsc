@@ -3,66 +3,49 @@ Installation
 .. _petsc4py_install:
 
 
-Using **pip**
--------------
+Install from PyPI using **pip**
+-------------------------------
 
 You can use :program:`pip` to install :mod:`petsc4py` and its
 dependencies (:mod:`mpi4py` is optional but highly recommended)::
 
-  $ python -m pip install [--user] numpy mpi4py  (or pip install [--user] numpy mpi4py)
-  $ python -m pip install [--user] petsc petsc4py (or pip install [--user] petsc petsc4py)
+  $ python -m pip install mpi4py petsc petsc4py
 
+Install from the PETSc source tree
+----------------------------------
 
-Using **setuptools**
---------------------
+First `build PETSc <petsc:doc_install>`. Next :file:`cd` to the top of the
+PETSc source tree and set the `PETSC_DIR <petsc:doc_multi>` and `PETSC_ARCH
+<petsc:doc_multi>` environment variables. Run::
 
-You can also install dependencies manually and then invoke setuptools
-from the `petsc4py` source directory:
+  $ python -m pip install src/binding/petsc4py
 
-  $ python setup.py build
-  $ python setup.py install
-
-You may use the `--install-lib` argument to the `install` command to alter the
-`site-packages` directory where the package is to be installed.
-
-If you are cross-compiling, and the `numpy` module cannot be loaded on your
-build host, then before invoking `setup.py`, set `NUMPY_INCLUDE` environment
-variable to the path that would be returned by `import numpy;
-numpy.get_include()`:
+If you are cross-compiling, and the :mod:`numpy` module cannot be loaded on
+your build host, then before invoking :file:`pip`, set the
+:envvar:`NUMPY_INCLUDE` environment variable to the path that would be returned
+by :samp:`import numpy; numpy.get_include()`::
 
   $ export NUMPY_INCLUDE=/usr/lib/pythonX/site-packages/numpy/core/include
 
+Building the documentation
+--------------------------
 
-From PETSc source
------------------
+Install the documentation dependencies using the ``[doc]`` extra::
 
-If you already have downloaded PETSc source and have installed the dependencies
-of `petsc4py`, then to build the `petsc4py` module along with PETSc, add the
-`--with-petsc4py=1` argument to the configure command when building PETSc:
+  $ python -m pip install "src/binding/petsc4py[doc]"
 
-  $ ./configure --with-petsc4py=1
-  $ make
-  $ make install
+Then::
 
-This will install PETSc and the `petsc4py` module into the PETSc directory
-under the prefix specified to the PETSc configure command.
+  $ cd src/binding/petsc4py/docs/source
+  $ make html
 
-If you wish to make the module importable without having to set the
-`PYTHONPATH` environment variable, you may add a shortcut to the system-wide
-`site-packages` directory creating a special `.pth` file with exactly one line
-of Python code. This can be done by the following command, where the
-system-wide path is assumed to be `/usr/lib/pythonX/site-packages` (replace `X`
-with your python version):
+The resulting HTML files will be in :file:`_build/html`.
 
-  $ echo \
-    "import sys, os;" \
-    "p = os.getenv('PETSC_DIR');" \
-    "a = os.getenv('PETSC_ARCH') or '';" \
-    "p = p and os.path.join(p, a, 'lib');" \
-    "p and (p in sys.path or sys.path.append(p))" \
-    > /usr/lib/pythonX/site-packages/petsc4py.pth
+.. note::
 
-If you are cross-compiling, and `numpy` cannot be loaded on your build host,
-then pass `--have-numpy=1 --with-numpy-include=PATH`, where `PATH` is the path
-that would be returned by `import numpy; print(numpy.get_include())`. This will
-suppress autodetection of the include path on the build host.
+  Building the documentation requires Python 3.11 or later.
+
+.. note::
+
+  All new code must include documentation in accordance with the `documentation
+  standard <documentation_standards>`

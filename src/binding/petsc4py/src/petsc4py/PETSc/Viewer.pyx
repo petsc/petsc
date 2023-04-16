@@ -1,6 +1,7 @@
 # --------------------------------------------------------------------
 
 class ViewerType(object):
+    """Viewer type."""
     SOCKET      = S_(PETSCVIEWERSOCKET)
     ASCII       = S_(PETSCVIEWERASCII)
     BINARY      = S_(PETSCVIEWERBINARY)
@@ -17,6 +18,7 @@ class ViewerType(object):
     EXODUSII    = S_(PETSCVIEWEREXODUSII)
 
 class ViewerFormat(object):
+    """Viewer format."""
     DEFAULT           = PETSC_VIEWER_DEFAULT
     ASCII_MATLAB      = PETSC_VIEWER_ASCII_MATLAB
     ASCII_MATHEMATICA = PETSC_VIEWER_ASCII_MATHEMATICA
@@ -56,7 +58,8 @@ class ViewerFormat(object):
     LOAD_BALANCE      = PETSC_VIEWER_LOAD_BALANCE
     FAILED            = PETSC_VIEWER_FAILED
 
-class FileMode(object):
+class ViewerFileMode(object):
+    """Viewer file mode."""
     # native
     READ          = PETSC_FILE_MODE_READ
     WRITE         = PETSC_FILE_MODE_WRITE
@@ -67,7 +70,8 @@ class FileMode(object):
     R, W, A, U = READ, WRITE, APPEND, UPDATE
     AU = UA    = APPEND_UPDATE
 
-class DrawSize(object):
+class ViewerDrawSize(object):
+    """Window size."""
     # native
     FULL_SIZE    = PETSC_DRAW_FULL_SIZE
     HALF_SIZE    = PETSC_DRAW_HALF_SIZE
@@ -82,11 +86,37 @@ class DrawSize(object):
 # --------------------------------------------------------------------
 
 cdef class Viewer(Object):
+    """Viewer object.
+
+    Viewer is described in the `PETSc manual <petsc:sec_viewers>`.
+
+    Viewers can be called as functions where the argument specified is the PETSc object to be viewed. See the example below.
+
+    Examples
+    --------
+    >>> from petsc4py import PETSc
+    >>> u = PETSc.Vec().createWithArray([1,2])
+    >>> v = PETSc.Viewer()
+    >>> v(u)
+    Vec Object: 1 MPI process
+      type: seq
+    1.
+    2.
+
+    See Also
+    --------
+    petsc.PetscViewer
+
+    """
 
     Type   = ViewerType
     Format = ViewerFormat
-    Mode   = FileMode
-    Size   = DrawSize
+    FileMode = ViewerFileMode
+    DrawSize = ViewerDrawSize
+
+    # backward compatibility
+    Mode = ViewerFileMode
+    Size = ViewerFileMode
 
     #
 
@@ -94,13 +124,33 @@ cdef class Viewer(Object):
         self.obj = <PetscObject*> &self.vwr
         self.vwr = NULL
 
-    def __call__(self, Object obj):
+    def __call__(self, Object obj) -> None:
+        """View a generic object."""
         assert obj.obj != NULL
         CHKERR( PetscObjectView(obj.obj[0], self.vwr) )
 
     #
 
-    def view(self, obj=None):
+    def view(self, obj: Viewer | Object | None = None) -> None:
+        """View the viewer.
+
+        Collective.
+
+        Parameters
+        ----------
+        obj
+            A `Viewer` instance or `None` for the default viewer.
+            If none of the above applies, it assumes ``obj`` is an instance of `Object`
+            and it calls the generic view for ``obj``.
+
+        Notes
+        -----
+
+        See Also
+        --------
+        petsc.PetscViewerView
+
+        """
         if obj is None:
             CHKERR( PetscViewerView(self.vwr, NULL) )
         elif isinstance(obj, Viewer):
@@ -109,18 +159,65 @@ cdef class Viewer(Object):
             assert (<Object?>obj).obj != NULL
             CHKERR( PetscObjectView((<Object?>obj).obj[0], self.vwr) )
 
-    def destroy(self):
+    def destroy(self) -> Self:
+        """Destroy the viewer.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscViewerDestroy
+
+        """
         CHKERR( PetscViewerDestroy(&self.vwr) )
         return self
 
-    def create(self, comm=None):
+    def create(self, comm: Comm | None = None) -> Self:
+        """Create a viewer.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        Sys.getDefaultComm, petsc.PetscViewerCreate
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
-    def createASCII(self, name, mode=None, comm=None):
+    def createASCII(
+        self,
+        name: str,
+        mode: FileMode | str | None = None,
+        comm: Comm | None = None,
+        ) -> Self:
+        """Create a viewer of type `Type.ASCII`.
+
+        Collective.
+
+        Parameters
+        ----------
+        name
+            The filename associated with the viewer.
+        mode
+            The mode type.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        create, setType, setFileMode, setFileName, Sys.getDefaultComm
+        setASCIITab, addASCIITab, subtractASCIITab, getASCIITab
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -134,7 +231,30 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
 
-    def createBinary(self, name, mode=None, comm=None):
+    def createBinary(
+        self,
+        name: str,
+        mode: FileMode | str | None = None,
+        comm: Comm | None = None,
+        ) -> Self:
+        """Create a viewer of type `Type.BINARY`.
+
+        Collective.
+
+        Parameters
+        ----------
+        name
+            The filename associated with the viewer.
+        mode
+            The mode type.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        create, setType, setFileMode, setFileName, Sys.getDefaultComm
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -144,7 +264,30 @@ cdef class Viewer(Object):
         PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
-    def createMPIIO(self, name, mode=None, comm=None):
+    def createMPIIO(
+        self,
+        name: str,
+        mode: FileMode | str | None = None,
+        comm: Comm | None = None,
+        ) -> Self:
+        """Create a viewer of type `Type.BINARY` supporting MPI-IO.
+
+        Collective.
+
+        Parameters
+        ----------
+        name
+            The filename associated with the viewer.
+        mode
+            The mode type.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        create, setType, setFileMode, setFileName, Sys.getDefaultComm
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -158,7 +301,30 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
 
-    def createVTK(self, name, mode=None, comm=None):
+    def createVTK(
+        self,
+        name: str,
+        mode: FileMode | str | None = None,
+        comm: Comm | None = None,
+        ) -> Self:
+        """Create a viewer of type `Type.VTK`.
+
+        Collective.
+
+        Parameters
+        ----------
+        name
+            The filename associated with the viewer.
+        mode
+            The mode type.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        create, setType, setFileMode, setFileName, Sys.getDefaultComm
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -171,7 +337,30 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
 
-    def createHDF5(self, name, mode=None, comm=None):
+    def createHDF5(
+        self,
+        name: str,
+        mode: FileMode | str | None = None,
+        comm: Comm | None = None,
+        ) -> Self:
+        """Create a viewer of type `Type.HDF5`.
+
+        Collective.
+
+        Parameters
+        ----------
+        name
+            The filename associated with the viewer.
+        mode
+            The mode type.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        create, setType, setFileMode, setFileName, Sys.getDefaultComm
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -184,8 +373,36 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
 
-    def createDraw(self, display=None, title=None,
-                   position=None, size=None, comm=None):
+    def createDraw(
+        self,
+        display: str | None = None,
+        title: str | None = None,
+        position: tuple[int, int] | None = None,
+        size: tuple[int, int] | int | None = None,
+        comm: Comm | None = None,
+        ) -> Self:
+        """Create a `Type.DRAW` viewer.
+
+        Collective.
+
+        Parameters
+        ----------
+        display
+            The X display to use or `None` for the local machine.
+        title
+            The window title or `None` for no title.
+        position
+            Screen coordinates of the upper left corner, or `None` for default.
+        size
+            Window size or `None` for default.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        Sys.getDefaultComm, petsc.PetscViewerDrawOpen
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const char *cdisplay = NULL
         cdef const char *ctitle = NULL
@@ -206,39 +423,131 @@ cdef class Viewer(Object):
         PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
-    def setType(self, vwr_type):
+    def setType(self, vwr_type: Type | str) -> None:
+        """Set the type of the viewer.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        vwr_type
+            The type of the viewer.
+
+        See Also
+        --------
+        getType, petsc.PetscViewerSetType
+
+        """
         cdef PetscViewerType cval = NULL
         vwr_type = str2bytes(vwr_type, &cval)
         CHKERR( PetscViewerSetType(self.vwr, cval) )
 
-    def getType(self):
+    def getType(self) -> str:
+        """Return the type of the viewer.
+
+        Not collective.
+
+        See Also
+        --------
+        setType, petsc.PetscViewerGetType
+
+        """
         cdef PetscViewerType cval = NULL
         CHKERR( PetscViewerGetType(self.vwr, &cval) )
         return bytes2str(cval)
 
-    def getFormat(self):
+    def getFormat(self) -> Format:
+        """Return the format of the viewer.
+
+        Not collective.
+
+        See Also
+        --------
+        pushFormat, popFormat, petsc.PetscViewerGetFormat
+
+        """
         cdef PetscViewerFormat format = PETSC_VIEWER_DEFAULT
         CHKERR( PetscViewerGetFormat(self.vwr, &format) )
         return format
 
-    def pushFormat(self, format):
+    def pushFormat(self, format: Format) -> None:
+        """Push format to the viewer.
+
+        Collective.
+
+        See Also
+        --------
+        popFormat, petsc.PetscViewerPushFormat
+
+        """
         CHKERR( PetscViewerPushFormat(self.vwr, format) )
 
-    def popFormat(self):
+    def popFormat(self) -> None:
+        """Pop format from the viewer.
+
+        Collective.
+
+        See Also
+        --------
+        pushFormat, petsc.PetscViewerPopFormat
+
+        """
         CHKERR( PetscViewerPopFormat(self.vwr) )
 
-    def getSubViewer(self, comm = None):
+    def getSubViewer(self, comm: Comm | None = None) -> Viewer:
+        """Return a viewer defined on a subcommunicator.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            The subcommunicator. If `None`, uses `COMM_SELF`.
+
+        Notes
+        -----
+        Users must call `restoreSubViewer` when done.
+
+        See Also
+        --------
+        restoreSubViewer, petsc.PetscViewerGetSubViewer
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_SELF)
         cdef Viewer sub = Viewer()
         CHKERR( PetscViewerGetSubViewer(self.vwr, ccomm, &sub.vwr) )
         return sub
 
-    def restoreSubViewer(self, Viewer sub):
+    def restoreSubViewer(self, Viewer sub) -> None:
+        """Restore a viewer defined on a subcommunicator.
+
+        Collective.
+
+        Parameters
+        ----------
+        sub
+            The subviewer obtained from `getSubViewer`.
+
+        See Also
+        --------
+        getSubViewer, petsc.PetscViewerRestoreSubViewer
+
+        """
         cdef MPI_Comm ccomm = def_Comm(sub.getComm(), PETSC_COMM_SELF)
         CHKERR( PetscViewerRestoreSubViewer(self.vwr, ccomm, &sub.vwr) )
 
     @classmethod
-    def STDOUT(cls, comm=None):
+    def STDOUT(cls, comm: Comm | None = None) -> Viewer:
+        """Return the standard output viewer associated with the communicator.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDOUT_(ccomm)
@@ -246,7 +555,17 @@ cdef class Viewer(Object):
         return viewer
 
     @classmethod
-    def STDERR(cls, comm=None):
+    def STDERR(cls, comm: Comm | None = None) -> Viewer:
+        """Return the standard error viewer associated with the communicator.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDERR_(ccomm)
@@ -254,7 +573,19 @@ cdef class Viewer(Object):
         return viewer
 
     @classmethod
-    def ASCII(cls, name, comm=None):
+    def ASCII(cls, name : str, comm: Comm | None = None) -> Viewer:
+        """Return an ASCII viewer associated with the communicator.
+
+        Collective.
+
+        Parameters
+        ----------
+        name
+            The filename.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -263,7 +594,17 @@ cdef class Viewer(Object):
         return viewer
 
     @classmethod
-    def BINARY(cls, comm=None):
+    def BINARY(cls, comm: Comm | None = None) -> Viewer:
+        """Return the default `Type.BINARY` viewer associated with the communicator.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_BINARY_(ccomm)
@@ -271,7 +612,17 @@ cdef class Viewer(Object):
         return viewer
 
     @classmethod
-    def DRAW(cls, comm=None):
+    def DRAW(cls, comm: Comm | None = None) -> Viewer:
+        """Return the default `Type.DRAW` viewer associated with the communicator.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_DRAW_(ccomm)
@@ -280,75 +631,247 @@ cdef class Viewer(Object):
 
     # --- ASCII viewers ---
 
-    def setASCIITab(self, tabs):
+    def setASCIITab(self, tabs : int) -> None:
+        """Set ASCII tab level.
+
+        Collective.
+
+        See Also
+        --------
+        getASCIITab, petsc.PetscViewerASCIISetTab
+
+        """
         cdef PetscInt ctabs = asInt(tabs)
         CHKERR( PetscViewerASCIISetTab(self.vwr, ctabs) )
 
-    def getASCIITab(self):
+    def getASCIITab(self) -> int:
+        """Return the ASCII tab level.
+
+        Not collective.
+
+        See Also
+        --------
+        setASCIITab, petsc.PetscViewerASCIIGetTab
+
+        """
         cdef PetscInt tabs = 0
         CHKERR( PetscViewerASCIIGetTab(self.vwr, &tabs) )
         return toInt(tabs)
 
-    def addASCIITab(self, tabs):
+    def addASCIITab(self, tabs: int):
+        """Increment the ASCII tab level.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscViewerASCIIAddTab
+
+        """
         cdef PetscInt ctabs = asInt(tabs)
         CHKERR( PetscViewerASCIIAddTab(self.vwr, ctabs) )
 
-    def subtractASCIITab(self, tabs):
+    def subtractASCIITab(self, tabs: int) -> None:
+        """Decrement the ASCII tab level.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscViewerASCIISubtractTab
+
+        """
         cdef PetscInt ctabs = asInt(tabs)
         CHKERR( PetscViewerASCIISubtractTab(self.vwr, ctabs) )
 
-    def pushASCIISynchronized(self):
+    def pushASCIISynchronized(self) -> None:
+        """Allow ASCII synchronized calls.
+
+        Collective.
+
+        See Also
+        --------
+        printfASCIISynchronized, popASCIISynchronized
+        petsc.PetscViewerASCIIPushSynchronized
+
+        """
         CHKERR( PetscViewerASCIIPushSynchronized(self.vwr) )
 
-    def popASCIISynchronized(self):
+    def popASCIISynchronized(self) -> None:
+        """Disallow ASCII synchronized calls.
+
+        Collective.
+
+        See Also
+        --------
+        printfASCIISynchronized, pushASCIISynchronized
+        petsc.PetscViewerASCIIPopSynchronized
+
+        """
         CHKERR( PetscViewerASCIIPopSynchronized(self.vwr) )
 
-    def pushASCIITab(self):
+    def pushASCIITab(self) -> None:
+        """Push an additional tab level.
+
+        Collective.
+
+        See Also
+        --------
+        popASCIITab, petsc.PetscViewerASCIIPushTab
+
+        """
         CHKERR( PetscViewerASCIIPushTab(self.vwr) )
 
-    def popASCIITab(self):
+    def popASCIITab(self) -> None:
+        """Pop an additional tab level pushed via `pushASCIITab`.
+
+        Collective.
+
+        See Also
+        --------
+        pushASCIITab, petsc.PetscViewerASCIIPopTab
+
+        """
         CHKERR( PetscViewerASCIIPopTab(self.vwr) )
 
-    def useASCIITabs(self, flag):
-        cdef PetscBool flg = flag
+    def useASCIITabs(self, flag: bool) -> None:
+        """Enable/disable the use of ASCII tabs.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscViewerASCIIUseTabs
+
+        """
+        cdef PetscBool flg = asBool(flag)
         CHKERR( PetscViewerASCIIUseTabs(self.vwr, flg) )
 
-    def printfASCII(self, msg):
+    def printfASCII(self, msg: str) -> None:
+        """Print a message.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscViewerASCIIPrintf
+
+        """
         cdef const char *cmsg = NULL
         msg = str2bytes(msg, &cmsg)
         CHKERR( PetscViewerASCIIPrintf(self.vwr, '%s', cmsg) )
 
-    def printfASCIISynchronized(self, msg):
+    def printfASCIISynchronized(self, msg: str) -> None:
+        """Print a synchronized message.
+
+        Collective.
+
+        See Also
+        --------
+        pushASCIISynchronized, petsc.PetscViewerASCIISynchronizedPrintf
+
+        """
         cdef const char *cmsg = NULL
         msg = str2bytes(msg, &cmsg)
         CHKERR( PetscViewerASCIISynchronizedPrintf(self.vwr, '%s', cmsg) )
 
     # --- methods specific to file viewers ---
 
-    def flush(self):
+    def flush(self) -> None:
+        """Flush the viewer.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscViewerFlush
+
+        """
         CHKERR( PetscViewerFlush(self.vwr) )
 
-    def setFileMode(self, mode):
+    def setFileMode(self, mode: FileMode | str) -> None:
+        """Set file mode.
+
+        Collective.
+
+        See Also
+        --------
+        getFileMode, petsc.PetscViewerFileSetMode
+
+        """
         CHKERR( PetscViewerFileSetMode(self.vwr, filemode(mode)) )
 
-    def getFileMode(self):
+    def getFileMode(self) -> FileMode:
+        """Return the file mode.
+
+        Not collective.
+
+        See Also
+        --------
+        setFileMode, petsc.PetscViewerFileGetMode
+
+        """
         cdef PetscFileMode mode = PETSC_FILE_MODE_READ
         CHKERR( PetscViewerFileGetMode(self.vwr, &mode) )
         return mode
 
-    def setFileName(self, name):
+    def setFileName(self, name: str) -> None:
+        """Set file name.
+
+        Collective.
+
+        See Also
+        --------
+        getFileName, petsc.PetscViewerFileSetName
+
+        """
         cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         CHKERR( PetscViewerFileSetName(self.vwr, cval) )
 
-    def getFileName(self):
+    def getFileName(self) -> str:
+        """Return file name.
+
+        Not collective.
+
+        See Also
+        --------
+        setFileName, petsc.PetscViewerFileGetName
+
+        """
         cdef const char *cval = NULL
         CHKERR( PetscViewerFileGetName(self.vwr, &cval) )
         return bytes2str(cval)
 
     # --- methods specific to draw viewers ---
 
-    def setDrawInfo(self,  display=None, title=None, position=None, size=None):
+    def setDrawInfo(
+        self,
+        display: str | None = None,
+        title: str | None = None,
+        position: tuple[int, int] | None = None,
+        size: tuple[int, int] | int | None = None,
+        ) -> None:
+        """Set window information for a `Type.DRAW` viewer.
+
+        Collective.
+
+        Parameters
+        ----------
+        display
+            The X display to use or `None` for the local machine.
+        title
+            The window title or `None` for no title.
+        position
+            Screen coordinates of the upper left corner, or `None` for default.
+        size
+            Window size or `None` for default.
+
+        """
+        # FIXME missing manual page
+        # See Also
+        # --------
+        # petsc.PetscViewerDrawSetInfo
         cdef const char *cdisplay = NULL
         cdef const char *ctitle = NULL
         display = str2bytes(display, &cdisplay)
@@ -366,7 +889,14 @@ cdef class Viewer(Object):
                                        cdisplay, ctitle,
                                        x, y, w, h) )
 
-    def clearDraw(self):
+    def clearDraw(self) -> None:
+        """Reset graphics.
+
+        See Also
+        --------
+        petsc.PetscViewerDrawClear
+
+        """
         CHKERR( PetscViewerDrawClear(self.vwr) )
 
 # --------------------------------------------------------------------
@@ -422,7 +952,7 @@ cdef class ViewerHDF5(Viewer):
 
 del ViewerType
 del ViewerFormat
-del FileMode
-del DrawSize
+del ViewerFileMode
+del ViewerDrawSize
 
 # --------------------------------------------------------------------

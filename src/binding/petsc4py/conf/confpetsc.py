@@ -518,15 +518,28 @@ class config(_config):
 
 class build(_build):
 
-    user_options = _build.user_options + cmd_petsc_opts
+    user_options = _build.user_options
+    user_options += [(
+        'inplace',
+        'i',
+        "ignore build-lib and put compiled extensions into the source "
+        "directory alongside your pure Python modules",
+    )]
+    user_options += cmd_petsc_opts
+
+    boolean_options = _build.boolean_options
+    boolean_options += ['inplace']
 
     def initialize_options(self):
         _build.initialize_options(self)
+        self.inplace = None
         self.petsc_dir  = None
         self.petsc_arch = None
 
     def finalize_options(self):
         _build.finalize_options(self)
+        if self.inplace is None:
+            self.inplace = False
         self.set_undefined_options('config',
                                    ('petsc_dir',  'petsc_dir'),
                                    ('petsc_arch', 'petsc_arch'))
@@ -573,12 +586,14 @@ class build_ext(_build_ext):
 
     def initialize_options(self):
         _build_ext.initialize_options(self)
+        self.inplace = None
         self.petsc_dir  = None
         self.petsc_arch = None
         self._outputs = []
 
     def finalize_options(self):
         _build_ext.finalize_options(self)
+        self.set_undefined_options('build', ('inplace', 'inplace'))
         self.set_undefined_options('build',
                                    ('petsc_dir',  'petsc_dir'),
                                    ('petsc_arch', 'petsc_arch'))

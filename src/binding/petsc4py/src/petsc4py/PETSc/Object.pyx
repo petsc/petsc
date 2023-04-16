@@ -20,7 +20,7 @@ cdef class Object:
         elif op == 3: return (s.obj[0] != o.obj[0])
         else: raise TypeError("only '==' and '!='")
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.obj[0] != NULL
 
     def __copy__(self):

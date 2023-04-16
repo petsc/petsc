@@ -1,11 +1,6 @@
 # Author:  Lisandro Dalcin
 # Contact: dalcinl@gmail.com
-
-# --------------------------------------------------------------------
-
-"""
-PETSc for Python
-================
+"""The PETSc for Python package.
 
 This package is an interface to PETSc libraries.
 
@@ -24,43 +19,48 @@ __author__  = 'Lisandro Dalcin'
 __version__ = '3.19.0'
 __credits__ = 'PETSc Team <petsc-maint@mcs.anl.gov>'
 
-# --------------------------------------------------------------------
 
 def init(args=None, arch=None, comm=None):
-    """
-    Initialize PETSc.
+    """Initialize PETSc.
 
-    :Parameters:
-      - `args`: command-line arguments, usually the 'sys.argv' list.
-      - `arch`: specific configuration to use.
-      - `comm`: MPI commmunicator
+    Parameters
+    ----------
+    args
+        Command-line arguments, usually the `sys.argv` list
+    arch
+        Specific configuration to use
+    comm
+        MPI commmunicator
 
-    .. note:: This function should be called only once, typically at
-       the very beginning of the bootstrap script of an application.
+    Notes
+    -----
+    This function should be called only once, typically at the very
+    beginning of the bootstrap script of an application.
     """
     import petsc4py.lib
     PETSc = petsc4py.lib.ImportPETSc(arch)
     args  = petsc4py.lib.getInitArgs(args)
     PETSc._initialize(args, comm)
 
-# --------------------------------------------------------------------
 
 def get_include():
-    """
-    Return the directory in the package that contains header files.
+    """Return the directory in the package that contains header files.
 
     Extension modules that need to compile against petsc4py should use
-    this function to locate the appropriate include directory. Using
-    Python distutils (or perhaps NumPy distutils)::
+    this function to locate the appropriate include directory.
 
-      import petsc4py
-      Extension('extension_name', ...
-                include_dirs=[..., petsc4py.get_include()])
+    Example
+    -------
+    Using Python distutils or NumPy distutils::
+
+        import petsc4py
+        Extension('extension_name', ...
+                  include_dirs=[..., petsc4py.get_include()])
+
     """
     from os.path import dirname, join
     return join(dirname(__file__), 'include')
 
-# --------------------------------------------------------------------
 
 def get_config():
     """Return a dictionary with information about PETSc."""
@@ -83,5 +83,3 @@ def get_config():
     else:
         parser.readfp(stream, filename)
     return dict(parser.items('petsc'))
-
-# --------------------------------------------------------------------
