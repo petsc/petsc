@@ -864,7 +864,7 @@ PetscErrorCode DMForestGetMaximumRefinement(DM dm, PetscInt *maxRefinement)
   for a refinement/coarsening flag to be valid, and `DMFORESTADAPTANY`, which indicates that only one process needs to
   specify refinement/coarsening.
 
- .seealso: `DM`, `DMFOREST`, `DMForestGetAdaptivityStrategy()`, `DMFORESTADAPTALL`, `DMFORESTADAPTANY`
+.seealso: `DM`, `DMFOREST`, `DMForestGetAdaptivityStrategy()`, `DMFORESTADAPTALL`, `DMFORESTADAPTANY`
 @*/
 PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy adaptStrategy)
 {

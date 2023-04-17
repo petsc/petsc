@@ -331,7 +331,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
- .seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`
+.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`
 @*/
 PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, PetscViewerAndFormat *vf)
 {

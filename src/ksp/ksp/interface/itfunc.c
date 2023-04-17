@@ -1252,7 +1252,7 @@ PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `MatMatSolve()`, `KSPMatSolveTranspose(), `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`
+.seealso: [](chapter_ksp), `KSPSolve()`, `MatMatSolve()`, `KSPMatSolveTranspose()`, `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`
 @*/
 PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 {
@@ -1277,7 +1277,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPSolveTranspose()`, `MatMatTransposeSolve()`, `KSPMatSolve(), `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`
+.seealso: [](chapter_ksp), `KSPSolveTranspose()`, `MatMatTransposeSolve()`, `KSPMatSolve()`, `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`
 @*/
 PetscErrorCode KSPMatSolveTranspose(KSP ksp, Mat B, Mat X)
 {

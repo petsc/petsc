@@ -1887,7 +1887,7 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar **a)
    Fortran Note:
    `VecRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayF90()`
 
- .seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
+.seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a)
@@ -2045,7 +2045,7 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
    Fortran Note:
    `VecRestoreArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayWriteF90()`
 
- .seealso: [](chapter_vectors), `Vec`, `VecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
+.seealso: [](chapter_vectors), `Vec`, `VecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`
 @*/
 PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)

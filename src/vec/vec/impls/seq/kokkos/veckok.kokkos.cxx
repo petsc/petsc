@@ -1342,7 +1342,7 @@ PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, 
 
  Level: intermediate
 
- .seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
+.seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
  @*/
 PetscErrorCode VecCreateSeqKokkos(MPI_Comm comm, PetscInt n, Vec *v)
 {

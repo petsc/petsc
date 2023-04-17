@@ -1076,7 +1076,7 @@ PetscErrorCode MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat, PetscInt *indices)
 
   MUST be called before any calls to `MatSetValues()`
 
- .seealso: [](chapter_matrices), `Mat`, `MATSEQSBAIJ`, `MatCreateSeqSBAIJ`
+.seealso: [](chapter_matrices), `Mat`, `MATSEQSBAIJ`, `MatCreateSeqSBAIJ`
 @*/
 PetscErrorCode MatSeqSBAIJSetColumnIndices(Mat mat, PetscInt *indices)
 {
@@ -1905,7 +1905,7 @@ PetscErrorCode MatSeqSBAIJRestoreArray(Mat A, PetscScalar **array)
 
     The number of rows in the matrix must be less than or equal to the number of columns
 
-  .seealso: [](chapter_matrices), `Mat`, `MATSEQSBAIJ`, `MatCreateSeqSBAIJ()`, `MatType`, `MATMPISBAIJ`
+.seealso: [](chapter_matrices), `Mat`, `MATSEQSBAIJ`, `MatCreateSeqSBAIJ()`, `MatType`, `MATMPISBAIJ`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {

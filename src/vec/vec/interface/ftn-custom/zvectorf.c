@@ -227,7 +227,7 @@ $      type(Field)     :: a(*)
 
      You do NOT need VecGetArrayAligned() if lx_v and a are arrays of PetscScalar
 
-.seealso: VecGetArray(), VecGetArrayF90()
+.seealso: `VecGetArray()`, `VecGetArrayF90()`
 M*/
 static PetscBool  VecGetArrayAligned = PETSC_FALSE;
 PETSC_EXTERN void vecgetarrayaligned_(PetscErrorCode *ierr)

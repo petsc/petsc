@@ -21,7 +21,7 @@
 
    Lower left corner is (0,0).
 
-.seealso: `PetscDrawGetViewPort(), ``PetscDraw`, `PetscDrawSplitViewPort()`, `PetscDrawViewPortsCreate()`
+.seealso: `PetscDrawGetViewPort()`, `PetscDraw`, `PetscDrawSplitViewPort()`, `PetscDrawViewPortsCreate()`
 @*/
 PetscErrorCode PetscDrawSetViewPort(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr)
 {

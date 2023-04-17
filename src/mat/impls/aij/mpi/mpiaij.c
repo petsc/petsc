@@ -5115,7 +5115,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
      destroyed when mpimat is destroyed. Call `PetscObjectQuery()` to access seqmat.
 
-seealso: [](chapter_matrices), `Mat`, `MatCreateAIJ()`
+.seealso: [](chapter_matrices), `Mat`, `MatCreateAIJ()`
 @*/
 PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm, Mat seqmat, PetscInt m, PetscInt n, MatReuse scall, Mat *mpimat)
 {

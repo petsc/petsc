@@ -1583,7 +1583,7 @@ PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
  Notes:
  This function cannot be called until `TSAdjointStep()` has been completed.
 
- .seealso: [](chapter_ts), `TSAdjointSolve()`, `TSAdjointStep()`
+.seealso: [](chapter_ts), `TSAdjointSolve()`, `TSAdjointStep()`
  @*/
 PetscErrorCode TSAdjointCostIntegral(TS ts)
 {

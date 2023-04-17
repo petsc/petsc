@@ -145,5 +145,5 @@ PetscErrorCode MatCreateAIJViennaCL(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
 
   Level: beginner
 
- .seealso: `Mat`, `MatType`, `MatCreateAIJViennaCL()`, `MATSEQAIJVIENNACL`, `MatCreateSeqAIJVIENNACL()`
+.seealso: `Mat`, `MatType`, `MatCreateAIJViennaCL()`, `MATSEQAIJVIENNACL`, `MatCreateSeqAIJVIENNACL()`
 M*/

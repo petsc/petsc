@@ -592,7 +592,7 @@ $  PetscErrorCode (*func)(Tao tao, Vec u, Mat H, void *ctx)
 
    Level: advanced
 
-  .seealso: `Tao`, `Mat`, `TAOBRGN`
+.seealso: `Tao`, `Mat`, `TAOBRGN`
 @*/
 PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscErrorCode (*func)(Tao, Vec, Mat, void *), void *ctx)
 {
