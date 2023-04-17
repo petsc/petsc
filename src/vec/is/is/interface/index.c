@@ -1270,7 +1270,7 @@ PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max)
 
   Level: intermediate
 
- .seealso: `IS`
+.seealso: `IS`
  @*/
 PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 {

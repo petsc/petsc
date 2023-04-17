@@ -1670,7 +1670,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
  Level: developer
 
- .seealso: `PetscInitialize()`
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode PCGAMGInitializePackage(void)
 {
@@ -1727,7 +1727,7 @@ PetscErrorCode PCGAMGInitializePackage(void)
 
  Level: developer
 
- .seealso: `PetscFinalize()`
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode PCGAMGFinalizePackage(void)
 {
@@ -1746,7 +1746,7 @@ PetscErrorCode PCGAMGFinalizePackage(void)
 
   Level: developer
 
- .seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
+.seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
 @*/
 PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
 {
@@ -1768,7 +1768,7 @@ PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
 
   Level: advanced
 
- .seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
+.seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
 @*/
 PetscErrorCode PCGAMGCreateGraph(PC pc, Mat A, Mat *G)
 {

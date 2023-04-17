@@ -1045,7 +1045,7 @@ PetscErrorCode DMCreateGlobalVector(DM dm, Vec *vec)
     Note:
     A local vector usually has ghost locations that contain values that are owned by different MPI ranks. A global vector has no ghost locations.
 
- .seealso: [](chapter_dmbase), `DM`, `Vec`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
+.seealso: [](chapter_dmbase), `DM`, `Vec`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`
          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`
 @*/
 PetscErrorCode DMCreateLocalVector(DM dm, Vec *vec)
@@ -5028,7 +5028,7 @@ PetscErrorCode DMSetFieldAvoidTensor(DM dm, PetscInt f, PetscBool avoidTensor)
 
   Level: intermediate
 
- .seealso: [](chapter_dmbase), `DM`, `DMAddField()`, `DMSetField()`, `DMGetField()`, `DMSetFieldAvoidTensor()`, `DMSetField()`, `DMGetField()`
+.seealso: [](chapter_dmbase), `DM`, `DMAddField()`, `DMSetField()`, `DMGetField()`, `DMSetFieldAvoidTensor()`, `DMSetField()`, `DMGetField()`
 @*/
 PetscErrorCode DMGetFieldAvoidTensor(DM dm, PetscInt f, PetscBool *avoidTensor)
 {
@@ -8480,7 +8480,7 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
  Note:
  Do not free the array, it is freed when the `DM` is destroyed.
 
- .seealso: [](chapter_dmbase), `DM`, `DMDAGetNeighbors()`, `PetscSFGetRootRanks()`
+.seealso: [](chapter_dmbase), `DM`, `DMDAGetNeighbors()`, `PetscSFGetRootRanks()`
 @*/
 PetscErrorCode DMGetNeighbors(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
 {

@@ -704,7 +704,7 @@ $ PetscErrorCode destroy(void *ctx)
  Notes:
  The default modifypc routine is `KSPPIPEGCRModifyPCNoChange()`
 
- .seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRModifyPCNoChange()`
+.seealso: [](chapter_ksp), `KSPPIPEGCR`, `KSPPIPEGCRModifyPCNoChange()`
  @*/
 PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
 {
