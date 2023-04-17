@@ -2811,9 +2811,9 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Contributed by Stefano Zampini
 
- .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PGGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
-            `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
-            `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
+          `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
+          `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
