@@ -62,7 +62,7 @@ PetscErrorCode VecStashGetInfo(Vec vec, PetscInt *nstash, PetscInt *reallocs, Pe
 
    Vectors obtained with `DMCreateGlobaVector()` will often have this attribute attached to the vector so this call is not needed
 
-seealso: [](chapter_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetValuesLocal()`,
+.seealso: [](chapter_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetValuesLocal()`,
            `VecGetLocalToGlobalMapping()`, `VecSetValuesBlockedLocal()`
 @*/
 PetscErrorCode VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
@@ -182,7 +182,7 @@ PetscErrorCode VecAssemblyEnd(Vec vec)
 
    The array coo_i[] may be freed immediately after calling this function.
 
-.seealso: [](chapter_vectors), `Vec`, VecSetValuesCOO(), VecSetPreallocationCOOLocal()
+.seealso: [](chapter_vectors), `Vec`, `VecSetValuesCOO()`, `VecSetPreallocationCOOLocal()`
 @*/
 PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo_i[])
 {
@@ -232,7 +232,7 @@ PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo
 
    Entries can be repeated. Negative indices and remote indices might be allowed. see `VecSetPreallocationCOO()`.
 
-.seealso: [](chapter_vectors), `Vec`, VecSetPreallocationCOO(), VecSetValuesCOO()
+.seealso: [](chapter_vectors), `Vec`, `VecSetPreallocationCOO()`, `VecSetValuesCOO()`
 @*/
 PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_i[])
 {
@@ -272,7 +272,7 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
    The imode flag indicates if `coo_v` must be added to the current values of the vector (`ADD_VALUES`) or overwritten (`INSERT_VALUES`).
    `VecAssemblyBegin()` and `VecAssemblyEnd()` do not need to be called after this routine. It automatically handles the assembly process.
 
-.seealso: [](chapter_vectors), `Vec`, VecSetPreallocationCOO(), VecSetPreallocationCOOLocal(), VecSetValues()
+.seealso: [](chapter_vectors), `Vec`, `VecSetPreallocationCOO()`, `VecSetPreallocationCOOLocal()`, `VecSetValues()`
 @*/
 PetscErrorCode VecSetValuesCOO(Vec x, const PetscScalar coo_v[], InsertMode imode)
 {

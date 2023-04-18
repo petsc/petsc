@@ -74,7 +74,7 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
  If it is underestimated, you will get bad performance due to reallocation
  (`MatSeqXSELLReallocateSELL()`).
 
- .seealso: `Mat`, `MATSEQSELL`, `MATSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
+.seealso: `Mat`, `MATSEQSELL`, `MATSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
  @*/
 PetscErrorCode MatSeqSELLSetPreallocation(Mat B, PetscInt rlenmax, const PetscInt rlen[])
 {
@@ -2440,7 +2440,7 @@ M*/
  Set `rlenmax` = `PETSC_DEFAULT` and `rlen` = `NULL` for PETSc to control dynamic memory
  allocation.
 
- .seealso: `Mat`, `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
+.seealso: `Mat`, `MATSEQSELL`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
  @*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt rlenmax, const PetscInt rlen[], Mat *A)
 {

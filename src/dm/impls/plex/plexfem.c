@@ -3574,11 +3574,11 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
 . x       - An array of field values, indexed by s
 
   Note:
-  The arrays in x will be allocated using DMGetWorkArray(), and must be returned using DMPlexRestoreHybridFields().
+  The arrays in `x` will be allocated using `DMGetWorkArray()`, and must be returned using `DMPlexRestoreHybridFields()`.
 
   Level: advanced
 
-.seealso: DMPlexRestoreHybridFields(), DMGetWorkArray()
+.seealso: `DMPlexRestoreHybridFields()`, `DMGetWorkArray()`
 */
 static PetscErrorCode DMPlexGetHybridFields(DM dm, DM dmX[], PetscDS dsX[], IS cellIS, Vec locX[], PetscBool useCell, PetscScalar *x[])
 {

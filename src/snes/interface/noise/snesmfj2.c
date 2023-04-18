@@ -194,7 +194,7 @@ $          -snes_mf_jorge
    The user should call `MatDestroy()` when finished with the matrix-free
    matrix context.
 
-.seealso: `SNESCreateMF`(), `MatCreateMFFD()`, `MatDestroy()`, `MatMFFDSetFunctionError()`
+.seealso: `SNESCreateMF()`, `MatCreateMFFD()`, `MatDestroy()`, `MatMFFDSetFunctionError()`
 @*/
 PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
 {

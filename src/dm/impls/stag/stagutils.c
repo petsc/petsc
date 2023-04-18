@@ -552,7 +552,7 @@ PetscErrorCode DMStagGetEntries(DM dm, PetscInt *entries)
   `VecGetLocalSize(vec,&size)` when `DMCreateLocalVector(dm,&vec)` is used to
   create a `Vec`. Users would typically use these functions.
 
-.seealso: [](chapter_stag), DMSTAG, DMStagGetDOF(), DMStagGetEntries(), DMStagGetEntriesPerElement(), DMCreateLocalVector()
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntries()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMStagGetEntriesLocal(DM dm, PetscInt *entries)
 {

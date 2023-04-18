@@ -559,7 +559,7 @@ manimplementations:
             sed "s?\(.*\.[ch]x*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
           fi ; \
           if [ -s implsClass.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
+            sed "s?\(.*\.[ch]x*u*\):.*struct.*\(_p_$${itemName}\).*{?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
           fi ; \
           ${RM} implsFunc.txt implsClass.txt; \
        fi ; \

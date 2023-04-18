@@ -330,10 +330,10 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm, PetscSplitReduction **sr)
    Level: advanced
 
    Notes:
-   Each call to VecDotBegin() should be paired with a call to VecDotEnd().
+   Each call to `VecDotBegin()` should be paired with a call to `VecDotEnd()`.
 
-seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecTDotBegin(), VecTDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecTDotBegin()`, `VecTDotEnd()`, `PetscCommSplitReductionBegin()`
 @*/
 PetscErrorCode VecDotBegin(Vec x, Vec y, PetscScalar *result)
 {
@@ -443,10 +443,10 @@ PetscErrorCode VecTDotBegin(Vec x, Vec y, PetscScalar *result)
    Level: advanced
 
    Notes:
-   Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
+   Each call to `VecTDotBegin()` should be paired with a call to `VecTDotEnd()`.
 
-seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecDotBegin(), VecDotEnd()
+.seealso: `VecTDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecDotBegin()`, `VecDotEnd()`
 @*/
 PetscErrorCode VecTDotEnd(Vec x, Vec y, PetscScalar *result)
 {

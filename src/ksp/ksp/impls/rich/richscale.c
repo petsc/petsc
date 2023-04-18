@@ -16,7 +16,7 @@
 
     Level: intermediate
 
- .seealso: [](chapter_ksp), `KSPRICHARDSON`, `KSPRichardsonSetSelfScale()`
+.seealso: [](chapter_ksp), `KSPRICHARDSON`, `KSPRichardsonSetSelfScale()`
 @*/
 PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
 {

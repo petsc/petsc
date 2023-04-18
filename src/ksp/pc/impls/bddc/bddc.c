@@ -2811,9 +2811,9 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Contributed by Stefano Zampini
 
- .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PGGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
-            `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
-            `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
+          `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
+          `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
@@ -2901,7 +2901,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
  Level: developer
 
- .seealso: `PetscInitialize()`, `PCBDDCFinalizePackage()`
+.seealso: `PetscInitialize()`, `PCBDDCFinalizePackage()`
 @*/
 PetscErrorCode PCBDDCInitializePackage(void)
 {
@@ -2968,7 +2968,7 @@ PetscErrorCode PCBDDCInitializePackage(void)
 
     Level: developer
 
- .seealso: `PetscFinalize()`, `PCBDDCInitializePackage()`
+.seealso: `PetscFinalize()`, `PCBDDCInitializePackage()`
 @*/
 PetscErrorCode PCBDDCFinalizePackage(void)
 {

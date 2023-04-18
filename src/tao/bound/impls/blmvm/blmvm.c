@@ -263,7 +263,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
 
   Level: intermediate
 
-seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`
+.seealso: `Tao`, `TAOLMVM`, `TAOBLMVM`
 @*/
 PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
 {
