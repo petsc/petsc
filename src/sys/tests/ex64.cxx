@@ -456,6 +456,19 @@ public:
     PetscCall(map.clear());
     PetscCall(check_map_is_truly_empty(map));
 
+    {
+      std::size_t cap_before;
+
+      PetscCallCXX(map = backup);
+      cap_before = map.capacity();
+      PetscCall(map.clear());
+      PetscCall(check_map_is_truly_empty(map));
+      MapCheck(map, map.capacity() == cap_before, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map capacity decreased on clear(), capacity before %zu != current capacity %zu", cap_before, map.capacity());
+      PetscCall(map.shrink_to_fit());
+      MapCheck(map, map.capacity() == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map capacity should be 0 (have %zu) after clear() -> shrink_to_fit()!", map.capacity());
+      PetscCall(check_map_is_truly_empty(map));
+    }
+
     // test that clear works OK (used to be a bug when inserting after clear)
     PetscCallCXX(map.insert(generator()));
     PetscCallCXX(map.insert(generator()));
