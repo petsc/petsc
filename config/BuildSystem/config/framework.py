@@ -1321,20 +1321,21 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       return moduleList[0]
 
     def checkChildCxxDialectBounds(child,minCxx,maxCxx):
-      if child.minCxxVersion > minCxx:
+      def assign_blame(key, blame_list, name):
+        if key not in blame_list:
+          blame_list[key] = set()
+        blame_list[key].add(name)
+        return
+
+      child_name = child.name
+      if child.minCxxVersion > minCxx or 'Cxx' in child.buildLanguages:
         minCxx = child.minCxxVersion
-        self.logPrint('serialEvaluation: child {child} raised minimum cxx dialect version to {minver}'.format(child=child.name,minver=minCxx))
-        try:
-          minCxxVersionBlameList[minCxx].add([child.name])
-        except KeyError:
-          minCxxVersionBlameList[minCxx] = set([child.name])
+        self.logPrint('serialEvaluation: child {child} raised minimum cxx dialect version to {minver}'.format(child=child_name,minver=minCxx))
+        assign_blame(minCxx, minCxxVersionBlameList, child_name)
       if child.maxCxxVersion < maxCxx:
         maxCxx = child.maxCxxVersion
-        self.logPrint('serialEvaluation: child {child} decreased maximum cxx dialect version to {maxver}'.format(child=child.name,maxver=maxCxx))
-        try:
-          maxCxxVersionBlameList[maxCxx].add([child.name])
-        except KeyError:
-          maxCxxVersionBlameList[maxCxx] = set([child.name])
+        self.logPrint('serialEvaluation: child {child} decreased maximum cxx dialect version to {maxver}'.format(child=child_name,maxver=maxCxx))
+        assign_blame(maxCxx, maxCxxVersionBlameList, child_name)
       return minCxx,maxCxx
 
     ndepGraph     = list(graph.DirectedGraph.topologicalSort(depGraph))
