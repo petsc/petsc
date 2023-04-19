@@ -9,6 +9,13 @@
 #
 #    export MPICH_GPU_SUPPORT_ENABLED=1
 #
+# To use hipcc with GPU-aware Cray MPICH, use the following environment variables to setup the needed header files and libraries.
+#
+#    -I${MPICH_DIR}/include
+#    -L${MPICH_DIR}/lib -lmpi ${PE_MPICH_GTL_DIR_amd_gfx90a} ${PE_MPICH_GTL_LIBS_amd_gfx90a}
+#
+# See also https://docs.olcf.ornl.gov/systems/frontier_user_guide.html#gpu-aware-mpi
+#
 if __name__ == '__main__':
   import sys
   import os
@@ -20,8 +27,10 @@ if __name__ == '__main__':
     '--with-cxx=CC',
     '--with-fc=ftn',
     '--with-mpiexec=srun -p batch -N 1 -A csc314 -t 00:10:00',
+    '--with-batch',
     '--with-hip',
     '--with-hipc=hipcc',
+    'LIBS={GTLDIR} {GTLLIBS}'.format(GTLDIR=os.environ['PE_MPICH_GTL_DIR_amd_gfx90a'], GTLLIBS=os.environ['PE_MPICH_GTL_LIBS_amd_gfx90a']),
     '--download-kokkos',
     '--download-kokkos-kernels',
   ]
@@ -67,6 +76,7 @@ if __name__ == '__main__':
 #     'LIBS={GTLDIR} {GTLLIBS}'.format(GTLDIR=os.environ['PE_MPICH_GTL_DIR_amd_gfx90a'], GTLLIBS=os.environ['PE_MPICH_GTL_LIBS_amd_gfx90a']),
 #     #'--with-openmp=1', # enable if using "craype-accel-amd-gfx90a" module
 #     '--with-mpiexec=srun -p batch -N 1 -A csc314 -t 00:10:00',
+#     '--with-batch',
 #     '--with-hip',
 #     '--with-hipc=hipcc',
 #     '--download-kokkos',
