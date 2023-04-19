@@ -1388,7 +1388,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       loPack = ', '.join(minCxxVersionBlameList[minCxx])
       # high water mark
       hiPack = ', '.join(maxCxxVersionBlameList[maxCxx])
-      raise RuntimeError('Requested package(s) have incompatible C++ requirements. Package(s) {loPacks} require at least {mincxx} but package(s) {hiPack} require at most {maxcxx}'.format(loPack=loPack,mincxx=minCxx,hiPack=hiPack,maxcxx=maxCxx))
+      raise RuntimeError('Requested package(s) have incompatible C++ requirements. Package(s) {loPack} require at least {mincxx} but package(s) {hiPack} require at most {maxcxx}'.format(loPack=loPack,mincxx=minCxx,hiPack=hiPack,maxcxx=maxCxx))
     setCompilers.cxxDialectPackageRanges = (minCxxVersionBlameList,maxCxxVersionBlameList)
     self.logPrint('serialEvaluation: new cxxDialectRanges {rng}'.format(rng=(minCxx,maxCxx)))
     depGraph  = graph.DirectedGraph.topologicalSort(depGraph)
