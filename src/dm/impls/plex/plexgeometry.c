@@ -211,7 +211,7 @@ static PetscErrorCode DMPlexGetPlaneSimplexIntersection_Coords_Internal(DM dm, P
   if (Nint) *Nint = 0;
   if (PetscDefined(USE_DEBUG)) {
     PetscReal mag = DMPlex_NormD_Internal(cdim, normal);
-    PetscCheck(PetscAbsReal(mag - 1.) < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Normal vector is not normalized: %g", (double)mag);
+    PetscCheck(PetscAbsReal(mag - (PetscReal)1.0) < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Normal vector is not normalized: %g", (double)mag);
   }
 
   dp = DMPlex_DotRealD_Internal(cdim, normal, p);
