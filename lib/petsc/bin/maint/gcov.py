@@ -13,6 +13,7 @@ import lxml
 import lxml.etree
 import copy
 import functools
+import textwrap
 
 # version of gcovr JSON format that this script was tested against and knows how to write
 # see https://gcovr.com/en/stable/output/json.html#json-output
@@ -491,7 +492,7 @@ def generate_xml(runner, merged_report, dest_dir):
   mega_report.unlink()
   return
 
-def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_mode):
+def do_main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_mode):
   petsc_dir = sanitize_path(petsc_dir)
   assert petsc_dir.is_dir(), 'PETSC_DIR {} is not a directory'.format(petsc_dir)
   petsc_arch_dir = sanitize_path(petsc_dir/petsc_arch)
@@ -662,6 +663,34 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
         ci_fail_file.touch()
 
   return ret_code
+
+def make_error_exc():
+  def add_logfile_path(mess, stream_name):
+    try:
+      path = getattr(gcov_logger, stream_name)
+    except AttributeError:
+      path = 'unknown location'
+    mess.append('  {}: {}'.format(stream_name, path))
+    return mess
+
+  width = 90
+  bars  = '=' * width
+  mess  = textwrap.wrap('An error occured while processing GCOVR results. NOTE THAT DEBUG LOGS ARE LOCATED:', width=width-2, initial_indent='  ', subsequent_indent='  ')
+  add_logfile_path(mess, 'stdout')
+  add_logfile_path(mess, 'stderr')
+  mess.insert(0, bars)
+  mess.append(bars)
+  return Exception('\n' + '\n'.join(mess))
+
+def main(*args, **kwargs):
+  try:
+    return do_main(*args, **kwargs)
+  except Exception as e:
+    try:
+      exc = make_error_exc()
+    except Exception as mem:
+      exc = mem
+    raise exc from e
 
 if __name__ == '__main__':
   import os
