@@ -1810,7 +1810,7 @@ PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
 
         mumps->id.ICNTL(19) = 1;                                                                            /* MUMPS returns Schur centralized on the host */
         gs                  = mumps->myid ? (mumps->id.size_schur ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE; /* always true on root; false on others if their size != 0 */
-        PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &gs, 1, MPIU_BOOL, MPI_LAND, mumps->petsc_comm));
+        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gs, 1, MPIU_BOOL, MPI_LAND, mumps->petsc_comm));
         PetscCheck(gs, PETSC_COMM_SELF, PETSC_ERR_SUP, "MUMPS distributed parallel Schur complements not yet supported from PETSc");
       } else {
         if (F->factortype == MAT_FACTOR_LU) {

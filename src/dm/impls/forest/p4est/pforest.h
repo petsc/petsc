@@ -871,7 +871,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
       PetscCall(DMLabelGetNumValues(adaptLabel, &numValues));
-      PetscCallMPI(MPI_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
+      PetscCall(MPIU_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
       PetscCall(DMLabelGetDefaultValue(adaptLabel, &defaultValue));
       if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN_LAST) { /* uniform coarsen of the last level only (equivalent to DM_ADAPT_COARSEN for conforming grids)  */
         PetscCall(DMForestGetMinimumRefinement(dm, &ctx.minLevel));
@@ -1312,7 +1312,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
   dm->setupcalled         = PETSC_TRUE;
-  PetscCallMPI(MPI_Allreduce(&ctx.anyChange, &(pforest->adaptivitySuccess), 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&ctx.anyChange, &(pforest->adaptivitySuccess), 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPforestGetPlex(dm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

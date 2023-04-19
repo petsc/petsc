@@ -2279,7 +2279,7 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
   }
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   count = (pEnd - pStart) > 0 ? 1 : 0;
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm));
   *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

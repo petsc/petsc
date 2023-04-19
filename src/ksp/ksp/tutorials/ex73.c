@@ -699,7 +699,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
       }
       dalist[d * levelrefs + k] = dmref;
     }
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &nx, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &nx, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD));
   }
 
   /* create the hierarchy of DMShell's */

@@ -1414,7 +1414,7 @@ static PetscErrorCode DMPlexComparePointSFWithInterface_Private(DM ipdm, IS inte
 
   /* compare pointsf_is with interface_is */
   PetscCall(ISEqual(interface_is, pointsf_is, &flg));
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
   if (!flg) {
     IS          pointsf_extra_is, pointsf_missing_is;
     PetscViewer errv = PETSC_VIEWER_STDERR_(comm);

@@ -127,7 +127,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
     }
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));
-    PetscCallMPI(MPI_Allreduce(&nAdaptLoc, &nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dmCur)));
+    PetscCall(MPIU_Allreduce(&nAdaptLoc, &nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dmCur)));
     if (nAdapt[0]) {
       PetscCall(PetscInfo(dmCur, "Adapted mesh, marking %" PetscInt_FMT " cells for refinement, and %" PetscInt_FMT " cells for coarsening\n", nAdapt[0], nAdapt[1]));
       PetscCall(DMAdaptLabel(dmCur, adaptLabel, &dmAdapt));

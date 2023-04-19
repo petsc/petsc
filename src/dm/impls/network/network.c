@@ -585,7 +585,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
 #endif
 
   /* (2.3) Shared vertices in the subnetworks are merged, update global NVertices: np = sum(local nmerged) */
-  PetscCallMPI(MPI_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
   network->cloneshared->NVertices -= np;
 
   ctr = 0;

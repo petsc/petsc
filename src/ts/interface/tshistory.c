@@ -31,7 +31,7 @@
       }; \
       b1[0] = -b; \
       b1[1] = b; \
-      PetscCallMPI(MPI_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
+      PetscCall(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
       PetscCheck((b2[2] == 1) || PetscEqualReal(-b2[0], b2[1]), a, PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", c); \
     } while (0)
 

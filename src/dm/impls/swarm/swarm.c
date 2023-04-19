@@ -927,7 +927,7 @@ PetscErrorCode DMSwarmGetSize(DM dm, PetscInt *n)
 
   PetscFunctionBegin;
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &nlocal, NULL, NULL));
-  PetscCallMPI(MPI_Allreduce(&nlocal, n, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&nlocal, n, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

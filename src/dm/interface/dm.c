@@ -165,7 +165,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
       PetscCall(DMGetLocalSection(dm->coordinates[i].dm, &cs));
       if (cs) PetscCall(PetscSectionGetChart(cs, NULL, &pEnd));
-      PetscCallMPI(MPI_Allreduce(&pEnd, &pEndMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+      PetscCall(MPIU_Allreduce(&pEnd, &pEndMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
       if (pEndMax >= 0) {
         PetscCall(DMClone(dm->coordinates[i].dm, &ncdm));
         PetscCall(DMCopyDisc(dm->coordinates[i].dm, ncdm));
@@ -5291,7 +5291,7 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
     maxLen = PetscMax(maxLen, (PetscInt)len + 2);
   }
   PetscCall(PetscFree(labels));
-  PetscCallMPI(MPI_Allreduce(&maxLen, &gmaxLen, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&maxLen, &gmaxLen, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscCalloc1(Nl * gmaxLen, &sendNames));
   for (l = 0; l < Nl; ++l) PetscCall(PetscStrncpy(&sendNames[gmaxLen * l], names[l], gmaxLen));
   PetscCall(PetscFree(names));
@@ -5916,7 +5916,7 @@ PetscErrorCode DMCreateDS(DM dm)
           break;
         }
       }
-      PetscCallMPI(MPI_Allreduce(&isCohesiveLocal, &isCohesive, 1, MPIU_BOOL, MPI_LOR, comm));
+      PetscCall(MPIU_Allreduce(&isCohesiveLocal, &isCohesive, 1, MPIU_BOOL, MPI_LOR, comm));
       if (isCohesive) {
         PetscCall(PetscDSCreate(PETSC_COMM_SELF, &dsIn));
         PetscCall(PetscDSSetCoordinateDimension(dsIn, dE));
@@ -6308,7 +6308,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscValidPointer(odm, 2);
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionHasConstraints(section, &hasConstraints));
-  PetscCallMPI(MPI_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (!ghasConstraints) {
     *odm = dm;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -7418,7 +7418,7 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char **message)
     PetscCall(DMGetNumLabels(dm1, &n1));
     eq = (PetscBool)(n == n1);
     if (!eq) PetscCall(PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %" PetscInt_FMT " != %" PetscInt_FMT " = Number of labels in dm1", n, n1));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
     if (!eq) goto finish;
   }
   for (i = 0; i < n; i++) {
@@ -7440,7 +7440,7 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char **message)
     PetscCall(PetscFree(msgInner));
     if (!eq) break;
   }
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
 finish:
   /* If message output arg not set, print to stderr */
   if (message) {

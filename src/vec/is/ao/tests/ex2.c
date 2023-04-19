@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc2(n, &ispetsc, n, &isapp));
 
   PetscCallMPI(MPI_Scan(&n, &start, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   start -= n;
 
   for (i = 0; i < n; i++) {

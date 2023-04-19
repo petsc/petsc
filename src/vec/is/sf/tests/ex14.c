@@ -81,14 +81,14 @@ int main(int argc, char **argv)
   PetscCall(PetscLogStagePop());
 
   /* check if we found wrong values on any processors */
-  PetscCallMPI(MPI_Allreduce(&errors, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&errors, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   if (tot_errors) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n", bs));
 
     /* print out event log of VecScatter(bs=1) */
 #if defined(PETSC_USE_LOG)
   PetscCall(PetscLogEventGetPerfInfo(stage1, event1, &eventInfo));
-  PetscCallMPI(MPI_Allreduce(&eventInfo.numMessages, &numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&eventInfo.messageLength, &messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&eventInfo.numMessages, &numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&eventInfo.messageLength, &messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
   tot_msg = (PetscInt)numMessages * 0.5; /* two MPI calls (Send & Recv) per message */
   tot_len = (PetscInt)messageLength * 0.5;
   avg_len = tot_msg ? (PetscInt)(messageLength / numMessages) : 0;
@@ -139,14 +139,14 @@ int main(int argc, char **argv)
   PetscCall(PetscLogStagePop());
 
   /* check if we found wrong values on any processors */
-  PetscCallMPI(MPI_Allreduce(&errors, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&errors, &tot_errors, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   if (tot_errors) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n", bs));
 
     /* print out event log of VecScatter(bs=4) */
 #if defined(PETSC_USE_LOG)
   PetscCall(PetscLogEventGetPerfInfo(stage2, event2, &eventInfo));
-  PetscCallMPI(MPI_Allreduce(&eventInfo.numMessages, &numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&eventInfo.messageLength, &messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&eventInfo.numMessages, &numMessages, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&eventInfo.messageLength, &messageLength, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
   tot_msg = (PetscInt)numMessages * 0.5; /* two MPI calls (Send & Recv) per message */
   tot_len = (PetscInt)messageLength * 0.5;
   avg_len = tot_msg ? (PetscInt)(messageLength / numMessages) : 0;

@@ -1929,8 +1929,8 @@ PetscErrorCode DMPlexIsInterpolatedCollective(DM dm, DMPlexInterpolatedFlag *int
 
     PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
     PetscCall(DMPlexIsInterpolated(dm, &plex->interpolatedCollective));
-    PetscCallMPI(MPI_Allreduce(&plex->interpolatedCollective, &min, 1, MPIU_ENUM, MPI_MIN, comm));
-    PetscCallMPI(MPI_Allreduce(&plex->interpolatedCollective, &max, 1, MPIU_ENUM, MPI_MAX, comm));
+    PetscCall(MPIU_Allreduce(&plex->interpolatedCollective, &min, 1, MPIU_ENUM, MPI_MIN, comm));
+    PetscCall(MPIU_Allreduce(&plex->interpolatedCollective, &max, 1, MPIU_ENUM, MPI_MAX, comm));
     if (min != max) plex->interpolatedCollective = DMPLEX_INTERPOLATED_MIXED;
     if (debug) {
       PetscMPIInt rank;

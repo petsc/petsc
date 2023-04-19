@@ -1081,9 +1081,9 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da, Vec X, Vec X_analytic)
       tu_H1 += u_e_H1;
     }
   }
-  PetscCallMPI(MPI_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);

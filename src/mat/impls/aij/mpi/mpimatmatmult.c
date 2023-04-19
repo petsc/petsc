@@ -441,7 +441,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   bs   = PetscAbs(B->cmap->bs);
   Bbn1 = Bbn1 / bs * bs; /* Bbn1 is a multiple of bs */
   if (Bbn1 > BN) Bbn1 = BN;
-  PetscCallMPI(MPI_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
 
   /* Enable runtime option for Bbn */
   PetscOptionsBegin(comm, ((PetscObject)C)->prefix, "MatMatMult", "Mat");

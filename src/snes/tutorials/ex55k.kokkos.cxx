@@ -161,7 +161,7 @@ PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj,
 
   PetscCall(DMDAVecRestoreKokkosOffsetView(info->da, x, &xv));
   PetscCall(PetscLogFlops(12.0 * info->ym * info->xm));
-  PetscCallMPI(MPI_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
+  PetscCall(MPIU_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

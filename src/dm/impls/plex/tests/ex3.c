@@ -639,7 +639,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       FrobDiff = PetscSqrtReal(FrobDiff);
       maxDiff  = PetscMax(maxDiff, FrobDiff);
     }
-    PetscCallMPI(MPI_Allreduce(&maxDiff, &maxDiffGlob, 1, MPIU_REAL, MPIU_MAX, comm));
+    PetscCall(MPIU_Allreduce(&maxDiff, &maxDiffGlob, 1, MPIU_REAL, MPIU_MAX, comm));
     allVecMaxDiff = PetscMax(allVecMaxDiff, maxDiffGlob);
     PetscCall(VecRestoreArrayRead(locGrad, &gradArray));
     PetscCall(DMRestoreLocalVector(dmfv, &locX));
