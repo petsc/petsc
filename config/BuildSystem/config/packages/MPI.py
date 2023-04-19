@@ -588,6 +588,16 @@ Unable to run hostname to check the network')
         MPIX_Wait_enqueue(&req, &stat);
       '''):
         self.addDefine('HAVE_MPIX_STREAM', 1)
+
+      if self.checkLink('#include <mpi.h>\n',
+      '''
+        MPI_Comm comm = MPI_COMM_WORLD; // fake
+        MPIX_Threadcomm_start(comm);
+        MPIX_Threadcomm_finish(comm);
+        MPIX_Threadcomm_free(&comm);
+      '''):
+        self.addDefine('HAVE_MPIX_THREADCOMM', 1)
+
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       self.logWrite(self.framework.restoreLog())
