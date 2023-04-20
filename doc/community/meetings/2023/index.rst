@@ -15,7 +15,7 @@ Easy access from the hotels via the Chicago Elevated `Green <https://www.transit
 Please test for Covid before attending the meeting and
 mask while traveling to the meeting.
 
-In addition to a newbie user tutorial and newbie developer workshop, the meeting will include a "speed dating" session where users can ask questions of developers (and each other) about technical details of their particular simulations. Finally the meeting will be interspersed with short mini tutorials that will dive down into particular aspects of PETSc that users may not be familiar with.
+In addition to a newbie user tutorial and a :any:`newbie_developer_workshop`, the meeting will include a "speed dating" session where users can ask questions of developers (and each other) about technical details of their particular simulations. Finally the meeting will be interspersed with short mini tutorials that will dive down into particular aspects of PETSc that users may not be familiar with.
 
 Meeting times
 -------------
@@ -27,7 +27,7 @@ PETSc newbie user lightning tutorial:
 
 * Monday June 5: 10 am to 12 pm
 
-PETSc newbie developer workshop:
+PETSc :any:`newbie_developer_workshop`
 
 * Tuesday June 6: 9 am to 10 am
 
@@ -101,7 +101,7 @@ Sample Detailed Agenda
 +------------+------------+-----------+------------------------------------------------+--------------+
 | Tuesday    |            |                                                            |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
-|            | 9 am       | Newbie developer workshop (optional)                       |              |
+|            | 9 am       | Newbie Developer Workshop (optional)                       |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
 |            | 10         | Break                                                      |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
@@ -162,3 +162,33 @@ Sample Detailed Agenda
 |            | 3          | End of meeting                                             |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
 
+.. _newbie_developer_workshop:
+
+Newbie Developer Workshop
+-------------------------
+
+Tuesday June 6, at 9 am. Some of the topics to be covered.
+
+* Exploring the developer documentation https://petsc.org/main/developers
+
+* Preparing a contribution, PETSc style and git commit organization,
+
+  * for source code
+
+  * for documentation
+
+* Submitting and monitoring a merge request (MR)
+
+* Reviewing some one elses MR
+
+* Adding new Fortran and Python function bindings
+
+* PETSc's
+
+  * configure system
+
+  * compiler system, and
+
+  * testing system including the GitLab CI
+
+* Any other topics requested by potential contributors
