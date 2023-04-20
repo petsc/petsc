@@ -221,10 +221,25 @@ LDLIBS += $(PETSC_LIB)
 % : %.hip.cpp
 	$(LINK.hip.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
+# Shall we compile *.c to *.o and then link *.o to executables in two separate steps?
+SEPARATE_COMPILE_LINK =
+
+# See MR !2750
 ifneq (,$(findstring -TP,$(PCC_FLAGS)))
+  SEPARATE_COMPILE_LINK = 1
+endif
+
+# To avoid warnings when compiling *.c with sycl compilers
+#   icx -fsycl -o ex1 ex1.c ..
+#   icx: warning: treating 'c' input as 'c++' when -fsycl is used [-Wexpected-file-type]
+ifneq (,$(findstring -fsycl,$(PCC_LINKER_FLAGS)))
+  SEPARATE_COMPILE_LINK = 1
+endif
+
+ifdef SEPARATE_COMPILE_LINK
 % : %.c
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
-	${CLINKER} $(EXEFLAGS) -o $@ $@.o  $(PETSC_LIB)
+	${CLINKER} $(EXEFLAGS) -o $@ $@.o $(filter-out $@.o $<,$^) $(PETSC_LIB)
 endif
 
 # We don't have % : %.cu target as we can't use nvcc as linker - due to difference in linker options [wrt CLINKER etc.]. For example, nvcc does not accept -Wl,-rpath
