@@ -38,7 +38,13 @@ Please register at `EventBrite <https://www.eventbrite.com/e/petsc-2023-user-mee
 
 Submit a presentation
 ---------------------
-`Submit an abstract  <https://docs.google.com/forms/d/e/1FAIpQLSesh47RGVb9YD9F1qu4obXSe1X6fn7vVmjewllePBDxBItfOw/viewform>`__ by May 1st (but preferably now) to be included in the schedule.
+`Submit an abstract  <https://docs.google.com/forms/d/e/1FAIpQLSesh47RGVb9YD9F1qu4obXSe1X6fn7vVmjewllePBDxBItfOw/viewform>`__ by May 1st (but preferably now) to be included in the schedule.  We welcome talks from all perspectives, including those who
+
+* contribute to PETSc,
+* use PETSc in their applications or libraries,
+* develop the libraries and packages `called from PETSc <https://petsc.org/release/install/external_software/>`, and even
+* those who are curious about using PETSc in their applications (see the special "Potential User Group" of talks on Monday afternoon in the schedule below).
+
 
 Suggested hotels
 ----------------
@@ -117,11 +123,11 @@ Sample Detailed Agenda
 +------------+------------+-----------+------------------------------------------------+--------------+
 |            | 2:30       | Break                                                      |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
-|            | 3          | Presentation                                               |              |
+|            | 3          | Presentation (Potential User Group)                        |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
-|            | 3:30       | Presentation                                               |              |
+|            | 3:30       | Presentation (Potential User Group)                        |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
-|            | 4          | Presentation                                               |              |
+|            | 4          | Presentation (Potential User Group)                        |              |
 +------------+------------+-----------+------------------------------------------------+--------------+
 |            | 4:30       | Mini tutorial                                              |              |
 +------------+------------+-----------+------------------------------------------------+--------------+

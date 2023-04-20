@@ -140,7 +140,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscCall(DMSetLocalSection(dm, sectionDist));
   /* If a sequential section is provided but no dof is affected, sfNatural cannot be computed and is set to NULL */
   PetscCall(PetscSectionGetStorageSize(sectionDist, &localSize));
-  PetscCallMPI(MPI_Allreduce(&localSize, &maxStorageSize, 1, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&localSize, &maxStorageSize, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   if (maxStorageSize) {
     const PetscInt *leaves;
     PetscInt       *sortleaves, *indices;
