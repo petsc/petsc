@@ -401,7 +401,11 @@ int main(int argc, char **argv)
     test:
       suffix: exo_4
       requires: exodusii
-     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo
+    test:
+      suffix: exo_1d_0
+      requires: exodusii
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/1d-2elems.e
 
   # Gmsh mesh reader tests
   testset:

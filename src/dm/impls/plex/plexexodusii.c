@@ -307,6 +307,7 @@ PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const
 PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
 {
   enum ElemType {
+    SEGMENT,
     TRI,
     QUAD,
     TET,
@@ -333,6 +334,8 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   PetscInt     num_vs, num_fs;
   PetscMPIInt  rank, size;
   const char  *dmName;
+  PetscInt     nodesLineP1[4] = {2, 0, 0, 0};
+  PetscInt     nodesLineP2[4] = {2, 0, 0, 1};
   PetscInt     nodesTriP1[4]  = {3, 0, 0, 0};
   PetscInt     nodesTriP2[4]  = {3, 3, 0, 0};
   PetscInt     nodesQuadP1[4] = {4, 0, 0, 0};
@@ -430,6 +433,10 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscCall(ISGetSize(stratumIS, &csSize));
       PetscCall(DMPlexVecGetClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz));
       switch (dim) {
+      case 1:
+        if (closureSize == 2 * dim) {
+          type[cs] = SEGMENT;
+        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize / dim, dim);
       case 2:
         if (closureSize == 3 * dim) {
           type[cs] = TRI;
@@ -447,6 +454,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       default:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not handled by ExodusII viewer", dim);
       }
+      if ((degree == 2) && (type[cs] == SEGMENT)) numNodes += csSize;
       if ((degree == 2) && (type[cs] == QUAD)) numNodes += csSize;
       if ((degree == 2) && (type[cs] == HEX)) {
         numNodes += csSize;
@@ -454,7 +462,10 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       }
       PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz));
       /* Set nodes and Element type */
-      if (type[cs] == TRI) {
+      if (type[cs] == SEGMENT) {
+        if (degree == 1) nodes[cs] = nodesLineP1;
+        else if (degree == 2) nodes[cs] = nodesLineP2;
+      } else if (type[cs] == TRI) {
         if (degree == 1) nodes[cs] = nodesTriP1;
         else if (degree == 2) nodes[cs] = nodesTriP2;
       } else if (type[cs] == QUAD) {
@@ -482,6 +493,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscInt        edgesInClosure = 0, facesInClosure = 0, verticesInClosure = 0;
       PetscInt        csSize, c, connectSize, closureSize;
       char           *elem_type        = NULL;
+      char            elem_type_bar2[] = "BAR2", elem_type_bar3[] = "BAR3";
       char            elem_type_tri3[] = "TRI3", elem_type_quad4[] = "QUAD4";
       char            elem_type_tri6[] = "TRI6", elem_type_quad9[] = "QUAD9";
       char            elem_type_tet4[] = "TET4", elem_type_hex8[] = "HEX8";
@@ -491,7 +503,10 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscCall(ISGetIndices(stratumIS, &cells));
       PetscCall(ISGetSize(stratumIS, &csSize));
       /* Set Element type */
-      if (type[cs] == TRI) {
+      if (type[cs] == SEGMENT) {
+        if (degree == 1) elem_type = elem_type_bar2;
+        else if (degree == 2) elem_type = elem_type_bar3;
+      } else if (type[cs] == TRI) {
         if (degree == 1) elem_type = elem_type_tri3;
         else if (degree == 2) elem_type = elem_type_tri6;
       } else if (type[cs] == QUAD) {
@@ -1382,6 +1397,16 @@ static PetscErrorCode ExodusGetCellType_Internal(const char *elem_type, DMPolyto
 
   PetscFunctionBegin;
   *ct = DM_POLYTOPE_UNKNOWN;
+  PetscCall(PetscStrcmp(elem_type, "BAR2", &flg));
+  if (flg) {
+    *ct = DM_POLYTOPE_SEGMENT;
+    goto done;
+  }
+  PetscCall(PetscStrcmp(elem_type, "BAR3", &flg));
+  if (flg) {
+    *ct = DM_POLYTOPE_SEGMENT;
+    goto done;
+  }
   PetscCall(PetscStrcmp(elem_type, "TRI", &flg));
   if (flg) {
     *ct = DM_POLYTOPE_TRIANGLE;
