@@ -133,7 +133,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
       }
     }
     PetscCall(DMLabelGetNumValues(label, &numValues));
-    PetscCallMPI(MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     for (v = numValues; v < maxValues; ++v) PetscCall(DMLabelAddStratum(label, v));
   }
   {

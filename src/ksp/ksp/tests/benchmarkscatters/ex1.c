@@ -111,7 +111,7 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "                Time     Min to Max Range   Proportion of KSP\n"));
 
   eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-  PetscCallMPI(MPI_Allreduce(&eventInfo[KSP_Solve].time, &ksptime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&eventInfo[KSP_Solve].time, &ksptime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
   ksptime = ksptime / size;
 
   for (i = 0; i < (int)(sizeof(events) / sizeof(int)); i++) {
@@ -122,9 +122,9 @@ PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
     stats[MESSLEN] = eventInfo[event].messageLength;
     stats[REDUCT]  = eventInfo[event].numReductions;
     stats[FLOPS]   = eventInfo[event].flops;
-    PetscCallMPI(MPI_Allreduce(stats, maxstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MAX, PETSC_COMM_WORLD));
-    PetscCallMPI(MPI_Allreduce(stats, minstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MIN, PETSC_COMM_WORLD));
-    PetscCallMPI(MPI_Allreduce(stats, sumstats, 6, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+    PetscCall(MPIU_Allreduce(stats, maxstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MAX, PETSC_COMM_WORLD));
+    PetscCall(MPIU_Allreduce(stats, minstats, 6, MPIU_PETSCLOGDOUBLE, MPI_MIN, PETSC_COMM_WORLD));
+    PetscCall(MPIU_Allreduce(stats, sumstats, 6, MPIU_PETSCLOGDOUBLE, MPI_SUM, PETSC_COMM_WORLD));
 
     avetime = sumstats[1] / size;
     PetscCall(PetscViewerASCIIPrintf(viewer, "%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n", stageLog->eventLog->eventInfo[event].name, avetime, 100. * (avetime - minstats[1]) / avetime, 100. * (maxstats[1] - avetime) / avetime, 100. * avetime / ksptime));

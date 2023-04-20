@@ -827,7 +827,7 @@ PetscErrorCode MatMPIAdjToSeq_MPIAdj(Mat A, Mat *B)
   PetscCall(MatGetLocalSize(A, &m, NULL));
   nz = adj->nz;
   PetscCheck(adj->i[m] == nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "nz %" PetscInt_FMT " not correct i[m] %" PetscInt_FMT, nz, adj->i[m]);
-  PetscCallMPI(MPI_Allreduce(&nz, &NZ, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(&nz, &NZ, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
 
   PetscCall(PetscMPIIntCast(nz, &mnz));
   PetscCall(PetscMalloc2(size, &allnz, size, &dispnz));
@@ -874,7 +874,7 @@ PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B)
   PetscCall(MatGetLocalSize(A, &m, NULL));
   nz = adj->nz;
   PetscCheck(adj->i[m] == nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "nz %" PetscInt_FMT " not correct i[m] %" PetscInt_FMT, nz, adj->i[m]);
-  PetscCallMPI(MPI_Allreduce(&nz, &NZ, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(&nz, &NZ, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
 
   PetscCall(PetscMPIIntCast(nz, &mnz));
   if (!rank) PetscCall(PetscMalloc2(size, &allnz, size, &dispnz));

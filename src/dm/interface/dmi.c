@@ -193,7 +193,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
           }
         }
       }
-      PetscCallMPI(MPI_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)dm)));
+      PetscCall(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)dm)));
       if (rset) PetscCall(ISSetBlockSize(*is, bs));
     }
   }

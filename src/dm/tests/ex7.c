@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
   PetscCall(VecAXPY(local_copy, -1.0, local));
   PetscCall(VecNorm(local_copy, NORM_MAX, &work));
-  PetscCallMPI(MPI_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of difference %g should be zero\n", (double)norm));
 
   PetscCall(VecDestroy(&local_copy));

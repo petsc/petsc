@@ -359,7 +359,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
       PetscCall(DMPlexVecRestoreClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
     }
   }
-  PetscCallMPI(MPI_Allreduce(&useDG, &useDGGlobal, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCall(MPIU_Allreduce(&useDG, &useDGGlobal, 1, MPIU_BOOL, MPI_LOR, comm));
   if (!useDGGlobal) goto end;
 
   PetscCall(PetscSectionSetUp(csDG));

@@ -379,7 +379,7 @@ PetscErrorCode FVRHSFunction_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscCallMPI(MPI_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt, tnow;
@@ -517,7 +517,7 @@ PetscErrorCode FVRHSFunctionslow_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscCallMPI(MPI_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1272,7 +1272,7 @@ int main(int argc, char *argv[])
     PetscCall(DMDAVecRestoreArrayRead(da, X0, (void *)&ptr_X0));
     PetscCall(DMDAVecRestoreArrayRead(da, X, (void *)&ptr_X));
     mass_difference = mass_final - mass_initial;
-    PetscCallMPI(MPI_Allreduce(&mass_difference, &mass_differenceg, 1, MPIU_SCALAR, MPIU_SUM, comm));
+    PetscCall(MPIU_Allreduce(&mass_difference, &mass_differenceg, 1, MPIU_SCALAR, MPIU_SUM, comm));
     PetscCall(PetscPrintf(comm, "Mass difference %g\n", (double)mass_differenceg));
     PetscCall(PetscPrintf(comm, "Final time %g, steps %" PetscInt_FMT "\n", (double)ptime, steps));
     PetscCall(PetscPrintf(comm, "Maximum allowable stepsize according to CFL %g\n", (double)(1.0 / ctx.cfl_idt)));

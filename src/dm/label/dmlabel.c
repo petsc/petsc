@@ -656,7 +656,7 @@ PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *
     PetscCall(DMLabelGetDefaultValue(l1, &v1));
     eq = (PetscBool)(v0 == v1);
     if (!eq) PetscCall(PetscSNPrintf(msg, sizeof(msg), "Default value of DMLabel l0 \"%s\" = %" PetscInt_FMT " != %" PetscInt_FMT " = Default value of DMLabel l1 \"%s\"", name0, v0, v1, name1));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
     if (!eq) goto finish;
   }
   {
@@ -668,7 +668,7 @@ PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *
     PetscCall(ISDestroy(&is0));
     PetscCall(ISDestroy(&is1));
     if (!eq) PetscCall(PetscSNPrintf(msg, sizeof(msg), "Stratum values in DMLabel l0 \"%s\" are different than in DMLabel l1 \"%s\"", name0, name1));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
     if (!eq) goto finish;
   }
   {
@@ -692,7 +692,7 @@ PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *
         break;
       }
     }
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
   }
 finish:
   /* If message output arg not set, print to stderr */

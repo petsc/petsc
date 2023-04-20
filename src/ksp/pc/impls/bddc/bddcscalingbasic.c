@@ -309,7 +309,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
         PetscCall(VecAXPY(B0_Bv, -1.0, B0_Bv2));
         PetscCall(VecNorm(B0_Bv, NORM_INFINITY, &errorl));
       }
-      PetscCallMPI(MPI_Allreduce(&errorl, &error, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)pc)));
+      PetscCall(MPIU_Allreduce(&errorl, &error, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)pc)));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Error benign extension %1.14e\n", (double)error));
     }
     PetscCall(VecAXPY(pcis->vec1_global, -1.0, vec2_global));

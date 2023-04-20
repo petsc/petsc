@@ -12,7 +12,7 @@ static PetscErrorCode CompareGhostedCoords(Vec gc1, Vec gc2)
   PetscCall(VecDuplicate(gc1, &tmp));
   PetscCall(VecWAXPY(tmp, -1.0, gc1, gc2));
   PetscCall(VecNorm(tmp, NORM_INFINITY, &nrm));
-  PetscCallMPI(MPI_Allreduce(&nrm, &gnrm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&nrm, &gnrm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "norm of difference of ghosted coordinates %8.2e\n", (double)gnrm));
   PetscCall(VecDestroy(&tmp));
   PetscFunctionReturn(PETSC_SUCCESS);

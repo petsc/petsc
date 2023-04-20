@@ -645,7 +645,7 @@ static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes
   *num_local_nodes = local_node;
   *nStart          = owned_start;
   *nEnd            = owned_start + owned_node;
-  PetscCallMPI(MPI_Allreduce(&owned_node, num_global_nodes, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&owned_node, num_global_nodes, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   *node_l2g = nodes;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -718,7 +718,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscCall(DMGetCoordinatesLocal(colloc_dm, &coord));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   num_global_elems = cEnd - cStart;
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   isize[0] = num_global_nodes;
   isize[1] = num_global_elems;
   isize[2] = 0;
@@ -771,7 +771,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCall(DMPlexRestoreClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
     }
     e_owned = cEnd - cStart;
-    PetscCallMPI(MPI_Allreduce(&e_owned, &e_global, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)dm)));
     PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PetscInt64_FMT "vs %" PetscInt_FMT, e_global, num_global_elems);
     e_start = 0;
     PetscCallMPI(MPI_Exscan(&e_owned, &e_start, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)dm)));

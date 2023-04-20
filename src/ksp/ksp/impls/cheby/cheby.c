@@ -834,7 +834,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 
           PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason));
           sendbuf = (PetscInt)pcreason;
-          PetscCallMPI(MPI_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp)));
+          PetscCall(MPIU_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp)));
           PetscCall(PCSetFailedReason(ksp->pc, (PCFailedReason)recvbuf));
         }
         PetscCall(PCGetFailedReason(ksp->pc, &pcreason));

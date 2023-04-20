@@ -398,8 +398,8 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
         if (PetscDefined(USE_DEBUG)) {
           dummy[0] = PETSC_TRUE;
           dummy[1] = PETSC_TRUE;
-          PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, dummy, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)sf)));
-          PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, dummy + 1, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
+          PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)sf)));
+          PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy + 1, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
           PetscCheck(dummy[0] == dummy[1], PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
         }
         PetscCheck(!link->inuse, PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Window in use");
@@ -409,8 +409,8 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
       } else if (PetscDefined(USE_DEBUG)) {
         dummy[0] = PETSC_FALSE;
         dummy[1] = PETSC_FALSE;
-        PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, dummy, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)sf)));
-        PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, dummy + 1, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
+        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)sf)));
+        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy + 1, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
         PetscCheck(dummy[0] == dummy[1], PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
       }
       break;
