@@ -50,6 +50,9 @@ all:
              printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
              echo "  Error during compile, check ${PETSC_ARCH}/lib/petsc/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
              echo "  Send it and ${PETSC_ARCH}/lib/petsc/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
+             if [ "X${CONDA_ACTIVE}" != "X" ]; then \
+               echo "  Having Conda in your shell may have caused this problem, consider turning off Conda." 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
+             fi ; \
              printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
            fi \
 	 else \

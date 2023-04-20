@@ -203,6 +203,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return argDB
 
   def outputBasics(self):
+    if 'CONDA_PREFIX' in os.environ and os.environ['CONDA_PREFIX'] is not None:
+      self.conda_active = True
+      self.addMakeMacro('CONDA_ACTIVE',1)
+
     buf = 'Environmental variables'
     for key,val in os.environ.items():
       buf += '\n'+str(key)+'='+str(val)

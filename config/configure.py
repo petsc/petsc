@@ -518,6 +518,7 @@ def petsc_configure(configure_options):
       except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
       try:
+        if hasattr(framework,'additional_error_message'): se += logger.build_multiline_message('',framework.additional_error_message)+'\n\n'
         framework.log.write(msg+se)
         traceback.print_tb(tbo, file = framework.log)
         print_final_timestamp(framework)

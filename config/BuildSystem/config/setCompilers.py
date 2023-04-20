@@ -2730,6 +2730,8 @@ if (dlclose(handle)) {
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.requireMpiLdPath)
     self.executeTest(self.checkInitialFlags)
+    if hasattr(self.framework,'conda_active'):
+      self.framework.additional_error_message = 'Conda may be causing this compiling/linking problem, consider turning off Conda.'
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
 
@@ -2778,6 +2780,9 @@ if (dlclose(handle)) {
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)
+    if hasattr(self.framework,'conda_active'):
+      del self.framework.additional_error_message
+
     self.executeTest(self.checkPragma)
     self.executeTest(self.checkAtFileOption)
     self.executeTest(self.output)
