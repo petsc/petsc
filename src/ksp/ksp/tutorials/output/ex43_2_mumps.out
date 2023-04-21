@@ -37,7 +37,6 @@ PC Object: (stokes_) 1 MPI process
             type: mumps
             rows=882, cols=882
             package used to perform factorization: mumps
-            total: nonzeros=204188, allocated nonzeros=204188
               MUMPS run parameters:
                 Use -stokes_fieldsplit_u_ksp_view ::ascii_info_detail to display information for all processes
                 INFOG(7) (ordering option effectively used after analysis): 1
