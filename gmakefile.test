@@ -43,8 +43,8 @@ MAKEFLAGS_SILENT=$(findstring s,$(MAKEFLAGS_SHORT))
 V ?= $(if $(MAKEFLAGS_SILENT),0)
 ifeq ($(V),)  # Default
   quiet_HELP := "Use \"$(MAKE) V=1\" to see verbose compile lines, \"$(MAKE) V=0\" to suppress.\n"
-  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-  quiettest = @printf "  %10s %s\n" "TEST" "$(@:$(TESTDIR)/counts/%.counts=%)";
+  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)" %10s %s\n" "$1$2" "$@"; $($1)
+  quiettest = @printf " %10s %s\n" "TEST" "$(@:$(TESTDIR)/counts/%.counts=%)";
 else ifeq ($(V),0)		# Suppress entire command
   quiet = @$($1)
   quiettest = @
