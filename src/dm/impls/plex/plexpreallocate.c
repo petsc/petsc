@@ -687,7 +687,6 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   MPI_Comm     comm;
-  PetscDS      prob;
   MatType      mtype;
   PetscSF      sf, sfDof;
   PetscSection section;
@@ -707,7 +706,6 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   if (onz) PetscValidIntPointer(onz, 4);
   if (dnzu) PetscValidIntPointer(dnzu, 5);
   if (onzu) PetscValidIntPointer(onzu, 6);
-  PetscCall(DMGetDS(dm, &prob));
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_view_preallocation", &debug, NULL));
