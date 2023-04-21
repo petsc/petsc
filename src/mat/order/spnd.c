@@ -15,7 +15,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat mat, MatOrderingType type, IS 
   PetscFunctionBegin;
   PetscCall(MatGetRowIJ(mat, 1, PETSC_TRUE, PETSC_TRUE, &nrow, &ia, &ja, &done));
   if (!done) {
-    PetscCall(MatConvert(mat, MATSEQAIJ, MAT_INITIAL_MATRIX, &B));
+    PetscCall(MatConvert(mat, MATAIJ, MAT_INITIAL_MATRIX, &B));
     PetscCall(MatGetRowIJ(B, 1, PETSC_TRUE, PETSC_TRUE, &nrow, &ia, &ja, &done));
   }
 
