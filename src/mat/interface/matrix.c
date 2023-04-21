@@ -567,7 +567,7 @@ PetscErrorCode MatGetRow(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt 
   MatCheckPreallocated(mat, 1);
   PetscCheck(row >= mat->rmap->rstart && row < mat->rmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Only for local rows, %" PetscInt_FMT " not in [%" PetscInt_FMT ",%" PetscInt_FMT ")", row, mat->rmap->rstart, mat->rmap->rend);
   PetscCall(PetscLogEventBegin(MAT_GetRow, mat, 0, 0, 0));
-  PetscCall((*mat->ops->getrow)(mat, row, &incols, (PetscInt **)cols, (PetscScalar **)vals));
+  PetscUseTypeMethod(mat, getrow, row, &incols, (PetscInt **)cols, (PetscScalar **)vals);
   if (ncols) *ncols = incols;
   PetscCall(PetscLogEventEnd(MAT_GetRow, mat, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -642,7 +642,7 @@ PetscErrorCode MatRestoreRow(Mat mat, PetscInt row, PetscInt *ncols, const Petsc
   if (ncols) PetscValidIntPointer(ncols, 3);
   PetscCheck(mat->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall((*mat->ops->restorerow)(mat, row, ncols, (PetscInt **)cols, (PetscScalar **)vals));
+  PetscUseTypeMethod(mat, restorerow, row, ncols, (PetscInt **)cols, (PetscScalar **)vals);
   if (ncols) *ncols = 0;
   if (cols) *cols = NULL;
   if (vals) *vals = NULL;
@@ -3150,11 +3150,6 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatF
   PetscValidType(mat, 2);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
-  if (!fact->ops->lufactorsymbolic) {
-    MatSolverType stype;
-    PetscCall(MatFactorGetSolverType(fact, &stype));
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Matrix type %s symbolic LU using solver package %s", ((PetscObject)mat)->type_name, stype);
-  }
   MatCheckPreallocated(mat, 2);
   if (!info) {
     PetscCall(MatFactorInfoInitialize(&tinfo));
@@ -3162,7 +3157,7 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatF
   }
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_LUFactorSymbolic, mat, row, col, 0));
-  PetscCall((*fact->ops->lufactorsymbolic)(fact, mat, row, col, info));
+  PetscUseTypeMethod(fact, lufactorsymbolic, mat, row, col, info);
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_LUFactorSymbolic, mat, row, col, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)fact));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3209,7 +3204,6 @@ PetscErrorCode MatLUFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
   PetscCheck(mat->rmap->N == (fact)->rmap->N && mat->cmap->N == (fact)->cmap->N, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_SIZ, "Mat mat,Mat fact: global dimensions are different %" PetscInt_FMT " should = %" PetscInt_FMT " %" PetscInt_FMT " should = %" PetscInt_FMT,
              mat->rmap->N, (fact)->rmap->N, mat->cmap->N, (fact)->cmap->N);
 
-  PetscCheck((fact)->ops->lufactornumeric, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat type %s numeric LU", ((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat, 2);
   if (!info) {
     PetscCall(MatFactorInfoInitialize(&tinfo));
@@ -3218,7 +3212,7 @@ PetscErrorCode MatLUFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_LUFactorNumeric, mat, fact, 0, 0));
   else PetscCall(PetscLogEventBegin(MAT_LUFactor, mat, fact, 0, 0));
-  PetscCall((*fact->ops->lufactornumeric)(fact, mat, info));
+  PetscUseTypeMethod(fact, lufactornumeric, mat, info);
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_LUFactorNumeric, mat, fact, 0, 0));
   else PetscCall(PetscLogEventEnd(MAT_LUFactor, mat, fact, 0, 0));
   PetscCall(MatViewFromOptions(fact, NULL, "-mat_factor_view"));
@@ -3327,11 +3321,6 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFa
   PetscCheck(mat->rmap->N == mat->cmap->N, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Matrix must be square");
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
-  if (!fact->ops->choleskyfactorsymbolic) {
-    MatSolverType stype;
-    PetscCall(MatFactorGetSolverType(fact, &stype));
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat type %s symbolic factor Cholesky using solver package %s", ((PetscObject)mat)->type_name, stype);
-  }
   MatCheckPreallocated(mat, 2);
   if (!info) {
     PetscCall(MatFactorInfoInitialize(&tinfo));
@@ -3339,7 +3328,7 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFa
   }
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_CholeskyFactorSymbolic, mat, perm, 0, 0));
-  PetscCall((*fact->ops->choleskyfactorsymbolic)(fact, mat, perm, info));
+  PetscUseTypeMethod(fact, choleskyfactorsymbolic, mat, perm, info);
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_CholeskyFactorSymbolic, mat, perm, 0, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)fact));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3381,7 +3370,6 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *
   PetscValidType(fact, 1);
   PetscValidType(mat, 2);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
-  PetscCheck((fact)->ops->choleskyfactornumeric, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat type %s numeric factor Cholesky", ((PetscObject)mat)->type_name);
   PetscCheck(mat->rmap->N == (fact)->rmap->N && mat->cmap->N == (fact)->cmap->N, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_SIZ, "Mat mat,Mat fact: global dim %" PetscInt_FMT " should = %" PetscInt_FMT " %" PetscInt_FMT " should = %" PetscInt_FMT,
              mat->rmap->N, (fact)->rmap->N, mat->cmap->N, (fact)->cmap->N);
   MatCheckPreallocated(mat, 2);
@@ -3392,7 +3380,7 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_CholeskyFactorNumeric, mat, fact, 0, 0));
   else PetscCall(PetscLogEventBegin(MAT_CholeskyFactor, mat, fact, 0, 0));
-  PetscCall((*fact->ops->choleskyfactornumeric)(fact, mat, info));
+  PetscUseTypeMethod(fact, choleskyfactornumeric, mat, info);
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_CholeskyFactorNumeric, mat, fact, 0, 0));
   else PetscCall(PetscLogEventEnd(MAT_CholeskyFactor, mat, fact, 0, 0));
   PetscCall(MatViewFromOptions(fact, NULL, "-mat_factor_view"));
@@ -5256,9 +5244,8 @@ PetscErrorCode MatTransposeSymbolic(Mat A, Mat *B)
   PetscValidType(A, 1);
   PetscCheck(A->assembled, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!A->factortype, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
-  PetscCheck(A->ops->transposesymbolic, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Mat type %s", ((PetscObject)A)->type_name);
   PetscCall(PetscLogEventBegin(MAT_Transpose, A, 0, 0, 0));
-  PetscCall((*A->ops->transposesymbolic)(A, B));
+  PetscUseTypeMethod(A, transposesymbolic, B);
   PetscCall(PetscLogEventEnd(MAT_Transpose, A, 0, 0, 0));
 
   PetscCall(MatTransposeSetPrecursor(A, *B));
@@ -5552,7 +5539,6 @@ PetscErrorCode MatScale(Mat mat, PetscScalar a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidType(mat, 1);
-  PetscCheck(a == (PetscScalar)1.0 || mat->ops->scale, PETSC_COMM_SELF, PETSC_ERR_SUP, "Mat type %s", ((PetscObject)mat)->type_name);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscValidLogicalCollectiveScalar(mat, a, 2);
@@ -6875,17 +6861,12 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const Mat
   PetscValidPointer(fact, 1);
   PetscCheck(info->levels >= 0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "Levels of fill negative %" PetscInt_FMT, (PetscInt)info->levels);
   PetscCheck(info->fill >= 1.0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "Expected fill less than 1.0 %g", (double)info->fill);
-  if (!fact->ops->ilufactorsymbolic) {
-    MatSolverType stype;
-    PetscCall(MatFactorGetSolverType(fact, &stype));
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Matrix type %s symbolic ILU using solver type %s", ((PetscObject)mat)->type_name, stype);
-  }
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 2);
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_ILUFactorSymbolic, mat, row, col, 0));
-  PetscCall((fact->ops->ilufactorsymbolic)(fact, mat, row, col, info));
+  PetscUseTypeMethod(fact, ilufactorsymbolic, mat, row, col, info);
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_ILUFactorSymbolic, mat, row, col, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -6936,16 +6917,11 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorI
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   PetscCheck(info->levels >= 0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "Levels negative %" PetscInt_FMT, (PetscInt)info->levels);
   PetscCheck(info->fill >= 1.0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "Expected fill less than 1.0 %g", (double)info->fill);
-  if (!(fact)->ops->iccfactorsymbolic) {
-    MatSolverType stype;
-    PetscCall(MatFactorGetSolverType(fact, &stype));
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Matrix type %s symbolic ICC using solver type %s", ((PetscObject)mat)->type_name, stype);
-  }
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   MatCheckPreallocated(mat, 2);
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_ICCFactorSymbolic, mat, perm, 0, 0));
-  PetscCall((fact->ops->iccfactorsymbolic)(fact, mat, perm, info));
+  PetscUseTypeMethod(fact, iccfactorsymbolic, mat, perm, info);
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_ICCFactorSymbolic, mat, perm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -7164,7 +7140,7 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n, Mat *mat[])
 
   mat0 = (*mat)[0];
   if (mat0 && mat0->ops->destroysubmatrices) {
-    PetscCall((mat0->ops->destroysubmatrices)(n, mat));
+    PetscCall((*mat0->ops->destroysubmatrices)(n, mat));
   } else {
     PetscCall(MatDestroyMatrices(n, mat));
   }
@@ -9126,11 +9102,6 @@ PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
   if (A->symmetric == PETSC_BOOL3_TRUE) *flg = PETSC_TRUE;
   else if (A->symmetric == PETSC_BOOL3_FALSE) *flg = PETSC_FALSE;
   else {
-    if (!A->ops->issymmetric) {
-      MatType mattype;
-      PetscCall(MatGetType(A, &mattype));
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix of type %s does not support checking for symmetric", mattype);
-    }
     PetscUseTypeMethod(A, issymmetric, tol, flg);
     if (!tol) PetscCall(MatSetOption(A, MAT_SYMMETRIC, *flg));
   }
@@ -9171,11 +9142,6 @@ PetscErrorCode MatIsHermitian(Mat A, PetscReal tol, PetscBool *flg)
   if (A->hermitian == PETSC_BOOL3_TRUE) *flg = PETSC_TRUE;
   else if (A->hermitian == PETSC_BOOL3_FALSE) *flg = PETSC_FALSE;
   else {
-    if (!A->ops->ishermitian) {
-      MatType mattype;
-      PetscCall(MatGetType(A, &mattype));
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix of type %s does not support checking for hermitian", mattype);
-    }
     PetscUseTypeMethod(A, ishermitian, tol, flg);
     if (!tol) PetscCall(MatSetOption(A, MAT_HERMITIAN, *flg));
   }
@@ -10695,11 +10661,11 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
 PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring, Mat B, Mat Btdense)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(coloring, MAT_TRANSPOSECOLORING_CLASSID, 1);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
   PetscValidHeaderSpecific(Btdense, MAT_CLASSID, 3);
-  PetscValidHeaderSpecific(coloring, MAT_TRANSPOSECOLORING_CLASSID, 1);
 
-  PetscCall((B->ops->transcoloringapplysptoden)(coloring, B, Btdense));
+  PetscCall((*B->ops->transcoloringapplysptoden)(coloring, B, Btdense));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -10732,7 +10698,7 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring, Ma
   PetscValidHeaderSpecific(Cden, MAT_CLASSID, 2);
   PetscValidHeaderSpecific(Csp, MAT_CLASSID, 3);
 
-  PetscCall((Csp->ops->transcoloringapplydentosp)(matcoloring, Cden, Csp));
+  PetscCall((*Csp->ops->transcoloringapplydentosp)(matcoloring, Cden, Csp));
   PetscCall(MatAssemblyBegin(Csp, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Csp, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
