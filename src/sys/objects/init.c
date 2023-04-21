@@ -239,7 +239,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 {
   char        string[64];
   MPI_Comm    comm = PETSC_COMM_WORLD;
-  PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE, flag, hasHelp;
+  PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flag, hasHelp;
   PetscBool   checkstack = PETSC_FALSE;
   PetscReal   si;
   PetscInt    intensity;
@@ -267,6 +267,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       Setup the memory management; support for tracing malloc() usage
     */
     PetscBool mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
+    PetscBool flg3 = PETSC_FALSE;
 
     if (PetscDefined(USE_DEBUG)) {
       mdebug        = PETSC_TRUE;
@@ -518,13 +519,13 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
 
+  PetscBool flg3 = PETSC_FALSE;
   #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg1));
   if (flg1) PetscCall(PetscLogMPEBegin());
   #endif
   flg1 = PETSC_FALSE;
-  flg3 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-log_summary", &flg3));
   if (flg1) PetscCall(PetscLogAllBegin());
