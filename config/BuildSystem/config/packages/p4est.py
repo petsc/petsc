@@ -1,10 +1,11 @@
 import config.package
+import os
 
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = '361499293eb2076f000d66e01f3253e31b00e030'
-    self.download          = ['git://https://github.com/tisaac/p4est','https://github.com/tisaac/p4est/archive/'+self.gitcommit+'.tar.gz']
+    self.gitcommit         = '56b58bd7a5462ef85e136cea9fd9ee6bf9558e71'
+    self.download          = ['git://https://github.com/cburstedde/p4est','https://github.com/cburstedde/p4est/archive/'+self.gitcommit+'.tar.gz']
     self.versionname       = 'P4EST_VERSION_MAJOR.P4EST_VERSION_MINOR.P4EST_VERSION_POINT'
     self.versioninclude    = 'p4est_config.h'
     self.functions         = ['p4est_init']
@@ -36,6 +37,7 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-debug')
     if not self.mpi.usingMPIUni:
       args.append('--enable-mpi')
+      args.append('PATH='+os.environ['PATH']+':'+os.path.dirname(self.mpi.mpiexecExecutable))
     else:
       args.append('--disable-mpi')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
@@ -44,7 +46,6 @@ class Configure(config.package.GNUPackage):
     return args
 
   def updateGitDir(self):
-    import os
     config.package.GNUPackage.updateGitDir(self)
     if not hasattr(self.sourceControl, 'git') or (self.packageDir != os.path.join(self.externalPackagesDir,'git.'+self.package)):
       return
@@ -54,7 +55,6 @@ class Configure(config.package.GNUPackage):
     except AttributeError:
       try:
         self.executeShellCommand([self.sourceControl.git, 'submodule', 'update', '--init'], cwd=Dir, log=self.log)
-        import os
         if os.path.isfile(os.path.join(Dir,'sc','README')):
           self.libsc = os.path.join(Dir,'sc')
         else:

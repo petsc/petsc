@@ -1893,7 +1893,7 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes, Mat A, Vec f)
          args: -change true -stokes_ksp_view
          output_file: output/ex43_2_mumps.out
          # mumps INFO,INFOG,RINFO,RINFOG may vary on different archs, so keep just a stable one
-         filter:  grep -E -v "(INFOG\([^7]|INFO\(|\[0\])"
+         filter:  grep -E -v "(INFOG\([^7]|INFO\(|\[0\])" | grep -v "            total: nonzeros="
 
    test:
       suffix: 3
