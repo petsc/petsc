@@ -496,6 +496,13 @@ int main(int argc, char *argv[])
         args: -pack_dm_mat_type aijkokkos -pack_dm_vec_type kokkos
 
    test:
+      requires: mumps
+      suffix: 3_nest_lu
+      nsize: 3
+      output_file: output/ex28_3.out
+      args: -pack_dm_mat_type nest -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator  -pc_type lu -pc_factor_mat_solver_type mumps
+
+   test:
       suffix: 4
       nsize: 6
       args: -u_da_grid_x 257 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_u_ksp_type gmres -fieldsplit_u_ksp_pc_side right -fieldsplit_u_pc_type mg -fieldsplit_u_pc_mg_levels 4 -fieldsplit_u_mg_levels_ksp_type richardson -fieldsplit_u_mg_levels_ksp_max_it 1 -fieldsplit_u_mg_levels_pc_type sor -fieldsplit_u_pc_mg_galerkin pmat -fieldsplit_u_ksp_converged_reason -fieldsplit_k_pc_type jacobi

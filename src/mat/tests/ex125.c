@@ -20,7 +20,7 @@ int main(int argc, char **args)
   PetscMPIInt   size;
   PetscInt      m, n, nfact, nsolve, nrhs, ipack = 5;
   PetscReal     norm, tol = 1.e-10;
-  IS            perm, iperm;
+  IS            perm = NULL, iperm = NULL;
   MatFactorInfo info;
   PetscRandom   rand;
   PetscBool     flg, symm, testMatSolve = PETSC_TRUE, testMatMatSolve = PETSC_TRUE, testMatMatSolveTranspose = PETSC_TRUE, testMatSolveTranspose = PETSC_TRUE, match = PETSC_FALSE;
@@ -56,12 +56,31 @@ int main(int argc, char **args)
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatShift(A, 1.0));
   }
-  PetscCall(MatGetLocalSize(A, &m, &n));
-  PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
   PetscCall(MatIsSymmetric(A, 0.0, &symm));
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, symm));
+
+  /* test MATNEST support */
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_nest", &flg, NULL));
+  if (flg) {
+    /* Create a nested matrix representing
+
+       | 0 0 A |
+       | 0 A 0 |
+       | A 0 0 |
+
+    */
+    Mat B, mats[9] = {NULL, NULL, A, NULL, A, NULL, A, NULL, NULL};
+
+    PetscCall(MatCreateNest(PETSC_COMM_WORLD, 3, NULL, 3, NULL, mats, &B));
+    PetscCall(MatDestroy(&A));
+    A = B;
+    PetscCall(MatSetOption(A, MAT_SYMMETRIC, symm));
+  }
+  PetscCall(MatGetLocalSize(A, &m, &n));
+  PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   PetscCall(MatViewFromOptions(A, NULL, "-A_view"));
 
@@ -441,6 +460,12 @@ skipoptions:
       output_file: output/ex125_mumps_seq.out
 
    test:
+      suffix: mumps_nest
+      requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type mumps -test_nest
+      output_file: output/ex125_mumps_seq.out
+
+   test:
       suffix: mumps_2
       nsize: 3
       requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
@@ -448,9 +473,22 @@ skipoptions:
       output_file: output/ex125_mumps_par.out
 
    test:
+      suffix: mumps_2_nest
+      nsize: 3
+      requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type mumps -test_nest
+      output_file: output/ex125_mumps_par.out
+
+   test:
       suffix: mumps_3
       requires: mumps
       args: -mat_solver_type mumps
+      output_file: output/ex125_mumps_seq.out
+
+   test:
+      suffix: mumps_3_nest
+      requires: mumps
+      args: -mat_solver_type mumps -test_nest
       output_file: output/ex125_mumps_seq.out
 
    test:
@@ -461,10 +499,24 @@ skipoptions:
       output_file: output/ex125_mumps_par.out
 
    test:
+      suffix: mumps_4_nest
+      nsize: 3
+      requires: mumps
+      args: -mat_solver_type mumps -test_nest
+      output_file: output/ex125_mumps_par.out
+
+   test:
       suffix: mumps_5
       nsize: 3
       requires: mumps
       args: -mat_solver_type mumps -cholesky
+      output_file: output/ex125_mumps_par_cholesky.out
+
+   test:
+      suffix: mumps_5_nest
+      nsize: 3
+      requires: mumps
+      args: -mat_solver_type mumps -cholesky -test_nest
       output_file: output/ex125_mumps_par_cholesky.out
 
    test:
