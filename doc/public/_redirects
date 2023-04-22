@@ -2,3 +2,5 @@
 /index.html /release/ 302
 /release/download /release/install/download 302
 /main/download /main/install/download 302
+/release/docs /release 302
+/main/docs /main 302
