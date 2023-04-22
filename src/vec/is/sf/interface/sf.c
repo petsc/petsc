@@ -2276,7 +2276,7 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
   `PETSCSF_CONCATENATE_ROOTMODE_LOCAL` joins the root spaces locally;
   roots of sfs[0], sfs[1], sfs[2], ... are joined on each rank separately, ordered by input `PetscSF` and original local index, and renumbered contiguously.
   `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL` joins the root spaces globally;
-  roots of sfs[0], sfs[1], sfs[2, ... are joined globally, ordered by input `PetscSF` index and original global index, and renumbered contiguously;
+  roots of sfs[0], sfs[1], sfs[2], ... are joined globally, ordered by input `PetscSF` index and original global index, and renumbered contiguously;
   the original root ranks are ignored.
   For both `PETSCSF_CONCATENATE_ROOTMODE_LOCAL` and `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL`,
   the output `PetscSF`'s root layout is such that the local number of roots is a sum of the input `PetscSF`'s local numbers of roots on each rank
