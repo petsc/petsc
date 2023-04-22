@@ -500,7 +500,7 @@ M*/
           PetscInt       sendbuf, recvbuf; \
           PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
           sendbuf = (PetscInt)pcreason; \
-          PetscCallMPI(MPI_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp))); \
+          PetscCall(MPIU_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp))); \
           if (recvbuf) { \
             PetscCall(PCSetFailedReason(ksp->pc, (PCFailedReason)recvbuf)); \
             ksp->reason = KSP_DIVERGED_PC_FAILED; \
@@ -543,7 +543,7 @@ M*/
           PetscInt       sendbuf, recvbuf; \
           PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
           sendbuf = (PetscInt)pcreason; \
-          PetscCallMPI(MPI_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp))); \
+          PetscCall(MPIU_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp))); \
           if (recvbuf) { \
             PetscCall(PCSetFailedReason(ksp->pc, (PCFailedReason)recvbuf)); \
             ksp->reason = KSP_DIVERGED_PC_FAILED; \

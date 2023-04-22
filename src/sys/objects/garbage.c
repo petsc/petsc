@@ -129,7 +129,7 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
   PetscCall(PetscSortInt64(*entries, set));
 
   /* Get the maximum size of all key sets */
-  PetscCallMPI(MPI_Allreduce(entries, &max_entries, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(entries, &max_entries, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscMalloc1(max_entries + 1, &sendset));
   PetscCall(PetscMalloc1(max_entries + 1, &recvset));
   sendset[0] = (PetscInt64)*entries;

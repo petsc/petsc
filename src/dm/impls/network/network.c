@@ -585,7 +585,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
 #endif
 
   /* (2.3) Shared vertices in the subnetworks are merged, update global NVertices: np = sum(local nmerged) */
-  PetscCallMPI(MPI_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
   network->cloneshared->NVertices -= np;
 
   ctr = 0;
@@ -1569,7 +1569,7 @@ static PetscErrorCode DMNetworkGetSubSection_private(PetscSection main, PetscInt
 }
 
 /* Create a submap of points with a GlobalToLocal structure */
-static PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend, ISLocalToGlobalMapping *map)
+static PetscErrorCode DMNetworkSetSubMap_private(DM dm, PetscInt pstart, PetscInt pend, ISLocalToGlobalMapping *map)
 {
   PetscInt i, *subpoints;
 
@@ -1577,7 +1577,7 @@ static PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend,
   /* Create index sets to map from "points" to "subpoints" */
   PetscCall(PetscMalloc1(pend - pstart, &subpoints));
   for (i = pstart; i < pend; i++) subpoints[i - pstart] = i;
-  PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD, 1, pend - pstart, subpoints, PETSC_COPY_VALUES, map));
+  PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), 1, pend - pstart, subpoints, PETSC_COPY_VALUES, map));
   PetscCall(PetscFree(subpoints));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1613,8 +1613,8 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
   /* Create maps for vertices and edges */
-  PetscCall(DMNetworkSetSubMap_private(network->cloneshared->vStart, network->cloneshared->vEnd, &network->vertex.mapping));
-  PetscCall(DMNetworkSetSubMap_private(network->cloneshared->eStart, network->cloneshared->eEnd, &network->edge.mapping));
+  PetscCall(DMNetworkSetSubMap_private(dm, network->cloneshared->vStart, network->cloneshared->vEnd, &network->vertex.mapping));
+  PetscCall(DMNetworkSetSubMap_private(dm, network->cloneshared->eStart, network->cloneshared->eEnd, &network->edge.mapping));
 
   /* Create local sub-sections */
   PetscCall(DMNetworkGetSubSection_private(network->DofSection, network->cloneshared->vStart, network->cloneshared->vEnd, &network->vertex.DofSection));
@@ -2003,7 +2003,7 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mainsf, ISLocalToGlobalMapping map, Petsc
   PetscCall(ISLocalToGlobalMappingGetSize(map, &nroots_sub));
 
   /* Create new subSF */
-  PetscCall(PetscSFCreate(PETSC_COMM_WORLD, subSF));
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mainsf), subSF));
   PetscCall(PetscSFSetFromOptions(*subSF));
   PetscCall(PetscSFSetGraph(*subSF, nroots_sub, nleaves_sub, ilocal_sub, PETSC_OWN_POINTER, iremote_sub, PETSC_COPY_VALUES));
   PetscCall(PetscFree(ilocal_map));
@@ -2373,7 +2373,7 @@ PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, Pet
     glob2loc[i] = dof;
   }
 
-  PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD, 1, size, glob2loc, PETSC_OWN_POINTER, ltog));
+  PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)globalsec), 1, size, glob2loc, PETSC_OWN_POINTER, ltog));
 #if 0
   PetscCall(PetscIntView(size,glob2loc,PETSC_VIEWER_STDOUT_WORLD));
 #endif
@@ -2896,7 +2896,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   PetscCheck(network->cloneshared->distributecalled, comm, PETSC_ERR_ARG_WRONGSTATE, "Must call DMNetworkDistribute() first");
   if (network->cloneshared->vltog) PetscCall(PetscFree(network->cloneshared->vltog));
 
-  PetscCall(DMNetworkSetSubMap_private(network->cloneshared->vStart, network->cloneshared->vEnd, &network->vertex.mapping));
+  PetscCall(DMNetworkSetSubMap_private(dm, network->cloneshared->vStart, network->cloneshared->vEnd, &network->vertex.mapping));
   PetscCall(PetscSFGetSubSF(network->plex->sf, network->vertex.mapping, &network->vertex.sf));
   vsf = network->vertex.sf;
 

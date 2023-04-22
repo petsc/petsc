@@ -858,7 +858,7 @@ static PetscErrorCode AdvectParticles(TS ts)
   PetscCall(DMSwarmGetSize(sdm, &newN));
   PetscCall(DMSwarmGetLocalSize(sdm, &newn));
   lreset = (n != newn || N != newN) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPI_Allreduce(&lreset, &reset, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sts)));
+  PetscCall(MPIU_Allreduce(&lreset, &reset, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sts)));
   if (reset) {
     PetscCall(TSReset(sts));
     PetscCall(DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor));

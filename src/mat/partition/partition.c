@@ -392,7 +392,7 @@ PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitionin
   PetscCall(ISGetLocalSize(partitioning, &nlocal));
   PetscCall(ISGetIndices(partitioning, &indices));
   for (i = 0; i < nlocal; i++) subdomainsizes_tmp[indices[i]] += matp->vertex_weights ? matp->vertex_weights[i] : 1;
-  PetscCallMPI(MPI_Allreduce(subdomainsizes_tmp, subdomainsizes, nparts, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)matp)));
+  PetscCall(MPIU_Allreduce(subdomainsizes_tmp, subdomainsizes, nparts, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)matp)));
   PetscCall(ISRestoreIndices(partitioning, &indices));
   minsub = PETSC_MAX_INT, maxsub = PETSC_MIN_INT, avgsub = 0;
   for (i = 0; i < nparts; i++) {

@@ -3326,7 +3326,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscInt lsdim;
     for (lsdim = dim; lsdim >= 0; --lsdim)
       if (numSubPoints[lsdim]) break;
-    PetscCallMPI(MPI_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPIU_MAX, comm));
+    PetscCall(MPIU_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPIU_MAX, comm));
     PetscCall(DMSetDimension(subdm, sdim));
     PetscCall(DMSetCoordinateDim(subdm, cdim));
   }

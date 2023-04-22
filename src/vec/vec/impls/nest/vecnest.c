@@ -54,7 +54,6 @@ static PetscErrorCode VecCopy_Nest(Vec x, Vec y)
   PetscInt  i;
 
   PetscFunctionBegin;
-  PetscCheckTypeName(y, VECNEST);
   VecNestCheckCompatible2(x, 1, y, 2);
   for (i = 0; i < bx->nb; i++) PetscCall(VecCopy(bx->v[i], by->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -85,6 +84,7 @@ static PetscErrorCode VecDot_Nest(Vec x, Vec y, PetscScalar *val)
   PetscScalar x_dot_y, _val;
 
   PetscFunctionBegin;
+  VecNestCheckCompatible2(x, 1, y, 2);
   nr   = bx->nb;
   _val = 0.0;
   for (i = 0; i < nr; i++) {
@@ -103,6 +103,7 @@ static PetscErrorCode VecTDot_Nest(Vec x, Vec y, PetscScalar *val)
   PetscScalar x_dot_y, _val;
 
   PetscFunctionBegin;
+  VecNestCheckCompatible2(x, 1, y, 2);
   nr   = bx->nb;
   _val = 0.0;
   for (i = 0; i < nr; i++) {
@@ -122,6 +123,7 @@ static PetscErrorCode VecDotNorm2_Nest(Vec x, Vec y, PetscScalar *dp, PetscScala
   PetscReal   norm2_y;
 
   PetscFunctionBegin;
+  VecNestCheckCompatible2(x, 1, y, 2);
   nr  = bx->nb;
   _dp = 0.0;
   _nm = 0.0;
@@ -142,6 +144,7 @@ static PetscErrorCode VecAXPY_Nest(Vec y, PetscScalar alpha, Vec x)
   PetscInt  i, nr;
 
   PetscFunctionBegin;
+  VecNestCheckCompatible2(y, 1, x, 3);
   nr = bx->nb;
   for (i = 0; i < nr; i++) PetscCall(VecAXPY(by->v[i], alpha, bx->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -154,6 +157,7 @@ static PetscErrorCode VecAYPX_Nest(Vec y, PetscScalar alpha, Vec x)
   PetscInt  i, nr;
 
   PetscFunctionBegin;
+  VecNestCheckCompatible2(y, 1, x, 3);
   nr = bx->nb;
   for (i = 0; i < nr; i++) PetscCall(VecAYPX(by->v[i], alpha, bx->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -166,6 +170,7 @@ static PetscErrorCode VecAXPBY_Nest(Vec y, PetscScalar alpha, PetscScalar beta, 
   PetscInt  i, nr;
 
   PetscFunctionBegin;
+  VecNestCheckCompatible2(y, 1, x, 4);
   nr = bx->nb;
   for (i = 0; i < nr; i++) PetscCall(VecAXPBY(by->v[i], alpha, beta, bx->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -179,6 +184,7 @@ static PetscErrorCode VecAXPBYPCZ_Nest(Vec z, PetscScalar alpha, PetscScalar bet
   PetscInt  i, nr;
 
   PetscFunctionBegin;
+  VecNestCheckCompatible3(z, 1, x, 5, y, 6);
   nr = bx->nb;
   for (i = 0; i < nr; i++) PetscCall(VecAXPBYPCZ(bz->v[i], alpha, beta, gamma, bx->v[i], by->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -218,7 +224,6 @@ static PetscErrorCode VecPointwiseDivide_Nest(Vec w, Vec x, Vec y)
 
   PetscFunctionBegin;
   VecNestCheckCompatible3(w, 1, x, 2, y, 3);
-
   nr = bx->nb;
   for (i = 0; i < nr; i++) PetscCall(VecPointwiseDivide(bw->v[i], bx->v[i], by->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -268,31 +273,25 @@ static PetscErrorCode VecNorm_Nest(Vec xin, NormType type, PetscReal *z)
 
 static PetscErrorCode VecMAXPY_Nest(Vec y, PetscInt nv, const PetscScalar alpha[], Vec *x)
 {
-  PetscInt v;
-
   PetscFunctionBegin;
-  for (v = 0; v < nv; v++) {
-    /* Do axpy on each vector,v */
-    PetscCall(VecAXPY(y, alpha[v], x[v]));
-  }
+  /* TODO: implement proper MAXPY. For now, do axpy on each vector */
+  for (PetscInt v = 0; v < nv; v++) PetscCall(VecAXPY(y, alpha[v], x[v]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecMDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScalar *val)
 {
-  PetscInt j;
-
   PetscFunctionBegin;
-  for (j = 0; j < nv; j++) PetscCall(VecDot(x, y[j], &val[j]));
+  /* TODO: implement proper MDOT. For now, do dot on each vector */
+  for (PetscInt j = 0; j < nv; j++) PetscCall(VecDot(x, y[j], &val[j]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecMTDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScalar *val)
 {
-  PetscInt j;
-
   PetscFunctionBegin;
-  for (j = 0; j < nv; j++) PetscCall(VecTDot(x, y[j], &val[j]));
+  /* TODO: implement proper MTDOT. For now, do tdot on each vector */
+  for (PetscInt j = 0; j < nv; j++) PetscCall(VecTDot(x, y[j], &val[j]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -340,7 +339,6 @@ static PetscErrorCode VecWAXPY_Nest(Vec w, PetscScalar alpha, Vec x, Vec y)
 
   PetscFunctionBegin;
   VecNestCheckCompatible3(w, 1, x, 3, y, 4);
-
   nr = bx->nb;
   for (i = 0; i < nr; i++) PetscCall(VecWAXPY(bw->v[i], alpha, bx->v[i], by->v[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -374,7 +372,7 @@ static PetscErrorCode VecMin_Nest(Vec x, PetscInt *p, PetscReal *v)
       *p = idxs[lp - st];
       PetscCall(ISRestoreIndices(bx->is[lw], &idxs));
     }
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -407,7 +405,7 @@ static PetscErrorCode VecMax_Nest(Vec x, PetscInt *p, PetscReal *v)
       *p = idxs[lp - st];
       PetscCall(ISRestoreIndices(bx->is[lw], &idxs));
     }
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -868,10 +866,10 @@ static PetscErrorCode VecNestSetSubVec_Private(Vec X, PetscInt idxm, Vec x)
   PetscBool issame = PETSC_FALSE;
   PetscInt  N      = 0;
 
+  PetscFunctionBegin;
   /* check if idxm < bx->nb */
   PetscCheck(idxm < bx->nb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, idxm, bx->nb);
 
-  PetscFunctionBegin;
   PetscCall(VecDestroy(&bx->v[idxm]));      /* destroy the existing vector */
   PetscCall(VecDuplicate(x, &bx->v[idxm])); /* duplicate the layout of given vector */
   PetscCall(VecCopy(x, bx->v[idxm]));       /* copy the contents of the given vector */
@@ -1087,6 +1085,18 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*MC
+  VECNEST - VECNEST = "nest" - Vector type consisting of nested subvectors, each stored separately.
+
+  Level: intermediate
+
+  Notes:
+  This vector type reduces the number of copies for certain solvers applied to multi-physics problems.
+  It is usually used with `MATNEST` and `DMCOMPOSITE` via `DMSetVecType()`.
+
+.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecType`, `VecCreateNest()`, `MatCreateNest()`
+M*/
+
 /*@C
    VecCreateNest - Creates a new vector containing several nested subvectors, each stored separately
 
@@ -1147,15 +1157,3 @@ PetscErrorCode VecCreateNest(MPI_Comm comm, PetscInt nb, IS is[], Vec x[], Vec *
   *Y = V;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*MC
-  VECNEST - VECNEST = "nest" - Vector type consisting of nested subvectors, each stored separately.
-
-  Level: intermediate
-
-  Notes:
-  This vector type reduces the number of copies for certain solvers applied to multi-physics problems.
-  It is usually used with `MATNEST` and `DMCOMPOSITE` via `DMSetVecType()`.
-
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecType`, `VecCreateNest()`, `MatCreateNest()`
-M*/

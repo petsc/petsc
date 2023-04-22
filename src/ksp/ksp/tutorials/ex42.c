@@ -1336,8 +1336,8 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
       }
     }
   }
-  PetscCallMPI(MPI_Allreduce(&tint_p_ms, &int_p_ms, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&tint_p, &int_p, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tint_p_ms, &int_p_ms, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tint_p, &int_p, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\\int P dv %1.4e (h)  %1.4e (ms)\n", (double)PetscRealPart(int_p), (double)PetscRealPart(int_p_ms)));
 
@@ -1405,9 +1405,9 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
       }
     }
   }
-  PetscCallMPI(MPI_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCallMPI(MPI_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);

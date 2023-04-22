@@ -154,7 +154,7 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], 
   sendbuf[0] = -minMaxVal[0]; /* Note that -PETSC_MIN_INT = PETSC_MIN_INT */
   sendbuf[1] = minMaxVal[1];
   sendbuf[2] = (minMaxVal[0] == PETSC_MIN_INT) ? 1 : 0; /* Are there PETSC_MIN_INT in minMaxVal[0]? */
-  PetscCallMPI(MPI_Allreduce(sendbuf, recvbuf, 3, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(sendbuf, recvbuf, 3, MPIU_INT, MPI_MAX, comm));
   minMaxValGlobal[0] = recvbuf[2] ? PETSC_MIN_INT : -recvbuf[0];
   minMaxValGlobal[1] = recvbuf[1];
   PetscFunctionReturn(PETSC_SUCCESS);

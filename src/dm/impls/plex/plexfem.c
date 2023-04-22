@@ -5712,7 +5712,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
 end : {
   PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
 
-  PetscCallMPI(MPI_Allreduce(&assOp, &gassOp, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&assOp, &gassOp, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (hasJac && hasPrec) {
     PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));

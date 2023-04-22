@@ -1020,7 +1020,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
       if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
       else ct = DM_POLYTOPE_UNKNOWN;
       ctTmp = (PetscInt)ct;
-      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
       ct = (DMPolytopeType)ctTmp;
       PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, 1, -1, &feLinear));
       PetscCall(DMSetField(cdmOld, 0, NULL, (PetscObject)feLinear));

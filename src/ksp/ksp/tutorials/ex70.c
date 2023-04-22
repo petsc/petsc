@@ -688,7 +688,7 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint)
       cnt++;
     }
   }
-  PetscCallMPI(MPI_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   if (cnt_g > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... ....pop cont: adjusted %" PetscInt_FMT " cells\n", cnt_g));
 
   PetscCall(DMSwarmSortRestoreAccess(dm_mpoint));

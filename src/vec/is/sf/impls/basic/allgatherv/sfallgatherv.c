@@ -61,12 +61,12 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF sf)
       PetscMPIInt rank, nRanksWithZeroRoots;
 
       nRanksWithZeroRoots = (sf->nroots == 0) ? 1 : 0; /* I have no roots */
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nRanksWithZeroRoots, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &nRanksWithZeroRoots, 1, MPI_INT, MPI_SUM, comm));
       if (nRanksWithZeroRoots == size - 1) { /* Only one rank has roots, which indicates a bcast pattern */
         dat->bcast_pattern = PETSC_TRUE;
         PetscCallMPI(MPI_Comm_rank(comm, &rank));
         dat->bcast_root = sf->nroots > 0 ? rank : -1;
-        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &dat->bcast_root, 1, MPI_INT, MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &dat->bcast_root, 1, MPI_INT, MPI_MAX, comm));
       }
     }
   }

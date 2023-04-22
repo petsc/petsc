@@ -75,7 +75,7 @@ static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empty pictures for them */
-  PetscCallMPI(MPI_Allreduce(&win->written, &written, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw))));
+  PetscCall(MPIU_Allreduce(&win->written, &written, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw))));
   if (!written) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_END_FRAME));
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_BEGIN_FRAME));

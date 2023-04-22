@@ -505,7 +505,7 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
     if (type == IS_LOCAL || size == 1) {
       *flg = sortedLocal;
     } else {
-      PetscCallMPI(MPI_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+      PetscCall(MPIU_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       if (*flg) {
         PetscInt n, min = PETSC_MAX_INT, max = PETSC_MIN_INT;
         PetscInt maxprev;
@@ -515,7 +515,7 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
         maxprev = PETSC_MIN_INT;
         PetscCallMPI(MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm));
         if (rank && (maxprev > min)) sortedLocal = PETSC_FALSE;
-        PetscCallMPI(MPI_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+        PetscCall(MPIU_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       }
     }
   }
@@ -563,7 +563,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
     if (type == IS_LOCAL || size == 1) {
       *flg = uniqueLocal;
     } else {
-      PetscCallMPI(MPI_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+      PetscCall(MPIU_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       if (*flg) {
         PetscInt min = PETSC_MAX_INT, max = PETSC_MIN_INT, maxprev;
 
@@ -583,7 +583,7 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
         maxprev = PETSC_MIN_INT;
         PetscCallMPI(MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm));
         if (rank && (maxprev == min)) uniqueLocal = PETSC_FALSE;
-        PetscCallMPI(MPI_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+        PetscCall(MPIU_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       }
     }
     PetscCall(PetscFree(idx));
@@ -627,7 +627,7 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
     if (type == IS_LOCAL || size == 1) {
       *flg = permLocal;
     } else {
-      PetscCallMPI(MPI_Allreduce(&permLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+      PetscCall(MPIU_Allreduce(&permLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
     }
     PetscCall(PetscFree(idx));
   }
@@ -671,7 +671,7 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
     if (type == IS_LOCAL || size == 1) {
       *flg = intervalLocal;
     } else {
-      PetscCallMPI(MPI_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+      PetscCall(MPIU_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       if (*flg) {
         PetscInt n, min = PETSC_MAX_INT, max = PETSC_MIN_INT;
         PetscInt maxprev;
@@ -681,7 +681,7 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
         maxprev = PETSC_MIN_INT;
         PetscCallMPI(MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm));
         if (rank && n && (maxprev != min - 1)) intervalLocal = PETSC_FALSE;
-        PetscCallMPI(MPI_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+        PetscCall(MPIU_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       }
     }
   }
@@ -736,7 +736,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
     if (type == IS_LOCAL || size == 1) {
       *flg = identLocal;
     } else {
-      PetscCallMPI(MPI_Allreduce(&identLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
+      PetscCall(MPIU_Allreduce(&identLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
     }
     PetscCall(ISRestoreIndices(is, &idx));
   }
@@ -1085,7 +1085,7 @@ PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout)
 
     PetscCall(ISGetLocalSize(is, &n));
     issame = (PetscBool)(n == nlocal);
-    PetscCallMPI(MPI_Allreduce(&issame, &isallsame, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+    PetscCall(MPIU_Allreduce(&issame, &isallsame, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
     issame = isallsame;
   }
   if (issame) {
