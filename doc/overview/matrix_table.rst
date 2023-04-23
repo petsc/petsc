@@ -116,7 +116,7 @@ Summary of Matrix Types Available In PETSc
      -  $A + UCV^T$
    * - FFT
      - ``MATFFTW``
-     - ``MatCreateSeqFFTW()``
+     - ``MatCreateFFT()``
      - FFTW
      -
    * -
@@ -124,11 +124,6 @@ Summary of Matrix Types Available In PETSc
      - ``MatCreateSeqCUFFT()``
      - NVIDIA's CuFFT
      - NVIDIA GPUs
-   * -
-     - ``MATSEQUSFFT``
-     - ``MatCreateSeqFFTW()``
-     - FFTW
-     -  Unevenly spaced FFT
    * - Hierarchical
      - ``MATHTOOL``
      - ``MatCreateHtoolFromKernel()``

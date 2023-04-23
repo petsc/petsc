@@ -1137,6 +1137,13 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*MC
+  MATFFTW -  "fftw" - Matrix type that provides FFT via the FFTW external package.
+
+  Level: intermediate
+
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatType`, `MatCreateFFT()`
+M*/
 PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 {
   MPI_Comm    comm;
