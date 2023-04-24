@@ -48,7 +48,7 @@ To extract the sources use:
 
    $ tar xf petsc-<version number>.tar.gz
 
-Use mirror if GitLab and our primary download server are unavailable:
+Current and older release tarballs are available at:
 
 - `Primary server <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/>`__
 
@@ -56,7 +56,7 @@ Use mirror if GitLab and our primary download server are unavailable:
 
 .. Note::
 
-   Older releases of PETSc are also available above. These should only be used for
+   Older release tarballs of PETSc should only be used for
    applications that have not been updated to the latest release. We urge you, whenever
    possible, to upgrade to the latest version of PETSc.
 
