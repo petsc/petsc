@@ -18,7 +18,7 @@ typedef struct {
 
    Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscFERefine()`
+.seealso: `PETSCDUALSPACEREFINED`, `PetscDualSpace`, `PetscFERefine()`
 @*/
 PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const PetscDualSpace cellSpaces[])
 {
@@ -188,7 +188,7 @@ static PetscErrorCode PetscDualSpaceInitialize_Refined(PetscDualSpace sp)
 
   Level: intermediate
 
-.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceRefinedSetCellSpaces`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace sp)
 {
