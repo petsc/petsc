@@ -353,6 +353,17 @@ class KSPConvergedReason(object):
     DIVERGED_INDEFINITE_MAT   = KSP_DIVERGED_INDEFINITE_MAT
     DIVERGED_PCSETUP_FAILED   = KSP_DIVERGED_PC_FAILED
 
+class KSPHPDDMType(object):
+    """The *HPDDM* Krylov solver type."""
+    GMRES                     = KSP_HPDDM_TYPE_GMRES
+    BGMRES                    = KSP_HPDDM_TYPE_BGMRES
+    CG                        = KSP_HPDDM_TYPE_CG
+    BCG                       = KSP_HPDDM_TYPE_BCG
+    GCRODR                    = KSP_HPDDM_TYPE_GCRODR
+    BGCRODR                   = KSP_HPDDM_TYPE_BGCRODR
+    BFBCG                     = KSP_HPDDM_TYPE_BFBCG
+    PREONLY                   = KSP_HPDDM_TYPE_PREONLY
+
 # --------------------------------------------------------------------
 
 cdef class KSP(Object):
@@ -381,6 +392,7 @@ cdef class KSP(Object):
     Type            = KSPType
     NormType        = KSPNormType
     ConvergedReason = KSPConvergedReason
+    HPDDMType       = KSPHPDDMType
 
     # --- xxx ---
 
@@ -1748,6 +1760,36 @@ cdef class KSP(Object):
         CHKERR( KSPGetConvergedReason(self.ksp, &reason) )
         return reason
 
+    def setHPDDMType(self, hpddm_type: HPDDMType) -> None:
+        """Set the Krylov solver type.
+
+        Collective.
+
+        Parameters
+        ----------
+        hpddm_type
+            The type of Krylov solver to use.
+
+        See Also
+        --------
+        petsc.KSPHPDDMSetType
+
+        """
+        cdef PetscKSPHPDDMType ctype = hpddm_type
+        CHKERR( KSPHPDDMSetType(self.ksp, ctype) )
+
+    def getHPDDMType(self) -> HPDDMType:
+        """Return the Krylov solver type.
+
+        See Also
+        --------
+        petsc.KSPHPDDMGetType
+
+        """
+        cdef PetscKSPHPDDMType cval = KSP_HPDDM_TYPE_GMRES
+        CHKERR( KSPHPDDMGetType(self.ksp, &cval) )
+        return cval
+
     def setErrorIfNotConverged(self, flag: bool) -> None:
         """Cause `solve` to generate an error if not converged.
 
@@ -2331,5 +2373,6 @@ cdef class KSP(Object):
 del KSPType
 del KSPNormType
 del KSPConvergedReason
+del KSPHPDDMType
 
 # --------------------------------------------------------------------

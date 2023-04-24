@@ -81,6 +81,16 @@ cdef extern from * nogil:
         KSP_DIVERGED_INDEFINITE_MAT
         KSP_DIVERGED_PC_FAILED
 
+    ctypedef enum PetscKSPHPDDMType "KSPHPDDMType":
+        KSP_HPDDM_TYPE_GMRES
+        KSP_HPDDM_TYPE_BGMRES
+        KSP_HPDDM_TYPE_CG
+        KSP_HPDDM_TYPE_BCG
+        KSP_HPDDM_TYPE_GCRODR
+        KSP_HPDDM_TYPE_BGCRODR
+        KSP_HPDDM_TYPE_BFBCG
+        KSP_HPDDM_TYPE_PREONLY
+
     ctypedef PetscErrorCode (*PetscKSPCtxDel)(void*)
 
     ctypedef PetscErrorCode (*PetscKSPConvergedFunction)(PetscKSP,
@@ -196,6 +206,9 @@ cdef extern from * nogil:
 
     PetscErrorCode KSPPythonSetType(PetscKSP,char[])
     PetscErrorCode KSPPythonGetType(PetscKSP,char*[])
+
+    PetscErrorCode KSPHPDDMSetType(PetscKSP,PetscKSPHPDDMType)
+    PetscErrorCode KSPHPDDMGetType(PetscKSP,PetscKSPHPDDMType*)
 
 cdef extern from * nogil: # custom.h
     PetscErrorCode KSPSetIterationNumber(PetscKSP,PetscInt)
