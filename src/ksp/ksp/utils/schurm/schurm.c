@@ -911,6 +911,14 @@ static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*MC
+  MATSCHURCOMPLEMENT -  "schurcomplement" - Matrix type that behaves like the Schur complement of a matrix.
+
+  Level: intermediate
+
+.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatType`, `MatCreateSchurComplement()`, `MatSchurComplementComputeExplicitOperator()`,
+          `MatSchurComplementGetSubMatrices()`, `MatSchurComplementGetKSP()`
+M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
 {
   Mat_SchurComplement *Na;
