@@ -21,6 +21,7 @@ Changes: 3.19
 - Add ``--with-strict-petscerrorcode`` configure option to enable compile-time checking for correct usage of ``PetscErrorCode``, see below
 - Add support for C++20
 - Add support for CUDA-12
+- Improved C++ dialect handling for non-conformal cases. In general ``configure`` will fail faster and with a more informative error message when the C++ compiler does not comply with restraints
 
 .. rubric:: Sys:
 

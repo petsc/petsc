@@ -1092,15 +1092,21 @@ class Configure(config.base.Configure):
         break
 
     if maxDialect == -1:
-      ver    = int(withLangDialect[-2:])
+      try:
+        ver = int(withLangDialect[-2:])
+      except ValueError:
+        ver = 9e9
       minver = int(dialects[0].num)
-      if ver == 89 or ver < minver:
-        mess = 'PETSc requires at least C++{}, how old is your compiler?'.format(minver)
-        # throw RTE (which is meant to be caught) as this indicates compiler is too old
-        raise RuntimeError(mess)
-      mess = 'Unknown C++ dialect: {val}'.format(val=withLangDialect)
-      # throw CSE (which is NOT meant to be caught) as this is an unhandled exception
-      raise ConfigureSetupError(mess)
+      if ver in {89, 98} or ver < minver:
+        mess = 'PETSc requires at least C++{} when using {}'.format(minver, language.replace('x', '+'))
+      else:
+        mess = 'Unknown C++ dialect: {}'.format(withLangDialect)
+      if explicit:
+        mess += ' (you have explicitly requested --{}={}). Remove this flag and let configure choose the most appropriate flag for you.'.format(configureArg, withLangDialect)
+        # If the user explicitly requested the dialect throw CSE (which is NOT meant to be
+        # caught) as this indicates a user error
+        raise ConfigureSetupError(mess)
+      raise RuntimeError(mess)
     self.logPrint('checkCxxDialect: dialect {dlct} has been {expl} selected for {lang}'.format(dlct=withLangDialect,expl='EXPLICITLY' if explicit else 'NOT explicitly',lang=LANG))
 
     def checkPackageRange(packageRanges,kind,dialectIdx):
@@ -1183,23 +1189,38 @@ class Configure(config.base.Configure):
               ),
               '' # for extra newline at the end
             ))
-            if flag.endswith(dialects[0].num):
-              # it's the compilers fault we can't try the next dialect
-              dialectNum = dialects[0].num
-            elif withLangDialect in ('NONE','AUTO'):
-              # it's a packages fault we can't try the next dialect
-              packDialects   = self.cxxDialectPackageRanges[0]
-              minPackDialect = max(packDialects.keys())
-              base_mess = '\n'.join((
-                'Using {lang} dialect C++{ver} as lower bound due to package(s):',
-                '\n'.join('- '+s for s in packDialects[minPackDialect]),
-                ' '.join(('But',base_mess))
-              ))
-              dialectNum = minPackDialect[-2:]
+            if withLangDialect in ('NONE','AUTO'):
+              packDialects = self.cxxDialectPackageRanges[0]
+              if packDialects.keys():
+                # it's a packages fault we can't try the next dialect
+                minPackDialect = max(packDialects.keys())
+                base_mess      = '\n'.join((
+                  'Using {lang} dialect C++{ver} as lower bound due to package(s):',
+                  '\n'.join('- '+s for s in packDialects[minPackDialect]),
+                  ' '.join(('But',base_mess))
+                ))
+                dialectNum = minPackDialect[-2:]
+                explicit   = True
+              else:
+                assert flag.endswith(dialects[0].num)
+                # it's the compilers fault we can't try the next dialect
+                dialectNum = dialects[0].num
             else:
               # if nothing else then it's because the user requested a particular version
               dialectNum = dialectNumStr
-            mess = base_mess.format(lang=language.replace('x','+'),compiler=compiler,ver=dialectNum)
+              base_mess  = '\n'.join((
+                base_mess,
+                'Note, you have explicitly requested --{}={}. If you do not need C++{ver}, then remove this flag and let configure choose the most appropriate flag for you.'
+                '\nIf you DO need it, then (assuming your compiler isn\'t just old) try consulting your compilers user manual. There may be other flags (e.g. \'--gcc-toolchain\') you must pass to enable C++{ver}'.format(configureArg, withLangDialect, ver='{ver}')
+              ))
+            if dialectNum.isdigit():
+              ver = dialectNum
+            else:
+              ver = dialectNum.casefold().replace('c++', '').replace('gnu++', '')
+            mess = base_mess.format(lang=language.replace('x','+'),compiler=compiler,ver=ver)
+            if explicit:
+              # if the user explicitly set the version, then this is a hard error
+              raise ConfigureSetupError(mess)
             raise RuntimeError(mess)
         else:
           # success
@@ -2733,18 +2754,17 @@ if (dlclose(handle)) {
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
 
-    def compilerIsDisabledFromOptions(compiler):
-      """Return True if compiler is disabled via configure options (and delete it from the argdb), False otherwise"""
-      disabled = self.argDB.get('with-'+compiler.lower()) == '0'
-      if disabled:
-        COMPILER = compiler.upper()
-        if COMPILER in self.argDB:
-          del self.argDB[COMPILER]
-      return disabled
-
     for LANG in ['Cxx','CUDA','HIP','SYCL']:
       compilerName = LANG.upper() if LANG == 'Cxx' else LANG+'C'
-      if not compilerIsDisabledFromOptions(compilerName):
+      argdbName    = 'with-' + compilerName.casefold()
+      argdbVal     = self.argDB.get(argdbName)
+      if argdbVal == '0':
+        # compiler was explicitly disabled, i.e. --with-cxx=0
+        COMPILER_NAME = compilerName.upper()
+        if COMPILER_NAME in self.argDB:
+          del self.argDB[COMPILER_NAME]
+          continue
+      else:
         self.executeTest(getattr(self,LANG.join(('check','Compiler'))))
         try:
           self.executeTest(self.checkDeviceHostCompiler,args=[LANG])
@@ -2757,6 +2777,15 @@ if (dlclose(handle)) {
             self.executeTest(self.checkCxxDialect,args=[LANG],kargs={'isGNUish':isGNUish})
           except RuntimeError as e:
             self.mesg = str(e)
+            if argdbVal is not None:
+              # user explicitly enabled a compiler, e.g. --with-cxx=clang++, so the fact
+              # that it does not work is an immediate problem
+              self.mesg += '\n'.join((
+                '',
+                'Note, you have explicitly requested --{}={}. If you don\'t need {}, or that specific compiler, remove this flag -- configure may be able to find a more suitable compiler automatically.',
+                'If you DO need the above, then consult your compilers user manual. It\'s possible you may need to add additional flags (or perhaps load additional modules) to enable compliance'
+              )).format(argdbName, argdbVal, LANG.replace('x', '+'))
+              raise config.base.ConfigureSetupError(self.mesg)
             self.logPrint(' '.join(('Error testing',LANG,'compiler:',self.mesg)))
             self.delMakeMacro(compilerName)
             delattr(self,compilerName)
