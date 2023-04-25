@@ -359,6 +359,9 @@ static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp)
 
   Level: intermediate
 
+  Developer Note:
+  Need a good easy to understand reference for trimmed poynomial spaces
+
 .seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
 M*/
 

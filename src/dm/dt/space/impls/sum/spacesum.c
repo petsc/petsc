@@ -1,6 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
+
 /*@
-  PetscSpaceSumGetNumSubspaces - Get the number of spaces in the sum
+  PetscSpaceSumGetNumSubspaces - Get the number of spaces in the sum space
 
   Input Parameter:
 . sp  - the function space object
@@ -8,7 +9,10 @@
   Output Parameter:
 . numSumSpaces - the number of spaces
 
-Level: intermediate
+  Level: intermediate
+
+  Note:
+  The name NumSubspaces is slightly misleading because it is actually getting the number of defining spaces of the sum, not a number of Subspaces of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumSetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -22,13 +26,16 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp, PetscInt *numSumSpace
 }
 
 /*@
-  PetscSpaceSumSetNumSubspaces - Set the number of spaces in the sum
+  PetscSpaceSumSetNumSubspaces - Set the number of spaces in the sum space
 
   Input Parameters:
 + sp  - the function space object
 - numSumSpaces - the number of spaces
 
-Level: intermediate
+  Level: intermediate
+
+  Note:
+  The name NumSubspaces is slightly misleading because it is actually setting the number of defining spaces of the sum, not a number of Subspaces of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumGetNumSubspaces()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -43,7 +50,7 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp, PetscInt numSumSpaces
 /*@
  PetscSpaceSumGetConcatenate - Get the concatenate flag for this space.
  A concatenated sum space will have number of components equal to the sum of the number of components of all subspaces. A non-concatenated,
- or direct sum space will have the same number of components as its subspaces .
+ or direct sum space will have the same number of components as its subspaces.
 
  Input Parameter:
 . sp - the function space object
@@ -51,7 +58,7 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp, PetscInt numSumSpaces
  Output Parameter:
 . concatenate - flag indicating whether subspaces are concatenated.
 
-Level: intermediate
+  Level: intermediate
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumSetConcatenate()`
 @*/
@@ -85,16 +92,19 @@ PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace sp, PetscBool concatenate)
 }
 
 /*@
-  PetscSpaceSumGetSubspace - Get a space in the sum
+  PetscSpaceSumGetSubspace - Get a space in the sum space
 
   Input Parameters:
 + sp - the function space object
 - s  - The space number
 
   Output Parameter:
-. subsp - the PetscSpace
+. subsp - the `PetscSpace`
 
   Level: intermediate
+
+  Note:
+  The name GetSubspace is slightly misleading because it is actually getting one of the defining spaces of the sum, not a Subspace of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumSetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -108,7 +118,7 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *s
 }
 
 /*@
-  PetscSpaceSumSetSubspace - Set a space in the sum
+  PetscSpaceSumSetSubspace - Set a space in the sum space
 
   Input Parameters:
 + sp    - the function space object
@@ -116,6 +126,9 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp, PetscInt s, PetscSpace *s
 - subsp - the number of spaces
 
   Level: intermediate
+
+  Note:
+  The name SetSubspace is slightly misleading because it is actually setting one of the defining spaces of the sum, not a Subspace of it
 
 .seealso: `PETSCSPACESUM`, `PetscSpace`, `PetscSpaceSumGetSubspace()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
@@ -544,13 +557,16 @@ static PetscErrorCode PetscSpaceInitialize_Sum(PetscSpace sp)
 
 /*MC
   PETSCSPACESUM = "sum" - A `PetscSpace` object that encapsulates a sum of subspaces.
-  That sum can either be direct or concatenate a concatenation. For example if A and B are spaces each with 2 components,
-  the direct sum of A and B will also have 2 components while the concatenated sum will have 4 components.In both cases A and B must be defined over the
-  same number of variables.
 
   Level: intermediate
 
-.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
+  Note:
+   That sum can either be direct or a concatenation. For example if A and B are spaces each with 2 components,
+  the direct sum of A and B will also have 2 components while the concatenated sum will have 4 components. In both cases A and B must be defined over the
+  same number of variables.
+
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceSumGetNumSubspaces()`, `PetscSpaceSumSetNumSubspaces()`,
+          `PetscSpaceSumGetConcatenate()`, `PetscSpaceSumSetConcatenate()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Sum(PetscSpace sp)
 {
