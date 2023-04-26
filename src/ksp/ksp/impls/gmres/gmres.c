@@ -1,4 +1,3 @@
-
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.
     Reference:  Saad and Schultz, 1986.
@@ -499,7 +498,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
 +  ksp - the `KSP` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  dummy - an collection of viewers created with `KSPViewerCreate()`
+-  dummy - a collection of viewers created with `PetscViewersCreate()`
 
    Options Database Key:
 .   -ksp_gmres_krylov_monitor <bool> - Plot the Krylov directions
@@ -509,7 +508,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
    Note:
     A new `PETSCVIEWERDRAW` is created for each Krylov vector so they can all be simultaneously viewed
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `KSPViewersCreate()`, `KSPViewersDestroy()`
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, void *dummy)
 {
