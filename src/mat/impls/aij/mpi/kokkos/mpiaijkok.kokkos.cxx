@@ -1795,7 +1795,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     if (A->was_assembled) PetscCall(PetscInfo(A, "Assemble more than once already\n"));
     A->was_assembled = PETSC_TRUE; // this is done (lazy) in MatAssemble but we are not calling it anymore - done in AIJ AssemblyEnd, need here?
   } else {
-    PetscCall(PetscInfo(A, "Warning !assemble ??? assembled=%" PetscInt_FMT "\n", A->assembled));
+    PetscCall(PetscInfo(A, "Warning !assemble ??? assembled=%d\n", A->assembled));
   }
   if (!d_mat) {
     struct _n_SplitCSRMat h_mat; /* host container */

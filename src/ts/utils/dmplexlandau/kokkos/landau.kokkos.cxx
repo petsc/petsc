@@ -559,7 +559,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeBegin());
 
     const int scr_bytes_fdf = real2_scr_t::shmem_size(Nf_max, Nb);
-    PetscCall(PetscInfo(plex[0], "df & f shared memory size: %d bytes in level, %d num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", scr_bytes_fdf, KOKKOS_SHARED_LEVEL, num_cells_batch * batch_sz, team_size, vector_size, nfaces, Nf_max));
+    PetscCall(PetscInfo(plex[0], "df & f shared memory size: %d bytes in level, %d num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", scr_bytes_fdf, KOKKOS_SHARED_LEVEL, (int)(num_cells_batch * batch_sz), team_size, vector_size, nfaces, (int)Nf_max));
     Kokkos::parallel_for(
       "f, df", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, /* Kokkos::AUTO */ vector_size).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes_fdf)), KOKKOS_LAMBDA(const team_member team) {
         const PetscInt b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank() % b_Nelem, b_id = team.league_rank() / b_Nelem, IPf_sz_glb = d_ipf_offset[num_grids];
@@ -769,7 +769,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     };
     PetscCall(PetscLogEventBegin(events[4], 0, 0, 0, 0));
     PetscCall(PetscLogGpuTimeBegin());
-    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %zu bytes in level %s (max shared=%zu), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", jac_scr_bytes, jac_shared_level == 0 ? "local" : "global", maximum_shared_mem_size, num_cells_batch * batch_sz, team_size, vector_size, nfaces, Nf_max));
+    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %zu bytes in level %s (max shared=%zu), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", jac_scr_bytes, jac_shared_level == 0 ? "local" : "global", maximum_shared_mem_size, (int)(num_cells_batch * batch_sz), team_size, vector_size, nfaces, (int)Nf_max));
     Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, vector_size).set_scratch_size(jac_shared_level, Kokkos::PerTeam(jac_scr_bytes)), jac_lambda); // Kokkos::LaunchBounds<512,2>
     Kokkos::fence();
     PetscCall(PetscLogGpuTimeEnd());
