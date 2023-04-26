@@ -721,23 +721,23 @@ done:
 // KSP solver solve Ax = b; xout is output, bin is input
 static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
 {
-  PC_PCBJKOKKOS    *jac = (PC_PCBJKOKKOS *)pc->data;
-  Mat               A   = pc->pmat;
-  Mat_SeqAIJKokkos *aijkok;
+  PC_PCBJKOKKOS *jac = (PC_PCBJKOKKOS *)pc->data;
+  Mat            A = pc->pmat, Aseq = A;
 
   PetscFunctionBegin;
-  aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  if (!aijkok) aijkok = static_cast<Mat_SeqAIJKokkos *>(((Mat_MPIAIJ *)A->data)->A->spptr);
-  PetscCheck(aijkok, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "No aijkok");
+  if (!A->spptr) {
+    Aseq = ((Mat_MPIAIJ *)A->data)->A; // MPI
+  }
+  PetscCall(MatSeqAIJKokkosSyncDevice(Aseq));
   {
     PetscInt           maxit = jac->ksp->max_it;
     const PetscInt     conc = Kokkos::DefaultExecutionSpace().concurrency(), openmp = !!(conc < 1000), team_size = (openmp == 0 && PCBJKOKKOS_VEC_SIZE != 1) ? PCBJKOKKOS_TEAM_SIZE : 1;
     const PetscInt     nwork = jac->nwork, nBlk = jac->nBlocks;
-    PetscScalar       *glb_xdata = NULL;
+    PetscScalar       *glb_xdata = NULL, *dummy;
     PetscReal          rtol = jac->ksp->rtol, atol = jac->ksp->abstol, dtol = jac->ksp->divtol;
     const PetscScalar *glb_idiag = jac->d_idiag_k->data(), *glb_bdata = NULL;
-    const PetscInt    *glb_Aai = aijkok->i_device_data(), *glb_Aaj = aijkok->j_device_data(), *d_bid_eqOffset = jac->d_bid_eqOffset_k->data();
-    const PetscScalar *glb_Aaa  = aijkok->a_device_data();
+    const PetscInt    *glb_Aai, *glb_Aaj, *d_bid_eqOffset = jac->d_bid_eqOffset_k->data();
+    const PetscScalar *glb_Aaa;
     const PetscInt    *d_isicol = jac->d_isicol_k->data(), *d_isrow = jac->d_isrow_k->data();
     PCFailedReason     pcreason;
     KSPIndex           ksp_type_idx = jac->ksp_type_idx;
@@ -749,7 +749,9 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
     PetscBool          monitor  = jac->monitor; // captured
     PetscInt           view_bid = jac->batch_target;
     MatInfo            info;
-    //PetscCall(MatGetOwnershipRange(A, &Istart, NULL));
+
+    PetscCall(MatSeqAIJGetCSRAndMemType(Aseq, &glb_Aai, &glb_Aaj, &dummy, &mtype));
+    glb_Aaa       = dummy;
     jac->max_nits = 0;
     if (view_bid < 0) view_bid = 0;
     PetscCall(MatGetInfo(A, MAT_LOCAL, &info));
@@ -1053,8 +1055,8 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
 #if PCBJKOKKOS_VERBOSE_LEVEL < 3
           if (jac->batch_target == blkID) {
             if (batch_sz != 1)
-              PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", species %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[blkID].reason], h_metadata[blkID].its, blkID % batch_sz, blkID / batch_sz));
-            else PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, block %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[blkID].reason], h_metadata[blkID].its, blkID));
+              PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", species %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[blkID].reason], (int)h_metadata[blkID].its, blkID % batch_sz, blkID / batch_sz));
+            else PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, block %d\n", KSPConvergedReasons[h_metadata[blkID].reason], (int)h_metadata[blkID].its, blkID));
           } else if (jac->batch_target == -1 && h_metadata[blkID].its >= count) {
             jac->max_nits = count = h_metadata[blkID].its;
             mbid                  = blkID;
@@ -1068,8 +1070,8 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
         }
         if (jac->batch_target == -1) {
           if (batch_sz != 1)
-            PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", species %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[mbid].reason], h_metadata[mbid].its, mbid % batch_sz, mbid / batch_sz));
-          else PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, block %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[mbid].reason], h_metadata[mbid].its, mbid));
+            PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", species %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[mbid].reason], (int)h_metadata[mbid].its, mbid % batch_sz, mbid / batch_sz));
+          else PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "    Linear solve converged due to %s iterations %d, block %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[mbid].reason], (int)h_metadata[mbid].its, mbid));
         }
       }
       for (int blkID = 0; blkID < nBlk; blkID++) {
@@ -1111,28 +1113,25 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
       PetscCall(VecScatterEnd(plex_batch, bvec, xout, INSERT_VALUES, SCATTER_REVERSE));
       PetscCall(VecDestroy(&bvec));
     }
-  } // whole 'have aijkok' block
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
 {
-  PC_PCBJKOKKOS    *jac = (PC_PCBJKOKKOS *)pc->data;
-  Mat               A = pc->pmat, Aseq = A; // use filtered block matrix, really "P"
-  Mat_SeqAIJKokkos *aijkok;
-  PetscBool         flg;
+  PC_PCBJKOKKOS *jac = (PC_PCBJKOKKOS *)pc->data;
+  Mat            A = pc->pmat, Aseq = A; // use filtered block matrix, really "P"
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscCheck(!pc->useAmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No support for using 'use_amat'");
   PetscCheck(A, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "No matrix - A is used above");
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "must use '-[dm_]mat_type aijkokkos -[dm_]vec_type kokkos' for -pc_type bjkokkos");
-  aijkok = static_cast<Mat_SeqAIJKokkos *>(Aseq->spptr);
-  if (!aijkok) {
-    PetscCall(MatMPIAIJGetSeqAIJ(A, &Aseq, NULL, NULL));
-    aijkok = static_cast<Mat_SeqAIJKokkos *>(Aseq->spptr);
+  if (!A->spptr) {
+    Aseq = ((Mat_MPIAIJ *)A->data)->A; // MPI
   }
-  PetscCheck((aijkok), PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "No aijkok");
+  PetscCall(MatSeqAIJKokkosSyncDevice(Aseq));
   {
     PetscInt    Istart, Iend;
     PetscMPIInt rank;
@@ -1320,11 +1319,14 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
       if (!pack) PetscCall(PetscFree(block_sizes));
     }
     { // get jac->d_idiag_k (PC setup),
-      const PetscInt    *d_ai = aijkok->i_device_data(), *d_aj = aijkok->j_device_data();
-      const PetscScalar *d_aa = aijkok->a_device_data();
+      const PetscInt    *d_ai, *d_aj;
+      const PetscScalar *d_aa;
       const PetscInt     conc = Kokkos::DefaultExecutionSpace().concurrency(), openmp = !!(conc < 1000), team_size = (openmp == 0 && PCBJKOKKOS_VEC_SIZE != 1) ? PCBJKOKKOS_TEAM_SIZE : 1;
       const PetscInt    *d_bid_eqOffset = jac->d_bid_eqOffset_k->data(), *r = jac->d_isrow_k->data(), *ic = jac->d_isicol_k->data();
-      PetscScalar       *d_idiag = jac->d_idiag_k->data();
+      PetscScalar       *d_idiag = jac->d_idiag_k->data(), *dummy;
+      PetscMemType       mtype;
+      PetscCall(MatSeqAIJGetCSRAndMemType(Aseq, &d_ai, &d_aj, &dummy, &mtype));
+      d_aa = dummy;
       Kokkos::parallel_for(
         "Diag", Kokkos::TeamPolicy<>(jac->nBlocks, team_size, PCBJKOKKOS_VEC_SIZE), KOKKOS_LAMBDA(const team_member team) {
           const PetscInt blkID = team.league_rank();
