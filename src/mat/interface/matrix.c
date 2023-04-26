@@ -4693,7 +4693,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 -  ftype - factor type, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 
    Output Parameter:
-.  f - the factor matrix used with MatXXFactorSymbolic() calls
+.  f - the factor matrix used with MatXXFactorSymbolic() calls. Can be `NULL` in some cases, see notes below.
 
    Options Database Key:
 .  -mat_factor_bind_factorization <host, device> - Where to do matrix factorization? Default is device (might consume more device memory.
@@ -4702,6 +4702,9 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
    Level: intermediate
 
    Notes:
+     The return matrix can be `NULL` if the requested factorization is not available, since some combinations of matrix types and factorization
+     types registered with `MatSolverTypeRegister()` cannot be fully tested if not at runtime.
+
      Users usually access the factorization solvers via `KSP`
 
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages

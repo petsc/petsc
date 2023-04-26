@@ -1000,6 +1000,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       } else {
         PetscCall(MatGetFactor(A, sub_schurs->mat_solver_type, MAT_FACTOR_LU, &F));
       }
+      PetscCheck(F, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MatGetFactor not supported by matrix instance of type %s. Rerun with \"-info :mat | grep MatGetFactor_\" for additional information", ((PetscObject)A)->type_name);
       PetscCall(MatSetErrorIfFailure(A, PETSC_TRUE));
 #if defined(PETSC_HAVE_MKL_PARDISO)
       if (benign_trick) PetscCall(MatMkl_PardisoSetCntl(F, 10, 10));

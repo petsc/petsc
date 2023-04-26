@@ -3292,7 +3292,11 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A, MatFactorType ftype, Mat *F)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(A->hermitian != PETSC_BOOL3_TRUE || A->symmetric == PETSC_BOOL3_TRUE || ftype != MAT_FACTOR_CHOLESKY, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hermitian CHOLESKY Factor is not supported");
+  if (ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
+    PetscCall(PetscInfo(A, "Hermitian MAT_FACTOR_CHOLESKY is not supported. Use MAT_FACTOR_LU instead.\n"));
+    *F = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 #endif
   /* Create the factorization matrix */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isSeqAIJ));
@@ -3371,7 +3375,11 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A, MatFactorType ftype, Mat *
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(A->hermitian != PETSC_BOOL3_TRUE || A->symmetric == PETSC_BOOL3_TRUE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hermitian CHOLESKY Factor is not supported");
+  if (ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
+    PetscCall(PetscInfo(A, "Hermitian MAT_FACTOR_CHOLESKY is not supported. Use MAT_FACTOR_LU instead.\n"));
+    *F = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 #endif
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
   PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
@@ -3564,25 +3572,33 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
   Mat_MUMPS  *mumps;
   PetscInt    nr, nc;
   PetscMPIInt size;
+  PetscBool   flg = PETSC_TRUE;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(A->hermitian != PETSC_BOOL3_TRUE || A->symmetric == PETSC_BOOL3_TRUE || ftype != MAT_FACTOR_CHOLESKY, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hermitian CHOLESKY Factor is not supported");
+  if (ftype == MAT_FACTOR_CHOLESKY && A->hermitian == PETSC_BOOL3_TRUE && A->symmetric != PETSC_BOOL3_TRUE) {
+    PetscCall(PetscInfo(A, "Hermitian MAT_FACTOR_CHOLESKY is not supported. Use MAT_FACTOR_LU instead.\n"));
+    *F = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 #endif
 
-  /* Errors if some condition is not satisfied */
+  /* Return if some condition is not satisfied */
+  *F = NULL;
   PetscCall(MatNestGetSubMats(A, &nr, &nc, &mats));
   if (ftype == MAT_FACTOR_CHOLESKY) {
     IS       *rows, *cols;
-    PetscBool flg = PETSC_TRUE;
     PetscInt *m, *M;
 
     PetscCheck(nr == nc, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MAT_FACTOR_CHOLESKY not supported for nest sizes %" PetscInt_FMT " != %" PetscInt_FMT ". Use MAT_FACTOR_LU.", nr, nc);
     PetscCall(PetscMalloc2(nr, &rows, nc, &cols));
     PetscCall(MatNestGetISs(A, rows, cols));
     for (PetscInt r = 0; flg && r < nr; r++) PetscCall(ISEqualUnsorted(rows[r], cols[r], &flg));
-    if (!flg) PetscCall(PetscFree2(rows, cols));
-    PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MAT_FACTOR_CHOLESKY not supported for unequal row and column maps. Use MAT_FACTOR_LU.");
+    if (!flg) {
+      PetscCall(PetscFree2(rows, cols));
+      PetscCall(PetscInfo(A, "MAT_FACTOR_CHOLESKY not supported for unequal row and column maps. Use MAT_FACTOR_LU.\n"));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
     PetscCall(PetscMalloc2(nr, &m, nr, &M));
     for (PetscInt r = 0; r < nr; r++) PetscCall(ISGetMinMax(rows[r], &m[r], &M[r]));
     for (PetscInt r = 0; flg && r < nr; r++)
@@ -3590,7 +3606,10 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
         if ((m[k] <= m[r] && m[r] <= M[k]) || (m[k] <= M[r] && M[r] <= M[k])) flg = PETSC_FALSE;
     PetscCall(PetscFree2(m, M));
     PetscCall(PetscFree2(rows, cols));
-    PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MAT_FACTOR_CHOLESKY not supported for intersecting row maps. Use MAT_FACTOR_LU.");
+    if (!flg) {
+      PetscCall(PetscInfo(A, "MAT_FACTOR_CHOLESKY not supported for intersecting row maps. Use MAT_FACTOR_LU.\n"));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
   }
 
   for (PetscInt r = 0; r < nr; r++) {
@@ -3612,11 +3631,20 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATSEQSBAIJ, &isSeqSBAIJ));
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATMPISBAIJ, &isMPISBAIJ));
       if (ftype == MAT_FACTOR_CHOLESKY) {
-        if (r == c) PetscCheck(isSeqAIJ || isMPIAIJ || isSeqSBAIJ || isMPISBAIJ, PetscObjectComm((PetscObject)sub), PETSC_ERR_SUP, "Not for diagonal block of type %s", ((PetscObject)sub)->type_name);
-        else PetscCheck(isSeqAIJ || isMPIAIJ || isSeqBAIJ || isMPIBAIJ, PetscObjectComm((PetscObject)sub), PETSC_ERR_SUP, "Not for offdiagonal block of type %s", ((PetscObject)sub)->type_name);
-      } else PetscCheck(isSeqAIJ || isMPIAIJ || isSeqBAIJ || isMPIBAIJ, PetscObjectComm((PetscObject)sub), PETSC_ERR_SUP, "Not for block of type %s", ((PetscObject)sub)->type_name);
+        if (r == c && !isSeqAIJ && !isMPIAIJ && !isSeqSBAIJ && !isMPISBAIJ) {
+          PetscCall(PetscInfo(sub, "MAT_CHOLESKY_FACTOR not supported for diagonal block of type %s.\n", ((PetscObject)sub)->type_name));
+          flg = PETSC_FALSE;
+        } else if (!isSeqAIJ && !isMPIAIJ && !isSeqBAIJ && !isMPIBAIJ) {
+          PetscCall(PetscInfo(sub, "MAT_CHOLESKY_FACTOR not supported for off-diagonal block of type %s.\n", ((PetscObject)sub)->type_name));
+          flg = PETSC_FALSE;
+        }
+      } else if (!isSeqAIJ && !isMPIAIJ && !isSeqBAIJ && !isMPIBAIJ) {
+        PetscCall(PetscInfo(sub, "MAT_LU_FACTOR not supported for block of type %s.\n", ((PetscObject)sub)->type_name));
+        flg = PETSC_FALSE;
+      }
     }
   }
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Create the factorization matrix */
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));

@@ -17,9 +17,9 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
     PC_Factor *fact = (PC_Factor *)pc->data;
     PetscCall(MatSolverTypeGet(fact->solvertype, ((PetscObject)pc->pmat)->type_name, fact->factortype, NULL, &foundmtype, NULL));
     if (foundmtype) {
-      if (!fact->fact) {
-        PetscCall(MatGetFactor(pc->pmat, fact->solvertype, fact->factortype, &fact->fact));
-      } else if (!fact->fact->assembled) {
+      if (!fact->fact) { PetscCall(MatGetFactor(pc->pmat, fact->solvertype, fact->factortype, &fact->fact)); }
+      if (!fact->fact) PetscFunctionReturn(PETSC_SUCCESS);
+      if (!fact->fact->assembled) {
         PetscCall(PetscStrcmp(fact->solvertype, fact->fact->solvertype, &flg));
         if (!flg) {
           Mat B;
@@ -87,6 +87,7 @@ static PetscErrorCode PCFactorGetUseInPlace_Factor(PC pc, PetscBool *flg)
 
   Note:
   After you have called this function (which has to be after the `KSPSetOperators()` or `PCSetOperators()`) you can call `PCFactorGetMatrix()` and then set factor options on that matrix.
+  This function raises an error if the requested combination of solver package and matrix type is not supported.
 
   Level: intermediate
 
