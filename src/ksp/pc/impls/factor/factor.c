@@ -7,7 +7,7 @@
 */
 PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
 {
-  PetscBool   foundmtype, flg;
+  PetscBool   foundmtype, flg, destroy = PETSC_FALSE;
   const char *prefix;
 
   PetscFunctionBegin;
@@ -17,7 +17,12 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
     PC_Factor *fact = (PC_Factor *)pc->data;
     PetscCall(MatSolverTypeGet(fact->solvertype, ((PetscObject)pc->pmat)->type_name, fact->factortype, NULL, &foundmtype, NULL));
     if (foundmtype) {
-      if (!fact->fact) { PetscCall(MatGetFactor(pc->pmat, fact->solvertype, fact->factortype, &fact->fact)); }
+      if (!fact->fact) {
+        /* factored matrix is not present at this point, we want to create it during PCSetUp.
+           Since this can be called from setfromoptions, we destroy it when we are done with it */
+        PetscCall(MatGetFactor(pc->pmat, fact->solvertype, fact->factortype, &fact->fact));
+        destroy = PETSC_TRUE;
+      }
       if (!fact->fact) PetscFunctionReturn(PETSC_SUCCESS);
       if (!fact->fact->assembled) {
         PetscCall(PetscStrcmp(fact->solvertype, fact->fact->solvertype, &flg));
@@ -37,6 +42,7 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
         } else otype = MATORDERINGEXTERNAL;
         PetscCall(PetscStrallocpy(otype, (char **)&fact->ordering));
       }
+      if (destroy) PetscCall(MatDestroy(&fact->fact));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
