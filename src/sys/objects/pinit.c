@@ -264,9 +264,11 @@ PETSC_EXTERN void MPIAPI PetscSum_Local(void *in, void *out, PetscMPIInt *cnt, M
   else if (*datatype == MPIU___FLOAT128) {
     __float128 *xin = (__float128 *)in, *xout = (__float128 *)out;
     for (i = 0; i < count; i++) xout[i] += xin[i];
+    #if defined(PETSC_HAVE_COMPLEX)
   } else if (*datatype == MPIU___COMPLEX128) {
     __complex128 *xin = (__complex128 *)in, *xout = (__complex128 *)out;
     for (i = 0; i < count; i++) xout[i] += xin[i];
+    #endif
   }
   #endif
   #if defined(PETSC_HAVE_REAL___FP16)
@@ -906,8 +908,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #if defined(PETSC_HAVE_REAL___FLOAT128)
   PetscCallMPI(MPI_Type_contiguous(2, MPI_DOUBLE, &MPIU___FLOAT128));
   PetscCallMPI(MPI_Type_commit(&MPIU___FLOAT128));
+  #if defined(PETSC_HAVE_COMPLEX)
   PetscCallMPI(MPI_Type_contiguous(4, MPI_DOUBLE, &MPIU___COMPLEX128));
   PetscCallMPI(MPI_Type_commit(&MPIU___COMPLEX128));
+  #endif
 #endif
 #if defined(PETSC_HAVE_REAL___FP16)
   PetscCallMPI(MPI_Type_contiguous(2, MPI_CHAR, &MPIU___FP16));
@@ -1291,7 +1295,9 @@ PetscErrorCode PetscFreeMPIResources(void)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_REAL___FLOAT128)
   PetscCallMPI(MPI_Type_free(&MPIU___FLOAT128));
+  #if defined(PETSC_HAVE_COMPLEX)
   PetscCallMPI(MPI_Type_free(&MPIU___COMPLEX128));
+  #endif
 #endif
 #if defined(PETSC_HAVE_REAL___FP16)
   PetscCallMPI(MPI_Type_free(&MPIU___FP16));
