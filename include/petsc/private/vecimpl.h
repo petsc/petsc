@@ -110,12 +110,7 @@ struct _VecOps {
   PetscErrorCode (*setvaluescoo)(Vec, const PetscScalar[], InsertMode);
 };
 
-#if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 11))
-  #if (PETSC_C_VERSION >= 11) && (PETSC_C_VERSION < 23)
-    // static_assert() is a keyword since C23, before that defined as macro in assert.h
-    #include <assert.h>
-  #endif
-
+#if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 23))
 static_assert(offsetof(struct _VecOps, duplicate) == sizeof(void (*)(void)) * VECOP_DUPLICATE, "");
 static_assert(offsetof(struct _VecOps, set) == sizeof(void (*)(void)) * VECOP_SET, "");
 static_assert(offsetof(struct _VecOps, view) == sizeof(void (*)(void)) * VECOP_VIEW, "");

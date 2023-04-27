@@ -82,18 +82,17 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
    The number of errors detected.
 
    Options Database Keys:.
-+  -malloc_test - turns this feature on when PETSc was not configured with --with-debugging=0
++  -malloc_test - turns this feature on when PETSc was not configured with `--with-debugging=0`
 -  -malloc_debug - turns this feature on anytime
-
-   Output Effect:
-   Error messages are written to stdout.
 
    Level: advanced
 
    Notes:
-    This is only run if `PetscMallocSetDebug()` has been called which is set by -malloc_test (if debugging is turned on) or -malloc_debug (any time)
+   Error messages are written to `stdout`.
 
-    You should generally use `CHKMEMQ` as a short cut for calling this  routine.
+   This is only run if `PetscMallocSetDebug()` has been called which is set by `-malloc_test` (if debugging is turned on) or `-malloc_debug` (any time)
+
+  You should generally use `CHKMEMQ` as a short cut for calling this routine.
 
    No output is generated if there are no problems detected.
 
@@ -103,7 +102,7 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
    Developers Note:
      Uses the flg `TRdebugLevel` (set as the first argument to `PetscMallocSetDebug()`) to determine if it should run
 
-.seealso: `CHKMEMQ`
+.seealso: `CHKMEMQ`, `PetscMalloc()`, `PetscFree()`, `PetscMallocSetDebug()`
 @*/
 PetscErrorCode PetscMallocValidate(int line, const char function[], const char file[])
 {
@@ -162,11 +161,11 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
 
     Input Parameters:
 +   a   - number of bytes to allocate
-.   lineno - line number where used.  Use __LINE__ for this
--   filename  - file name where used.  Use __FILE__ for this
+.   lineno - line number where used.  Use `__LINE__` for this
+-   filename  - file name where used.  Use `__FILE__` for this
 
-    Returns:
-    double aligned pointer to requested storage, or null if not  available.
+    Output Parameter:
+    double aligned pointer to requested storage
  */
 PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result)
 {
@@ -260,9 +259,11 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
    PetscTrFreeDefault - Free with tracing.
 
    Input Parameters:
-.   a    - pointer to a block allocated with PetscTrMalloc
-.   lineno - line number where used.  Use __LINE__ for this
-.   filename  - file name where used.  Use __FILE__ for this
++   a    - pointer to a block allocated with `PetscTrMallocDefault()`
+.   lineno - line number where used.  Use `__LINE__` for this
+-   filename  - file name where used.  Use `__FILE__` for this
+
+  Level: developer
  */
 PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], const char filename[])
 {
@@ -336,12 +337,12 @@ PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], c
 
   Input Parameters:
 + len      - number of bytes to allocate
-. lineno   - line number where used.  Use __LINE__ for this
-. filename - file name where used.  Use __FILE__ for this
+. lineno   - line number where used.  Use `__LINE__` for this
+. filename - file name where used.  Use `__FILE__` for this
 - result - original memory
 
   Output Parameter:
-. result - double aligned pointer to requested storage, or null if not available.
+. result - double aligned pointer to requested storage
 
   Level: developer
 
@@ -472,17 +473,17 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
     Collective
 
     Input Parameters:
-+    viewer - the viewer that defines the communicator
++    viewer - the viewer to output the information on
 -    message - string printed before values
 
     Options Database Keys:
 +    -malloc_debug - have PETSc track how much memory it has allocated
-.    -log_view_memory - print memory usage per event
--    -memory_view - during PetscFinalize() have this routine called
+.    -log_view_memory - print memory usage per event when `-log_view` is used
+-    -memory_view - during `PetscFinalize()` have this routine called
 
     Level: intermediate
 
-.seealso: `PetscMallocDump()`, `PetscMemoryGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMallocView()`
+.seealso: `PetscMallocDump()`, `PetscMemoryGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMallocView()`, `PetscMalloc()`, `PetscFree()`
  @*/
 PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[])
 {
@@ -559,7 +560,7 @@ PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[])
 
     Level: intermediate
 
-.seealso: `PetscMallocDump()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+.seealso: `PetscMallocDump()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMemoryGetMaximumUsage()`
  @*/
 PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
@@ -580,7 +581,7 @@ PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
 
     Level: intermediate
 
-.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMallocPushMaximumUsage()`
  @*/
 PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space)
@@ -600,7 +601,7 @@ PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space)
 
     Level: developer
 
-.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMallocPopMaximumUsage()`
  @*/
 PetscErrorCode PetscMallocPushMaximumUsage(int event)
@@ -625,7 +626,7 @@ PetscErrorCode PetscMallocPushMaximumUsage(int event)
 
     Level: developer
 
-.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMalloc()`, `PetscFree()`,
           `PetscMallocPushMaximumUsage()`
  @*/
 PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
@@ -641,7 +642,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 /*@C
    PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to `PetscMalloc()` was used to obtain that memory
 
-   Collective on `PETSC_COMM_WORLD`
+   Not Collective
 
    Input Parameter:
 .    ptr - the memory location
@@ -651,7 +652,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 
    Level: intermediate
 
-.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`
+.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 {
@@ -677,10 +678,10 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
    Not Collective
 
    Input Parameter:
-.  fp  - file pointer.  If fp is NULL, stdout is assumed.
+.  fp  - file pointer.  If `fp` is `NULL`, `stdout` is assumed.
 
    Options Database Key:
-.  -malloc_dump <optional filename> - Dumps unfreed memory during call to `PetscFinalize()`
+.  -malloc_dump <optional filename> - Print summary of unfreed memory during call to `PetscFinalize()`, writing to filename if given
 
    Level: intermediate
 
@@ -691,12 +692,10 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 
      `PetscMallocView()` prints a list of all memory ever allocated
 
-   Fortran Notes:
-   The calling sequence in Fortran is PetscMallocDump(integer ierr)
+   Fortran Note:
+   The calling sequence is `PetscMallocDump`(PetscErrorCode ierr). A `fp` parameter is not supported.
 
-   The `fp` defaults to stdout.
-
-.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocValidate()`
+.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocValidate()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocDump(FILE *fp)
 {
@@ -735,21 +734,22 @@ PetscErrorCode PetscMallocDump(FILE *fp)
     Not Collective
 
     Input Parameter:
-.   logmin - minimum allocation size to log, or `PETSC_DEFAULT`
+.   logmin - minimum allocation size to log, or `PETSC_DEFAULT` to log all memory allocations
 
-    Options Database Key:
+    Options Database Keys:
 +  -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
 .  -malloc_view_threshold <min> - Sets a minimum size if -malloc_view is used
 -  -log_view_memory - view the memory usage also with the -log_view option
 
     Level: advanced
 
-    Notes:
+    Note:
     Must be called after `PetscMallocSetDebug()`
 
+    Developer Note:
     Uses `MPI_COMM_WORLD` to determine rank because PETSc communicators may not be available
 
-.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocTraceSet()`, `PetscMallocValidate()`
+.seealso: `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocTraceSet()`, `PetscMallocValidate()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 {
@@ -774,7 +774,7 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 
     Level: advanced
 
-.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocTraceGet()`
+.seealso: `PetscMallocViewSet()`, `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocTraceGet()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocViewGet(PetscBool *logging)
 {
@@ -789,16 +789,16 @@ PetscErrorCode PetscMallocViewGet(PetscBool *logging)
   Not Collective
 
   Input Parameters:
-+ viewer - The viewer to use for tracing, or NULL to use stdout
++ viewer - The viewer to use for tracing, or `NULL` to use `PETSC_VIEWER_STDOUT_SELF`
 . active - Flag to activate or deactivate tracing
 - logmin - The smallest memory size that will be logged
+
+  Level: advanced
 
   Note:
   The viewer should not be collective.
 
-  Level: advanced
-
-.seealso: `PetscMallocTraceGet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`
+.seealso: `PetscMallocTraceGet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLogDouble logmin)
 {
@@ -807,7 +807,9 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
     PetscLogMallocTrace = -1;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscLogMallocTraceViewer = !viewer ? PETSC_VIEWER_STDOUT_SELF : viewer;
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscLogMallocTraceViewer = viewer;
   PetscLogMallocTrace       = 0;
   PetscCall(PetscMemorySetGetMaximumUsage());
   if (logmin < 0) logmin = 0.0; /* PETSC_DEFAULT or PETSC_DECIDE */
@@ -824,11 +826,11 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
 . logging - `PETSC_TRUE` if logging is active
 
   Options Database Key:
-. -malloc_view <optional filename> - Activates PetscMallocView()
+. -malloc_view <optional filename> - Activates `PetscMallocView()`
 
   Level: advanced
 
-.seealso: `PetscMallocTraceSet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`
+.seealso: `PetscMallocTraceSet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 {
@@ -844,7 +846,7 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
     Not Collective
 
     Input Parameter:
-.   fp - file pointer; or NULL
+.   fp - file pointer; or `NULL`
 
     Options Database Key:
 .  -malloc_view <optional filename> - Activates `PetscMallocView()` in `PetscFinalize()`
@@ -857,11 +859,9 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
      `PetscMemoryView()` gives a brief summary of current memory usage
 
    Fortran Notes:
-   The calling sequence in Fortran is PetscMallocView(integer ierr)
+   The calling sequence in Fortran is `PetscMallocView`(integer ierr)
 
-   The `fp` defaults to stdout.
-
-.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`
+.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocView(FILE *fp)
 {
@@ -925,8 +925,6 @@ PetscErrorCode PetscMallocView(FILE *fp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------------------------- */
-
 /*@
     PetscMallocSetDebug - Set's PETSc memory debugging
 
@@ -934,22 +932,22 @@ PetscErrorCode PetscMallocView(FILE *fp)
 
     Input Parameters:
 +   eachcall - checks the entire heap of allocated memory for issues on each call to `PetscMalloc()` and `PetscFree()`, slow
--   initializenan - initializes all memory with NaN to catch use of uninitialized floating point arrays
+-   initializenan - initializes all memory with `NaN` to catch use of uninitialized floating point arrays
 
     Options Database Keys:
 +   -malloc_debug <true or false> - turns on or off debugging
-.   -malloc_test - turns on all debugging if PETSc was configured with debugging including -malloc_dump, otherwise ignored
+.   -malloc_test - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
 .   -malloc_view_threshold t - log only allocations larger than t
 .   -malloc_dump <filename> - print a list of all memory that has not been freed
-.   -malloc no - (deprecated) same as -malloc_debug no
--   -malloc_log - (deprecated) same as -malloc_view
+.   -malloc no - (deprecated) same as `-malloc_debug no`
+-   -malloc_log - (deprecated) same as `-malloc_view`
 
    Level: developer
 
     Note:
     This is called in `PetscInitialize()` and should not be called elsewhere
 
-.seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocGetDebug()`
+.seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocGetDebug()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
 {
@@ -977,14 +975,14 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
     Output Parameters:
 +    basic - doing basic debugging
 .    eachcall - checks the entire memory heap at each `PetscMalloc()`/`PetscFree()`
--    initializenan - initializes memory with NaN
+-    initializenan - initializes memory with `NaN`
 
    Level: intermediate
 
    Note:
-     By default, the debug version always does some debugging unless you run with -malloc_debug no
+     By default, the debug version always does some debugging unless you run with `-malloc_debug no`
 
-.seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocSetDebug()`
+.seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocSetDebug()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscBool *initializenan)
 {
@@ -1008,7 +1006,7 @@ PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscB
 
   Level: developer
 
-.seealso: `PetscMallocLogRequestedSizeGet()`, `PetscMallocViewSet()`
+.seealso: `PetscMallocLogRequestedSizeGet()`, `PetscMallocViewSet()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool flg)
 {
@@ -1027,7 +1025,7 @@ PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool flg)
 
   Level: developer
 
-.seealso: `PetscMallocLogRequestedSizeSetinalSizeSet()`, `PetscMallocViewSet()`
+.seealso: `PetscMallocLogRequestedSizeSet()`, `PetscMallocViewSet()`, `PetscMalloc()`, `PetscFree()`
 @*/
 PetscErrorCode PetscMallocLogRequestedSizeGet(PetscBool *flg)
 {

@@ -493,6 +493,7 @@ freebsd-pkgs-opt:
     - os:fbsd
   variables:
     TEST_ARCH: arch-ci-freebsd-pkgs-opt
+    MAKE_CFLAGS: -DPETSC_SKIP_COMPLEX -Werror
 
 linux-hip-double:
   extends:
