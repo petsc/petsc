@@ -6,7 +6,9 @@ static char help[] = "Artificial test to check that snes->domainerror is being r
 
   ------------------------------------------------------------------------- */
 
-#define PETSC_SKIP_COMPLEX
+#if !defined(PETSC_SKIP_COMPLEX)
+  #define PETSC_SKIP_COMPLEX
+#endif
 #include <petscsnes.h>
 
 typedef struct {
