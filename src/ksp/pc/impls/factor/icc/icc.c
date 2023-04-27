@@ -19,7 +19,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
 
   PetscCall(MatSetErrorIfFailure(pc->pmat, pc->erroriffailure));
   if (!pc->setupcalled) {
-    if (!((PC_Factor *)icc)->fact) PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, MAT_FACTOR_ICC, &((PC_Factor *)icc)->fact));
+    PetscCall(PCFactorSetUpMatSolverType(pc));
     PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)icc)->fact, &canuseordering));
     if (canuseordering) {
       PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
@@ -27,9 +27,8 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
     }
     PetscCall(MatICCFactorSymbolic(((PC_Factor *)icc)->fact, pc->pmat, perm, &((PC_Factor *)icc)->info));
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
-    PetscBool canuseordering;
     PetscCall(MatDestroy(&((PC_Factor *)icc)->fact));
-    PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, MAT_FACTOR_ICC, &((PC_Factor *)icc)->fact));
+    PetscCall(PCFactorSetUpMatSolverType(pc));
     PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)icc)->fact, &canuseordering));
     if (canuseordering) {
       PetscCall(PCFactorSetDefaultOrdering_Factor(pc));

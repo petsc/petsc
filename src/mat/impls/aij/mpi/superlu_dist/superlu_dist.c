@@ -130,6 +130,7 @@ typedef struct {
   gridinfo3d_t grid3d;
 #endif
 } PetscSuperLU_DIST;
+
 static PetscMPIInt Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID;
 
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
@@ -138,7 +139,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm com
 
   PetscFunctionBegin;
   if (keyval != Petsc_Superlu_dist_keyval) SETERRMPI(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Unexpected keyval");
-  PetscCall(PetscInfo(NULL, "Removing Petsc_Superlu_dist_keyval attribute from communicator that is being freed\n"));
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7, 2, 0)
   if (context->use3d) {
     PetscStackCallExternalVoid("SuperLU_DIST:superlu_gridexit3d", superlu_gridexit3d(&context->grid3d));
@@ -165,7 +165,6 @@ static PetscErrorCode Petsc_Superlu_dist_keyval_free(void)
   PetscMPIInt Petsc_Superlu_dist_keyval_temp = Petsc_Superlu_dist_keyval;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(NULL, "Freeing Petsc_Superlu_dist_keyval\n"));
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval_temp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -220,8 +219,7 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 
     PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
     PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
-    context->busy = PETSC_FALSE;
+    if (flg) context->busy = PETSC_FALSE;
   }
 
   PetscCall(PetscFree(A->data));
@@ -574,11 +572,6 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
   PetscCall(PetscOptionsDeprecated("-mat_superlu_dist_statprint", "-mat_superlu_dist_printstat", "3.19", NULL));
   PetscCall(PetscOptionsBool("-mat_superlu_dist_printstat", "Print factorization information", "None", (PetscBool)lu->options.PrintStat, (PetscBool *)&lu->options.PrintStat, NULL));
 
-  /* Additional options for special cases */
-  if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
-    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_Superlu_dist_keyval_Delete_Fn, &Petsc_Superlu_dist_keyval, (void *)0));
-    PetscCall(PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free));
-  }
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &mpiflg));
   if (!mpiflg || context->busy) { /* additional options */
     if (!mpiflg) {
@@ -846,6 +839,10 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_aij_superlu_dist));
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATMPIAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_aij_superlu_dist));
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATSEQAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_aij_superlu_dist));
+  if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_Superlu_dist_keyval_Delete_Fn, &Petsc_Superlu_dist_keyval, NULL));
+    PetscCall(PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

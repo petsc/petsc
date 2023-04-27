@@ -1383,6 +1383,7 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(mat, 2);
+  PetscCall(PCFactorSetUpMatSolverType(pc));
   PetscUseTypeMethod(pc, getfactoredmatrix, mat);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

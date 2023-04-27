@@ -355,14 +355,14 @@ static PetscErrorCode MatDestroy_SuperLU(Mat A)
   PetscFunctionBegin;
   if (lu->CleanUpSuperLU) { /* Free the SuperLU datastructures */
     PetscStackCallExternalVoid("SuperLU:Destroy_SuperMatrix_Store", Destroy_SuperMatrix_Store(&lu->A));
-    PetscStackCallExternalVoid("SuperLU:Destroy_SuperMatrix_Store", Destroy_SuperMatrix_Store(&lu->B));
-    PetscStackCallExternalVoid("SuperLU:Destroy_SuperMatrix_Store", Destroy_SuperMatrix_Store(&lu->X));
-    PetscStackCallExternalVoid("SuperLU:StatFree", StatFree(&lu->stat));
     if (lu->lwork >= 0) {
       PetscStackCallExternalVoid("SuperLU:Destroy_SuperNode_Matrix", Destroy_SuperNode_Matrix(&lu->L));
       PetscStackCallExternalVoid("SuperLU:Destroy_CompCol_Matrix", Destroy_CompCol_Matrix(&lu->U));
     }
   }
+  PetscStackCallExternalVoid("SuperLU:Destroy_SuperMatrix_Store", Destroy_SuperMatrix_Store(&lu->B));
+  PetscStackCallExternalVoid("SuperLU:Destroy_SuperMatrix_Store", Destroy_SuperMatrix_Store(&lu->X));
+  PetscStackCallExternalVoid("SuperLU:StatFree", StatFree(&lu->stat));
   PetscCall(PetscFree(lu->etree));
   PetscCall(PetscFree(lu->perm_r));
   PetscCall(PetscFree(lu->perm_c));

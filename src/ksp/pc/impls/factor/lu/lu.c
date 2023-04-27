@@ -77,7 +77,8 @@ static PetscErrorCode PCSetUp_LU(PC pc)
 
     if (!pc->setupcalled) {
       PetscBool canuseordering;
-      if (!((PC_Factor *)dir)->fact) { PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_LU, &((PC_Factor *)dir)->fact)); }
+
+      PetscCall(PCFactorSetUpMatSolverType(pc));
       PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
       if (canuseordering) {
         PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
@@ -89,9 +90,10 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       dir->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       PetscBool canuseordering;
+
       if (!dir->hdr.reuseordering) {
         PetscCall(MatDestroy(&((PC_Factor *)dir)->fact));
-        PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)dir)->solvertype, MAT_FACTOR_LU, &((PC_Factor *)dir)->fact));
+        PetscCall(PCFactorSetUpMatSolverType(pc));
         PetscCall(MatFactorGetCanUseOrdering(((PC_Factor *)dir)->fact, &canuseordering));
         if (canuseordering) {
           if (dir->row && dir->col && dir->row != dir->col) PetscCall(ISDestroy(&dir->row));
