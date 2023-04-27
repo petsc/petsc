@@ -227,11 +227,11 @@ M*/
 
 .seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`
 M*/
-enum {
-  PETSC_DECIDE    = -1,
-  PETSC_DETERMINE = PETSC_DECIDE,
-  PETSC_DEFAULT   = -2
-};
+
+/* These MUST be preprocessor defines! see https://gitlab.com/petsc/petsc/-/issues/1370 */
+#define PETSC_DECIDE    (-1)
+#define PETSC_DETERMINE PETSC_DECIDE
+#define PETSC_DEFAULT   (-2)
 
 /*MC
     PETSC_COMM_WORLD - the equivalent of the `MPI_COMM_WORLD` communicator which represents
