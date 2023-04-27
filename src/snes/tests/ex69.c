@@ -356,6 +356,8 @@ PetscErrorCode MatMult_MyShell(Mat A, Vec x, Vec y)
     PetscMPIInt rank;
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
     if (rank == 0) PetscCall(VecSetInf(y));
+    PetscCall(VecAssemblyBegin(y));
+    PetscCall(VecAssemblyEnd(y));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -380,6 +382,8 @@ PetscErrorCode PCApply_MyShell(PC pc, Vec x, Vec y)
     PetscMPIInt rank;
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
     if (rank == 0) PetscCall(VecSetInf(y));
+    PetscCall(VecAssemblyBegin(y));
+    PetscCall(VecAssemblyEnd(y));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

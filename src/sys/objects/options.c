@@ -923,6 +923,7 @@ static const char *PetscCIOptions[] = {
   "error_output_stdout",
   "use_gpu_aware_mpi",
   "checkfunctionlist",
+  "fp_trap",
   "petsc_ci",
   "petsc_ci_portable_error_output",
 };
