@@ -25,7 +25,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *s)
   PetscCall(VecGetArray(F, &f));
 
   f[0] = PetscCosReal(t);
-  f[1] = PetscSinReal(u[1]);
+  f[1] = PetscSinScalar(u[1]);
 
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));

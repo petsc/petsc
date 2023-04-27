@@ -967,10 +967,10 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   if (dd->pure_neumann) dd->DBC_zerorows = PETSC_FALSE;
   dd->scalingfactor = 1.0;
 
-  factor = 0.0;
+  factor = 0;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-jump", &factor, NULL));
   /* checkerboard pattern */
-  dd->scalingfactor = PetscPowScalar(10.0, (PetscScalar)factor * PetscPowScalar(-1.0, (PetscScalar)rank));
+  dd->scalingfactor = PetscPowScalar(10.0, factor * PetscPowInt(-1, rank));
   /* test data passed in */
   if (dd->dim == 1) {
     PetscCheck(sizes == dd->npx, dd->gcomm, PETSC_ERR_USER, "Number of mpi procs in 1D must be equal to npx");
