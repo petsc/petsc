@@ -307,16 +307,13 @@ M*/
 @*/
 PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
 {
-  PetscInt       m, n;
   Mat_Transpose *Na;
   VecType        vtype;
 
   PetscFunctionBegin;
-  PetscCall(MatGetLocalSize(A, &m, &n));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), N));
-  PetscCall(MatSetSizes(*N, n, m, PETSC_DECIDE, PETSC_DECIDE));
-  PetscCall(PetscLayoutSetUp((*N)->rmap));
-  PetscCall(PetscLayoutSetUp((*N)->cmap));
+  PetscCall(PetscLayoutReference(A->rmap, &((*N)->cmap)));
+  PetscCall(PetscLayoutReference(A->cmap, &((*N)->rmap)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEVIRTUAL));
 
   PetscCall(PetscNew(&Na));
