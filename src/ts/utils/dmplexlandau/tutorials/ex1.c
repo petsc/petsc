@@ -131,7 +131,7 @@ PetscErrorCode   FormFunction(TS ts, PetscReal tdummy, Vec X, Vec F, void *ptr)
   LandauCtx         *ctx = (LandauCtx *)ptr; /* user-defined application context */
   PetscScalar       *f;
   const PetscScalar *x;
-  const PetscReal    k_B = 1.6e-12, e_cgs = 4.8e-10, m_cgs[2] = {9.1094e-28, 9.1094e-28 * ctx->masses[1] / ctx->masses[0]}; // erg/eV, e, m as per NRL;
+  const PetscReal    k_B = 1.6e-12, e_cgs = 4.8e-10, proton_mass = 9.1094e-28, m_cgs[2] = {proton_mass, proton_mass * ctx->masses[1] / ctx->masses[0]}; // erg/eV, e, m as per NRL;
   PetscReal          AA, v_bar_ab, vTe, t1, TeDiff, Te, Ti, Tdiff;
 
   PetscFunctionBeginUser;
@@ -148,7 +148,7 @@ PetscErrorCode   FormFunction(TS ts, PetscReal tdummy, Vec X, Vec F, void *ptr)
     else ff = PetscAtanReal(PetscSqrtReal(AA)) / PetscSqrtReal(AA);
     t1 = (-3 + (AA + 3) * ff) / PetscSqr(AA);
     //PetscReal vTeB = 8.2e-7 * n_cm3[0] * ctx->lambdas[0][1] * PetscPowReal(Te, -1.5);
-    vTe = PetscRealPart(2 * PetscSqrtReal(PETSC_PI / m_cgs[ii]) * PetscSqr(PetscSqr(e_cgs)) * n_cm3[0] * ctx->lambdas[0][1] * PetscPowReal(k_B * x[E_PAR_IDX], -1.5)) * t1;
+    vTe = 2 * PetscSqrtReal(PETSC_PI / m_cgs[ii]) * PetscSqr(PetscSqr(e_cgs)) * n_cm3[0] * ctx->lambdas[0][1] * PetscPowReal(PetscRealPart(k_B * x[E_PAR_IDX]), -1.5) * t1;
     t1  = vTe * TeDiff; // * 2; // scaling from NRL that makes it fit pretty good
 
     f[2 * ii + E_PAR_IDX]  = 2 * t1; // par

@@ -246,7 +246,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
   */
   for (i = xs; i < xs + xm; i++) {
     x = i * hx;
-    r = PetscSqrtScalar((x - .5) * (x - .5));
+    r = PetscSqrtReal((x - .5) * (x - .5));
     if (r < .125) u[i] = 1.0;
     else u[i] = -.5;
 
