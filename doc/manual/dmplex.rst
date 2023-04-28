@@ -161,27 +161,79 @@ Data Layout by Hand
 ..
   TODO: This text needs additional work so it can be understood without a detailed (or any) understanding of ``DMPLEX`` because the ``PetscSection`` concept is below ``DM`` in the
 
-PETSc hierarchy of classes. We may want to even move this introductory ``PetscSection`` material to its own pride of place in the user guide and not inside the ``DMPLEX`` discussion.
+..
+  We may want to even move this introductory ``PetscSection`` material to its own pride of place in the user guide and not inside the ``DMPLEX`` discussion.
 
-Data are associated with a mesh using the ``PetscSection`` object.
+Specific entries (or collections of entries) in a ``Vec`` (or a simple array) can be associated with a "location" on a mesh (or other types of data structure) using the ``PetscSection`` object.
+A **point** is a ``PetscInt`` that serves as an abstract "index" into arrays from iteratable sets, such as points on a mesh.
 
-A ``PetscSection``, associates a set of degrees of freedom (dof), (a small space
+``PetscSection`` has two modes of operation.
+
+Mode 1:
+
+A ``PetscSection`` associates a set of degrees of freedom (dof), (a small space
 :math:`\{e_k\} 0 < k < d_p`), with every point. The number of dof and their meaning may be different for different points. For example, the dof on a cell point may represent pressure
-while a dof on a face point may represent velocity. A reminder that though points must be
+while a dof on a face point may represent velocity. Though points must be
 contiguously numbered, they can be in any range
-:math:`[\mathrm{pStart}, \mathrm{pEnd})`. A ``PetscSection`` may be thought of as defining a two dimensional array indexed by point in the outer dimension with
+:math:`[\mathrm{pStart}, \mathrm{pEnd})`, which is called a **chart**. A ``PetscSection`` in mode 1 may be thought of as defining a two dimensional array indexed by point in the outer dimension with
 a variable length inner dimension indexed by the dof at that point, :math:`v[pStart <= point < pEnd][0 <= dof <d_p]` [#petscsection_footnote]_.
 
-The sequence for constructing a ``PetscSection`` is the following:
+The sequence for constructing a ``PetscSection`` in mode 1 is the following:
 
-#. Specify the range of points, or chart,
+#. Specify the range of points, or chart, with ``PetscSectionSetChart()``.
 
-#. Specify the number of dofs per point, and
+#. Specify the number of dofs per point, with ``PetscSectionSetDof()``. Any values not set will be zero.
 
-#. Set up the ``PetscSection``.
+#. Set up the ``PetscSection`` with ``PetscSectionSetUp()``.
 
-For example, using the mesh from
-:numref:`fig_doubletMesh`, we can lay out data for
+Below we demonstrate such a process used by ``DMPLEX`` but first we introduce the second mode for working with ``PetscSection``.
+
+Mode 2:
+
+A ``PetscSection`` consists of one more **fields** each of which is represented (internally) by a ``PetscSection``.
+A ``PetscSection`` in mode 2 may be thought of as defining a three dimensional array indexed by point and field in the outer dimensions with
+a variable length inner dimension indexed by the dof at that point. The actual order the values in the array are stored can be set with
+``PetscSectionSetPointMajor``\(``PetscSection``\, ``PETSC_TRUE``\, ``PETSC_FALSE``\). In **point major** order all the degrees of freedom for each point for all fields are stored contiguously, otherwise
+all degrees of freedom for each field are stored  are stored contiguously. With point major order the fields are said to be **interlaced**.
+
+Consider a ``PetscSection`` with 2 fields and 3 points (from 0 to 2) with 1 dof for each point. In point major order the array has the storage
+(values for all the fields at point 0, values for all the fields at point 1, values for all the fields at point 2) while in field major order it is
+(values for all points in field 0, values for all points in field 1).
+
+The sequence for constructing such a ``PetscSection`` is the following:
+
+#. Specify the range of points, or chart, with ``PetscSectionSetChart()``\. All fields share the same chart.
+
+#. Specify the number of fields with ``PetscSectionSetNumFields()``.
+
+#. Optionally provide a name for the fields with ``PetscSectionSetFieldName()``.
+
+#. Set the number of dof for each point on each field with ``PetscSectionSetFieldDof()``. Again, values not set will be zero.
+
+#. Set the **total** number of dof for each point with ``PetscSectionSetDof()``. Thus value must be greater than or equal to the sum of the values set with
+   ``PetscSectionSetFieldDof()`` at that point. Again, values not set will be zero.
+
+#. Set up the ``PetscSection`` with ``PetscSectionSetUp()``.
+
+Once a ``PetscSection`` has been created one can use ``PetscSectionGetStorageSize``\(``PetscSection``\, ``PetscInt`` ``*``) to determine the total number of entries that can be stored in an array or ``Vec``
+accessible by the ``PetscSection``. The memory locations in the associated array are found using an **offset** which can be obtained with:
+
+Mode 1:
+
+.. code-block::
+
+   PetscSectionGetOffset(PetscSection, PetscInt point, PetscInt &offset);
+
+Mode 2:
+
+.. code-block::
+
+   PetscSectionGetFieldOffset(PetscSection, PetscInt point, PetscInt field, PetscInt &offset);
+
+The value in the array is then accessed with ``array[offset]``. If there are multiple dof at a point (and field in mode 2) then ``array[offset + 1]``, etc give access to each of those dof.
+
+Using the mesh from
+:numref:`fig_doubletMesh`, we provide an example of creating a ``PetscSection`` using mode 1. We can lay out data for
 a continuous Galerkin :math:`P_3` finite element method,
 
 .. code-block::
