@@ -376,10 +376,9 @@ class Package(config.base.Configure):
     outflags = self.removeCoverageFlag(outflags)
     with self.Language('C'):
       if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
+        outflags.append('-Wno-implicit-function-declaration')
         if config.setCompilers.Configure.isDarwin(self.log):
           outflags.append('-fno-common')
-        if config.setCompilers.Configure.isDarwinCatalina(self.log):
-          outflags.append('-Wno-implicit-function-declaration')
     return ' '.join(outflags)
 
   def updatePackageFFlags(self,flags):
