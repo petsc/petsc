@@ -838,10 +838,9 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscViewer_CGNS  *cgv = (PetscViewer_CGNS *)viewer->data;
   DM                 dm;
   PetscSection       section;
-  PetscInt           ncomp, time_step;
+  PetscInt           time_step, num_fields, pStart, pEnd;
   PetscReal          time, *time_slot;
   size_t            *step_slot;
-  const PetscInt     field = 0;
   const PetscScalar *v;
   char               solution_name[PETSC_MAX_PATH_LEN];
   int                sol;
@@ -865,23 +864,34 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscCall(PetscSNPrintf(solution_name, sizeof solution_name, "FlowSolution%" PetscInt_FMT, time_step));
   PetscCallCGNS(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, CGNS_ENUMV(Vertex), &sol));
   PetscCall(DMGetLocalSection(dm, &section));
-  PetscCall(PetscSectionGetFieldComponents(section, field, &ncomp));
+  PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   PetscCall(VecGetArrayRead(V, &v));
-  for (PetscInt comp = 0; comp < ncomp; comp++) {
-    int         cgfield;
-    const char *comp_name;
-    CGNS_ENUMT(DataType_t) datatype;
-    PetscCall(PetscSectionGetComponentName(section, field, comp, &comp_name));
-    PetscCall(PetscCGNSDataType(PETSC_SCALAR, &datatype));
-    PetscCallCGNS(cgp_field_write(cgv->file_num, cgv->base, cgv->zone, sol, datatype, comp_name, &cgfield));
-    for (PetscInt n = 0; n < cgv->num_local_nodes; n++) {
-      PetscInt gn = cgv->node_l2g[n];
-      if (gn < cgv->nStart || cgv->nEnd <= gn) continue;
-      cgv->nodal_field[gn - cgv->nStart] = v[n * ncomp + comp];
+  PetscCall(PetscSectionGetNumFields(section, &num_fields));
+  for (PetscInt field = 0; field < num_fields; field++) {
+    PetscInt ncomp;
+    PetscCall(PetscSectionGetFieldComponents(section, field, &ncomp));
+    for (PetscInt comp = 0; comp < ncomp; comp++) {
+      int         cgfield;
+      const char *comp_name;
+      CGNS_ENUMT(DataType_t) datatype;
+      PetscCall(PetscSectionGetComponentName(section, field, comp, &comp_name));
+      PetscCall(PetscCGNSDataType(PETSC_SCALAR, &datatype));
+      PetscCallCGNS(cgp_field_write(cgv->file_num, cgv->base, cgv->zone, sol, datatype, comp_name, &cgfield));
+      for (PetscInt p = pStart, n = 0; p < pEnd; p++) {
+        PetscInt off, dof;
+        PetscCall(PetscSectionGetFieldDof(section, p, field, &dof));
+        if (dof == 0) continue;
+        PetscCall(PetscSectionGetFieldOffset(section, p, field, &off));
+        for (PetscInt c = comp; c < dof; c += ncomp, n++) {
+          PetscInt gn = cgv->node_l2g[n];
+          if (gn < cgv->nStart || cgv->nEnd <= gn) continue;
+          cgv->nodal_field[gn - cgv->nStart] = v[off + c];
+        }
+      }
+      // CGNS nodes use 1-based indexing
+      cgsize_t start = cgv->nStart + 1, end = cgv->nEnd;
+      PetscCallCGNS(cgp_field_write_data(cgv->file_num, cgv->base, cgv->zone, sol, cgfield, &start, &end, cgv->nodal_field));
     }
-    // CGNS nodes use 1-based indexing
-    cgsize_t start = cgv->nStart + 1, end = cgv->nEnd;
-    PetscCallCGNS(cgp_field_write_data(cgv->file_num, cgv->base, cgv->zone, sol, cgfield, &start, &end, cgv->nodal_field));
   }
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(PetscViewerCGNSCheckBatch_Internal(viewer));
