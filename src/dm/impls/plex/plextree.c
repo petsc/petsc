@@ -1556,6 +1556,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
   maxFields = PetscMax(1, numFields);
   PetscCall(DMPlexGetReferenceTree(dm, &refTree));
   PetscCall(DMCopyDisc(dm, refTree));
+  PetscCall(DMSetLocalSection(refTree, NULL));
+  PetscCall(DMSetDefaultConstraints(refTree, NULL, NULL, NULL));
   PetscCall(DMGetDefaultConstraints(refTree, &refConSec, &refCmat, NULL));
   PetscCall(DMPlexGetAnchors(refTree, &refAnSec, &refAnIS));
   PetscCall(DMPlexGetAnchors(dm, &anSec, &anIS));
