@@ -491,7 +491,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     PetscCall(PetscFEGetDimension((PetscFE)obj, &Nb));
     PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
     PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
-    PetscCall(PetscMalloc6(Nc, &field, cdim * Nc, &gradient, cdim * Nq, &coords, Nq, &fegeom.detJ, cdim * cdim * Nq, &fegeom.J, cdim * cdim * Nq, &fegeom.invJ));
+    PetscCall(PetscCalloc6(Nc, &field, cdim * Nc, &gradient, cdim * Nq, &coords, Nq, &fegeom.detJ, cdim * cdim * Nq, &fegeom.J, cdim * cdim * Nq, &fegeom.invJ));
     PetscCall(PetscMalloc2(Nc, &interpolant, cdim * Nc, &interpolantGrad));
     PetscCall(DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
     PetscCall(DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL));

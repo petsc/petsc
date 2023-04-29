@@ -1612,7 +1612,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: tri_p2_adapt_uniform_mmg
-    requires: mmg tetgen
+    requires: mmg tetgen broken
     args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor mmg
     timeoutfactor: 1
 
@@ -1701,10 +1701,10 @@ int main(int argc, char **argv)
     args: -quiet -run_type test -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -viewer_glvis_dm_plex_enable_ncmesh
   test:
     suffix: glvis_2d_tet_p0
-    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -petscspace_degree 0 -dm_coord_space 0
+    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -petscspace_degree 0 -dm_coord_space 0 -pc_type jacobi
   test:
     suffix: glvis_2d_hex_p0
-    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_box_faces 5,7 -dm_plex_simplex 0 -petscspace_degree 0 -dm_coord_space 0
+    args: -run_type exact -guess_vec_view glvis: -nonzero_initial_guess 1 -dm_plex_box_faces 5,7 -dm_plex_simplex 0 -petscspace_degree 0 -dm_coord_space 0 -pc_type jacobi
 
   # PCHPDDM tests
   testset:

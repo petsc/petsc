@@ -694,7 +694,8 @@ static inline void DMPlex_Transpose3D_Internal(PetscScalar A[])
 
 static inline void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
-  const PetscReal invDet = 1.0 / detJ;
+  // Allow zero volume cells
+  const PetscReal invDet = detJ == 0 ? 1.0 : 1.0 / detJ;
 
   invJ[0] = invDet * J[3];
   invJ[1] = -invDet * J[1];
@@ -705,7 +706,8 @@ static inline void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], Pet
 
 static inline void DMPlex_Invert3D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
-  const PetscReal invDet = 1.0 / detJ;
+  // Allow zero volume cells
+  const PetscReal invDet = detJ == 0 ? 1.0 : 1.0 / detJ;
 
   invJ[0 * 3 + 0] = invDet * (J[1 * 3 + 1] * J[2 * 3 + 2] - J[1 * 3 + 2] * J[2 * 3 + 1]);
   invJ[0 * 3 + 1] = invDet * (J[0 * 3 + 2] * J[2 * 3 + 1] - J[0 * 3 + 1] * J[2 * 3 + 2]);
