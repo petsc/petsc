@@ -1906,7 +1906,7 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
       PetscCall(VecAXPBYPCZ(rhat, -1.0, -h, 1.0, r, df));
       PetscCall(VecNorm(rhat, NORM_2, &errors[Nv]));
 
-      es[Nv] = PetscLog10Real(errors[Nv]);
+      es[Nv] = errors[Nv] == 0 ? -16.0 : PetscLog10Real(errors[Nv]);
       hs[Nv] = PetscLog10Real(h);
     }
     PetscCall(VecDestroy(&uhat));
