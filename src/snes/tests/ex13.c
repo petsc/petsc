@@ -209,7 +209,7 @@ int main(int argc, char **argv)
   test:
     suffix: strong
     requires: triangle
-    args: -dm_plex_dim 2 -dm_refine 1 -benchmark_it 0 -dmsnes_check -potential_petscspace_degree 2 -dm_ds_jet_degree 2 -strong
+    args: -dm_plex_dim 2 -dm_refine 1 -benchmark_it 0 -dmsnes_check -potential_petscspace_degree 2 -dm_ds_jet_degree 2 -strong -pc_type jacobi
 
   test:
     suffix: bench
