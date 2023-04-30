@@ -86,6 +86,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   PetscCall(SNESMonitor(snes, 0, fnorm));
   PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(SNESNGMRESUpdateSubspace_Private(snes, 0, 0, F, fnorm, X));
 
   k_restart = 0;
   l         = 0;
