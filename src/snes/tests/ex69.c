@@ -403,32 +403,32 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes, Vec X, Mat A, Mat B, void 
 
    test:
       suffix: 2
-      args: -snes_converged_reason -ksp_converged_reason -error_in_matmult
+      args: -snes_converged_reason -ksp_converged_reason -error_in_matmult -fp_trap 0
 
    test:
       suffix: 3
-      args: -snes_converged_reason -ksp_converged_reason -error_in_pcapply
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcapply -fp_trap 0
 
    test:
       suffix: 4
-      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -fp_trap 0
 
    test:
       suffix: 5
-      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type bjacobi
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type bjacobi -fp_trap 0
 
    test:
       suffix: 5_fieldsplit
-      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type fieldsplit
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type fieldsplit -fp_trap 0
       output_file: output/ex69_5.out
 
    test:
       suffix: 6
-      args: -snes_converged_reason -ksp_converged_reason -error_in_domainmf -snes_mf -pc_type none
+      args: -snes_converged_reason -ksp_converged_reason -error_in_domainmf -snes_mf -pc_type none -fp_trap 0
 
    test:
       suffix: 7
-      args: -snes_converged_reason -ksp_converged_reason -error_in_domain
+      args: -snes_converged_reason -ksp_converged_reason -error_in_domain -fp_trap 0
 
    test:
       suffix: 8
