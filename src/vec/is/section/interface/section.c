@@ -32,7 +32,7 @@ PetscClassId PETSC_SECTION_CLASSID;
 
   The `PetscSection` object and methods are intended to be used in the PETSc `Vec` and `Mat` implementations. The indices returned by the `PetscSection` are appropriate for the kind of `Vec` it is associated with. For example, if the vector being indexed is a local vector, we call the section a local section. If the section indexes a global vector, we call it a global section. For parallel vectors, like global vectors, we use negative indices to indicate dofs owned by other processes.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionDestroy()`, `PetscSectionCreateGlobalSection()`
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetChart()`, `PetscSectionDestroy()`, `PetscSectionCreateGlobalSection()`
 @*/
 PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 {
@@ -351,7 +351,12 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection()`, `PetscSectionGetNumFields()`
+  Notes:
+  Calling this destroys all the information in the `PetscSection` including the chart.
+
+  You must call `PetscSectionSetChart()` after calling this.
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetNumFields()`, `PetscSectionSetChart()`, `PetscSectionReset()`
 @*/
 PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 {
@@ -457,6 +462,9 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   Note:
   Will error if the field or component number do not exist
 
+  Developer Note:
+  The function name should have Field in it since they are field components.
+
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
           `PetscSectionSetComponentName()`, `PetscSectionSetFieldName()`, `PetscSectionGetFieldComponents()`, `PetscSectionSetFieldComponents()`
 @*/
@@ -482,10 +490,13 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
 . comp  - the component number
 - compName - the component name
 
-  Level: intermediate
+  Level: advanced
 
   Note:
   Will error if the field or component number do not exist
+
+  Developer Note:
+  The function name should have Field in it since they are field components.
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetComponentName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
           `PetscSectionSetComponentName()`, `PetscSectionSetFieldName()`, `PetscSectionGetFieldComponents()`, `PetscSectionSetFieldComponents()`
@@ -514,12 +525,13 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
   Output Parameter:
 . numComp - the number of field components
 
-  Level: intermediate
+  Level: advanced
 
   Developer Note:
   This function is misnamed. There is a Num in `PetscSectionGetNumFields()` but not in this name
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldComponents()`, `PetscSectionGetNumFields()`
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldComponents()`, `PetscSectionGetNumFields()`,
+          `PetscSectionSetComponentName()`, `PetscSectionGetComponentName()`
 @*/
 PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, PetscInt *numComp)
 {
@@ -541,9 +553,21 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 . field - the field number
 - numComp - the number of field components
 
-  Level: intermediate
+  Level: advanced
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldComponents()`, `PetscSectionGetNumFields()`
+  Note:
+  This number can be different than the values set with `PetscSectionSetFieldDof()`. It can be used to indicate the number of
+  components in the field of the underlying physical model which may be different than the number of degrees of freedom needed
+  at a point in a discretization. For example, if in three dimensions the field is velocity, it will have 3 components, u, v, and w but
+  an face based model for velocity (where the velocity normal to the face is stored) there is only 1 dof for each face point.
+
+  The value set with this function are not needed or used in `PetscSectionSetUp()`.
+
+  Developer Note:
+  This function is misnamed. There is a Num in `PetscSectionSetNumFields()` but not in this name
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldComponents()`, `PetscSectionSetComponentName()`,
+          `PetscSectionGetComponentName()`, `PetscSectionGetNumFields()`
 @*/
 PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
 {
@@ -571,7 +595,7 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
 }
 
 /*@
-  PetscSectionGetChart - Returns the range [`pStart`, `pEnd`) in which points (indices) lie for this `PetscSection`
+  PetscSectionGetChart - Returns the range [`pStart`, `pEnd`) in which points (indices) lie for this `PetscSection` on this MPI process
 
   Not Collective
 
@@ -596,7 +620,7 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
 }
 
 /*@
-  PetscSectionSetChart - Sets the range [`pStart`, `pEnd`) in which points (indices) lie for this `PetscSection`
+  PetscSectionSetChart - Sets the range [`pStart`, `pEnd`) in which points (indices) lie for this `PetscSection` on this MPI process
 
   Not Collective
 
@@ -607,7 +631,14 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetChart()`, `PetscSectionCreate()`
+  Notes:
+  The charts on different MPI processes may (and often do) overlap
+
+  If you intend to use `PetscSectionSetNumFields()` it must be called before this call.
+
+  The chart for all fields created with `PetscSectionSetNumFields()` is the same as this chart.
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetChart()`, `PetscSectionCreate()`, `PetscSectionSetNumFields()`
 @*/
 PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pEnd)
 {
@@ -657,7 +688,7 @@ PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
 }
 
 /*@
-  PetscSectionSetPermutation - Sets the permutation for [0, `pEnd` - `pStart`)
+  PetscSectionSetPermutation - Sets a permutation of the chart for this section, [0, `pEnd` - `pStart`), which determines the order to store the `PetscSection` information
 
   Not Collective
 
@@ -667,10 +698,14 @@ PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
 
   Level: intermediate
 
-  Developer Note:
-  What purpose does this permutation serve?
+  Notes:
+  The permutation must be provided before `PetscSectionSetUp()`.
 
-.seealso: [](sec_scatter), `IS`, `PetscSection`, `PetscSectionGetPermutation()`, `PetscSectionCreate()`
+  The data in the `PetscSection` are permuted but the access via `PetscSectionGetFieldOffset()` and `PetscSectionGetOffset()` is not changed
+
+  Compart to `PetscSectionPermute()`
+
+.seealso: [](sec_scatter), `IS`, `PetscSection`, `PetscSectionSetUp()`, `PetscSectionGetPermutation()`, `PetscSectionPermute()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
 {
@@ -723,7 +758,24 @@ PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetPointMajor()`
+  Note:
+  Field-major order is not recommended unless you are managing the entire problem yourself, since many higher-level functions in PETSc depend on point-major order.
+
+  Point major order means the degrees of freedom are stored as follows
+.vb
+    all the degrees of freedom for each point are stored contiquously, one point after another (respecting a permutation set with `PetscSectionSetPermutation()`)
+    for each point
+       the degrees of freedom for each field (starting with the unnamed default field) are listed in order by field
+.ve
+
+  Field major order means the degrees of freedom are stored as follows
+.vb
+    all degrees of freedom for each field (including the unnamed default field) are stored contiquously, one field after another
+    for each field (started with unnamed default field)
+      the degrees of freedom for each point are listed in order by point (respecting a permutation set with `PetscSectionSetPermutation()`)
+.ve
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetPointMajor()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
 {
@@ -782,7 +834,7 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
 }
 
 /*@
-  PetscSectionGetDof - Return the number of degrees of freedom associated with a given point.
+  PetscSectionGetDof - Return the total number of degrees of freedom associated with a given point.
 
   Not Collective
 
@@ -793,10 +845,12 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
   Output Parameter:
 . numDof - the number of dof
 
-  Note:
+  Level: intermediate
+
+  Notes:
   In a global section, this size will be negative for points not owned by this process.
 
-  Level: intermediate
+  This number is for the unnamed default field at the given point plus all degrees of freedom associated with all fields at that point
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionCreate()`
 @*/
@@ -811,7 +865,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
 }
 
 /*@
-  PetscSectionSetDof - Sets the number of degrees of freedom associated with a given point.
+  PetscSectionSetDof - Sets the total number of degrees of freedom associated with a given point.
 
   Not Collective
 
@@ -821,6 +875,9 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
 - numDof - the number of dof
 
   Level: intermediate
+
+  Note:
+  This number is for the unnamed default field at the given point plus all degrees of freedom associated with all fields at that point
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionAddDof()`, `PetscSectionCreate()`
 @*/
@@ -835,7 +892,7 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
 }
 
 /*@
-  PetscSectionAddDof - Adds to the number of degrees of freedom associated with a given point.
+  PetscSectionAddDof - Adds to the total number of degrees of freedom associated with a given point.
 
   Not Collective
 
@@ -845,6 +902,9 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
 - numDof - the number of additional dof
 
   Level: intermediate
+
+  Note:
+  This number is for the unnamed default field at the given point plus all degrees of freedom associated with all fields at that point
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetDof()`, `PetscSectionCreate()`
 @*/
@@ -898,7 +958,18 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`
+  Note:
+  When setting the number of dof for a field at a point one must also ensure the count of the total number of dof at the point (summed over
+  the fields and the unnamed default field) is correct by also calling `PetscSectionAddDof()` or `PetscSectionSetDof()`
+
+  This is equivalent to
+.vb
+     PetscSection fs;
+     PetscSectionGetField(s,field,&fs)
+     PetscSectionSetDof(fs,numDof)
+.ve
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`, `PetscSectionAddDof()`, `PetscSectionSetDof()`
 @*/
 PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
@@ -921,6 +992,17 @@ PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt 
 - numDof - the number of dof
 
   Level: intermediate
+
+  Notes:
+  When adding to the number of dof for a field at a point one must also ensure the count of the total number of dof at the point (summed over
+  the fields and the unnamed default field) is correct by also calling `PetscSectionAddDof()` or `PetscSectionSetDof()`
+
+  This is equivalent to
+.vb
+     PetscSection fs;
+     PetscSectionGetField(s,field,&fs)
+     PetscSectionAddDof(fs,numDof)
+.ve
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldDof()`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`
 @*/
@@ -1111,7 +1193,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 }
 
 /*@
-  PetscSectionSetUp - Calculate offsets based upon the number of degrees of freedom for each point.
+  PetscSectionSetUp - Calculate offsets based upon the number of degrees of freedom for each point in preparation for use of the `PetscSection`
 
   Not Collective
 
@@ -1120,7 +1202,12 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`
+  Notes:
+  If used, `PetscSectionSetPermutation()` must be called before this routine.
+
+  `PetscSectionSetPointMajor()`, cannot be called after this routine.
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode PetscSectionSetUp(PetscSection s)
 {
@@ -1185,10 +1272,13 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 
   Level: intermediate
 
-  Note:
+  Notes:
   The returned number is up-to-date without need for `PetscSectionSetUp()`.
 
-  Developer Note:
+  This is the maximum over all points of the sum of the number of dof in the unnamed default field plus all named fields. This is equivalent to
+  the maximum over all points of the value returned by `PetscSectionGetDof()` on this MPI process
+
+  Developer Notes:
   The returned number is calculated lazily and stashed.
 
   A call to `PetscSectionInvalidateMaxDof_Internal()` invalidates the stashed value.
@@ -1272,8 +1362,8 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 }
 
 /*@
-  PetscSectionCreateGlobalSection - Create a section describing the global field layout using
-  the local section and a `PetscSF` describing the section point overlap.
+  PetscSectionCreateGlobalSection - Create a parallel section describing the global layout using
+  a local (sequential) `PetscSection` on each MPI process and a `PetscSF` describing the section point overlap.
 
   Input Parameters:
 + s - The `PetscSection` for the local field layout
@@ -1287,10 +1377,10 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   Level: intermediate
 
   Notes:
-  If we have a set of local sections defining the layout of a set of local vectors, and also a `PetscSF` to determine which section points are shared and the ownership,
-  we can calculate a global section defining the parallel data layout, and the associated global vector.
+  On each MPI process `gsection` inherits the chart of the `s` on that process.
 
-  This gives negative sizes and offsets to points not owned by this process
+  This sets negative sizes and offsets to points not owned by this process as defined by `sf` but that are within the local value of the chart of `gsection`.
+  In those locations the value of size is -(size+1) and the value of the offset on the remote process is -(off+1).
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCreateGlobalSectionCensored()`
 @*/
@@ -1406,25 +1496,28 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
 }
 
 /*@
-  PetscSectionCreateGlobalSectionCensored - Create a `PetscSection` describing the global field layout using
-  the local section and an `PetscSF` describing the section point overlap.
+  PetscSectionCreateGlobalSectionCensored - Create a `PetscSection` describing the globallayout using
+  a local (sequential) `PetscSection` on each MPI process and an `PetscSF` describing the section point overlap.
 
   Input Parameters:
 + s - The `PetscSection` for the local field layout
 . sf - The `PetscSF` describing parallel layout of the section points
-. includeConstraints - By default this is `PETSC_FALSE`, meaning that the global field vector will not possess constrained dofs
-. numExcludes - The number of exclusion ranges
-- excludes - An array [start_0, end_0, start_1, end_1, ...] where there are numExcludes pairs
+. includeConstraints - By default this is `PETSC_FALSE`, meaning that the global vector will not possess constrained dofs
+. numExcludes - The number of exclusion ranges, this must have the same value on all MPI processes
+- excludes - An array [start_0, end_0, start_1, end_1, ...] where there are `numExcludes` pairs and must have the same values on all MPI processes
 
   Output Parameter:
 . gsection - The `PetscSection` for the global field layout
 
   Level: advanced
 
-  Note:
-  This routine augments `PetscSectionCreateGlobalSection()` by allowing one to exclude certain ranges in the chart of the `PetscSection`
+  Notes:
+  On each MPI process `gsection` inherits the chart of the `s` on that process.
 
-  This gives negative sizes and offsets to points not owned by this process
+  This sets negative sizes and offsets to points not owned by this process as defined by `sf` but that are within the local value of the chart of `gsection`.
+  In those locations the value of size is -(size+1) and the value of the offset on the remote process is -(off+1).
+
+  This routine augments `PetscSectionCreateGlobalSection()` by allowing one to exclude certain ranges in the chart of the `PetscSection`
 
   Developer Note:
   This is a terrible function name
@@ -1512,7 +1605,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
 }
 
 /*@
-  PetscSectionGetPointLayout - Get the `PetscLayout` associated with a `PetscSection`
+  PetscSectionGetPointLayout - Get a `PetscLayout` for the points with nonzero dof counts of the unnamed default field within this `PetscSection`s local chart
 
   Collective
 
@@ -1526,11 +1619,21 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   Level: advanced
 
   Notes:
-  `PetscSectionGetValueLayout()` provides the `layout` for an array of data associated with the `PetscSection`. `PetscSectionGetPointLayout()`
-  provides the `layout` for the data that
-  defines the `PetscSection`
+  `PetscSectionGetValueLayout()` provides similar information but counting the total number of degrees of freedom on the MPI process (excluding constrained
+  degrees of freedom).
 
-  This is usually called for the default global section.
+  This count includes constrained degrees of freedom
+
+  This is usually called on the default global section.
+
+  Example:
+.vb
+     The chart is [2,5), point 2 has 2 dof, point 3 has 0 dof, point 4 has 1 dof
+     The local size of the `PetscLayout` is 2 since 2 points have a non-zero number of dof
+.ve
+
+  Developer Note:
+  I find the names of these two functions extremely non-informative
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetValueLayout()`, `PetscSectionCreate()`
 @*/
@@ -1568,11 +1671,16 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
   Level: advanced
 
   Notes:
-  `PetscSectionGetValueLayout()` provides the `layout` for an array of data associated with the `PetscSection`. `PetscSectionGetPointLayout()`
-  provides the `layout` for the data that
-  defines the `PetscSection`
+  `PetscSectionGetPointLayout()` provides similar information but only counting the number of points with nonzero degrees of freedom and
+  including the constrained degrees of freedom
 
   This is usually called for the default global section.
+
+  Example:
+.vb
+     The chart is [2,5), point 2 has 4 dof (2 constrained), point 3 has 0 dof, point 4 has 1 dof (not constrained)
+     The local size of the `PetscLayout` is 3 since there are 3 unconstrained degrees of freedom on this MPI process
+.ve
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetPointLayout()`, `PetscSectionCreate()`
 @*/
@@ -1610,12 +1718,16 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
   Output Parameter:
 . offset - the offset
 
-  Note:
-  In a global section, this offset will be negative for points not owned by this process.
-
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`
+  Notes:
+  In a global section, this offset will be negative for points not owned by this process.
+
+  This is for the unnamed default field in the `PetscSection` not the named fields
+
+  The `offset` values are different depending on a value set with `PetscSectionSetPointMajor()`
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`, `PetscSectionSetPointMajor()`
 @*/
 PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
 {
@@ -1637,7 +1749,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
 . point - the point
 - offset - the offset
 
-  Level: intermediate
+  Level: developer
 
   Note:
   The user usually does not call this function, but uses `PetscSectionSetUp()`
@@ -1666,12 +1778,14 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
   Output Parameter:
 . offset - the offset
 
-  Note:
-  In a global section, this offset will be negative for points not owned by this process.
-
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`
+  Notes:
+  In a global section, this offset will be negative for points not owned by this process.
+
+  The `offset` values are different depending on a value set with `PetscSectionSetPointMajor()`
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`, `PetscSectionGetFieldPointOffset()`
 @*/
 PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
 {
@@ -1711,7 +1825,8 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
 }
 
 /*@
-  PetscSectionGetFieldPointOffset - Return the offset on the given point for the dof associated with the given point.
+  PetscSectionGetFieldPointOffset - Return the offset for the first field dof associated with the given point relative to the offset for that point for the
+  unnamed default field's first dof
 
   Not Collective
 
@@ -1726,10 +1841,17 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
   Level: advanced
 
   Note:
-  This gives the offset on a point of the field, ignoring constraints, meaning starting at the first dof for
-  this point, what number is the first dof with this field.
+  This ignores constraints
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`
+  Example:
+.vb
+  if PetscSectionSetPointMajor(s,PETSC_TRUE)
+  The unnamed default field has 3 dof at `point`
+  Field 0 has 2 dof at `point`
+  Then PetscSectionGetFieldPointOffset(s,point,1,&offset) returns and offset of 5
+.ve
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`, `PetscSectionGetFieldOffset()`
 @*/
 PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
 {
@@ -1786,7 +1908,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 }
 
 /*@
-  PetscSectionCreateSubsection - Create a new, smaller `PetscSection` composed of only the selected fields
+  PetscSectionCreateSubsection - Create a new, smaller `PetscSection` composed of only selected fields
 
   Collective
 
@@ -1801,7 +1923,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
   Level: advanced
 
   Notes:
-  The section offsets now refer to a new, smaller vector.
+  The chart of `subs` is the same as the chart of `s`
 
   This will error if a fieldnumber is out of range
 
@@ -1881,7 +2003,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
 }
 
 /*@
-  PetscSectionCreateSupersection - Create a new, larger section composed of multiple input `PetscSection`s
+  PetscSectionCreateSupersection - Create a new, larger section composed of multiple `PetscSection`s
 
   Collective
 
@@ -1894,7 +2016,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
 
   Level: advanced
 
-  Note:
+  Notes:
   The section offsets now refer to a new, larger vector.
 
   Developer Note:
@@ -2103,8 +2225,9 @@ PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subp
 
   Level: advanced
 
-  Note:
-  The points are renumbered from 0, and the section offsets now refer to a new, smaller vector.
+  Notes:
+  The points are renumbered from 0, and the section offsets now refer to a new, smaller vector. That is the chart of `subs` is `[0,sizeof(subpointmap))`
+
   Compare this with `PetscSectionCreateSubdomainSection()` that does not map the points numbers to start at zero but leaves them as before
 
   Developer Note:
@@ -2133,8 +2256,10 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
 
   Level: advanced
 
-  Note:
-  The point numbers remain the same as in the larger `PetscSection`, but the section offsets now refer to a new, smaller vector.
+  Notes:
+  The point numbers remain the same as in the larger `PetscSection`, but the section offsets now refer to a new, smaller vector. The chart of `subs`
+  is `[min(subpointMap),max(subpointMap)+1)`
+
   Compare this with `PetscSectionCreateSubmeshSection()` that maps the point numbers to start at zero
 
   Developer Notes:
@@ -2314,7 +2439,7 @@ static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
 }
 
 /*@
-  PetscSectionReset - Frees all section data.
+  PetscSectionReset - Frees all section data, the section is then as if `PetscSectionCreate()` had just been called.
 
   Not Collective
 
@@ -2362,7 +2487,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
 }
 
 /*@
-  PetscSectionDestroy - Frees a section object and frees its range if that exists.
+  PetscSectionDestroy - Frees a `PetscSection`
 
   Not Collective
 
@@ -2646,7 +2771,12 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `IS`, `PetscSection`, `MatPermute()`
+  Note:
+  The data and the access to the data via `PetscSectionGetFieldOffset()` and `PetscSectionGetOffset()` are both changed in `sectionNew`
+
+  Compare to `PetscSectionSetPermutation()`
+
+.seealso: [PetscSection](sec_petscsection), `IS`, `PetscSection`, `MatPermute()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSection *sectionNew)
 {
@@ -2945,14 +3075,14 @@ PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, Pe
 }
 
 /*@
-  PetscSectionGetField - Get the subsection associated with a single field
+  PetscSectionGetField - Get the `PetscSection` associated with a single field
 
   Input Parameters:
 + s     - The `PetscSection`
 - field - The field number
 
   Output Parameter:
-. subs  - The subsection for the given field
+. subs  - The `PetscSection` for the given field, note the chart of `subs` is not set
 
   Level: intermediate
 
@@ -3303,7 +3433,7 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
 
   Level: developer
 
-  Note:
+  Notes:
   `PetscSectionSetSym()` must have been previously called to provide the symmetries to the `PetscSection`
 
   Use `PetscSectionRestorePointSyms()` when finished with the data
