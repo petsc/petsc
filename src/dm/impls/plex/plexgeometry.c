@@ -273,10 +273,10 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &array, &coords));
   PetscCheck(numCoords == 8, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Quadrilateral should have 8 coordinates, not %" PetscInt_FMT, numCoords);
   for (f = 0; f < 4; ++f) {
-    PetscReal x_i   = PetscRealPart(coords[faces[2 * f + 0] * 2 + 0]);
-    PetscReal y_i   = PetscRealPart(coords[faces[2 * f + 0] * 2 + 1]);
-    PetscReal x_j   = PetscRealPart(coords[faces[2 * f + 1] * 2 + 0]);
-    PetscReal y_j   = PetscRealPart(coords[faces[2 * f + 1] * 2 + 1]);
+    PetscReal x_i = PetscRealPart(coords[faces[2 * f + 0] * 2 + 0]);
+    PetscReal y_i = PetscRealPart(coords[faces[2 * f + 0] * 2 + 1]);
+    PetscReal x_j = PetscRealPart(coords[faces[2 * f + 1] * 2 + 0]);
+    PetscReal y_j = PetscRealPart(coords[faces[2 * f + 1] * 2 + 1]);
 
     if ((x == x_j) && (y == y_j)) {
       // point is a corner
