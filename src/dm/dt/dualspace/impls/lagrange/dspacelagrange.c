@@ -161,7 +161,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   PetscCall(PetscDTBinomialInt(degree + dim, dim, &npoints));
   PetscCall(Petsc1DNodeFamilyGetNodeSets(f, degree, &nodesets));
   worksize = ((dim + 2) * (dim + 3)) / 2;
-  PetscCall(PetscMalloc2(worksize, &nodework, worksize, &tupwork));
+  PetscCall(PetscCalloc2(worksize, &nodework, worksize, &tupwork));
   /* loop over the tuples of length dim with sum at most degree */
   for (k = 0; k < npoints; k++) {
     PetscInt i;
@@ -183,7 +183,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
       }
       break;
     default:
-      /* compute equispaces nodes on the barycentric reference triangle (the trace on the first dim dimensions are the
+      /* compute equispaced nodes on the barycentric reference triangle (the trace on the first dim dimensions are the
        * unit reference triangle nodes */
       for (i = 0; i < dim + 1; i++) tupwork[i] = tup[i];
       PetscCall(PetscNodeRecursive_Internal(dim, degree, nodesets, tupwork, nodework));
