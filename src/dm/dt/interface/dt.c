@@ -2383,6 +2383,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, 
 
   PetscFunctionBegin;
   PetscCheck(digits > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   /* Center term */
   func(&beta, ctx, &lval);
   sum = 0.5 * alpha * PETSC_PI * lval;
@@ -2424,7 +2425,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, 
     d = PetscAbsInt(PetscMin(0, PetscMax(PetscMax(PetscMax(PetscSqr(d1) / d2, 2 * d1), d3), d4)));
   } while (d < digits && l < 12);
   *sol = sum;
-
+  PetscCall(PetscFPTrapPop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

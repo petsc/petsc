@@ -173,6 +173,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
     case PETSCDTNODES_EQUISPACED:
       /* compute equispaces nodes on the unit reference triangle */
       if (f->endpoints) {
+        PetscCheck(degree > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have positive degree");
         for (i = 0; i < dim; i++) points[dim * k + i] = (PetscReal)tup[i + 1] / (PetscReal)degree;
       } else {
         for (i = 0; i < dim; i++) {

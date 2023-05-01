@@ -380,7 +380,7 @@ static PetscErrorCode PetscGridHashInitialize_Internal(PetscGridHash box, PetscI
 PetscErrorCode PetscGridHashCreate(MPI_Comm comm, PetscInt dim, const PetscScalar point[], PetscGridHash *box)
 {
   PetscFunctionBegin;
-  PetscCall(PetscMalloc1(1, box));
+  PetscCall(PetscCalloc1(1, box));
   PetscCall(PetscGridHashInitialize_Internal(*box, dim, point));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1381,7 +1381,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[7] = R[7];
       J[8] = R[8];
       DMPlex_Det3D_Internal(detJ, J);
-      if (invJ) DMPlex_Invert2D_Internal(invJ, J, *detJ);
+      if (invJ) DMPlex_Invert3D_Internal(invJ, J, *detJ);
     }
   } else if (numCoords == 4) {
     const PetscInt dim = 2;
