@@ -823,7 +823,7 @@ PetscErrorCode DMForestSetMaximumRefinement(DM dm, PetscInt maxRefinement)
 /*@
   DMForestGetMaximumRefinement - Get the maximum level of refinement (relative to the base `DM`, see
   `DMForestGetBaseDM()`) allowed in the forest.  If the forest is being created by refining a previous forest (see
-  `DMForestGetAdaptivityForest`()), this limits the amount of refinement.
+  `DMForestGetAdaptivityForest()`), this limits the amount of refinement.
 
   Not Collective
 
