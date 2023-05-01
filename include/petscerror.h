@@ -1748,7 +1748,7 @@ void PetscCallExternal(F, Args...);
 @*/
   #define PetscStackCallExternalVoid(name, ...) \
     do { \
-      PetscStackPush(name); \
+      PetscStackPushExternal(name); \
       __VA_ARGS__; \
       PetscStackPop; \
     } while (0)
