@@ -260,29 +260,29 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   PetscCall(DMPlexMetricGetNumIterations(dm, &numIter));
   PetscCall(DMPlexMetricGetGradationFactor(dm, &gradationFactor));
   PetscCall(DMPlexMetricGetHausdorffNumber(dm, &hausdorffNumber));
-  PetscCallMMG_NONSTANDARD(PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, comm, PMMG_ARG_end));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_meshSize(parmesh, numVertices, numCells, 0, numFaceTags, 0, 0));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_APImode, PMMG_APIDISTRIB_nodes));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noinsert, noInsert));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noswap, noSwap));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_nomove, noMove));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_nosurf, noSurf));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_verbose, verbosity));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_globalNum, 1));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_niter, numIter));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_dparameter(parmesh, PMMG_DPARAM_hgrad, gradationFactor));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_dparameter(parmesh, PMMG_DPARAM_hausd, hausdorffNumber));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_vertices(parmesh, vertices, verTags));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_tetrahedra(parmesh, cells, cellTags));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_triangles(parmesh, bdFaces, faceTags));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_metSize(parmesh, MMG5_Vertex, numVertices, MMG5_Tensor));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_tensorMets(parmesh, metric));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_numberOfNodeCommunicators(parmesh, numNgbRanks));
+  PetscCallMMG_NONSTANDARD(PMMG_Init_parMesh, PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, comm, PMMG_ARG_end);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_meshSize, parmesh, numVertices, numCells, 0, numFaceTags, 0, 0);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_APImode, PMMG_APIDISTRIB_nodes);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_noinsert, noInsert);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_noswap, noSwap);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_nomove, noMove);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_nosurf, noSurf);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_verbose, verbosity);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_globalNum, 1);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_niter, numIter);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_dparameter, parmesh, PMMG_DPARAM_hgrad, gradationFactor);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_dparameter, parmesh, PMMG_DPARAM_hausd, hausdorffNumber);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_vertices, parmesh, vertices, verTags);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_tetrahedra, parmesh, cells, cellTags);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_triangles, parmesh, bdFaces, faceTags);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_metSize, parmesh, MMG5_Vertex, numVertices, MMG5_Tensor);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_tensorMets, parmesh, metric);
+  PetscCallMMG_NONSTANDARD(PMMG_Set_numberOfNodeCommunicators, parmesh, numNgbRanks);
   for (c = 0; c < numNgbRanks; ++c) {
-    PetscCallMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicatorSize(parmesh, c, ngbRanks[c], intOffset[c + 1] - intOffset[c]));
-    PetscCallMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicator_nodes(parmesh, c, &interfaces_lv[intOffset[c]], &interfaces_gv[intOffset[c]], 1));
+    PetscCallMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicatorSize, parmesh, c, ngbRanks[c], intOffset[c + 1] - intOffset[c]);
+    PetscCallMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicator_nodes, parmesh, c, &interfaces_lv[intOffset[c]], &interfaces_gv[intOffset[c]], 1);
   }
-  PetscCallMMG(PMMG_parmmglib_distributed(parmesh));
+  PetscCallMMG(PMMG_parmmglib_distributed, parmesh);
   PetscCall(PetscFree(cells));
   PetscCall(PetscFree2(metric, vertices));
   PetscCall(PetscFree2(bdFaces, faceTags));
@@ -294,16 +294,16 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
 
   /* Retrieve mesh from Mmg */
   numCornersNew = 4;
-  PetscCallMMG_NONSTANDARD(PMMG_Get_meshSize(parmesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0));
+  PetscCallMMG_NONSTANDARD(PMMG_Get_meshSize, parmesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0);
   PetscCall(PetscMalloc4(dim * numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
   PetscCall(PetscMalloc3((dim + 1) * numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
   PetscCall(PetscMalloc4(dim * numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
-  PetscCallMMG_NONSTANDARD(PMMG_Get_vertices(parmesh, verticesNew, verTagsNew, corners, requiredVer));
-  PetscCallMMG_NONSTANDARD(PMMG_Get_tetrahedra(parmesh, cellsNew, cellTagsNew, requiredCells));
-  PetscCallMMG_NONSTANDARD(PMMG_Get_triangles(parmesh, facesNew, faceTagsNew, requiredFaces));
+  PetscCallMMG_NONSTANDARD(PMMG_Get_vertices, parmesh, verticesNew, verTagsNew, corners, requiredVer);
+  PetscCallMMG_NONSTANDARD(PMMG_Get_tetrahedra, parmesh, cellsNew, cellTagsNew, requiredCells);
+  PetscCallMMG_NONSTANDARD(PMMG_Get_triangles, parmesh, facesNew, faceTagsNew, requiredFaces);
   PetscCall(PetscMalloc2(numVerticesNew, &owners, numVerticesNew, &gv_new));
-  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_globalNum, 1));
-  PetscCallMMG_NONSTANDARD(PMMG_Get_verticesGloNum(parmesh, gv_new, owners));
+  PetscCallMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_globalNum, 1);
+  PetscCallMMG_NONSTANDARD(PMMG_Get_verticesGloNum, parmesh, gv_new, owners);
   for (i = 0; i < dim * numFacesNew; ++i) facesNew[i] -= 1;
   for (i = 0; i < (dim + 1) * numCellsNew; ++i) cellsNew[i] = gv_new[cellsNew[i] - 1] - 1;
   for (i = 0, numVerticesNewLoc = 0; i < numVerticesNew; ++i) {
@@ -322,7 +322,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
 
   /* Create new plex */
   PetscCall(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNewLoc, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNewLoc, NULL, &verticesNewSorted, dmNew));
-  PetscCallMMG_NONSTANDARD(PMMG_Free_all(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_end));
+  PetscCallMMG_NONSTANDARD(PMMG_Free_all, PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_end);
   PetscCall(PetscFree4(verticesNew, verTagsNew, corners, requiredVer));
 
   /* Get adapted mesh information */
