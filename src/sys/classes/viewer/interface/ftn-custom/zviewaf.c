@@ -12,6 +12,7 @@
   #define petscviewergetsubviewer_     PETSCVIEWERGETSUBVIEWER
   #define petscviewerrestoresubviewer_ PETSCVIEWERRESTORESUBVIEWER
   #define petscviewierview_            PETSCVIEWERVIEW
+  #define petscviewerflush_            PETSCVIEWERFLUSH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define petscviewersetformat_        petscviewersetformat
   #define petscviewersettype_          petscviewersettype
@@ -23,7 +24,15 @@
   #define petscviewergetsubviewer_     petscviewergetsubviewer
   #define petscviewerrestoresubviewer_ petscviewerrestoresubviewer
   #define petscviewierview_            petscviewerview
+  #define petscviewerflush_            petscviewerflush
 #endif
+
+PETSC_EXTERN void petscviewerflush_(PetscViewer *viewer, int *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viewer, v);
+  *ierr = PetscViewerFlush(v);
+}
 
 PETSC_EXTERN void petscviewergetsubviewer_(PetscViewer *vin, MPI_Fint *comm, PetscViewer *outviewer, PetscErrorCode *ierr)
 {
