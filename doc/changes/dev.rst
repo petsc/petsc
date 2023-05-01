@@ -48,6 +48,7 @@ Changes: Development
 - Remove ``MatSetValuesDevice()``, ``MatCUSPARSEGetDeviceMatWrite()``, ``MatKokkosGetDeviceMatWrite``
 - Add ``MatDenseCUDASetPreallocation()`` and ``MatDenseHIPSetPreallocation()``
 - Add support for KOKKOS in ``MATH2OPUS``
+- Add ``-pc_precision single`` option for use with ``MATSOLVERSUPERLU_DIST``
 
 .. rubric:: MatCoarsen:
 
