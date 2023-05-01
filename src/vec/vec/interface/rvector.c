@@ -2772,7 +2772,7 @@ PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
 }
 
 /*@C
-   VecRestoreArray2dWrite - Restores a vector after VecGetArray2dWrite`()` has been called.
+   VecRestoreArray2dWrite - Restores a vector after `VecGetArray2dWrite()` has been called.
 
    Logically Collective
 
@@ -2792,7 +2792,7 @@ PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
    array, this routine will copy the data back into the underlying
    vector data structure from the array obtained with `VecGetArray()`.
 
-   This routine actually zeros out the a pointer.
+   This routine actually zeros out the `a` pointer.
 
 .seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecPlaceArray()`,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
