@@ -16,6 +16,7 @@
   #define pcasmgetlocalsubdomains_  PCASMGETLOCALSUBDOMAINS
   #define pcasmcreatesubdomains_    PCASMCREATESUBDOMAINS
   #define pcasmdestroysubdomains_   PCASMDESTROYSUBDOMAINS
+  #define pcasmcreatesubdomains2d_  PCASMCREATESUBDOMAINS2D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define pcasmgetsubksp1_          pcasmgetsubksp1
   #define pcasmgetsubksp2_          pcasmgetsubksp2
@@ -31,7 +32,22 @@
   #define pcasmgetlocalsubdomains_  pcasmgetlocalsubdomains
   #define pcasmcreatesubdomains_    pcasmcreatesubdomains
   #define pcasmdestroysubdomains_   pcasmdestroysubdomains
+  #define pcasmcreatesubdomains2d_  pcasmcreatesubdomains2d
 #endif
+
+PETSC_EXTERN void pcasmcreatesubdomains2d_(PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, PetscInt *dof, PetscInt *overlap, PetscInt *Nsub, IS *is, IS *isl, int *ierr)
+{
+  IS *iis, *iisl;
+  *ierr = PCASMCreateSubdomains2D(*m, *n, *M, *N, *dof, *overlap, Nsub, &iis, &iisl);
+  if (*ierr) return;
+  *ierr = PetscMemcpy(is, iis, *Nsub * sizeof(IS));
+  if (*ierr) return;
+  *ierr = PetscMemcpy(isl, iisl, *Nsub * sizeof(IS));
+  if (*ierr) return;
+  *ierr = PetscFree(iis);
+  if (*ierr) return;
+  *ierr = PetscFree(iisl);
+}
 
 PETSC_EXTERN void pcasmcreatesubdomains_(Mat *mat, PetscInt *n, IS *subs, PetscErrorCode *ierr)
 {

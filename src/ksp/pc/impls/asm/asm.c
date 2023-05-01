@@ -1512,7 +1512,7 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
    preconditioner, `PCASM`, for a two-dimensional problem on a regular grid.
 
@@ -1537,6 +1537,9 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
    Presently `PCAMSCreateSubdomains2d()` is valid only for sequential
    preconditioners.  More general related routines are
    `PCASMSetTotalSubdomains()` and `PCASMSetLocalSubdomains()`.
+
+   Fortran Note:
+   The `IS` must be declared as an array of length long enough to hold `Nsub` entries
 
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`

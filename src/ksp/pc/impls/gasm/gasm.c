@@ -1573,7 +1573,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
     } \
   }
 
-/*@
+/*@C
    PCGASMCreateSubdomains2D - Creates the index sets for the `PCGASM` overlapping Schwarz
    preconditioner for a two-dimensional problem on a regular grid.
 
@@ -1595,7 +1595,10 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
 
    Level: advanced
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`
+   Fortran Note:
+   The `IS` must be declared as an array of length long enough to hold `Nsub` entries
+
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`, `PCASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt Mdomains, PetscInt Ndomains, PetscInt dof, PetscInt overlap, PetscInt *nsub, IS **iis, IS **ois)
 {
