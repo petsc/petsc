@@ -3,7 +3,7 @@
 
 /*@C
    PetscViewerGetSubViewer - Creates a new `PetscViewer` (same type as the old)
-    that lives on a subcommunicator of the original viewers communicator
+    that lives on a subcommunicator of the original viewer's communicator
 
     Collective
 
@@ -17,7 +17,7 @@
 
    Notes:
     The output of the subviewers is synchronized against the original viewer. For example, if a
-    viewer on two MPI ranks is decomposed into two subviewers, the output from the first viewer is
+    viewer on two MPI processes is decomposed into two subviewers, the output from the first viewer is
     all printed before the output from the second viewer. You must call `PetscViewerFlush()` after
     the call to `PetscViewerRestoreSubViewer()`.
 
@@ -30,18 +30,18 @@
     Between the calls to `PetscViewerGetSubViewer()` and `PetscViewerRestoreSubViewer()` the original
     viewer should not be used
 
-    `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on rank 0,
-    all other ranks will return a NULL viewer
+    `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on MPI rank 0,
+    all other ranks will return a `NULL` viewer
 
   Developer Notes:
-    There is currently incomplete error checking that the user does not use the original viewer between the
+    There is currently incomplete error checking to ensure the user does not use the original viewer between the
     the calls to `PetscViewerGetSubViewer()` and `PetscViewerRestoreSubViewer()`. If the user does there
     could be errors in the viewing that go undetected or crash the code.
 
     It would be nice if the call to `PetscViewerFlush()` was not required and was handled by
     `PetscViewerRestoreSubViewer()`
 
-.seealso: [](sec_viewers), `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerRestoreSubViewer()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerRestoreSubViewer()`
 @*/
 PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer)
 {
@@ -53,17 +53,17 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
 }
 
 /*@C
-   PetscViewerRestoreSubViewer - Restores a new `PetscViewer` obtained with `PetscViewerGetSubViewer()`.
+   PetscViewerRestoreSubViewer - Restores a  `PetscViewer` obtained with `PetscViewerGetSubViewer()`.
 
     Collective
 
    Input Parameters:
 +  viewer - the `PetscViewer` that was reproduced
--  outviewer - the subviewer to be returned `PetscViewer`
+-  outviewer - the subviewer to be returned
 
    Level: advanced
 
-.seealso: [](sec_viewers), `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerGetSubViewer()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerGetSubViewer()`
 @*/
 PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer)
 {

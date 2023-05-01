@@ -22,7 +22,7 @@
     Level: advanced
 
     Notes:
-    Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the SAWs viewer allows
+    Unlike other viewers that only access the object being viewed on the call to `XXXView`(object,viewer) the SAWs viewer allows
     one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
     `PetscObjectSAWsViewOff()`.
 
@@ -55,7 +55,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
    object can be collective.
 
    Developer Note:
-   Currently this is called only on rank zero of `PETSC_COMM_WORLD`
+   Currently this is called only on MPI rank 0 of `PETSC_COMM_WORLD`
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscObject`, `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
 @*/

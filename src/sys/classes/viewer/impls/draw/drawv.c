@@ -36,15 +36,14 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 }
 
 /*@C
-    PetscViewerDrawGetDraw - Returns `PetscDraw` object from `PetscViewer` object.
-    This `PetscDraw` object may then be used to perform graphics using
-    `PetscDraw` commands.
+    PetscViewerDrawGetDraw - Returns `PetscDraw` object from `PETSCVIEWERDRAW` `PetscViewer` object.
+    This `PetscDraw` object may then be used to perform graphics using `PetscDraw` commands.
 
     Collective
 
     Input Parameters:
 +   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()` of type `PETSCVIEWERDRAW`)
--   windownumber - indicates which subwindow (usually 0)
+-   windownumber - indicates which subwindow (usually 0) to obtain
 
     Output Parameter:
 .   draw - the draw object
@@ -102,7 +101,7 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
 }
 
 /*@C
-    PetscViewerDrawBaseAdd - add to the base integer that is added to the windownumber passed to `PetscViewerDrawGetDraw()`
+    PetscViewerDrawBaseAdd - add to the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
 
     Logically Collective
 
@@ -135,7 +134,7 @@ PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
 }
 
 /*@C
-    PetscViewerDrawBaseSet - sets the base integer that is added to the windownumber passed to `PetscViewerDrawGetDraw()`
+    PetscViewerDrawBaseSet - sets the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
 
     Logically Collective
 
@@ -656,7 +655,7 @@ PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause)
 }
 
 /*@
-    PetscViewerDrawSetHold - Holds previous image when drawing new image
+    PetscViewerDrawSetHold - Holds previous image when drawing new image in a `PETSCVIEWERDRAW`
 
     Not Collective
 
@@ -724,7 +723,7 @@ PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
     PETSC_VIEWER_DRAW_ - Creates a window `PETSCVIEWERDRAW` `PetscViewer` shared by all processors
-                     in a communicator.
+                     in an MPI communicator.
 
      Collective
 
@@ -791,14 +790,14 @@ PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
 }
 
 /*@
-    PetscViewerDrawSetBounds - sets the upper and lower bounds to be used in plotting
+    PetscViewerDrawSetBounds - sets the upper and lower bounds to be used in plotting in a `PETSCVIEWERDRAW` `PetscViewer`
 
     Collective
 
     Input Parameters:
 +   viewer - the Petsc`Viewer` (created with `PetscViewerDrawOpen()`)
 .   nbounds - number of plots that can be made with this viewer, for example the dof passed to `DMDACreate()`
--   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
+-   bounds - the actual bounds, the size of this is 2*`nbounds`, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 
     Options Database Key:
 .   -draw_bounds  minF0,maxF0,minF1,maxF1 - the lower left and upper right bounds
@@ -840,7 +839,7 @@ PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, co
 
     Output Parameters:
 +   nbounds - number of plots that can be made with this viewer, for example the dof passed to `DMDACreate()`
--   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
+-   bounds - the actual bounds, the size of this is 2*`nbounds`, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 
     Level: intermediate
 
