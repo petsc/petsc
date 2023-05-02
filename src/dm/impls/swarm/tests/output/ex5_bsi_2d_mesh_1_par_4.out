@@ -14,11 +14,11 @@ Time     Step Part     Energy
 0.000000    0    1   250.0000
 Time     Step Part     Energy
 0.000000    0    0   500.0000
-0.000000    0    1   250.0000
+0.000000    0    0   500.0000
 Time     Step Part     Energy
 0.000000    0    0   500.0000
 0.000000    0    1   250.0000
-L_2 convergence rate: 0.66
+L_2 convergence rate: 1.0
 Time     Step Part     Energy
 0.000000    0    0   500.0000
-0.000000    0    1   250.0000
+0.000000    0    0   500.0000

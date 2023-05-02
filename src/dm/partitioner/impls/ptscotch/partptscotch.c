@@ -68,6 +68,7 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   double       kbalval = imbalance;
 
   PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   {
     PetscBool flg = PETSC_TRUE;
     PetscCall(PetscOptionsDeprecatedNoObject("-petscpartititoner_ptscotch_vertex_weight", NULL, "3.13", "Use -petscpartitioner_use_vertex_weights"));
@@ -80,9 +81,9 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   PetscCallPTSCOTCH(SCOTCH_stratGraphMapBuild(&stradat, flagval, nparts, kbalval));
   PetscCallPTSCOTCH(SCOTCH_archInit(&archdat));
   if (tpart) {
-    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, nparts, tpart));
+    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, PetscMin(nparts, n), tpart));
   } else {
-    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, nparts));
+    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, PetscMin(nparts, n)));
   }
   PetscCallPTSCOTCH(SCOTCH_graphMap(&grafdat, &archdat, &stradat, part));
   SCOTCH_archExit(&archdat);

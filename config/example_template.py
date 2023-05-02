@@ -23,7 +23,7 @@ filter='@FILTER@'
 filter_output='@FILTER_OUTPUT@'
 petsc_bindir='@PETSC_BINDIR@'
 @DATAFILESPATH_LINE@
-# -petsc_ci has be a command line argument because if it is from the environment it will be listed by PetscOptionsMonitor()
+# -petsc_ci must be a command line argument because if it is from the environment it will be listed by PetscOptionsMonitor()
 args='-petsc_ci @ARGS@'
 diff_args='@DIFF_ARGS@'
 timeoutfactor=@TIMEOUTFACTOR@

@@ -1963,9 +1963,13 @@ PetscErrorCode VecSetInf(Vec xin)
   // use of variables one and zero over just doing 1.0/0.0 is deliberate. MSVC complains that
   // we are dividing by zero in the latter case (ostensibly because dividing by 0 is UB, but
   // only for *integers* not floats).
-  const PetscScalar one = 1.0, zero = 0.0, inf = one / zero;
+  const PetscScalar one = 1.0, zero = 0.0;
+  PetscScalar       inf;
 
   PetscFunctionBegin;
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  inf = one / zero;
+  PetscCall(PetscFPTrapPop());
   if (xin->ops->set) {
     PetscUseTypeMethod(xin, set, inf);
   } else {

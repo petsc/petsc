@@ -1170,7 +1170,7 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
   PetscBool    isotropic, uniform;
   PetscInt     dim, vStart, vEnd, v;
   PetscScalar *met, *det;
-  PetscReal    h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0;
+  PetscReal    h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+15;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_MetricEnforceSPD, 0, 0, 0, 0));

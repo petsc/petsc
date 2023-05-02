@@ -1132,12 +1132,15 @@ static PetscErrorCode cryer_3d_u(PetscInt dim, PetscReal time, const PetscReal x
       const PetscReal E_n = PetscRealPart(PetscSqr(1 - nu) * PetscSqr(1 + nu_u) * x_n - 18.0 * (1 + nu) * (nu_u - nu) * (1 - nu_u));
 
       /* m , Cheng (7.404) */
-      A_n += PetscRealPart((12.0 * (1.0 + nu) * (nu_u - nu)) / ((1.0 - 2.0 * nu) * E_n * PetscSqr(R_star) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * (3.0 * (nu_u - nu) * (PetscSinReal(R_star * PetscSqrtReal(x_n)) - R_star * PetscSqrtReal(x_n) * PetscCosReal(R_star * PetscSqrtReal(x_n))) + (1.0 - nu) * (1.0 - 2.0 * nu) * PetscPowRealInt(R_star, 3) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * PetscExpReal(-x_n * tstar));
+      if (R_star != 0) {
+        A_n += PetscRealPart((12.0 * (1.0 + nu) * (nu_u - nu)) / ((1.0 - 2.0 * nu) * E_n * PetscSqr(R_star) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * (3.0 * (nu_u - nu) * (PetscSinReal(R_star * PetscSqrtReal(x_n)) - R_star * PetscSqrtReal(x_n) * PetscCosReal(R_star * PetscSqrtReal(x_n))) + (1.0 - nu) * (1.0 - 2.0 * nu) * PetscPowRealInt(R_star, 3) * x_n * PetscSinReal(PetscSqrtReal(x_n))) * PetscExpReal(-x_n * tstar));
+      }
     }
-    u_sc = PetscRealPart(u_inf) * (R_star - A_n);
-    u[0] = u_sc * x[0] / R;
-    u[1] = u_sc * x[1] / R;
-    u[2] = u_sc * x[2] / R;
+    if (R_star != 0) u_sc = PetscRealPart(u_inf) * (R_star - A_n) / R;
+    else u_sc = PetscRealPart(u_inf) / R_0;
+    u[0] = u_sc * x[0];
+    u[1] = u_sc * x[1];
+    u[2] = u_sc * x[2];
   }
   return PETSC_SUCCESS;
 }

@@ -804,8 +804,8 @@ int main(int argc, char **args)
 
    testset:
       suffix: zeropivot
-      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps
-      args: -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+      args: -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -fp_trap 0
       test:
          nsize: 3
          args: -ksp_pc_type bjacobi

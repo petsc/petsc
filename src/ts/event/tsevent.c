@@ -404,6 +404,7 @@ static PetscErrorCode TSEventDetection(TS ts)
 static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
 {
   TSEvent   event = ts->event;
+  PetscReal diff  = PetscAbsReal((event->ptime_right - event->ptime_prev) / 2);
   PetscInt  i;
   PetscReal t;
   PetscInt  fvalue_sign, fvalueprev_sign;
@@ -414,7 +415,7 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
   event->nevents_zero = 0;
   for (i = 0; i < event->nevents; i++) {
     if (event->zerocrossing[i]) {
-      if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal((*dt) / ((event->ptime_right - event->ptime_prev) / 2)) < event->vtol[i]) { /* stopping criteria */
+      if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal(*dt) < diff * event->vtol[i]) { /* stopping criteria */
         event->status          = TSEVENT_ZERO;
         event->fvalue_right[i] = event->fvalue[i];
         continue;
@@ -459,7 +460,7 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
   if (event->status == TSEVENT_ZERO) {
     for (i = 0; i < event->nevents; i++) {
       if (event->zerocrossing[i]) {
-        if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal((*dt) / ((event->ptime_right - event->ptime_prev) / 2)) < event->vtol[i]) { /* stopping criteria */
+        if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i] || *dt < event->timestep_min || PetscAbsReal(*dt) < diff * event->vtol[i]) { /* stopping criteria */
           event->events_zero[event->nevents_zero++] = i;
           if (event->monitor) PetscCall(PetscViewerASCIIPrintf(event->monitor, "TSEvent: iter %" PetscInt_FMT " - Event %" PetscInt_FMT " zero crossing located at time %g\n", event->iterctr, i, (double)t));
           event->zerocrossing[i] = PETSC_FALSE;

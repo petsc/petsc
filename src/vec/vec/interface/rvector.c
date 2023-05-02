@@ -316,10 +316,11 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
   if (val) PetscValidRealPointer(val, 2);
   PetscCall(PetscLogEventBegin(VEC_Normalize, x, 0, 0, 0));
   PetscCall(VecNorm(x, NORM_2, &norm));
-  if (norm == 0.0) {
-    PetscCall(PetscInfo(x, "Vector of zero norm can not be normalized; Returning only the zero norm\n"));
-  } else if (norm != 1.0) {
-    PetscCall(VecScale(x, 1.0 / norm));
+  if (norm == 0.0) PetscCall(PetscInfo(x, "Vector of zero norm can not be normalized; Returning only the zero norm\n"));
+  else if (PetscIsInfOrNanReal(norm)) PetscCall(PetscInfo(x, "Vector with Inf or Nan norm can not be normalized; Returning only the norm\n"));
+  else {
+    PetscScalar s = 1.0 / norm;
+    PetscCall(VecScale(x, s));
   }
   PetscCall(PetscLogEventEnd(VEC_Normalize, x, 0, 0, 0));
   if (val) *val = norm;
@@ -467,15 +468,16 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
 @*/
 PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 {
-  PetscReal norms[4];
-  PetscBool flgs[4];
+  PetscReal   norms[4];
+  PetscBool   flgs[4];
+  PetscScalar one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(x, 1));
-  if (alpha == (PetscScalar)1.0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (alpha == one) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* get current stashed norms */
   for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
@@ -487,7 +489,8 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   /* put the scaled stashed norms back into the Vec */
   for (PetscInt i = 0; i < 4; i++) {
-    if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], PetscAbsScalar(alpha) * norms[i]));
+    PetscReal ar = PetscAbsScalar(alpha);
+    if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], ar * norms[i]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

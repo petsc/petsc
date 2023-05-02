@@ -258,6 +258,7 @@ static PetscErrorCode DMPlexClosestPoint_Simplex_2D_Internal(DM dm, const PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// This is the ray-casting, or even-odd algorithm: https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule
 static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
   const PetscScalar *array;
@@ -272,15 +273,25 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &array, &coords));
   PetscCheck(numCoords == 8, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Quadrilateral should have 8 coordinates, not %" PetscInt_FMT, numCoords);
   for (f = 0; f < 4; ++f) {
-    PetscReal x_i   = PetscRealPart(coords[faces[2 * f + 0] * 2 + 0]);
-    PetscReal y_i   = PetscRealPart(coords[faces[2 * f + 0] * 2 + 1]);
-    PetscReal x_j   = PetscRealPart(coords[faces[2 * f + 1] * 2 + 0]);
-    PetscReal y_j   = PetscRealPart(coords[faces[2 * f + 1] * 2 + 1]);
-    PetscReal slope = (y_j - y_i) / (x_j - x_i);
-    PetscBool cond1 = (x_i <= x) && (x < x_j) ? PETSC_TRUE : PETSC_FALSE;
-    PetscBool cond2 = (x_j <= x) && (x < x_i) ? PETSC_TRUE : PETSC_FALSE;
-    PetscBool above = (y < slope * (x - x_i) + y_i) ? PETSC_TRUE : PETSC_FALSE;
-    if ((cond1 || cond2) && above) ++crossings;
+    PetscReal x_i = PetscRealPart(coords[faces[2 * f + 0] * 2 + 0]);
+    PetscReal y_i = PetscRealPart(coords[faces[2 * f + 0] * 2 + 1]);
+    PetscReal x_j = PetscRealPart(coords[faces[2 * f + 1] * 2 + 0]);
+    PetscReal y_j = PetscRealPart(coords[faces[2 * f + 1] * 2 + 1]);
+
+    if ((x == x_j) && (y == y_j)) {
+      // point is a corner
+      crossings = 1;
+      break;
+    }
+    if ((y_j > y) != (y_i > y)) {
+      PetscReal slope = (x - x_j) * (y_i - y_j) - (x_i - x_j) * (y - y_j);
+      if (slope == 0) {
+        // point is a corner
+        crossings = 1;
+        break;
+      }
+      if ((slope < 0) != (y_i < y_j)) ++crossings;
+    }
   }
   if (crossings % 2) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
@@ -369,7 +380,7 @@ static PetscErrorCode PetscGridHashInitialize_Internal(PetscGridHash box, PetscI
 PetscErrorCode PetscGridHashCreate(MPI_Comm comm, PetscInt dim, const PetscScalar point[], PetscGridHash *box)
 {
   PetscFunctionBegin;
-  PetscCall(PetscMalloc1(1, box));
+  PetscCall(PetscCalloc1(1, box));
   PetscCall(PetscGridHashInitialize_Internal(*box, dim, point));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1370,7 +1381,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[7] = R[7];
       J[8] = R[8];
       DMPlex_Det3D_Internal(detJ, J);
-      if (invJ) DMPlex_Invert2D_Internal(invJ, J, *detJ);
+      if (invJ) DMPlex_Invert3D_Internal(invJ, J, *detJ);
     }
   } else if (numCoords == 4) {
     const PetscInt dim = 2;
@@ -2309,12 +2320,15 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
       for (d = 0; d < cdim; d++) c[d] += a * PetscRealPart(origin[d] + coords[cdim * fv[p + 1] + d] + coords[cdim * fv[p + 2] + d]) / 3.;
     }
     norm = PetscSqrtReal(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-    n[0] /= norm;
-    n[1] /= norm;
-    n[2] /= norm;
-    c[0] /= norm;
-    c[1] /= norm;
-    c[2] /= norm;
+    // Allow zero volume cells
+    if (norm != 0) {
+      n[0] /= norm;
+      n[1] /= norm;
+      n[2] /= norm;
+      c[0] /= norm;
+      c[1] /= norm;
+      c[2] /= norm;
+    }
     if (vol) *vol = 0.5 * norm;
     if (centroid)
       for (d = 0; d < cdim; ++d) centroid[d] = c[d];

@@ -8494,7 +8494,7 @@ PetscErrorCode DMGetNeighbors(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[
 
 /*
     Converts the input vector to a ghosted vector and then calls the standard coloring code.
-    This has be a different function because it requires DM which is not defined in the Mat library
+    This must be a different function because it requires DM which is not defined in the Mat library
 */
 PetscErrorCode MatFDColoringApply_AIJDM(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {

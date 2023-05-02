@@ -31,6 +31,13 @@ EXTERN_C_END
 
 #endif /* PETSC_USE_COMPLEX */
 
+#define PetscPastixCall(...) \
+  do { \
+    PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
+    PetscStackCallExternalVoid(PetscStringize(PASTIX_CALL), PASTIX_CALL(__VA_ARGS__)); \
+    PetscCall(PetscFPTrapPop()); \
+  } while (0)
+
 typedef PetscScalar PastixScalar;
 
 typedef struct Mat_Pastix_ {
@@ -184,7 +191,7 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
     lu->iparm[IPARM_START_TASK] = API_TASK_CLEAN;
     lu->iparm[IPARM_END_TASK]   = API_TASK_CLEAN;
 
-    PASTIX_CALL(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in destroy: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
     PetscCall(PetscFree(lu->colptr));
     PetscCall(PetscFree(lu->row));
@@ -233,7 +240,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
   lu->iparm[IPARM_END_TASK]   = API_TASK_REFINE;
   lu->iparm[IPARM_RHS_MAKING] = API_RHS_B;
 
-  PASTIX_CALL(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+  PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
   PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
 
   if (lu->commSize == 1) {
@@ -285,7 +292,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
     lu->rhsnbr = 1;
 
     /* Call to set default pastix options */
-    PASTIX_CALL(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in MatFactorNumeric: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
 
     PetscOptionsBegin(PetscObjectComm((PetscObject)F), ((PetscObject)F)->prefix, "PaStiX Options", "Mat");
@@ -347,12 +354,12 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
     lu->iparm[IPARM_START_TASK] = API_TASK_ORDERING;
     lu->iparm[IPARM_END_TASK]   = API_TASK_NUMFACT;
 
-    PASTIX_CALL(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
   } else {
     lu->iparm[IPARM_START_TASK] = API_TASK_NUMFACT;
     lu->iparm[IPARM_END_TASK]   = API_TASK_NUMFACT;
-    PASTIX_CALL(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
   }
 
