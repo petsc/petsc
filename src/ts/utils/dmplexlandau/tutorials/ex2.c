@@ -738,17 +738,13 @@ int main(int argc, char **argv)
       requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type bicg -pc_type jacobi
     test:
-      suffix: cuda
-      requires: cuda !defined(PETSC_HAVE_CUDA_CLANG)
-      args: -dm_landau_device_type cuda -dm_mat_type aijcusparse -dm_vec_type cuda -mat_cusparse_use_cpu_solve -ksp_type bicg -pc_type jacobi
-    test:
       suffix: kokkos_batch
       requires: kokkos_kernels
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type bicg -pc_bjkokkos_pc_type jacobi
     test:
       suffix: kokkos_batch_coo
       requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
-      args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type bicg -pc_bjkokkos_pc_type jacobi -dm_landau_coo_assembly
+      args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type bicg -pc_bjkokkos_pc_type jacobi
 
   test:
     requires: !complex double defined(PETSC_USE_DMLANDAU_2D) !kokkos_kernels !cuda

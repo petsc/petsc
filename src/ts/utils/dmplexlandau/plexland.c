@@ -31,11 +31,7 @@ static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
     if (maps[0].deviceType == LANDAU_KOKKOS) {
       PetscCall(LandauKokkosDestroyMatMaps(maps, maps[0].numgrids)); // implies Kokkos does
-    }                                                                // else could be CUDA
-#elif defined(PETSC_HAVE_CUDA)
-    if (maps[0].deviceType == LANDAU_CUDA) {
-      PetscCall(LandauCUDADestroyMatMaps(maps, maps[0].numgrids));
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "maps->deviceType %d ?????", maps->deviceType);
+    }
 #endif
   }
   // free host data
@@ -205,20 +201,12 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   } else xdata = cellClosure = NULL;
 
   /* do it */
-  if (ctx->deviceType == LANDAU_CUDA || ctx->deviceType == LANDAU_KOKKOS) {
-    if (ctx->deviceType == LANDAU_CUDA) {
-#if defined(PETSC_HAVE_CUDA)
-      PetscCall(LandauCUDAJacobian(ctx->plex, Nq, ctx->batch_sz, ctx->num_grids, numCells, Eq_m, cellClosure, xdata, &ctx->SData_d, shift, ctx->events, ctx->mat_offset, ctx->species_offset, subJ, JacP));
-#else
-      SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type %s not built", "cuda");
-#endif
-    } else if (ctx->deviceType == LANDAU_KOKKOS) {
+  if (ctx->deviceType == LANDAU_KOKKOS) {
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-      PetscCall(LandauKokkosJacobian(ctx->plex, Nq, ctx->batch_sz, ctx->num_grids, numCells, Eq_m, cellClosure, xdata, &ctx->SData_d, shift, ctx->events, ctx->mat_offset, ctx->species_offset, subJ, JacP));
+    PetscCall(LandauKokkosJacobian(ctx->plex, Nq, ctx->batch_sz, ctx->num_grids, numCells, Eq_m, cellClosure, xdata, &ctx->SData_d, shift, ctx->events, ctx->mat_offset, ctx->species_offset, subJ, JacP));
 #else
-      SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type %s not built", "kokkos");
+    SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type %s not built", "kokkos");
 #endif
-    }
   } else {               /* CPU version */
     PetscTabulation *Tf; // used for CPU and print info. Same on all grids and all species
     PetscInt         ip_offset[LANDAU_MAX_GRIDS + 1], ipf_offset[LANDAU_MAX_GRIDS + 1], elem_offset[LANDAU_MAX_GRIDS + 1], IPf_sz_glb, IPf_sz_tot, num_grids = ctx->num_grids, Nf[LANDAU_MAX_GRIDS];
@@ -245,7 +233,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     IPf_sz_glb = ipf_offset[num_grids];
     IPf_sz_tot = IPf_sz_glb * ctx->batch_sz;
     // prep COO
-    if (ctx->coo_assembly) {
+    {
       PetscCall(PetscMalloc1(ctx->SData_d.coo_size, &coo_vals)); // allocate every time?
       PetscCall(PetscInfo(ctx->plex[0], "COO Allocate %" PetscInt_FMT " values\n", (PetscInt)ctx->SData_d.coo_size));
     }
@@ -1114,7 +1102,6 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->jacobian_field_major_order     = PETSC_FALSE;
   ctx->SData_d.coo_elem_offsets       = NULL;
   ctx->SData_d.coo_elem_point_offsets = NULL;
-  ctx->coo_assembly                   = PETSC_FALSE;
   ctx->SData_d.coo_elem_fullNb        = NULL;
   ctx->SData_d.coo_size               = 0;
   PetscOptionsBegin(ctx->comm, prefix, "Options for Fokker-Plank-Landau collision operator", "none");
@@ -1123,26 +1110,18 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
     ctx->deviceType = LANDAU_KOKKOS;
     PetscCall(PetscStrncpy(opstring, "kokkos", sizeof(opstring)));
-#elif defined(PETSC_HAVE_CUDA)
-    ctx->deviceType = LANDAU_CUDA;
-    PetscCall(PetscStrncpy(opstring, "cuda", sizeof(opstring)));
 #else
     ctx->deviceType = LANDAU_CPU;
     PetscCall(PetscStrncpy(opstring, "cpu", sizeof(opstring)));
 #endif
-    PetscCall(PetscOptionsString("-dm_landau_device_type", "Use kernels on 'cpu', 'cuda', or 'kokkos'", "plexland.c", opstring, opstring, sizeof(opstring), NULL));
+    PetscCall(PetscOptionsString("-dm_landau_device_type", "Use kernels on 'cpu' 'kokkos'", "plexland.c", opstring, opstring, sizeof(opstring), NULL));
     PetscCall(PetscStrcmp("cpu", opstring, &flg));
     if (flg) {
       ctx->deviceType = LANDAU_CPU;
     } else {
-      PetscCall(PetscStrcmp("cuda", opstring, &flg));
-      if (flg) {
-        ctx->deviceType = LANDAU_CUDA;
-      } else {
-        PetscCall(PetscStrcmp("kokkos", opstring, &flg));
-        if (flg) ctx->deviceType = LANDAU_KOKKOS;
-        else SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_device_type %s", opstring);
-      }
+      PetscCall(PetscStrcmp("kokkos", opstring, &flg));
+      if (flg) ctx->deviceType = LANDAU_KOKKOS;
+      else SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_device_type %s", opstring);
     }
   }
   PetscCall(PetscOptionsReal("-dm_landau_electron_shift", "Shift in thermal velocity of electrons", "none", ctx->electronShift, &ctx->electronShift, NULL));
@@ -1271,10 +1250,6 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   }
   /* processing options */
   PetscCall(PetscOptionsBool("-dm_landau_gpu_assembly", "Assemble Jacobian on GPU", "plexland.c", ctx->gpu_assembly, &ctx->gpu_assembly, NULL));
-  if (ctx->deviceType == LANDAU_CPU || ctx->deviceType == LANDAU_KOKKOS) { // make Kokkos
-    PetscCall(PetscOptionsBool("-dm_landau_coo_assembly", "Assemble Jacobian with Kokkos on 'device'", "plexland.c", ctx->coo_assembly, &ctx->coo_assembly, NULL));
-    if (ctx->coo_assembly) PetscCheck(ctx->gpu_assembly, ctx->comm, PETSC_ERR_ARG_WRONG, "COO assembly requires 'gpu assembly' even if Kokkos 'CPU' back-end %d", ctx->coo_assembly);
-  }
   PetscCall(PetscOptionsBool("-dm_landau_jacobian_field_major_order", "Reorder Jacobian for GPU assembly with field major, or block diagonal, ordering (DEPRECATED)", "plexland.c", ctx->jacobian_field_major_order, &ctx->jacobian_field_major_order, NULL));
   if (ctx->jacobian_field_major_order) PetscCheck(ctx->gpu_assembly, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_jacobian_field_major_order requires -dm_landau_gpu_assembly");
   PetscCheck(!ctx->jacobian_field_major_order, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_jacobian_field_major_order DEPRECATED");
@@ -1423,7 +1398,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     PetscCall(PetscMalloc(sizeof(*pointMaps) * MAP_BF_SIZE, &pointMaps));
     PetscCall(PetscMalloc(sizeof(*elemMatrix) * elMatSz, &elemMatrix));
 
-    if (ctx->coo_assembly) {                                                                                                      // setup COO assembly -- put COO metadata directly in ctx->SData_d
+    {                                                                                                                             // setup COO assembly -- put COO metadata directly in ctx->SData_d
       PetscCall(PetscMalloc3(ncellsTot + 1, &coo_elem_offsets, ncellsTot, &coo_elem_fullNb, ncellsTot, &coo_elem_point_offsets)); // array of integer pointers
       coo_elem_offsets[0] = 0;                                                                                                    // finish later
       PetscCall(PetscInfo(ctx->plex[0], "COO initialization, %" PetscInt_FMT " cells\n", ncellsTot));
@@ -1431,10 +1406,6 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
       ctx->SData_d.coo_elem_offsets       = (void *)coo_elem_offsets;
       ctx->SData_d.coo_elem_fullNb        = (void *)coo_elem_fullNb;
       ctx->SData_d.coo_elem_point_offsets = (void *)coo_elem_point_offsets;
-    } else {
-      ctx->SData_d.coo_elem_offsets = ctx->SData_d.coo_elem_fullNb = NULL;
-      ctx->SData_d.coo_elem_point_offsets                          = NULL;
-      ctx->SData_d.coo_n_cellsTot                                  = 0;
     }
 
     ctx->SData_d.coo_max_fullnb = 0;
@@ -1523,7 +1494,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
             PetscCall(DMPlexRestoreClosureIndices(ctx->plex[grid], section[grid], globsection[grid], ej, PETSC_TRUE, &numindices, &indices, NULL, (PetscScalar **)&elMat));
             if (elMat != valuesOrig) PetscCall(DMRestoreWorkArray(ctx->plex[grid], numindices * numindices, MPIU_SCALAR, &elMat));
           }
-          if (ctx->coo_assembly) {                                 // setup COO assembly
+          {                                                        // setup COO assembly
             coo_elem_offsets[glb_elem_idx + 1] += fullNb * fullNb; // one species block, adds a block for each species, on this element in this grid
             if (fieldA == 0) {                                     // cache full Nb for this element, on this grid per species
               coo_elem_fullNb[glb_elem_idx] = fullNb;
@@ -1543,10 +1514,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
       if (ctx->deviceType == LANDAU_KOKKOS) {
         PetscCall(LandauKokkosCreateMatMaps(maps, pointMaps, Nf, Nq, grid)); // implies Kokkos does
-      }                                                                      // else could be CUDA
-#endif
-#if defined(PETSC_HAVE_CUDA)
-      if (ctx->deviceType == LANDAU_CUDA) PetscCall(LandauCUDACreateMatMaps(maps, pointMaps, Nf, Nq, grid));
+      }
 #endif
       if (plex_batch) {
         PetscCall(ISRestoreIndices(grid_batch_is_inv[grid], &plex_batch));
@@ -1554,7 +1522,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
       }
     } /* grids */
     // finish COO
-    if (ctx->coo_assembly) { // setup COO assembly
+    { // setup COO assembly
       PetscInt *oor, *ooc;
       ctx->SData_d.coo_size = coo_elem_offsets[ncellsTot] * ctx->batch_sz;
       PetscCall(PetscMalloc2(ctx->SData_d.coo_size, &oor, ctx->SData_d.coo_size, &ooc));
@@ -1748,21 +1716,11 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     } /* grid */
     if (ctx->use_energy_tensor_trick) PetscCall(PetscFEDestroy(&fe));
     /* cache static data */
-    if (ctx->deviceType == LANDAU_CUDA || ctx->deviceType == LANDAU_KOKKOS) {
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS_KERNELS)
-      if (ctx->deviceType == LANDAU_CUDA) {
-  #if defined(PETSC_HAVE_CUDA)
-        PetscCall(LandauCUDAStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, (PetscReal *)ctx->lambdas, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
-  #else
-        SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type cuda not built");
-  #endif
-      } else if (ctx->deviceType == LANDAU_KOKKOS) {
-  #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-        PetscCall(LandauKokkosStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, (PetscReal *)ctx->lambdas, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
-  #else
-        SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type kokkos not built");
-  #endif
-      }
+    if (ctx->deviceType == LANDAU_KOKKOS) {
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+      PetscCall(LandauKokkosStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, (PetscReal *)ctx->lambdas, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
+#else
+      SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type kokkos not built");
 #endif
       /* free */
       PetscCall(PetscFree4(ww, xx, yy, invJ_a));
@@ -2034,10 +1992,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   /* check for correct matrix type */
   if (ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
     PetscBool flg;
-    if (ctx->deviceType == LANDAU_CUDA) {
-      PetscCall(PetscObjectTypeCompareAny((PetscObject)ctx->J, &flg, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, MATAIJCUSPARSE, ""));
-      PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "must use '-dm_mat_type aijcusparse -dm_vec_type cuda' for GPU assembly and Cuda or use '-dm_landau_device_type cpu'");
-    } else if (ctx->deviceType == LANDAU_KOKKOS) {
+    if (ctx->deviceType == LANDAU_KOKKOS) {
       PetscCall(PetscObjectTypeCompareAny((PetscObject)ctx->J, &flg, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
       PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for GPU assembly and Kokkos or use '-dm_landau_device_type cpu'");
@@ -2177,13 +2132,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
   PetscCall(ISDestroy(&ctx->batch_is));
   PetscCall(VecDestroy(&ctx->work_vec));
   PetscCall(VecScatterDestroy(&ctx->plex_batch));
-  if (ctx->deviceType == LANDAU_CUDA) {
-#if defined(PETSC_HAVE_CUDA)
-    PetscCall(LandauCUDAStaticDataClear(&ctx->SData_d));
-#else
-    SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type %s not built", "cuda");
-#endif
-  } else if (ctx->deviceType == LANDAU_KOKKOS) {
+  if (ctx->deviceType == LANDAU_KOKKOS) {
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
     PetscCall(LandauKokkosStaticDataClear(&ctx->SData_d));
 #else

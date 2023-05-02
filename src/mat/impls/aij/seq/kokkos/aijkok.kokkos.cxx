@@ -54,9 +54,6 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
     A->spptr = aijkok;
   }
 
-  if (aijkok->device_mat_d.data()) {
-    A->offloadmask = PETSC_OFFLOAD_GPU; // in GPU mode, no going back. MatSetValues checks this
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -193,34 +190,6 @@ static PetscErrorCode MatSeqAIJGetCSRAndMemType_SeqAIJKokkos(Mat A, const PetscI
     *a = aijkok->a_device_data();
   }
   if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-// MatSeqAIJKokkosSetDeviceMat takes a PetscSplitCSRDataStructure with device data and copies it to the device. Note, "deep_copy" here is really a shallow copy
-PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat A, PetscSplitCSRDataStructure h_mat)
-{
-  Mat_SeqAIJKokkos                            *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  Kokkos::View<SplitCSRMat, Kokkos::HostSpace> h_mat_k(h_mat);
-
-  PetscFunctionBegin;
-  PetscCheck(aijkok, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
-  aijkok->device_mat_d = create_mirror(DefaultMemorySpace(), h_mat_k);
-  Kokkos::deep_copy(aijkok->device_mat_d, h_mat_k);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-// MatSeqAIJKokkosGetDeviceMat gets the device if it is here, otherwise it creates a place for it and returns NULL
-PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat A, PetscSplitCSRDataStructure *d_mat)
-{
-  Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-
-  PetscFunctionBegin;
-  if (aijkok && aijkok->device_mat_d.data()) {
-    *d_mat = aijkok->device_mat_d.data();
-  } else {
-    PetscCall(MatSeqAIJKokkosSyncDevice(A)); // create aijkok (we are making d_mat now so make a place for it)
-    *d_mat = NULL;
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1454,234 +1423,6 @@ PetscErrorCode MatCreateSeqAIJKokkos(MPI_Comm comm, PetscInt m, PetscInt n, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-typedef Kokkos::TeamPolicy<>::member_type team_member;
-//
-// This factorization exploits block diagonal matrices with "Nf" (not used).
-// Use -pc_factor_mat_ordering_type rcm to order decouple blocks of size N/Nf for this optimization
-//
-static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B, Mat A, const MatFactorInfo *info)
-{
-  Mat_SeqAIJ       *b      = (Mat_SeqAIJ *)B->data;
-  Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr), *baijkok = static_cast<Mat_SeqAIJKokkos *>(B->spptr);
-  IS                isrow = b->row, isicol = b->icol;
-  const PetscInt   *r_h, *ic_h;
-  const PetscInt n = A->rmap->n, *ai_d = aijkok->i_dual.view_device().data(), *aj_d = aijkok->j_dual.view_device().data(), *bi_d = baijkok->i_dual.view_device().data(), *bj_d = baijkok->j_dual.view_device().data(), *bdiag_d = baijkok->diag_d.data();
-  const PetscScalar *aa_d = aijkok->a_dual.view_device().data();
-  PetscScalar       *ba_d = baijkok->a_dual.view_device().data();
-  PetscBool          row_identity, col_identity;
-  PetscInt           nc, Nf = 1, nVec = 32; // should be a parameter, Nf is batch size - not used
-
-  PetscFunctionBegin;
-  PetscCheck(A->rmap->n == n, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "square matrices only supported %" PetscInt_FMT " %" PetscInt_FMT, A->rmap->n, n);
-  PetscCall(MatIsStructurallySymmetric(A, &row_identity));
-  PetscCheck(row_identity, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "structurally symmetric matrices only supported");
-  PetscCall(ISGetIndices(isrow, &r_h));
-  PetscCall(ISGetIndices(isicol, &ic_h));
-  PetscCall(ISGetSize(isicol, &nc));
-  PetscCall(PetscLogGpuTimeBegin());
-  PetscCall(MatSeqAIJKokkosSyncDevice(A));
-  {
-#define KOKKOS_SHARED_LEVEL 1
-    using scr_mem_t    = Kokkos::DefaultExecutionSpace::scratch_memory_space;
-    using sizet_scr_t  = Kokkos::View<size_t, scr_mem_t>;
-    using scalar_scr_t = Kokkos::View<PetscScalar, scr_mem_t>;
-    const Kokkos::View<const PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_r_k(r_h, n);
-    Kokkos::View<PetscInt *, Kokkos::LayoutLeft>                                                                         d_r_k("r", n);
-    const Kokkos::View<const PetscInt *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_ic_k(ic_h, nc);
-    Kokkos::View<PetscInt *, Kokkos::LayoutLeft>                                                                         d_ic_k("ic", nc);
-    size_t                                                                                                               flops_h = 0.0;
-    Kokkos::View<size_t, Kokkos::HostSpace>                                                                              h_flops_k(&flops_h);
-    Kokkos::View<size_t>                                                                                                 d_flops_k("flops");
-    const int                                                                                                            conc = Kokkos::DefaultExecutionSpace().concurrency(), team_size = conc > 1 ? 16 : 1; // 8*32 = 256
-    const int                                                                                                            nloc = n / Nf, Ni = (conc > 8) ? 1 /* some intelligent number of SMs -- but need league_barrier */ : 1;
-    Kokkos::deep_copy(d_flops_k, h_flops_k);
-    Kokkos::deep_copy(d_r_k, h_r_k);
-    Kokkos::deep_copy(d_ic_k, h_ic_k);
-    // Fill A --> fact
-    Kokkos::parallel_for(
-      Kokkos::TeamPolicy<>(Nf * Ni, team_size, nVec), KOKKOS_LAMBDA(const team_member team) {
-        const PetscInt  field = team.league_rank() / Ni, field_block = team.league_rank() % Ni; // use grid.x/y in CUDA
-        const PetscInt  nloc_i = (nloc / Ni + !!(nloc % Ni)), start_i = field * nloc + field_block * nloc_i, end_i = (start_i + nloc_i) > (field + 1) * nloc ? (field + 1) * nloc : (start_i + nloc_i);
-        const PetscInt *ic = d_ic_k.data(), *r = d_r_k.data();
-        // zero rows of B
-        Kokkos::parallel_for(Kokkos::TeamVectorRange(team, start_i, end_i), [=](const int &rowb) {
-          PetscInt     nzbL = bi_d[rowb + 1] - bi_d[rowb], nzbU = bdiag_d[rowb] - bdiag_d[rowb + 1]; // with diag
-          PetscScalar *baL = ba_d + bi_d[rowb];
-          PetscScalar *baU = ba_d + bdiag_d[rowb + 1] + 1;
-          /* zero (unfactored row) */
-          for (int j = 0; j < nzbL; j++) baL[j] = 0;
-          for (int j = 0; j < nzbU; j++) baU[j] = 0;
-        });
-        // copy A into B
-        Kokkos::parallel_for(Kokkos::TeamVectorRange(team, start_i, end_i), [=](const int &rowb) {
-          PetscInt           rowa = r[rowb], nza = ai_d[rowa + 1] - ai_d[rowa];
-          const PetscScalar *av    = aa_d + ai_d[rowa];
-          const PetscInt    *ajtmp = aj_d + ai_d[rowa];
-          /* load in initial (unfactored row) */
-          for (int j = 0; j < nza; j++) {
-            PetscInt    colb = ic[ajtmp[j]];
-            PetscScalar vala = av[j];
-            if (colb == rowb) {
-              *(ba_d + bdiag_d[rowb]) = vala;
-            } else {
-              const PetscInt *pbj = bj_d + ((colb > rowb) ? bdiag_d[rowb + 1] + 1 : bi_d[rowb]);
-              PetscScalar    *pba = ba_d + ((colb > rowb) ? bdiag_d[rowb + 1] + 1 : bi_d[rowb]);
-              PetscInt        nz = (colb > rowb) ? bdiag_d[rowb] - (bdiag_d[rowb + 1] + 1) : bi_d[rowb + 1] - bi_d[rowb], set = 0;
-              for (int j = 0; j < nz; j++) {
-                if (pbj[j] == colb) {
-                  pba[j] = vala;
-                  set++;
-                  break;
-                }
-              }
-#if !defined(PETSC_HAVE_SYCL)
-              if (set != 1) printf("\t\t\t ERROR DID NOT SET ?????\n");
-#else
-              (void)set;
-#endif
-            }
-          }
-        });
-      });
-    Kokkos::fence();
-
-    Kokkos::parallel_for(
-      Kokkos::TeamPolicy<>(Nf * Ni, team_size, nVec).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerThread(sizet_scr_t::shmem_size() + scalar_scr_t::shmem_size()), Kokkos::PerTeam(sizet_scr_t::shmem_size())), KOKKOS_LAMBDA(const team_member team) {
-        sizet_scr_t    colkIdx(team.thread_scratch(KOKKOS_SHARED_LEVEL));
-        scalar_scr_t   L_ki(team.thread_scratch(KOKKOS_SHARED_LEVEL));
-        sizet_scr_t    flops(team.team_scratch(KOKKOS_SHARED_LEVEL));
-        const PetscInt field = team.league_rank() / Ni, field_block_idx = team.league_rank() % Ni; // use grid.x/y in CUDA
-        const PetscInt start = field * nloc, end = start + nloc;
-        Kokkos::single(Kokkos::PerTeam(team), [=]() { flops() = 0; });
-        // A22 panel update for each row A(1,:) and col A(:,1)
-        for (int ii = start; ii < end - 1; ii++) {
-          const PetscInt    *bjUi = bj_d + bdiag_d[ii + 1] + 1, nzUi = bdiag_d[ii] - (bdiag_d[ii + 1] + 1); // vector, and vector size, of column indices of U(i,(i+1):end)
-          const PetscScalar *baUi    = ba_d + bdiag_d[ii + 1] + 1;                                          // vector of data  U(i,i+1:end)
-          const PetscInt     nUi_its = nzUi / Ni + !!(nzUi % Ni);
-          const PetscScalar  Bii     = *(ba_d + bdiag_d[ii]); // diagonal in its special place
-          Kokkos::parallel_for(Kokkos::TeamThreadRange(team, nUi_its), [=](const int j) {
-            PetscInt kIdx = j * Ni + field_block_idx;
-            if (kIdx >= nzUi) /* void */
-              ;
-            else {
-              const PetscInt  myk = bjUi[kIdx];                // assume symmetric structure, need a transposed meta-data here in general
-              const PetscInt *pjL = bj_d + bi_d[myk];          // look for L(myk,ii) in start of row
-              const PetscInt  nzL = bi_d[myk + 1] - bi_d[myk]; // size of L_k(:)
-              size_t          st_idx;
-              // find and do L(k,i) = A(:k,i) / A(i,i)
-              Kokkos::single(Kokkos::PerThread(team), [&]() { colkIdx() = PETSC_MAX_INT; });
-              // get column, there has got to be a better way
-              Kokkos::parallel_reduce(
-                Kokkos::ThreadVectorRange(team, nzL),
-                [&](const int &j, size_t &idx) {
-                  if (pjL[j] == ii) {
-                    PetscScalar *pLki = ba_d + bi_d[myk] + j;
-                    idx               = j;           // output
-                    *pLki             = *pLki / Bii; // column scaling:  L(k,i) = A(:k,i) / A(i,i)
-                  }
-                },
-                st_idx);
-              Kokkos::single(Kokkos::PerThread(team), [=]() {
-                colkIdx() = st_idx;
-                L_ki()    = *(ba_d + bi_d[myk] + st_idx);
-              });
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-              if (colkIdx() == PETSC_MAX_INT) printf("\t\t\t\t\t\t\tERROR: failed to find L_ki(%d,%d)\n", (int)myk, ii); // uses a register
-#endif
-              // active row k, do  A_kj -= Lki * U_ij; j \in U(i,:) j != i
-              // U(i+1,:end)
-              Kokkos::parallel_for(Kokkos::ThreadVectorRange(team, nzUi), [=](const int &uiIdx) { // index into i (U)
-                PetscScalar Uij = baUi[uiIdx];
-                PetscInt    col = bjUi[uiIdx];
-                if (col == myk) {
-                  // A_kk = A_kk - L_ki * U_ij(k)
-                  PetscScalar *Akkv = (ba_d + bdiag_d[myk]); // diagonal in its special place
-                  *Akkv             = *Akkv - L_ki() * Uij;  // UiK
-                } else {
-                  PetscScalar    *start, *end, *pAkjv = NULL;
-                  PetscInt        high, low;
-                  const PetscInt *startj;
-                  if (col < myk) { // L
-                    PetscScalar *pLki = ba_d + bi_d[myk] + colkIdx();
-                    PetscInt     idx  = (pLki + 1) - (ba_d + bi_d[myk]); // index into row
-                    start             = pLki + 1;                        // start at pLki+1, A22(myk,1)
-                    startj            = bj_d + bi_d[myk] + idx;
-                    end               = ba_d + bi_d[myk + 1];
-                  } else {
-                    PetscInt idx = bdiag_d[myk + 1] + 1;
-                    start        = ba_d + idx;
-                    startj       = bj_d + idx;
-                    end          = ba_d + bdiag_d[myk];
-                  }
-                  // search for 'col', use bisection search - TODO
-                  low  = 0;
-                  high = (PetscInt)(end - start);
-                  while (high - low > 5) {
-                    int t = (low + high) / 2;
-                    if (startj[t] > col) high = t;
-                    else low = t;
-                  }
-                  for (pAkjv = start + low; pAkjv < start + high; pAkjv++) {
-                    if (startj[pAkjv - start] == col) break;
-                  }
-#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-                  if (pAkjv == start + high) printf("\t\t\t\t\t\t\t\t\t\t\tERROR: *** failed to find Akj(%d,%d)\n", (int)myk, (int)col); // uses a register
-#endif
-                  *pAkjv = *pAkjv - L_ki() * Uij; // A_kj = A_kj - L_ki * U_ij
-                }
-              });
-            }
-          });
-          team.team_barrier(); // this needs to be a league barrier to use more that one SM per block
-          if (field_block_idx == 0) Kokkos::single(Kokkos::PerTeam(team), [&]() { Kokkos::atomic_add(flops.data(), (size_t)(2 * (nzUi * nzUi) + 2)); });
-        } /* endof for (i=0; i<n; i++) { */
-        Kokkos::single(Kokkos::PerTeam(team), [=]() {
-          Kokkos::atomic_add(&d_flops_k(), flops());
-          flops() = 0;
-        });
-      });
-    Kokkos::fence();
-    Kokkos::deep_copy(h_flops_k, d_flops_k);
-    PetscCall(PetscLogGpuFlops((PetscLogDouble)h_flops_k()));
-    Kokkos::parallel_for(
-      Kokkos::TeamPolicy<>(Nf * Ni, 1, 256), KOKKOS_LAMBDA(const team_member team) {
-        const PetscInt lg_rank = team.league_rank(), field = lg_rank / Ni;                            //, field_offset = lg_rank%Ni;
-        const PetscInt start = field * nloc, end = start + nloc, n_its = (nloc / Ni + !!(nloc % Ni)); // 1/Ni iters
-        /* Invert diagonal for simpler triangular solves */
-        Kokkos::parallel_for(Kokkos::TeamVectorRange(team, n_its), [=](int outer_index) {
-          int i = start + outer_index * Ni + lg_rank % Ni;
-          if (i < end) {
-            PetscScalar *pv = ba_d + bdiag_d[i];
-            *pv             = 1.0 / (*pv);
-          }
-        });
-      });
-  }
-  PetscCall(PetscLogGpuTimeEnd());
-  PetscCall(ISRestoreIndices(isicol, &ic_h));
-  PetscCall(ISRestoreIndices(isrow, &r_h));
-
-  PetscCall(ISIdentity(isrow, &row_identity));
-  PetscCall(ISIdentity(isicol, &col_identity));
-  if (b->inode.size) {
-    B->ops->solve = MatSolve_SeqAIJ_Inode;
-  } else if (row_identity && col_identity) {
-    B->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
-  } else {
-    B->ops->solve = MatSolve_SeqAIJ; // at least this needs to be in Kokkos
-  }
-  B->offloadmask = PETSC_OFFLOAD_GPU;
-  PetscCall(MatSeqAIJKokkosSyncHost(B));          // solve on CPU
-  B->ops->solveadd          = MatSolveAdd_SeqAIJ; // and this
-  B->ops->solvetranspose    = MatSolveTranspose_SeqAIJ;
-  B->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ;
-  B->ops->matsolve          = MatMatSolve_SeqAIJ;
-  B->assembled              = PETSC_TRUE;
-  B->preallocated           = PETSC_TRUE;
-
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatLUFactorSymbolic_SeqAIJKokkos(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
 {
   PetscFunctionBegin;
@@ -1888,39 +1629,10 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJKokkos(Mat B, Mat A, IS isrow, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatLUFactorSymbolic_SeqAIJKOKKOSDEVICE(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
-{
-  Mat_SeqAIJ    *b     = (Mat_SeqAIJ *)B->data;
-  const PetscInt nrows = A->rmap->n;
-
-  PetscFunctionBegin;
-  PetscCall(MatLUFactorSymbolic_SeqAIJ(B, A, isrow, iscol, info));
-  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJKOKKOSDEVICE;
-  // move B data into Kokkos
-  PetscCall(MatSeqAIJKokkosSyncDevice(B)); // create aijkok
-  PetscCall(MatSeqAIJKokkosSyncDevice(A)); // create aijkok
-  {
-    Mat_SeqAIJKokkos *baijkok = static_cast<Mat_SeqAIJKokkos *>(B->spptr);
-    if (!baijkok->diag_d.extent(0)) {
-      const Kokkos::View<PetscInt *, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_diag(b->diag, nrows + 1);
-      baijkok->diag_d = Kokkos::View<PetscInt *>(Kokkos::create_mirror(DefaultMemorySpace(), h_diag));
-      Kokkos::deep_copy(baijkok->diag_d, h_diag);
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatFactorGetSolverType_SeqAIJKokkos(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERKOKKOS;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos_device(Mat A, MatSolverType *type)
-{
-  PetscFunctionBegin;
-  *type = MATSOLVERKOKKOSDEVICE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1958,34 +1670,11 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_SeqAIJKokkos_Kokkos(Mat A, MatFactorTyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijkokkos_kokkos_device(Mat A, MatFactorType ftype, Mat *B)
-{
-  PetscInt n = A->rmap->n;
-
-  PetscFunctionBegin;
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
-  PetscCall(MatSetSizes(*B, n, n, n, n));
-  (*B)->factortype     = ftype;
-  (*B)->canuseordering = PETSC_TRUE;
-  PetscCall(PetscStrallocpy(MATORDERINGND, (char **)&(*B)->preferredordering[MAT_FACTOR_LU]));
-  PetscCall(MatSetType(*B, MATSEQAIJKOKKOS));
-
-  if (ftype == MAT_FACTOR_LU) {
-    PetscCall(MatSetBlockSizesFromMats(*B, A, A));
-    (*B)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJKOKKOSDEVICE;
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported for KOKKOS Matrix Types");
-
-  PetscCall(MatSeqAIJSetPreallocation(*B, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*B), "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_kokkos_device));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_KOKKOS(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERKOKKOS, MATSEQAIJKOKKOS, MAT_FACTOR_LU, MatGetFactor_SeqAIJKokkos_Kokkos));
   PetscCall(MatSolverTypeRegister(MATSOLVERKOKKOS, MATSEQAIJKOKKOS, MAT_FACTOR_ILU, MatGetFactor_SeqAIJKokkos_Kokkos));
-  PetscCall(MatSolverTypeRegister(MATSOLVERKOKKOSDEVICE, MATSEQAIJKOKKOS, MAT_FACTOR_LU, MatGetFactor_seqaijkokkos_kokkos_device));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

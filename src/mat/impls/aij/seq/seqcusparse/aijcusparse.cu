@@ -3700,16 +3700,8 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, 
 
 static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
 {
-  PetscObjectState    onnz = A->nonzerostate;
-  Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE *)A->spptr;
-
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd_SeqAIJ(A, mode));
-  if (onnz != A->nonzerostate && cusp->deviceMat) {
-    PetscCall(PetscInfo(A, "Destroy device mat since nonzerostate changed\n"));
-    PetscCallCUDA(cudaFree(cusp->deviceMat));
-    cusp->deviceMat = NULL;
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4076,12 +4068,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 .seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJCUSPARSE()`, `MatCUSPARSESetUseCPUSolve()`, `MATAIJCUSPARSE`, `MatCreateAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse_band(Mat, MatFactorType, Mat *);
-
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
 {
   PetscFunctionBegin;
-  PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSEBAND, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaijcusparse_cusparse_band));
   PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSE, MATSEQAIJCUSPARSE, MAT_FACTOR_LU, MatGetFactor_seqaijcusparse_cusparse));
   PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSE, MATSEQAIJCUSPARSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqaijcusparse_cusparse));
   PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSE, MATSEQAIJCUSPARSE, MAT_FACTOR_ILU, MatGetFactor_seqaijcusparse_cusparse));
@@ -4217,10 +4206,8 @@ PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p 
 #endif
     delete fs->rpermIndices;
     delete fs->cpermIndices;
-    fs->rpermIndices = NULL;
-    fs->cpermIndices = NULL;
-    if (fs->a_band_d) PetscCallCUDA(cudaFree(fs->a_band_d));
-    if (fs->i_band_d) PetscCallCUDA(cudaFree(fs->i_band_d));
+    fs->rpermIndices  = NULL;
+    fs->cpermIndices  = NULL;
     fs->init_dev_prop = PETSC_FALSE;
 #if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
     PetscCallCUDA(cudaFree(fs->csrRowPtr));
