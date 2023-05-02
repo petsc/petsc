@@ -11,8 +11,10 @@
 
    Input Parameters:
 +  path     - pathname to qualify
-.  fullpath - pointer to buffer to hold full pathname
--  flen     - size of fullpath
+-  flen     - size of `fullpath`
+
+   Output Parameter:
+.  fullpath - buffer to hold the full pathname
 
    Level: developer
 

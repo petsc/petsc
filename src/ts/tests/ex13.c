@@ -35,6 +35,7 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(W, &W2));
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetSolution(ts, W2));
+  PetscCall(TSSetMaxTime(ts, 10.));
   PetscCall(TSSetMaxSteps(ts, 10));
   PetscCall(TSSetSaveTrajectory(ts));
   PetscCall(TSGetTrajectory(ts, &tj));
@@ -120,6 +121,7 @@ int main(int argc, char **argv)
   PetscCall(TSDestroy(&ts));
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetSolution(ts, W2));
+  PetscCall(TSSetMaxTime(ts, 10.));
   PetscCall(TSSetMaxSteps(ts, 10));
   PetscCall(TSSetSaveTrajectory(ts));
   PetscCall(TSGetTrajectory(ts, &tj));

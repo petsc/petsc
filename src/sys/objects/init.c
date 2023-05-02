@@ -86,7 +86,6 @@ PetscErrorCode (*PetscErrorPrintf)(const char[], ...)          = PetscErrorPrint
 PetscErrorCode (*PetscHelpPrintf)(MPI_Comm, const char[], ...) = PetscHelpPrintfDefault;
 PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list) = PetscVFPrintfDefault;
 
-/* ------------------------------------------------------------------------------*/
 /*
    Optional file where all PETSc output from various prints is saved
 */
@@ -151,8 +150,6 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
-
 /*
    This is ugly and probably belongs somewhere else, but I want to
   be able to put a true MPI abort error handler with command line args.
@@ -214,14 +211,16 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 /*@C
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
    before the PETSc help and version information is printed. Must call BEFORE `PetscInitialize()`.
-   This routine enables a "higher-level" package that uses PETSc to print its messages first.
+   This routine enables a "higher-level" package that uses PETSc to print its messages first and control
+   how the PETSc help messages are printed.
 
    Input Parameters:
-+  help - the help function (may be NULL)
--  version - the version function (may be NULL)
++  help - the help function (may be `NULL`)
+-  version - the version function (may be `NULL`)
 
    Level: developer
 
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), PetscErrorCode (*version)(MPI_Comm))
 {

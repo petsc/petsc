@@ -189,7 +189,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     Level: intermediate
 
     Note:
-    For the standard `PETSCVIEWERASCII` the value is valid only on process 0 of the viewer
+    For the standard `PETSCVIEWERASCII` the value is valid only on MPI rank 0 of the viewer
 
 .seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscViewerASCIIOpen()`, `PetscViewerDestroy()`, `PetscViewerSetType()`,
           `PetscViewerCreate()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerFlush()`
@@ -417,7 +417,7 @@ PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer viewer)
     PetscViewerASCIIPushTab - Adds one more tab to the amount that `PetscViewerASCIIPrintf()`
      lines are tabbed.
 
-    Not Collective, but only first processor in set has any effect; No Fortran Support
+    Not Collective, but only first MPI rank in the viewer has any effect; No Fortran Support
 
     Input Parameter:
 .    viewer - obtained with `PetscViewerASCIIOpen()`
@@ -444,7 +444,7 @@ PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
     PetscViewerASCIIPopTab - Removes one tab from the amount that `PetscViewerASCIIPrintf()` lines are tabbed that was provided by
     `PetscViewerASCIIPushTab()`
 
-    Not Collective, but only first processor in set has any effect; No Fortran Support
+    Not Collective, but only first MPI rank in the viewer has any effect; No Fortran Support
 
     Input Parameter:
 .    viewer - obtained with `PetscViewerASCIIOpen()`
@@ -471,9 +471,9 @@ PetscErrorCode PetscViewerASCIIPopTab(PetscViewer viewer)
 }
 
 /*@
-    PetscViewerASCIIUseTabs - Turns on or off the use of tabs with the ASCII `PetscViewer`
+    PetscViewerASCIIUseTabs - Turns on or off the use of tabs with the `PETSCVIEWERASCII` `PetscViewer`
 
-    Not Collective, but only first processor in set has any effect; No Fortran Support
+    Not Collective, but only first MPI rank in the viewer has any effect; No Fortran Support
 
     Input Parameters:
 +    viewer - obtained with `PetscViewerASCIIOpen()`
@@ -503,13 +503,11 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------------- */
-
 /*@C
     PetscViewerASCIIPrintf - Prints to a file, only from the first
     processor in the `PetscViewer` of type `PETSCVIEWERASCII`
 
-    Not Collective, but only first processor in set has any effect
+    Not Collective, but only the first MPI rank in the viewer has any effect
 
     Input Parameters:
 +    viewer - obtained with `PetscViewerASCIIOpen()`
@@ -518,7 +516,7 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
     Level: developer
 
     Fortran Note:
-    The call sequence is `PetscViewerASCIIPrintf`(PetscViewer, character(*), int ierr) from Fortran.
+    The call sequence is `PetscViewerASCIIPrintf`(`PetscViewer`, character(*), int ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
 .seealso: [](sec_viewers), `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIOpen()`,
@@ -587,7 +585,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
 }
 
 /*@C
-     PetscViewerFileSetName - Sets the name of the file the `PetscViewer` uses.
+     PetscViewerFileSetName - Sets the name of the file the `PetscViewer` should use.
 
     Collective
 
@@ -596,6 +594,9 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
 -  name - the name of the file it should use
 
     Level: advanced
+
+  Note:
+  This will have no effect on viewers that are not related to files
 
 .seealso: [](sec_viewers), `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PetscViewerDestroy()`,
           `PetscViewerASCIIGetPointer()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`
@@ -613,7 +614,7 @@ PetscErrorCode PetscViewerFileSetName(PetscViewer viewer, const char name[])
 }
 
 /*@C
-     PetscViewerFileGetName - Gets the name of the file the `PetscViewer` uses.
+     PetscViewerFileGetName - Gets the name of the file the `PetscViewer` is using
 
     Not Collective
 
@@ -624,6 +625,9 @@ PetscErrorCode PetscViewerFileSetName(PetscViewer viewer, const char name[])
 .  name - the name of the file it is using
 
     Level: advanced
+
+  Note:
+  This will have no effect on viewers that are not related to files
 
 .seealso: [](sec_viewers), `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PetscViewerFileSetName()`
 @*/
@@ -817,11 +821,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
 }
 
 /*@C
-    PetscViewerASCIISynchronizedPrintf - Prints synchronized output to the specified file from
+    PetscViewerASCIISynchronizedPrintf - Prints synchronized output to the specified `PETSCVIEWERASCII` file from
     several processors.  Output of the first processor is followed by that of the
     second, etc.
 
-    Not Collective, must call collective `PetscViewerFlush()` to get the results out
+    Not Collective, must call collective `PetscViewerFlush()` to get the results flushed
 
     Input Parameters:
 +   viewer - the `PETSCVIEWERASCII` `PetscViewer`
@@ -954,13 +958,13 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
 }
 
 /*@C
-   PetscViewerASCIIRead - Reads from a ASCII file
+   PetscViewerASCIIRead - Reads from a `PETSCVIEWERASCII` file
 
-   Only process 0 in the `PetscViewer` may call this
+   Only MPI rank 0 in the `PetscViewer` may call this
 
    Input Parameters:
 +  viewer - the `PETSCVIEWERASCII` viewer
-.  data - location to write the data
+.  data - location to write the data, treated as an array of type indicated by `datatype`
 .  num - number of items of data to read
 -  datatype - type of data to read
 

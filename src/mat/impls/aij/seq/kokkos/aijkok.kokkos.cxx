@@ -1622,7 +1622,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJKokkos(Mat B, Mat A, IS isrow, 
   b     = (Mat_SeqAIJ *)B->data;
   b->nz = b->maxnz          = spiluk_handle->get_nnzL() + spiluk_handle->get_nnzU();
   B->info.fill_ratio_given  = info->fill;
-  B->info.fill_ratio_needed = ((PetscReal)b->nz) / ((PetscReal)nnzA);
+  B->info.fill_ratio_needed = nnzA > 0 ? ((PetscReal)b->nz) / ((PetscReal)nnzA) : 1.0;
 
   B->offloadmask          = PETSC_OFFLOAD_GPU;
   B->ops->lufactornumeric = MatILUFactorNumeric_SeqAIJKokkos;

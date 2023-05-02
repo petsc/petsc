@@ -104,8 +104,11 @@ static PetscInt  inoviewers = 0;
   Level: developer
 
   Note:
-    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
-   many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive XXXViewFromOptions calls.
+    Calling `XXXViewFromOptions` in an inner loop can be expensive.  This can appear, for example, when using
+   many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive `XXXViewFromOptions` calls.
+
+  Developer Notes;
+  Instead of using this approach, the calls to `PetscOptionsGetViewer()` can be moved into `XXXSetFromOptions()`
 
 .seealso: [](sec_viewers), `PetscOptionsGetViewer()`, `PetscOptionsPopGetViewerOff()`
 @*/
@@ -127,8 +130,7 @@ PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool flg)
   Level: developer
 
   Note:
-    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
-   many small subsolves.  Call this function to control viewer creation in `PetscOptionsGetViewer()`, thus removing the expensive XXXViewFromOptions calls.
+  See `PetscOptionsPushGetViewerOff()`
 
 .seealso: [](sec_viewers), `PetscOptionsGetViewer()`, `PetscOptionsPushGetViewerOff()`
 @*/
@@ -151,8 +153,7 @@ PetscErrorCode PetscOptionsPopGetViewerOff(void)
   Level: developer
 
   Note:
-    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
-   many small subsolves.
+  See `PetscOptionsPushGetViewerOff()`
 
 .seealso: [](sec_viewers), `PetscOptionsGetViewer()`, `PetscOptionsPushGetViewerOff()`, `PetscOptionsPopGetViewerOff()`
 @*/
@@ -356,7 +357,8 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 }
 
 /*@
-   PetscViewerCreate - Creates a viewing context. A `PetscViewer` represents a file, a graphical window, a Unix socket or a variety of other ways of viewing a PETSc object
+   PetscViewerCreate - Creates a viewing context. A `PetscViewer` represents a file, a graphical window, a Unix socket or a variety of other ways
+   of viewing a PETSc object
 
    Collective
 
@@ -429,7 +431,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 }
 
 /*@C
-   PetscViewerRegister - Adds a viewer to those available for use
+   PetscViewerRegister - Adds a viewer to those available for use with `PetscViewerSetType()`
 
    Not Collective
 
@@ -473,7 +475,7 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
    Level: intermediate
 
    Note:
-    Must be called after `PetscViewerCreate()` before the `PetscViewer` is used.
+    Must be called after `PetscViewerCreate()` but before the `PetscViewer` is used.
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/

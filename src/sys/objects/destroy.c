@@ -86,13 +86,15 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
 
   Input Parameters:
 + obj   - the object
-. bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
+. bobj  - optional other object that provides prefix (if `NULL` then the prefix in `obj` is used)
 - optionname - option string that is used to activate viewing
 
   Options Database Key:
-.  -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like -mat_coarse_view
+.  -optionname_view [viewertype]:... - option name and values. In actual usage this would be something like `-mat_coarse_view`
 
-  Notes:
+  Level: developer
+
+ Notes:
 .vb
     If no value is provided ascii:stdout is used
        ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
@@ -104,9 +106,7 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
        saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 .ve
 
-  This is not called directly but is called by, for example, `MatCoarseViewFromOptions()`
-
-  Level: developer
+  This is not called directly but is called by, for example, `MatViewFromOptions()`
 
 .seealso: `PetscObject`, `PetscObjectView()`, `PetscOptionsGetViewer()`
 @*/
@@ -173,11 +173,11 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
    Logically Collective
 
    Input Parameters:
-+  obj1 - any PETSc object, for example a Vec, Mat or KSP.
++  obj1 - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
 -  obj2 - another PETSc object
 
    Output Parameter:
-.  same - PETSC_TRUE if they are the same, else PETSC_FALSE
+.  same - `PETSC_TRUE` if they are the same, else `PETSC_FALSE`
 
    Level: intermediate
 
@@ -236,7 +236,7 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
 -  type_name - array of strings containing type names, pass the empty string "" to terminate the list
 
    Output Parameter:
-.  match - `PETSC_TRUE` if the type of obj matches any in the list, else `PETSC_FALSE`
+.  match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
 
    Level: intermediate
 
@@ -275,7 +275,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
 -  type_name - array of strings containing type names, pass the empty string "" to terminate the list
 
    Output Parameter:
-.  match - `PETSC_TRUE` if the type of obj matches any in the list, else `PETSC_FALSE`
+.  match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
 
    Level: intermediate
 
@@ -320,7 +320,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
    Level: developer
 
    Note:
-      This is used by, for example, PETSC_VIEWER_XXX_() routines to free the viewer
+      This is used by, for example, `PETSC_VIEWER_XXX_()` routines to free the viewer
     when PETSc ends.
 
 .seealso: `PetscObjectRegisterDestroyAll()`
@@ -362,14 +362,16 @@ static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
    Not Collective
 
    Input Parameter:
-.  PetscErrorCode (*fun)(void) -
+.  PetscErrorCode (*fun)(void) - function to be called
 
    Level: developer
 
-   Note:
-      This is used by, for example, `DMInitializePackage()` to have `DMFinalizePackage()` called
+   Notes:
+  This is used by, for example, `DMInitializePackage()` to have `DMFinalizePackage()` called
 
-.seealso: `PetscRegisterFinalizeAll()`
+  Use `PetscObjectRegisterDestroy()` to register the destruction of an object in `PetscFinalize()`
+
+.seealso: `PetscRegisterFinalizeAll()`, `PetscObjectRegisterDestroy()`
 @*/
 PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
@@ -389,7 +391,7 @@ PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 
    Level: developer
 
-.seealso: `PetscRegisterFinalize()`
+.seealso: `PetscRegisterFinalize()`, `PetscObjectRegisterDestroyAll()`
 @*/
 PetscErrorCode PetscRegisterFinalizeAll(void)
 {

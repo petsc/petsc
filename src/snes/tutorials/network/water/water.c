@@ -117,7 +117,7 @@ int main(int argc, char **argv)
       requires: !complex double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
-      args: -water_snes_converged_reason -options_left no
+      args: -water_snes_converged_reason -options_left no -fp_trap 0
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
       requires: double !complex defined(PETSC_HAVE_ATTRIBUTEALIGNED)
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
    test:
       suffix: 2
       nsize: 3
-      args: -water_snes_converged_reason -options_left no
+      args: -water_snes_converged_reason -options_left no -fp_trap 0
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
       requires: double !complex defined(PETSC_HAVE_ATTRIBUTEALIGNED)

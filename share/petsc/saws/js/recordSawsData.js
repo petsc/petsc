@@ -42,7 +42,7 @@ function recordSawsData(data, sub) {
             data[parentEndtag].pc_mg_levels = currentLevel+1;//if we are on level 0 then that means there was 1 level so far
         }
 
-        if(data[parentEndtag] != undefined && data[parentEndtag].pc_type == "fieldsplit"){ //cheeck to see if parent was fieldsplit
+        if(data[parentEndtag] != undefined && data[parentEndtag].pc_type == "fieldsplit"){ //check to see if parent was fieldsplit
             var currentLevel                        = endtag.substring(endtag.lastIndexOf('_')+1, endtag.length);//everything after the last underscore
             currentLevel                            = parseInt(currentLevel);
             data[parentEndtag].pc_fieldsplit_blocks = currentLevel + 1;

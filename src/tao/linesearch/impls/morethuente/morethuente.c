@@ -137,6 +137,12 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
     PetscCall(VecWAXPY(mt->work, ls->step, s, x)); /* W = X + step*S */
 
+    if (ls->step == 0.0) {
+      PetscCall(PetscInfo(ls, "Step is zero."));
+      ls->reason = TAOLINESEARCH_HALTED_LOWERBOUND;
+      break;
+    }
+
     if (ls->bounded) PetscCall(VecMedian(ls->lower, mt->work, ls->upper, mt->work));
     if (ls->usegts) {
       PetscCall(TaoLineSearchComputeObjectiveAndGTS(ls, mt->work, f, &dg));

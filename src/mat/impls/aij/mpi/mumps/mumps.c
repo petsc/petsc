@@ -97,7 +97,9 @@ static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems *Pets
       if (mumps->use_petsc_omp_support) { \
         if (mumps->is_omp_master) { \
           PetscCall(PetscOmpCtrlOmpRegionOnMasterBegin(mumps->omp_ctrl)); \
-          MUMPS_c(&mumps->id); \
+          PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
+          PetscStackCallExternalVoid(PetscStringize(MUMPS_c), MUMPS_c(&mumps->id)); \
+          PetscCall(PetscFPTrapPop()); \
           PetscCall(PetscOmpCtrlOmpRegionOnMasterEnd(mumps->omp_ctrl)); \
         } \
         PetscCall(PetscOmpCtrlBarrier(mumps->omp_ctrl)); \
@@ -110,13 +112,17 @@ static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems *Pets
         PetscCallMPI(MPI_Bcast(mumps->id.rinfog, 20, MPIU_REAL, 0, mumps->omp_comm)); \
         PetscCallMPI(MPI_Bcast(mumps->id.info, 1, MPIU_MUMPSINT, 0, mumps->omp_comm)); \
       } else { \
-        MUMPS_c(&mumps->id); \
+        PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
+        PetscStackCallExternalVoid(PetscStringize(MUMPS_c), MUMPS_c(&mumps->id)); \
+        PetscCall(PetscFPTrapPop()); \
       } \
     } while (0)
 #else
   #define PetscMUMPS_c(mumps) \
     do { \
-      MUMPS_c(&mumps->id); \
+      PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
+      PetscStackCallExternalVoid(PetscStringize(MUMPS_c), MUMPS_c(&mumps->id)); \
+      PetscCall(PetscFPTrapPop()); \
     } while (0)
 #endif
 

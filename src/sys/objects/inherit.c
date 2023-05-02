@@ -220,6 +220,8 @@ PetscErrorCode PetscHeaderReset_Internal(PetscObject obj)
    Both objects must have the same class.
 
    This is used to help manage user callback functions that were provided in Fortran
+
+.seealso: `PetscFortranCallbackRegister()`, `PetscFortranCallbackGetSizes()`
 @*/
 PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObject dest)
 {
@@ -263,7 +265,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
    Note:
    This is used to help manage user callback functions that were provided in Fortran
 
-.seealso: `PetscObjectGetFortranCallback()`
+.seealso: `PetscObjectGetFortranCallback()`, `PetscFortranCallbackRegister()`, `PetscFortranCallbackGetSizes()`
 @*/
 PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId *cid, void (*func)(void), void *ctx)
 {
@@ -300,15 +302,15 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
 -  cid - address of callback Id
 
    Output Parameters:
-+  func - Fortran function (or NULL if not needed)
--  ctx - Fortran context (or NULL if not needed)
++  func - Fortran function (or `NULL` if not needed)
+-  ctx - Fortran context (or `NULL` if not needed)
 
    Level: developer
 
    Note:
    This is used to help manage user callback functions that were provided in Fortran
 
-.seealso: `PetscObjectSetFortranCallback()`
+.seealso: `PetscObjectSetFortranCallback()`, `PetscObjectGetFortranCallback()`, `PetscFortranCallbackRegister()`, `PetscFortranCallbackGetSizes()`
 @*/
 PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId cid, void (**func)(void), void **ctx)
 {
@@ -339,6 +341,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
 
    Level: advanced
 
+.seealso: `PetscObject`
 @*/
 PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all)
 {
@@ -394,6 +397,7 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all)
 
    Level: advanced
 
+.seealso: `PetscObject`
 @*/
 PetscErrorCode PetscObjectsView(PetscViewer viewer)
 {
@@ -418,11 +422,12 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
 .  name - the name of an object
 
    Output Parameters:
-+  obj - the object or null if there is no object
++  obj - the object or `NULL` if there is no object
 -  classname - the name of the class
 
    Level: advanced
 
+.seealso: `PetscObject`
 @*/
 PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **classname)
 {
@@ -461,7 +466,7 @@ PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **
    This is used, for example to prevent sequential objects that are created from a parallel object; such as the `KSP` created by
    `PCBJACOBI` from all printing the same help messages to the screen
 
-.seealso: `PetscOptionsInsert()`
+.seealso: `PetscOptionsInsert()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 {
@@ -476,7 +481,7 @@ PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 
    Input Parameters:
 +  pobj - the parent object
--  obj  - the PetscObject
+-  obj  - the `PetscObject`
 
    Level: developer
 
@@ -486,7 +491,7 @@ PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 
    This will not handle more complicated situations like with `PCGASM` where children may live on any subset of the parent's processes and overlap
 
-.seealso: `PetscOptionsInsert()`, `PetscObjectSetPrintedOptions()`
+.seealso: `PetscOptionsInsert()`, `PetscObjectSetPrintedOptions()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject obj)
 {
@@ -502,7 +507,7 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject ob
 }
 
 /*@C
-    PetscObjectAddOptionsHandler - Adds an additional function to check for options when XXXSetFromOptions() is called.
+    PetscObjectAddOptionsHandler - Adds an additional function to check for options when `XXXSetFromOptions()` is called.
 
     Not Collective
 
@@ -514,7 +519,8 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject ob
 
     Level: developer
 
-.seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectProcessOptionsHandlers()`, `PetscObjectDestroyOptionsHandlers()`
+.seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectProcessOptionsHandlers()`, `PetscObjectDestroyOptionsHandlers()`,
+          `PetscObject`
 @*/
 PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*handle)(PetscObject, PetscOptionItems *, void *), PetscErrorCode (*destroy)(PetscObject, void *), void *ctx)
 {
@@ -538,7 +544,8 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*ha
 
     Level: developer
 
-.seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectDestroyOptionsHandlers()`
+.seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectDestroyOptionsHandlers()`,
+          `PetscObject`
 @*/
 PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionItems *PetscOptionsObject)
 {
@@ -558,7 +565,8 @@ PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionIte
 
     Level: developer
 
-.seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectProcessOptionsHandlers()`
+.seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectProcessOptionsHandlers()`,
+          `PetscObject`
 @*/
 PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
 {
@@ -584,7 +592,7 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
 
    Level: advanced
 
-.seealso: `PetscObjectCompose()`, `PetscObjectDereference()`
+.seealso: `PetscObjectCompose()`, `PetscObjectDereference()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectReference(PetscObject obj)
 {
@@ -610,7 +618,7 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
 
    Level: advanced
 
-.seealso: `PetscObjectCompose()`, `PetscObjectDereference()`, `PetscObjectReference()`
+.seealso: `PetscObjectCompose()`, `PetscObjectDereference()`, `PetscObjectReference()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
 {
@@ -637,7 +645,7 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
    Note:
     `PetscObjectDestroy()` sets the obj pointer to null after the call, this routine does not.
 
-.seealso: `PetscObjectCompose()`, `PetscObjectReference()`, `PetscObjectDestroy()`
+.seealso: `PetscObjectCompose()`, `PetscObjectReference()`, `PetscObjectDestroy()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectDereference(PetscObject obj)
 {
@@ -649,7 +657,6 @@ PetscErrorCode PetscObjectDereference(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------------- */
 /*
      The following routines are the versions private to the PETSc object
      data structures.
@@ -730,7 +737,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj, const char name[]
    user-provided pointer that may then be composed with PETSc objects using `PetscObjectCompose()`
 
 .seealso: `PetscObjectQuery()`, `PetscContainerCreate()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`,
-          `PetscContainerSetPointer()`
+          `PetscContainerSetPointer()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObject ptr)
 {
@@ -762,7 +769,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
    The reference count of neither object is increased in this call
 
 .seealso: `PetscObjectCompose()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`
-          `PetscContainerGetPointer()`
+          `PetscContainerGetPointer()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject *ptr)
 {
@@ -803,7 +810,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
    `PetscUseTypeMethod()` and `PetscTryTypeMethod()` are used to call a function that is stored in the objects `obj->ops` table.
 
 .seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscTryMethod()`, `PetscUseMethod()`,
-          `PetscUseTypeMethod()`, `PetscTryTypeMethod()`
+          `PetscUseTypeMethod()`, `PetscTryTypeMethod()`, `PetscObject`
 M*/
 
 PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char name[], void (*fptr)(void))
@@ -834,7 +841,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
 
    Level: advanced
 
-.seealso: `PetscObjectComposeFunction()`, `PetscFunctionListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`
+.seealso: `PetscObjectComposeFunction()`, `PetscFunctionListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObject`
 M*/
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], void (**ptr)(void))
 {
@@ -862,7 +869,7 @@ struct _p_PetscContainer {
 
    Level: advanced
 
-.seealso: `PetscContainerDestroy()`, `PetscContainerSetUserDestroy()`
+.seealso: `PetscContainerDestroy()`, `PetscContainerSetUserDestroy(`), `PetscObject`
 @*/
 PetscErrorCode PetscContainerUserDestroyDefault(void *ctx)
 {
@@ -884,7 +891,7 @@ PetscErrorCode PetscContainerUserDestroyDefault(void *ctx)
 
    Level: advanced
 
-.seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`,
+.seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscObject`,
           `PetscContainerSetPointer()`
 @*/
 PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
@@ -907,7 +914,7 @@ PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
 
    Level: advanced
 
-.seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
+.seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObject`,
           `PetscContainerGetPointer()`
 @*/
 PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
@@ -933,7 +940,7 @@ PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
    If `PetscContainerSetUserDestroy()` was used to provide a user destroy object for the data provided with `PetscContainerSetPointer()`
    then that function is called to destroy the data.
 
-.seealso: `PetscContainerCreate()`, `PetscContainerSetUserDestroy()`
+.seealso: `PetscContainerCreate()`, `PetscContainerSetUserDestroy()`, `PetscObject`
 @*/
 PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
 {
@@ -963,7 +970,7 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
    Note:
    Use `PetscContainerUserDestroyDefault()` if the memory was obtained by calling `PetscMalloc()` or one of its variants for single memory allocation.
 
-.seealso: `PetscContainerDestroy()`, `PetscContainerUserDestroyDefault()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc()`, `PetscCalloc1()`
+.seealso: `PetscContainerDestroy()`, `PetscContainerUserDestroyDefault()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc()`, `PetscCalloc1()`, `PetscObject`
 @*/
 PetscErrorCode PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void *))
 {
@@ -992,7 +999,7 @@ PetscClassId PETSC_CONTAINER_CLASSID;
    Level: advanced
 
 .seealso: `PetscContainerDestroy()`, `PetscContainerSetPointer()`, `PetscContainerGetPointer()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
-          `PetscContainerSetUserDestroy()`
+          `PetscContainerSetUserDestroy()`, `PetscObject`
 @*/
 PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
 {
@@ -1016,7 +1023,7 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
    Note:
    We have no generic options at present, so this does nothing
 
-.seealso: `PetscObjectSetOptionsPrefix()`, `PetscObjectGetOptionsPrefix()`
+.seealso: `PetscObjectSetOptionsPrefix()`, `PetscObjectGetOptionsPrefix()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectSetFromOptions(PetscObject obj)
 {
@@ -1038,7 +1045,7 @@ PetscErrorCode PetscObjectSetFromOptions(PetscObject obj)
    Note:
    This does nothing at present.
 
-.seealso: `PetscObjectDestroy()`
+.seealso: `PetscObjectDestroy()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectSetUp(PetscObject obj)
 {

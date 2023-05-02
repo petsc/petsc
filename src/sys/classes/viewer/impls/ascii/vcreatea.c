@@ -45,7 +45,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
 }
 
 /*@C
-   PETSC_VIEWER_STDOUT_ - Creates a ASCII `PetscViewer` shared by all processors
+   PETSC_VIEWER_STDOUT_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
                     in a communicator.
 
    Collective
@@ -84,7 +84,7 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
 /*@
-   PetscViewerASCIIGetStderr - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
+   PetscViewerASCIIGetStderr - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
                     in a communicator. Error returning version of `PETSC_VIEWER_STDERR_()`
 
    Collective
@@ -121,7 +121,7 @@ PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer)
 }
 
 /*@C
-   PETSC_VIEWER_STDERR_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
+   PETSC_VIEWER_STDERR_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
                     in a communicator.
 
    Collective
@@ -171,7 +171,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyva
 }
 
 /*@C
-   PetscViewerASCIIOpen - Opens an ASCII file for writing as a `PetscViewer`.
+   PetscViewerASCIIOpen - Opens an ASCII file for writing as a `PETSCVIEWERASCII` `PetscViewer`.
 
    Collective
 
@@ -316,7 +316,7 @@ PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer
    Level: beginner
 
    Notes:
-   This `PetscViewer` can be destroyed with `PetscViewerDestroy()`, but the fd will NOT be closed.
+   This `PetscViewer` can be destroyed with `PetscViewerDestroy()`, but the `fd` will NOT be closed.
 
    If a multiprocessor communicator is used (such as `PETSC_COMM_WORLD`),
    then only the first processor in the group uses the file.  All other

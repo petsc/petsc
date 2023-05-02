@@ -266,4 +266,78 @@ allobj.d := $(srcs.o:%.o=%.d)
 # do-nothing build of PETSc (much worse for larger projects)
 $(allobj.d) : ;
 
+gmakeinfo:
+	-@echo "=========================================="
+	-@echo " "
+	-@echo "See documentation/faq.html and documentation/bugreporting.html"
+	-@echo "for help with installation problems.  Please send EVERYTHING"
+	-@echo "printed out below when reporting problems.  Please check the"
+	-@echo "mailing list archives and consider subscribing."
+	-@echo " "
+	-@echo "  https://petsc.org/release/community/mailing/"
+	-@echo " "
+	-@echo "=========================================="
+	-@echo Starting make run on `hostname` at `date +'%a, %d %b %Y %H:%M:%S %z'`
+	-@echo Machine characteristics: `uname -a`
+	-@echo "-----------------------------------------"
+	-@echo "Using PETSc directory: ${PETSC_DIR}"
+	-@echo "Using PETSc arch: ${PETSC_ARCH}"
+	-@echo "-----------------------------------------"
+	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//" | head -n 7
+	-@echo "-----------------------------------------"
+	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
+	-@echo "Using configuration flags:"
+	-@grep "\#define " ${PETSCCONF_H} | tail -n +2
+	-@echo "-----------------------------------------"
+	-@echo "Using C compile: ${PETSC_CCOMPILE_SINGLE}"
+	-@if [  "${MPICC_SHOW}" != "" ]; then \
+             printf  "mpicc -show: %b\n" "${MPICC_SHOW}";\
+          fi; \
+        printf  "C compiler version: %b\n" "${C_VERSION}"; \
+        if [ "${CXX}" != "" ]; then \
+        echo "Using C++ compile: ${PETSC_CXXCOMPILE_SINGLE}";\
+        if [ "${MPICXX_SHOW}" != "" ]; then \
+               printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
+            fi;\
+            printf  "C++ compiler version: %b\n" "${Cxx_VERSION}"; \
+          fi
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran compile: ${PETSC_FCOMPILE_SINGLE}";\
+           if [ "${MPIFC_SHOW}" != "" ]; then \
+             printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
+           fi; \
+             printf  "Fortran compiler version: %b\n" "${FC_VERSION}"; \
+         fi
+	-@if [ "${CUDAC}" != "" ]; then \
+	   echo "Using CUDA compile: ${PETSC_CUCOMPILE_SINGLE}";\
+         fi
+	-@if [ "${CLANGUAGE}" = "CXX" ]; then \
+           echo "Using C++ compiler to compile PETSc";\
+        fi
+	-@echo "-----------------------------------------"
+	-@echo "Using C/C++ linker: ${PCC_LINKER}"
+	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran linker: ${FC_LINKER}";\
+	   echo "Using Fortran flags: ${FC_LINKER_FLAGS}";\
+         fi
+	-@echo "-----------------------------------------"
+	-@echo "Using system modules: ${LOADEDMODULES}"
+	-@if [ "${MPI_IS_MPIUNI}" = "1" ]; then \
+           echo Using mpi.h: mpiuni; \
+        else \
+           TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
+           echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
+           BUF=`${CPP} ${PETSC_CPPFLAGS} ${PETSC_CC_INCLUDES} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
+        fi
+	-@echo "-----------------------------------------"
+	-@echo "Using libraries: ${PETSC_LIB}"
+	-@echo "------------------------------------------"
+	-@echo "Using mpiexec: ${MPIEXEC}"
+	-@echo "------------------------------------------"
+	-@echo "Using MAKE: ${MAKE}"
+	-@echo "Default MAKEFLAGS: MAKE_NP:${MAKE_NP} MAKE_LOAD:${MAKE_LOAD} MAKEFLAGS:${MAKEFLAGS}"
+	-@echo "=========================================="
+
 -include $(allobj.d)

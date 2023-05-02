@@ -205,8 +205,8 @@ typedef enum {
    Values:
 +  `DM_ENC_SUBMESH` - the `DM` is the boundary of another `DM`
 .  `DM_ENC_SUPERMESH`  - the `DM` has the boundary of another `DM` (the reverse situation to `DM_ENC_SUBMESH`)
-.  `DM_ENC_EQUALITY` - unkown what this means
-.  `DM_ENC_NONE` - no relatiship can be determined
+.  `DM_ENC_EQUALITY` - unknown what this means
+.  `DM_ENC_NONE` - no relationship can be determined
 -  `DM_ENC_UNKNOWN`  - the relationship is unknown
 
   Level: beginner

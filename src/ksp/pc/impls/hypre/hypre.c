@@ -416,7 +416,9 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   PetscCallExternal(HYPRE_IJMatrixGetObject, hjac->ij, (void **)&hmat);
   PetscCallExternal(HYPRE_IJVectorGetObject, hjac->b->ij, (void **)&bv);
   PetscCallExternal(HYPRE_IJVectorGetObject, hjac->x->ij, (void **)&xv);
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallExternal(jac->setup, jac->hsolver, hmat, bv, xv);
+  PetscCall(PetscFPTrapPop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

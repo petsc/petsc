@@ -161,7 +161,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   PetscCall(PetscDTBinomialInt(degree + dim, dim, &npoints));
   PetscCall(Petsc1DNodeFamilyGetNodeSets(f, degree, &nodesets));
   worksize = ((dim + 2) * (dim + 3)) / 2;
-  PetscCall(PetscMalloc2(worksize, &nodework, worksize, &tupwork));
+  PetscCall(PetscCalloc2(worksize, &nodework, worksize, &tupwork));
   /* loop over the tuples of length dim with sum at most degree */
   for (k = 0; k < npoints; k++) {
     PetscInt i;
@@ -173,6 +173,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
     case PETSCDTNODES_EQUISPACED:
       /* compute equispaces nodes on the unit reference triangle */
       if (f->endpoints) {
+        PetscCheck(degree > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have positive degree");
         for (i = 0; i < dim; i++) points[dim * k + i] = (PetscReal)tup[i + 1] / (PetscReal)degree;
       } else {
         for (i = 0; i < dim; i++) {
@@ -183,7 +184,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
       }
       break;
     default:
-      /* compute equispaces nodes on the barycentric reference triangle (the trace on the first dim dimensions are the
+      /* compute equispaced nodes on the barycentric reference triangle (the trace on the first dim dimensions are the
        * unit reference triangle nodes */
       for (i = 0; i < dim + 1; i++) tupwork[i] = tup[i];
       PetscCall(PetscNodeRecursive_Internal(dim, degree, nodesets, tupwork, nodework));

@@ -34,7 +34,7 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
 
    Input Parameters:
 +     obj - the PETSc object
--     viewer - ASCII viewer where the information is printed, function does nothing if the viewer is not `PETSCVIEWERASCII` type
+-     viewer - `PETSCVIEWERASCII` viewer where the information is printed, function does nothing if the viewer is not `PETSCVIEWERASCII` type
 
    Level: developer
 

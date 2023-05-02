@@ -14,11 +14,11 @@ struct _n_PetscViewers {
    Collective
 
    Input Parameter:
-.  v - the `PetscViewer`s to be destroyed.
+.  v - the `PetscViewers` to be destroyed.
 
    Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerDestroy()`, `PetscViewers()`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerDestroy()`, `PetscViewers`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 @*/
 PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 {
@@ -33,7 +33,7 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 }
 
 /*@C
-   PetscViewersCreate - Creates a container to hold a set of `PetscViewer`s. The container is essentially a sparse, growable in length array of `PetscViewer`s
+   PetscViewersCreate - Creates a container to hold a set of `PetscViewer`'s. The container is essentially a sparse, growable in length array of `PetscViewer`s
 
    Collective
 
@@ -41,11 +41,11 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 .   comm - the MPI communicator
 
    Output Parameter:
-.  v - the collection of `PetscViewer`s
+.  v - the collection of `PetscViewers`
 
    Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewersDestroy()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewers`, `PetscViewerCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 {
@@ -60,7 +60,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 }
 
 /*@C
-   PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewer` collection
+   PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewers` collection
 
    Collective if the viewer has not previously be obtained.
 
@@ -73,7 +73,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 
    Level: intermediate
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewersCreate()`, `PetscViewersDestroy()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewers`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscViewer *viewer)
 {

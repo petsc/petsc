@@ -2303,7 +2303,7 @@ PetscErrorCode DMRefine(DM dm, MPI_Comm comm, DM *dmf)
    Input Parameters:
 +  coarse - `DM` on which to run a hook when interpolating to a finer level
 .  refinehook - function to run when setting up the finer level
-.  interphook - function to run to update data on finer levels (once per `SNESSolve`())
+.  interphook - function to run to update data on finer levels (once per `SNESSolve()`)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be `NULL`)
 
    Calling sequence of `refinehook`:
@@ -2313,7 +2313,7 @@ $  PetscErrorCode refinehook(DM coarse, DM fine, void *ctx);
 -  ctx - optional user-defined function context
 
    Calling sequence of `interphook`:
-$  PetscErrorCode interphook(DM coarse, Mat interp, DM fine,void *ctx)
+$  PetscErrorCode interphook(DM coarse, Mat interp, DM fine, void *ctx)
 +  coarse - coarse level `DM`
 .  interp - matrix interpolating a coarse-level solution to the finer grid
 .  fine - fine level `DM` to update
@@ -8496,7 +8496,7 @@ PetscErrorCode DMGetNeighbors(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[
 
 /*
     Converts the input vector to a ghosted vector and then calls the standard coloring code.
-    This has be a different function because it requires DM which is not defined in the Mat library
+    This must be a different function because it requires DM which is not defined in the Mat library
 */
 PetscErrorCode MatFDColoringApply_AIJDM(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {

@@ -180,7 +180,7 @@ PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions options, const 
    Logically Collective
 
    Input Parameters:
-+  options - options database, use NULL for default global database
++  options - options database, use `NULL` for default global database
 -  in_str - YAML-formatted string options
 
    Level: intermediate
@@ -206,7 +206,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
 
   Input Parameters:
 +   comm - the processes that will share the options (usually `PETSC_COMM_WORLD`)
-.   options - options database, use NULL for default global database
+.   options - options database, use `NULL` for default global database
 .   file - name of file
 -   require - if `PETSC_TRUE` will generate an error if the file does not exist
 

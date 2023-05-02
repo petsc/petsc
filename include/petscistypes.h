@@ -64,7 +64,7 @@ typedef struct _n_ISColoring *ISColoring;
    the second MPI process the next `n1` entries, etc. A `PetscLayout` is a way of managing this information, for example the number of locally owned entries is provided
    by `PetscLayoutGetLocalSize()` and the range of indices for a given MPI process is provided by `PetscLayoutGetRange()`.
 
-   Each PETSc `Vec` contains a `PetscLayout` object which can be obtained with `VecGetLayout()`. For convinence `Vec` provides an API to access the layout information directly,
+   Each PETSc `Vec` contains a `PetscLayout` object which can be obtained with `VecGetLayout()`. For convenience `Vec` provides an API to access the layout information directly,
    for example with `VecGetLocalSize()` and `VecGetOwnershipRange()`.
 
    Similarly PETSc matrices have layouts, these are discussed in [](chapter_matrices).

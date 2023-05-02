@@ -22,7 +22,7 @@ FILE *PETSC_STDOUT = NULL;
 FILE *PETSC_STDERR = NULL;
 
 /*@C
-     PetscFormatConvertGetSize - Gets the length of a string needed to hold data converted with `PetscFormatConvert()` based on format
+     PetscFormatConvertGetSize - Gets the length of a string needed to hold data converted with `PetscFormatConvert()` based on the format
 
    No Fortran Support
 
@@ -83,13 +83,15 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
 
    Input Parameters:
 +   format - the PETSc format string
-.   newformat - the location to put the new format
 -   size - the length of newformat, you can use `PetscFormatConvertGetSize()` to compute the needed size
+
+   Output Parameter:
+.   newformat - the new format
 
    Level: developer
 
     Note:
-    Deprecated usage also converts the %D to %d for 32 bit PETSc indices and %lld for 64 bit PETSc indices. This feature is no
+    Deprecated usage also converts the `%D` to `%d` for 32 bit PETSc indices and to `%lld` for 64 bit PETSc indices. This feature is no
     longer used in PETSc code instead use %" PetscInt_FMT " in the format string
 
 .seealso: `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
@@ -150,9 +152,11 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
 
    Input Parameters:
 +   str - location to put result
-.   len - the amount of space in str
-+   format - the PETSc format string
--   fullLength - the amount of space in str actually used.
+.   len - the length of `str`
+-   format - the PETSc format string
+
+    Output Parameter:
+.   fullLength - the amount of space in `str` actually used.
 
    Level: developer
 
@@ -160,7 +164,7 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
    This function may be called from an error handler, if an error occurs when it is called by the error handler than likely
    a recursion will occur resulting in a crash of the program.
 
-   If the length of the format string `format` is on the order of `PETSCDEFAULTBUFFERSIZE` (8 * 1024 bytes), this function will call `PetscMalloc()`
+   If the length of the format string `format` is on the order of `PETSCDEFAULTBUFFERSIZE` (8 * 1024 bytes) or larger, this function will call `PetscMalloc()`
 
 .seealso: `PetscFormatConvert()`, `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscVPrintf()`
 @*/
@@ -312,8 +316,8 @@ PetscErrorCode PetscFFlush(FILE *fd)
   Level:  developer
 
    Note:
-   For error messages this may be called by any process, for regular standard out it is
-   called only by process 0 of a given communicator
+   For error messages this may be called by any MPI process, for regular standard out it is
+   called only by MPI rank 0 of a given communicator
 
    Developer Note:
    This could be called by an error handler, if that happens then a recursion of the error handler may occur
@@ -363,10 +367,12 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
     Not Collective
 
     Input Parameters:
-+   str - the string to print to
-.   len - the length of `str`
++   len - the length of `str`
 .   format - the usual `printf()` format string
 -   ... - any arguments that are to be printed, each much have an appropriate symbol in the format argument
+
+    Output Parameter:
+.   str - the resulting string
 
    Level: intermediate
 
@@ -392,13 +398,13 @@ PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
     Not Collective
 
     Input Parameters:
-+   str - the string to print to
-.   len - the length of `str`
++   len - the length of `str`
 .   format - the usual `printf()` format string
 -   ... - any arguments that are to be printed, each much have an appropriate symbol in the format argument
 
-    Output Parameter:
-.   countused - number of characters printed
+    Output Parameters:
++   str - the resulting string
+-   countused - number of characters printed
 
    Level: intermediate
 
@@ -479,7 +485,7 @@ static inline PetscErrorCode PetscSynchronizedFPrintf_Private(MPI_Comm comm, FIL
 }
 
 /*@C
-    PetscSynchronizedPrintf - Prints synchronized output from several processors.
+    PetscSynchronizedPrintf - Prints synchronized output from multple MPI processes.
     Output of the first processor is followed by that of the second, etc.
 
     Not Collective
@@ -515,7 +521,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
 
 /*@C
     PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
-    several processors.  Output of the first processor is followed by that of the
+    several MPI processes.  Output of the first process is followed by that of the
     second, etc.
 
     Not Collective
@@ -554,7 +560,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
 
     Input Parameters:
 +   comm - the MPI communicator
--   fd - the file pointer (valid on process 0 of the communicator)
+-   fd - the file pointer (valid on MPI rank 0 of the communicator)
 
     Level: intermediate
 
@@ -618,7 +624,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
 
 /*@C
     PetscFPrintf - Prints to a file, only from the first
-    processor in the communicator.
+    MPI process in the communicator.
 
     Not Collective; No Fortran Support
 
@@ -649,7 +655,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
 
 /*@C
     PetscPrintf - Prints to standard out, only from the first
-    processor in the communicator. Calls from other processes are ignored.
+    MPI process in the communicator. Calls from other processes are ignored.
 
     Not Collective
 
@@ -692,17 +698,17 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
 }
 
 /*@C
-    PetscSynchronizedFGets - Several processors all get the same line from a file.
+    PetscSynchronizedFGets - Multiple MPI processes all get the same line from a file.
 
     Collective
 
     Input Parameters:
-+   comm - the communicator
++   comm - the MPI communicator
 .   fd - the file pointer
--   len - the length of the output buffer
+-   len - the length of `string`
 
     Output Parameter:
-.   string - the line read from the file, at end of file string[0] == 0
+.   string - the line read from the file, at end of file `string`[0] == 0
 
     Level: intermediate
 
@@ -725,13 +731,12 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
 }
 
 /*@C
-     PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
+     PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to `%` operations
 
    Input Parameter:
 .   format - the PETSc format string
 
- Level: developer
-
+   Level: developer
 @*/
 PetscErrorCode PetscFormatStrip(char *format)
 {

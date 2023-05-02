@@ -43,7 +43,8 @@ typedef void *dlsymbol_t;
 
    Level: developer
 
-.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLAddr()`
+.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLAddr()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
 @*/
 PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *handle)
 {
@@ -196,20 +197,21 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
    Not Collective
 
    Input Parameters:
-+   handle - obtained with `PetscDLOpen()` or NULL
++   handle - obtained with `PetscDLOpen()` or `NULL`
 -   symbol - name of symbol
 
    Output Parameter:
-.   value - pointer to the function, NULL if not found
+.   value - pointer to the function, `NULL` if not found
 
    Level: developer
 
   Note:
-   If handle is NULL, the symbol is looked for in the main executable's dynamic symbol table.
+   If handle is `NULL`, the symbol is looked for in the main executable's dynamic symbol table.
    In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
    systems this requires platform-specific linker flags.
 
-.seealso: `PetscDLClose()`, `PetscDLOpen()`, `PetscDLAddr()`
+.seealso: `PetscDLClose()`, `PetscDLOpen()`, `PetscDLAddr()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
 @*/
 PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **value)
 {
@@ -308,11 +310,11 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   Not Collective
 
   Input Parameters:
-+ handle - obtained with `PetscDLOpen()` or NULL
-- func   - pointer to the function, NULL if not found
++ handle - obtained with `PetscDLOpen()` or `NULL`
+- func   - pointer to the function, `NULL` if not found
 
   Output Parameter:
-. name   - name of symbol, or NULL if name lookup is not supported.
+. name   - name of symbol, or `NULL` if name lookup is not supported.
 
   Level: developer
 
@@ -322,7 +324,8 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
   systems this requires platform-specific linker flags.
 
-.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLOpen()`
+.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLOpen()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
+          `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
 @*/
 PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
 {

@@ -34,21 +34,21 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
 }
 
 /*@C
-   PetscFortranCallbackRegister - register a type+subtype callback. This is used by the PETSc Fortran interface to allow the use of user Fortran functions as arguments
-   to PETSc functions that take function pointers
+   PetscFortranCallbackRegister - register a type+subtype callback. This is used by the PETSc Fortran interface to allow the use of user Fortran functions
+   as arguments to PETSc functions that take function pointers
 
    Not Collective
 
    Input Parameters:
 +  classid - ID of class on which to register callback
--  subtype - subtype string, or NULL for class ids
+-  subtype - subtype string, or `NULL` for class ids
 
    Output Parameter:
 .  id - callback id
 
    Level: developer
 
-.seealso: `PetscFortranCallbackGetSizes()`
+.seealso: `PetscFortranCallbackGetSizes()`, `PetscObjectCopyFortranFunctionPointers()`, `PetscObjectSetFortranCallback()`, `PetscObjectGetFortranCallback()`
 @*/
 PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *subtype, PetscFortranCallbackId *id)
 {
@@ -111,7 +111,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *su
 
    Level: developer
 
-.seealso: `PetscFortranCallbackRegister()`
+.seealso: `PetscFortranCallbackRegister()`, `PetscObjectCopyFortranFunctionPointers()`, `PetscObjectSetFortranCallback()`, `PetscObjectGetFortranCallback()`
 @*/
 PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid, PetscFortranCallbackId *numbase, PetscFortranCallbackId *numsubtype)
 {

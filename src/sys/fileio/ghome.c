@@ -5,7 +5,7 @@
 #include <petscsys.h>
 
 /*@C
-   PetscGetHomeDirectory - Returns home directory name.
+   PetscGetHomeDirectory - Returns the name of the user's home directory
 
    Not Collective
 
@@ -48,10 +48,8 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
    Output Parameter:
 .  fileout - the fixed name. Should long enough to hold the filename.
 
-   Level: advanced
+   Level: developer
 
-   Note:
-   Call `PetscFixFilename()` just before calling `fopen()`.
 @*/
 PetscErrorCode PetscFixFilename(const char filein[], char fileout[])
 {

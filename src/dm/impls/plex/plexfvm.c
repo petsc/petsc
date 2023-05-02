@@ -38,7 +38,8 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
     for (d = 0; d < dof; ++d) {
       /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
       PetscReal denom = DMPlex_DotD_Internal(dim, &cgrad[d * dim], v);
-      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) / denom;
+      PetscReal fact  = denom == 0 ? 1.0e+30 : 1 / denom;
+      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) * fact;
 
       PetscCall(PetscLimiterLimit(lim, flim, &phi));
       cellPhi[d] = PetscMin(cellPhi[d], phi);

@@ -26,13 +26,15 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
     Input Parameter:
 .   obj - object to be destroyed
 
+    Level: developer
+
     Notes:
     Analogue to `PetscObjectDestroy()` for use in managed languages.
 
     A PETSc object is given a creation index at initialisation based on
     the communicator it was created on and the order in which it is
     created. When this function is passed a PETSc object, a pointer to
-    the object is stashed on a garbage dictionary (PetscHMapObj) which is
+    the object is stashed on a garbage dictionary (`PetscHMapObj`) which is
     keyed by its creation index.
 
     Objects stashed on this garbage dictionary can later be destroyed
@@ -42,9 +44,7 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
     Python or Julia, which may not destroy objects in a deterministic
     order.
 
-    Level: developer
-
-.seealso: `PetscGarbageCleanup()`
+.seealso: `PetscGarbageCleanup()`, `PetscObjectDestroy()`
 @*/
 PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
 {
@@ -155,19 +155,21 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
 
 /*@C
     PetscGarbageCleanup - Destroys objects placed in the garbage by
-    PetscObjectDelayedDestroy().
+    `PetscObjectDelayedDestroy()`.
 
     Collective
 
     Input Parameter:
-.   comm      - communicator over which to perform collective cleanup
+.   comm      - MPI communicator over which to perform collective cleanup
+
+    Level: developer
 
     Notes:
     Implements a collective garbage collection.
     A per- MPI communicator garbage dictionary is created to store
-    references to objects destroyed using PetscObjectDelayedDestroy().
-    Objects that appear in this dictionary on all ranks can be destroyed
-    by calling PetscGarbageCleanup().
+    references to objects destroyed using `PetscObjectDelayedDestroy()`.
+    Objects that appear in this dictionary on all MPI processes can be destroyed
+    by calling `PetscGarbageCleanup()`.
 
     This is done as follows:
     1.  Keys of the garbage dictionary, which correspond to the creation
@@ -182,8 +184,6 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
     This function is intended for use with managed languages such as
     Python or Julia, which may not destroy objects in a deterministic
     order.
-
-    Level: developer
 
 .seealso: PetscObjectDelayedDestroy()
 @*/
