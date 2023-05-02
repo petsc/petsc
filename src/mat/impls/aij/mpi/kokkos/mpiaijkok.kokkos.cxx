@@ -9,8 +9,7 @@
 
 PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
 {
-  Mat_SeqAIJKokkos *aijkok;
-  Mat_MPIAIJ       *mpiaij = (Mat_MPIAIJ *)A->data;
+  Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;
 
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd_MPIAIJ(A, mode));
@@ -21,10 +20,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
     PetscCall(MatSetType(mpiaij->A, MATSEQAIJKOKKOS));
     PetscCall(MatSetType(mpiaij->B, MATSEQAIJKOKKOS));
     PetscCall(VecSetType(mpiaij->lvec, VECSEQKOKKOS));
-  }
-  aijkok = static_cast<Mat_SeqAIJKokkos *>(((Mat_MPIAIJ *)A->data)->A->spptr); /* Access spptr after MatAssemblyEnd_MPIAIJ(), which might have deleted old spptr */
-  if (aijkok && aijkok->device_mat_d.data()) {
-    A->offloadmask = PETSC_OFFLOAD_GPU; // in GPU mode, no going back. MatSetValues checks this
   }
 
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1765,151 +1760,6 @@ PetscErrorCode MatCreateAIJKokkos(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   } else {
     PetscCall(MatSetType(*A, MATSEQAIJKOKKOS));
     PetscCall(MatSeqAIJSetPreallocation(*A, d_nz, d_nnz));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-// get GPU pointer to stripped down Mat. For both Seq and MPI Mat.
-PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
-{
-  PetscMPIInt                size, rank;
-  MPI_Comm                   comm;
-  PetscSplitCSRDataStructure d_mat = NULL;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (size == 1) {
-    PetscCall(MatSeqAIJKokkosGetDeviceMat(A, &d_mat));
-    PetscCall(MatSeqAIJKokkosModifyDevice(A)); /* Since we are going to modify matrix values on device */
-  } else {
-    Mat_MPIAIJ *aij = (Mat_MPIAIJ *)A->data;
-    PetscCall(MatSeqAIJKokkosGetDeviceMat(aij->A, &d_mat));
-    PetscCall(MatSeqAIJKokkosModifyDevice(aij->A));
-    PetscCall(MatSeqAIJKokkosModifyDevice(aij->B));
-    PetscCheck(A->nooffprocentries || aij->donotstash, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Device assembly does not currently support offproc values insertion. Use MatSetOption(A,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) or MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE)");
-  }
-  // act like MatSetValues because not called on host
-  if (A->assembled) {
-    if (A->was_assembled) PetscCall(PetscInfo(A, "Assemble more than once already\n"));
-    A->was_assembled = PETSC_TRUE; // this is done (lazy) in MatAssemble but we are not calling it anymore - done in AIJ AssemblyEnd, need here?
-  } else {
-    PetscCall(PetscInfo(A, "Warning !assemble ??? assembled=%d\n", A->assembled));
-  }
-  if (!d_mat) {
-    struct _n_SplitCSRMat h_mat; /* host container */
-    Mat_SeqAIJKokkos     *aijkokA;
-    Mat_SeqAIJ           *jaca;
-    PetscInt              n = A->rmap->n, nnz;
-    Mat                   Amat;
-    PetscInt             *colmap;
-
-    /* create and copy h_mat */
-    h_mat.M = A->cmap->N; // use for debug build
-    PetscCall(PetscInfo(A, "Create device matrix in Kokkos\n"));
-    if (size == 1) {
-      Amat            = A;
-      jaca            = (Mat_SeqAIJ *)A->data;
-      h_mat.rstart    = 0;
-      h_mat.rend      = A->rmap->n;
-      h_mat.cstart    = 0;
-      h_mat.cend      = A->cmap->n;
-      h_mat.offdiag.i = h_mat.offdiag.j = NULL;
-      h_mat.offdiag.a                   = NULL;
-      aijkokA                           = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-    } else {
-      Mat_MPIAIJ       *aij  = (Mat_MPIAIJ *)A->data;
-      Mat_SeqAIJ       *jacb = (Mat_SeqAIJ *)aij->B->data;
-      PetscInt          ii;
-      Mat_SeqAIJKokkos *aijkokB;
-
-      Amat    = aij->A;
-      aijkokA = static_cast<Mat_SeqAIJKokkos *>(aij->A->spptr);
-      aijkokB = static_cast<Mat_SeqAIJKokkos *>(aij->B->spptr);
-      jaca    = (Mat_SeqAIJ *)aij->A->data;
-      PetscCheck(!aij->B->cmap->n || aij->garray, comm, PETSC_ERR_PLIB, "MPIAIJ Matrix was assembled but is missing garray");
-      PetscCheck(aij->B->rmap->n == aij->A->rmap->n, comm, PETSC_ERR_SUP, "Only support aij->B->rmap->n == aij->A->rmap->n");
-      aij->donotstash          = PETSC_TRUE;
-      aij->A->nooffprocentries = aij->B->nooffprocentries = A->nooffprocentries = PETSC_TRUE;
-      jaca->nonew = jacb->nonew = PETSC_TRUE; // no more disassembly
-      PetscCall(PetscCalloc1(A->cmap->N, &colmap));
-      for (ii = 0; ii < aij->B->cmap->n; ii++) colmap[aij->garray[ii]] = ii + 1;
-      // allocate B copy data
-      h_mat.rstart = A->rmap->rstart;
-      h_mat.rend   = A->rmap->rend;
-      h_mat.cstart = A->cmap->rstart;
-      h_mat.cend   = A->cmap->rend;
-      nnz          = jacb->i[n];
-      if (jacb->compressedrow.use) {
-        const Kokkos::View<PetscInt *, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_i_k(jacb->i, n + 1);
-        aijkokB->i_uncompressed_d = Kokkos::View<PetscInt *>(Kokkos::create_mirror(DefaultMemorySpace(), h_i_k));
-        Kokkos::deep_copy(aijkokB->i_uncompressed_d, h_i_k);
-        h_mat.offdiag.i = aijkokB->i_uncompressed_d.data();
-      } else {
-        h_mat.offdiag.i = aijkokB->i_device_data();
-      }
-      h_mat.offdiag.j = aijkokB->j_device_data();
-      h_mat.offdiag.a = aijkokB->a_device_data();
-      {
-        Kokkos::View<PetscInt *, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_colmap_k(colmap, A->cmap->N);
-        aijkokB->colmap_d = Kokkos::View<PetscInt *>(Kokkos::create_mirror(DefaultMemorySpace(), h_colmap_k));
-        Kokkos::deep_copy(aijkokB->colmap_d, h_colmap_k);
-        h_mat.colmap = aijkokB->colmap_d.data();
-        PetscCall(PetscFree(colmap));
-      }
-      h_mat.offdiag.ignorezeroentries = jacb->ignorezeroentries;
-      h_mat.offdiag.n                 = n;
-    }
-    // allocate A copy data
-    nnz                          = jaca->i[n];
-    h_mat.diag.n                 = n;
-    h_mat.diag.ignorezeroentries = jaca->ignorezeroentries;
-    PetscCallMPI(MPI_Comm_rank(comm, &h_mat.rank));
-    PetscCheck(!jaca->compressedrow.use, PETSC_COMM_SELF, PETSC_ERR_PLIB, "A does not support compressed row (todo)");
-    h_mat.diag.i = aijkokA->i_device_data();
-    h_mat.diag.j = aijkokA->j_device_data();
-    h_mat.diag.a = aijkokA->a_device_data();
-    // copy pointers and metadata to device
-    PetscCall(MatSeqAIJKokkosSetDeviceMat(Amat, &h_mat));
-    PetscCall(MatSeqAIJKokkosGetDeviceMat(Amat, &d_mat));
-    PetscCall(PetscInfo(A, "Create device Mat n=%" PetscInt_FMT " nnz=%" PetscInt_FMT "\n", h_mat.diag.n, nnz));
-  }
-  *B           = d_mat;       // return it, set it in Mat, and set it up
-  A->assembled = PETSC_FALSE; // ready to write with matsetvalues - this done (lazy) in normal MatSetValues
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetOffloadMask(Mat A, const char **mask)
-{
-  Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-
-  PetscFunctionBegin;
-  if (!aijkok) *mask = "AIJKOK_UNALLOCATED";
-  else if (aijkok->a_dual.need_sync_host()) *mask = "PETSC_OFFLOAD_GPU";
-  else if (aijkok->a_dual.need_sync_device()) *mask = "PETSC_OFFLOAD_CPU";
-  else *mask = "PETSC_OFFLOAD_BOTH";
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_INTERN PetscErrorCode MatAIJKokkosPrintOffloadMask(Mat A)
-{
-  PetscMPIInt size;
-  Mat         Ad, Ao;
-  const char *amask, *bmask;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
-
-  if (size == 1) {
-    PetscCall(MatSeqAIJKokkosGetOffloadMask(A, &amask));
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "%s\n", amask));
-  } else {
-    Ad = ((Mat_MPIAIJ *)A->data)->A;
-    Ao = ((Mat_MPIAIJ *)A->data)->B;
-    PetscCall(MatSeqAIJKokkosGetOffloadMask(Ad, &amask));
-    PetscCall(MatSeqAIJKokkosGetOffloadMask(Ao, &bmask));
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Diag : Off-diag = %s : %s\n", amask, bmask));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

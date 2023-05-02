@@ -202,13 +202,10 @@
 #define MATSOLVERPETSC           'petsc'
 #define MATSOLVERBAS             'bas'
 #define MATSOLVERCUSPARSE        'cusparse'
-#define MATSOLVERCUSPARSEBAND    'cusparseband'
 #define MATSOLVERCUDA            'cuda'
 #define MATSOLVERHIPSPARSE       'hipsparse'
-#define MATSOLVERHIPSPARSEBAND   'hipsparseband'
 #define MATSOLVERHIP             'hip'
 #define MATSOLVERKOKKOS          'kokkos'
-#define MATSOLVERKOKKOSDEVICE    'kokkosdevice'
 #define MATSOLVERSPQR            'spqr'
 
 !

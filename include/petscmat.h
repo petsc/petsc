@@ -147,32 +147,29 @@ typedef const char *MatType;
 .seealso: [](sec_matfactor), [](chapter_matrices), `MatGetFactor()`, `PCFactorSetMatSolverType()`, `PCFactorGetMatSolverType()`
 J*/
 typedef const char *MatSolverType;
-#define MATSOLVERSUPERLU       "superlu"
-#define MATSOLVERSUPERLU_DIST  "superlu_dist"
-#define MATSOLVERSTRUMPACK     "strumpack"
-#define MATSOLVERUMFPACK       "umfpack"
-#define MATSOLVERCHOLMOD       "cholmod"
-#define MATSOLVERKLU           "klu"
-#define MATSOLVERELEMENTAL     "elemental"
-#define MATSOLVERSCALAPACK     "scalapack"
-#define MATSOLVERESSL          "essl"
-#define MATSOLVERLUSOL         "lusol"
-#define MATSOLVERMUMPS         "mumps"
-#define MATSOLVERMKL_PARDISO   "mkl_pardiso"
-#define MATSOLVERMKL_CPARDISO  "mkl_cpardiso"
-#define MATSOLVERPASTIX        "pastix"
-#define MATSOLVERMATLAB        "matlab"
-#define MATSOLVERPETSC         "petsc"
-#define MATSOLVERBAS           "bas"
-#define MATSOLVERCUSPARSE      "cusparse"
-#define MATSOLVERCUSPARSEBAND  "cusparseband"
-#define MATSOLVERCUDA          "cuda"
-#define MATSOLVERHIPSPARSE     "hipsparse"
-#define MATSOLVERHIPSPARSEBAND "hipsparseband"
-#define MATSOLVERHIP           "hip"
-#define MATSOLVERKOKKOS        "kokkos"
-#define MATSOLVERKOKKOSDEVICE  "kokkosdevice"
-#define MATSOLVERSPQR          "spqr"
+#define MATSOLVERSUPERLU      "superlu"
+#define MATSOLVERSUPERLU_DIST "superlu_dist"
+#define MATSOLVERSTRUMPACK    "strumpack"
+#define MATSOLVERUMFPACK      "umfpack"
+#define MATSOLVERCHOLMOD      "cholmod"
+#define MATSOLVERKLU          "klu"
+#define MATSOLVERELEMENTAL    "elemental"
+#define MATSOLVERSCALAPACK    "scalapack"
+#define MATSOLVERESSL         "essl"
+#define MATSOLVERLUSOL        "lusol"
+#define MATSOLVERMUMPS        "mumps"
+#define MATSOLVERMKL_PARDISO  "mkl_pardiso"
+#define MATSOLVERMKL_CPARDISO "mkl_cpardiso"
+#define MATSOLVERPASTIX       "pastix"
+#define MATSOLVERMATLAB       "matlab"
+#define MATSOLVERPETSC        "petsc"
+#define MATSOLVERBAS          "bas"
+#define MATSOLVERCUSPARSE     "cusparse"
+#define MATSOLVERCUDA         "cuda"
+#define MATSOLVERHIPSPARSE    "hipsparse"
+#define MATSOLVERHIP          "hip"
+#define MATSOLVERKOKKOS       "kokkos"
+#define MATSOLVERSPQR         "spqr"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -2291,15 +2288,6 @@ PETSC_DEPRECATED_FUNCTION("Use MatBindToCPU (since v3.13)") static inline PetscE
 }
 PETSC_EXTERN PetscErrorCode MatSetBindingPropagates(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatGetBindingPropagates(Mat, PetscBool *);
-
-typedef struct _n_SplitCSRMat *PetscSplitCSRDataStructure;
-PETSC_EXTERN PetscErrorCode    MatCUSPARSEGetDeviceMatWrite(Mat, PetscSplitCSRDataStructure *);
-
-#ifdef PETSC_HAVE_KOKKOS_KERNELS
-PETSC_EXTERN PetscErrorCode MatKokkosGetDeviceMatWrite(Mat, PetscSplitCSRDataStructure *);
-PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat, PetscSplitCSRDataStructure);
-PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat, PetscSplitCSRDataStructure *);
-#endif
 
 #ifdef PETSC_HAVE_CUDA
 /*E
