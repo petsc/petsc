@@ -519,12 +519,12 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
 static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nmerged_ptr)
 {
   MPI_Comm    comm;
-  PetscMPIInt size, rank, *recvcounts = NULL, *displs = NULL;
+  PetscMPIInt size, rank;
   DM_Network *network = (DM_Network *)dm->data;
   PetscInt    i, j, ctr, np;
   PetscInt   *vidxlTog, Nsv, Nsubnet = network->cloneshared->Nsubnet;
-  PetscInt   *sedgelist = network->cloneshared->sedgelist;
-  PetscInt    net, idx, gidx, nmerged, *vrange, gidx_from, net_from, sv_idx;
+  PetscInt   *sedgelist = network->cloneshared->sedgelist, vrange;
+  PetscInt    net, idx, gidx, nmerged, gidx_from, net_from, sv_idx;
   SVtxType    svtype = SVNONE;
   SVtx       *svtx;
 
@@ -542,15 +542,10 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
   /* (2) Merge shared vto vertices to their vfrom vertex with same global vertex index (gidx) */
   /* --------------------------------------------------------------------------------------- */
   /* (2.1) compute vrage[rank]: global index of 1st local vertex in proc[rank] */
-  PetscCall(PetscMalloc4(size + 1, &vrange, size, &displs, size, &recvcounts, network->cloneshared->nVertices, &vidxlTog));
-  for (i = 0; i < size; i++) {
-    displs[i]     = i;
-    recvcounts[i] = 1;
-  }
+  PetscCall(PetscMalloc1(network->cloneshared->nVertices, &vidxlTog));
 
-  vrange[0] = 0;
-  PetscCallMPI(MPI_Allgatherv(&network->cloneshared->nVertices, 1, MPIU_INT, vrange + 1, recvcounts, displs, MPIU_INT, comm));
-  for (i = 2; i < size + 1; i++) vrange[i] += vrange[i - 1];
+  PetscCallMPI(MPI_Scan(&network->cloneshared->nVertices, &vrange, 1, MPIU_INT, MPI_SUM, comm));
+  vrange -= network->cloneshared->nVertices;
 
   /* (2.2) Create vidxlTog: maps UN-MERGED local vertex index i to global index gidx (plex, excluding ghost vertices) */
   i                           = 0;
@@ -592,16 +587,16 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
   for (net = 0; net < Nsubnet; net++) {
     for (j = 0; j < network->cloneshared->subnet[net].nedge; j++) {
       /* vfrom: */
-      i              = network->cloneshared->subnet[net].edgelist[2 * j] + (network->cloneshared->subnet[net].vStart - vrange[rank]);
+      i              = network->cloneshared->subnet[net].edgelist[2 * j] + (network->cloneshared->subnet[net].vStart - vrange);
       edges[2 * ctr] = vidxlTog[i];
 
       /* vto */
-      i                  = network->cloneshared->subnet[net].edgelist[2 * j + 1] + (network->cloneshared->subnet[net].vStart - vrange[rank]);
+      i                  = network->cloneshared->subnet[net].edgelist[2 * j + 1] + (network->cloneshared->subnet[net].vStart - vrange);
       edges[2 * ctr + 1] = vidxlTog[i];
       ctr++;
     }
   }
-  PetscCall(PetscFree4(vrange, displs, recvcounts, vidxlTog));
+  PetscCall(PetscFree(vidxlTog));
   PetscCall(PetscFree(sedgelist)); /* created in DMNetworkAddSharedVertices() */
 
   *nmerged_ptr = nmerged;
