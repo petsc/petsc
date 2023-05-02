@@ -574,7 +574,7 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
     VecAYPX(y,beta,x)                    y =       x           + beta y
     VecAXPBY(y,alpha,beta,x)             y = alpha x           + beta y
     VecWAXPY(w,alpha,x,y)                w = alpha x           +      y
-    VecAXPBYPCZ(w,alpha,beta,gamma,x,y)  z = alpha x           + beta y + gamma z
+    VecAXPBYPCZ(z,alpha,beta,gamma,x,y)  z = alpha x           + beta y + gamma z
     VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
 .ve
 
