@@ -15,10 +15,10 @@
    Level: intermediate
 
    Notes:
-   This is basically an alternative for PETSC_HAVE_XXX whenever a preprocessor macro is not available/desirable, e.g. in Python.
+   This is basically an alternative for `PETSC_HAVE_XXX` whenever a preprocessor macro is not available/desirable, e.g. in Python.
 
    The external package name pkg is e.g. "hdf5", "yaml", "parmetis".
-   It should correspond to the name listed in  ./configure --help  or e.g. in PetscViewerType, MatPartitioningType, MatSolverType.
+   It should correspond to the name listed in  `./configure --help`  or e.g. in `PetscViewerType`, `MatPartitioningType`, `MatSolverType`.
 
    The lookup is case insensitive, i.e. looking for "HDF5" or "hdf5" is the same.
 

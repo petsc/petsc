@@ -66,7 +66,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 
   Input Parameters:
 +   psubcomm - `PetscSubcomm` context
--   prefix - the prefix to prepend all PetscSubcomm item names with.
+-   prefix - the prefix to prepend all `PetscSubcomm` item names with.
 
 .seealso: `PetscSubcomm`, `PetscSubcommCreate()`
 @*/

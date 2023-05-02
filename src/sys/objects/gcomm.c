@@ -15,9 +15,13 @@
          `PetscObjectComm`((`PetscObject`)mat,...);
 
    Output Parameter:
-.  comm - the MPI communicator or `MPI_COMM_NULL` if object is not valid
+.  comm - the MPI communicator or `MPI_COMM_NULL` if `obj` is not valid
 
    Level: advanced
+
+   Note:
+   This is one of the rare PETSc routines that does not return an error code. Use `PetscObjectGetComm()`
+   when appropriate for error handling.
 
 .seealso: `PetscObject`, `PetscObjectGetComm()`
 @*/
@@ -42,7 +46,7 @@ MPI_Comm PetscObjectComm(PetscObject obj)
 
    Level: advanced
 
-.seealso: `PetscObjectComm()`
+.seealso: `PetscObject`, `PetscObjectComm()`
 @*/
 PetscErrorCode PetscObjectGetComm(PetscObject obj, MPI_Comm *comm)
 {
@@ -73,7 +77,7 @@ PetscErrorCode PetscObjectGetComm(PetscObject obj, MPI_Comm *comm)
       the `KSP` object inside a `SNES` object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
-.seealso: `PetscObjectIncrementTabLevel()`, `PETSCVIEWERASCII`
+.seealso: `PetscObjectIncrementTabLevel()`, `PetscObjectSetTabLevel()`, `PETSCVIEWERASCII`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectGetTabLevel(PetscObject obj, PetscInt *tab)
 {
@@ -104,7 +108,7 @@ PetscErrorCode PetscObjectGetTabLevel(PetscObject obj, PetscInt *tab)
 
     `PetscObjectIncrementTabLevel()` is the preferred API
 
-.seealso: `PetscObjectIncrementTabLevel()`
+.seealso: `PetscObjectIncrementTabLevel()`, `PetscObjectGetTabLevel()`
 @*/
 PetscErrorCode PetscObjectSetTabLevel(PetscObject obj, PetscInt tab)
 {

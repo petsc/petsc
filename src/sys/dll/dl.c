@@ -5,7 +5,6 @@
 
 #include <petsc/private/petscimpl.h>
 
-/* ------------------------------------------------------------------------------*/
 /*
       Code to maintain a list of opened dynamic libraries and load symbols
 */
@@ -27,17 +26,17 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 
 /*@C
    PetscDLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
-     (if it is remote), indicates if it exits and its local name.
+     (if it is remote), then indicates if it exits and its local name.
 
      Collective
 
    Input Parameters:
-+   comm - processors that are opening the library
--   libname - name of the library, can be relative or absolute
++   comm - MPI processes that will be opening the library
+.   libname - name of the library, can be a relative or absolute path and be a URL
+-   llen - length of the `name` buffer
 
    Output Parameters:
-+   name - actual name of file on local filesystem if found
-.   llen - length of the name buffer
++   name - actual name of the file on local filesystem if `found`
 -   found - true if the file exists
 
    Level: developer
@@ -47,6 +46,8 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
    occurring in directoryname and filename will be replaced with appropriate values.
+
+.seealso: `PetscFileRetrieve()`
 @*/
 PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char *lname, size_t llen, PetscBool *found)
 {
@@ -101,8 +102,8 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char 
      Collective
 
    Input Parameters:
-+   comm - processors that are opening the library
--   path - name of the library, can be relative or absolute
++   comm - MPI processes that are opening the library
+-   path - name of the library, can be a relative or absolute path
 
    Output Parameter:
 .   entry - a PETSc dynamic link library entry
@@ -112,13 +113,13 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char 
    Notes:
    [[<http,ftp>://hostname]/directoryname/]libbasename[.so.1.0]
 
-   If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
+   If the library has the symbol `PetscDLLibraryRegister_basename()` in it then that function is automatically run
    when the library is opened.
 
    ${PETSC_ARCH} occurring in directoryname and filename
    will be replaced with the appropriate value.
 
-.seealso: `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`
+.seealso: `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`, `PetscDLLibraryRetrieve()`, `PetscDLLibrarySym()`, `PetscDLLibraryClose()`
 @*/
 PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibrary *entry)
 {
@@ -187,27 +188,28 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
 }
 
 /*@C
-   PetscDLLibrarySym - Load a symbol from the dynamic link libraries.
+   PetscDLLibrarySym - Load a symbol from a list of dynamic link libraries.
 
    Collective
 
    Input Parameters:
-+  comm - communicator that will open the library
-.  outlist - list of already open libraries that may contain symbol (can be NULL and only the executable is searched for the function)
-.  path     - optional complete library name (if provided checks here before checking outlist)
++  comm - the MPI communicator that will load the symbol
+.  outlist - list of already open libraries that may contain symbol (can be `NULL` and only the executable is searched for the function)
+.  path     - optional complete library name (if provided it checks here before checking `outlist`)
 -  insymbol - name of symbol
 
    Output Parameter:
-.  value - if symbol not found then this value is set to NULL
+.  value - if symbol not found then this value is set to `NULL`
 
    Level: developer
 
    Notes:
-    Symbol can be of the form
+   Symbol can be of the form
         [/path/libname[.so.1.0]:]functionname[()] where items in [] denote optional
 
-        Will attempt to (retrieve and) open the library if it is not yet been opened.
+   It will attempt to (retrieve and) open the library if it is not yet been opened.
 
+.seealso: `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`, `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`
 @*/
 PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[], const char insymbol[], void **value)
 {
@@ -235,7 +237,6 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 
   /*
        Function name does include library
-       -------------------------------------
   */
   if (path && path[0] != '\0') {
     /* copy path and remove suffix from libname */
@@ -268,7 +269,6 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 
     /*
          Function name does not include library so search path
-         -----------------------------------------------------
     */
   } else {
     while (list) {
@@ -290,8 +290,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 }
 
 /*@C
-     PetscDLLibraryAppend - Appends another dynamic link library to the search list, to the end
-                of the search path.
+     PetscDLLibraryAppend - Appends another dynamic link library to the end  of the search list
 
      Collective
 
@@ -310,7 +309,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
   If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
       when the library is opened.
 
-.seealso: `PetscDLLibraryOpen()`
+.seealso: `PetscDLLibrary`, `PetscDLLibraryOpen()`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryPrepend()`
 @*/
 PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, const char path[])
 {
@@ -376,8 +375,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
 }
 
 /*@C
-     PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
-                 the search path.
+     PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of the search list
 
      Collective
 
@@ -391,8 +389,9 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
      Level: developer
 
      Note:
-    If library is already in path will remove old reference.
+    If library is already in the list it will remove the old reference.
 
+.seealso: `PetscDLLibrary`, `PetscDLLibraryOpen()`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryAppend()`
 @*/
 PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, const char path[])
 {
@@ -475,6 +474,8 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
 
      Level: developer
 
+.seealso: `PetscDLLibrary`, `PetscDLLibraryOpen()`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryAppend()`,
+          `PetscDLLibraryPrepend()`
 @*/
 PetscErrorCode PetscDLLibraryClose(PetscDLLibrary list)
 {

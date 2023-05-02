@@ -16,7 +16,7 @@
 #endif
 
 /*@C
-   PetscGetRealPath - Get the path without symbolic links etc. and in absolute form.
+   PetscGetRealPath - Get the path without symbolic links etc. in absolute form.
 
    Not Collective
 

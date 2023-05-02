@@ -1,7 +1,7 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 #include <petsc/private/hashmapobj.h>
 #include <petsc/private/garbagecollector.h>
-/* ---------------------------------------------------------------- */
+
 /*
    A simple way to manage tags inside a communicator.
 
@@ -97,14 +97,14 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag)
   Output Parameter:
 . comm_out - Output communicator
 
+  Level: developer
+
   Notes:
     Use `PetscCommRestoreComm()` to return the communicator when the external package no longer needs it
 
     Certain MPI implementations have `MPI_Comm_free()` that do not work, thus one can run out of available MPI communicators causing
     mysterious crashes in the code after running a long time. This routine allows reusing previously obtained MPI communicators that
     are no longer needed.
-
-Level: developer
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`, `PetscCommRestoreComm()`
 @*/
@@ -141,7 +141,7 @@ PetscErrorCode PetscCommGetComm(MPI_Comm comm_in, MPI_Comm *comm_out)
 +  comm_in - Input communicator
 -  comm_out - returned communicator
 
-Level: developer
+   Level: developer
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`, `PetscCommRestoreComm()`
 @*/
@@ -180,8 +180,8 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out)
 .  comm_in - Input communicator
 
    Output Parameters:
-+  comm_out - Output communicator.  May be comm_in.
--  first_tag - Tag available that has not already been used with this communicator (you may pass in NULL if you do not need a tag)
++  comm_out - Output communicator.  May be `comm_in`.
+-  first_tag - Tag available that has not already been used with this communicator (you may pass in `NULL` if you do not need a tag)
 
    Level: developer
 
@@ -340,7 +340,7 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
 
     Input Parameters:
 +   comm    - the `MPI_Comm`
-.   len     - local length of objlist
+.   len     - local length of `objlist`
 -   objlist - a list of PETSc objects living on subcomms of comm and containing this comm rank
               (subcomm ordering is assumed to be deadlock-free)
 

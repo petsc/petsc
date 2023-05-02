@@ -609,10 +609,10 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
   Notes:
    Use  # for lines that are comments and which should be ignored.
    Usually, instead of using this command, one should list the file name in the call to `PetscInitialize()`, this insures that certain options
-   such as -log_view or -malloc_debug are processed properly. This routine only sets options into the options database that will be processed by later
-   calls to XXXSetFromOptions() it should not be used for options listed under PetscInitialize().
-   The collectivity of this routine is complex; only the MPI ranks in comm will
-   have the affect of these options. If some processes that create objects call this routine and others do
+   such as `-log_view` or `-malloc_debug` are processed properly. This routine only sets options into the options database that will be processed by later
+   calls to `XXXSetFromOptions()`, it should not be used for options listed under PetscInitialize().
+   The collectivity of this routine is complex; only the MPI processes in comm will
+   have the effect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
 
@@ -953,7 +953,7 @@ static PetscBool PetscCIOption(const char *name)
    Level: advanced
 
    Note:
-   Only the rank zero process of the `MPI_Comm` used to create view prints the option values. Other processes
+   Only the MPI rank 0 of the `MPI_Comm` used to create view prints the option values. Other processes
    may have different values but they are not printed.
 
 .seealso: `PetscOptionsAllUsed()`
@@ -1062,13 +1062,13 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
    Level: advanced
 
    Notes:
-   It is common to use this in conjunction with -options_file as in
+   It is common to use this in conjunction with `-options_file` as in
 
 $ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2_ -options_file system2rc -prefix_pop
 
-   where the files no longer require all options to be prefixed with -system2_.
+   where the files no longer require all options to be prefixed with `-system2_`.
 
-   The collectivity of this routine is complex; only the MPI ranks that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -1135,7 +1135,7 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
    Level: developer
 
    Note:
-   The collectivity of this routine is complex; only the MPI ranks that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -1199,7 +1199,7 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
    Level: advanced
 
    Note:
-   The collectivity of this routine is complex; only the MPI ranks that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -1268,7 +1268,7 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options, const char newname[], 
    Note:
    This function can be called BEFORE `PetscInitialize()`
 
-   The collectivity of this routine is complex; only the MPI ranks that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
@@ -1422,7 +1422,7 @@ setvalue:
    Level: intermediate
 
    Note:
-   The collectivity of this routine is complex; only the MPI ranks that call this routine will
+   The collectivity of this routine is complex; only the MPI processes that call this routine will
    have the affect of these options. If some processes that create objects call this routine and others do
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.

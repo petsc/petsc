@@ -45,7 +45,7 @@ PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid)
 
    Level: developer
 
-.seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetType()`
+.seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetType()`, `PetscObjectGetClassId()`
 @*/
 PetscErrorCode PetscObjectGetClassName(PetscObject obj, const char *classname[])
 {

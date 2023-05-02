@@ -29,7 +29,8 @@ struct _n_PetscObjectList {
     Developer Note:
     This is to handle some cases that otherwise would result in having circular references so reference counts never got to zero
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`, `PetscObjectListAdd()`
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`,
+          `PetscObject`, `PetscObjectListAdd()`
 @*/
 PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char name[])
 {
@@ -63,11 +64,12 @@ PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char na
     Level: developer
 
     Notes:
-    Replaces item if it is already in list. Removes item if you pass in a NULL object.
+    Replaces item if it is already in list. Removes item if you pass in a `NULL` object.
 
     Use `PetscObjectListFind()` or `PetscObjectListReverseFind()` to get the object back
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`,
+          `PetscObject`, `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscObject obj)
 {
@@ -133,7 +135,8 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
 
     Level: developer
 
-.seealso: `PetscObjectListAdd()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
+.seealso: `PetscObjectList`, `PetscObject`, `PetscObjectListAdd()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`,
+          `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`, `PetscObject`
 @*/
 PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 {
@@ -153,7 +156,7 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 }
 
 /*@C
-    PetscObjectListFind - givn a name, find the matching object
+    PetscObjectListFind - givn a name, find the matching object in a list
 
     Input Parameters:
 +   fl   - pointer to list
@@ -169,7 +172,8 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
 
     The reference count of the object is not increased
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`,
+          `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscObject *obj)
 {
@@ -206,7 +210,8 @@ PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscO
 
     The reference count of the object is not increased
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`,
+          `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, char **name, PetscBool *skipdereference)
 {
@@ -232,11 +237,12 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
 .   fl   - pointer to list
 
     Output Parameter:
-.   nl - the new list (should point to 0 to start, otherwise appends)
+.   nl - the new list (should point to `NULL` to start, otherwise appends)
 
     Level: developer
 
-.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListReverseFind()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListReverseFind()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`,
+          `PetscObjectList`
 @*/
 PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl)
 {

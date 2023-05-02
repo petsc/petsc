@@ -19,7 +19,6 @@
 
 const char *const PetscFileModes[] = {"READ", "WRITE", "APPEND", "UPDATE", "APPEND_UPDATE", "PetscFileMode", "PETSC_FILE_", NULL};
 
-/* --------------------------------------------------------- */
 /*
   PetscByteSwapEnum - Swap bytes in a  PETSc Enum
 
@@ -95,7 +94,6 @@ PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------- */
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
@@ -130,7 +128,7 @@ PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* --------------------------------------------------------- */
+
 /*
   PetscByteSwapReal - Swap bytes in a PetscReal
 */
@@ -148,7 +146,7 @@ PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* --------------------------------------------------------- */
+
 /*
   PetscByteSwapScalar - Swap bytes in a PetscScalar
   The complex case is dealt with with an array of PetscReal, twice as long.
@@ -170,7 +168,7 @@ PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* --------------------------------------------------------- */
+
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
@@ -235,19 +233,19 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
 -  type - the type of items to read (`PETSC_INT`, `PETSC_REAL`, `PETSC_SCALAR`, etc.)
 
    Output Parameters:
-+  data - the buffer
++  data - the buffer, this is an array of the type that matches the value in `type`
 -  count - the number of items read, optional
 
    Level: developer
 
    Notes:
-   If count is not provided and the number of items read is less than
+   If `count` is not provided and the number of items read is less than
    the maximum number of items to read, then this routine errors.
 
    `PetscBinaryRead()` uses byte swapping to work on all machines; the files
-   are written to file ALWAYS using big-endian ordering. On little-endian machines the numbers
+   are written ALWAYS using big-endian ordering. On little-endian machines the numbers
    are converted to the little-endian format when they are read in from the file.
-   When PETSc is ./configure with --with-64-bit-indices the integers are written to the
+   When PETSc is ./configure with `--with-64-bit-indices` the integers are written to the
    file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
    is used.
 
@@ -341,7 +339,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
 
    Input Parameters:
 +  fd     - the file
-.  p      - the buffer
+.  p      - the buffer, an array of the type that matches the value in `type`
 .  n      - the number of items to write
 -  type   - the type of items to read (`PETSC_INT`, `PETSC_REAL` or `PETSC_SCALAR`)
 
@@ -351,11 +349,11 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
    `PetscBinaryWrite()` uses byte swapping to work on all machines; the files
    are written using big-endian ordering to the file. On little-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
-   When PETSc is ./configure with --with-64-bit-indices the integers are written to the
+   When PETSc is configured using `./configure with --with-64-bit-indices` the integers are written to the
    file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
    is used.
 
-   If running with `__float128` precision the output is in `__float128` unless one uses the `-binary_write_double` option
+   If running with `__float128` precision the output of `PETSC_REAL` is in `__float128` unless one uses the `-binary_write_double` option
 
    The buffer `p` should be read-write buffer, and not static data.
    This way, byte-swapping is done in-place, and then the buffer is
@@ -472,11 +470,6 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
 
    Level: advanced
 
-   Note:
-    Files access with PetscBinaryRead()` and `PetscBinaryWrite()` are ALWAYS written in
-   big-endian format. This means the file can be accessed using `PetscBinaryOpen()` and
-   `PetscBinaryRead()` and `PetscBinaryWrite()` on any machine.
-
 .seealso: `PetscBinaryRead()`, `PetscBinaryWrite()`, `PetscFileMode`, `PetscViewerFileSetMode()`, `PetscViewerBinaryGetDescriptor()`,
           `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
@@ -528,19 +521,13 @@ PetscErrorCode PetscBinaryClose(int fd)
    Input Parameters:
 +  fd - the file
 .  off - number of bytes to move. Use `PETSC_BINARY_INT_SIZE`, `PETSC_BINARY_SCALAR_SIZE`,
-            etc. in your calculation rather than sizeof() to compute byte lengths.
+            etc. in your calculation rather than `sizeof()` to compute byte lengths.
 -  whence - see `PetscBinarySeekType` for possible values
 
    Output Parameter:
 .   offset - new offset in file
 
    Level: developer
-
-   Note:
-   Integers are stored on the file as 32 long, regardless of whether
-   they are stored in the machine as 32 or 64, this means the same
-   binary file may be read on any machine. Hence you CANNOT use `sizeof()`
-   to determine the offset or location.
 
 .seealso: `PetscBinaryRead()`, `PetscBinarySeekType`, `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`,
           `PetscBinarySynchronizedSeek()`
@@ -565,7 +552,7 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
 }
 
 /*@C
-   PetscBinarySynchronizedRead - Reads from a binary file.
+   PetscBinarySynchronizedRead - Reads from a binary file, all MPI processes get the same values
 
    Collective
 
@@ -576,7 +563,7 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
 -  type - the type of items to read (`PETSC_INT`, `PETSC_REAL`, `PETSC_SCALAR`, etc.)
 
    Output Parameters:
-+  data - the buffer
++  data - the buffer, an array of the type that matches the value in `type`
 -  count - the number of items read, optional
 
    Level: developer
@@ -584,13 +571,15 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
    Notes:
    Does a `PetscBinaryRead()` followed by an `MPI_Bcast()`
 
-   If count is not provided and the number of items read is less than
+   If `count` is not provided and the number of items read is less than
    the maximum number of items to read, then this routine errors.
 
    `PetscBinarySynchronizedRead()` uses byte swapping to work on all machines.
-   Integers are stored on the file as 32 long, regardless of whether
-   they are stored in the machine as 32 or 64, this means the same
-   binary file may be read on any machine.
+   The files  are written using big-endian ordering to the file. On little-endian machines the numbers
+   are converted to the big-endian format when they are written to disk.
+   When PETSc is configured using `./configure with --with-64-bit-indices` the integers are written to the
+   file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
+   is used.
 
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscBinaryRead()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedSeek()`
@@ -646,24 +635,25 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 +  comm - the MPI communicator
 .  fd - the file
 .  n  - the number of items to write
-.  p - the buffer
+.  p - the buffer, an array of the type that matches the value in `type`
 -  type - the type of items to write (`PETSC_INT`, `PETSC_REAL` or `PETSC_SCALAR`)
 
    Level: developer
 
    Notes:
-   MPI rank 0 does a `PetscBinaryWrite()`
+   MPI rank 0 does a `PetscBinaryWrite()` the values on other MPI processes are not used
 
-   `PetscBinarySynchronizedWrite()` uses byte swapping to work on all machines.
-   Integers are stored on the file as 32 long, regardless of whether
-   they are stored in the machine as 32 or 64, this means the same
-   binary file may be read on any machine.
+   The files  are written using big-endian ordering to the file. On little-endian machines the numbers
+   are converted to the big-endian format when they are written to disk.
+   When PETSc is configured using `./configure with --with-64-bit-indices` the integers are written to the
+   file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
+   is used.
 
    Because byte-swapping may be done on the values in data it cannot be declared const
 
    WARNING:
    This is NOT like `PetscSynchronizedFPrintf()`! This routine ignores calls on all but MPI rank 0,
-   while `PetscSynchronizedFPrintf()` has all processes print their strings in order.
+   while `PetscSynchronizedFPrintf()` has all MPI processes print their strings in order.
 
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscBinaryRead()`, `PetscBinarySynchronizedRead()`,
           `PetscBinarySynchronizedSeek()`
@@ -691,12 +681,6 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
 .   offset - new offset in file
 
    Level: developer
-
-   Note:
-   Integers are stored on the file as 32 long, regardless of whether
-   they are stored in the machine as 32 or 64, this means the same
-   binary file may be read on any machine. Hence you CANNOT use `sizeof()`
-   to determine the offset or location.
 
 .seealso: `PetscBinaryRead()`, `PetscBinarySeekType`, `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`,
           `PetscBinarySynchronizedSeek()`

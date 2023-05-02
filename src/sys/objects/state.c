@@ -18,13 +18,13 @@
    Output Parameter:
 .  state - the object state
 
+   Level: advanced
+
    Note:
    Object state is an integer which gets increased every time
    the object is changed. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for `Vec` and `Mat` objects.
-
-   Level: advanced
 
 .seealso: `PetscObjectStateIncrease()`, `PetscObjectStateSet()`
 @*/
@@ -53,7 +53,7 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj, PetscObjectState *state)
 
    Note:
     This function should be used with extreme caution. There is
-   essentially only one use for it: if the user calls Mat(Vec)GetRow(Array),
+   essentially only one use for it: if the user calls `Mat`(`Vec`)GetRow(Array),
    which increases the state, but does not alter the data, then this
    routine can be used to reset the state.  Such a reset must be collective.
 

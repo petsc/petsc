@@ -27,11 +27,10 @@
    Not Collective
 
    Input Parameter:
-.  len  - maximum length of path
+.  len  - maximum length of `path`
 
    Output Parameter:
-.  path - use to hold the result value. The string should be long enough
-          to hold the path.
+.  path - holds the result value. The string should be long enough to hold the path, for example, `PETSC_MAX_PATH_LEN`
 
    Level: developer
 
