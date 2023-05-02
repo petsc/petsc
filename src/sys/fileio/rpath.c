@@ -21,10 +21,12 @@
 
    Not Collective; No Fortran Support
 
-   Input parameters:
+   Input Parameters:
 +  fullpath  - full pathname
-.  path      - pointer to buffer to hold relative pathname
--  flen     - size of path
+-  flen     - size of `path`
+
+  Output Parameter:
+.  path      - buffer that holds relative pathname
 
    Level: developer
 

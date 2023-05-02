@@ -57,7 +57,7 @@ PetscErrorCode PetscMkdir(const char dir[])
 }
 
 /*@C
-  PetscMkdtemp - Create a folder with a unique name given a filename template.
+  PetscMkdtemp - Create a directory with a unique name given a name template.
 
   Input Parameter:
 . dir - file name template, the last six characters must be 'XXXXXX', and they will be modified upon return

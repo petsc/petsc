@@ -7,13 +7,13 @@
 #include <errno.h>
 
 /*@C
-    PetscFOpen - Has the first process in the communicator open a file;
+    PetscFOpen - Has the first process in the MPI communicator open a file;
     all others do nothing.
 
     Logically Collective; No Fortran Support
 
     Input Parameters:
-+   comm - the communicator
++   comm - the MPI communicator
 .   name - the filename
 -   mode - the mode for `fopen()`, usually "w"
 
@@ -58,14 +58,14 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
 }
 
 /*@C
-    PetscFClose - Has the first processor in the communicator close a
-    file; all others do nothing.
+    PetscFClose - Has MPI rank 0 in the communicator close a
+    file (usually obtained with `PetscFOpen()`; all others do nothing.
 
     Logically Collective; No Fortran Support
 
     Input Parameters:
-+   comm - the communicator
--   fd - the file, opened with PetscFOpen()
++   comm - the MPI communicator
+-   fd - the file, opened with `PetscFOpen()`
 
    Level: developer
 
@@ -89,13 +89,13 @@ PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd)
 static char PetscPOpenMachine[128] = "";
 
 /*@C
-      PetscPClose - Closes (ends) a program on processor zero run with `PetscPOpen()`
+      PetscPClose - Closes (ends) a program on MPI rank 0 run with `PetscPOpen()`
 
-     Collective, but only MPI rank 0 runs the command
+     Collective, but only MPI rank 0 does anything
 
    Input Parameters:
-+   comm - MPI communicator, only rank 0 runs the program
--   fp - the file pointer where program input or output may be read or `NULL` if don't care
++   comm - MPI communicator, only rank 0 performs the close
+-   fd - the file pointer where program input or output may be read or `NULL` if don't care
 
    Level: intermediate
 
@@ -120,19 +120,19 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
 }
 
 /*@C
-      PetscPOpen - Runs a program on processor zero and sends either its input or output to
+      PetscPOpen - Runs a program on MPI rank 0 and sends either its input or output to
           a file.
 
      Logically Collective, but only MPI rank 0 runs the command
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
-.   machine - machine to run command on or `NULL`, or string with 0 in first location
+.   machine - machine to run command on or `NULL`, or a string with 0 in first location
 .   program - name of program to run
 -   mode - either "r" or "w"
 
    Output Parameter:
-.   fp - the file pointer where program input or output may be read or `NULL` if don't care
+.   fp - the file pointer where program input or output may be read or `NULL` if results are not needed
 
    Level: intermediate
 
@@ -142,7 +142,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
        Does not work under Microsoft Windows
 
        If machine is not provided will use the value set with `PetsPOpenSetMachine()` if that was provided, otherwise
-       will use the machine running node zero of the communicator
+       will use the machine running MPI rank 0 of the communicator
 
        The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
     will be replaced with relevant values.

@@ -4,7 +4,7 @@
 /*@C
     PetscStartMatlab - starts up MATLAB with a MATLAB script
 
-    Logically Collective, but only processor zero in the communicator does anything
+    Logically Collective, but only MPI rank 0 in the communicator does anything
 
     Input Parameters:
 +     comm - MPI communicator
@@ -17,13 +17,13 @@
     Level: intermediate
 
     Notes:
-     This overwrites your matlab/startup.m file
+    This starts up a "regular" MATLAB interactive session, it does not start the MATLAB Engine, this is controlled with `PetscMatlabEngine`
+
+    Warning, this overwrites your `matlab/startup.m` file
 
      The script must be in your MATLAB path or current directory
 
-     Assumes that all machines share a common file system
-
-.seealso: `PetscPOpen()`, `PetscPClose()`
+.seealso: `PetscPOpen()`, `PetscPClose()`, `PetscMatlabEngine`
 @*/
 PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char script[], FILE **fp)
 {

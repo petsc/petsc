@@ -32,8 +32,6 @@ PetscFPT              PetscFPTData = 0;
   #include <petscviewersaws.h>
 #endif
 
-/* -----------------------------------------------------------------------------------------*/
-
 PETSC_INTERN FILE *petsc_history;
 
 PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
@@ -233,8 +231,6 @@ PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt sizes[], PetscInt *max,
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ----------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_HAVE_REAL___FP16)
   #if defined(PETSC_HAVE_REAL___FLOAT128)
@@ -487,6 +483,7 @@ PetscErrorCode PetscSetProgramName(const char name[])
 
    Level: advanced
 
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArguments()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscGetProgramName(char name[], size_t len)
 {
@@ -513,7 +510,7 @@ PetscErrorCode PetscGetProgramName(char name[], size_t len)
 
       The first argument contains the program name as is normal for C arguments.
 
-.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArguments()`
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArguments()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscGetArgs(int *argc, char ***args)
 {
@@ -535,10 +532,10 @@ PetscErrorCode PetscGetArgs(int *argc, char ***args)
 
    Level: intermediate
 
-   Notes:
-      This does NOT start with the program name and IS null terminated (final arg is void)
+   Note:
+      This does NOT start with the program name and IS `NULL` terminated (final arg is void)
 
-.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscFreeArguments()`
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscFreeArguments()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscGetArguments(char ***args)
 {

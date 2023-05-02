@@ -166,7 +166,6 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------*/
 PETSC_HASH_MAP(HMapFunc, const char *, PetscVoidFunction, kh_str_hash_func, kh_str_hash_equal, NULL)
 
 struct _n_PetscFunctionList {
@@ -277,17 +276,17 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
 .  name - string to identify routine
 -  fptr - function pointer
 
+    Level: developer
+
    Notes:
-   To remove a registered routine, pass in a NULL fptr.
+   To remove a registered routine, pass in a `NULL` `fptr`.
 
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., `SNES`) should generally call the registration routine
    for that particular component (e.g., `SNESRegister()`) instead of
    calling `PetscFunctionListAdd()` directly.
 
-    Level: developer
-
-.seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,
+.seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,`PetscFunctionListDuplicate()`
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
 PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFunction fnc)
@@ -350,10 +349,10 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
   Input Parameter:
 . fl - The `PetscFunctionList` to clear
 
+  Level: developer
+
   Notes:
   This clears the contents of `fl` but does not deallocate the entries themselves.
-
-  Level: developer
 
 .seealso: `PetscFunctionList`, `PetscFunctionListDestroy()`, `PetscFunctionListAdd()`
 @*/
@@ -384,7 +383,7 @@ PetscErrorCode PetscFunctionListPrintAll(void)
 }
 
 /*MC
-    PetscFunctionListNonEmpty - Print composed names for non null function pointers
+    PetscFunctionListNonEmpty - Print composed names for non `NULL` function pointers
 
     Input Parameter:
 .   flist   - pointer to list
@@ -420,11 +419,11 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 -   name - name registered for the function
 
     Output Parameter:
-.   fptr - the function pointer if name was found, else NULL
+.   fptr - the function pointer if name was found, else `NULL`
 
     Level: developer
 
-.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`, `PetscFunctionListDuplicate()`
 M*/
 PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFunction *r)
 {
@@ -491,13 +490,13 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
 
    Output Parameters:
 +  array - array of names
--  n - length of array
+-  n - length of `array`
+
+   Level: developer
 
    Note:
        This allocates the array so that must be freed. BUT the individual entries are
     not copied so should not be freed.
-
-   Level: developer
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
@@ -527,11 +526,11 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
 
    Input Parameters:
 +  comm   - the communicator (usually `MPI_COMM_WORLD`)
-.  fd     - file to print to, usually stdout
+.  fd     - file to print to, usually `stdout`
 .  prefix - prefix to prepend to name (optional)
-.  name   - option string (for example, "-ksp_type")
+.  name   - option string (for example, `-ksp_type`)
 .  text - short description of the object (for example, "Krylov solvers")
-.  man - name of manual page that discusses the object (for example, "KSPCreate")
+.  man - name of manual page that discusses the object (for example, `KSPCreate`)
 .  list   - list of types
 .  def - default (current) value
 -  newv - new value
@@ -556,13 +555,13 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
 }
 
 /*@
-    PetscFunctionListDuplicate - Creates a new list from a given object list.
+    PetscFunctionListDuplicate - Creates a new list from a given function list `PetscFunctionList`.
 
     Input Parameter:
 .   fl   - pointer to list
 
     Output Parameter:
-.   nl - the new list (should point to 0 to start, otherwise appends)
+.   nl - the new list (should point to `NULL` to start, otherwise appends)
 
     Level: developer
 

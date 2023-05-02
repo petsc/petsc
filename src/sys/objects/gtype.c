@@ -19,7 +19,7 @@
 
    Level: advanced
 
-.seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetClassName()`
+.seealso: `PetscObject`, `PetscClassId`, `PetscObjectGetClassName()`, `PetscObjectGetClassId()`
 @*/
 PetscErrorCode PetscObjectGetType(PetscObject obj, const char *type[])
 {

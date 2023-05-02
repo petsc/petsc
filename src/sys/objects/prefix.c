@@ -104,12 +104,12 @@ PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject obj, const char prefix[])
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
 -  prefix - the prefix string to prepend to option requests of the object.
 
+  Level: advanced
+
    Note:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
-
-  Level: advanced
 
 .seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectPrependOptionsPrefix()`,
           `PetscObjectGetOptionsPrefix()`, `TSAppendOptionsPrefix()`, `SNESAppendOptionsPrefix()`, `KSPAppendOptionsPrefix()`
@@ -165,14 +165,14 @@ PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj, const char *prefix[]
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
 -  prefix - the prefix string to prepend to option requests of the object.
 
-   Note:
+  Level: advanced
+
+  Note:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
 
-  Level: advanced
-
-.seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectAppendOptionsPrefix()`,
+ .seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectAppendOptionsPrefix()`,
           `PetscObjectGetOptionsPrefix()`
 @*/
 PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject obj, const char prefix[])

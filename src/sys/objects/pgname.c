@@ -17,7 +17,7 @@
 
    Level: intermediate
 
-.seealso: `PetscObjectSetName()`, `PetscObjectName()`
+.seealso: `PetscObjectSetName()`, `PetscObjectName()`, `PetscObject`, `PetscObjectGetId()`
 @*/
 PetscErrorCode PetscObjectGetName(PetscObject obj, const char *name[])
 {
