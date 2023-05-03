@@ -629,8 +629,7 @@ static PetscErrorCode DMPlexCreateGridHash(DM dm, PetscGridHash *box)
   PetscCall(VecGetBlockSize(coordinates, &bs));
   PetscCheck(bs == cdim, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Coordinate block size %" PetscInt_FMT " != %" PetscInt_FMT " coordinate dimension", bs, cdim);
 
-  PetscCall(PetscMalloc1(1, box));
-  PetscCall(PetscGridHashInitialize_Internal(*box, cdim, coords));
+  PetscCall(PetscGridHashCreate(PetscObjectComm((PetscObject)dm), cdim, coords, box));
   for (PetscInt i = 0; i < N; i += cdim) PetscCall(PetscGridHashEnlarge(*box, &coords[i]));
 
   PetscCall(VecRestoreArrayRead(coordinates, &coords));
@@ -656,9 +655,12 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
   PetscInt d;
 
   PetscFunctionBegin;
+  PetscValidIntPointer(n, 2);
+  if (h) PetscValidRealPointer(h, 3);
   for (d = 0; d < box->dim; ++d) {
     box->extent[d] = box->upper[d] - box->lower[d];
     if (n[d] == PETSC_DETERMINE) {
+      PetscCheck(h, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Missing h");
       box->h[d] = h[d];
       box->n[d] = PetscCeilReal(box->extent[d] / h[d]);
     } else {
