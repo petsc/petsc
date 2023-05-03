@@ -10,7 +10,7 @@ June 5-7, 2023 at the `Hermann Hall Conference Center <https://www.iit.edu/event
 (3241 South Federal Street, Chicago IL)
 on the campus of `Illinois Institute of Technology (IIT) <https://www.iit.edu>`__ in Chicago.
 Easy access from the hotels via the Chicago Elevated `Green <https://www.transitchicago.com/greenline>`__ or `Red <https://www.transitchicago.com/redline>`__ Lines.
-`Parking use B5, 2nd & Federal St. <https://www.iit.edu/cbsc/parking/visitor-and-event-parking>`__.
+`Parking use B5 (32nd & Federal St.) <https://www.iit.edu/cbsc/parking/visitor-and-event-parking>`__.
 
 Please test for Covid before attending the meeting and
 mask while traveling to the meeting.
