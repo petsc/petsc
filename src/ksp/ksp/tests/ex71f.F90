@@ -3,23 +3,20 @@
       program main
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
 #include <petsc/finclude/petscpc.h>
       USE petscmat
-      USE petscksp
       USE petscpc
       implicit none
 
-      Mat   :: A
+      Mat :: A
       PetscInt :: M, M2, NSubx, dof, overlap, NSub
       PetscInt :: I, J
       PetscMPIInt :: size
       PetscErrorCode :: ierr
       PetscScalar :: v
-      KSP            :: ksp
-      PC             :: pc
+      PC :: pc
       IS :: subdomains_IS(20), inflated_IS(20)
-      PetscViewer singleton
+      PetscViewer :: singleton
 
       PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
@@ -35,13 +32,9 @@
 
       PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
       PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
-      PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
-      PetscCallA(KSPSetOperators(ksp, A, A, ierr))
-      PetscCallA(KSPSetType(ksp, 'bcgs', ierr))
-      PetscCallA(KSPGetPC(ksp, pc, ierr))
-      PetscCallA(KSPSetUp(ksp, ierr))
+      PetscCallA(PCCreate(PETSC_COMM_WORLD, pc, ierr))
+      PetscCallA(PCSetOperators(pc, A, A, ierr))
       PetscCallA(PCSetType(pc, PCGASM, ierr))
-      PetscCallA(PCSetUp(pc, ierr))
 
       NSubx = 4
       dof = 1
@@ -69,7 +62,7 @@
       endif
 
       PetscCallA(MatDestroy(A, ierr))
-      PetscCallA(KSPDestroy(ksp, ierr))
+      PetscCallA(PCDestroy(pc, ierr))
       PetscCallA(PetscFinalize(ierr))
       end
 
