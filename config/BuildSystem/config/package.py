@@ -1973,6 +1973,13 @@ class CMakePackage(Package):
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error configuring '+self.PACKAGE+' with CMake '+str(e))
+        try:
+          with open(os.path.join(folder, 'CMakeFiles', 'CMakeOutput.log')) as fd:
+            conf = fd.read()
+            fd.close()
+            self.logPrint('Output in CMakeOutput.log for ' + self.PACKAGE+':\n'+conf)
+        except:
+          pass
         raise RuntimeError('Error configuring '+self.PACKAGE+' with CMake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
