@@ -2,6 +2,8 @@
 #include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+  #define pcgasmsetsubdomains_      PCGASMSETSUBDOMAINS
+  #define pcgasmdestroysubdomains_  PCGASMDESTROYSUBDOMAINS
   #define pcgasmgetsubksp1_         PCGASMGETSUBKSP1
   #define pcgasmgetsubksp2_         PCGASMGETSUBKSP2
   #define pcgasmgetsubksp3_         PCGASMGETSUBKSP3
@@ -12,7 +14,8 @@
   #define pcgasmgetsubksp8_         PCGASMGETSUBKSP8
   #define pcgasmcreatesubdomains2d_ PCGASMCREATESUBDOMAINS2D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define pcgasmgetsubksp1_         pcgasmgetsubksp1
+  #define pcgasmsetsubdomains_      pcgasmsetsubdomains
+  #define pcgasmdestroysubdomains_  pcgasmdestroysubdomains
   #define pcgasmgetsubksp2_         pcgasmgetsubksp2
   #define pcgasmgetsubksp3_         pcgasmgetsubksp3
   #define pcgasmgetsubksp4_         pcgasmgetsubksp4
@@ -23,14 +26,32 @@
   #define pcgasmcreatesubdomains2d_ pcgasmcreatesubdomains2d
 #endif
 
+PETSC_EXTERN void pcgasmsetsubdomains_(PC *pc, PetscInt *n, IS *is, IS *isl, int *ierr)
+{
+  *ierr = PCGASMSetSubdomains(*pc, *n, is, isl);
+}
+
+PETSC_EXTERN void pcgasmdestroysubdomains_(PetscInt *n, IS *is, IS *isl, int *ierr)
+{
+  IS *iis, *iisl;
+  *ierr = PetscMalloc1(*n, &iis);
+  if (*ierr) return;
+  *ierr = PetscArraycpy(iis, is, *n);
+  if (*ierr) return;
+  *ierr = PetscMalloc1(*n, &iisl);
+  if (*ierr) return;
+  *ierr = PetscArraycpy(iisl, isl, *n);
+  *ierr = PCGASMDestroySubdomains(*n, &iis, &iisl);
+}
+
 PETSC_EXTERN void pcgasmcreatesubdomains2d_(PC *pc, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, PetscInt *dof, PetscInt *overlap, PetscInt *Nsub, IS *is, IS *isl, int *ierr)
 {
   IS *iis, *iisl;
   *ierr = PCGASMCreateSubdomains2D(*pc, *m, *n, *M, *N, *dof, *overlap, Nsub, &iis, &iisl);
   if (*ierr) return;
-  *ierr = PetscMemcpy(is, iis, *Nsub * sizeof(IS));
+  *ierr = PetscArraycpy(is, iis, *Nsub);
   if (*ierr) return;
-  *ierr = PetscMemcpy(isl, iisl, *Nsub * sizeof(IS));
+  *ierr = PetscArraycpy(isl, iisl, *Nsub);
   if (*ierr) return;
   *ierr = PetscFree(iis);
   if (*ierr) return;

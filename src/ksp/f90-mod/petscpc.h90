@@ -15,6 +15,38 @@
       end Interface
 
       Interface
+      subroutine PCGASMSetSubdomains(p,a,h,i,z)
+       import tIS
+       import tPC
+       PC p
+       PetscInt a
+       IS h(*)
+       IS i(*)
+       PetscErrorCode z
+       end subroutine PCGASMSetSubdomains
+      end Interface
+
+      Interface
+      subroutine PCGASMDestroySubdomains(a,h,i,z)
+       import tIS
+       PetscInt a
+       IS h(*)
+       IS i(*)
+       PetscErrorCode z
+       end subroutine PCGASMDestroySubdomains
+      end Interface
+
+      Interface
+      subroutine PCASMDestroySubdomains(a,h,i,z)
+       import tIS
+       PetscInt a
+       IS h(*)
+       IS i(*)
+       PetscErrorCode z
+       end subroutine PCASMDestroySubdomains
+      end Interface
+
+      Interface
       subroutine PCGASMCreateSubdomains2D(p,a,b,c,d,e,f,g,h,i,z)
        import tIS
        import tPC
