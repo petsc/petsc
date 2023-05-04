@@ -321,7 +321,6 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::GetColumnVec(Mat A, PetscInt col, Ve
   const auto mimpl   = MatIMPLCast(A);
   const auto mimpl_A = mimpl->A;
   const auto pobj    = PetscObjectCast(A);
-  auto      &cvec    = mimpl->cvec;
   PetscInt   lda;
 
   PetscFunctionBegin;
@@ -329,14 +328,14 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::GetColumnVec(Mat A, PetscInt col, Ve
   PetscCheck(!mimpl->matinuse, PetscObjectComm(pobj), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   mimpl->vecinuse = col + 1;
 
-  if (!cvec) PetscCall(VecCreateMPICUPMWithArray<T>(PetscObjectComm(pobj), A->rmap->bs, A->rmap->n, A->rmap->N, nullptr, &cvec));
+  if (!mimpl->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &mimpl->cvec));
 
   PetscCall(MatDenseGetLDA(mimpl_A, &lda));
   PetscCall(MatDenseCUPMGetArray_Private<T, access>(mimpl_A, const_cast<PetscScalar **>(&mimpl->ptrinuse)));
-  PetscCall(VecCUPMPlaceArrayAsync<T>(cvec, mimpl->ptrinuse + static_cast<std::size_t>(col) * static_cast<std::size_t>(lda)));
+  PetscCall(VecCUPMPlaceArrayAsync<T>(mimpl->cvec, mimpl->ptrinuse + static_cast<std::size_t>(col) * static_cast<std::size_t>(lda)));
 
-  if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPush(cvec));
-  *v = cvec;
+  if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPush(mimpl->cvec));
+  *v = mimpl->cvec;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

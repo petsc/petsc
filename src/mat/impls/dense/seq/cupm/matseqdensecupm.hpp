@@ -1594,13 +1594,9 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::GetColumnVec(Mat A, PetscInt col, Ve
   PetscCheck(!mimpl->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!mimpl->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   mimpl->vecinuse = col + 1;
+  if (!mimpl->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &mimpl->cvec));
   PetscCall(GetHandles_(&dctx));
   PetscCall(GetArray<PETSC_MEMTYPE_DEVICE, access>(A, const_cast<PetscScalar **>(&mimpl->ptrinuse), dctx));
-  if (!mimpl->cvec) {
-    // we pass the data of A, to prevent allocating needless GPU memory the first time
-    // VecCUPMPlaceArray is called
-    PetscCall(VecCreateSeqCUPMWithArraysAsync<T>(PetscObjectComm(PetscObjectCast(A)), A->rmap->bs, A->rmap->n, nullptr, mimpl->ptrinuse, &mimpl->cvec));
-  }
   PetscCall(VecCUPMPlaceArrayAsync<T>(mimpl->cvec, mimpl->ptrinuse + static_cast<std::size_t>(col) * static_cast<std::size_t>(mimpl->lda)));
   if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPush(mimpl->cvec));
   *v = mimpl->cvec;
