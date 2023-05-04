@@ -1899,7 +1899,7 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, dim, 2);
-  PetscTryMethod(pc, "PCSetCoordinates_C", (PC, PetscInt, PetscInt, PetscReal *), (pc, dim, nloc, coords));
+  PetscTryMethod(pc, "PCSetCoordinates_C", (PC, PetscInt, PetscInt, PetscReal[]), (pc, dim, nloc, coords));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

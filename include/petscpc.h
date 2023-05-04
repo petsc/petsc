@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode PCGetDM(PC, DM *);
 PETSC_EXTERN PetscErrorCode PCGetInterpolations(PC, PetscInt *, Mat *[]);
 PETSC_EXTERN PetscErrorCode PCGetCoarseOperators(PC pc, PetscInt *, Mat *[]);
 
-PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC, PetscInt, PetscInt, PetscReal *);
+PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC, PetscInt, PetscInt, PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC, void *);
 PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC, void *);

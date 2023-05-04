@@ -59,7 +59,7 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseHIP(Mat A, MatType type, MatReuse reu
 . n    - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
 . M    - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
 . N    - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
-- data - optional location of GPU matrix data. Pass`NULL` to have PETSc to control matrix
+- data - optional location of GPU matrix data. Pass `NULL` to have PETSc to control matrix
          memory allocation.
 
   Output Parameter:
