@@ -56,6 +56,7 @@ class Configure(config.package.Package):
     self.functions = [l+'mumps_c']
     self.includes  = [l+'mumps_c.h']
     liblist_common = [['libmumps_common.a','libpord.a','libpthread.a'],
+                     ['libmumps_common.a','libpord.a'],
                      ['libmumps_common.a','libpord.a','libmpiseq.a'],
                      ['libmumps_common.a','libpord.a','libpthread.a','libmpiseq.a']]
     self.liblist   = []

@@ -388,7 +388,10 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       if (neighborRank >= 0) { /* note we copy the values for our own rank (neighbor 4) */
         nNeighbors[i][0] = stag->l[0][neighborRank % stag->nRanks[0]];
         nNeighbors[i][1] = stag->l[1][neighborRank / stag->nRanks[0]];
-      } /* else leave uninitialized - error if accessed */
+      } else {
+        nNeighbors[i][0] = 0;
+        nNeighbors[i][1] = 0;
+      }
     }
 
     /* These offsets should always be non-negative, and describe how many
