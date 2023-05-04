@@ -72,6 +72,7 @@ class Package(config.base.Configure):
     self.includes               = []   # headers to check for
     self.optionalincludes       = []   # headers to check for, do not error if not found
     self.foundoptionalincludes  = 0
+    self.macros                 = []   # optional macros we wish to check for in the headers
     self.functions              = []   # functions we wish to check for in the libraries
     self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
@@ -889,10 +890,22 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
     self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     self.headers.saveLog()
-    ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
+    ret = self.executeTest(self.headers.checkInclude, [incl, hfiles], {'otherIncludes' : otherIncludes, 'macro' : None, 'timeout': timeout})
     self.logWrite(self.headers.restoreLog())
     self.headers.popLanguage()
     return ret
+
+  def checkMacros(self, timeout = 600.0):
+    if not len(self.macros):
+      return
+    self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
+    self.logPrint('Checking for macros ' + str(self.macros) + ' in ' + str(self.includes))
+    self.headers.saveLog()
+    for macro in self.macros:
+      self.executeTest(self.headers.checkInclude, [self.include, self.includes], {'macro' : macro, 'timeout' : timeout})
+    self.logWrite(self.headers.restoreLog())
+    self.headers.popLanguage()
+    return
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     flagsArg = self.getPreprocessorFlagsArg()
@@ -1019,6 +1032,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           dinc = []
           [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc]
           self.dinclude = dinc
+          self.checkMacros(timeout = 60.0)
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
