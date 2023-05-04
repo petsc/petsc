@@ -625,6 +625,44 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 }
 
 /*@C
+   PetscStrcmpAny - Determines whether a string matches any of a list of strings.
+
+   Not Collective
+
+   Input Parameters:
++  src - pointer to input the string
+-  cmp - list of non-null and non-empty strings to be compared against, pass the empty string "" to terminate the list
+
+   Output Parameter:
+.  match - `PETSC_TRUE` if the input string matches any in the list, else `PETSC_FALSE`
+
+   Level: intermediate
+
+.seealso: `PetscStrcmp`
+@*/
+PetscErrorCode PetscStrcmpAny(const char src[], PetscBool *match, const char cmp[], ...)
+{
+  va_list Argp;
+
+  PetscFunctionBegin;
+  PetscValidBoolPointer(match, 2);
+  *match = PETSC_FALSE;
+  if (!src) PetscFunctionReturn(PETSC_SUCCESS);
+  va_start(Argp, cmp);
+  while (cmp && cmp[0]) {
+    PetscBool found;
+    PetscCall(PetscStrcmp(src, cmp, &found));
+    if (found) {
+      *match = PETSC_TRUE;
+      break;
+    }
+    cmp = va_arg(Argp, const char *);
+  }
+  va_end(Argp);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
    PetscEListFind - searches list of strings for given string, using case insensitive matching
 
    Not Collective; No Fortran Support
