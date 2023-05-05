@@ -1540,7 +1540,6 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
         PetscBool    cohesive;
 
         PetscCall(PetscDSGetCohesive(ds, f, &cohesive));
-        if (isCohesive && !cohesive) continue;
         PetscCall(PetscDSGetDiscretization(ds, f, &obj));
         PetscCall(PetscObjectGetClassId(obj, &id));
         if (id == PETSCFE_CLASSID) {
@@ -1550,6 +1549,11 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
           PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
           Nb = 1;
         } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, fields[f]);
+        if (isCohesive && !cohesive) {
+          fOff += Nb * 2;
+          qc += Nc;
+          continue;
+        }
         if (debug) {
           char title[1024];
           PetscCall(PetscSNPrintf(title, 1023, "Solution for Field %" PetscInt_FMT, fields[f]));
