@@ -2847,10 +2847,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
    Level: beginner
 
    Note:
-    `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
+    `MatSetOption(A, MAT_STRUCTURE_ONLY, PETSC_TRUE)` may be called for this matrix type. In this no
     space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
 
-.seealso: `Mat`, MATBAIJ`, MATSEQBAIJ`, `MatCreateBAIJ`
+.seealso: `Mat`, `MATBAIJ`, `MATSEQBAIJ`, `MatCreateBAIJ`
 M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat, MatType, MatReuse, Mat *);
