@@ -591,7 +591,7 @@ typedef PetscReal PetscScalar;
                           increases its reference count).
 -   `PETSC_USE_POINTER` - invalid for `PetscObject` inputs.
 
-.seealso: `PetcsInsertMode`
+.seealso: `PetscInsertMode`
 E*/
 typedef enum {
   PETSC_COPY_VALUES,
