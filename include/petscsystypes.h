@@ -590,6 +590,8 @@ typedef PetscReal PetscScalar;
 .   `PETSC_OWN_POINTER` - the input `PetscObject` is referenced by pointer (with reference count), thus should not be modified by the user.
                           increases its reference count).
 -   `PETSC_USE_POINTER` - invalid for `PetscObject` inputs.
+
+.seealso: `PetcsInsertMode`
 E*/
 typedef enum {
   PETSC_COPY_VALUES,
@@ -628,6 +630,7 @@ M*/
   Note:
   Contains double precision numbers that are not used in the numerical computations, but rather in logging, timing etc.
 
+.seealso: `PetscBool`, `PetscDataType`
 M*/
 typedef double PetscLogDouble;
 
