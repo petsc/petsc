@@ -101,7 +101,7 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
-ifneq ($(filter-out help clean check info libs all install install-lib checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out help clean check info gmakeinfo libs all install install-lib checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 

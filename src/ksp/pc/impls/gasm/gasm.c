@@ -4,7 +4,7 @@
   intersect multiple MPI ranks.  Intersections of subdomains with MPI ranks are called *local
   subdomains*.
 
-       N    - total number of distinct global subdomains          (set explicitly in PCGASMSetTotalSubdomains() or implicitly PCGASMSetSubdomains() and then calculated in PCSetUp_GASM())
+       N    - total number of distinct global subdomains  (set explicitly in PCGASMSetTotalSubdomains() or implicitly PCGASMSetSubdomains() and then calculated in PCSetUp_GASM())
        n    - actual number of local subdomains on this rank (set in PCGASMSetSubdomains() or calculated in PCGASMSetTotalSubdomains())
        nmax - maximum number of local subdomains per rank    (calculated in PCSetUp_GASM())
 */
@@ -884,8 +884,6 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems *PetscOption
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------------------------------*/
-
 /*@
     PCGASMSetTotalSubdomains - sets the total number of subdomains to use across the communicator for `PCGASM`
 
@@ -1050,15 +1048,19 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
 +   pc  - the preconditioner object
 .   n   - the number of subdomains for this MPI rank
 .   iis - the index sets that define the inner subdomains (or `NULL` for PETSc to determine subdomains)
--   ois - the index sets that define the outer subdomains (or `NULL` to use the same as iis, or to construct by expanding iis by the requested overlap)
+-   ois - the index sets that define the outer subdomains (or `NULL` to use the same as `iis`, or to construct by expanding `iis` by
+          the requested overlap)
 
     Level: advanced
 
     Notes:
     The `IS` indices use the parallel, global numbering of the vector entries.
+
     Inner subdomains are those where the correction is applied.
+
     Outer subdomains are those where the residual necessary to obtain the
     corrections is obtained (see `PCGASMType` for the use of inner/outer subdomains).
+
     Both inner and outer subdomains can extend over several MPI ranks.
     This rank's portion of a subdomain is known as a local subdomain.
 
@@ -1069,7 +1071,9 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
 
     By default the `PGASM` preconditioner uses 1 (local) subdomain per MPI rank.
 
-.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
+    The `iis` and `ois` arrays may be freed after this call using `PCGASMDestroySubdomains()`
+
+.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMDestroySubdomains()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMGetSubdomains()`
 @*/
 PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
@@ -1102,11 +1106,11 @@ PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
     Notes:
     By default the `PCGASM` preconditioner uses 1 subdomain per rank.  To use
     multiple subdomain per perocessor or "straddling" subdomains that intersect
-    multiple ranks use `PCGASMSetSubdomains()` (or option -pc_gasm_total_subdomains <n>).
+    multiple ranks use `PCGASMSetSubdomains()` (or option `-pc_gasm_total_subdomains` <n>).
 
     The overlap defaults to 0, so if one desires that no additional
     overlap be computed beyond what may have been set with a call to
-    `PCGASMSetSubdomains()`, then ovl must be set to be 0.  In particular, if one does
+    `PCGASMSetSubdomains()`, then `ovl` must be set to be 0.  In particular, if one does
     not explicitly set the subdomains in application code, then all overlap would be computed
     internally by PETSc, and using an overlap of 0 would result in an `PCGASM`
     variant that is equivalent to the block Jacobi preconditioner.
@@ -1147,7 +1151,7 @@ PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl)
 .ve
 
     Options Database Key:
-.   -pc_gasm_type [basic,restrict,interpolate,none] - Sets GASM type
+.   -pc_gasm_type [basic,restrict,interpolate,none] - Sets `PCGASM` type
 
     Level: intermediate
 
@@ -1196,20 +1200,20 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n_local - the number of blocks on this MPI rank or NULL
-.  first_local - the global number of the first block on this rank or NULL,
-                 all ranks must request or all must pass NULL
++  n_local - the number of blocks on this MPI rank or `NULL`
+.  first_local - the global number of the first block on this rank or `NULL`,
+                 all ranks must request or all must pass `NULL`
 -  ksp - the array of `KSP` contexts
+
+   Level: advanced
 
    Note:
    After `PCGASMGetSubKSP()` the array of `KSP`es is not to be freed
 
-   Currently for some matrix implementations only 1 block per MPI rank
+   Currently for some matrix implementations only 1 block per MPI process
    is supported.
 
    You must call `KSPSetUp()` before calling `PCGASMGetSubKSP()`.
-
-   Level: advanced
 
 .seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
           `PCGASMCreateSubdomains2D()`,
@@ -1233,15 +1237,15 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
 .  -pc_gasm_overlap <ovl>         - Sets overlap by which to (automatically) extend local subdomains
 -  -pc_gasm_type [basic,restrict,interpolate,none] - Sets `PCGASMType`
 
+   Level: beginner
+
    Notes:
-   To set options on the solvers for each block append -sub_ to all the `KSP`, and `PC`
-   options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
+   To set options on the solvers for each block append `-sub_` to all the `KSP`, and `PC`
+   options database keys. For example, `-sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly`
 
    To set the options on the solvers separate for each block call `PCGASMGetSubKSP()`
    and set the options directly on the resulting `KSP` object (you can access its `PC`
    with `KSPGetPC()`)
-
-   Level: beginner
 
     References:
 +   * - M Dryja, OB Widlund, An additive variant of the Schwarz alternating method for the case of many subregions
@@ -1456,7 +1460,7 @@ PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, 
 }
 
 /*@C
-   PCGASMCreateSubdomains - Creates n index sets defining n nonoverlapping subdomains for the `PCGASM` additive
+   PCGASMCreateSubdomains - Creates `n` index sets defining `n` nonoverlapping subdomains on this MPI process for the `PCGASM` additive
    Schwarz preconditioner for a any problem based on its matrix.
 
    Collective
@@ -1471,12 +1475,14 @@ PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, 
 
    Level: advanced
 
-   Note:
-   When `N` >= A's communicator size, each subdomain is local -- contained within a single MPI rank.
+   Notes:
+   When `N` >= A's communicator size, each subdomain is local -- contained within a single MPI process.
          When `N` < size, the subdomains are 'straddling' (rank boundaries) and are no longer local.
          The resulting subdomains can be use in `PCGASMSetSubdomains`(pc,n,iss,`NULL`).  The overlapping
          outer subdomains will be automatically generated from these according to the requested amount of
          overlap; this is currently supported only with local subdomains.
+
+   Use `PCGASMDestroySubdomains()` to free the array and the list of index sets.
 
 .seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMDestroySubdomains()`
 @*/
@@ -1508,8 +1514,8 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
 
    Input Parameters:
 +  n   - the number of index sets
-.  iis - the array of inner subdomains,
--  ois - the array of outer subdomains, can be NULL
+.  iis - the array of inner subdomains
+-  ois - the array of outer subdomains, can be `NULL`
 
    Level: intermediate
 
@@ -1518,7 +1524,7 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
    destroys each `IS` on the list, and then frees the list. At the end the
    list pointers are set to `NULL`.
 
-.seealso: `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
+.seealso: `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`, `PCGASMSetSubdomains()`
 @*/
 PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
 {
@@ -1595,10 +1601,14 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
 
    Level: advanced
 
+   Note:
+   Use `PCGASMDestroySubdomains()` to free the index sets and the arrays
+
    Fortran Note:
    The `IS` must be declared as an array of length long enough to hold `Nsub` entries
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`, `PCASMCreateSubdomains2D()`
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`, `PCASMCreateSubdomains2D()`,
+          `PCGASMDestroySubdomains()`
 @*/
 PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt Mdomains, PetscInt Ndomains, PetscInt dof, PetscInt overlap, PetscInt *nsub, IS **iis, IS **ois)
 {
@@ -1768,12 +1778,14 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
 
     Level: advanced
 
-    Note:
-    The user is responsible for destroying the `IS`s and freeing the returned arrays.
+    Notes:
+    The user is responsible for destroying the `IS`s and freeing the returned arrays, this can be done with
+    `PCGASMDestroySubdomains()`
+
     The `IS` numbering is in the parallel, global numbering of the vector.
 
 .seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMCreateSubdomains2D()`,
-          `PCGASMSetSubdomains()`, `PCGASMGetSubmatrices()`
+          `PCGASMSetSubdomains()`, `PCGASMGetSubmatrices()`, `PCGASMDestroySubdomains()`
 @*/
 PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
 {
@@ -1811,11 +1823,11 @@ PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
 +   n   - the number of matrices for this MPI rank (default value = 1)
 -   mat - the matrices
 
-    Note:
-    Matrices returned by this routine have the same communicators as the index sets (IS)
-           used to define subdomains in `PCGASMSetSubdomains()`
-
     Level: advanced
+
+    Note:
+    Matrices returned by this routine have the same communicators as the index sets (`IS`)
+           used to define subdomains in `PCGASMSetSubdomains()`
 
 .seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMSetSubdomains()`, `PCGASMGetSubdomains()`
