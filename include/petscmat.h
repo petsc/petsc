@@ -906,11 +906,14 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 /*MC
    MatSetValue - Set a single entry into a matrix.
 
-   Not Collective
+   This value may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
+   MUST be called after all calls to `MatSetValue()` have been completed.
 
    Synopsis:
      #include <petscmat.h>
-     PetscErrorCode MatSetValue(Mat m,PetscInt row,PetscInt col,PetscScalar value,InsertMode mode)
+     PetscErrorCode MatSetValue(Mat m,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode)
+
+   Not Collective
 
    Input Parameters:
 +  m - the matrix
