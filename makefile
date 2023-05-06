@@ -212,7 +212,10 @@ check_build:
            ${RUN_TEST} testex31; \
            ${RUN_TEST} clean-legacy; \
           fi; ${RM} .ftn.log;
-	-@echo "Completed test examples"
+	+@if [ "${SLEPC}" = "yes" ]; then \
+           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} slepc-check; \
+         fi;
+	-@echo "Completed PETSc test examples"
 
 # ********* Rules for make install *******************************************************************************************************************
 

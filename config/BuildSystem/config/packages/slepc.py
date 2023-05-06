@@ -87,6 +87,7 @@ class Configure(config.package.Package):
             echo "Error installing SLEPc." && \\\n\
             echo "********************************************************************" && \\\n\
             exit 1)'])
+    self.addMakeRule('slepc-check', '', ['@cd '+self.packageDir+' ; SLEPC_DIR=`pwd` ${OMAKE} check'])
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('slepc-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building slepc
