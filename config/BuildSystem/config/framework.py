@@ -281,7 +281,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def printSummary(self):
     # __str__(), __str1__(), __str2__() are used to create 3 different groups of summary outputs.
     for child in self.childGraph.vertices:
-      self.logWrite(str(child), debugSection = 'screen', forceScroll = 1)
+      self.logWrite(str(child), debugSection = 'screen', forceScroll = 1, rmDir = 0)
     for child in self.childGraph.vertices:
       if hasattr(child,'__str1__'):
         self.logWrite(child.__str1__(), debugSection = 'screen', forceScroll = 1)

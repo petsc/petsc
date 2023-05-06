@@ -20,6 +20,10 @@ class Configure(config.package.Package):
     help.addArgument('PETSc', '-with-numpy-include=<dir>', nargs.Arg(None, None, 'Path to numpy headers from numpy.get_include() (default: autodetect)'))
     return
 
+  def __str__(self):
+    if self.found: return 'petsc4py:\n  PYTHONPATH: '+self.petsc4pypythonpath+'\n'
+    return ''
+
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.python          = framework.require('config.packages.python',self)
@@ -92,6 +96,7 @@ class Configure(config.package.Package):
                           '@echo "To use petsc4py, add '+installLibPath+' to PYTHONPATH"',\
                           '@echo "====================================="'])
 
+    self.petsc4pypythonpath = installLibPath
     np = self.make.make_test_np
     if self.mpi.usingMPIUni:
       np = 1
@@ -113,6 +118,7 @@ class Configure(config.package.Package):
     else:
       self.addMakeRule('petsc4py-build','petsc4pybuild petsc4pyinstall')
       self.addMakeRule('petsc4py-install','')
+    self.found = True
     return self.installDir
 
   def configureLibrary(self):
