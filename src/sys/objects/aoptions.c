@@ -614,11 +614,11 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
 /*MC
    PetscOptionsEnum - Gets the enum value for a particular option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char man[],const char *const *list,PetscEnum currentvalue,PetscEnum *value,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -679,11 +679,11 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject, co
    PetscOptionsEnumArray - Gets an array of enum values for a particular
    option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsEnumArray(const char opt[],const char text[],const char man[],const char *const *list,PetscEnum value[],PetscInt *n,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -747,11 +747,11 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObjec
 /*MC
    PetscOptionsBoundedInt - Gets an integer value greater than or equal a given bound for a particular option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsBoundedInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt bound)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -795,11 +795,11 @@ M*/
 /*MC
    PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsRangeInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg,PetscInt lb,PetscInt ub)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -841,11 +841,11 @@ M*/
 /*MC
    PetscOptionsInt - Gets the integer value for a particular option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg))
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -911,11 +911,11 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
 /*MC
    PetscOptionsString - Gets the string value for a particular option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char man[],const char currentvalue[],char value[],size_t len,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -971,11 +971,11 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
 /*MC
    PetscOptionsReal - Gets the `PetscReal` value for a particular option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char man[],PetscReal currentvalue,PetscReal *value,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1035,11 +1035,11 @@ PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, co
 /*MC
    PetscOptionsScalar - Gets the `PetscScalar` value for a particular option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsScalar(const char opt[],const char text[],const char man[],PetscScalar currentvalue,PetscScalar *value,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1091,11 +1091,11 @@ PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject, 
    PetscOptionsName - Determines if a particular option has been set in the database. This returns true whether the option is a number, string or boolean, even
                       its value is set to false.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsName(const char opt[],const char text[],const char man[],PetscBool  *flg)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1140,11 +1140,11 @@ PetscErrorCode PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject, co
 /*MC
      PetscOptionsFList - Puts a list of option values that a single one may be selected from
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char currentvalue[],char value[],size_t len,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1211,11 +1211,11 @@ PetscErrorCode PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject, c
 /*MC
      PetscOptionsEList - Puts a list of option values that a single one may be selected from
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char currentvalue[],PetscInt *value,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1278,11 +1278,11 @@ PetscErrorCode PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject, c
      PetscOptionsBoolGroupBegin - First in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsBoolGroupBegin(const char opt[],const char text[],const char man[],PetscBool  *flg)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1331,11 +1331,11 @@ PetscErrorCode PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOptions
      PetscOptionsBoolGroup - One in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsBoolGroup(const char opt[],const char text[],const char man[],PetscBool  *flg)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1383,11 +1383,11 @@ PetscErrorCode PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObjec
      PetscOptionsBoolGroupEnd - Last in a series of logical queries on the options database for
        which at most a single value can be true.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsBoolGroupEnd(const char opt[],const char text[],const char man[],PetscBool  *flg)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1434,11 +1434,11 @@ PetscErrorCode PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsOb
 /*MC
    PetscOptionsBool - Determines if a particular option is in the database with a true or false
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool currentvalue,PetscBool  *flg,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name
@@ -1499,11 +1499,11 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject, co
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1557,11 +1557,11 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsScalarArray(const char opt[],const char text[],const char man[],PetscScalar value[],PetscInt *n,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1614,11 +1614,11 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
    PetscOptionsIntArray - Gets an array of integers for a particular
    option in the database.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsIntArray(const char opt[],const char text[],const char man[],PetscInt value[],PetscInt *n,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1681,11 +1681,11 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`; No Fortran Support
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsStringArray(const char opt[],const char text[],const char man[],char *value[],PetscInt *nmax,PetscBool  *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`; No Fortran Support
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1740,11 +1740,11 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsObj
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsBoolArray(const char opt[],const char text[],const char man[],PetscBool value[],PetscInt *n,PetscBool *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - the option one is seeking
@@ -1799,11 +1799,11 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
 /*MC
    PetscOptionsViewer - Gets a viewer appropriate for the type indicated by the user
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
-
    Synopsis:
    #include "petscsys.h"
    PetscErrorCode PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool *set)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
 +  opt - option name

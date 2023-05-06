@@ -33,11 +33,11 @@
 /*MC
     PetscCallBLAS - Calls a BLAS or LAPACK routine and catches exceptions
 
-    Not Collective
-
     Synopsis:
    #include <petscsys.h>
    void PetscCallBLAS(char *name,routine)
+
+    Not Collective
 
   Input Parameters:
 +   name - string that gives the name of the function being called

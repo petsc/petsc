@@ -236,11 +236,11 @@ M*/
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
-    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
-
    Synopsis:
      #include <petscoptions.h>
      PetscErrorCode PetscOptionsEnd(void)
+
+    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
   Level: intermediate
 
@@ -354,11 +354,11 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
      PetscOptionsHeadEnd - Ends a section of options begun with `PetscOptionsHeadBegin()`
             See, for example, `KSPSetFromOptions_GMRES()`.
 
-    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
-
    Synopsis:
      #include <petscoptions.h>
      PetscErrorCode PetscOptionsHeadEnd(void)
+
+    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
   Level: intermediate
 
