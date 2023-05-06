@@ -2,9 +2,13 @@
   Implements the Kokkos kernel
 */
 #include <petscconf.h>
-#if defined(PETSC_HAVE_CUDA_CLANG)
+// On Sunspot, as of 05/04/2023, the default SYCL compiler oneapi/eng-compiler/2022.12.30.003
+// failed to link this file, so we add "defined(PETSC_HAVE_SYCL)" to disable landau with SYCL
+// to facilitate petsc users' experiments on Sunspot.
+// TODO: remove it when Intel fixed the bug. See MR !6412
+#if defined(PETSC_HAVE_CUDA_CLANG) || defined(PETSC_HAVE_SYCL)
   #include <petsclandau.h>
-  #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG")
+  #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG or SYCL")
 PetscErrorCode LandauKokkosJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscScalar[], const LandauStaticData *, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat)
 {
   LANDAU_NOT_IMPLEMENTED;
