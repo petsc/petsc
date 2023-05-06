@@ -2126,9 +2126,6 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 /*@C
    TaoRegister - Adds a method to the Tao package for minimization.
 
-   Synopsis:
-   TaoRegister(char *name_solver,char *path,char *name_Create,PetscErrorCode (*routine_Create)(Tao))
-
    Not Collective
 
    Input Parameters:
