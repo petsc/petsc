@@ -42,7 +42,6 @@ PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE *, const char[], va_list);
 /*
    PetscOps: structure of core operations that all PETSc objects support.
 
-      getcomm()         - Gets the object's communicator.
       view()            - Is the routine for viewing the entire PETSc object; for
                           example, MatView() is the general matrix viewing routine.
                           This is used by PetscObjectView((PetscObject)obj) to allow
@@ -52,20 +51,11 @@ PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE *, const char[], va_list);
                           destruction routine.
                           This is used by PetscObjectDestroy((PetscObject*)&obj) to allow
                           destroying any PETSc object.
-      compose()         - Associates a PETSc object with another PETSc object with a name
-      query()           - Returns a different PETSc object that has been associated
-                          with the first object using a name.
-      composefunction() - Attaches an a function to a PETSc object with a name.
-      queryfunction()   - Requests a registered function that has been attached to a PETSc object.
 */
 
 typedef struct {
   PetscErrorCode (*view)(PetscObject, PetscViewer);
   PetscErrorCode (*destroy)(PetscObject *);
-  PetscErrorCode (*compose)(PetscObject, const char[], PetscObject);
-  PetscErrorCode (*query)(PetscObject, const char[], PetscObject *);
-  PetscErrorCode (*composefunction)(PetscObject, const char[], void (*)(void));
-  PetscErrorCode (*queryfunction)(PetscObject, const char[], void (**)(void));
 } PetscOps;
 
 typedef enum {
