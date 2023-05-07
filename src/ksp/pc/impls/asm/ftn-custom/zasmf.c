@@ -60,12 +60,14 @@ PETSC_EXTERN void pcasmcreatesubdomains_(Mat *mat, PetscInt *n, IS *subs, PetscE
   *ierr = PetscFree(insubs);
 }
 
-PETSC_EXTERN void pcasmdestroysubdomains_(Mat *mat, PetscInt *n, IS *subs, PetscErrorCode *ierr)
+PETSC_EXTERN void pcasmdestroysubdomains_(PetscInt *n, IS *subs, IS *isubs, PetscErrorCode *ierr)
 {
   PetscInt i;
 
   for (i = 0; i < *n; i++) {
     *ierr = ISDestroy(&subs[i]);
+    if (*ierr) return;
+    *ierr = ISDestroy(&isubs[i]);
     if (*ierr) return;
   }
 }

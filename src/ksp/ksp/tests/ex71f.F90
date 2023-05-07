@@ -41,24 +41,23 @@
       overlap = 0
 
       PetscCallA(PCGASMCreateSubdomains2D(pc, M, M,NSubx, NSubx, dof, overlap, NSub, subdomains_IS, inflated_IS, ierr))
+      PetscCallA(PCGASMSetSubdomains(pc,NSub,subdomains_IS, inflated_IS, ierr))
       PetscCallA(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, singleton, ierr))
       PetscCallA(PetscViewerASCIIPrintf(singleton, 'GASM index sets from this MPI process\n', ierr))
       do i=1,Nsub
         PetscCallA(ISView(subdomains_IS(i), singleton, ierr))
-        PetscCallA(ISDestroy(subdomains_IS(i), ierr))
-        PetscCallA(ISDestroy(inflated_IS(i), ierr))
       end do
       PetscCallA(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, singleton, ierr))
       PetscCallA(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD, ierr))
+      PetscCallA(PCGASMDestroySubdomains(NSub, subdomains_IS, inflated_IS, ierr))
 
       if (size == 1) then
         ! this routine only works on one rank
         PetscCallA(PCASMCreateSubdomains2D(M, M, NSubx, NSubx, dof, overlap, NSub, subdomains_IS, inflated_IS, ierr))
         do i=1,Nsub
           PetscCallA(ISView(subdomains_IS(i), PETSC_VIEWER_STDOUT_SELF, ierr))
-          PetscCallA(ISDestroy(subdomains_IS(i), ierr))
-          PetscCallA(ISDestroy(inflated_IS(i), ierr))
         end do
+        PetscCallA(PCASMDestroySubdomains(NSub, subdomains_IS, inflated_IS, ierr))
       endif
 
       PetscCallA(MatDestroy(A, ierr))
