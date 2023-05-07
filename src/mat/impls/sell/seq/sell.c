@@ -543,7 +543,7 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx;
-  __mmask8 mask;
+  __mmask8 mask = 0;
   __m512d  vec_x2, vec_y2, vec_vals2, vec_x3, vec_y3, vec_vals3, vec_x4, vec_y4, vec_vals4;
   __m256i  vec_idx2, vec_idx3, vec_idx4;
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
