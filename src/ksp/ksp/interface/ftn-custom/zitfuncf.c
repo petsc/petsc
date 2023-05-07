@@ -54,9 +54,9 @@ PETSC_EXTERN void dmkspsetcomputeoperators_(DM *dm, void (*func)(KSP *, Vec *, v
         These cannot be called from Fortran but allow Fortran users to transparently set these monitors from .F code
 */
 
-PETSC_EXTERN void kspconvergeddefault_(KSP *ksp, PetscInt *n, PetscReal *rnorm, KSPConvergedReason *flag, void *dummy, PetscErrorCode *ierr)
+PETSC_EXTERN void kspconvergeddefault_(KSP *ksp, PetscInt *n, PetscReal *rnorm, KSPConvergedReason *flag, PetscFortranAddr *dummy, PetscErrorCode *ierr)
 {
-  *ierr = KSPConvergedDefault(*ksp, *n, *rnorm, flag, dummy);
+  *ierr = KSPConvergedDefault(*ksp, *n, *rnorm, flag, (void *)*dummy);
 }
 
 PETSC_EXTERN void kspconvergedskip_(KSP *ksp, PetscInt *n, PetscReal *rnorm, KSPConvergedReason *flag, void *dummy, PetscErrorCode *ierr)

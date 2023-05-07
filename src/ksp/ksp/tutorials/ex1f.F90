@@ -2,6 +2,23 @@
 !   Description: Solves a tridiagonal linear system with KSP.
 !
 ! -----------------------------------------------------------------------
+!
+!  Demonstrate a custom KSP convergence test that calls the default convergence test
+!
+subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
+#include <petsc/finclude/petscksp.h>
+      use petscksp
+
+       KSP ksp
+       PetscErrorCode ierr
+       PetscInt n
+       integer*8 defaultctx
+       KSPConvergedReason flag
+       PetscReal rnorm
+
+       ! Must call default convergence test on the 0th iteration
+       call KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr)
+       end subroutine MyKSPConverged
 
       program main
 #include <petsc/finclude/petscksp.h>
@@ -32,7 +49,9 @@
       PetscBool  flg
       PetscMPIInt size
       PetscScalar      none,one,value(3)
-      PetscLogStage    stages(2);
+      PetscLogStage    stages(2)
+      integer*8 defaultctx
+      external kspconvergeddefaultdestroy,mykspconverged
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -117,6 +136,9 @@
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
+
+      call KSPConvergedDefaultCreate(defaultctx,ierr)
+      call KSPSetConvergenceTest(ksp, MyKSPConverged, defaultctx, KSPConvergedDefaultDestroy, ierr)
 
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
