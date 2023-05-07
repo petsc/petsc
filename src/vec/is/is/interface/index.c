@@ -1985,7 +1985,7 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
     Synopsis:
     ISGetIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Not Collective
 
     Input Parameter:
 .   x - index set

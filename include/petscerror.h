@@ -155,13 +155,11 @@ M*/
 /*MC
   PetscCheck - Check that a particular condition is true
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCheck(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -187,13 +185,11 @@ M*/
 /*MC
   PetscCheckAbort - Check that a particular condition is true, otherwise prints error and aborts
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCheckAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -219,13 +215,11 @@ M*/
 /*MC
   PetscAssert - Assert that a particular condition is true
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscAssert(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -253,13 +247,11 @@ M*/
 /*MC
   PetscAssertAbort - Assert that a particular condition is true, otherwise prints error and aborts
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscAssertAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + cond    - The boolean condition
@@ -379,13 +371,11 @@ M*/
   PetscCallBack - Calls a user provided PETSc callback function and then checks the resulting error code, if it is non-zero it calls the error
   handler and returns from the current function with the error code.
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCallBack(const char *functionname,PetscFunction(args))
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + functionname - the name of the function being called, this can be a string with spaces that describes the meaning of the callback
@@ -411,13 +401,11 @@ M*/
 /*MC
   PetscCallVoid - Like `PetscCall()` but for functions returning `void`
 
-  No Fortran Support
-
   Synopsis:
   #include <petscerror.h>
   void PetscCall(PetscFunction(args))
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . PetscFunction - any PETSc function that returns an error code
@@ -790,13 +778,11 @@ PETSC_EXTERN PetscBool petscindebugger;
 /*MC
    PETSCABORT - Call `MPI_Abort()` with an informative error code
 
-   No Fortran Support
-
    Synopsis:
    #include <petscsys.h>
    PETSCABORT(MPI_Comm comm, PetscErrorCode ierr)
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
@@ -1159,11 +1145,11 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version
 /*MC
     PetscErrorPrintf - Prints error messages.
 
-    Not Collective; No Fortran Support
-
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
+
+    Not Collective; No Fortran Support
 
     Input Parameter:
 .   format - the usual `printf()` format string
@@ -1307,11 +1293,11 @@ PETSC_EXTERN PetscStack petscstack;
    PetscStackPushNoCheck - Pushes a new function name and line number onto the PETSc default stack that tracks where the running program is
    currently in the source code.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPushNoCheck(char *funct,int petsc_routine,PetscBool hot);
+
+   Not Collective
 
    Input Parameters:
 +  funct - the function name
@@ -1346,11 +1332,11 @@ M*/
    PetscStackUpdateLine - in a function that has a `PetscFunctionBegin` or `PetscFunctionBeginUser` updates the stack line number to the
    current line number.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackUpdateLine
+
+   Not Collective
 
    Level: developer
 
@@ -1377,11 +1363,11 @@ M*/
    currently in the source code. Does not include the filename or line number since this is called by the calling routine
    for non-PETSc or user functions.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPushExternal(char *funct);
+
+   Not Collective
 
    Input Parameter:
 .  funct - the function name
@@ -1414,11 +1400,11 @@ M*/
    PetscStackPopNoCheck - Pops a function name from the PETSc default stack that tracks where the running program is
    currently in the source code.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPopNoCheck(char *funct);
+
+   Not Collective
 
    Input Parameter:
 .   funct - the function name
@@ -1557,11 +1543,11 @@ M*/
    PetscStackPush - Pushes a new function name and line number onto the PETSc default stack that tracks where the running program is
    currently in the source code and verifies the memory is not corrupted.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPush(char *funct)
+
+   Not Collective
 
    Input Parameter:
 .  funct - the function name
@@ -1588,11 +1574,11 @@ M*/
    PetscStackPop - Pops a function name from the PETSc default stack that tracks where the running program is
    currently in the source code and verifies the memory is not corrupted.
 
-   Not Collective
-
    Synopsis:
    #include <petscsys.h>
    void PetscStackPop
+
+   Not Collective
 
    Level: developer
 
