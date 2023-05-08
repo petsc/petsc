@@ -31,7 +31,7 @@ Windows compilers; nor can you use MS-MPI, Intel-MPI or MPICH2).
      - make
      - gcc-core gcc-g++ gcc-fortran
      - liblapack-devel
-     - openmpi libopenmpi-devel
+     - openmpi libopenmpi-devel libhwloc-devel libevent-devel zlib-devel
 
 - `MSYS2 <https://www.msys2.org>`__. See more details below.
 

@@ -880,11 +880,11 @@ M*/
 /*MC
   PetscDefined - Determine whether a boolean macro is defined
 
-  No Fortran Support
-
   Synopsis:
   #include <petscmacros.h>
   int PetscDefined(def)
+
+  No Fortran Support
 
   Input Parameter:
 . def - PETSc-style preprocessor variable (without PETSC_ prepended!)
@@ -966,11 +966,11 @@ M*/
   PetscUnlikelyDebug - Hints the compiler that the given condition is usually false, eliding
   the check in optimized mode
 
-  No Fortran Support
-
   Synopsis:
   #include <petscmacros.h>
   bool PetscUnlikelyDebug(bool cond)
+
+  No Fortran Support
 
   Not Collective
 
@@ -1034,11 +1034,11 @@ M*/
 /*MC
   PetscExpandToNothing - Expands to absolutely nothing
 
-  No Fortran Support
-
   Synopsis:
   #include <petscmacros.h>
   void PetscExpandToNothing(...)
+
+  No Fortran Support
 
   Input Parameter:
 . __VA_ARGS__ - Anything at all

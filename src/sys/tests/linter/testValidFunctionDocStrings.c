@@ -269,11 +269,11 @@ PetscErrorCode testFloatingDocstring(void)
 /*@M
   testExplicitSynopsis - Lorem Ipsum
 
-  Collective
-
   Synopsis:
   #include "testheader.h"
   PetscErrorCode testExplicitSynopsis(PetscInt foo, PetscReal bar, void *baz)
+
+  Collective
 
   Input Parameters:
 + foo - a foo

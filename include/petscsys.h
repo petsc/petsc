@@ -1301,11 +1301,11 @@ M*/
 /*MC
     PetscHelpPrintf - Prints help messages.
 
-    Not Collective, only applies on MPI rank 0; No Fortran Support
-
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[],args);
+
+    Not Collective, only applies on MPI rank 0; No Fortran Support
 
     Input Parameters:
 +  comm - the MPI communicator over which the help message is printed
@@ -2258,11 +2258,11 @@ static inline unsigned int PetscStrHash(const char *str)
                     same place in the PETSc code. This helps to detect bugs where different MPI ranks follow different code paths
                     resulting in inconsistent and incorrect calls to `MPI_Allreduce()`.
 
-   Collective
-
    Synopsis:
      #include <petscsys.h>
      PetscErrorCode MPIU_Allreduce(void *indata,void *outdata,PetscMPIInt count,MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
+
+   Collective
 
    Input Parameters:
 +  a - pointer to the input data to be reduced
