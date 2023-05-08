@@ -129,6 +129,8 @@ PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP, PCSide);
 PETSC_EXTERN PetscErrorCode KSPGetPCSide(KSP, PCSide *);
 PETSC_EXTERN PetscErrorCode KSPSetTolerances(KSP, PetscReal, PetscReal, PetscReal, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGetTolerances(KSP, PetscReal *, PetscReal *, PetscReal *, PetscInt *);
+PETSC_EXTERN PetscErrorCode KSPSetMinimumIterations(KSP, PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGetMinimumIterations(KSP, PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPSetInitialGuessNonzero(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetInitialGuessNonzero(KSP, PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetErrorIfNotConverged(KSP, PetscBool);

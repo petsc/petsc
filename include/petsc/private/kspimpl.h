@@ -86,6 +86,7 @@ struct _p_KSP {
   PetscBool dmActive; /* KSP should use DM for computing operators */
   /*------------------------- User parameters--------------------------*/
   PetscInt  max_it; /* maximum number of iterations */
+  PetscInt  min_it; /* minimum number of iterations */
   KSPGuess  guess;
   PetscBool guess_zero,                                  /* flag for whether initial guess is 0 */
     calc_sings,                                          /* calculate extreme Singular Values */

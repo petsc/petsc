@@ -217,4 +217,9 @@ int main(int argc, char **args)
       filter: sed 's?ATOL?RTOL?g'
       args: -mpi_linear_solver_server  -mpi_linear_solver_server_view -pc_type mpi -ksp_type preonly -mpi_ksp_monitor -mpi_ksp_converged_reason -mat_view -mpi_pc_type none -mpi_ksp_view -mpi_mat_view -pc_mpi_always_use_server
 
+   test:
+      requires: !__float128
+      suffix: minit
+      args: -ksp_monitor -pc_type none -ksp_min_it 8
+
 TEST*/

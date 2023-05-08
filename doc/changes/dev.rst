@@ -52,6 +52,8 @@ Changes: Development
 
 .. rubric:: KSP:
 
+- Add ``KSPSetMinimumIterations()`` and ``KSPGetMinimumIterations()``
+
 .. rubric:: SNES:
 
 .. rubric:: SNESLineSearch:

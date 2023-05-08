@@ -1573,7 +1573,7 @@ PetscErrorCode KSPGetPCSide(KSP ksp, PCSide *side)
 
            maximum, iterations
 
-.seealso: [](chapter_ksp), `KSPSetTolerances()`, `KSP`
+.seealso: [](chapter_ksp), `KSPSetTolerances()`, `KSP`, `KSPSetMinimumIterations()`, `KSPGetMinimumIterations()`
 @*/
 PetscErrorCode KSPGetTolerances(KSP ksp, PetscReal *rtol, PetscReal *abstol, PetscReal *dtol, PetscInt *maxits)
 {
@@ -1613,7 +1613,7 @@ PetscErrorCode KSPGetTolerances(KSP ksp, PetscReal *rtol, PetscReal *abstol, Pet
    See `KSPConvergedDefault()` for details how these parameters are used in the default convergence test.  See also `KSPSetConvergenceTest()`
    for setting user-defined stopping criteria.
 
-.seealso: [](chapter_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`
+.seealso: [](chapter_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetMinimumIterations()`
 @*/
 PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits)
 {
@@ -1640,6 +1640,64 @@ PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, Petsc
     PetscCheck(maxits >= 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations %" PetscInt_FMT " must be non-negative", maxits);
     ksp->max_it = maxits;
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   KSPSetMinimumIterations - Sets the minimum number of iterations to use, regardless of the tolerances
+
+   Logically Collective
+
+   Input Parameters:
++  ksp - the Krylov subspace context
+-  minit - minimum number of iterations to use
+
+   Options Database Keys:
+.  -ksp_min_it <minits> - Sets `minit`
+
+   Level: intermediate
+
+   Notes:
+   Use `KSPSetTolerances()` to set a variety of other tolerances
+
+   See `KSPConvergedDefault()` for details on how these parameters are used in the default convergence test. See also `KSPSetConvergenceTest()`
+   for setting user-defined stopping criteria.
+
+.seealso: [](chapter_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetTolerances()`, `KSPGetMinimumIterations()`, `KSPGetTolerances()`
+@*/
+PetscErrorCode KSPSetMinimumIterations(KSP ksp, PetscInt minit)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(ksp, minit, 2);
+
+  PetscCheck(minit >= 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Minimum number of iterations %" PetscInt_FMT " must be non-negative", minit);
+  ksp->min_it = minit;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   KSPGetMinimumIterations - Gets the minimum number of iterations to use, regardless of the tolerances, that was set with `KSPSetMinimumIterations()` or `-ksp_min_it`
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - the Krylov subspace context
+
+   Output Parameter:
+.  minit - minimum number of iterations to use
+
+   Level: intermediate
+
+.seealso: [](chapter_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetTolerances()`, `KSPSetMinimumIterations()`, `KSPGetTolerances()`
+@*/
+PetscErrorCode KSPGetMinimumIterations(KSP ksp, PetscInt *minit)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidIntPointer(minit, 2);
+
+  *minit = ksp->min_it;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
