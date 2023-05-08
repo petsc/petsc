@@ -484,6 +484,9 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
     PetscInt n = v->map->n + nghost;
     PetscCall(PetscCalloc1(n, &s->array));
     s->array_allocated = s->array;
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)v, NormIds[NORM_2], 0));
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)v, NormIds[NORM_1], 0));
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)v, NormIds[NORM_INFINITY], 0));
   }
 
   /* By default parallel vectors do not have local representation */
