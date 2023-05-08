@@ -1341,6 +1341,9 @@ PetscErrorCode VecSetRandom(Vec x, PetscRandom rctx)
 
   Level: beginner
 
+  Note:
+  If the norm of the vector is known to be zero then this skips the unneeded zeroing process
+
 .seealso: [](chapter_vectors), `Vec`, `VecCreate()`, `VecSetOptionsPrefix()`, `VecSet()`, `VecSetValues()`
 @*/
 PetscErrorCode VecZeroEntries(Vec vec)

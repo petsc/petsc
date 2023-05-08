@@ -515,6 +515,8 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
    You CANNOT call this after you have called `VecSetValues()` but before you call
    `VecAssemblyBegin()`
 
+   If `alpha` is zero and the norm of the vector is known to be zero then this skips the unneeded zeroing process
+
 .seealso: [](chapter_vectors), `Vec`, `VecSetValues()`, `VecSetValuesBlocked()`, `VecSetRandom()`
 @*/
 PetscErrorCode VecSet(Vec x, PetscScalar alpha)
@@ -526,6 +528,13 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
   PetscValidLogicalCollectiveScalar(x, alpha, 2);
   PetscCall(VecSetErrorIfLocked(x, 1));
 
+  if (alpha == 0) {
+    PetscReal norm;
+    PetscBool set;
+
+    PetscCall(VecNormAvailable(x, NORM_2, &set, &norm));
+    if (set == PETSC_TRUE && norm == 0) PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscLogEventBegin(VEC_Set, x, 0, 0, 0));
   PetscUseTypeMethod(x, set, alpha);
   PetscCall(PetscLogEventEnd(VEC_Set, x, 0, 0, 0));

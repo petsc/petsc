@@ -36,6 +36,10 @@ PetscErrorCode VecCreate_Seq(Vec V)
 
   s                  = (Vec_Seq *)V->data;
   s->array_allocated = array;
+  PetscCall(PetscObjectComposedDataSetReal((PetscObject)V, NormIds[NORM_2], 0));
+  PetscCall(PetscObjectComposedDataSetReal((PetscObject)V, NormIds[NORM_1], 0));
+  PetscCall(PetscObjectComposedDataSetReal((PetscObject)V, NormIds[NORM_INFINITY], 0));
+
 #else
   switch (((PetscObject)V)->precision) {
   case PETSC_PRECISION_SINGLE: {
