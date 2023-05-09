@@ -594,7 +594,7 @@ below:
    space while the ``F`` defines the function space for the history of
    updates.
 
--  ``MatLMVMUpdate(MatB, Vec X, Vec F)`` – Applies a nonlinear update to
+-  ``MatLMVMUpdate(Mat B, Vec X, Vec F)`` – Applies a nonlinear update to
    the approximate Jacobian such that :math:`s_k = x_k - x_{k-1}` and
    :math:`y_k = f(x_k) - f(x_{k-1})`, where :math:`k` is the index for
    the update.
