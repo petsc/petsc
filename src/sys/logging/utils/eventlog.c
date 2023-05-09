@@ -777,7 +777,7 @@ PetscErrorCode PetscLogEventSynchronize(PetscLogEvent event, MPI_Comm comm)
   #include <nvToolsExt.h>
 #endif
 #if defined(PETSC_HAVE_THREADSAFETY)
-static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogEvent event, PetscLogStage stage, PetscEventPerfInfo **eventInfo)
+static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogStage stage, PetscLogEvent event, PetscEventPerfInfo **eventInfo)
 {
   PetscHashIJKKey     key;
   PetscEventPerfInfo *leventInfo;
