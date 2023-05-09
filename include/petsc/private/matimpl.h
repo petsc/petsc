@@ -1628,7 +1628,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(Mat, c
 #endif
 
 PETSC_EXTERN PetscLogEvent MAT_Mult;
-PETSC_EXTERN PetscLogEvent MAT_MultMatrixFree;
 PETSC_EXTERN PetscLogEvent MAT_Mults;
 PETSC_EXTERN PetscLogEvent MAT_MultAdd;
 PETSC_EXTERN PetscLogEvent MAT_MultTranspose;
@@ -1665,7 +1664,6 @@ PETSC_EXTERN PetscLogEvent MAT_GetValues;
 PETSC_EXTERN PetscLogEvent MAT_GetRow;
 PETSC_EXTERN PetscLogEvent MAT_GetRowIJ;
 PETSC_EXTERN PetscLogEvent MAT_CreateSubMats;
-PETSC_EXTERN PetscLogEvent MAT_GetColoring;
 PETSC_EXTERN PetscLogEvent MAT_GetOrdering;
 PETSC_EXTERN PetscLogEvent MAT_RedundantMat;
 PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap;
