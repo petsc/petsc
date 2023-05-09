@@ -786,13 +786,13 @@ static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogStage stage
   key.i = PetscLogGetTid();
   key.j = stage;
   key.k = event;
+  PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
   PetscCall(PetscHMapEventGet(eventInfoMap_th, key, &leventInfo));
   if (!leventInfo) {
-    PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
     PetscCall(PetscNew(&leventInfo));
     PetscCall(PetscHMapEventSet(eventInfoMap_th, key, leventInfo));
-    PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   }
+  PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   *eventInfo = leventInfo;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
