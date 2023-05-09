@@ -204,7 +204,7 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 
 .seealso: `PetscEventPerfInfoClear()`
 @*/
-PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
+PetscErrorCode PetscEventPerfInfoCopy(const PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
 {
   PetscFunctionBegin;
   outInfo->id      = eventInfo->id;
@@ -231,7 +231,7 @@ PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventP
 
 .seealso: `PetscEventPerfInfoClear()`
 @*/
-PetscErrorCode PetscEventPerfInfoAdd(PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
+PetscErrorCode PetscEventPerfInfoAdd(const PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
 {
   PetscFunctionBegin;
   outInfo->count += eventInfo->count;
