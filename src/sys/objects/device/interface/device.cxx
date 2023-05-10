@@ -5,7 +5,6 @@
 #include "../impls/cupm/cupmdevice.hpp"
 #include "../impls/sycl/sycldevice.hpp"
 
-#include <limits>  // std::numeric_limits
 #include <utility> // std::make_pair
 
 using namespace Petsc::device;
@@ -29,6 +28,8 @@ static sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
   case PetscConcat_(PETSC_DEVICE_, IMPLS): { \
     PetscCall(PetscConcat_(IMPLS, Device).func(__VA_ARGS__)); \
   } break
+
+#define PETSC_VOID_0(...) ((void)0)
 
 /*
   Suppose you have:
@@ -57,7 +58,7 @@ static sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
 
   if PetscDefined(HAVE_CUDA) evaluates to 1, and expand to nothing otherwise
 */
-#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS, func, ...) PetscIfPetscDefined(PetscConcat_(HAVE_, IMPLS), PETSC_DEVICE_CASE, PetscExpandToNothing)(IMPLS, func, __VA_ARGS__)
+#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS, func, ...) PetscIfPetscDefined(PetscConcat_(HAVE_, IMPLS), PETSC_DEVICE_CASE, PETSC_VOID_0)(IMPLS, func, __VA_ARGS__)
 
 /*@C
   PetscDeviceCreate - Get a new handle for a particular device (often a GPU) type
