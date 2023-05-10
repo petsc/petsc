@@ -821,11 +821,11 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 
    Sample usage:
 .vb
-   KSPRegister("my_solver",MySolverCreate);
+   KSPRegister("my_solver", MySolverCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$    ` KSPSetType`(ksp,"my_solver")
+$    ` KSPSetType`(ksp, "my_solver")
    or at runtime via the option
 $     -ksp_type my_solver
 
@@ -870,11 +870,11 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
 
   Sample usage:
 .vb
-  KSPMonitorRegister("my_monitor",PETSCVIEWERASCII,PETSC_VIEWER_ASCII_INFO_DETAIL,MyMonitor,NULL,NULL);
+  KSPMonitorRegister("my_monitor", PETSCVIEWERASCII, PETSC_VIEWER_ASCII_INFO_DETAIL, MyMonitor, NULL, NULL);
 .ve
 
   Then, your monitor can be chosen with the procedural interface via
-$     KSPMonitorSetFromOptions(ksp,"-ksp_monitor_my_monitor","my_monitor",NULL)
+$     KSPMonitorSetFromOptions(ksp, "-ksp_monitor_my_monitor", "my_monitor", NULL)
   or at runtime via the option
 $     -ksp_monitor_my_monitor
 

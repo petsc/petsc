@@ -487,7 +487,7 @@ PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
      Notes:
      Unlike almost all other PETSc routines, `PETSC_VIEWER_SOCKET_()` does not return
      an error code, it returns NULL if it fails. The  `PETSCVIEWERSOCKET`  `PetscViewer` is usually used in the form
-$       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
+$       XXXView(XXX object, PETSC_VIEWER_SOCKET_(comm));
 
      Currently the only socket client available is MATLAB. See
      src/dm/tests/ex12.c and ex12.m for an example of usage.

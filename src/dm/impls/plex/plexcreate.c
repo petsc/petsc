@@ -5422,7 +5422,7 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
   Options Database Key:
 . -dm_plex_create_from_hdf5_xdmf - use the `PETSC_VIEWER_HDF5_XDMF` format for reading HDF5
 
-  Use -dm_plex_create_ prefix to pass options to the internal PetscViewer, e.g.
+  Use `-dm_plex_create_ prefix` to pass options to the internal `PetscViewer`, e.g.
 $ -dm_plex_create_viewer_hdf5_collective
 
   Level: beginner

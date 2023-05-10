@@ -514,7 +514,7 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
 .  dm - `DM` to be used with `SNES`
 
    Output Parameters:
-+  f - relaxation function which performs Gauss-Seidel sweeps, see `SNESGSFunction`
++  f - relaxation function which performs Gauss-Seidel sweeps, see `SNESSetNGS()`
 -  ctx - context for residual evaluation
 
    Level: advanced
@@ -527,7 +527,7 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
    This makes the interface consistent regardless of whether the user interacts with a `DM` or
    not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: `DMSNESSetContext()`, `SNESGetNGS()`, `DMSNESGetJacobian()`, `DMSNESGetFunction()`, `SNESNGSFunction`
+.seealso: `DMSNESSetContext()`, `SNESGetNGS()`, `DMSNESGetJacobian()`, `DMSNESGetFunction()`
 @*/
 PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *), void **ctx)
 {

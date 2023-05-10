@@ -261,7 +261,7 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      Note:
      Unlike almost all other PETSc routines, `PETSC_VIEWER_MATLAB_()` does not return
      an error code.  The matlab PetscViewer is usually used in the form
-$       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
+$       XXXView(XXX object, PETSC_VIEWER_MATLAB_(comm));
 
      Use `PETSC_VIEWER_SOCKET_()` or `PetscViewerSocketOpen()` to communicator with an interactive MATLAB session.
 

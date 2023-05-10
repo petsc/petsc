@@ -30,11 +30,11 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt);
 
    Sample usage:
 .vb
-   TSAdaptRegister("my_scheme",MySchemeCreate);
+   TSAdaptRegister("my_scheme", MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
-$     TSAdaptSetType(ts,"my_scheme")
+$     TSAdaptSetType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_adapt_type my_scheme
 

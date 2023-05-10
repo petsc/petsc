@@ -555,8 +555,10 @@ $    F(X,Xdot) = 0
 
   for steady state using the iteration
 
-$    [G'] S = -F(X,0)
-$    X += S
+.vb
+    [G'] S = -F(X,0)
+    X += S
+.ve
 
   where
 

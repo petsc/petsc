@@ -477,7 +477,7 @@ PetscErrorCode PetscAttachDebugger(void)
    Most users need not directly employ this routine and the other error
    handlers, but can instead use the simplified interface SETERR, which has
    the calling sequence
-$     SETERRQ(PETSC_COMM_SELF,number,p,message)
+$     SETERRQ(PETSC_COMM_SELF, number, p, message)
 
    Notes for experienced users:
    Use `PetscPushErrorHandler()` to set the desired error handler.  The

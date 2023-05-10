@@ -1211,11 +1211,11 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
 
    Sample usage:
 .vb
-   TSGLLERegister("my_scheme",MySchemeCreate);
+   TSGLLERegister("my_scheme", MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
-$     TSGLLESetType(ts,"my_scheme")
+$     TSGLLESetType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_gl_type my_scheme
 
@@ -1245,11 +1245,11 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 
    Sample usage:
 .vb
-   TSGLLEAcceptRegister("my_scheme",MySchemeCreate);
+   TSGLLEAcceptRegister("my_scheme", MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
-$     TSGLLESetAcceptType(ts,"my_scheme")
+$     TSGLLESetAcceptType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_gl_accept_type my_scheme
 

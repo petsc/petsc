@@ -249,7 +249,7 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
 
     If using direct solvers such as `PCLU` and `PCCHOLESKY` one generally uses `KSPPREONLY` which uses exactly one iteration
 
-$    -ksp_type richardson -pc_type jacobi gives one classically Jacobi preconditioning
+    `-ksp_type richardson -pc_type jacobi` gives one classical Jacobi preconditioning
 
   Reference:
 . * - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving

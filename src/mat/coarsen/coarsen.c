@@ -20,11 +20,11 @@ PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
    Sample usage:
 .vb
-   MatCoarsenRegister("my_agg",MyAggCreate);
+   MatCoarsenRegister("my_agg", MyAggCreate);
 .ve
 
    Then, your aggregator can be chosen with the procedural interface via
-$     MatCoarsenSetType(agg,"my_agg")
+$     MatCoarsenSetType(agg, "my_agg")
    or at runtime via the option
 $     -mat_coarsen_type my_agg
 
@@ -72,11 +72,8 @@ PetscErrorCode MatCoarsenGetType(MatCoarsen coarsen, MatCoarsenType *type)
 .   coarsen - the coarsen
 
    Options Database Keys:
-   To specify the coarsen through the options database, use one of
-   the following
-$    -mat_coarsen_type mis|hem|misk
-   To see the coarsen result
-$    -mat_coarsen_view
++    -mat_coarsen_type mis|hem|misk - set the coarsening type
+-    -mat_coarsen_view - view the coarsening object
 
    Level: advanced
 

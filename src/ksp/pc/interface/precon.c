@@ -1044,7 +1044,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 -  ctx - optional user-defined context (may be null)
 
    Calling sequence of `func`:
-$  PetscErrorCode func (PC pc, PetscInt nsub, IS *row, IS *col, Mat *submat, void *ctx);
+$  PetscErrorCode func(PC pc, PetscInt nsub, IS *row, IS *col, Mat *submat, void *ctx);
 +  pc - the preconditioner context
 .  row - an array of index sets that contain the global row numbers
          that comprise each local submatrix
@@ -1800,7 +1800,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     PCSetType(pc,"my_solver")
+$     PCSetType(pc, "my_solver")
    or at runtime via the option
 $     -pc_type my_solver
 

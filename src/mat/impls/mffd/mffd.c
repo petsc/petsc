@@ -184,11 +184,11 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J)
 
    Sample usage:
 .vb
-   MatMFFDRegister("my_h",MyHCreate);
+   MatMFFDRegister("my_h", MyHCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     `MatMFFDSetType`(mfctx,"my_h")
+$     `MatMFFDSetType`(mfctx, "my_h")
    or at runtime via the option
 $     -mat_mffd_type my_h
 

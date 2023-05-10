@@ -903,7 +903,7 @@ M*/
   The prefix "PETSC_" is automatically prepended to def. To avoid prepending "PETSC_", say to
   add custom checks in user code, one should use `PetscDefined_()`.
 
-$ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_,d))
+$ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_, d))
 
   Developer Notes:
   Getting something that works in C and CPP for an arg that may or may not be defined is

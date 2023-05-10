@@ -1176,9 +1176,11 @@ static PetscErrorCode TSGetStages_Theta(TS ts, PetscInt *ns, Vec *Y[])
 -  -ts_theta_initial_guess_extrapolate <flg> - Extrapolate stage initial guess from previous solution (sometimes unstable)
 
    Notes:
-$  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (`TSBEULER`)
-$  -ts_type theta -ts_theta_theta 0.5 corresponds to the implicit midpoint rule
-$  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (`TSCN`)
+.vb
+  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
+  -ts_type theta -ts_theta_theta 0.5 corresponds to the implicit midpoint rule
+  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (TSCN)
+.ve
 
    The endpoint variant of the Theta method and backward Euler can be applied to DAE. The midpoint variant is not suitable for DAEs because it is not stiffly accurate.
 
@@ -1391,8 +1393,7 @@ static PetscErrorCode TSView_BEuler(TS ts, PetscViewer viewer)
   Level: beginner
 
   Note:
-  `TSBEULER` is equivalent to `TSTHETA` with Theta=1.0
-$  -ts_type theta -ts_theta_theta 1.0
+  `TSBEULER` is equivalent to `TSTHETA` with Theta=1.0 or `-ts_type theta -ts_theta_theta 1.0`
 
 .seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
 M*/

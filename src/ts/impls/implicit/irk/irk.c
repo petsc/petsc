@@ -172,11 +172,11 @@ static PetscErrorCode TSIRKCreate_Gauss(TS ts)
 
    Sample usage:
 .vb
-   TSIRKRegister("my_scheme",MySchemeCreate);
+   TSIRKRegister("my_scheme", MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
-$     TSIRKSetType(ts,"my_scheme")
+$     TSIRKSetType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_irk_type my_scheme
 

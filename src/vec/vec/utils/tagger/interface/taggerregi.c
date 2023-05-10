@@ -46,11 +46,11 @@ PetscErrorCode VecTaggerRegisterAll(void)
 
    Sample usage:
 .vb
-   VecTaggerRegister("my_impl",MyImplCreate);
+   VecTaggerRegister("my_impl", MyImplCreate);
 .ve
 
    Then, this implementation can be chosen with the procedural interface via
-$     VecTaggerSetType(tagger,"my_impl")
+$     VecTaggerSetType(tagger, "my_impl")
    or at runtime via the option
 $     -snes_type my_solver
 

@@ -1217,7 +1217,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
     `PetscViewerFileSetName`(v,"datafile");
 .ve
    The optional `PetscViewerSetFromOptions()` call allows overriding `PetscViewerSetType()` using the option
-$ -viewer_type {binary,hdf5}
+$ -viewer_type {binary, hdf5}
 
    See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
    and src/mat/tutorials/ex10.c with the second approach.
@@ -2922,14 +2922,15 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
    Output Parameter:
 .  info - matrix information context
 
+   Options Database Key:
+.  -mat_view ::ascii_info - print matrix info to `PETSC_STDOUT`
+
    Notes:
    The `MatInfo` context contains a variety of matrix data, including
    number of nonzeros allocated and used, number of mallocs during
    matrix assembly, etc.  Additional information for factored matrices
    is provided (such as the fill ratio, number of mallocs during
-   factorization, etc.).  Much of this info is printed to `PETSC_STDOUT`
-   when using the runtime options
-$       -info -mat_view ::ascii_info
+   factorization, etc.).
 
    Example:
    See the file ${PETSC_DIR}/include/petscmat.h for a complete list of
@@ -2939,7 +2940,7 @@ $       -info -mat_view ::ascii_info
       Mat     A;
       double  mal, nz_a, nz_u;
 
-      MatGetInfo(A,MAT_LOCAL,&info);
+      MatGetInfo(A, MAT_LOCAL, &info);
       mal  = info.mallocs;
       nz_a = info.nz_allocated;
 .ve
@@ -2954,7 +2955,7 @@ $       -info -mat_view ::ascii_info
       Mat     A
       integer ierr
 
-      call MatGetInfo(A,MAT_LOCAL,info,ierr)
+      call MatGetInfo(A, MAT_LOCAL, info, ierr)
       mal = info(MAT_INFO_MALLOCS)
       nz_a = info(MAT_INFO_NZ_ALLOCATED)
 .ve
@@ -6275,13 +6276,13 @@ PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
 
    Fortran Note:
    `idxm` and `idxn` should be declared as
-$     MatStencil idxm(4,m)
+$     MatStencil idxm(4, m)
    and the values inserted using
 .vb
-    idxm(MatStencil_i,1) = i
-    idxm(MatStencil_j,1) = j
-    idxm(MatStencil_k,1) = k
-    idxm(MatStencil_c,1) = c
+    idxm(MatStencil_i, 1) = i
+    idxm(MatStencil_j, 1) = j
+    idxm(MatStencil_k, 1) = k
+    idxm(MatStencil_c, 1) = c
    etc
 .ve
 
@@ -6356,13 +6357,13 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
 
    Fortran Note:
    `idxm` and `idxn` should be declared as
-$     MatStencil idxm(4,m)
+$     MatStencil idxm(4, m)
    and the values inserted using
 .vb
-    idxm(MatStencil_i,1) = i
-    idxm(MatStencil_j,1) = j
-    idxm(MatStencil_k,1) = k
-    idxm(MatStencil_c,1) = c
+    idxm(MatStencil_i, 1) = i
+    idxm(MatStencil_j, 1) = j
+    idxm(MatStencil_k, 1) = k
+    idxm(MatStencil_c, 1) = c
     etc
 .ve
 
