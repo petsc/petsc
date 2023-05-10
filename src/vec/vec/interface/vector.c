@@ -1735,7 +1735,7 @@ PetscErrorCode VecCopy(Vec x, Vec y)
 }
 
 /*@
-   VecSwap - Swaps the values between two vectors,  `x` and `y`.
+   VecSwap - Swaps the values between two vectors, `x` and `y`.
 
    Logically Collective
 
