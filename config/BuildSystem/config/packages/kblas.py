@@ -67,7 +67,7 @@ class Configure(config.package.Package):
       g.write('_USE_MAGMA_ = TRUE\n')
       g.write('_MAGMA_ROOT_ = '+self.magma.directory+'\n')
       g.write('_CUDA_ROOT_ = '+cudaDir+'\n')
-      if self.cuda.cudaArch:
+      if hasattr(self.cuda, 'cudaArch'):
         # TARGET_SM is just used to check min version compatibility, so we pass
         # it the smallest version (or 35 if "all" etc are specified)
         if self.cuda.cudaArchIsVersionList():

@@ -118,7 +118,7 @@ class Configure(config.package.Package):
         g.write('H2OPUS_USE_MAGMA_POTRF = 1\n')
         g.write('NVCC = '+nvcc+'\n')
         g.write('NVCCFLAGS = '+nvopts+' --expt-relaxed-constexpr\n')
-        if self.cuda.cudaArch:
+        if hasattr(self.cuda, 'cudaArch'):
           g.write('GENCODE_FLAGS = '+self.cuda.nvccArchFlags()+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.cuda.include)+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.magma.include)+'\n')
