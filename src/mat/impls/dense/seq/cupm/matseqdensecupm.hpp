@@ -244,7 +244,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::HostToDevice_(Mat m, PetscDeviceCont
     cupmStream_t stream;
 
     // Allocate GPU memory if not present
-    if (!mcu->d_v) PetscCall(SetPreallocation(m, dctx));
+    if (!mcu->d_v) PetscCall(SetPreallocation(m, dctx, nullptr));
     PetscCall(GetHandlesFrom_(dctx, &stream));
     PetscCall(PetscLogEventBegin(MAT_DenseCopyToGPU, m, 0, 0, 0));
     {
@@ -872,6 +872,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Convert_Dispatch_(Mat M, MatType typ
     MatComposeOp_CUPM(to_host, pobj, MatDenseCUPMResetArray_C(), nullptr, ResetArray);
     MatComposeOp_CUPM(to_host, pobj, MatDenseCUPMReplaceArray_C(), nullptr, ReplaceArray);
     MatComposeOp_CUPM(to_host, pobj, MatProductSetFromOptions_seqaij_seqdensecupm_C(), nullptr, MatProductSetFromOptions_SeqAIJ_SeqDense);
+    MatComposeOp_CUPM(to_host, pobj, MatDenseCUPMSetPreallocation_C(), nullptr, SetPreallocation);
 
     if (to_host) {
       B->offloadmask = PETSC_OFFLOAD_CPU;
@@ -959,7 +960,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::SetUp(Mat A) noexcept
     PetscDeviceContext dctx;
 
     PetscCall(GetHandles_(&dctx));
-    PetscCall(SetPreallocation(A, dctx));
+    PetscCall(SetPreallocation(A, dctx, nullptr));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1505,7 +1506,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Duplicate(Mat A, MatDuplicateOption 
   PetscCall(MatDuplicateNoCreate_SeqDense(*B, A, hopt));
   if (opt == MAT_COPY_VALUES && hopt != MAT_COPY_VALUES) PetscCall(Copy(A, *B, SAME_NONZERO_PATTERN));
   // allocate memory if needed
-  if (opt != MAT_COPY_VALUES && !MatCUPMCast(*B)->d_v) PetscCall(SetPreallocation(*B, dctx));
+  if (opt != MAT_COPY_VALUES && !MatCUPMCast(*B)->d_v) PetscCall(SetPreallocation(*B, dctx, nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

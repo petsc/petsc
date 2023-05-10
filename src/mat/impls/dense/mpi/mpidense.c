@@ -629,6 +629,7 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDAPlaceArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDAResetArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDAReplaceArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDASetPreallocation_C", NULL));
 #endif
 #if defined(PETSC_HAVE_HIP)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijhipsparse_mpidense_C", NULL));
@@ -648,6 +649,7 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPPlaceArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPResetArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPReplaceArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPSetPreallocation_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumn_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumn_C", NULL));
