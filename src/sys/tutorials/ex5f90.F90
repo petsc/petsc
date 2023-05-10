@@ -75,7 +75,7 @@
       PetscCallA(PetscBagSetOptionsPrefix(bag, 'pbag_', ierr))
 
 ! register the data within the bag, grabbing values from the options database
-!     Need to put the value into a variable for 64 bit indices
+!     Need to put the value into a variable for 64-bit indices
       int56 = 56
       PetscCallA(PetscBagRegisterInt(bag,data%nxc ,int56,'nxc','nxc_variable help message',ierr))
       PetscCallA(PetscBagRegisterRealArray(bag,data%rarray,three,'rarray','rarray help message',ierr))

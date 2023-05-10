@@ -1187,7 +1187,7 @@ PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[], ...) PETSC_ATTRIBU
 
      Level: intermediate
 
-.seealso: `PetscSetFPTrap()`, `PetscPushFPTrap()`
+.seealso: `PetscSetFPTrap()`, `PetscFPTrapPush()`
  E*/
 typedef enum {
   PETSC_FP_TRAP_OFF      = 0,

@@ -44,7 +44,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem
      on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithmetic
-     rather than just 64 bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
+     rather than just 64-bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
      and tell MPI to do its ALlreduces with MPI_LONG_DOUBLE.
 
      Note for developers that does not effect the code. Intel's long double is implemented by storing the 80 bits of extended double

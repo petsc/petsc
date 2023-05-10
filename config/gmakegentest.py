@@ -721,7 +721,7 @@ class generateExamples(Petsc):
         isNull=False
         if requirement.startswith("!"):
           requirement=requirement[1:]; isNull=True
-        # 32bit vs 64bit pointers
+        # 32-bit vs 64-bit pointers
         if requirement == "64bitptr":
           if self.conf['PETSC_SIZEOF_VOID_P']==8:
             if isNull:

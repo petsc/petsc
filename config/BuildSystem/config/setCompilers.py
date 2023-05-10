@@ -2096,7 +2096,7 @@ class Configure(config.base.Configure):
     return
 
   def checkLargeFileIO(self):
-    '''check for large file support with 64bit offset'''
+    '''check for large file support with 64-bit offset'''
     if not self.argDB['with-large-file-io']:
       return
     languages = ['C']
@@ -2182,7 +2182,7 @@ class Configure(config.base.Configure):
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
     yield ('ar',self.getArchiverFlags('ar'),'true')
-    # IBM with 64 bit pointers
+    # IBM with 64-bit pointers
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'true')

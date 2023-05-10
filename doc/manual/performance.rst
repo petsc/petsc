@@ -529,22 +529,6 @@ Aggressive aggregation of data may result in inflexible datastructures
 and code that is hard to maintain. We advise users to keep these
 competing goals in mind and not blindly optimize for performance only.
 
-.. _sec_perf_memory:
-
-Memory Allocation for Sparse Matrix Assembly
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Since the process of dynamic memory allocation for sparse matrices is
-inherently very expensive, accurate preallocation of memory is crucial
-for efficient sparse matrix assembly. One should use the matrix creation
-routines for particular data structures, such as ``MatCreateSeqAIJ()``
-and ``MatCreateAIJ()`` for compressed, sparse row formats, instead of
-the generic ``MatCreate()`` routine. For problems with multiple degrees
-of freedom per node, the block, compressed, sparse row formats, created
-by ``MatCreateSeqBAIJ()`` and ``MatCreateBAIJ()``, can significantly
-enhance performance. :any:`sec_matsparse` includes
-extensive details and examples regarding preallocation.
-
 .. _sec_symbolfactor:
 
 Memory Allocation for Sparse Matrix Factorization
@@ -700,7 +684,7 @@ solvers, as discussed throughout the manual.
 
 In particular, note that the default restart parameter for GMRES is 30,
 which may be too small for some large-scale problems. One can alter this
-parameter with the option ``-ksp_gmres_restar <restart>`` or by calling
+parameter with the option ``-ksp_gmres_restart <restart>`` or by calling
 ``KSPGMRESSetRestart()``. :any:`sec_ksp` gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.

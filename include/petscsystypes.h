@@ -171,8 +171,8 @@ typedef int PetscClassId;
     Level: intermediate
 
     Notes:
-    This is always a 32 bit integer, sometimes it is the same as `PetscInt`, but if PETSc was built with `--with-64-bit-indices` but
-           standard C/Fortran integers are 32 bit then this is NOT the same as `PetscInt`; it remains 32 bit.
+    This is always a 32-bit integer, sometimes it is the same as `PetscInt`, but if PETSc was built with `--with-64-bit-indices` but
+           standard C/Fortran integers are 32-bit then this is NOT the same as `PetscInt`; it remains 32-bit.
 
     `PetscMPIIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscMPIInt`, if not it
       generates a `PETSC_ERR_ARG_OUTOFRANGE` error.
@@ -317,27 +317,27 @@ enum {
 
    Notes:
    Usually this is the same as `PetscInt`, but if PETSc was built with `--with-64-bit-indices` but
-   standard C/Fortran integers are 32 bit then this may not be the same as `PetscInt`,
-   except on some BLAS/LAPACK implementations that support 64 bit integers see the notes below.
+   standard C/Fortran integers are 32-bit then this may not be the same as `PetscInt`,
+   except on some BLAS/LAPACK implementations that support 64-bit integers see the notes below.
 
    `PetscErrorCode` `PetscBLASIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscBLASInt`, if not it
     generates a `PETSC_ERR_ARG_OUTOFRANGE` error
 
    Installation Notes:
     ./configure automatically determines the size of the integers used by BLAS/LAPACK except when `--with-batch` is used
-    in that situation one must know (by some other means) if the integers used by BLAS/LAPACK are 64 bit and if so pass the flag `--known-64-bit-blas-indices`
+    in that situation one must know (by some other means) if the integers used by BLAS/LAPACK are 64-bit and if so pass the flag `--known-64-bit-blas-indices`
 
-    MATLAB ships with BLAS and LAPACK that use 64 bit integers, for example if you run ./configure with, the option
+    MATLAB ships with BLAS and LAPACK that use 64-bit integers, for example if you run ./configure with, the option
      `--with-blaslapack-lib`=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
 
-    MKL ships with both 32 and 64 bit integer versions of the BLAS and LAPACK. If you pass the flag `-with-64-bit-blas-indices` PETSc will link
-    against the 64 bit version, otherwise it uses the 32 bit version
+    MKL ships with both 32 and 64-bit integer versions of the BLAS and LAPACK. If you pass the flag `-with-64-bit-blas-indices` PETSc will link
+    against the 64-bit version, otherwise it uses the 32-bit version
 
-    OpenBLAS can be built to use 64 bit integers. The ./configure options `--download-openblas` `-with-64-bit-blas-indices` will build a 64 bit integer version
+    OpenBLAS can be built to use 64-bit integers. The ./configure options `--download-openblas` `-with-64-bit-blas-indices` will build a 64-bit integer version
 
-    External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64 bit integers to BLAS/LAPACK so cannot
-    be used with PETSc when PETSc links against 64 bit integer BLAS/LAPACK. ./configure will generate an error if you attempt to link PETSc against any of
-    these external libraries while using 64 bit integer BLAS/LAPACK.
+    External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64-bit integers to BLAS/LAPACK so cannot
+    be used with PETSc when PETSc links against 64-bit integer BLAS/LAPACK. ./configure will generate an error if you attempt to link PETSc against any of
+    these external libraries while using 64-bit integer BLAS/LAPACK.
 
 .seealso: `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`
 M*/

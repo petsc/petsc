@@ -16,7 +16,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
+    help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64-bit integers (long long) for indexing in vectors and matrices'))
     return
 
   def setupDependencies(self, framework):
@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
       return 0
 
   def configureIndexSize(self):
-    '''Determine the size of PETSc indices (32 or 64 bit), from -with-64-bit-indices'''
+    '''Determine the size of PETSc indices (32 or 64-bit), from -with-64-bit-indices'''
     if self.framework.argDB['with-64-bit-indices']:
       self.integerSize = 64
       self.addDefine('USE_64BIT_INDICES', 1)

@@ -317,9 +317,9 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
     stag->entries = stag->n[2] * entriesPerElementLayer + (dummyEnd[2] ? stag->n[0] * stag->n[1] * entriesPerFace : 0) + (dummyEnd[2] && dummyEnd[0] ? stag->n[1] * entriesPerEdge : 0) + (dummyEnd[2] && dummyEnd[1] ? stag->n[0] * entriesPerEdge : 0) + (dummyEnd[2] && dummyEnd[1] && dummyEnd[0] ? entriesPerCorner : 0);
   }
 
-  /* Check that we will not overflow 32 bit indices (slightly overconservative) */
+  /* Check that we will not overflow 32-bit indices (slightly overconservative) */
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheck(((PetscInt64)stag->n[0]) * ((PetscInt64)stag->n[1]) * ((PetscInt64)stag->n[2]) * ((PetscInt64)stag->entriesPerElement) <= (PetscInt64)PETSC_MPI_INT_MAX, PetscObjectComm((PetscObject)dm), PETSC_ERR_INT_OVERFLOW, "Mesh of %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with %" PetscInt_FMT " entries per (interior) element is likely too large for 32 bit indices",
+    PetscCheck(((PetscInt64)stag->n[0]) * ((PetscInt64)stag->n[1]) * ((PetscInt64)stag->n[2]) * ((PetscInt64)stag->entriesPerElement) <= (PetscInt64)PETSC_MPI_INT_MAX, PetscObjectComm((PetscObject)dm), PETSC_ERR_INT_OVERFLOW, "Mesh of %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with %" PetscInt_FMT " entries per (interior) element is likely too large for 32-bit indices",
                stag->n[0], stag->n[1], stag->n[2], stag->entriesPerElement);
   }
 

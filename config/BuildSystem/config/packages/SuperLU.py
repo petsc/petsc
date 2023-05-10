@@ -12,8 +12,8 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
     self.liblist          = [['libsuperlu.a']]
-    # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
-    self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
+    # SuperLU has NO support for 64-bit integers, use SuperLU_Dist if you need that
+    self.requires32bitint = 1;  # 1 means that the package will not work with 64-bit integers
     self.excludedDirs     = ['superlu_dist','superlu_mt']
     # SuperLU does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.

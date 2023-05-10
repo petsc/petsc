@@ -5,7 +5,7 @@
    When build with PETSC_USE_64BIT_INDICES this will use SuiteSparse_long as the
    integer type in KLU, otherwise it will use int. This means
    all integers in this file are simply declared as PetscInt. Also it means
-   that KLU SuiteSparse_long version MUST be built with 64 bit integers when used.
+   that KLU SuiteSparse_long version MUST be built with 64-bit integers when used.
 
 */
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -178,7 +178,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const Ma
     PetscCall(ISGetIndices(r, &ra));
     PetscCall(ISGetIndices(c, &ca));
     PetscCall(PetscMalloc2(m, &lu->perm_r, n, &lu->perm_c));
-    /* we cannot simply memcpy on 64 bit archs */
+    /* we cannot simply memcpy on 64-bit archs */
     for (i = 0; i < m; i++) lu->perm_r[i] = ra[i];
     for (i = 0; i < n; i++) lu->perm_c[i] = ca[i];
     PetscCall(ISRestoreIndices(r, &ra));

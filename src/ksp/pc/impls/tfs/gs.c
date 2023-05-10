@@ -544,7 +544,7 @@ static PetscErrorCode get_ngh_buf(PCTFS_gs_id *gs)
     gs->num_loads = num_loads = negl / per_load + (negl % per_load > 0);
   }
 
-  /* convert buf sizes from #bytes to #ints - 32 bit only! */
+  /* convert buf sizes from #bytes to #ints - 32-bit only! */
   p_mask_size /= sizeof(PetscInt);
   ngh_buf_size /= sizeof(PetscInt);
   buf_size /= sizeof(PetscInt);

@@ -138,7 +138,7 @@ extern "C" {
 /* MPI_Aint has to be a signed integral type large enough to hold a pointer */
 typedef ptrdiff_t MPI_Aint;
 
-/* old 32bit Microsoft compiler does not support long long */
+/* old 32-bit Microsoft compiler does not support long long */
 #if defined(PETSC_SIZEOF_LONG_LONG)
 typedef long long          MPIUNI_INT64;
 typedef unsigned long long MPIUNI_UINT64;

@@ -282,7 +282,7 @@ struct Maxloc {
   atomic insertion, since it does not need the old value. A 32-bit or 64-bit store instruction should
   be atomic itself.
 
-  With bs>1 and a unit > 64 bits, the current element-wise atomic approach can not guarantee the whole
+  With bs>1 and a unit > 64-bits, the current element-wise atomic approach can not guarantee the whole
   insertion is atomic. Hope no user codes rely on that.
 */
 __device__ static double atomicExch(double *address, double val)

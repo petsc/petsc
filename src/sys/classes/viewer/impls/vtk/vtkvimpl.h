@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVTKFWrite(PetscViewer, FILE *, const void
 
 #if defined(PETSC_HAVE_STDINT_H) /* The VTK format requires a 32-bit integer */
 typedef int32_t PetscVTKInt;
-#else /* Hope int is 32 bits */
+#else /* Hope int is 32-bits */
 typedef int PetscVTKInt;
 #endif
 typedef unsigned char PetscVTKType;

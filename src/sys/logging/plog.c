@@ -2147,9 +2147,9 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n"));
   #endif
   #if defined(PETSC_USE_64BIT_INDICES)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with 64 bit PetscInt\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with 64-bit PetscInt\n"));
   #elif defined(PETSC_USE___FLOAT128)
-  PetscCall(PetscFPrintf(comm, fd, "Compiled with 32 bit PetscInt\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with 32-bit PetscInt\n"));
   #endif
   #if defined(PETSC_USE_REAL_SINGLE)
   PetscCall(PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n"));
