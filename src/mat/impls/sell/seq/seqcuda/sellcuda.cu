@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 
 #include <petscdevice_cuda.h>
+#include <petsc/private/cupmatomics.hpp>
 #include <../src/mat/impls/sell/seq/sell.h> /*I   "petscmat.h"  I*/
 
 #define SLICE_HEIGHT 16
@@ -188,6 +189,7 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
   __shared__ MatScalar shared[BLOCKY * 32];
   PetscInt             gid, row, start_slice, cid;
   PetscScalar          t = 0.0;
+  AtomicAdd<MatScalar> atomAdd;
   /* zero out y */
   for (int iter = 0; iter < 1 + (nrows - 1) / (gridDim.x * 32 * BLOCKY); iter++) {
     gid = gridDim.x * 32 * BLOCKY * iter + blockIdx.x * BLOCKY * 32 + threadIdx.y * 32 + threadIdx.x;
@@ -209,7 +211,7 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
         if (row < nrows && gid < totalentries) t = aval[gid] * x[acolidx[gid]];
         __syncthreads();
         write = segment_scan<BLOCKY>(flag, shared, &t);
-        if (row < nrows && gid < totalentries && write) atomicAdd(&y[row], t);
+        if (row < nrows && gid < totalentries && write) atomAdd(y[row], t);
         t = 0.0;
       } else { /* this iteration covers only one slice */
         row = start_slice * sliceheight + threadIdx.x % sliceheight;
@@ -227,7 +229,7 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
           for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
           if (tidx == 0 && tidy < sliceheight) { shared[tidy] = t; /* shared[0][tidy] = t */ }
           __syncthreads();
-          if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomicAdd(&y[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
+          if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(y[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
           t = 0.0;
         }
       }
@@ -242,6 +244,7 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
   __shared__ MatScalar shared[BLOCKY * 32];
   PetscInt             gid, row, start_slice, cid;
   PetscScalar          t = 0.0;
+  AtomicAdd<MatScalar> atomAdd;
   /* copy y to z */
   for (int iter = 0; iter < 1 + (nrows - 1) / (gridDim.x * 32 * BLOCKY); iter++) {
     gid = gridDim.x * 32 * BLOCKY * iter + blockIdx.x * BLOCKY * 32 + threadIdx.y * 32 + threadIdx.x;
@@ -263,7 +266,7 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
         if (row < nrows && gid < totalentries) t = aval[gid] * x[acolidx[gid]];
         __syncthreads();
         write = segment_scan<BLOCKY>(flag, shared, &t);
-        if (row < nrows && gid < totalentries && write) atomicAdd(&z[row], t);
+        if (row < nrows && gid < totalentries && write) atomAdd(z[row], t);
         t = 0.0;
       } else { /* this iteration covers only one slice */
         row = start_slice * sliceheight + threadIdx.x % sliceheight;
@@ -281,7 +284,7 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
           for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
           if (tidx == 0 && tidy < sliceheight) { shared[tidy] = t; /* shared[0][tidy] = t */ }
           __syncthreads();
-          if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomicAdd(&z[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
+          if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(z[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
           t = 0.0;
         }
       }
