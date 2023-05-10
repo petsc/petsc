@@ -72,7 +72,7 @@ checkbadFileChange:
 	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/src src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
 
 vermin:
-	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
+	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 
 lint:
 	${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} $(LINTER_OPTIONS)
