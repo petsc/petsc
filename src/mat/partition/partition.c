@@ -509,7 +509,7 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const Petsc
       The array weights is freed by PETSc so the user should not free the array. In C/C++
    the array must be obtained with a call to `PetscMalloc()`, not malloc().
 
-.seealso: [](chapter_matrices), `Mat`,  `MatPartitioning`, `MatPartitioningSetVertexWeights()`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`
+.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetVertexWeights()`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`
 @*/
 PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const PetscReal weights[])
 {

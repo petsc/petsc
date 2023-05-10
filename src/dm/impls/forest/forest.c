@@ -781,7 +781,7 @@ PetscErrorCode DMForestSetInitialRefinement(DM dm, PetscInt initRefinement)
 
   Level: intermediate
 
-.seealso: `DM`, `DMFOREST`,  `DMForestSetMinimumRefinement()`, `DMForestSetMaximumRefinement()`, `DMForestGetBaseDM()`
+.seealso: `DM`, `DMFOREST`, `DMForestSetMinimumRefinement()`, `DMForestSetMaximumRefinement()`, `DMForestGetBaseDM()`
 @*/
 PetscErrorCode DMForestGetInitialRefinement(DM dm, PetscInt *initRefinement)
 {
