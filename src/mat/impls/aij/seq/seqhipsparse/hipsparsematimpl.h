@@ -287,22 +287,12 @@ struct Mat_SeqAIJHIPSPARSE {
   hipsparseSpMVAlg_t spmvAlg;
   hipsparseSpMMAlg_t spmmAlg;
   THRUSTINTARRAY    *csr2csc_i;
-  THRUSTINTARRAY    *cooPerm;   /* permutation array that sorts the input coo entris by row and col */
-  THRUSTINTARRAY    *cooPerm_a; /* ordered array that indicate i-th nonzero (after sorting) is the j-th unique nonzero */
-
-  /* Stuff for extended COO support */
-  PetscBool   use_extended_coo; /* Use extended COO format */
-  PetscCount *jmap_d;           /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
-  PetscCount *perm_d;
-
-  Mat_SeqAIJHIPSPARSE() : use_extended_coo(PETSC_FALSE), jmap_d(NULL), perm_d(NULL) { }
+  THRUSTINTARRAY    *coords; /* permutation array used in MatSeqAIJHIPSPARSEMergeMats */
 };
 
 typedef struct Mat_SeqAIJHIPSPARSETriFactors *Mat_SeqAIJHIPSPARSETriFactors_p;
 
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSECopyToGPU(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJHIPSPARSE_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
-PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE_Basic(Mat, const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat, Mat, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSETriFactors_Reset(Mat_SeqAIJHIPSPARSETriFactors_p *);
 

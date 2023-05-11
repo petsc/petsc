@@ -2020,23 +2020,6 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDuplicate_HYPRE(Mat A, MatDuplicateOption op, Mat *B)
-{
-  hypre_ParCSRMatrix *parcsr = NULL;
-  PetscCopyMode       cpmode;
-
-  PetscFunctionBegin;
-  PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
-  if (op == MAT_DO_NOT_COPY_VALUES || op == MAT_SHARE_NONZERO_PATTERN) {
-    parcsr = hypre_ParCSRMatrixClone(parcsr, 0);
-    cpmode = PETSC_OWN_POINTER;
-  } else {
-    cpmode = PETSC_COPY_VALUES;
-  }
-  PetscCall(MatCreateFromParCSR(parcsr, MATHYPRE, cpmode, B));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
 {
   hypre_ParCSRMatrix *acsr, *bcsr;
@@ -2163,19 +2146,95 @@ static PetscErrorCode MatAXPY_HYPRE(Mat Y, PetscScalar a, Mat X, MatStructure st
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
+/* Attach cooMat to hypre matrix mat. The two matrices will share the same data array */
+static PetscErrorCode MatAttachCOOMat_HYPRE(Mat mat, Mat cooMat)
 {
-  MPI_Comm             comm;
-  PetscMPIInt          size;
-  PetscLayout          rmap, cmap;
-  Mat_HYPRE           *hmat;
-  hypre_ParCSRMatrix  *parCSR;
+  Mat_HYPRE           *hmat = (Mat_HYPRE *)mat->data;
   hypre_CSRMatrix     *diag, *offd;
-  Mat                  A, B, cooMat;
-  PetscScalar         *Aa, *Ba;
+  hypre_ParCSRMatrix  *parCSR;
   HYPRE_MemoryLocation hypreMemtype = HYPRE_MEMORY_HOST;
   PetscMemType         petscMemtype;
-  MatType              matType = MATAIJ; /* default type of cooMat */
+  Mat                  A, B;
+  PetscScalar         *Aa, *Ba;
+  PetscMPIInt          size;
+  MPI_Comm             comm;
+  PetscLayout          rmap;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(MatGetLayouts(mat, &rmap, NULL));
+
+  /* Alias cooMat's data array to IJMatrix's */
+  PetscCallExternal(HYPRE_IJMatrixGetObject, hmat->ij, (void **)&parCSR);
+  diag = hypre_ParCSRMatrixDiag(parCSR);
+  offd = hypre_ParCSRMatrixOffd(parCSR);
+
+  hypreMemtype = hypre_CSRMatrixMemoryLocation(diag);
+  A            = (size == 1) ? cooMat : ((Mat_MPIAIJ *)cooMat->data)->A;
+  PetscCall(MatSeqAIJGetCSRAndMemType(A, NULL, NULL, &Aa, &petscMemtype));
+  PetscAssert((PetscMemTypeHost(petscMemtype) && hypreMemtype == HYPRE_MEMORY_HOST) || (PetscMemTypeDevice(petscMemtype) && hypreMemtype == HYPRE_MEMORY_DEVICE), comm, PETSC_ERR_PLIB, "PETSc and hypre's memory types mismatch");
+
+  hmat->diagJ = hypre_CSRMatrixJ(diag);
+  PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(diag), hypreMemtype));
+  hypre_CSRMatrixData(diag)     = (HYPRE_Complex *)Aa;
+  hypre_CSRMatrixOwnsData(diag) = 0; /* Take ownership of (j,a) away from hypre. As a result, we need to free them on our own */
+
+  /* Copy diagonal pointers of A to device to facilitate MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos */
+  if (hypreMemtype == HYPRE_MEMORY_DEVICE) {
+    PetscStackCallExternalVoid("hypre_TAlloc", hmat->diag = hypre_TAlloc(PetscInt, rmap->n, hypreMemtype));
+    PetscCall(MatMarkDiagonal_SeqAIJ(A)); /* We need updated diagonal positions */
+    PetscStackCallExternalVoid("hypre_TMemcpy", hypre_TMemcpy(hmat->diag, ((Mat_SeqAIJ *)A->data)->diag, PetscInt, rmap->n, hypreMemtype, HYPRE_MEMORY_HOST));
+  }
+
+  if (size > 1) {
+    B = ((Mat_MPIAIJ *)cooMat->data)->B;
+    PetscCall(MatSeqAIJGetCSRAndMemType(B, NULL, NULL, &Ba, &petscMemtype));
+    hmat->offdJ = hypre_CSRMatrixJ(offd);
+    PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(offd), hypreMemtype));
+    hypre_CSRMatrixData(offd)     = (HYPRE_Complex *)Ba;
+    hypre_CSRMatrixOwnsData(offd) = 0;
+  }
+
+  /* Record cooMat for use in MatSetValuesCOO_HYPRE */
+  hmat->cooMat  = cooMat;
+  hmat->memType = hypreMemtype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatDuplicate_HYPRE(Mat A, MatDuplicateOption op, Mat *B)
+{
+  hypre_ParCSRMatrix *parcsr = NULL;
+  PetscCopyMode       cpmode;
+  Mat_HYPRE          *hA;
+  Mat                 cooMat;
+
+  PetscFunctionBegin;
+  PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
+  if (op == MAT_DO_NOT_COPY_VALUES || op == MAT_SHARE_NONZERO_PATTERN) {
+    parcsr = hypre_ParCSRMatrixClone(parcsr, 0);
+    cpmode = PETSC_OWN_POINTER;
+  } else {
+    cpmode = PETSC_COPY_VALUES;
+  }
+  PetscCall(MatCreateFromParCSR(parcsr, MATHYPRE, cpmode, B));
+  hA = (Mat_HYPRE *)A->data;
+  if (hA->cooMat) {
+    /* could not simply increase the reference count of hA->cooMat, since B needs to share cooMat's data array */
+    PetscCall(MatDuplicate(hA->cooMat, MAT_DO_NOT_COPY_VALUES, &cooMat));
+    PetscCall(MatAttachCOOMat_HYPRE(*B, cooMat));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
+{
+  MPI_Comm    comm;
+  PetscMPIInt size;
+  PetscLayout rmap, cmap;
+  Mat_HYPRE  *hmat;
+  Mat         cooMat;
+  MatType     matType = MATAIJ; /* default type of cooMat */
 
   PetscFunctionBegin;
   /* Build an agent matrix cooMat whose type is either MATAIJ or MATAIJKOKKOS.
@@ -2218,40 +2277,8 @@ static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, Pe
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY)); /* Migrate mat to device if it is bound to. Hypre builds its own SpMV context here */
 
-  /* Alias cooMat's data array to IJMatrix's */
-  PetscCallExternal(HYPRE_IJMatrixGetObject, hmat->ij, (void **)&parCSR);
-  diag = hypre_ParCSRMatrixDiag(parCSR);
-  offd = hypre_ParCSRMatrixOffd(parCSR);
-
-  hypreMemtype = hypre_CSRMatrixMemoryLocation(diag);
-  A            = (size == 1) ? cooMat : ((Mat_MPIAIJ *)cooMat->data)->A;
-  PetscCall(MatSeqAIJGetCSRAndMemType(A, NULL, NULL, &Aa, &petscMemtype));
-  PetscAssert((PetscMemTypeHost(petscMemtype) && hypreMemtype == HYPRE_MEMORY_HOST) || (PetscMemTypeDevice(petscMemtype) && hypreMemtype == HYPRE_MEMORY_DEVICE), comm, PETSC_ERR_PLIB, "PETSc and hypre's memory types mismatch");
-
-  hmat->diagJ = hypre_CSRMatrixJ(diag);
-  PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(diag), hypreMemtype));
-  hypre_CSRMatrixData(diag)     = (HYPRE_Complex *)Aa;
-  hypre_CSRMatrixOwnsData(diag) = 0; /* Take ownership of (j,a) away from hypre. As a result, we need to free them on our own */
-
-  /* Copy diagonal pointers of A to device to facilitate MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos */
-  if (hypreMemtype == HYPRE_MEMORY_DEVICE) {
-    PetscStackCallExternalVoid("hypre_TAlloc", hmat->diag = hypre_TAlloc(PetscInt, rmap->n, hypreMemtype));
-    PetscCall(MatMarkDiagonal_SeqAIJ(A)); /* We need updated diagonal positions */
-    PetscStackCallExternalVoid("hypre_TMemcpy", hypre_TMemcpy(hmat->diag, ((Mat_SeqAIJ *)A->data)->diag, PetscInt, rmap->n, hypreMemtype, HYPRE_MEMORY_HOST));
-  }
-
-  if (size > 1) {
-    B = ((Mat_MPIAIJ *)cooMat->data)->B;
-    PetscCall(MatSeqAIJGetCSRAndMemType(B, NULL, NULL, &Ba, &petscMemtype));
-    hmat->offdJ = hypre_CSRMatrixJ(offd);
-    PetscStackCallExternalVoid("hypre_TFree", hypre_TFree(hypre_CSRMatrixData(offd), hypreMemtype));
-    hypre_CSRMatrixData(offd)     = (HYPRE_Complex *)Ba;
-    hypre_CSRMatrixOwnsData(offd) = 0;
-  }
-
-  /* Record cooMat for use in MatSetValuesCOO_HYPRE */
-  hmat->cooMat  = cooMat;
-  hmat->memType = hypreMemtype;
+  /* Attach cooMat to mat */
+  PetscCall(MatAttachCOOMat_HYPRE(mat, cooMat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

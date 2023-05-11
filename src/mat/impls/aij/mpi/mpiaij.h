@@ -67,9 +67,12 @@ typedef struct {
   /* Used by device classes */
   void *spptr;
 
-  /* MatSetValuesCOO() related stuff */
-  PetscCount   coo_n;                      /* Number of COOs passed to MatSetPreallocationCOO)() */
-  PetscSF      coo_sf;                     /* SF to send/recv remote values in MatSetValuesCOO() */
+  struct _MatOps cops;
+} Mat_MPIAIJ;
+
+typedef struct {
+  PetscCount   n;                          /* Number of COOs passed to MatSetPreallocationCOO)() */
+  PetscSF      sf;                         /* SF to send/recv remote values in MatSetValuesCOO() */
   PetscCount   Annz, Bnnz;                 /* Number of entries in diagonal A and off-diagonal B */
   PetscCount   Annz2, Bnnz2;               /* Number of unique remote entries belonging to A and B */
   PetscCount   Atot1, Atot2, Btot1, Btot2; /* Total local (tot1) and remote (tot2) entries (which might contain repeats) belonging to A and B */
@@ -80,9 +83,7 @@ typedef struct {
   PetscCount  *Cperm1;                     /* [sendlen] Permutation to fill MPI send buffer. 'C' for communication */
   PetscScalar *sendbuf, *recvbuf;          /* Buffers for remote values in MatSetValuesCOO() */
   PetscInt     sendlen, recvlen;           /* Lengths (in unit of PetscScalar) of send/recvbuf */
-
-  struct _MatOps cops;
-} Mat_MPIAIJ;
+} MatCOOStruct_MPIAIJ;
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
 

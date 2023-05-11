@@ -3,7 +3,7 @@ static char help[] = "Test MatSetValuesCOO for MPIAIJ and its subclasses \n\n";
 #include <petscmat.h>
 int main(int argc, char **args)
 {
-  Mat            A, B;
+  Mat            A, B, C;
   PetscInt       k;
   const PetscInt M = 18, N = 18;
   PetscMPIInt    rank, size;
@@ -58,19 +58,20 @@ int main(int argc, char **args)
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatSetOption(B, MAT_IGNORE_OFF_PROC_ENTRIES, flg));
   PetscCall(MatSetPreallocationCOO(B, coo[rank].n, coo[rank].i, coo[rank].j));
-
-  PetscCall(MatSetValuesCOO(B, vals, ADD_VALUES));
-  PetscCall(MatEqual(A, B, &equal));
+  PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &C));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatSetValuesCOO(C, vals, ADD_VALUES));
+  PetscCall(MatEqual(A, C, &equal));
 
   if (!equal) {
     PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatSetValuesCOO() failed");
   }
 
   PetscCall(PetscFree(vals));
   PetscCall(MatDestroy(&A));
-  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&C));
 
   PetscCall(PetscFinalize());
   return 0;
@@ -92,6 +93,11 @@ int main(int argc, char **args)
       suffix: cuda
       requires: cuda
       args: -mat_type aijcusparse
+
+    test:
+      suffix: hip
+      requires: hip
+      args: -mat_type aijhipsparse
 
     test:
       suffix: aij

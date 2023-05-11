@@ -559,7 +559,7 @@ static PetscErrorCode MatDuplicate_SeqAIJKokkos(Mat A, MatDuplicateOption dupOpt
   /* Do not copy values on host as A's latest values might be on device. We don't want to do sync blindly */
   PetscCall(MatDuplicate_SeqAIJ(A, MAT_DO_NOT_COPY_VALUES, B));
   mat = *B;
-  if (A->assembled) {
+  if (A->preallocated) {
     bseq = static_cast<Mat_SeqAIJ *>(mat->data);
     bkok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, bseq->nz, bseq->i, bseq->j, bseq->a, mat->nonzerostate, PETSC_FALSE);
     bkok->a_dual.clear_sync_state(); /* Clear B's sync state as it will be decided below */
@@ -1185,10 +1185,37 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y, PetscScalar alpha, Mat X, MatS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+struct MatCOOStruct_SeqAIJKokkos {
+  PetscCount           n;
+  PetscCount           Atot;
+  PetscInt             nz;
+  PetscCountKokkosView jmap;
+  PetscCountKokkosView perm;
+
+  MatCOOStruct_SeqAIJKokkos(const MatCOOStruct_SeqAIJ *coo_h)
+  {
+    nz   = coo_h->nz;
+    n    = coo_h->n;
+    Atot = coo_h->Atot;
+    jmap = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->jmap, nz + 1));
+    perm = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->perm, Atot));
+  }
+};
+
+static PetscErrorCode MatCOOStructDestroy_SeqAIJKokkos(void *data)
+{
+  PetscFunctionBegin;
+  PetscCallCXX(delete static_cast<MatCOOStruct_SeqAIJKokkos *>(data));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
-  Mat_SeqAIJKokkos *akok;
-  Mat_SeqAIJ       *aseq;
+  Mat_SeqAIJKokkos          *akok;
+  Mat_SeqAIJ                *aseq;
+  PetscContainer             container_h, container_d;
+  MatCOOStruct_SeqAIJ       *coo_h;
+  MatCOOStruct_SeqAIJKokkos *coo_d;
 
   PetscFunctionBegin;
   PetscCall(MatSetPreallocationCOO_SeqAIJ(mat, coo_n, coo_i, coo_j));
@@ -1197,27 +1224,43 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount co
   delete akok;
   mat->spptr = akok = new Mat_SeqAIJKokkos(mat->rmap->n, mat->cmap->n, aseq->nz, aseq->i, aseq->j, aseq->a, mat->nonzerostate + 1, PETSC_FALSE);
   PetscCall(MatZeroEntries_SeqAIJKokkos(mat));
-  akok->SetUpCOO(aseq);
+
+  // Copy the COO struct to device
+  PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container_h));
+  PetscCall(PetscContainerGetPointer(container_h, (void **)&coo_h));
+  PetscCallCXX(coo_d = new MatCOOStruct_SeqAIJKokkos(coo_h));
+
+  // Put the COO struct in a container and then attach that to the matrix
+  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container_d));
+  PetscCall(PetscContainerSetPointer(container_d, coo_d));
+  PetscCall(PetscContainerSetUserDestroy(container_d, MatCOOStructDestroy_SeqAIJKokkos));
+  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject)container_d));
+  PetscCall(PetscContainerDestroy(&container_d));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A, const PetscScalar v[], InsertMode imode)
 {
-  Mat_SeqAIJ                 *aseq = static_cast<Mat_SeqAIJ *>(A->data);
-  Mat_SeqAIJKokkos           *akok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  PetscCount                  Annz = aseq->nz;
-  const PetscCountKokkosView &jmap = akok->jmap_d;
-  const PetscCountKokkosView &perm = akok->perm_d;
-  MatScalarKokkosView         Aa;
-  ConstMatScalarKokkosView    kv;
-  PetscMemType                memtype;
+  MatScalarKokkosView        Aa;
+  ConstMatScalarKokkosView   kv;
+  PetscMemType               memtype;
+  PetscContainer             container;
+  MatCOOStruct_SeqAIJKokkos *coo;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
+  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+
+  const auto &n    = coo->n;
+  const auto &Annz = coo->nz;
+  const auto &jmap = coo->jmap;
+  const auto &perm = coo->perm;
+
   PetscCall(PetscGetMemType(v, &memtype));
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
-    kv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), ConstMatScalarKokkosViewHost(v, aseq->coo_n));
+    kv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), ConstMatScalarKokkosViewHost(v, n));
   } else {
-    kv = ConstMatScalarKokkosView(v, aseq->coo_n); /* Directly use v[]'s memory */
+    kv = ConstMatScalarKokkosView(v, n); /* Directly use v[]'s memory */
   }
 
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJGetKokkosViewWrite(A, &Aa)); /* write matrix values */

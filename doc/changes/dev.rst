@@ -41,6 +41,7 @@ Changes: Development
 .. rubric:: Mat:
 
 - Add ``MatCreateDenseFromVecType()``
+- Add support for calling ``MatDuplicate()`` on a matirx preallocated via ``MatSetPreallocationCOO()``, and then ``MatSetValuesCOO()`` on the new matrix
 - Remove ``MATSOLVERSPARSEELEMENTAL`` since it is no longer functional
 - Add MATSELLCUDA. It supports fast ``MatMult()``, ``MatMultTranspose()`` and ``MatMultAdd()`` on GPUs
 - Add support for ``MAT_FACTOR_LU`` and ``MAT_FACTOR_CHOLESKY`` with ``MATSOLVERMUMPS`` for ``MATNEST``

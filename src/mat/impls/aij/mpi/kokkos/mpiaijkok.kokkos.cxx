@@ -1,9 +1,8 @@
 #include <petscvec_kokkos.hpp>
 #include <petscpkg_version.h>
-#include <petscsf.h>
 #include <petsc/private/sfimpl.h>
+#include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <../src/mat/impls/aij/mpi/kokkos/mpiaijkok.hpp>
 #include <KokkosSparse_spadd.hpp>
 #include <KokkosSparse_spgemm.hpp>
 
@@ -1534,10 +1533,58 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Mirror of MatCOOStruct_MPIAIJ on device
+struct MatCOOStruct_MPIAIJKokkos {
+  PetscCount           n;
+  PetscSF              sf;
+  PetscCount           Annz, Bnnz;
+  PetscCount           Annz2, Bnnz2;
+  PetscCountKokkosView Ajmap1, Aperm1;
+  PetscCountKokkosView Bjmap1, Bperm1;
+  PetscCountKokkosView Aimap2, Ajmap2, Aperm2;
+  PetscCountKokkosView Bimap2, Bjmap2, Bperm2;
+  PetscCountKokkosView Cperm1;
+  MatScalarKokkosView  sendbuf, recvbuf;
+
+  MatCOOStruct_MPIAIJKokkos(const MatCOOStruct_MPIAIJ *coo_h) :
+    n(coo_h->n),
+    sf(coo_h->sf),
+    Annz(coo_h->Annz),
+    Bnnz(coo_h->Bnnz),
+    Annz2(coo_h->Annz2),
+    Bnnz2(coo_h->Bnnz2),
+    Ajmap1(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Ajmap1, coo_h->Annz + 1))),
+    Aperm1(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Aperm1, coo_h->Atot1))),
+    Bjmap1(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Bjmap1, coo_h->Bnnz + 1))),
+    Bperm1(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Bperm1, coo_h->Btot1))),
+    Aimap2(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Aimap2, coo_h->Annz2))),
+    Ajmap2(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Ajmap2, coo_h->Annz2 + 1))),
+    Aperm2(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Aperm2, coo_h->Atot2))),
+    Bimap2(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Bimap2, coo_h->Bnnz2))),
+    Bjmap2(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Bjmap2, coo_h->Bnnz2 + 1))),
+    Bperm2(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Bperm2, coo_h->Btot2))),
+    Cperm1(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(coo_h->Cperm1, coo_h->sendlen))),
+    sendbuf(Kokkos::create_mirror_view(DefaultMemorySpace(), MatScalarKokkosViewHost(coo_h->sendbuf, coo_h->sendlen))),
+    recvbuf(Kokkos::create_mirror_view(DefaultMemorySpace(), MatScalarKokkosViewHost(coo_h->recvbuf, coo_h->recvlen)))
+  {
+    PetscCallVoid(PetscObjectReference((PetscObject)sf));
+  }
+
+  ~MatCOOStruct_MPIAIJKokkos() { PetscCallVoid(PetscSFDestroy(&sf)); }
+};
+
+static PetscErrorCode MatCOOStructDestroy_MPIAIJKokkos(void *data)
+{
+  PetscFunctionBegin;
+  PetscCallCXX(delete static_cast<MatCOOStruct_MPIAIJKokkos *>(data));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
-  Mat_MPIAIJ       *mpiaij = (Mat_MPIAIJ *)mat->data;
-  Mat_MPIAIJKokkos *mpikok;
+  PetscContainer             container_h, container_d;
+  MatCOOStruct_MPIAIJ       *coo_h;
+  MatCOOStruct_MPIAIJKokkos *coo_d;
 
   PetscFunctionBegin;
   PetscCall(MatSetPreallocationCOO_MPIAIJ(mat, coo_n, coo_i, coo_j)); /* mpiaij->A,B's type is set to seqaijkokkos */
@@ -1545,34 +1592,59 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount co
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatZeroEntries(mat));
-  mpikok = static_cast<Mat_MPIAIJKokkos *>(mpiaij->spptr);
-  delete mpikok;
-  mpiaij->spptr = new Mat_MPIAIJKokkos(mpiaij);
+
+  // Copy the COO struct to device
+  PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container_h));
+  PetscCall(PetscContainerGetPointer(container_h, (void **)&coo_h));
+  PetscCallCXX(coo_d = new MatCOOStruct_MPIAIJKokkos(coo_h));
+
+  // Put the COO struct in a container and then attach that to the matrix
+  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container_d));
+  PetscCall(PetscContainerSetPointer(container_d, coo_d));
+  PetscCall(PetscContainerSetUserDestroy(container_d, MatCOOStructDestroy_MPIAIJKokkos));
+  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject)container_d));
+  PetscCall(PetscContainerDestroy(&container_d));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[], InsertMode imode)
 {
-  Mat_MPIAIJ                 *mpiaij = static_cast<Mat_MPIAIJ *>(mat->data);
-  Mat_MPIAIJKokkos           *mpikok = static_cast<Mat_MPIAIJKokkos *>(mpiaij->spptr);
-  Mat                         A = mpiaij->A, B = mpiaij->B;
-  PetscCount                  Annz = mpiaij->Annz, Annz2 = mpiaij->Annz2, Bnnz = mpiaij->Bnnz, Bnnz2 = mpiaij->Bnnz2;
-  MatScalarKokkosView         Aa, Ba;
-  MatScalarKokkosView         v1;
-  MatScalarKokkosView        &vsend  = mpikok->sendbuf_d;
-  const MatScalarKokkosView  &v2     = mpikok->recvbuf_d;
-  const PetscCountKokkosView &Ajmap1 = mpikok->Ajmap1_d, Ajmap2 = mpikok->Ajmap2_d, Aimap2 = mpikok->Aimap2_d;
-  const PetscCountKokkosView &Bjmap1 = mpikok->Bjmap1_d, Bjmap2 = mpikok->Bjmap2_d, Bimap2 = mpikok->Bimap2_d;
-  const PetscCountKokkosView &Aperm1 = mpikok->Aperm1_d, Aperm2 = mpikok->Aperm2_d, Bperm1 = mpikok->Bperm1_d, Bperm2 = mpikok->Bperm2_d;
-  const PetscCountKokkosView &Cperm1 = mpikok->Cperm1_d;
-  PetscMemType                memtype;
+  Mat_MPIAIJ                *mpiaij = static_cast<Mat_MPIAIJ *>(mat->data);
+  Mat                        A = mpiaij->A, B = mpiaij->B;
+  MatScalarKokkosView        Aa, Ba;
+  MatScalarKokkosView        v1;
+  PetscMemType               memtype;
+  PetscContainer             container;
+  MatCOOStruct_MPIAIJKokkos *coo;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
+  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+
+  const auto &n      = coo->n;
+  const auto &Annz   = coo->Annz;
+  const auto &Annz2  = coo->Annz2;
+  const auto &Bnnz   = coo->Bnnz;
+  const auto &Bnnz2  = coo->Bnnz2;
+  const auto &vsend  = coo->sendbuf;
+  const auto &v2     = coo->recvbuf;
+  const auto &Ajmap1 = coo->Ajmap1;
+  const auto &Ajmap2 = coo->Ajmap2;
+  const auto &Aimap2 = coo->Aimap2;
+  const auto &Bjmap1 = coo->Bjmap1;
+  const auto &Bjmap2 = coo->Bjmap2;
+  const auto &Bimap2 = coo->Bimap2;
+  const auto &Aperm1 = coo->Aperm1;
+  const auto &Aperm2 = coo->Aperm2;
+  const auto &Bperm1 = coo->Bperm1;
+  const auto &Bperm2 = coo->Bperm2;
+  const auto &Cperm1 = coo->Cperm1;
+
   PetscCall(PetscGetMemType(v, &memtype)); /* Return PETSC_MEMTYPE_HOST when v is NULL */
   if (PetscMemTypeHost(memtype)) {         /* If user gave v[] in host, we need to copy it to device if any */
-    v1 = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), MatScalarKokkosViewHost((PetscScalar *)v, mpiaij->coo_n));
+    v1 = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), MatScalarKokkosViewHost((PetscScalar *)v, n));
   } else {
-    v1 = MatScalarKokkosView((PetscScalar *)v, mpiaij->coo_n); /* Directly use v[]'s memory */
+    v1 = MatScalarKokkosView((PetscScalar *)v, n); /* Directly use v[]'s memory */
   }
 
   if (imode == INSERT_VALUES) {
@@ -1588,7 +1660,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
     vsend.extent(0), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
 
   /* Send remote entries to their owner and overlap the communication with local computation */
-  PetscCall(PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, vsend.data(), PETSC_MEMTYPE_KOKKOS, v2.data(), MPI_REPLACE));
+  PetscCall(PetscSFReduceWithMemTypeBegin(coo->sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, vsend.data(), PETSC_MEMTYPE_KOKKOS, v2.data(), MPI_REPLACE));
   /* Add local entries to A and B in one kernel */
   Kokkos::parallel_for(
     Annz + Bnnz, KOKKOS_LAMBDA(PetscCount i) {
@@ -1602,7 +1674,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
         Ba(i) = (imode == INSERT_VALUES ? 0.0 : Ba(i)) + sum;
       }
     });
-  PetscCall(PetscSFReduceEnd(mpiaij->coo_sf, MPIU_SCALAR, vsend.data(), v2.data(), MPI_REPLACE));
+  PetscCall(PetscSFReduceEnd(coo->sf, MPIU_SCALAR, vsend.data(), v2.data(), MPI_REPLACE));
 
   /* Add received remote entries to A and B in one kernel */
   Kokkos::parallel_for(
@@ -1625,17 +1697,31 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_MPIAIJKokkos(Mat A)
+static PetscErrorCode MatDestroy_MPIAIJKokkos(Mat A)
 {
-  Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;
-
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPIAIJGetLocalMatMerge_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", NULL));
-  delete (Mat_MPIAIJKokkos *)mpiaij->spptr;
   PetscCall(MatDestroy_MPIAIJ(A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
+{
+  PetscFunctionBegin;
+  B->ops->assemblyend           = MatAssemblyEnd_MPIAIJKokkos;
+  B->ops->mult                  = MatMult_MPIAIJKokkos;
+  B->ops->multadd               = MatMultAdd_MPIAIJKokkos;
+  B->ops->multtranspose         = MatMultTranspose_MPIAIJKokkos;
+  B->ops->productsetfromoptions = MatProductSetFromOptions_MPIAIJKokkos;
+  B->ops->destroy               = MatDestroy_MPIAIJKokkos;
+
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJSetPreallocation_C", MatMPIAIJSetPreallocation_MPIAIJKokkos));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJKokkos));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_MPIAIJKokkos));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetValuesCOO_C", MatSetValuesCOO_MPIAIJKokkos));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1661,20 +1747,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
   if (a->A) PetscCall(MatSetType(a->A, MATSEQAIJKOKKOS));
   if (a->B) PetscCall(MatSetType(a->B, MATSEQAIJKOKKOS));
   if (a->lvec) PetscCall(VecSetType(a->lvec, VECSEQKOKKOS));
-
-  B->ops->assemblyend           = MatAssemblyEnd_MPIAIJKokkos;
-  B->ops->mult                  = MatMult_MPIAIJKokkos;
-  B->ops->multadd               = MatMultAdd_MPIAIJKokkos;
-  B->ops->multtranspose         = MatMultTranspose_MPIAIJKokkos;
-  B->ops->productsetfromoptions = MatProductSetFromOptions_MPIAIJKokkos;
-  B->ops->destroy               = MatDestroy_MPIAIJKokkos;
-
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJSetPreallocation_C", MatMPIAIJSetPreallocation_MPIAIJKokkos));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJKokkos));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_MPIAIJKokkos));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetValuesCOO_C", MatSetValuesCOO_MPIAIJKokkos));
+  PetscCall(MatSetOps_MPIAIJKokkos(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*MC
    MATAIJKOKKOS - "mpiaijkokkos", a matrix type to be used for CSR sparse matrices with Kokkos
 
