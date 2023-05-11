@@ -5,12 +5,14 @@
 
 static PetscErrorCode MatFDColoringMarkHost_AIJ(Mat J)
 {
-  PetscBool    isseqAIJ, ismpiAIJ;
+  PetscBool    isseqAIJ, ismpiAIJ, issell;
   PetscScalar *v;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)J, MATMPIAIJ, &ismpiAIJ));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)J, MATSEQAIJ, &isseqAIJ));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)J, &issell, MATSEQSELLCUDA, MATMPISELLCUDA, ""));
+  PetscCheck(!issell, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature", ((PetscObject)J)->type_name);
   if (isseqAIJ) {
     PetscCall(MatSeqAIJGetArrayWrite(J, &v));
     PetscCall(MatSeqAIJRestoreArrayWrite(J, &v));
