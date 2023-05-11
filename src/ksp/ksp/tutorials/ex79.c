@@ -23,7 +23,8 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-  PetscCall(PetscLogDefaultBegin());
+  PetscCall(PetscLogIsActive(&flg));
+  if (!flg) PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, m, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, m, NULL, &A));
   PetscCall(MatSetRandom(A, NULL));
