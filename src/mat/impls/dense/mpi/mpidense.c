@@ -107,10 +107,10 @@ PetscErrorCode MatGetDiagonalBlock_MPIDense(Mat A, Mat *a)
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only square matrices supported.");
   PetscCall(PetscObjectQuery((PetscObject)A, "DiagonalBlock", (PetscObject *)&B));
   if (!B) { /* This should use MatDenseGetSubMatrix (not create), but we would need a call like MatRestoreDiagonalBlock */
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     PetscCall(PetscObjectTypeCompare((PetscObject)mdn->A, MATSEQDENSECUDA, &flg));
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature", MATSEQDENSECUDA);
-#elif (PETSC_HAVE_HIP)
+#elif PetscDefined(HAVE_HIP)
     PetscCall(PetscObjectTypeCompare((PetscObject)mdn->A, MATSEQDENSEHIP, &flg));
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature", MATSEQDENSEHIP);
 #endif
@@ -203,11 +203,11 @@ static PetscErrorCode MatDenseSetLDA_MPIDense(Mat A, PetscInt lda)
     PetscCall(PetscLayoutSetUp(A->cmap));
     PetscCall(MatCreate(PETSC_COMM_SELF, &a->A));
     PetscCall(MatSetSizes(a->A, A->rmap->n, A->cmap->N, A->rmap->n, A->cmap->N));
-#if defined(PETSC_HAVE_CUDA)
+#if PetscDefined(HAVE_CUDA)
     PetscBool iscuda;
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSECUDA, &iscuda));
     if (iscuda) mtype = MATSEQDENSECUDA;
-#elif (PETSC_HAVE_HIP)
+#elif PetscDefined(HAVE_HIP)
     PetscBool iship;
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSEHIP, &iship));
     if (iship) mtype = MATSEQDENSEHIP;
