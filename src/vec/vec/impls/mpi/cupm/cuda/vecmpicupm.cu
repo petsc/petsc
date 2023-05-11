@@ -44,6 +44,13 @@ PetscErrorCode VecCreate_MPICUDA(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecConvert_MPI_MPICUDA_inplace(Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecMPI_CUDA.Convert_IMPL_IMPLCUPM(v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode VecCUDAGetArrays_Private(Vec v, const PetscScalar **host_array, const PetscScalar **device_array, PetscOffloadMask *mask)
 {
   PetscDeviceContext dctx;

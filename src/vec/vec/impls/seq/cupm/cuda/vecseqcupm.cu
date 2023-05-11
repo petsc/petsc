@@ -12,6 +12,13 @@ PetscErrorCode VecCreate_SeqCUDA(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecConvert_Seq_SeqCUDA_inplace(Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecSeq_CUDA.Convert_IMPL_IMPLCUPM(v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   VecCreateSeqCUDA - Creates a standard, sequential, array-style vector.
 

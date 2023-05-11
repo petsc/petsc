@@ -12,6 +12,13 @@ PetscErrorCode VecCreate_SeqHIP(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecConvert_Seq_SeqHIP_inplace(Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecSeq_HIP.Convert_IMPL_IMPLCUPM(v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   VecCreateSeqHIP - Creates a standard, sequential, array-style vector.
 

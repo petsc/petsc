@@ -1272,6 +1272,22 @@ PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v)
+{
+  Vec_Seq *vecseq;
+
+  PetscFunctionBegin;
+  PetscCall(PetscKokkosInitializeCheck());
+  PetscCall(PetscLayoutSetUp(v->map));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECSEQKOKKOS));
+  PetscCall(VecSetOps_SeqKokkos(v));
+  PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
+  vecseq = static_cast<Vec_Seq *>(v->data);
+  PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecseq->array, NULL));
+  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
    VecCreateSeqKokkosWithArrays_Private - Creates a Kokkos sequential array-style vector
    with user-provided arrays on host and device.

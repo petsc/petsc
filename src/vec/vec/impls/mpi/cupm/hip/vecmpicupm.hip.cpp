@@ -44,6 +44,13 @@ PetscErrorCode VecCreate_MPIHIP(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecConvert_MPI_MPIHIP_inplace(Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecMPI_HIP.Convert_IMPL_IMPLCUPM(v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode VecHIPGetArrays_Private(Vec v, const PetscScalar **host_array, const PetscScalar **device_array, PetscOffloadMask *mask)
 {
   PetscDeviceContext dctx;

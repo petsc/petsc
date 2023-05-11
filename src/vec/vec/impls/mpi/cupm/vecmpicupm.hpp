@@ -28,6 +28,7 @@ public:
 private:
   PETSC_NODISCARD static Vec_MPI          *VecIMPLCast_(Vec) noexcept;
   PETSC_NODISCARD static constexpr VecType VECIMPLCUPM_() noexcept;
+  PETSC_NODISCARD static constexpr VecType VECIMPL_() noexcept;
 
   static PetscErrorCode VecDestroy_IMPL_(Vec) noexcept;
   static PetscErrorCode VecResetArray_IMPL_(Vec) noexcept;
@@ -64,6 +65,12 @@ template <device::cupm::DeviceType T>
 inline constexpr VecType VecMPI_CUPM<T>::VECIMPLCUPM_() noexcept
 {
   return VECMPICUPM();
+}
+
+template <device::cupm::DeviceType T>
+inline constexpr VecType VecMPI_CUPM<T>::VECIMPL_() noexcept
+{
+  return VECMPI;
 }
 
 template <device::cupm::DeviceType T>
