@@ -633,7 +633,7 @@ static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
 PETSC_EXTERN PetscErrorCode  VecLockReadPush(Vec);
 PETSC_EXTERN PetscErrorCode  VecLockReadPop(Vec);
 PETSC_EXTERN PetscErrorCode  VecLockWriteSet(Vec, PetscBool);
@@ -769,7 +769,7 @@ PETSC_EXTERN PetscErrorCode VecsCreateSeq(MPI_Comm, PetscInt, PetscInt, Vecs *);
 PETSC_EXTERN PetscErrorCode VecsCreateSeqWithArray(MPI_Comm, PetscInt, PetscInt, PetscScalar *, Vecs *);
 PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs, Vecs *);
 
-#if defined(PETSC_HAVE_VIENNACL)
+#if PetscDefined(HAVE_VIENNACL)
 typedef struct _p_PetscViennaCLIndices *PetscViennaCLIndices;
 PETSC_EXTERN PetscErrorCode             PetscViennaCLIndicesCreate(PetscInt, PetscInt *, PetscInt, PetscInt *, PetscViennaCLIndices *);
 PETSC_EXTERN PetscErrorCode             PetscViennaCLIndicesDestroy(PetscViennaCLIndices *);
@@ -778,11 +778,11 @@ PETSC_EXTERN PetscErrorCode             VecViennaCLCopyFromGPUSome_Public(Vec, P
 PETSC_EXTERN PetscErrorCode             VecCreateSeqViennaCL(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode             VecCreateMPIViennaCL(MPI_Comm, PetscInt, PetscInt, Vec *);
 #endif
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter, Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 #endif
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkos(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIKokkos(MPI_Comm, PetscInt, PetscInt, Vec *);
