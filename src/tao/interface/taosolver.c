@@ -2454,8 +2454,9 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
     tao->cnorm0 = cnorm;
     tao->gnorm0 = res;
   }
-  PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(res), PetscObjectComm((PetscObject)tao), PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCall(VecLockReadPush(tao->solution));
   for (i = 0; i < tao->numbermonitors; i++) PetscCall((*tao->monitor[i])(tao, tao->monitorcontext[i]));
+  PetscCall(VecLockReadPop(tao->solution));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

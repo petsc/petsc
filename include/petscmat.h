@@ -961,7 +961,7 @@ static inline PetscErrorCode MatSetValue(Mat m, PetscInt i, PetscInt j, PetscSca
 
    See notes for `MatGetValues()`.
 
-.seealso: [](chapter_matrices),  `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd`, `MatSetValue()`, `MatGetValueLocal()`, `MatGetValues()`
+.seealso: [](chapter_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd`, `MatSetValue()`, `MatGetValueLocal()`, `MatGetValues()`
 @*/
 static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, PetscScalar *va)
 {
@@ -1483,7 +1483,7 @@ PETSC_EXTERN PetscErrorCode MatFactorGetErrorZeroPivot(Mat, PetscReal *, PetscIn
    The data is available in a double precision arrays of size `MAT_FACTORINFO_SIZE`
 
 .seealso: [](chapter_matrices), `Mat`, `MatInfo`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatILUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`,
-          `MatICCFactorSymbolic()`, `MatICCFactor()`,  `MatFactorInfoInitialize()`
+          `MatICCFactorSymbolic()`, `MatICCFactor()`, `MatFactorInfoInitialize()`
 S*/
 typedef struct {
   PetscReal diagonal_fill; /* force diagonal to fill in if initially not filled */
@@ -1591,8 +1591,8 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat, Vec, PetscReal, MatSORType, PetscReal, P
    same object can also be used to efficiently convert data created by Automatic Differentiation tools to PETSc sparse matrices.
 
 .seealso: [](chapter_matrices), [](sec_graph), `MatFDColoringCreate()`, `MatColoringWeightType`, `ISColoring`, `MatFDColoring`, `DMCreateColoring()`, `MatColoringCreate()`,
-          `MatPartitioning`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`,  `MatColoringSetWeightType()`,
-          `MatColoringSetWeights()`, `MatCoarsenType`,  `MatCoarsen`
+          `MatPartitioning`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`, `MatColoringSetWeightType()`,
+          `MatColoringSetWeights()`, `MatCoarsenType`, `MatCoarsen`
 S*/
 typedef struct _p_MatColoring *MatColoring;
 

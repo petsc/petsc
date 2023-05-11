@@ -165,10 +165,11 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(MatSeqAIJRegisterAll());
   /* Register Events */
   PetscCall(PetscLogEventRegister("MatMult", MAT_CLASSID, &MAT_Mult));
-  PetscCall(PetscLogEventRegister("MatMults", MAT_CLASSID, &MAT_Mults));
   PetscCall(PetscLogEventRegister("MatMultAdd", MAT_CLASSID, &MAT_MultAdd));
   PetscCall(PetscLogEventRegister("MatMultTranspose", MAT_CLASSID, &MAT_MultTranspose));
+  PetscCall(PetscLogEventRegister("MatMultHermitian", MAT_CLASSID, &MAT_MultHermitianTranspose));
   PetscCall(PetscLogEventRegister("MatMultTrAdd", MAT_CLASSID, &MAT_MultTransposeAdd));
+  PetscCall(PetscLogEventRegister("MatMultHTAdd", MAT_CLASSID, &MAT_MultHermitianTransposeAdd));
   PetscCall(PetscLogEventRegister("MatSolve", MAT_CLASSID, &MAT_Solve));
   PetscCall(PetscLogEventRegister("MatSolves", MAT_CLASSID, &MAT_Solves));
   PetscCall(PetscLogEventRegister("MatSolveAdd", MAT_CLASSID, &MAT_SolveAdd));
@@ -233,7 +234,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatTrnMatMultNum", MAT_CLASSID, &MAT_TransposeMatMultNumeric));
   PetscCall(PetscLogEventRegister("MatTrnColorCreate", MAT_CLASSID, &MAT_TransposeColoringCreate));
   PetscCall(PetscLogEventRegister("MatRedundantMat", MAT_CLASSID, &MAT_RedundantMat));
-  PetscCall(PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID, &MAT_GetSequentialNonzeroStructure));
+  PetscCall(PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID, &MAT_GetSeqNonzeroStructure));
   PetscCall(PetscLogEventRegister("MatGetMultiProcB", MAT_CLASSID, &MAT_GetMultiProcBlock));
   PetscCall(PetscLogEventRegister("MatSetRandom", MAT_CLASSID, &MAT_SetRandom));
 
@@ -247,11 +248,6 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatGetBrowsOfAcols", MAT_CLASSID, &MAT_GetBrowsOfAcols));
   PetscCall(PetscLogEventRegister("MatGetBrAoCol", MAT_CLASSID, &MAT_GetBrowsOfAocols));
 
-  PetscCall(PetscLogEventRegister("MatApplyPAPt_Symbolic", MAT_CLASSID, &MAT_Applypapt_symbolic));
-  PetscCall(PetscLogEventRegister("MatApplyPAPt_Numeric", MAT_CLASSID, &MAT_Applypapt_numeric));
-  PetscCall(PetscLogEventRegister("MatApplyPAPt", MAT_CLASSID, &MAT_Applypapt));
-
-  PetscCall(PetscLogEventRegister("MatGetSymTrans", MAT_CLASSID, &MAT_Getsymtranspose));
   PetscCall(PetscLogEventRegister("MatGetSymTransR", MAT_CLASSID, &MAT_Getsymtransreduced));
   PetscCall(PetscLogEventRegister("MatCUSPARSCopyTo", MAT_CLASSID, &MAT_CUSPARSECopyToGPU));
   PetscCall(PetscLogEventRegister("MatCUSPARSCopyFr", MAT_CLASSID, &MAT_CUSPARSECopyFromGPU));

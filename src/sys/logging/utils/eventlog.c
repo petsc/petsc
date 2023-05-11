@@ -204,7 +204,7 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 
 .seealso: `PetscEventPerfInfoClear()`
 @*/
-PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
+PetscErrorCode PetscEventPerfInfoCopy(const PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
 {
   PetscFunctionBegin;
   outInfo->id      = eventInfo->id;
@@ -231,7 +231,7 @@ PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventP
 
 .seealso: `PetscEventPerfInfoClear()`
 @*/
-PetscErrorCode PetscEventPerfInfoAdd(PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
+PetscErrorCode PetscEventPerfInfoAdd(const PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
 {
   PetscFunctionBegin;
   outInfo->count += eventInfo->count;
@@ -777,7 +777,7 @@ PetscErrorCode PetscLogEventSynchronize(PetscLogEvent event, MPI_Comm comm)
   #include <nvToolsExt.h>
 #endif
 #if defined(PETSC_HAVE_THREADSAFETY)
-static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogEvent event, PetscLogStage stage, PetscEventPerfInfo **eventInfo)
+static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogStage stage, PetscLogEvent event, PetscEventPerfInfo **eventInfo)
 {
   PetscHashIJKKey     key;
   PetscEventPerfInfo *leventInfo;
@@ -786,13 +786,13 @@ static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogEvent event
   key.i = PetscLogGetTid();
   key.j = stage;
   key.k = event;
+  PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
   PetscCall(PetscHMapEventGet(eventInfoMap_th, key, &leventInfo));
   if (!leventInfo) {
-    PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
     PetscCall(PetscNew(&leventInfo));
     PetscCall(PetscHMapEventSet(eventInfoMap_th, key, leventInfo));
-    PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   }
+  PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   *eventInfo = leventInfo;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -40,7 +40,7 @@ typedef struct _p_PetscDrawAxis *PetscDrawAxis;
 
    Level: advanced
 
-.seealso: `PetscDrawAxis`, `PetscDraw`,  `PetscDrawBar`, `PetscDrawHG`, `PetscDrawSP`, `PetscDrawAxisCreate()`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`
+.seealso: `PetscDrawAxis`, `PetscDraw`, `PetscDrawBar`, `PetscDrawHG`, `PetscDrawSP`, `PetscDrawAxisCreate()`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`
 S*/
 typedef struct _p_PetscDrawLG *PetscDrawLG;
 
@@ -49,7 +49,7 @@ typedef struct _p_PetscDrawLG *PetscDrawLG;
 
    Level: advanced
 
-.seealso: `PetscDrawAxis`, `PetscDraw`, `PetscDrawLG`,  `PetscDrawBar`, `PetscDrawHG`, `PetscDrawSPCreate()`
+.seealso: `PetscDrawAxis`, `PetscDraw`, `PetscDrawLG`, `PetscDrawBar`, `PetscDrawHG`, `PetscDrawSPCreate()`
 S*/
 typedef struct _p_PetscDrawSP *PetscDrawSP;
 

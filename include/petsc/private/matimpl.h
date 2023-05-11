@@ -1619,11 +1619,11 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(Mat, c
 #endif
 
 PETSC_EXTERN PetscLogEvent MAT_Mult;
-PETSC_EXTERN PetscLogEvent MAT_MultMatrixFree;
-PETSC_EXTERN PetscLogEvent MAT_Mults;
 PETSC_EXTERN PetscLogEvent MAT_MultAdd;
 PETSC_EXTERN PetscLogEvent MAT_MultTranspose;
+PETSC_EXTERN PetscLogEvent MAT_MultHermitianTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeAdd;
+PETSC_EXTERN PetscLogEvent MAT_MultHermitianTransposeAdd;
 PETSC_EXTERN PetscLogEvent MAT_Solve;
 PETSC_EXTERN PetscLogEvent MAT_Solves;
 PETSC_EXTERN PetscLogEvent MAT_SolveAdd;
@@ -1654,7 +1654,6 @@ PETSC_EXTERN PetscLogEvent MAT_GetValues;
 PETSC_EXTERN PetscLogEvent MAT_GetRow;
 PETSC_EXTERN PetscLogEvent MAT_GetRowIJ;
 PETSC_EXTERN PetscLogEvent MAT_CreateSubMats;
-PETSC_EXTERN PetscLogEvent MAT_GetColoring;
 PETSC_EXTERN PetscLogEvent MAT_GetOrdering;
 PETSC_EXTERN PetscLogEvent MAT_RedundantMat;
 PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap;
@@ -1693,12 +1692,8 @@ PETSC_EXTERN PetscLogEvent MAT_TransposeMatMultSymbolic;
 PETSC_EXTERN PetscLogEvent MAT_TransposeMatMultNumeric;
 PETSC_EXTERN PetscLogEvent MAT_MatMatMultSymbolic;
 PETSC_EXTERN PetscLogEvent MAT_MatMatMultNumeric;
-PETSC_EXTERN PetscLogEvent MAT_Applypapt;
-PETSC_EXTERN PetscLogEvent MAT_Applypapt_symbolic;
-PETSC_EXTERN PetscLogEvent MAT_Applypapt_numeric;
-PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose;
 PETSC_EXTERN PetscLogEvent MAT_Getsymtransreduced;
-PETSC_EXTERN PetscLogEvent MAT_GetSequentialNonzeroStructure;
+PETSC_EXTERN PetscLogEvent MAT_GetSeqNonzeroStructure;
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU;
