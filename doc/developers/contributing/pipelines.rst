@@ -9,9 +9,9 @@ PETSc uses `GitLab Pipelines <https://docs.gitlab.com/ee/ci/pipelines/>`__ for t
 Do not overdo requesting testing; it is a limited resource, so if you
 realize a currently running pipeline is no longer needed, cancel it.
 
-The pipeline status for a merge request (MR) is displayed near the top of the MR page, and in the pipelines tab.
+The pipeline status for a merge request (MR) is displayed near the top of the MR page and in the pipelines tab.
 
-(The figures below are high resolution, so zoom in if needbe)
+(The figures below are high resolution, so zoom in if needed)
 
 .. figure:: /images/developers/pipeline-from-MR.png
    :align: center
@@ -27,7 +27,7 @@ To un-pause the pipeline, click the "play" button (or start a new one with "Run 
 
    Un-pausing a pipeline.
 
-A pipeline consists of ``Stages`` each with multiple ``Jobs``: each of these is one configuration on one machine.
+A pipeline consists of "Stages" each with multiple "Jobs". Every job is one configuration on one machine.
 
 .. figure:: /images/developers/show-failure.png
    :align: center
@@ -60,7 +60,7 @@ Search for ``not ok`` in the jobs output to find the exact failure
    :align: center
    :width: 90%
 
-   A test which failed because of unfreed memory.
+   A test that failed because of unfreed memory.
 
 
 .. _more_test_failures:
@@ -69,7 +69,7 @@ Examples of pipeline failures
 =============================
 
 
-If your source code is not properly formatted you will see an error from ``make checkbadSource``. You should always run ``make checkbadSource`` on your machine
+If your source code is not properly formatted you will see an error from ``make checkbadSource``. Always run ``make checkbadSource`` on your machine
 before submitting a pipeline.
 
 .. figure:: /images/developers/badsource.png
@@ -90,7 +90,7 @@ before submitting a pipeline.
 
    Error in compiling the source code.
 
-You can download the ``configure.log`` file to find the problem by using the "Browse" button and following the paths to the configure file.
+You can download the ``configure.log`` file to find the problem using the "Browse" button and following the paths to the configure file.
 
 .. figure:: /images/developers/pipeline-configure.png
    :align: center
@@ -104,46 +104,11 @@ You can download the ``configure.log`` file to find the problem by using the "Br
 
    Downloading ``configure.log`` from a failed pipeline job.
 
-When there are failures in some jobs and a fix has been pushed, one can save time by testing only the previously
-failed jobs, before running the full pipeline. To do this, un-pause a
-new pipeline (do **not** retry the previous pipeline from before your most recent push), cancel
-the pipeline on the pipeline page,
 
-.. figure:: /images/developers/cancel-pipeline.png
-   :align: center
-   :width: 90%
-
-   Canceling a pipeline.
-
-then retry the failed jobs by using the  "Retry"
-circular button to the right of job name.
-
-.. figure:: /images/developers/retry-job.png
-   :align: center
-   :width: 90%
-
-   Retrying a job.
-
-.. figure:: /images/developers/started-retry-job.png
-   :align: center
-   :width: 90%
-
-   A job after retrying.
-
-If the selected jobs are
-successful, run the rest of the pipeline by using the "Retry"
-button at the top of the pipeline
-
-.. figure:: /images/developers/retry-pipeline.png
-   :align: center
-   :width: 90%
-
-   Retrying a pipeline.
-
-The "Retry" button at the top of of a previous pipeline or job does **not** use any
-new changes to the branch you have pushed since that pipeline was started - it retries exactly the
-same git commit that was previously tried. The job "Retry" should only be used in this way
-when you suspect the testing system has some intermittent error that is unrelated to your branch.
+The "Retry" button at the top of a previous pipeline or job does **not** use any
+new changes to the branch you have pushed since that pipeline was started - it retries the
+same Git commit that was previously tried. The job "Retry" should only be used this way
+when you suspect the testing system has some intermittent error unrelated to your branch.
 
 Please report all "odd" errors in the testing that don’t seem related
 to your branch in `this tracking issue <https://gitlab.com/petsc/petsc/issues/951>`__.

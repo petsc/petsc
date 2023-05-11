@@ -32,6 +32,14 @@ whether a fix or work-around to the problem already exists. Also, see the chapte
 :ref:`performance tuning <ch_performance>` in the PETSc users manual for guidelines on
 achieving good efficiency within PETSc codes.
 
+.. _sec_doc_fixes:
+
+Small Documentation fixes
+=========================
+We welcome corrections to our documentation directly by clicking "Edit this page", on the upper right corner of the page,
+making your edits, and following the instructions to make a merge request. Merge requests for such fixes should always have the GitLab ``docs-only`` label set.
+
+
 Guidelines For Bug Reports
 ==========================
 

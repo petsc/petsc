@@ -1,18 +1,21 @@
-===========================================
-Communication Channels for PETSc Developers
-===========================================
+
+.. _petsc-developers-communication-channels:
+
+========================================
+ PETSc Developers Communication Channels
+========================================
 
 GitLab
-======
+------
 
 Day-to-day development happens at the `PETSc GitLab repository <https://gitlab.com/petsc/petsc>`__.
 There, you can find the history and development version of the source code,
 `see or create issues <https://gitlab.com/petsc/petsc/issues>`__,
 `see or create merge requests <https://gitlab.com/petsc/petsc/-/merge_requests>`__,
-and more. Also see :doc:`integration`.
+and more.
 
 Mailing Lists
-=============
+-------------
 
 Please consider joining the :ref:`mailing lists <doc_mail>`.
 
@@ -26,6 +29,11 @@ this allows better tracking of long-term bug reports and feature requests.
 
 General questions regarding the use of PETSc can, as usual, go to petsc-users@mcs.anl.gov (public)
 or petsc-maint@mcs.anl.gov (private, can handle large attachments).
+
+Slack Workspace
+---------------
+
+To join the Slack workspace devoted to PETSc developers send email to petsc-dev@mcs.anl.gov.
 
 Responding to User Requests and Questions
 -----------------------------------------

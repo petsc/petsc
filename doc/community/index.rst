@@ -14,4 +14,4 @@ Community
    meetings/meeting
    petsc_team
 
-If you are interested in contributing to PETSc, see :doc:`/developers/contributing`.
+If you are interested in contributing to PETSc, see :doc:`/developers/contributing/index`.
