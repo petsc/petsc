@@ -364,6 +364,8 @@ PETSC_INTERN PetscErrorCode VecCreate_CUDA(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_SeqCUDA(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPICUDA(Vec);
 PETSC_INTERN PetscErrorCode VecCUDAGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqCUDA_inplace(Vec);
+PETSC_INTERN PetscErrorCode VecConvert_MPI_MPICUDA_inplace(Vec);
 #endif
 
 #if PetscDefined(HAVE_HIP)
@@ -371,11 +373,15 @@ PETSC_INTERN PetscErrorCode VecCreate_HIP(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_SeqHIP(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPIHIP(Vec);
 PETSC_INTERN PetscErrorCode VecHIPGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqHIP_inplace(Vec);
+PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIHIP_inplace(Vec);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
+PETSC_INTERN PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec);
+PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec);
 #endif
 
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value

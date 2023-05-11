@@ -235,6 +235,22 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec v)
+{
+  Vec_MPI *vecmpi;
+
+  PetscFunctionBegin;
+  PetscCall(PetscKokkosInitializeCheck());
+  PetscCall(PetscLayoutSetUp(v->map));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
+  PetscCall(VecSetOps_MPIKokkos(v));
+  PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
+  vecmpi = static_cast<Vec_MPI *>(v->data);
+  PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecmpi->array, NULL));
+  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    VECMPIKOKKOS - VECMPIKOKKOS = "mpikokkos" - The basic parallel vector, modified to use Kokkos
 
