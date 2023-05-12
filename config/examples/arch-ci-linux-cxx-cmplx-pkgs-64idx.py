@@ -17,6 +17,8 @@ configure_options = [
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
 
+  '--download-blis=1',
+  '--download-f2cblaslapack=1',
   '--download-hypre=1',
   '--download-mpich=1',
   '--download-cmake=1',
