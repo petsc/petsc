@@ -667,7 +667,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
   /* Find depths for each timer path */
   done     = PETSC_FALSE;
-  maxdepth = 0;
+  maxdepth = 1;
   while (!done) {
     done = PETSC_TRUE;
     for (i = 0; i < nTimers; i++) {
