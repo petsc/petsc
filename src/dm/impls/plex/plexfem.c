@@ -3564,7 +3564,7 @@ PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t,
 }
 
 /*
-  DMPlexGetHybridFields - Get the field values for the negative side (s = 0) and positive side (s = 1) of the interfaace
+  DMPlexGetHybridFields - Get the field values for the negative side (s = 0) and positive side (s = 1) of the interface
 
   Input Parameters:
 + dm      - The full domain DM
@@ -3637,7 +3637,7 @@ static PetscErrorCode DMPlexGetHybridFields(DM dm, DM dmX[], PetscDS dsX[], IS c
       }
       PetscCall(DMGetEnclosurePoint(plexX[s], dm, encX[s], point, &subpoint));
       PetscCall(DMPlexVecGetOrientedClosure_Internal(plexX[s], sectionX[s], locX[s], subpoint, ornt[s], &Nx, &closure));
-      PetscCheck(Nx == tdX, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Closure size %" PetscInt_FMT " for subpoint %" PetscInt_FMT "does not match DS size %" PetscInt_FMT, Nx, subpoint, tdX);
+      PetscCheck(Nx == tdX, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Closure size %" PetscInt_FMT " for subpoint %" PetscInt_FMT " does not match DS size %" PetscInt_FMT, Nx, subpoint, tdX);
       for (i = 0; i < Nx; ++i) xl[i] = closure[i];
       PetscCall(DMPlexVecRestoreClosure(plexX[s], sectionX[s], locX[s], subpoint, &Nx, &closure));
     }
@@ -5078,7 +5078,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   const PetscInt *cells;
   PetscInt       *faces;
   PetscInt        cStart, cEnd, numCells;
-  PetscInt        Nf, f, totDim, totDimIn, totDimAux[3], totDimScale, numChunks, cellChunkSize, chunk;
+  PetscInt        Nf, f, totDim, totDimIn, totDimAux[3], totDimScale[3], numChunks, cellChunkSize, chunk;
   PetscInt        maxDegree  = PETSC_MAX_INT;
   PetscQuadrature affineQuad = NULL, *quads = NULL;
   PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
@@ -5138,19 +5138,38 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
        The field in key[2] is the field to be scaled, and the scaling field is the first in the dsScale */
   PetscCall(DMGetAuxiliaryVec(dm, key[2].label, -key[2].value, key[2].part, &locS[2]));
   if (locS[2]) {
-    PetscInt Nb, Nbs;
+    const PetscInt cellStart = cells ? cells[cStart] : cStart;
+    PetscInt       Nb, Nbs;
 
     PetscCall(VecGetDM(locS[2], &dmScale[2]));
-    PetscCall(DMGetCellDS(dmScale[2], cells ? cells[cStart] : cStart, &dsScale[2], NULL));
-    locS[1] = locS[0] = locS[2];
-    dmScale[1] = dmScale[0] = dmScale[2];
-    dsScale[1] = dsScale[0] = dsScale[2];
-    PetscCall(PetscDSGetTotalDimension(dsScale[2], &totDimScale));
+    PetscCall(DMGetCellDS(dmScale[2], cellStart, &dsScale[2], NULL));
+    PetscCall(PetscDSGetTotalDimension(dsScale[2], &totDimScale[2]));
     // BRAD: This is not set correctly
     key[2].field = 2;
     PetscCall(PetscDSGetFieldSize(ds, key[2].field, &Nb));
     PetscCall(PetscDSGetFieldSize(dsScale[2], 0, &Nbs));
     PetscCheck(Nb == Nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " of size %" PetscInt_FMT " cannot be scaled by field of size %" PetscInt_FMT, key[2].field, Nb, Nbs);
+    {
+      const PetscInt *cone;
+      PetscInt        c;
+
+      locS[1] = locS[0] = locS[2];
+      dmScale[1] = dmScale[0] = dmScale[2];
+      PetscCall(DMPlexGetCone(dm, cellStart, &cone));
+      for (c = 0; c < 2; ++c) {
+        const PetscInt *support;
+        PetscInt        ssize, s;
+
+        PetscCall(DMPlexGetSupport(dm, cone[c], &support));
+        PetscCall(DMPlexGetSupportSize(dm, cone[c], &ssize));
+        PetscCheck(ssize == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cellStart, ssize);
+        if (support[0] == cellStart) s = 1;
+        else if (support[1] == cellStart) s = 0;
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
+        PetscCall(DMGetCellDS(dmScale[c], support[s], &dsScale[c], NULL));
+        PetscCall(PetscDSGetTotalDimension(dsScale[c], &totDimScale[c]));
+      }
+    }
   }
   /* 2: Setup geometric data */
   PetscCall(DMGetCoordinateField(dm, &coordField));
@@ -5176,7 +5195,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   /* NOTE This needs the end cap faces to have identical orientations */
   PetscCall(DMPlexGetHybridCellFields(dm, cellIS, locX, locX_t, locA[2], &u, &u_t, &a[2]));
   PetscCall(DMPlexGetHybridFields(dm, dmAux, dsAux, cellIS, locA, PETSC_TRUE, a));
-  PetscCall(DMPlexGetHybridFields(dm, dmScale, dsScale, cellIS, locS, PETSC_FALSE, s));
+  PetscCall(DMPlexGetHybridFields(dm, dmScale, dsScale, cellIS, locS, PETSC_TRUE, s));
   PetscCall(DMGetWorkArray(dm, cellChunkSize * totDim, MPIU_SCALAR, &elemVecNeg));
   PetscCall(DMGetWorkArray(dm, cellChunkSize * totDim, MPIU_SCALAR, &elemVecPos));
   PetscCall(DMGetWorkArray(dm, cellChunkSize * totDim, MPIU_SCALAR, &elemVecCoh));
@@ -5249,7 +5268,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
       /* Scale element values */
       if (locS[0]) {
-        PetscInt  Nb, off = cind * totDim, soff = cind * totDimScale;
+        PetscInt  Nb, off = cind * totDim, soff = cind * totDimScale[0];
         PetscBool cohesive;
 
         for (f = 0; f < Nf; ++f) {
@@ -5282,7 +5301,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   }
   PetscCall(DMPlexRestoreCellFields(dm, cellIS, locX, locX_t, locA[2], &u, &u_t, &a[2]));
   PetscCall(DMPlexRestoreHybridFields(dm, dmAux, dsAux, cellIS, locA, PETSC_TRUE, a));
-  PetscCall(DMPlexRestoreHybridFields(dm, dmScale, dsScale, cellIS, locS, PETSC_FALSE, s));
+  PetscCall(DMPlexRestoreHybridFields(dm, dmScale, dsScale, cellIS, locS, PETSC_TRUE, s));
   PetscCall(DMRestoreWorkArray(dm, numCells * totDim, MPIU_SCALAR, &elemVecNeg));
   PetscCall(DMRestoreWorkArray(dm, numCells * totDim, MPIU_SCALAR, &elemVecPos));
   PetscCall(DMRestoreWorkArray(dm, numCells * totDim, MPIU_SCALAR, &elemVecCoh));
@@ -5756,7 +5775,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   const PetscInt *cells;
   PetscInt       *faces;
   PetscInt        cStart, cEnd, numCells;
-  PetscInt        Nf, fieldI, fieldJ, totDim, totDimIn, totDimAux[3], totDimScale, numChunks, cellChunkSize, chunk;
+  PetscInt        Nf, fieldI, fieldJ, totDim, totDimIn, totDimAux[3], totDimScale[3], numChunks, cellChunkSize, chunk;
   PetscInt        maxDegree  = PETSC_MAX_INT;
   PetscQuadrature affineQuad = NULL, *quads = NULL;
   PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
@@ -5819,19 +5838,41 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
        The field in key[2] is the field to be scaled, and the scaling field is the first in the dsScale */
   PetscCall(DMGetAuxiliaryVec(dm, key[2].label, -key[2].value, key[2].part, &locS[2]));
   if (locS[2]) {
-    PetscInt Nb, Nbs;
+    const PetscInt cellStart = cells ? cells[cStart] : cStart;
+    PetscInt       Nb, Nbs;
 
     PetscCall(VecGetDM(locS[2], &dmScale[2]));
     PetscCall(DMGetCellDS(dmScale[2], cells ? cells[cStart] : cStart, &dsScale[2], NULL));
     locS[1] = locS[0] = locS[2];
     dmScale[1] = dmScale[0] = dmScale[2];
     dsScale[1] = dsScale[0] = dsScale[2];
-    PetscCall(PetscDSGetTotalDimension(dsScale[2], &totDimScale));
+    PetscCall(PetscDSGetTotalDimension(dsScale[2], &totDimScale[2]));
     // BRAD: This is not set correctly
     key[2].field = 2;
     PetscCall(PetscDSGetFieldSize(ds, key[2].field, &Nb));
     PetscCall(PetscDSGetFieldSize(dsScale[2], 0, &Nbs));
     PetscCheck(Nb == Nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Field %" PetscInt_FMT " of size %" PetscInt_FMT " cannot be scaled by field of size %" PetscInt_FMT, key[2].field, Nb, Nbs);
+    {
+      const PetscInt *cone;
+      PetscInt        c;
+
+      locS[1] = locS[0] = locS[2];
+      dmScale[1] = dmScale[0] = dmScale[2];
+      PetscCall(DMPlexGetCone(dm, cellStart, &cone));
+      for (c = 0; c < 2; ++c) {
+        const PetscInt *support;
+        PetscInt        ssize, s;
+
+        PetscCall(DMPlexGetSupport(dm, cone[c], &support));
+        PetscCall(DMPlexGetSupportSize(dm, cone[c], &ssize));
+        PetscCheck(ssize == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cellStart, ssize);
+        if (support[0] == cellStart) s = 1;
+        else if (support[1] == cellStart) s = 0;
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
+        PetscCall(DMGetCellDS(dmScale[c], support[s], &dsScale[c], NULL));
+        PetscCall(PetscDSGetTotalDimension(dsScale[c], &totDimScale[c]));
+      }
+    }
   }
   /* 2: Setup geometric data */
   PetscCall(DMGetCoordinateField(dm, &coordField));
@@ -5960,7 +6001,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
       /* Scale element values */
       if (locS[0]) {
-        PetscInt  Nb, soff = cind * totDimScale, off = 0;
+        PetscInt  Nb, soff = cind * totDimScale[0], off = 0;
         PetscBool cohesive;
 
         for (fieldI = 0; fieldI < Nf; ++fieldI) {
