@@ -48,7 +48,7 @@ int main(int argc, char **args)
   Vec           u, x, b;
   PetscMPIInt   size;
   PetscInt      m, n, nfact, nsolve, nrhs, ipack = 5;
-  PetscReal     norm, tol = 10 * PETSC_SMALL;
+  PetscReal     norm, tol = 10 * PETSC_SQRT_MACHINE_EPSILON;
   IS            perm = NULL, iperm = NULL;
   MatFactorInfo info;
   PetscRandom   rand;
@@ -478,7 +478,8 @@ skipoptions:
         PetscCall(VecNorm(u, NORM_2, &norm));
         if (norm > tol) {
           PetscReal resi;
-          PetscCall(VecAXPY(u, -1.0, b)); /* u <- (-1.0)b + u */
+          PetscCall(MatMultTranspose(Ae, x, u)); /* u = A*x */
+          PetscCall(VecAXPY(u, -1.0, b));        /* u <- (-1.0)b + u */
           PetscCall(VecNorm(u, NORM_2, &resi));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSolveTranspose: Norm of error %g, resi %g, numfact %" PetscInt_FMT "\n", (double)norm, (double)resi, nfact));
         }
