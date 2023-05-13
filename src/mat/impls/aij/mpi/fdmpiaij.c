@@ -3,6 +3,29 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petsc/private/isimpl.h>
 
+static PetscErrorCode MatFDColoringMarkHost_AIJ(Mat J)
+{
+  PetscBool    isseqAIJ, ismpiAIJ;
+  PetscScalar *v;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)J, MATMPIAIJ, &ismpiAIJ));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)J, MATSEQAIJ, &isseqAIJ));
+  if (isseqAIJ) {
+    PetscCall(MatSeqAIJGetArrayWrite(J, &v));
+    PetscCall(MatSeqAIJRestoreArrayWrite(J, &v));
+  } else if (ismpiAIJ) {
+    Mat dJ, oJ;
+
+    PetscCall(MatMPIAIJGetSeqAIJ(J, &dJ, &oJ, NULL));
+    PetscCall(MatSeqAIJGetArrayWrite(dJ, &v));
+    PetscCall(MatSeqAIJRestoreArrayWrite(dJ, &v));
+    PetscCall(MatSeqAIJGetArrayWrite(oJ, &v));
+    PetscCall(MatSeqAIJRestoreArrayWrite(oJ, &v));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {
   PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
@@ -172,6 +195,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   PetscBool          alreadyboundtocpu;
 
   PetscFunctionBegin;
+  PetscCall(MatFDColoringMarkHost_AIJ(J));
   PetscCall(VecBoundToCPU(x1, &alreadyboundtocpu));
   PetscCall(VecBindToCPU(x1, PETSC_TRUE));
   PetscCheck(!(ctype == IS_COLORING_LOCAL) || !(J->ops->fdcoloringapply == MatFDColoringApply_AIJ), PetscObjectComm((PetscObject)J), PETSC_ERR_SUP, "Must call MatColoringUseDM() with IS_COLORING_LOCAL");
@@ -366,9 +390,6 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
     }
   }
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  if (J->offloadmask != PETSC_OFFLOAD_UNALLOCATED) J->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   if (vscale) PetscCall(VecRestoreArray(vscale, &vscale_array));
