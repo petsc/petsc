@@ -17,8 +17,8 @@
 .ve
 
     Options Database Keys:
-+   -ksp_cg_hermitian - Indicates Hermitian matrix
--   -ksp_cg_symmetric - Indicates symmetric matrix
++   -ksp_cg_type hermitian - Indicates Hermitian matrix
+-   -ksp_cg_type symmetric - Indicates symmetric matrix
 
     Level: intermediate
 
