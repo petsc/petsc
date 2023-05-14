@@ -15,7 +15,7 @@
       use petscvec
       implicit none
 
-      PetscMPIInt rank,mySize
+      PetscMPIInt rank,size
       PetscInt nlocal,nghost,ifrom(2)
       PetscErrorCode ierr
       PetscInt i,rstart,rend,ione
@@ -29,9 +29,9 @@
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
 
-      if (mySize /= 2) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'Requires 2 processors'); endif
+      PetscCheckA(size .eq. 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'Requires 2 processors')
 
 !
 !     Construct a two dimensional graph connecting nlocal degrees of

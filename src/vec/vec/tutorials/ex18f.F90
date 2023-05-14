@@ -10,7 +10,7 @@ program main
   implicit none
 
   PetscErrorCode :: ierr
-  PetscMPIInt :: rank,mySize
+  PetscMPIInt :: rank,size
   PetscInt   ::  rstart,rend,i,k,N
   PetscInt, parameter   ::   numPoints=1000000
   PetscScalar  ::  dummy
@@ -24,7 +24,7 @@ program main
   PetscCallA(PetscInitialize(ierr))
 
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr))
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
 
   ! Create a parallel vector.
   ! Here we set up our x vector which will be given values below.
@@ -43,7 +43,7 @@ program main
     PetscCallA(VecSetValues(xend,one,i,myResult,INSERT_VALUES,ierr))
   endif
 
-  if (rank == mySize-1) then
+  if (rank == size-1) then
     i    = N-1
     PetscCallA(VecSetValues(xend,one,i,myResult,INSERT_VALUES,ierr))
   endif

@@ -118,7 +118,7 @@ checkbadSource:
 	-@echo "------PetscCall following SETERRQ ----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";PetscCall" >> checkbadSource.out;true
 	-@echo "------SETERRQ() without defined error code -------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v flow.c >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v "then;" | grep -v flow.c >> checkbadSource.out;true
 	-@echo "------SETERRQ() with trailing newline ------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P "SETERRQ[1-9]?.*\\\n\"" -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------Define keyword used in test definition -----------------------" >> checkbadSource.out
@@ -126,7 +126,7 @@ checkbadSource:
 	-@echo "------No new line at end of file -----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '[^\n]\z' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------Using if (condition) SETERRQ(...) instead of PetscCheck() ----" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' | grep -v "then;" | grep -v "__VA_ARGS__"  >> checkbadSource.out;true
 	-@echo "------Using if (PetscUnlikelyDebug(condition)) SETERRQ(...) instead of PetscAssert()" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E ' if +\(PetscUnlikelyDebug.*\) *SETERRQ' -- ${GITSRC} | grep -v petscerror.h >> checkbadSource.out;true
 	-@echo "------Using PetscFunctionReturn(ierr) ------------------------------" >> checkbadSource.out

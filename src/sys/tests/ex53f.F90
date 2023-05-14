@@ -14,7 +14,6 @@
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
-!      if (size .ne. 2) SETERRA(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,'Two ranks only')
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       PetscCallA(PetscSubcommCreate(PETSC_COMM_WORLD,r,ierr))
       PetscCallA(PetscSubcommSetFromOptions(r,ierr))

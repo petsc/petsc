@@ -24,16 +24,16 @@
       PetscCallA(MatCreate(PETSC_COMM_WORLD,B,ierr))
 
       PetscCallA(MatGetNullSpace(A,sp,ierr))
-      if (sp .ne. PETSC_NULL_MATNULLSPACE) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not exist"); endif
+      PetscCheckA(sp .eq. PETSC_NULL_MATNULLSPACE,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrix null space should not exist')
 
       PetscCallA(MatSetNullSpace(A,PETSC_NULL_MATNULLSPACE,ierr))
       PetscCallA(MatGetNullSpace(A,sp,ierr))
-      if (sp .ne. PETSC_NULL_MATNULLSPACE) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not exist"); endif
+      PetscCheckA(sp .eq. PETSC_NULL_MATNULLSPACE,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrix null space should not exist')
 
       PetscCallA(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,zero,PETSC_NULL_VEC,sp,ierr))
       PetscCallA(MatSetNullSpace(A,sp,ierr))
       PetscCallA(MatGetNullSpace(A,sp1,ierr))
-      if (sp1 .eq. PETSC_NULL_MATNULLSPACE) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not be null"); endif
+      PetscCheckA(sp1 .ne. PETSC_NULL_MATNULLSPACE,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrix null space should not be null')
       PetscCallA(MatNullSpaceDestroy(sp,ierr))
 
       PetscCallA(MatCreateSeqDense(PETSC_COMM_WORLD,one,one,PETSC_NULL_SCALAR,C,ierr))

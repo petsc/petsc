@@ -12,8 +12,8 @@ program main
       PetscErrorCode          ierr
 
       PetscCallA(PetscInitialize(ierr))
-      pkg = "hdf5"
-      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-pkg",pkg,flg,ierr))
+      pkg = 'hdf5'
+      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pkg',pkg,flg,ierr))
       PetscCallA(PetscHasExternalPackage(pkg,has,ierr))
       write (outputString,*) 'PETSc has '//trim(pkg)//'?',has,'\n'
       PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))

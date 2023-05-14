@@ -56,13 +56,9 @@
 !     Test label retrieval
       PetscCallA(DMGetLabel(dm, 'marker', label, ierr))
       PetscCallA(DMLabelGetValue(label, zero, val, ierr))
-      if (size .eq. 1 .and. val .ne. -1) then
-        SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
-      endif
+      PetscCheckA(size .ne. 1 .or. val .eq. -1,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
       PetscCallA(DMLabelGetValue(label, eight, val, ierr))
-      if (size .eq. 1 .and. val .ne. 1) then
-        SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
-      endif
+      PetscCheckA(size .ne. 1 .or. val .eq. 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
 !     Prescribe a Dirichlet condition on u on the boundary
 !       Label "marker" is made by the mesh creation routine
       bcField(1) = 0
