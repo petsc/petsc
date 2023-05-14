@@ -13,7 +13,7 @@
       IS             is
       PetscInt       one,zero
 
-!  Needed to work with 64 bit integers from Fortran
+!  Needed to work with 64-bit integers from Fortran
       one  = 1
       zero = 0
 

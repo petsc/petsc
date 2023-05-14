@@ -91,7 +91,7 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
    Level: developer
 
     Note:
-    Deprecated usage also converts the `%D` to `%d` for 32 bit PETSc indices and to `%lld` for 64 bit PETSc indices. This feature is no
+    Deprecated usage also converts the `%D` to `%d` for 32-bit PETSc indices and to `%lld` for 64-bit PETSc indices. This feature is no
     longer used in PETSc code instead use %" PetscInt_FMT " in the format string
 
 .seealso: `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscVFPrintf()`

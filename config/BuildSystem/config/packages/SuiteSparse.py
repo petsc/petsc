@@ -99,7 +99,7 @@ class Configure(config.package.Package):
     else:
       flg+=' -DNPARTITION'
 
-    # CUDA support for 64bit indices installations only
+    # CUDA support for 64-bit indices installations only
     if self.cuda.found and self.defaultIndexSize == 64 and not self.argDB['download-suitesparse-disablegpu']:
       self.logPrintBox('SuiteSparse: Enabling support for CHOLMOD on GPUs (it can be disabled with --download-suitesparse-disablegpu=1)')
       args.append('CF="'+cflags+' -D_GNU_SOURCE"') # The GPU code branches use feenableexcept including fenv.h only
@@ -176,5 +176,5 @@ class Configure(config.package.Package):
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
     if self.framework.argDB['with-'+self.package] and self.defaultIndexSize == 64 and self.types.sizes['void-p'] == 4:
-      raise RuntimeError('SuiteSparse does not support 64bit indices in 32bit (pointer) mode.')
+      raise RuntimeError('SuiteSparse does not support 64-bit indices in 32-bit pointer mode.')
     return

@@ -905,7 +905,7 @@ M*/
    Level: developer
 
    Notes:
-   Object state is a 64 bit integer which gets increased every time
+   Object state is a 64-bit integer which gets increased every time
    the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for `Vec` and `Mat` objects.

@@ -4,7 +4,7 @@ The Use of BLAS and LAPACK in PETSc and external libraries
 ----------------------------------------------------------
 
 
-#. BLAS 1 operations - vector operations such as ``VecNorm()``, ``VecAXPY()``, and ``VecScale()``. Depending on the
+#. BLAS 1 operations (and GPU equivalents) - vector operations such as ``VecNorm()``, ``VecAXPY()``, and ``VecScale()`` are used extensively in PETSc. Depending on the
    simulation the size of the vectors may be from hundreds of entries to many millions.
 
 #. BLAS 2 operations - dense matrix with vector operations, generally the dense matrices are very small.
@@ -18,27 +18,28 @@ For most PETSc simulations (that is not using certain external packages) using a
 only provides a modest improvement in performance. For some external packages using optimized BLAS/LAPACK can make a
 dramatic improvement in performance.
 
-32 or 64 bit BLAS/LAPACK integers
+32 or 64-bit BLAS/LAPACK integers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-BLAS/LAPACK libraries may use 32 bit integers or 64 bit integers. PETSc configure and compile handles this automatically
+BLAS/LAPACK libraries may use 32 or 64-bit integers. PETSc configure and compile handles this automatically
 so long at the arguments to the BLAS/LAPACK routines are set to the type ``PetscBLASInt``.  The routine ``PetscBLASIntCast``\(``PetscInt``, ``PetscBLASInt`` \*) casts
 a ``PetscInt`` to the BLAS/LAPACK size. If the BLAS/LAPACK size is not large enough it generates an error. For the vast majority of
-simulations even very large ones 64 bit BLAS/LAPACK integers are not needed, even if 64 bit PETSc integers are used, The configure
-option ``--with-64-bit-blas-indices`` attempts to locate and use a 64 bit integer version of BLAS/LAPACK library.
+simulations, even very large ones, 64-bit BLAS/LAPACK integers are not needed, even when 64-bit PETSc integers are used, The configure
+option ``--with-64-bit-blas-indices`` attempts to locate and use a 64-bit integer version of BLAS/LAPACK library. Except for MKL CPardiso, the external packages do not support using
+64-bit BLAS/LAPACK integers so if you are using such packages you cannot use 64-bit BLAS/LAPACK integers.
 
 Shared memory BLAS/LAPACK parallelism
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Some BLAS/LAPACK libraries make use of shared memory parallelism within the function calls, generally using OpenMP, or possibly PThreads.
-If this feature is on, it is in addition to the MPI based parallelism that PETSc is using. Thus it can result in over-subscription of hardware resources. For example,
+Some BLAS/LAPACK libraries can make use of shared memory parallelism within the function calls, generally using OpenMP, or possibly PThreads.
+If this feature is turned on, it is in addition to the MPI based parallelism that PETSc is using. Thus it can result in over-subscription of hardware resources. For example,
 if a system has 16 cores and PETSc is run with an MPI size of 16 then each core is assigned an MPI process. But if the BLAS/LAPACK is running with
 OpenMP and 4 threads per process this results in 64 threads competing to use 16 cores which will perform poorly.
 
-If one elects to use both MPI parallelism and OpenMP BLAS/LAPACK parallelism one should ensure they do not over subscribe the hardware
+If one elects to use both MPI parallelism and shared memory BLAS/LAPACK parallelism one should ensure they do not over subscribe the hardware
 resources. Since PETSc does not natively use OpenMP this means that phases of the computation that do not use BLAS/LAPACK will be under-subscribed,
 thus under-utilizing the system. For PETSc simulations which do not use external packages there is generally no benefit to using parallel
-BLAS/LAPACK. The environmental variable ``OMP_NUM_THREADS`` can be used to set the number of threads used by parallel BLAS/LAPACK. The additional
+BLAS/LAPACK. The environmental variable ``OMP_NUM_THREADS`` can be used to set the number of threads used by each MPI process for its shared memory parallel BLAS/LAPACK. The additional
 environmental variables ``OMP_PROC_BIND`` and ``OMP_PLACES`` may also need to be set appropriately for the system to obtain good parallel performance with
 BLAS/LAPACK. The configure option ``--with-openmp`` will trigger PETSc to try to locate and use a parallel BLAS/LAPACK library.
 
@@ -58,12 +59,12 @@ and are generally fine for most users.
 
 For systems that do not provide BLAS/LAPACK, such as Microsoft Windows, PETSc provides the Fortran reference version
 ``--download-fblaslapack`` and a f2c generated C version ``--download-f2cblaslapack`` (which also supports 128 bit real number computations).
-These libraries are generally low performing but useful to get started with PETSc easily.
+These libraries are less optimized but useful to get started with PETSc easily.
 
 PETSc also provides access to OpenBLAS via the ``--download-openblas`` configure option. OpenBLAS uses some highly optimized operations but falls back on reference
 routines for many other operations. See the OpenBLAS manual for more information. The configure option ``--download-openblas`` provides a full BLAS/LAPACK implementation.
 
 BLIS does not bundle LAPACK with it so PETSc's configure attempts to locate a compatible system LAPACK library to use if ``--download-blis`` is
-selected. One can use ``--download-f2cblaslapack --download-blis`` to build netlib LAPACK with BLIS. This is recommended as a portable high-performance option.
+selected. One can use ``--download-f2cblaslapack --download-blis``. This is recommended as a portable high-performance option.
 
 

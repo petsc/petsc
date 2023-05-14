@@ -10739,7 +10739,7 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat, ISColoring iscoloring, MatTra
 }
 
 /*@
-      MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the
+      MatGetNonzeroState - Returns a 64-bit integer representing the current state of nonzeros in the matrix. If the
         matrix has had no new nonzero locations added to (or removed from) the matrix since the previous call then the value will be the
         same, otherwise it will be larger
 

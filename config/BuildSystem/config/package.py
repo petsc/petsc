@@ -94,8 +94,8 @@ class Package(config.base.Configure):
 
     self.precisions             = ['__fp16','single','double','__float128']; # Floating point precision package works with
     self.complex                = 1  # 0 means cannot use complex
-    self.requires32bitint       = 0  # 1 means that the package will not work with 64 bit integers
-    self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
+    self.requires32bitint       = 0  # 1 means that the package will not work with 64-bit integers
+    self.requires32bitintblas   = 1  # 1 means that the package will not work with 64-bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.skippackagelibincludedirs = 0 # packages like make do not support --with-package-lib and --with-package-include so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
@@ -1072,7 +1072,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
 
     if self.argDB['with-'+self.package]:
       if blaslapackconflict:
-        raise RuntimeError('Cannot use '+self.name+' with 64 bit BLAS/Lapack indices')
+        raise RuntimeError('Cannot use '+self.name+' with 64-bit BLAS/Lapack indices')
       if 'Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX'):
         raise RuntimeError('Cannot use '+self.name+' without C++, make sure you do NOT have --with-cxx=0')
       if 'FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC'):
@@ -1088,7 +1088,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       if not self.complex and self.defaultScalarType.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
-        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
+        raise RuntimeError('Cannot use '+self.name+' with 64-bit integers, it is not coded for this capability')
     if not self.download and 'download-'+self.downloadname.lower() in self.argDB and self.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return

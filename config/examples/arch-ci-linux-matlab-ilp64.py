@@ -6,7 +6,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 # This test is done on grind.mcs.anl.gov. It uses ILP64 MKL/BLAS packaged
 # with MATLAB.
 
-# Note: regular BLAS [with 32bit integers] conflict with
+# Note: regular BLAS [with 32-bit integers] conflict with
 # MATLAB BLAS - hence requiring -known-64-bit-blas-indices=1
 
 # Note: MATLAB build requires petsc shared libraries

@@ -8,7 +8,7 @@ Changes: 3.5
 -  --download-f-blas-lapack is now --download-fblaslapack.
 -  PETSc built with --with-precision=__float128 will now by default
    read in binary files that have all 128 bits stored in the file, to
-   read in files with 64 bit double use the option
+   read in files with 64-bit double use the option
    -binary_read_double
 -  PETSc options of complex numbers must be passed as
    [+/-][realnumber][+/-]realnumberi with no spaces, you can no

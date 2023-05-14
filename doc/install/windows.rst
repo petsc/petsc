@@ -87,7 +87,7 @@ interface to Microsoft/Intel compilers).
    and Intel 10 Fortran one can do:
 
    #. Start > Programs > Intel Software Development Tools > Intel Fortran
-      Compiler 10 > Visual Fortran Build Environment (32bit or 64bit depending on
+      Compiler 10 > Visual Fortran Build Environment (32-bit or 64-bit depending on
       your usage). This should start a "dos cmd" shell.
 
    #. Within this shell - run Cygwin terminal/bash-shell ``mintty.exe`` as:

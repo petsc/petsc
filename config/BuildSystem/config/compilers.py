@@ -786,7 +786,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         mess = '  See https://petsc.org/release/faq/#macos-gfortran'
       else:
         mess = ''
-      raise RuntimeError('Unknown Fortran name mangling: Are you sure the C and Fortran compilers are compatible?\n  Perhaps one is 64 bit and one is 32 bit?\n'+mess)
+      raise RuntimeError('Unknown Fortran name mangling: Are you sure the C and Fortran compilers are compatible?\n  Perhaps one is 64-bit and one is 32-bit?\n'+mess)
     self.logPrint('Fortran name mangling is '+self.fortranMangling, 4, 'compilers')
     if self.fortranMangling == 'underscore':
       self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)

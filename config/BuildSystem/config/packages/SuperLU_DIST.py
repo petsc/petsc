@@ -95,11 +95,11 @@ class Configure(config.package.CMakePackage):
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.dinclude)
     if self.defaultIndexSize == 64:
       if not self.checkCompile('#include "superlu_ddefs.h"','#if !defined(_LONGINT)\n#error "No longint"\n#endif\n'):
-        raise RuntimeError('PETSc is being configured using --with-64-bit-indices but SuperLU_DIST library is built for 32 bit integers.\n\
+        raise RuntimeError('PETSc is being configured using --with-64-bit-indices but SuperLU_DIST library is built for 32-bit integers.\n\
 Suggest using --download-superlu_dist')
     else:
       if not self.checkCompile('#include "superlu_ddefs.h"','#if defined(_LONGINT)\n#error "longint is defined"\n#endif\n'):
-        raise RuntimeError('PETSc is being configured without using --with-64-bit-indices but SuperLU_DIST library is built for 64 bit integers.\n\
+        raise RuntimeError('PETSc is being configured without using --with-64-bit-indices but SuperLU_DIST library is built for 64-bit integers.\n\
 Suggest using --download-superlu_dist')
     self.compilers.CPPFLAGS = oldFlags
     self.popLanguage()
