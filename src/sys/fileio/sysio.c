@@ -58,7 +58,7 @@ PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
 }
 
 /*
-  PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64 bits)
+  PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64-bits)
 
 */
 PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
@@ -76,7 +76,7 @@ PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
 }
 
 /*
-  PetscByteSwapInt64 - Swap bytes in a  PETSc integer (64 bits)
+  PetscByteSwapInt64 - Swap bytes in a  PETSc integer (64-bits)
 
 */
 PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
@@ -246,7 +246,7 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
    are written ALWAYS using big-endian ordering. On little-endian machines the numbers
    are converted to the little-endian format when they are read in from the file.
    When PETSc is ./configure with `--with-64-bit-indices` the integers are written to the
-   file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
+   file as 64-bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
    is used.
 
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscViewerBinaryGetDescriptor()`, `PetscBinarySynchronizedWrite()`,
@@ -350,7 +350,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
    are written using big-endian ordering to the file. On little-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
    When PETSc is configured using `./configure with --with-64-bit-indices` the integers are written to the
-   file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
+   file as 64-bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
    is used.
 
    If running with `__float128` precision the output of `PETSC_REAL` is in `__float128` unless one uses the `-binary_write_double` option
@@ -578,7 +578,7 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
    The files  are written using big-endian ordering to the file. On little-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
    When PETSc is configured using `./configure with --with-64-bit-indices` the integers are written to the
-   file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
+   file as 64-bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
    is used.
 
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscBinaryRead()`, `PetscBinarySynchronizedWrite()`,
@@ -646,7 +646,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
    The files  are written using big-endian ordering to the file. On little-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
    When PETSc is configured using `./configure with --with-64-bit-indices` the integers are written to the
-   file as 64 bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
+   file as 64-bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
    is used.
 
    Because byte-swapping may be done on the values in data it cannot be declared const

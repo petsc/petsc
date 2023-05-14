@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions              = ['CeedRegister']
     self.includes               = ['ceed.h']
     self.liblist                = [['libceed.a']]
-    self.requires32bitint       = 1;   # TODO: fix for 64 bit integers
+    self.requires32bitint       = 1;   # TODO: fix for 64-bit integers
     return
 
   def setupHelp(self, help):

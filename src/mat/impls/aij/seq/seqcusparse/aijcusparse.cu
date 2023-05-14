@@ -3302,7 +3302,7 @@ finalizesym:
   c->free_ij      = PETSC_TRUE;
   PetscCall(PetscMalloc1(m + 1, &c->i));
   PetscCall(PetscMalloc1(c->nz, &c->j));
-  if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64 bit conversion on the GPU and then copy to host (lazy) */
+  if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64-bit conversion on the GPU and then copy to host (lazy) */
     PetscInt      *d_i = c->i;
     THRUSTINTARRAY ii(Ccsr->row_offsets->size());
     THRUSTINTARRAY jj(Ccsr->column_indices->size());
@@ -5071,7 +5071,7 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
     c->free_ij      = PETSC_TRUE;
     PetscCall(PetscMalloc1(m + 1, &c->i));
     PetscCall(PetscMalloc1(c->nz, &c->j));
-    if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64 bit conversion on the GPU and then copy to host (lazy) */
+    if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64-bit conversion on the GPU and then copy to host (lazy) */
       THRUSTINTARRAY ii(Ccsr->row_offsets->size());
       THRUSTINTARRAY jj(Ccsr->column_indices->size());
       ii = *Ccsr->row_offsets;

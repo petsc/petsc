@@ -42,7 +42,7 @@ class Mistakes(object):
     def compareDirLists(self,root, mdirs, dirs):
         if SKIPDIRS.intersection(pathsplit(None, root)):
             return
-        smdirs = set(mdirs)
+        smdirs = set(mdirs).difference(AUTODIRS)
         sdirs  = set(dirs).difference(AUTODIRS)
         if not smdirs.issubset(sdirs):
             self.mistakes.append('%s/makefile contains a directory not on the filesystem: %r' % (root, sorted(smdirs - sdirs)))

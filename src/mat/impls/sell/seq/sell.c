@@ -2374,7 +2374,7 @@ M*/
   Level: beginner
 
   Notes:
-   This format is only supported for real scalars, double precision, and 32 bit indices (the defaults).
+   This format is only supported for real scalars, double precision, and 32-bit indices (the defaults).
 
    It can provide better performance on Intel and AMD processes with AVX2 or AVX512 support for matrices that have a similar number of
    non-zeros in contiguous groups of rows. However if the computation is memory bandwidth limited it may not provide much improvement.

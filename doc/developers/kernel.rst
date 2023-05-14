@@ -33,7 +33,7 @@ so on are not used in PETSc source code. Rather, it has
 * ``PetscBT`` - bit storage of logical true and false.
 
 ``PetscInt`` can be set using ``configure`` to be either ``int`` (32
-bit, the default) or ``long long`` (64 bit, with
+bit, the default) or ``long long`` (64-bit, with
 ``configure –with-64-bit-indices``) to allow indexing into very large
 arrays. ``PetscMPIInt`` is used for integers passed to MPI as counts and
 sizes. These are always ``int`` since that is what the MPI standard

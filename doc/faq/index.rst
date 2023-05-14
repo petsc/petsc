@@ -419,7 +419,7 @@ When should/can I use the ``configure`` option ``--with-64-bit-indices``?
 -------------------------------------------------------------------------
 
 By default the type that PETSc uses to index into arrays and keep sizes of arrays is a
-``PetscInt`` defined to be a 32 bit ``int``. If your problem:
+``PetscInt`` defined to be a 32-bit ``int``. If your problem:
 
 - Involves more than 2^31 - 1 unknowns (around 2 billion).
 
@@ -427,8 +427,8 @@ By default the type that PETSc uses to index into arrays and keep sizes of array
 
 Then you need to use this option. Otherwise you will get strange crashes.
 
-This option can be used when you are using either 32 bit or 64 bit pointers. You do not
-need to use this option if you are using 64 bit pointers unless the two conditions above
+This option can be used when you are using either 32 or 64-bit pointers. You do not
+need to use this option if you are using 64-bit pointers unless the two conditions above
 hold.
 
 What if I get an internal compiler error?

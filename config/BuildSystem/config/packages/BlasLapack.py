@@ -46,8 +46,8 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.ArgLibrary(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
-    help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64 bit integers for BLAS/LAPACK; will error if not available'))
-    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if using 64 bit integer BLAS'))
+    help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64-bit integers for BLAS/LAPACK; will error if not available'))
+    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if using 64-bit integer BLAS'))
     help.addArgument('BLAS/LAPACK', '-known-snrm2-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS snrm2() returns a double'))
     help.addArgument('BLAS/LAPACK', '-known-sdot-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS sdot() returns a double'))        
     return
@@ -586,7 +586,7 @@ class Configure(config.package.Package):
     if self.mkl and self.has64bitindices:
       self.addDefine('HAVE_MKL_INTEL_ILP64',1)
     if self.argDB['with-64-bit-blas-indices'] and not self.has64bitindices:
-      raise RuntimeError('You requested 64 bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
+      raise RuntimeError('You requested 64-bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
 
   def checkMKL(self):
     '''Check for Intel MKL library'''
@@ -759,13 +759,13 @@ class Configure(config.package.Package):
       return result
 
   def checkRuntimeIssues(self):
-    '''Determines if BLAS/LAPACK routines use 32 or 64 bit integers'''
+    '''Determines if BLAS/LAPACK routines use 32 or 64-bit integers'''
     if self.known64 == '64':
       self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
       self.has64bitindices = 1
-      self.log.write('64 bit blas indices based on the BLAS/LAPACK library being used\n')
+      self.log.write('64-bit BLAS indices based on the BLAS/LAPACK library being used\n')
     elif self.known64 == '32':
-      self.log.write('32 bit blas indices based on the BLAS/LAPACK library being used\n')
+      self.log.write('32-bit BLAS indices based on the BLAS/LAPACK library being used\n')
     elif 'known-64-bit-blas-indices' in self.argDB:
       if self.argDB['known-64-bit-blas-indices']:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
@@ -773,12 +773,12 @@ class Configure(config.package.Package):
       else:
         self.has64bitindices = 0
     elif self.argDB['with-batch']:
-      self.logPrintWarning('Cannot determine if BLAS/LAPACK uses 32 bit or 64 bit integers \
-in batch-mode! Assuming 32 bit integers. Run with --known-64-bit-blas-indices \
-if you know they are 64 bit. Run with --known-64-bit-blas-indices=0 to remove \
+      self.logPrintWarning('Cannot determine if BLAS/LAPACK uses 32 or 64-bit integers \
+in batch-mode! Assuming 32-bit integers. Run with --known-64-bit-blas-indices \
+if you know they are 64-bit. Run with --known-64-bit-blas-indices=0 to remove \
 this warning message')
       self.has64bitindices = 0
-      self.log.write('In batch mode with unknown size of BLAS/LAPACK defaulting to 32 bit\n')
+      self.log.write('In batch mode with unknown size of BLAS/LAPACK defaulting to 32-bit\n')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n\n'''
       t = self.getType()
@@ -790,11 +790,11 @@ this warning message')
                   fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
       result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
       if result is not None:
-        self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
+        self.log.write('Checking for 64-bit BLAS/LAPACK indices: result ' +str(result)+'\n')
         result = int(result)
         if result:
           if self.defaultPrecision == 'single':
-            self.log.write('Checking for 64 bit blas indices: special check for Apple single precision\n')
+            self.log.write('Checking for 64-bit BLAS/LAPACK indices: special check for Apple single precision\n')
             # On Apple single precision sdot() returns a double so we need to test that case
             body     = '''extern double '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
                   '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
@@ -807,11 +807,11 @@ this warning message')
         if result:
           self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
           self.has64bitindices = 1
-          self.log.write('Checking for 64 bit blas indices: result not equal to 1 so assuming 64 bit blas indices\n')
+          self.log.write('Checking for 64-bit BLAS/LAPACK indices: result not equal to 1 so assuming 64-bit BLAS/LAPACK indices\n')
       else:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
         self.has64bitindices = 1
-        self.log.write('Checking for 64 bit blas indices: program did not return therefore assuming 64 bit blas indices\n')
+        self.log.write('Checking for 64-bit BLAS/LAPACK indices: program did not return therefore assuming 64-bit BLAS/LAPACK indices\n')
     self.log.write('Checking if sdot() returns a float or a double\n')
     if 'known-sdot-returns-double' in self.argDB:
       if self.argDB['known-sdot-returns-double']:

@@ -5,7 +5,7 @@
    When build with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
-   that one cannot use 64BIT_INDICES on 32bit machines [as Suitesparse_long is 32bit only]
+   that one cannot use 64BIT_INDICES on 32-bit pointer systems [as Suitesparse_long is 32-bit only]
 
 */
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -271,7 +271,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
   if (r) {
     PetscCall(ISGetIndices(r, &ra));
     PetscCall(PetscMalloc1(m, &lu->perm_c));
-    /* we cannot simply memcpy on 64 bit archs */
+    /* we cannot simply memcpy on 64-bit archs */
     for (i = 0; i < m; i++) lu->perm_c[i] = ra[i];
     PetscCall(ISRestoreIndices(r, &ra));
   }

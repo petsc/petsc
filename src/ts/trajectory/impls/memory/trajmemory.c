@@ -13,7 +13,7 @@ static inline PetscErrorCode PetscRevolveIntCast(PetscInt a, PetscRevolveInt *b)
   PetscFunctionBegin;
   #if defined(PETSC_USE_64BIT_INDICES)
   *b = 0;
-  PetscCheck(a <= PETSC_REVOLVE_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Parameter is too large for Revolve, which is restricted to 32 bit integers");
+  PetscCheck(a <= PETSC_REVOLVE_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Parameter is too large for Revolve, which is restricted to 32-bit integers");
   #endif
   *b = (PetscRevolveInt)(a);
   PetscFunctionReturn(PETSC_SUCCESS);

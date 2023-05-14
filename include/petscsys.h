@@ -116,7 +116,7 @@
 */
 #include <stdio.h>
 
-/* MSMPI on 32bit windows requires this yukky hack - that breaks MPI standard compliance */
+/* MSMPI on 32-bit Microsoft Windows requires this yukky hack - that breaks MPI standard compliance */
 #if !defined(MPIAPI)
   #define MPIAPI
 #endif
@@ -1548,7 +1548,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 #endif
 
 /*@C
-    PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32 bits in size), generates an
+    PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32-bits in size), generates an
          error if the `PetscInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -1562,7 +1562,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
    Level: advanced
 
    Notes:
-   If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64 bit ints
+   If integers needed for the applications are too large to fit in 32-bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
 @*/
@@ -1577,7 +1577,7 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
 }
 
 /*@C
-    PetscCountCast - casts a `PetscCount` to a `PetscInt` (which may be 32 bits in size), generates an
+    PetscCountCast - casts a `PetscCount` to a `PetscInt` (which may be 32-bits in size), generates an
          error if the `PetscInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -1591,7 +1591,7 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
    Level: advanced
 
    Note:
-     If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64 bit ints
+     If integers needed for the applications are too large to fit in 32-bit integers you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
 
 .seealso: `PetscCount`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`, `PetscIntCast()`
 @*/
@@ -1605,7 +1605,7 @@ static inline PetscErrorCode PetscCountCast(PetscCount a, PetscInt *b)
 }
 
 /*@C
-    PetscBLASIntCast - casts a `PetscInt` (which may be 64 bits in size) to a `PetscBLASInt` (which may be 32 bits in size), generates an
+    PetscBLASIntCast - casts a `PetscInt` (which may be 64-bits in size) to a `PetscBLASInt` (which may be 32-bits in size), generates an
          error if the `PetscBLASInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -1628,7 +1628,7 @@ static inline PetscErrorCode PetscBLASIntCast(PetscInt a, PetscBLASInt *b)
   PetscFunctionBegin;
   *b = 0;
   if (PetscDefined(USE_64BIT_INDICES) && !PetscDefined(HAVE_64BIT_BLAS_INDICES)) {
-    PetscCheck(a <= PETSC_BLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for BLAS/LAPACK, which is restricted to 32 bit integers. Either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-blas-indices for the case you are running", a);
+    PetscCheck(a <= PETSC_BLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for BLAS/LAPACK, which is restricted to 32-bit integers. Either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-blas-indices for the case you are running", a);
   }
   PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to BLAS/LAPACK routine");
   *b = (PetscBLASInt)a;
@@ -1657,7 +1657,7 @@ static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
 {
   PetscFunctionBegin;
   *b = 0;
-  PetscCheck(a <= PETSC_CUBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for cuBLAS, which is restricted to 32 bit integers.", a);
+  PetscCheck(a <= PETSC_CUBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for cuBLAS, which is restricted to 32-bit integers.", a);
   PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer %" PetscInt_FMT "to cuBLAS routine", a);
   *b = (PetscCuBLASInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1685,14 +1685,14 @@ static inline PetscErrorCode PetscHipBLASIntCast(PetscInt a, PetscHipBLASInt *b)
 {
   PetscFunctionBegin;
   *b = 0;
-  PetscCheck(a <= PETSC_HIPBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for hipBLAS, which is restricted to 32 bit integers.", a);
+  PetscCheck(a <= PETSC_HIPBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for hipBLAS, which is restricted to 32-bit integers.", a);
   PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer %" PetscInt_FMT "to hipBLAS routine", a);
   *b = (PetscHipBLASInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-    PetscMPIIntCast - casts a `PetscInt` (which may be 64 bits in size) to a PetscMPIInt (which may be 32 bits in size), generates an
+    PetscMPIIntCast - casts a `PetscInt` (which may be 64-bits in size) to a PetscMPIInt (which may be 32-bits in size), generates an
          error if the `PetscMPIInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -1882,7 +1882,7 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
    Level: advanced
 
    Notes:
-   Use `PetscInt64Mult()` to compute the product of two 32 bit `PetscInt` and store in a `PetscInt64`
+   Use `PetscInt64Mult()` to compute the product of two 32-bit `PetscInt` and store in a `PetscInt64`
 
    Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 

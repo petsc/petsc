@@ -43,8 +43,10 @@ static struct PetscFPTrapLink *_trapstack;                    /* Any pushed stat
 
      Most systems by default have all trapping turned off, but certain Fortran compilers have
      link flags that turn on trapping before the program begins.
-$       gfortran -ffpe-trap=invalid,zero,overflow,underflow,denormal
-$       ifort -fpe0
+.vb
+       gfortran -ffpe-trap=invalid,zero,overflow,underflow,denormal
+       ifort -fpe0
+.ve
 
 .seealso: `PetscFPTrapPop()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/
@@ -158,6 +160,8 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
    Level: advanced
 
    Notes:
+   Preferred usage is `PetscFPTrapPush()` and `PetscFPTrapPop()` instead of this routine
+
    Currently only `PETSC_FP_TRAP_OFF` and `PETSC_FP_TRAP_ON` are handled. All others are treated as `PETSC_FP_TRAP_ON`.
 
    The values are bit values and may be |ed together in the function call

@@ -33,7 +33,7 @@ PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
     #define MKL_PARDISO      pardiso
     #define MKL_PARDISO_INIT pardisoinit
   #else
-    /* this is the case where the MKL BLAS/LAPACK are 32 bit integers but the 64 bit integer version of
+    /* this is the case where the MKL BLAS/LAPACK are 32-bit integers but the 64-bit integer version of
      of Pardiso code is used; hence the need for the 64 below*/
     #define INT_TYPE         long long int
     #define MKL_PARDISO      pardiso_64
