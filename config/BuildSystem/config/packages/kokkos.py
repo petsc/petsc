@@ -112,7 +112,6 @@ class Configure(config.package.CMakePackage):
     lang = 'cxx'
     deviceArchName = ''
     if self.cuda.found:
-      args.append('-DKokkos_ENABLE_LIBDL=OFF') # See MR !4890
       # lang is used below to get nvcc C++ dialect. In a case with nvhpc-21.7 and "nvcc -ccbin nvc++ -std=c++17",
       # nvcc complains the host compiler does not support c++17, even though it does. So we have to respect
       # what nvcc thinks, instead of taking the c++ dialect directly from the host compiler.
