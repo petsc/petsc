@@ -17,11 +17,6 @@ PetscInt     PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 PetscBool    PetscObjectsLog = PETSC_FALSE;
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject, const char[], PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject, const char[], PetscObject *);
-PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject, const char[], void (*)(void));
-PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject, const char[], void (**)(void));
-
 PetscObjectId PetscObjectNewId_Internal(void)
 {
   static PetscObjectId idcnt = 1;
@@ -48,10 +43,6 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
   h->id                    = PetscObjectNewId_Internal();
   h->bops->destroy         = destroy;
   h->bops->view            = view;
-  h->bops->compose         = PetscObjectCompose_Petsc;
-  h->bops->query           = PetscObjectQuery_Petsc;
-  h->bops->composefunction = PetscObjectComposeFunction_Petsc;
-  h->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
   PetscCall(PetscCommDuplicate(comm, &h->comm, &h->tag));
 
@@ -130,10 +121,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject obj, PetscBool clear_for_r
 
   if (clear_for_reuse) {
     /* we will assume that obj->bops->view and destroy are safe to leave as-is */
-    obj->bops->compose         = PetscObjectCompose_Petsc;
-    obj->bops->query           = PetscObjectQuery_Petsc;
-    obj->bops->composefunction = PetscObjectComposeFunction_Petsc;
-    obj->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
     /* reset quantities, in order of appearance in _p_PetscObject */
     obj->id       = PetscObjectNewId_Internal();
@@ -669,44 +656,6 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj, const char name[], PetscObject ptr)
-{
-  PetscFunctionBegin;
-  if (ptr) {
-    char     *tname;
-    PetscBool skipreference;
-
-    PetscCall(PetscObjectListReverseFind(ptr->olist, obj, &tname, &skipreference));
-    if (tname) PetscCheck(skipreference, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "An object cannot be composed with an object that was composed with it");
-  }
-  PetscCall(PetscObjectListAdd(&obj->olist, name, ptr));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj, const char name[], PetscObject *ptr)
-{
-  PetscFunctionBegin;
-  PetscValidHeader(obj, 1);
-  PetscCall(PetscObjectListFind(obj->olist, name, ptr));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj, const char name[], void (*ptr)(void))
-{
-  PetscFunctionBegin;
-  PetscValidHeader(obj, 1);
-  PetscCall(PetscFunctionListAdd(&obj->qlist, name, ptr));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj, const char name[], void (**ptr)(void))
-{
-  PetscFunctionBegin;
-  PetscValidHeader(obj, 1);
-  PetscCall(PetscFunctionListFind(obj->qlist, name, ptr));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@C
    PetscObjectCompose - Associates another PETSc object with a given PETSc object.
 
@@ -746,7 +695,14 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   PetscValidCharPointer(name, 2);
   if (ptr) PetscValidHeader(ptr, 3);
   PetscCheck(obj != ptr, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "Cannot compose object with itself");
-  PetscCall((*obj->bops->compose)(obj, name, ptr));
+  if (ptr) {
+    char     *tname;
+    PetscBool skipreference;
+
+    PetscCall(PetscObjectListReverseFind(ptr->olist, obj, &tname, &skipreference));
+    if (tname) PetscCheck(skipreference, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "An object cannot be composed with an object that was composed with it");
+  }
+  PetscCall(PetscObjectListAdd(&obj->olist, name, ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -777,7 +733,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
   PetscValidHeader(obj, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(ptr, 3);
-  PetscCall((*obj->bops->query)(obj, name, ptr));
+  PetscCall(PetscObjectListFind(obj->olist, name, ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -818,7 +774,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscValidCharPointer(name, 2);
-  PetscCall((*obj->bops->composefunction)(obj, name, fptr));
+  PetscCall(PetscFunctionListAdd(&obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -848,7 +804,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, co
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscValidCharPointer(name, 2);
-  PetscCall((*obj->bops->queryfunction)(obj, name, ptr));
+  PetscCall(PetscFunctionListFind(obj->qlist, name, ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
