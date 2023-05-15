@@ -433,4 +433,17 @@ int main(int argc, char **argv)
     nsize: {{1 2}}
     args: -coord_space 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q3.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
 
+  test:
+    # Volume: 1.0
+    suffix: gmsh_3d_q2
+    requires: double
+    args: -coord_space 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_q2.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
+
+  test:
+    # Volume: 1.0
+    suffix: gmsh_3d_q3
+    requires: double
+    nsize: {{1 2}}
+    args: -coord_space 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_q3.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
+
 TEST*/
