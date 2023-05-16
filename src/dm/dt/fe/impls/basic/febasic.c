@@ -100,6 +100,7 @@ static PetscErrorCode TensorContract_Private(PetscInt m, PetscInt n, PetscInt p,
   PetscInt i;
 
   PetscFunctionBegin;
+  PetscCheck(n && p, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Empty tensor is not allowed %" PetscInt_FMT " %" PetscInt_FMT, n, p);
   for (i = 0; i < m; i++) {
     PetscBLASInt n_, p_, k_, lda, ldb, ldc;
     PetscReal    one = 1, zero = 0;
@@ -144,11 +145,11 @@ PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt 
     /* B[npoints, nodes, Nc] = tmpB[npoints, prime, Nc] * invV[prime, nodes] */
     PetscCall(TensorContract_Private(npoints, pdim, Nc, pdim, tmpB, fem->invV, B));
   }
-  if (D) {
+  if (D && dim) {
     /* D[npoints, nodes, Nc, dim] = tmpD[npoints, prime, Nc, dim] * invV[prime, nodes] */
     PetscCall(TensorContract_Private(npoints, pdim, Nc * dim, pdim, tmpD, fem->invV, D));
   }
-  if (H) {
+  if (H && dim) {
     /* H[npoints, nodes, Nc, dim, dim] = tmpH[npoints, prime, Nc, dim, dim] * invV[prime, nodes] */
     PetscCall(TensorContract_Private(npoints, pdim, Nc * dim * dim, pdim, tmpH, fem->invV, H));
   }

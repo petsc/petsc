@@ -799,7 +799,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
   PetscValidPointer(T, 3);
   PetscCall(PetscQuadratureGetData(fem->quadrature, NULL, NULL, &npoints, &points, NULL));
   if (!fem->T) PetscCall(PetscFECreateTabulation(fem, 1, npoints, points, k, &fem->T));
-  PetscCheck(!fem->T || k <= fem->T->K, PetscObjectComm((PetscObject)fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %" PetscInt_FMT " derivatives, but only tabulated %" PetscInt_FMT, k, fem->T->K);
+  PetscCheck(!fem->T || k <= fem->T->K || (!fem->T->cdim && !fem->T->K), PetscObjectComm((PetscObject)fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %" PetscInt_FMT " derivatives, but only tabulated %" PetscInt_FMT, k, fem->T->K);
   *T = fem->T;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
