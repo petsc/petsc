@@ -88,6 +88,7 @@ struct _p_KSP {
   PetscInt  max_it; /* maximum number of iterations */
   KSPGuess  guess;
   PetscBool guess_zero,                                  /* flag for whether initial guess is 0 */
+    guess_not_read,                                      /* guess is not read, does not need to be zeroed */
     calc_sings,                                          /* calculate extreme Singular Values */
     calc_ritz,                                           /* calculate (harmonic) Ritz pairs */
     guess_knoll;                                         /* use initial guess of PCApply(ksp->B,b */

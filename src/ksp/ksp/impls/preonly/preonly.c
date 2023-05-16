@@ -115,5 +115,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
+  ksp->guess_not_read      = PETSC_TRUE; // A KSP of preonly never needs to zero the input x since PC do not use an initial guess
   PetscFunctionReturn(PETSC_SUCCESS);
 }

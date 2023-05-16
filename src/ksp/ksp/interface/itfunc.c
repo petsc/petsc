@@ -867,7 +867,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   }
   PetscCall(PCPreSolve(ksp->pc, ksp));
 
-  if (ksp->guess_zero) PetscCall(VecSet(ksp->vec_sol, 0.0));
+  if (ksp->guess_zero && !ksp->guess_not_read) PetscCall(VecSet(ksp->vec_sol, 0.0));
   if (ksp->guess_knoll) { /* The Knoll trick is independent on the KSPGuess specified */
     PetscCall(PCApply(ksp->pc, ksp->vec_rhs, ksp->vec_sol));
     PetscCall(KSP_RemoveNullSpace(ksp, ksp->vec_sol));
