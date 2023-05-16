@@ -12,6 +12,7 @@ typedef struct {
   const PetscInt *node_l2g;
   int             base, zone;
   PetscInt        num_local_nodes, nStart, nEnd;
+  PetscInt        eStart, eEnd;
   PetscScalar    *nodal_field;
   PetscSegBuffer  output_steps;
   PetscSegBuffer  output_times;
