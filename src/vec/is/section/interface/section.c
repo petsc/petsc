@@ -1943,8 +1943,9 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), subs));
   PetscCall(PetscSectionSetNumFields(*subs, len));
   for (f = 0; f < len; ++f) {
-    const char *name    = NULL;
-    PetscInt    numComp = 0;
+    const char     *name    = NULL;
+    PetscInt        numComp = 0;
+    PetscSectionSym sym;
 
     PetscCall(PetscSectionGetFieldName(s, fields[f], &name));
     PetscCall(PetscSectionSetFieldName(*subs, f, name));
@@ -1954,6 +1955,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
       PetscCall(PetscSectionGetComponentName(s, fields[f], c, &name));
       PetscCall(PetscSectionSetComponentName(*subs, f, c, name));
     }
+    PetscCall(PetscSectionGetFieldSym(s, fields[f], &sym));
+    PetscCall(PetscSectionSetFieldSym(*subs, f, sym));
   }
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(*subs, pStart, pEnd));
