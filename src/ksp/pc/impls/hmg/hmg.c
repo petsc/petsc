@@ -127,7 +127,7 @@ PetscErrorCode PCSetUp_HMG(PC pc)
     /* If users do not set an inner pc type, we need to set a default value */
     if (!hmg->innerpctype) {
       /* If hypre is available, use hypre, otherwise, use gamg */
-#if PETSC_HAVE_HYPRE
+#if PetscDefined(HAVE_HYPRE)
       PetscCall(PetscStrallocpy(PCHYPRE, &(hmg->innerpctype)));
 #else
       PetscCall(PetscStrallocpy(PCGAMG, &(hmg->innerpctype)));

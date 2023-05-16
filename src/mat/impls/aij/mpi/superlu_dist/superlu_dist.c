@@ -6,6 +6,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscpkg_version.h>
 
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wundef")
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
   #define CASTDOUBLECOMPLEX     (doublecomplex *)
@@ -81,6 +82,7 @@ EXTERN_C_BEGIN
   #endif
 #endif
 EXTERN_C_END
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 
 typedef struct {
   int_t      nprow, npcol, *row, *col;

@@ -10,6 +10,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blis = framework.require('config.packages.blis', self)
+    self.blis.complex_return = 'intel' # f2cblaslapack puts complex return values into the arguments, like Intel Fortran compilers, and blis needs to know this
     self.scalartypes = framework.require('PETSc.options.scalarTypes', self)
     self.odeps = [self.blis]
     return

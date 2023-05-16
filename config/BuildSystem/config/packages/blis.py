@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.functions = ['bli_init']
     self.includes  = ['blis/blis.h']
     self.liblist   = [['libblis.a']]
+    self.complex_return = None
     return
 
   def setupHelp(self, help):
@@ -16,6 +17,7 @@ class Configure(config.package.Package):
     config.package.Package.setupHelp(self, help)
     help.addArgument(self.PACKAGE,'-download-blis-use-pthreads=<bool>',nargs.ArgBool(None,0,'Use pthreads threading support for '+self.name ))
     help.addArgument(self.PACKAGE,'-download-blis-enable-cblas-headers=<bool>',nargs.ArgBool(None,0,'Enable CBLAS headers for '+self.name ))
+    help.addArgument(self.PACKAGE,'-download-blis-complex-return=<string>',nargs.ArgString(None,None,'Specify the method of returning complex numbers from blas routines ('+self.name+' supports "gnu" and "intel")'))
     return
 
   def configureLibrary(self):
@@ -66,6 +68,12 @@ class Configure(config.package.Package):
         self.usesopenmp = 'yes'
       if self.argDB['download-blis-enable-cblas-headers']:
         args.append('--enable-cblas')
+      try:
+        self.complex_return = self.argDB['download-blis-complex-return']
+      except:
+        pass
+      if self.complex_return:
+        args.append('--complex-return=' + self.complex_return)
       args.append('CC=' + cc)
       args.append('auto')
       config.package.Package.executeShellCommand(args, cwd=self.packageDir, timeout=60, log=self.log)
