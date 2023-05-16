@@ -208,10 +208,10 @@ static PetscErrorCode MatSeqAIJKokkosGenerateTransposeStructure(Mat A, MatRowMap
   Mat_SeqAIJ             *aseq = static_cast<Mat_SeqAIJ *>(A->data);
   PetscInt                nz = aseq->nz, m = A->rmap->N, n = A->cmap->n;
   const PetscInt         *Ai = aseq->i, *Aj = aseq->j;
-  MatRowMapKokkosViewHost Ti_h("Ti", n + 1);
+  MatRowMapKokkosViewHost Ti_h(NoInit("Ti"), n + 1);
   MatRowMapType          *Ti = Ti_h.data();
-  MatColIdxKokkosViewHost Tj_h("Tj", nz);
-  MatRowMapKokkosViewHost perm_h("permutation", nz);
+  MatColIdxKokkosViewHost Tj_h(NoInit("Tj"), nz);
+  MatRowMapKokkosViewHost perm_h(NoInit("permutation"), nz);
   PetscInt               *Tj   = Tj_h.data();
   PetscInt               *perm = perm_h.data();
   PetscInt               *offset;
@@ -1453,10 +1453,9 @@ static PetscErrorCode MatSeqAIJKokkosTransposeSolveCheck(Mat A)
   PetscFunctionBegin;
   if (!factors->transpose_updated) { /* TODO: KK needs to provide functions to do numeric transpose only */
     /* Update L^T and do sptrsv symbolic */
-    factors->iLt_d = MatRowMapKokkosView("factors->iLt_d", n + 1);
-    Kokkos::deep_copy(factors->iLt_d, 0); /* KK requires 0 */
-    factors->jLt_d = MatColIdxKokkosView("factors->jLt_d", factors->jL_d.extent(0));
-    factors->aLt_d = MatScalarKokkosView("factors->aLt_d", factors->aL_d.extent(0));
+    factors->iLt_d = MatRowMapKokkosView("factors->iLt_d", n + 1); // KK requires 0
+    factors->jLt_d = MatColIdxKokkosView(NoInit("factors->jLt_d"), factors->jL_d.extent(0));
+    factors->aLt_d = MatScalarKokkosView(NoInit("factors->aLt_d"), factors->aL_d.extent(0));
 
     transpose_matrix<ConstMatRowMapKokkosView, ConstMatColIdxKokkosView, ConstMatScalarKokkosView, MatRowMapKokkosView, MatColIdxKokkosView, MatScalarKokkosView, MatRowMapKokkosView, DefaultExecutionSpace>(n, n, factors->iL_d, factors->jL_d, factors->aL_d,
                                                                                                                                                                                                               factors->iLt_d, factors->jLt_d, factors->aLt_d);
@@ -1469,10 +1468,9 @@ static PetscErrorCode MatSeqAIJKokkosTransposeSolveCheck(Mat A)
     KokkosSparse::Experimental::sptrsv_symbolic(&factors->khLt, factors->iLt_d, factors->jLt_d, factors->aLt_d);
 
     /* Update U^T and do sptrsv symbolic */
-    factors->iUt_d = MatRowMapKokkosView("factors->iUt_d", n + 1);
-    Kokkos::deep_copy(factors->iUt_d, 0); /* KK requires 0 */
-    factors->jUt_d = MatColIdxKokkosView("factors->jUt_d", factors->jU_d.extent(0));
-    factors->aUt_d = MatScalarKokkosView("factors->aUt_d", factors->aU_d.extent(0));
+    factors->iUt_d = MatRowMapKokkosView("factors->iUt_d", n + 1); // KK requires 0
+    factors->jUt_d = MatColIdxKokkosView(NoInit("factors->jUt_d"), factors->jU_d.extent(0));
+    factors->aUt_d = MatScalarKokkosView(NoInit("factors->aUt_d"), factors->aU_d.extent(0));
 
     transpose_matrix<ConstMatRowMapKokkosView, ConstMatColIdxKokkosView, ConstMatScalarKokkosView, MatRowMapKokkosView, MatColIdxKokkosView, MatScalarKokkosView, MatRowMapKokkosView, DefaultExecutionSpace>(n, n, factors->iU_d, factors->jU_d, factors->aU_d,
                                                                                                                                                                                                               factors->iUt_d, factors->jUt_d, factors->aUt_d);
