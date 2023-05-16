@@ -48,38 +48,28 @@ int main(int argc, char **args)
 }
 
 /*TEST
+  testset:
+    args: -lda {{0 1}} -ex19_mat_view
+    filter: grep -v -i type
+    output_file: output/ex19.out
 
-   test:
+    test:
       suffix: cuda
       requires: cuda
-      args: -lda {{0 1}} -vec_type cuda -ex19_mat_view
+      args: -vec_type {{cuda mpicuda}}
 
-   test:
-      suffix: mpicuda
-      requires: cuda
-      args: -lda {{0 1}} -vec_type mpicuda -ex19_mat_view
-
-   test:
+    test:
       suffix: hip
       requires: hip
-      args: -lda {{0 1}} -vec_type hip -ex19_mat_view
+      args: -vec_type hip
 
-   test:
+    test:
       suffix: standard
-      args: -lda {{0 1}} -vec_type standard -ex19_mat_view
+      args: -vec_type standard
 
-   test:
-      suffix: kokkos_cuda
-      requires: kokkos kokkos_kernels cuda
-      args: -lda {{0 1}} -vec_type kokkos -ex19_mat_view
-
-   test:
-      suffix: kokkos_hip
-      requires: kokkos kokkos_kernels hip
-      args: -lda {{0 1}} -vec_type kokkos -ex19_mat_view
-
-   test:
+    test:
       suffix: kokkos
-      requires: kokkos kokkos_kernels !cuda !hip
-      args: -lda {{0 1}} -vec_type kokkos -ex19_mat_view
+      # we don't have MATDENSESYCL yet
+      requires: kokkos_kernels !sycl
+      args: -vec_type kokkos
 TEST*/
