@@ -775,7 +775,8 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
   ksp->converged_neg_curve = PETSC_FALSE; // restore default
   ksp->setupnewmatrix      = PETSC_FALSE; // restore default (setup not called in case of new matrix)
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
-  ksp->setupstage = KSP_SETUP_NEW;
+  ksp->setupstage     = KSP_SETUP_NEW;
+  ksp->guess_not_read = PETSC_FALSE; // restore default
   PetscCall((*r)(ksp));
   PetscCall(PetscObjectChangeTypeName((PetscObject)ksp, type));
   PetscFunctionReturn(PETSC_SUCCESS);
