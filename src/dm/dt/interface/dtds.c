@@ -444,7 +444,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
         PetscCall(PetscFEGetQuadrature(fe, &q));
         PetscCall(PetscQuadratureGetData(q, &dim, NULL, NULL, NULL, NULL));
         PetscCall(PetscFESetQuadrature(fe, maxQuad[dim]));
-        PetscCall(PetscFESetFaceQuadrature(fe, maxQuad[dim - 1]));
+        PetscCall(PetscFESetFaceQuadrature(fe, dim ? maxQuad[dim - 1] : NULL));
       } else if (id == PETSCFV_CLASSID) {
         PetscFV fv = (PetscFV)obj;
 
