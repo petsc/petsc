@@ -1469,6 +1469,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 
    Options Database Keys:
 +   -ksp_max_it - maximum number of linear iterations
+.   -ksp_min_it - minimum number of linear iterations, defaults to 0
 .   -ksp_rtol rtol - relative tolerance used in default determination of convergence, i.e. if residual norm decreases by this factor than convergence is declared
 .   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
@@ -1506,7 +1507,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 
    Call `KSPSetConvergenceTest()` with the ctx, as created above and the destruction function `KSPConvergedDefaultDestroy()`
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
+.seealso: [](chapter_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPSetMinimumIterations()`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`
 @*/
 PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *ctx)
@@ -1581,7 +1582,12 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
       *reason = KSP_DIVERGED_NANORINF;
       PetscCall(PetscInfo(ksp, "Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n"));
     }
-  } else if (rnorm <= ksp->ttol) {
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  if (n < ksp->min_it) PetscFunctionReturn(PETSC_SUCCESS);
+
+  if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
       PetscCall(PetscInfo(ksp, "Linear solver has converged. Residual norm %14.12e is less than absolute tolerance %14.12e at iteration %" PetscInt_FMT "\n", (double)rnorm, (double)ksp->abstol, n));
       *reason = KSP_CONVERGED_ATOL;

@@ -1,0 +1,37 @@
+  0 KSP Residual norm 1.414213562373e+00 
+  1 KSP Residual norm 6.324555320337e-01 
+  2 KSP Residual norm 3.779644730092e-01 
+  3 KSP Residual norm 2.581988897472e-01 
+  4 KSP Residual norm 1.906925178491e-01 
+  5 KSP Residual norm 1.616509124176e-15 
+  6 KSP Residual norm 1.143044563555e-15 
+  7 KSP Residual norm 9.332919779906e-16 
+  8 KSP Residual norm 8.082545620881e-16 
+KSP Object: 1 MPI process
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  minimum iterations=8
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI process
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=10, cols=10
+    total: nonzeros=28, allocated nonzeros=28
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+Norm of error 2.12978e-15, Iterations 8
+  0 KSP Residual norm 1.414213562373e+00 
+  1 KSP Residual norm 3.429971702850e-01 
+  2 KSP Residual norm 9.090909090909e-02 
+  3 KSP Residual norm 2.433241277446e-02 
+  4 KSP Residual norm 6.519190181733e-03 
+  5 KSP Residual norm 2.565962614385e-16 
+  6 KSP Residual norm 1.814409564903e-16 
+  7 KSP Residual norm 1.481459206146e-16 
+  8 KSP Residual norm 1.282981307193e-16 

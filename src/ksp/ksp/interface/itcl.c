@@ -273,6 +273,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 
    Options Database Keys:
 +   -ksp_max_it - maximum number of linear iterations
+.   -ksp_min_it - miminum number of linear iterations to use, defaults to zero
 .   -ksp_rtol rtol - relative tolerance used in default determination of convergence, i.e.
                 if residual norm decreases by this factor than convergence is declared
 .   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual
@@ -397,7 +398,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     goto skipoptions;
   }
 
-  PetscCall(PetscOptionsInt("-ksp_max_it", "Maximum number of iterations", "KSPSetTolerances", ksp->max_it, &ksp->max_it, NULL));
+  PetscCall(PetscOptionsBoundedInt("-ksp_max_it", "Maximum number of iterations", "KSPSetTolerances", ksp->max_it, &ksp->max_it, NULL, 0));
+  PetscCall(PetscOptionsRangeInt("-ksp_min_it", "Minimum number of iterations", "KSPSetMinimumIterations", ksp->min_it, &ksp->min_it, NULL, 0, ksp->max_it));
   PetscCall(PetscOptionsReal("-ksp_rtol", "Relative decrease in residual norm", "KSPSetTolerances", ksp->rtol, &ksp->rtol, NULL));
   PetscCall(PetscOptionsReal("-ksp_atol", "Absolute value of residual norm", "KSPSetTolerances", ksp->abstol, &ksp->abstol, NULL));
   PetscCall(PetscOptionsReal("-ksp_divtol", "Residual norm increase cause divergence", "KSPSetTolerances", ksp->divtol, &ksp->divtol, NULL));
