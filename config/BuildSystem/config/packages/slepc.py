@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '19c2f7e23f164dc9c1722faf88a7c1f5f9bd1647' # main may 5, 2023
+    self.gitcommit              = 'a2e6dffced497e0bb2b62d91121136d8c8448e1d' # main may 9, 2023
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -49,6 +49,13 @@ class Configure(config.package.Package):
        barg = 'SLEPC_DIR='+self.packageDir
        prefix = os.path.join(self.petscdir.dir,self.arch)
 
+    if  self.argDB['with-petsc4py']:
+      if 'download-slepc-configure-arguments' in self.argDB:
+        if self.argDB['download-slepc-configure-arguments'] and '--with-slepc4py' not in self.argDB['download-slepc-configure-arguments']:
+          self.argDB['download-slepc-configure-arguments'] += ' --with-slepc4py'
+      else:
+        self.argDB['download-slepc-configure-arguments'] = ' --with-slepc4py'
+
     if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments']:
       configargs = self.argDB['download-slepc-configure-arguments']
       if '--with-slepc4py' in self.argDB['download-slepc-configure-arguments']:
@@ -80,6 +87,7 @@ class Configure(config.package.Package):
             echo "Error installing SLEPc." && \\\n\
             echo "********************************************************************" && \\\n\
             exit 1)'])
+    self.addMakeRule('slepc-check', '', ['@cd '+self.packageDir+' ; SLEPC_DIR=`pwd` ${OMAKE} check'])
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('slepc-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building slepc
