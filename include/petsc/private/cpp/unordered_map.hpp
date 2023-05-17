@@ -14,8 +14,6 @@
   #define PETSC_KHASH_MAP_USE_OPTIONAL 0
 #endif
 
-#include <unordered_map>
-
 #include <cstdint>   // std::uint32_t
 #include <climits>   // CHAR_BIT
 #include <iterator>  // std::inserter
@@ -295,7 +293,7 @@ public:
   using pointer           = value_type *;
 
   table_iterator() noexcept = default;
-  table_iterator(table_type *map, khash_int it) noexcept : map_(map), it_(it) { }
+  table_iterator(table_type *map, khash_int it) noexcept : map_{std::move(map)}, it_{std::move(it)} { }
 
   table_iterator(const table_iterator &) noexcept            = default;
   table_iterator &operator=(const table_iterator &) noexcept = default;
@@ -304,7 +302,7 @@ public:
   table_iterator &operator=(table_iterator &&) noexcept = default;
 
   template <bool other_is_const_it, util::enable_if_t<is_const_it && !other_is_const_it> * = nullptr>
-  table_iterator(const table_iterator<other_is_const_it> &other) noexcept : table_iterator(other.map_, other.it_)
+  table_iterator(const table_iterator<other_is_const_it> &other) noexcept : table_iterator{other.map_, other.it_}
   {
   }
 
@@ -332,14 +330,14 @@ public:
     PetscCallAbort(PETSC_COMM_SELF, check_iterator_inbounds_(1, 1));
     do {
       --it_;
-    } while (it_ > map_begin && !map_->occupied(it_));
+    } while ((it_ > map_begin) && !map_->occupied(it_));
     PetscFunctionReturn(*this);
   }
 
   // postfix
   table_iterator operator--(int) noexcept
   {
-    table_iterator old(*this);
+    table_iterator old{*this};
 
     PetscFunctionBegin;
     --(*this);
@@ -363,7 +361,7 @@ public:
   // postfix
   table_iterator operator++(int) noexcept
   {
-    table_iterator old(*this);
+    table_iterator old{*this};
 
     PetscFunctionBegin;
     ++(*this);
@@ -428,7 +426,7 @@ template <typename Iter>
 inline KHashTable<V, H, KE>::KHashTable(Iter first, Iter last, std::input_iterator_tag) noexcept
 {
   PetscFunctionBegin;
-  std::copy(std::move(first), std::move(last), std::inserter(*this, begin()));
+  PetscCallCXXAbort(PETSC_COMM_SELF, std::copy(std::move(first), std::move(last), std::inserter(*this, begin())));
   PetscFunctionReturnVoid();
 }
 
@@ -441,7 +439,7 @@ inline KHashTable<V, H, KE>::KHashTable(Iter first, Iter last, std::random_acces
 {
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, reserve(static_cast<size_type>(std::distance(first, last))));
-  std::copy(std::move(first), std::move(last), std::inserter(*this, begin()));
+  PetscCallCXXAbort(PETSC_COMM_SELF, std::copy(std::move(first), std::move(last), std::inserter(*this, begin())));
   PetscFunctionReturnVoid();
 }
 
@@ -641,7 +639,7 @@ inline std::pair<typename KHashTable<V, H, KE>::iterator, bool> KHashTable<V, H,
       if (it == nb) {
         // didn't find a completely empty place to put it, see if we can reuse an existing
         // bucket
-        if (khash_is_empty_(i) && site != nb) {
+        if (khash_is_empty_(i) && (site != nb)) {
           // reuse a deleted element (I think)
           it = site;
         } else {
@@ -1330,7 +1328,7 @@ inline typename UnorderedMap<K, T, H, KE>::size_type UnorderedMap<K, T, H, KE>::
   {
     auto it = this->find(key);
 
-    if (it == this->end()) PetscFunctionReturn(PETSC_SUCCESS);
+    if (it == this->end()) PetscFunctionReturn(0);
     PetscCallCXX(this->erase(it));
   }
   PetscFunctionReturn(1);
