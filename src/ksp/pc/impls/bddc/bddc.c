@@ -295,7 +295,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 }
 
 /*@
-  PCBDDCSetDiscreteGradient - Sets the discrete gradient
+  PCBDDCSetDiscreteGradient - Sets the discrete gradient to be used by the `PCBDDC` preconditioner
 
    Collective
 
@@ -304,7 +304,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 .  G          - the discrete gradient matrix (in `MATAIJ` format)
 .  order      - the order of the Nedelec space (1 for the lowest order)
 .  field      - the field id of the Nedelec dofs (not used if the fields have not been specified)
-.  global     - the type of global ordering for the rows of G
+.  global     - the type of global ordering for the rows of `G`
 -  conforming - whether the mesh is conforming or not
 
    Level: advanced
@@ -312,8 +312,8 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
    Note:
     The discrete gradient matrix `G` is used to analyze the subdomain edges, and it should not contain any zero entry.
           For variable order spaces, the order should be set to zero.
-          If global is true, the rows of `G` should be given in global ordering for the whole dofs;
-          if false, the ordering should be global for the Nedelec field.
+          If `global` is `PETSC_TRUE`, the rows of `G` should be given in global ordering for the whole dofs;
+          if `PETSC_FALSE`, the ordering should be global for the Nedelec field.
           In the latter case, it should hold gid[i] < gid[j] iff geid[i] < geid[j], with gid the global orderding for all the dofs
           and geid the one for the Nedelec field.
 
@@ -352,15 +352,15 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 }
 
 /*@
-  PCBDDCSetDivergenceMat - Sets the linear operator representing \int_\Omega \div {\bf u} \cdot p dx
+  PCBDDCSetDivergenceMat - Sets the linear operator representing \int_\Omega \div {\bf u} \cdot p dx for the `PCBDDC` preconditioner
 
    Collective
 
    Input Parameters:
 +  pc - the preconditioning context
 .  divudotp - the matrix (must be of type `MATIS`)
-.  trans - if trans if false (resp. true), then pressures are in the test (trial) space and velocities are in the trial (test) space.
--  vl2l - optional index set describing the local (wrt the local matrix in divudotp) to local (wrt the local matrix
+.  trans - if `PETSC_FALSE` (resp. `PETSC_TRUE`), then pressures are in the test (trial) space and velocities are in the trial (test) space.
+-  vl2l - optional index set describing the local (wrt the local matrix in `divudotp`) to local (wrt the local matrix
    in the preconditioning matrix) map for the velocities
 
    Level: advanced
@@ -368,7 +368,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
    Notes:
    This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
 
-   If `vl2l` is `NULL`, the local ordering for velocities in divudotp should match that of the preconditioning matrix
+   If `vl2l` is `NULL`, the local ordering for velocities in `divudotp` should match that of the preconditioning matrix
 
 .seealso: `PCBDDC`, `PCBDDCSetDiscreteGradient()`
 @*/
@@ -590,7 +590,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
 }
 
 /*@
-  PCBDDCSetCoarseningRatio - Set coarsening ratio used in multilevel version
+  PCBDDCSetCoarseningRatio - Set coarsening ratio used in the multi-level version of `PCBDDC`
 
    Logically Collective
 
@@ -599,7 +599,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
 -  k - coarsening ratio (H/h at the coarser level)
 
    Options Database Key:
-.    -pc_bddc_coarsening_ratio <int> - Set coarsening ratio used in multilevel coarsening
+.    -pc_bddc_coarsening_ratio <int> - Set the coarsening ratio used in multi-level coarsening
 
    Level: intermediate
 
@@ -679,7 +679,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc, PetscInt levels)
    Level: intermediate
 
    Note:
-   The default value is 0, that gives the classical two-levels BDDC
+   The default value is 0, that gives the classical two-levels BDDC algorithm
 
 .seealso: `PCBDDC`, `PCBDDCSetCoarseningRatio()`
 @*/
@@ -709,7 +709,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc, IS DirichletBound
 }
 
 /*@
- PCBDDCSetDirichletBoundaries - Set IS defining Dirichlet boundaries for the global problem.
+ PCBDDCSetDirichletBoundaries - Set the `IS` defining Dirichlet boundaries for the global problem.
 
    Collective
 
@@ -751,7 +751,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc, IS Dirichlet
 }
 
 /*@
- PCBDDCSetDirichletBoundariesLocal - Set IS defining Dirichlet boundaries for the global problem in local ordering.
+  PCBDDCSetDirichletBoundariesLocal - Set the `IS` defining Dirichlet boundaries for the global problem in local ordering.
 
    Collective
 
@@ -790,7 +790,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc, IS NeumannBoundarie
 }
 
 /*@
-   PCBDDCSetNeumannBoundaries - Set `IS` defining Neumann boundaries for the global problem.
+   PCBDDCSetNeumannBoundaries - Set the `IS` defining Neumann boundaries for the global problem.
 
    Collective
 
@@ -832,7 +832,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc, IS NeumannBoun
 }
 
 /*@
- PCBDDCSetNeumannBoundariesLocal - Set IS defining Neumann boundaries for the global problem in local ordering.
+  PCBDDCSetNeumannBoundariesLocal - Set the `IS` defining Neumann boundaries for the global problem in local ordering.
 
    Collective
 
@@ -1116,13 +1116,13 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc, PetscInt n_is, IS 
 }
 
 /*@
-   PCBDDCSetDofsSplittingLocal - Set index sets defining fields of the local subdomain matrix
+   PCBDDCSetDofsSplittingLocal - Set the `IS` defining fields of the local subdomain matrix
 
    Collective
 
    Input Parameters:
 +  pc - the preconditioning context
-.  n_is - number of index sets defining the fields, must be the same on all MPI ranks
+.  n_is - number of index sets defining the fields, must be the same on all MPI processes
 -  ISForDofs - array of `IS` describing the fields in local ordering
 
    Level: intermediate
@@ -1180,14 +1180,14 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc, PetscInt n_is, IS ISFor
 }
 
 /*@
-   PCBDDCSetDofsSplitting - Set index sets defining fields of the global matrix
+   PCBDDCSetDofsSplitting - Set the `IS` defining fields of the global matrix
 
    Collective
 
    Input Parameters:
 +  pc - the preconditioning context
 .  n_is - number of index sets defining the fields
--  ISForDofs - array of IS describing the fields in global ordering
+-  ISForDofs - array of `IS` describing the fields in global ordering
 
    Level: intermediate
 
@@ -2261,7 +2261,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 }
 
 /*@
-   PCBDDCMatFETIDPGetRHS - Compute the right-hand side for FETI-DP linear system using the physical right-hand side
+   PCBDDCMatFETIDPGetRHS - Compute the right-hand side for a FETI-DP linear system using the physical right-hand side
 
    Collective
 
@@ -2706,7 +2706,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
    Collective
 
    Input Parameters:
-+  pc - the BDDC preconditioning context (setup should have been called before)
++  pc - the `PCBDDC` preconditioning context (setup should have been called before)
 .  fully_redundant - true for a fully redundant set of Lagrange multipliers
 -  prefix - optional options database prefix for the objects to be created (can be `NULL`)
 
