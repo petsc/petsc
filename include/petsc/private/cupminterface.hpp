@@ -1,11 +1,12 @@
 #ifndef PETSCCUPMINTERFACE_HPP
 #define PETSCCUPMINTERFACE_HPP
 
-#include <petsc/private/cpputil.hpp>
-#include <petsc/private/petscadvancedmacros.h>
 #include <petscdevice_cupm.h>
 
-#include <array>
+#include <petsc/private/cpputil.hpp>
+#include <petsc/private/petscadvancedmacros.h>
+
+#include <petsc/private/cpp/array.hpp>
 
 namespace Petsc
 {
@@ -27,8 +28,8 @@ enum class DeviceType : int {
 static constexpr std::array<const char *const, 5> DeviceTypes = {
   "cuda",
   "hip",
-  "Petsc::Device::CUPM::DeviceType",
-  "Petsc::Device::CUPM::DeviceType::",
+  "Petsc::device::cupm::DeviceType",
+  "Petsc::device::cupm::DeviceType::",
   nullptr
 };
 // clang-format on
@@ -36,22 +37,20 @@ static constexpr std::array<const char *const, 5> DeviceTypes = {
 namespace impl
 {
 
+#define PetscCallCUPM_(__abort_fn__, __comm__, ...) \
+  do { \
+    PetscStackUpdateLine; \
+    const cupmError_t cerr_p_ = __VA_ARGS__; \
+    __abort_fn__(cerr_p_ == cupmSuccess, __comm__, PETSC_ERR_GPU, "%s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr_p_), cupmGetErrorName(cerr_p_), cupmGetErrorString(cerr_p_)); \
+  } while (0)
+
 // A backend agnostic PetscCallCUPM() function, this will only work inside the member
 // functions of a class inheriting from CUPM::Interface. Thanks to __VA_ARGS__ templated
 // functions can also be wrapped inline:
 //
 // PetscCallCUPM(foo<int,char,bool>());
-#define PetscCallCUPM(...) \
-  do { \
-    const cupmError_t cerr_p_ = __VA_ARGS__; \
-    PetscCheck(cerr_p_ == cupmSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "%s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr_p_), cupmGetErrorName(cerr_p_), cupmGetErrorString(cerr_p_)); \
-  } while (0)
-
-#define PetscCallCUPMAbort(comm_, ...) \
-  do { \
-    const cupmError_t cerr_abort_p_ = __VA_ARGS__; \
-    PetscCheckAbort(cerr_abort_p_ == cupmSuccess, comm_, PETSC_ERR_GPU, "%s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr_abort_p_), cupmGetErrorName(cerr_abort_p_), cupmGetErrorString(cerr_abort_p_)); \
-  } while (0)
+#define PetscCallCUPM(...)             PetscCallCUPM_(PetscCheck, PETSC_COMM_SELF, __VA_ARGS__)
+#define PetscCallCUPMAbort(comm_, ...) PetscCallCUPM_(PetscCheckAbort, comm_, __VA_ARGS__)
 
 // PETSC_CUPM_ALIAS_FUNCTION() - declaration to alias a cuda/hip function
 //
@@ -272,8 +271,8 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   PETSC_NODISCARD static cudaError_t cupmLaunchKernel(FunctionT &&func, dim3 gridDim, dim3 blockDim, std::size_t sharedMem, cudaStream_t stream, KernelArgsT &&...kernelArgs) noexcept
   {
     static_assert(!std::is_pointer<FunctionT>::value, "kernel function must not be passed by pointer");
+    void *args[] = {(void *)std::addressof(kernelArgs)...};
 
-    void *args[] = {(void *)&kernelArgs...};
     return cudaLaunchKernel<util::remove_reference_t<FunctionT>>(std::addressof(func), std::move(gridDim), std::move(blockDim), args, sharedMem, std::move(stream));
   }
 };
@@ -423,7 +422,8 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   template <typename FunctionT, typename... KernelArgsT>
   PETSC_NODISCARD static hipError_t cupmLaunchKernel(FunctionT &&func, dim3 gridDim, dim3 blockDim, std::size_t sharedMem, hipStream_t stream, KernelArgsT &&...kernelArgs) noexcept
   {
-    void *args[] = {(void *)&kernelArgs...};
+    void *args[] = {(void *)std::addressof(kernelArgs)...};
+
     return hipLaunchKernel((void *)func, std::move(gridDim), std::move(blockDim), args, sharedMem, std::move(stream));
   }
 };
