@@ -1,8 +1,12 @@
 #ifndef PETSC_CPP_MEMORY_HPP
 #define PETSC_CPP_MEMORY_HPP
 
-#include <petsc/private/cpp/type_traits.hpp> // remove_extent
+#include <petscmacros.h> // PETSC_CPP_VERSION
+
 #include <petsc/private/cpp/utility.hpp>
+#if PETSC_CPP_VERSION < 14
+  #include <petsc/private/cpp/type_traits.hpp> // remove_extent
+#endif
 
 #include <memory>
 
