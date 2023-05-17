@@ -17,19 +17,23 @@ namespace cupm
 namespace impl
 {
 
-  #define PetscCallCUPMSOLVER(...) \
+  #define PetscCallCUPMSOLVER_(__abort_fn__, __comm__, ...) \
     do { \
+      PetscStackUpdateLine; \
       const cupmSolverError_t cupmsolver_stat_p_ = __VA_ARGS__; \
       if (PetscUnlikely(cupmsolver_stat_p_ != CUPMSOLVER_STATUS_SUCCESS)) { \
         if (((cupmsolver_stat_p_ == CUPMSOLVER_STATUS_NOT_INITIALIZED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_ALLOC_FAILED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_INTERNAL_ERROR)) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
-                  "%s error %d (%s). " \
-                  "This indicates the GPU may have run out resources", \
-                  cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
+          __abort_fn__(__comm__, PETSC_ERR_GPU_RESOURCE, \
+                       "%s error %d (%s). " \
+                       "This indicates the GPU may have run out resources", \
+                       cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
         } \
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "%s error %d (%s)", cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
+        __abort_fn__(__comm__, PETSC_ERR_GPU, "%s error %d (%s)", cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
       } \
     } while (0)
+
+  #define PetscCallCUPMSOLVER(...)             PetscCallCUPMSOLVER_(SETERRQ, PETSC_COMM_SELF, __VA_ARGS__)
+  #define PetscCallCUPMSOLVERAbort(comm_, ...) PetscCallCUPMSOLVER_(SETERRABORT, comm_, __VA_ARGS__)
 
   #ifndef PetscConcat3
     #define PetscConcat3(a, b, c) PetscConcat(PetscConcat(a, b), c)
