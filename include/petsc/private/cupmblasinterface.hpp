@@ -18,33 +18,23 @@ namespace cupm
 namespace impl
 {
 
-#define PetscCallCUPMBLAS(...) \
+#define PetscCallCUPMBLAS_(__abort_fn__, __comm__, ...) \
   do { \
+    PetscStackUpdateLine; \
     const cupmBlasError_t cberr_p_ = __VA_ARGS__; \
     if (PetscUnlikely(cberr_p_ != CUPMBLAS_STATUS_SUCCESS)) { \
       if (((cberr_p_ == CUPMBLAS_STATUS_NOT_INITIALIZED) || (cberr_p_ == CUPMBLAS_STATUS_ALLOC_FAILED)) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
-                "%s error %d (%s). Reports not initialized or alloc failed; " \
-                "this indicates the GPU may have run out resources", \
-                cupmBlasName(), static_cast<PetscErrorCode>(cberr_p_), cupmBlasGetErrorName(cberr_p_)); \
+        __abort_fn__(__comm__, PETSC_ERR_GPU_RESOURCE, \
+                     "%s error %d (%s). Reports not initialized or alloc failed; " \
+                     "this indicates the GPU may have run out resources", \
+                     cupmBlasName(), static_cast<PetscErrorCode>(cberr_p_), cupmBlasGetErrorName(cberr_p_)); \
       } \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "%s error %d (%s)", cupmBlasName(), static_cast<PetscErrorCode>(cberr_p_), cupmBlasGetErrorName(cberr_p_)); \
+      __abort_fn__(__comm__, PETSC_ERR_GPU, "%s error %d (%s)", cupmBlasName(), static_cast<PetscErrorCode>(cberr_p_), cupmBlasGetErrorName(cberr_p_)); \
     } \
   } while (0)
 
-#define PetscCallCUPMBLASAbort(comm, ...) \
-  do { \
-    const cupmBlasError_t cberr_abort_p_ = __VA_ARGS__; \
-    if (PetscUnlikely(cberr_abort_p_ != CUPMBLAS_STATUS_SUCCESS)) { \
-      if (((cberr_abort_p_ == CUPMBLAS_STATUS_NOT_INITIALIZED) || (cberr_abort_p_ == CUPMBLAS_STATUS_ALLOC_FAILED)) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
-        SETERRABORT(comm, PETSC_ERR_GPU_RESOURCE, \
-                    "%s error %d (%s). Reports not initialized or alloc failed; " \
-                    "this indicates the GPU may have run out resources", \
-                    cupmBlasName(), static_cast<PetscErrorCode>(cberr_abort_p_), cupmBlasGetErrorName(cberr_abort_p_)); \
-      } \
-      SETERRABORT(comm, PETSC_ERR_GPU, "%s error %d (%s)", cupmBlasName(), static_cast<PetscErrorCode>(cberr_abort_p_), cupmBlasGetErrorName(cberr_abort_p_)); \
-    } \
-  } while (0)
+#define PetscCallCUPMBLAS(...)             PetscCallCUPMBLAS_(SETERRQ, PETSC_COMM_SELF, __VA_ARGS__)
+#define PetscCallCUPMBLASAbort(comm_, ...) PetscCallCUPMBLAS_(SETERRABORT, comm_, __VA_ARGS__)
 
 // given cupmBlas<T>axpy() then
 // T = PETSC_CUPBLAS_FP_TYPE
@@ -218,7 +208,7 @@ template <typename T, std::size_t I>
 class cupmBlasHandleWrapper {
 public:
   constexpr cupmBlasHandleWrapper() noexcept = default;
-  constexpr cupmBlasHandleWrapper(T h) noexcept : handle_(std::move(h)) { static_assert(std::is_standard_layout<cupmBlasHandleWrapper<T, I>>::value, ""); }
+  constexpr cupmBlasHandleWrapper(T h) noexcept : handle_{std::move(h)} { static_assert(std::is_standard_layout<cupmBlasHandleWrapper<T, I>>::value, ""); }
 
   cupmBlasHandleWrapper &operator=(std::nullptr_t) noexcept
   {
@@ -443,6 +433,36 @@ struct BlasInterface : BlasInterfaceImpl<T> {
     PetscCall(checkCupmBlasIntCast(x));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
+
+  class CUPMBlasPointerModeGuard {
+  public:
+    CUPMBlasPointerModeGuard(const cupmBlasHandle_t &handle, cupmBlasPointerMode_t mode) noexcept : handle_{handle}
+    {
+      PetscFunctionBegin;
+      PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasGetPointerMode(handle, &this->old_));
+      if (this->old_ == mode) {
+        this->set_ = false;
+      } else {
+        this->set_ = true;
+        PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasSetPointerMode(handle, mode));
+      }
+      PetscFunctionReturnVoid();
+    }
+
+    CUPMBlasPointerModeGuard(const cupmBlasHandle_t &handle, PetscMemType mtype) noexcept : CUPMBlasPointerModeGuard{handle, PetscMemTypeDevice(mtype) ? CUPMBLAS_POINTER_MODE_DEVICE : CUPMBLAS_POINTER_MODE_HOST} { }
+
+    ~CUPMBlasPointerModeGuard() noexcept
+    {
+      PetscFunctionBegin;
+      if (this->set_) PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasSetPointerMode(this->handle_, this->old_));
+      PetscFunctionReturnVoid();
+    }
+
+  private:
+    cupmBlasHandle_t      handle_;
+    cupmBlasPointerMode_t old_;
+    bool                  set_;
+  };
 };
 
 #define PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(T) \
@@ -450,7 +470,8 @@ struct BlasInterface : BlasInterfaceImpl<T> {
   using ::Petsc::device::cupm::impl::BlasInterface<T>::cupmBlasName; \
   using ::Petsc::device::cupm::impl::BlasInterface<T>::PetscCUPMBlasSetPointerModeFromPointer; \
   using ::Petsc::device::cupm::impl::BlasInterface<T>::checkCupmBlasIntCast; \
-  using ::Petsc::device::cupm::impl::BlasInterface<T>::PetscCUPMBlasIntCast
+  using ::Petsc::device::cupm::impl::BlasInterface<T>::PetscCUPMBlasIntCast; \
+  using CUPMBlasPointerModeGuard = typename ::Petsc::device::cupm::impl::BlasInterface<T>::CUPMBlasPointerModeGuard
 
 #if PetscDefined(HAVE_CUDA)
 extern template struct BlasInterface<DeviceType::CUDA>;
