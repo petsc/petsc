@@ -170,9 +170,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     packagedirs = []
 
     help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
-    help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler output'))
-    help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 0, 'Ignore linker output'))
-    help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
+    help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler terminal output when checking if compiles succeed'))
+    help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 0, 'Ignore linker terminal output when checking if links succeed'))
+    help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings in terminal output when checking if it succeeded'))
     help.addArgument('Framework', '-doCleanup=<bool>',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
     help.addArgument('Framework', '-with-executables-search-path', nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-with-packages-search-path',  nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
@@ -478,6 +478,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
 
   def filterCompileOutput(self, output,flag = ''):
+    '''
+       With --ignoreCompileOutput=1 (default), it filters all compiler messages
+    '''
     if flag and output.find("ignoring unknown option '"+flag+"'"): return output
     if flag and output.find("invalid value"): return output
     if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
@@ -496,7 +499,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.log.write("Compiler output before filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
-        # EXCEPT warnings that those bastards say we want
+        # ACCEPT compiler warnings
         extraLines = [s for s in lines if s.find('implicit declaration of function') >= 0]
         lines = [s for s in lines if not self.warningRE.search(s)]
         lines = [s for s in lines if s.find('In file included from') < 0]
@@ -535,6 +538,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
 
   def filterLinkOutput(self, output):
+    '''
+       With --ignoreCompileOutput=0 it filters only compiler messages known to be harmless
+    '''
     if output.find('relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol') >= 0: return output
     elif self.argDB['ignoreLinkOutput']:
       output = ''
