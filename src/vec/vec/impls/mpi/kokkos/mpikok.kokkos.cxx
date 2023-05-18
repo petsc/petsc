@@ -25,6 +25,13 @@ static PetscErrorCode VecNorm_MPIKokkos(Vec xin, NormType type, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecErrorWeightedNorms_MPIKokkos(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  PetscFunctionBegin;
+  PetscCall(VecErrorWeightedNorms_MPI_Default(U, Y, E, wnormtype, atol, vatol, rtol, vrtol, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc, VecErrorWeightedNorms_SeqKokkos));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* z = y^H x */
 static PetscErrorCode VecDot_MPIKokkos(Vec xin, Vec yin, PetscScalar *z)
 {
@@ -232,6 +239,9 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
 
   v->ops->setpreallocationcoo = VecSetPreallocationCOO_MPIKokkos;
   v->ops->setvaluescoo        = VecSetValuesCOO_MPIKokkos;
+
+  v->ops->errorwnorm = VecErrorWeightedNorms_MPIKokkos;
+  v->ops->errorwnorm = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

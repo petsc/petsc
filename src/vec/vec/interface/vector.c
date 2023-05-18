@@ -2206,3 +2206,154 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "PETSc must be configured with --with-opencl to restore a Vec's cl_mem");
 }
 #endif
+
+static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  const PetscScalar *u, *y;
+  const PetscScalar *atola = NULL, *rtola = NULL, *erra = NULL;
+  PetscInt           n, n_loc = 0, na_loc = 0, nr_loc = 0;
+  PetscReal          nrm = 0, nrma = 0, nrmr = 0, err_loc[6];
+
+  PetscFunctionBegin;
+#define SkipSmallValue(a, b, tol) \
+  if (PetscAbsScalar(a) < tol || PetscAbsScalar(b) < tol) continue;
+
+  PetscCall(VecGetLocalSize(U, &n));
+  PetscCall(VecGetArrayRead(U, &u));
+  PetscCall(VecGetArrayRead(Y, &y));
+  if (E) PetscCall(VecGetArrayRead(E, &erra));
+  if (vatol) PetscCall(VecGetArrayRead(vatol, &atola));
+  if (vrtol) PetscCall(VecGetArrayRead(vrtol, &rtola));
+  for (PetscInt i = 0; i < n; i++) {
+    PetscReal err, tol, tola, tolr;
+
+    SkipSmallValue(y[i], u[i], ignore_max);
+    atol = atola ? PetscRealPart(atola[i]) : atol;
+    rtol = rtola ? PetscRealPart(rtola[i]) : rtol;
+    err  = erra ? PetscAbsScalar(erra[i]) : PetscAbsScalar(y[i] - u[i]);
+    tola = atol;
+    tolr = rtol * PetscMax(PetscAbsScalar(u[i]), PetscAbsScalar(y[i]));
+    tol  = tola + tolr;
+    if (tola > 0.) {
+      if (wnormtype == NORM_INFINITY) nrma = PetscMax(nrma, err / tola);
+      else nrma += PetscSqr(err / tola);
+      na_loc++;
+    }
+    if (tolr > 0.) {
+      if (wnormtype == NORM_INFINITY) nrmr = PetscMax(nrmr, err / tolr);
+      else nrmr += PetscSqr(err / tolr);
+      nr_loc++;
+    }
+    if (tol > 0.) {
+      if (wnormtype == NORM_INFINITY) nrm = PetscMax(nrm, err / tol);
+      else nrm += PetscSqr(err / tol);
+      n_loc++;
+    }
+  }
+  if (E) PetscCall(VecRestoreArrayRead(E, &erra));
+  if (vatol) PetscCall(VecRestoreArrayRead(vatol, &atola));
+  if (vrtol) PetscCall(VecRestoreArrayRead(vrtol, &rtola));
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscCall(VecRestoreArrayRead(Y, &y));
+#undef SkipSmallValue
+
+  err_loc[0] = nrm;
+  err_loc[1] = nrma;
+  err_loc[2] = nrmr;
+  err_loc[3] = (PetscReal)n_loc;
+  err_loc[4] = (PetscReal)na_loc;
+  err_loc[5] = (PetscReal)nr_loc;
+  if (wnormtype == NORM_2) {
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+  } else {
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+  }
+  if (wnormtype == NORM_2) {
+    *norm  = PetscSqrtReal(err_loc[0]);
+    *norma = PetscSqrtReal(err_loc[1]);
+    *normr = PetscSqrtReal(err_loc[2]);
+  } else {
+    *norm  = err_loc[0];
+    *norma = err_loc[1];
+    *normr = err_loc[2];
+  }
+  *norm_loc  = (PetscInt)err_loc[3];
+  *norma_loc = (PetscInt)err_loc[4];
+  *normr_loc = (PetscInt)err_loc[5];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   VecErrorWeightedNorms - compute a weighted norm of the difference between two vectors
+
+   Collective
+
+   Input Parameters:
++  U - first vector to be compared
+.  Y - second vector to be compared
+.  E - optional third vector representing the error (if not provided, the error is ||U-Y||)
+.  wnormtype - norm type
+.  atol - scalar for absolute tolerance
+.  vatol - vector representing per-entry absolute tolerances (can be ``NULL``)
+.  rtol - scalar for relative tolerance
+.  vrtol - vector representing per-entry relative tolerances (can be ``NULL``)
+-  ignore_max - ignore values smaller then this value in absolute terms.
+
+   Output Parameters:
++  norm - weighted norm
+.  norm_loc - number of vector locations used for the weighted norm
+.  norma - weighted norm based on the absolute tolerance
+.  norma_loc - number of vector locations used for the absolute weighted norm
+.  normr - weighted norm based on the relative tolerance
+-  normr_loc - number of vector locations used for the relative weighted norm
+
+   Level: developer
+
+   Notes:
+     This is primarily used for computing weighted local truncation errors in ``TS``.
+
+.seealso: [](chapter_vectors), `Vec`, `NormType`, ``TSErrorWeightedNorm()``, ``TSErrorWeightedENorm()``
+@*/
+PetscErrorCode VecErrorWeightedNorms(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(U, VEC_CLASSID, 1);
+  PetscValidType(U, 1);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 2);
+  PetscValidType(Y, 2);
+  if (E) {
+    PetscValidHeaderSpecific(E, VEC_CLASSID, 3);
+    PetscValidType(E, 3);
+  }
+  PetscValidLogicalCollectiveEnum(U, wnormtype, 4);
+  PetscValidLogicalCollectiveReal(U, atol, 5);
+  if (vatol) {
+    PetscValidHeaderSpecific(vatol, VEC_CLASSID, 6);
+    PetscValidType(vatol, 6);
+  }
+  PetscValidLogicalCollectiveReal(U, rtol, 7);
+  if (vrtol) {
+    PetscValidHeaderSpecific(vrtol, VEC_CLASSID, 8);
+    PetscValidType(vrtol, 8);
+  }
+  PetscValidLogicalCollectiveReal(U, ignore_max, 9);
+  PetscValidRealPointer(norm, 10);
+  PetscValidIntPointer(norm_loc, 11);
+  PetscValidRealPointer(norma, 12);
+  PetscValidIntPointer(norma_loc, 13);
+  PetscValidRealPointer(normr, 14);
+  PetscValidIntPointer(normr_loc, 15);
+  PetscCheck(wnormtype == NORM_2 || wnormtype == NORM_INFINITY, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "No support for norm type %s", NormTypes[wnormtype]);
+
+  /* There are potentially 5 vectors involved, some of them may happen to be of different type or bound to cpu.
+     Here we check that they all implement the same operation and call it if so.
+     Otherwise, we call the _Basic implementation that always works (provided VecGetArrayRead is implemented). */
+  PetscBool sameop = (PetscBool)(U->ops->errorwnorm && U->ops->errorwnorm == Y->ops->errorwnorm);
+  if (sameop && E) sameop = (PetscBool)(U->ops->errorwnorm == E->ops->errorwnorm);
+  if (sameop && vatol) sameop = (PetscBool)(U->ops->errorwnorm == vatol->ops->errorwnorm);
+  if (sameop && vrtol) sameop = (PetscBool)(U->ops->errorwnorm == vrtol->ops->errorwnorm);
+  if (sameop) PetscUseTypeMethod(U, errorwnorm, Y, E, wnormtype, atol, vatol, rtol, vrtol, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc);
+  else PetscCall(VecErrorWeightedNorms_Basic(U, Y, E, wnormtype, atol, vatol, rtol, vrtol, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

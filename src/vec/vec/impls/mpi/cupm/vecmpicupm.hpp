@@ -53,6 +53,7 @@ public:
   static PetscErrorCode Min(Vec, PetscInt *, PetscReal *) noexcept;
   static PetscErrorCode SetPreallocationCOO(Vec, PetscCount, const PetscInt[]) noexcept;
   static PetscErrorCode SetValuesCOO(Vec, const PetscScalar[], InsertMode) noexcept;
+  static PetscErrorCode ErrorWnorm(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *) noexcept;
 };
 
 template <device::cupm::DeviceType T>
@@ -191,6 +192,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::BindToCPU(Vec v, PetscBool usehost) noexce
   VecSetOp_CUPM(placearray, VecPlaceArray_MPI, base_type::template PlaceArray<PETSC_MEMTYPE_HOST>);
   VecSetOp_CUPM(max, VecMax_MPI, Max);
   VecSetOp_CUPM(min, VecMin_MPI, Min);
+  VecSetOp_CUPM(errorwnorm, nullptr, ErrorWnorm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -202,6 +204,14 @@ inline PetscErrorCode VecMPI_CUPM<T>::Norm(Vec v, NormType type, PetscReal *z) n
 {
   PetscFunctionBegin;
   PetscCall(VecNorm_MPI_Default(v, type, z, VecSeq_T::Norm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecMPI_CUPM<T>::ErrorWnorm(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(VecErrorWeightedNorms_MPI_Default(U, Y, E, wnormtype, atol, vatol, rtol, vrtol, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc, VecSeq_T::ErrorWnorm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

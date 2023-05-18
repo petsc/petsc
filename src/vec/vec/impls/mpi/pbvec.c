@@ -454,7 +454,8 @@ static struct _VecOps DvOps = {PetscDesignatedInitializer(duplicate, VecDuplicat
                                PetscDesignatedInitializer(concatenate, NULL),
                                PetscDesignatedInitializer(sum, NULL),
                                PetscDesignatedInitializer(setpreallocationcoo, VecSetPreallocationCOO_MPI),
-                               PetscDesignatedInitializer(setvaluescoo, VecSetValuesCOO_MPI)};
+                               PetscDesignatedInitializer(setvaluescoo, VecSetValuesCOO_MPI),
+                               PetscDesignatedInitializer(errorwnorm, NULL)};
 
 /*
     VecCreate_MPI_Private - Basic create routine called by VecCreate_MPI() (i.e. VecCreateMPI()),

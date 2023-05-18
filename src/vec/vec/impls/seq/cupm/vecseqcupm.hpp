@@ -21,6 +21,7 @@
   #include <thrust/device_ptr.h>
   #include <thrust/iterator/zip_iterator.h>
   #include <thrust/iterator/counting_iterator.h>
+  #include <thrust/iterator/constant_iterator.h>
   #include <thrust/inner_product.h>
 
 namespace Petsc
@@ -102,6 +103,7 @@ public:
   static PetscErrorCode AXPBY(Vec, PetscScalar, PetscScalar, Vec) noexcept;
   static PetscErrorCode AXPBYPCZ(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec) noexcept;
   static PetscErrorCode Norm(Vec, NormType, PetscReal *) noexcept;
+  static PetscErrorCode ErrorWnorm(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *) noexcept;
   static PetscErrorCode DotNorm2(Vec, Vec, PetscScalar *, PetscScalar *) noexcept;
   static PetscErrorCode Conjugate(Vec) noexcept;
   template <PetscMemoryAccessMode>
@@ -348,6 +350,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::BindToCPU(Vec v, PetscBool usehost) noexce
   VecSetOp_CUPM(min, VecMin_Seq, Min);
   VecSetOp_CUPM(setpreallocationcoo, VecSetPreallocationCOO_Seq, SetPreallocationCOO);
   VecSetOp_CUPM(setvaluescoo, VecSetValuesCOO_Seq, SetValuesCOO);
+  VecSetOp_CUPM(errorwnorm, nullptr, ErrorWnorm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1311,9 +1314,257 @@ inline PetscErrorCode VecSeq_CUPM<T>::Norm(Vec xin, NormType type, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// v->ops->errorwnorm
 namespace detail
 {
+using errorwnorm_input_type  = thrust::tuple<PetscScalar, PetscScalar, PetscScalar, PetscScalar>;
+using errorwnormE_input_type = thrust::tuple<PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar>;
+using errorwnorm_value_type  = thrust::tuple<PetscReal, PetscReal, PetscReal, PetscInt, PetscInt, PetscInt>;
 
+template <int wnormtype>
+struct errorwnorm_transform : public thrust::unary_function<errorwnorm_input_type, errorwnorm_value_type> {
+  PETSC_HOSTDEVICE_DECL explicit errorwnorm_transform(PetscReal tol) { ignore_max = tol; }
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL errorwnorm_value_type operator()(const errorwnorm_input_type &x) const noexcept
+  {
+    const PetscScalar u    = x.get<0>();
+    const PetscScalar y    = x.get<1>();
+    const PetscReal   au   = PetscAbsScalar(u);
+    const PetscReal   ay   = PetscAbsScalar(y);
+    const PetscReal   skip = (au < ignore_max || ay < ignore_max) ? 0.0 : 1.0;
+    const PetscReal   err  = PetscAbsScalar(u - y);
+    const PetscReal   tola = PetscRealPart(x.get<2>()) * skip;
+    const PetscReal   tolr = PetscRealPart(x.get<3>()) * PetscMax(au, ay) * skip;
+    const PetscReal   tol  = tola + tolr;
+    PetscReal         n = 0, na = 0, nr = 0;
+    PetscInt          n_loc = 0, na_loc = 0, nr_loc = 0;
+    if (tola > 0.) {
+      if (wnormtype == NORM_INFINITY) na = err / tola;
+      else na = PetscSqr(err / tola);
+      na_loc = 1;
+    }
+    if (tolr > 0.) {
+      if (wnormtype == NORM_INFINITY) nr = err / tolr;
+      else nr = PetscSqr(err / tolr);
+      nr_loc = 1;
+    }
+    if (tol > 0.) {
+      if (wnormtype == NORM_INFINITY) n = err / tol;
+      else n = PetscSqr(err / tol);
+      n_loc = 1;
+    }
+    return {n, na, nr, n_loc, na_loc, nr_loc};
+  }
+
+  PetscReal ignore_max;
+};
+
+template <int wnormtype>
+struct errorwnormE_transform : public thrust::unary_function<errorwnormE_input_type, errorwnorm_value_type> {
+  PETSC_HOSTDEVICE_DECL explicit errorwnormE_transform(PetscReal tol) { ignore_max = tol; }
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL errorwnorm_value_type operator()(const errorwnormE_input_type &x) const noexcept
+  {
+    const PetscScalar u    = x.get<0>();
+    const PetscScalar y    = x.get<1>();
+    const PetscReal   au   = PetscAbsScalar(u);
+    const PetscReal   ay   = PetscAbsScalar(y);
+    const PetscReal   skip = (au < ignore_max || ay < ignore_max) ? 0.0 : 1.0;
+    const PetscReal   err  = PetscAbsScalar(x.get<2>());
+    const PetscReal   tola = PetscRealPart(x.get<3>()) * skip;
+    const PetscReal   tolr = PetscRealPart(x.get<4>()) * PetscMax(au, ay) * skip;
+    const PetscReal   tol  = tola + tolr;
+    PetscReal         n = 0, na = 0, nr = 0;
+    PetscInt          n_loc = 0, na_loc = 0, nr_loc = 0;
+    if (tola > 0.) {
+      if (wnormtype == NORM_INFINITY) na = err / tola;
+      else na = PetscSqr(err / tola);
+      na_loc = 1;
+    }
+    if (tolr > 0.) {
+      if (wnormtype == NORM_INFINITY) nr = err / tolr;
+      else nr = PetscSqr(err / tolr);
+      nr_loc = 1;
+    }
+    if (tol > 0.) {
+      if (wnormtype == NORM_INFINITY) n = err / tol;
+      else n = PetscSqr(err / tol);
+      n_loc = 1;
+    }
+    return {n, na, nr, n_loc, na_loc, nr_loc};
+  }
+
+  PetscReal ignore_max;
+};
+
+template <int wnormtype>
+struct errorwnorm_reduce {
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL errorwnorm_value_type operator()(const errorwnorm_value_type &lhs, const errorwnorm_value_type &rhs) const noexcept
+  {
+    if (wnormtype == NORM_INFINITY) {
+      return {PetscMax(lhs.get<0>(), rhs.get<0>()), PetscMax(lhs.get<1>(), rhs.get<1>()), PetscMax(lhs.get<2>(), rhs.get<2>()), lhs.get<3>() + rhs.get<3>(), lhs.get<4>() + rhs.get<4>(), lhs.get<5>() + rhs.get<5>()};
+    } else {
+      return {lhs.get<0>() + rhs.get<0>(), lhs.get<1>() + rhs.get<1>(), lhs.get<2>() + rhs.get<2>(), lhs.get<3>() + rhs.get<3>(), lhs.get<4>() + rhs.get<4>(), lhs.get<5>() + rhs.get<5>()};
+    }
+  }
+};
+
+template <typename InputIterator, typename cupmStream_t>
+inline PetscErrorCode ExecuteWnorm(InputIterator first, InputIterator last, NormType wnormtype, cupmStream_t stream, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  PetscReal n = 0, na = 0, nr = 0;
+  PetscInt  n_loc = 0, na_loc = 0, nr_loc = 0;
+
+  PetscFunctionBegin;
+  // clang-format off
+  if (wnormtype == NORM_INFINITY) {
+    PetscCallThrust(
+      thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
+        thrust::transform_reduce,
+        stream,
+        first,
+        last,
+        detail::errorwnorm_transform<NORM_INFINITY>(ignore_max),
+        thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
+        detail::errorwnorm_reduce<NORM_INFINITY>()
+      );
+    );
+  } else {
+    PetscCallThrust(
+      thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
+        thrust::transform_reduce,
+        stream,
+        first,
+        last,
+        detail::errorwnorm_transform<NORM_2>(ignore_max),
+        thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
+        detail::errorwnorm_reduce<NORM_2>()
+      );
+    );
+  }
+  // clang-format on
+  if (wnormtype == NORM_2) {
+    *norm  = PetscSqrtReal(*norm);
+    *norma = PetscSqrtReal(*norma);
+    *normr = PetscSqrtReal(*normr);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <typename InputIterator, typename cupmStream_t>
+inline PetscErrorCode ExecuteWEnorm(InputIterator first, InputIterator last, NormType wnormtype, cupmStream_t stream, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  PetscReal n = 0, na = 0, nr = 0;
+  PetscInt  n_loc = 0, na_loc = 0, nr_loc = 0;
+
+  PetscFunctionBegin;
+  // clang-format off
+  if (wnormtype == NORM_INFINITY) {
+    PetscCallThrust(
+      thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
+        thrust::transform_reduce,
+        stream,
+        first,
+        last,
+        detail::errorwnormE_transform<NORM_INFINITY>(ignore_max),
+        thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
+        detail::errorwnorm_reduce<NORM_INFINITY>()
+      );
+    );
+  } else {
+    PetscCallThrust(
+      thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
+        thrust::transform_reduce,
+        stream,
+        first,
+        last,
+        detail::errorwnormE_transform<NORM_2>(ignore_max),
+        thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
+        detail::errorwnorm_reduce<NORM_2>()
+      );
+    );
+  }
+  // clang-format on
+  if (wnormtype == NORM_2) {
+    *norm  = PetscSqrtReal(*norm);
+    *norma = PetscSqrtReal(*norma);
+    *normr = PetscSqrtReal(*normr);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+} // namespace detail
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode VecSeq_CUPM<T>::ErrorWnorm(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc) noexcept
+{
+  PetscDeviceContext dctx;
+  cupmStream_t       stream;
+
+  PetscFunctionBegin;
+  PetscCall(GetHandles_(&dctx, &stream));
+  {
+    const PetscInt nl   = U->map->n;
+    const auto     uptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, U).data());
+    const auto     yptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, Y).data());
+    auto           ait  = thrust::make_constant_iterator(static_cast<PetscScalar>(atol));
+    auto           rit  = thrust::make_constant_iterator(static_cast<PetscScalar>(rtol));
+    if (!vatol && !vrtol) {
+      if (E) {
+        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
+        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, ait, rit));
+        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, ait, rit));
+        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      } else {
+        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, ait, rit));
+        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, ait, rit));
+        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      }
+    } else if (!vatol) {
+      const auto rptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vrtol).data());
+      if (E) {
+        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
+        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, ait, rptr));
+        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, ait, rptr + nl));
+        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      } else {
+        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, ait, rptr));
+        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, ait, rptr + nl));
+        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      }
+    } else if (!vrtol) {
+      const auto aptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vatol).data());
+      if (E) {
+        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
+        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, aptr, rit));
+        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, aptr + nl, rit));
+        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      } else {
+        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, aptr, rit));
+        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, aptr + nl, rit));
+        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      }
+    } else {
+      const auto aptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vatol).data());
+      const auto rptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vrtol).data());
+      if (E) {
+        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
+        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, aptr, rptr));
+        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, aptr + nl, rptr + nl));
+        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      } else {
+        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, aptr, rptr));
+        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, aptr + nl, rptr + nl));
+        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+      }
+    }
+  }
+  #undef call_wnorm
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+namespace detail
+{
 struct dotnorm2_mult {
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL thrust::tuple<PetscScalar, PetscScalar> operator()(const PetscScalar &s, const PetscScalar &t) const noexcept
   {
@@ -1363,7 +1614,6 @@ inline PetscErrorCode VecSeq_CUPM<T>::DotNorm2(Vec s, Vec t, PetscScalar *dp, Pe
 
 namespace detail
 {
-
 struct conjugate {
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(PetscScalar x) const noexcept { return PetscConj(x); }
 };
@@ -1381,7 +1631,6 @@ inline PetscErrorCode VecSeq_CUPM<T>::Conjugate(Vec xin) noexcept
 
 namespace detail
 {
-
 struct real_part {
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscScalar, PetscInt> &x) const { return {PetscRealPart(x.get<0>()), x.get<1>()}; }
 
@@ -1564,7 +1813,6 @@ inline PetscErrorCode VecSeq_CUPM<T>::SetPreallocationCOO(Vec v, PetscCount ncoo
 
 namespace kernels
 {
-
 template <typename F>
 PETSC_DEVICE_INLINE_DECL void add_coo_values_impl(const PetscScalar *PETSC_RESTRICT vv, PetscCount n, const PetscCount *PETSC_RESTRICT jmap, const PetscCount *PETSC_RESTRICT perm, InsertMode imode, PetscScalar *PETSC_RESTRICT xv, F &&xvindex)
 {

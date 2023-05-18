@@ -748,6 +748,12 @@ PetscErrorCode VecNorm_SeqKokkos(Vec xin, NormType type, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecErrorWeightedNorms_SeqKokkos(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* A functor for DotNorm2 so that we can compute dp and nm in one kernel */
 struct DotNorm2 {
   typedef PetscScalar                           value_type[];
@@ -1173,6 +1179,9 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
 
   v->ops->setpreallocationcoo = VecSetPreallocationCOO_SeqKokkos;
   v->ops->setvaluescoo        = VecSetValuesCOO_SeqKokkos;
+
+  v->ops->errorwnorm = VecErrorWeightedNorms_SeqKokkos;
+  v->ops->errorwnorm = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

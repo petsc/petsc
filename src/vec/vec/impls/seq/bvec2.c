@@ -848,6 +848,7 @@ static struct _VecOps DvOps = {
   PetscDesignatedInitializer(sum, NULL),
   PetscDesignatedInitializer(setpreallocationcoo, VecSetPreallocationCOO_Seq),
   PetscDesignatedInitializer(setvaluescoo, VecSetValuesCOO_Seq),
+  PetscDesignatedInitializer(errorwnorm, NULL),
 };
 
 /*
