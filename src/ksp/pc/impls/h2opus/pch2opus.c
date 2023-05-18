@@ -1,5 +1,6 @@
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/matimpl.h>
+#include <petscdm.h>
 #include <h2opusconf.h>
 
 /* Use GPU only if H2OPUS is configured for GPU */
@@ -48,6 +49,32 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode MatNorm_H2OPUS(Mat, NormType, PetscReal *);
 
+static PetscErrorCode PCH2OpusInferCoordinates_Private(PC pc)
+{
+  PC_H2OPUS *pch2opus = (PC_H2OPUS *)pc->data;
+  DM         dm;
+  PetscBool  isdmda;
+
+  PetscFunctionBegin;
+  if (pch2opus->sdim) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PCGetDM(pc, &dm));
+  if (!dm) PetscCall(MatGetDM(pc->useAmat ? pc->mat : pc->pmat, &dm));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMDA, &isdmda));
+  if (isdmda) {
+    Vec                c;
+    const PetscScalar *coords;
+    PetscInt           n, sdim;
+
+    PetscCall(DMGetCoordinates(dm, &c));
+    PetscCall(DMGetDimension(dm, &sdim));
+    PetscCall(VecGetLocalSize(c, &n));
+    PetscCall(VecGetArrayRead(c, &coords));
+    PetscCall(PCSetCoordinates(pc, sdim, n / sdim, (PetscScalar *)coords));
+    PetscCall(VecRestoreArrayRead(c, &coords));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCReset_H2OPUS(PC pc)
 {
   PC_H2OPUS *pch2opus = (PC_H2OPUS *)pc->data;
@@ -56,19 +83,6 @@ static PetscErrorCode PCReset_H2OPUS(PC pc)
   pch2opus->sdim  = 0;
   pch2opus->nlocc = 0;
   PetscCall(PetscFree(pch2opus->coords));
-  PetscCall(MatDestroy(&pch2opus->A));
-  PetscCall(MatDestroy(&pch2opus->M));
-  PetscCall(MatDestroy(&pch2opus->T));
-  PetscCall(VecDestroy(&pch2opus->w));
-  PetscCall(MatDestroy(&pch2opus->S));
-  PetscCall(VecDestroy(&pch2opus->wns[0]));
-  PetscCall(VecDestroy(&pch2opus->wns[1]));
-  PetscCall(VecDestroy(&pch2opus->wns[2]));
-  PetscCall(VecDestroy(&pch2opus->wns[3]));
-  PetscCall(MatDestroy(&pch2opus->wnsmat[0]));
-  PetscCall(MatDestroy(&pch2opus->wnsmat[1]));
-  PetscCall(MatDestroy(&pch2opus->wnsmat[2]));
-  PetscCall(MatDestroy(&pch2opus->wnsmat[3]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -95,8 +109,23 @@ static PetscErrorCode PCSetCoordinates_H2OPUS(PC pc, PetscInt sdim, PetscInt nlo
 
 static PetscErrorCode PCDestroy_H2OPUS(PC pc)
 {
+  PC_H2OPUS *pch2opus = (PC_H2OPUS *)pc->data;
+
   PetscFunctionBegin;
   PetscCall(PCReset_H2OPUS(pc));
+  PetscCall(MatDestroy(&pch2opus->A));
+  PetscCall(MatDestroy(&pch2opus->M));
+  PetscCall(MatDestroy(&pch2opus->T));
+  PetscCall(VecDestroy(&pch2opus->w));
+  PetscCall(MatDestroy(&pch2opus->S));
+  PetscCall(VecDestroy(&pch2opus->wns[0]));
+  PetscCall(VecDestroy(&pch2opus->wns[1]));
+  PetscCall(VecDestroy(&pch2opus->wns[2]));
+  PetscCall(VecDestroy(&pch2opus->wns[3]));
+  PetscCall(MatDestroy(&pch2opus->wnsmat[0]));
+  PetscCall(MatDestroy(&pch2opus->wnsmat[1]));
+  PetscCall(MatDestroy(&pch2opus->wnsmat[2]));
+  PetscCall(MatDestroy(&pch2opus->wnsmat[3]));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -537,6 +566,9 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
     pch2opus->A = A;
   } else {
     const char *prefix;
+
+    /* See if we can infer coordinates from the DM */
+    if (!pch2opus->sdim) PetscCall(PCH2OpusInferCoordinates_Private(pc));
     PetscCall(MatCreateH2OpusFromMat(A, pch2opus->sdim, pch2opus->coords, PETSC_FALSE, pch2opus->eta, pch2opus->leafsize, pch2opus->max_rank, pch2opus->bs, pch2opus->mrtol, &pch2opus->A));
     /* XXX */
     PetscCall(MatSetOption(pch2opus->A, MAT_SYMMETRIC, PETSC_TRUE));

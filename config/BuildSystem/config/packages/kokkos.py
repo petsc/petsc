@@ -26,6 +26,7 @@ class Configure(config.package.CMakePackage):
     self.precisions       = ['single','double']
     self.devicePackage    = 1
     self.minCmakeVersion  = (3,16,0)
+    self.macros           = ['KOKKOS_ENABLE_CUDA', 'KOKKOS_ENABLE_HIP', 'KOKKOS_ENABLE_SYCL']
     return
 
   def __str__(self):

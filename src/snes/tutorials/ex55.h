@@ -7,8 +7,9 @@
 */
 typedef struct AppCtx AppCtx;
 struct AppCtx {
-  PetscReal param; /* test problem parameter */
-  PetscInt  m, n;  /* MMS3 parameters */
+  PetscReal  param; /* test problem parameter */
+  PetscInt   m, n;  /* MMS3 parameters */
+  PetscCount ncoo;  /* support for coo setvalues only */
   PetscErrorCode (*mms_solution)(AppCtx *, const DMDACoor2d *, PetscScalar *);
   PetscErrorCode (*mms_forcing)(AppCtx *, const DMDACoor2d *, PetscScalar *);
 };

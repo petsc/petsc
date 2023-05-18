@@ -3389,6 +3389,50 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm comm, Mat inma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode MatDenseCreateColumnVec_Private(Mat A, Vec *v)
+{
+  PetscBool   isstd, iskok, iscuda, iship;
+  PetscMPIInt size;
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
+  /* we pass the data of A, to prevent allocating needless GPU memory the first time VecCUPMPlaceArray is called. */
+  const PetscScalar *a;
+#endif
+
+  PetscFunctionBegin;
+  *v = NULL;
+  PetscCall(PetscStrcmpAny(A->defaultvectype, &isstd, VECSTANDARD, VECSEQ, VECMPI, ""));
+  PetscCall(PetscStrcmpAny(A->defaultvectype, &iskok, VECKOKKOS, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+  PetscCall(PetscStrcmpAny(A->defaultvectype, &iscuda, VECCUDA, VECSEQCUDA, VECMPICUDA, ""));
+  PetscCall(PetscStrcmpAny(A->defaultvectype, &iship, VECHIP, VECSEQHIP, VECMPIHIP, ""));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
+  if (isstd) {
+    if (size > 1) PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, v));
+    else PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, v));
+  } else if (iskok) {
+    PetscCheck(PetscDefined(HAVE_KOKKOS_KERNELS), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Reconfigure using KOKKOS kernels support");
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
+    if (size > 1) PetscCall(VecCreateMPIKokkosWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, v));
+    else PetscCall(VecCreateSeqKokkosWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, v));
+#endif
+  } else if (iscuda) {
+    PetscCheck(PetscDefined(HAVE_CUDA), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Reconfigure using CUDA support");
+#if PetscDefined(HAVE_CUDA)
+    PetscCall(MatDenseCUDAGetArrayRead(A, &a));
+    if (size > 1) PetscCall(VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, a, v));
+    else PetscCall(VecCreateSeqCUDAWithArrays(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, a, v));
+#endif
+  } else if (iship) {
+    PetscCheck(PetscDefined(HAVE_HIP), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Reconfigure using HIP support");
+#if PetscDefined(HAVE_HIP)
+    PetscCall(MatDenseHIPGetArrayRead(A, &a));
+    if (size > 1) PetscCall(VecCreateMPIHIPWithArrays(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, a, v));
+    else PetscCall(VecCreateSeqHIPWithArrays(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, a, v));
+#endif
+  }
+  PetscCheck(*v, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not coded for type %s", A->defaultvectype);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatDenseGetColumnVec_SeqDense(Mat A, PetscInt col, Vec *v)
 {
   Mat_SeqDense *a = (Mat_SeqDense *)A->data;
@@ -3396,7 +3440,7 @@ PetscErrorCode MatDenseGetColumnVec_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) { PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, &a->cvec)); }
+  if (!a->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetArray(A, (PetscScalar **)&a->ptrinuse));
   PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -3425,7 +3469,7 @@ PetscErrorCode MatDenseGetColumnVecRead_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) { PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, &a->cvec)); }
+  if (!a->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetArrayRead(A, &a->ptrinuse));
   PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -3456,7 +3500,7 @@ PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *v)
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  if (!a->cvec) PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, NULL, &a->cvec));
+  if (!a->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetArrayWrite(A, (PetscScalar **)&a->ptrinuse));
   PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));

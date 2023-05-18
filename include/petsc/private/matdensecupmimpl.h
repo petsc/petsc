@@ -79,6 +79,7 @@ public:
   MatDenseCUPMComposedOpDecl(PlaceArray_C)
   MatDenseCUPMComposedOpDecl(ReplaceArray_C)
   MatDenseCUPMComposedOpDecl(ResetArray_C)
+  MatDenseCUPMComposedOpDecl(SetPreallocation_C)
     // clang-format on
 
   #undef MatDenseCUPMComposedOpDecl
@@ -133,7 +134,8 @@ inline constexpr MatSolverType MatDense_CUPM_Base<T>::MATSOLVERCUPM() noexcept
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMRestoreArrayWrite_C; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMPlaceArray_C; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMReplaceArray_C; \
-    using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMResetArray_C
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMResetArray_C; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMSetPreallocation_C
 
 // forward declare
 template <device::cupm::DeviceType>
@@ -163,7 +165,7 @@ protected:
   PETSC_NODISCARD static constexpr MatType MATIMPLCUPM() noexcept;
 
   static PetscErrorCode CreateIMPLDenseCUPM(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar *, Mat *, PetscDeviceContext, bool) noexcept;
-  static PetscErrorCode SetPreallocation(Mat, PetscDeviceContext, PetscScalar * = nullptr) noexcept;
+  static PetscErrorCode SetPreallocation(Mat, PetscDeviceContext, PetscScalar *) noexcept;
 
   template <typename F>
   static PetscErrorCode DiagonalUnaryTransform(Mat, PetscInt, PetscInt, PetscInt, PetscDeviceContext, F &&) noexcept;
@@ -264,6 +266,7 @@ inline PetscErrorCode MatDense_CUPM<T, D>::SetPreallocation(Mat A, PetscDeviceCo
   PetscCheckTypeNames(A, D::MATSEQDENSECUPM(), D::MATMPIDENSECUPM());
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
+  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscCall(D::SetPreallocation_(A, dctx, device_array));
   A->preallocated = PETSC_TRUE;
   A->assembled    = PETSC_TRUE;
@@ -542,6 +545,15 @@ inline PetscErrorCode MatDenseCUPMResetArray(Mat A) noexcept
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMResetArray_C(), (Mat), (A));
   PetscCall(PetscObjectStateIncrease(PetscObjectCast(A)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDenseCUPMSetPreallocation(Mat A, PetscScalar *device_data, PetscDeviceContext dctx = nullptr) noexcept
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseMethod(A, impl::MatDense_CUPM_Base<T>::MatDenseCUPMSetPreallocation_C(), (Mat, PetscDeviceContext, PetscScalar *), (A, dctx, device_data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

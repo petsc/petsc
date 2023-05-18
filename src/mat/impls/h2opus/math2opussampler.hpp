@@ -146,19 +146,26 @@ void PetscMatrixSampler::sample(H2Opus_Real *x, H2Opus_Real *y, int samples)
   Mat          X = NULL, Y = NULL;
   PetscInt     M, N, m, n;
   H2Opus_Real *px, *py;
+  VecType      vtype;
 
   if (!this->A) PetscCallVoid(PETSC_ERR_PLIB);
   PetscCallVoid(MatGetSize(this->A, &M, &N));
+  PetscCallVoid(MatGetVecType(this->A, &vtype));
   PetscCallVoid(MatGetLocalSize(this->A, &m, &n));
   PetscCallVoid(PetscObjectGetComm((PetscObject)A, &comm));
   PermuteBuffersIn(samples, x, &px, y, &py);
   if (!this->gpusampling) {
     PetscCallVoid(MatCreateDense(comm, n, PETSC_DECIDE, N, samples, px, &X));
     PetscCallVoid(MatCreateDense(comm, m, PETSC_DECIDE, M, samples, py, &Y));
+    PetscCallVoid(MatSetVecType(X, vtype));
+    PetscCallVoid(MatSetVecType(Y, vtype));
+
   } else {
   #if defined(PETSC_HAVE_CUDA)
     PetscCallVoid(MatCreateDenseCUDA(comm, n, PETSC_DECIDE, N, samples, px, &X));
     PetscCallVoid(MatCreateDenseCUDA(comm, m, PETSC_DECIDE, M, samples, py, &Y));
+    PetscCallVoid(MatSetVecType(X, vtype));
+    PetscCallVoid(MatSetVecType(Y, vtype));
   #endif
   }
   PetscCallVoid(MatMatMult(this->A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));

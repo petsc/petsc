@@ -1687,16 +1687,16 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
   PetscCall(MatSetSizes(A, B->rmap->n, B->cmap->n, B->rmap->N, B->cmap->N));
   #if defined(PETSC_H2OPUS_USE_GPU)
   {
-    PetscBool iscuda;
     VecType   vtype;
+    PetscBool isstd, iscuda, iskok;
 
     PetscCall(MatGetVecType(B, &vtype));
-    PetscCall(PetscStrcmp(vtype, VECCUDA, &iscuda));
-    if (!iscuda) {
-      PetscCall(PetscStrcmp(vtype, VECSEQCUDA, &iscuda));
-      if (!iscuda) PetscCall(PetscStrcmp(vtype, VECMPICUDA, &iscuda));
-    }
+    PetscCall(PetscStrcmpAny(vtype, &isstd, VECSTANDARD, VECSEQ, VECMPI, ""));
+    PetscCall(PetscStrcmpAny(vtype, &iscuda, VECCUDA, VECSEQCUDA, VECMPICUDA, ""));
+    PetscCall(PetscStrcmpAny(vtype, &iskok, VECKOKKOS, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+    PetscCheck(isstd || iscuda || iskok, comm, PETSC_ERR_SUP, "Not for type %s", vtype);
     if (iscuda && !B->boundtocpu) boundtocpu = PETSC_FALSE;
+    if (iskok && PetscDefined(HAVE_MACRO_KOKKOS_ENABLE_CUDA)) boundtocpu = PETSC_FALSE;
   }
   #endif
   PetscCall(MatSetType(A, MATH2OPUS));

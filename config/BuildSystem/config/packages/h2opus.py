@@ -123,9 +123,9 @@ class Configure(config.package.Package):
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.cuda.include)+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.magma.include)+'\n')
         g.write('CXXCPPFLAGS += '+self.headers.toString(self.kblas.include)+'\n')
-        g.write('CUDA_LIBS = '+self.libraries.toString(self.cuda.dlib)+'\n')
-        g.write('MAGMA_LIBS = '+self.libraries.toString(self.magma.dlib)+'\n')
-        g.write('KBLAS_LIBS = '+self.libraries.toString(self.kblas.dlib)+'\n')
+        g.write('CUDA_LIBS = '+self.libraries.toString(self.cuda.lib)+'\n')
+        g.write('MAGMA_LIBS = '+self.libraries.toString(self.magma.lib)+'\n')
+        g.write('KBLAS_LIBS = '+self.libraries.toString(self.kblas.lib)+'\n')
       else:
         if self.thrust.found:
           g.write('CXXCPPFLAGS += '+self.headers.toString(self.thrust.include)+'\n')
@@ -140,7 +140,7 @@ class Configure(config.package.Package):
       if not self.mpi.usingMPIUni:
         g.write('H2OPUS_USE_MPI = 1\n')
 
-      g.write('LDFLAGS = '+ldflags+' '+ self.libraries.toString(self.math.dlib)+'\n')
+      g.write('LDFLAGS = '+ldflags+' '+ self.libraries.toString(self.math.lib)+'\n')
 
       if not self.argDB['with-shared-libraries']:
         g.write('H2OPUS_DISABLE_SHARED = 1\n')

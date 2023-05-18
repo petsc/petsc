@@ -10,6 +10,7 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
   PetscInt i;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj, 1);
   if (obj->intstar_idmax > 0) {
     for (i = 0; i < obj->intstar_idmax; i++) PetscCall(PetscFree(obj->intstarcomposeddata[i]));
     PetscCall(PetscFree2(obj->intstarcomposeddata, obj->intstarcomposedstate));
@@ -119,6 +120,8 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   const char       *prefix;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj, 1);
+  if (bobj) PetscValidHeader(bobj, 2);
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
@@ -146,7 +149,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
 -  type_name - string containing a type name
 
    Output Parameter:
-.  same - `PETSC_TRUE` if they are the same, else `PETSC_FALSE`
+.  same - `PETSC_TRUE` if the type of `obj` and `type_name` are the same or both `NULL`, else `PETSC_FALSE`
 
    Level: intermediate
 
@@ -156,13 +159,14 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
 {
   PetscFunctionBegin;
   PetscValidBoolPointer(same, 3);
-  if (!obj) *same = PETSC_FALSE;
-  else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
-  else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
+  if (!obj) *same = (PetscBool)!type_name;
   else {
     PetscValidHeader(obj, 1);
-    PetscValidCharPointer(type_name, 2);
-    PetscCall(PetscStrcmp((char *)(obj->type_name), type_name, same));
+    if (!type_name || !obj->type_name) *same = (PetscBool)(!obj->type_name == !type_name);
+    else {
+      PetscValidCharPointer(type_name, 2);
+      PetscCall(PetscStrcmp(obj->type_name, type_name, same));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -177,7 +181,7 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
 -  obj2 - another PETSc object
 
    Output Parameter:
-.  same - `PETSC_TRUE` if they are the same, else `PETSC_FALSE`
+.  same - `PETSC_TRUE` if they are the same or both unset, else `PETSC_FALSE`
 
    Level: intermediate
 
@@ -187,10 +191,10 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
 PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, PetscBool *same)
 {
   PetscFunctionBegin;
-  PetscValidBoolPointer(same, 3);
   PetscValidHeader(obj1, 1);
   PetscValidHeader(obj2, 2);
-  PetscCall(PetscStrcmp((char *)(obj1->type_name), (char *)(obj2->type_name), same));
+  PetscValidBoolPointer(same, 3);
+  PetscCall(PetscStrcmp(obj1->type_name, obj2->type_name, same));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -204,7 +208,7 @@ PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, 
 -  type_name - string containing a type name
 
    Output Parameter:
-.  same - `PETSC_TRUE` if it is of the same base type
+.  same - `PETSC_TRUE` if the object is of the same base type identified by `type_name` or both `NULL`, `PETSC_FALSE` otherwise
 
    Level: intermediate
 
@@ -214,13 +218,14 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
 {
   PetscFunctionBegin;
   PetscValidBoolPointer(same, 3);
-  if (!obj) *same = PETSC_FALSE;
-  else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
-  else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
+  if (!obj) *same = (PetscBool)!type_name;
   else {
     PetscValidHeader(obj, 1);
-    PetscValidCharPointer(type_name, 2);
-    PetscCall(PetscStrbeginswith((char *)(obj->type_name), type_name, same));
+    if (!type_name || !obj->type_name) *same = (PetscBool)(!obj->type_name == !type_name);
+    else {
+      PetscValidCharPointer(type_name, 2);
+      PetscCall(PetscStrbeginswith(obj->type_name, type_name, same));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

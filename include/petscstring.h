@@ -21,6 +21,7 @@ PETSC_EXTERN PetscErrorCode PetscStrArrayDestroy(char ***);
 PETSC_EXTERN PetscErrorCode PetscStrNArrayallocpy(PetscInt, const char *const *, char ***);
 PETSC_EXTERN PetscErrorCode PetscStrNArrayDestroy(PetscInt, char ***);
 PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm, const char[], char[], size_t);
+PETSC_EXTERN PetscErrorCode PetscStrcmpAny(const char[], PetscBool *, const char[], ...);
 
 PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[], char, PetscToken *);
 PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken, char *[]);
@@ -189,7 +190,7 @@ static inline void PetscStrcmpNoError(const char a[], const char b[], PetscBool 
 
   Level: intermediate
 
-.seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`
+.seealso: `PetscStrcmpAny()`, `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`
 @*/
 static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBool *flg)
 {
