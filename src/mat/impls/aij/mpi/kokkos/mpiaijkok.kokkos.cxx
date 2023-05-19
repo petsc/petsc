@@ -424,7 +424,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
     const MatColIdxType *Aj = Aj_h.data(), *Bj = Bj_h.data();
 
     // Count how many nonzeros of each row in E are in the left of the diag block [cstart,cend)
-    PetscIntKokkosViewHost E_NzLeft_h("E_NzLeft_h", Em), E_RowLen_h("E_RowLen_h", Em);
+    PetscIntKokkosViewHost E_NzLeft_h(NoInit("E_NzLeft_h"), Em), E_RowLen_h(NoInit("E_RowLen_h"), Em);
     PetscInt              *E_NzLeft = E_NzLeft_h.data(), *E_RowLen = E_RowLen_h.data();
     for (PetscInt i = 0; i < Em; i++) {
       const PetscInt *first, *last, *it;
@@ -539,7 +539,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
     PetscCall(PetscSortIntWithPermutation(recvRowCnt, irootloc, recvRowPerm)); // irootloc[] (owned by ownerSF) won't be changed
 
     // i[] array, nz are always easiest to compute
-    MatRowMapKokkosViewHost Fdi_h("Fdi_h", Fm + 1), Foi_h("Foi_h", Fm + 1);
+    MatRowMapKokkosViewHost Fdi_h(NoInit("Fdi_h"), Fm + 1), Foi_h(NoInit("Foi_h"), Fm + 1);
     MatRowMapType          *Fdi, *Foi;
     PetscInt                FnzDups = 0, Fdnz = 0, FdnzDups = 0, Fonz = 0, FonzDups = 0; // nz (with or without dups) in F, Fd, Fo
     PetscInt                iter;
@@ -604,9 +604,9 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
     PetscCall(PetscFree2(sendCol, recvCol));
 
     // Allocate j, jmap, jperm for Fd and Fo
-    MatColIdxKokkosViewHost Fdj_h("Fdj_h", Fdnz), Foj_h("Foj_h", Fonz);
-    MatRowMapKokkosViewHost Fdjmap_h("Fdjmap_h", Fdnz + 1), Fojmap_h("Fojmap_h", Fonz + 1); // +1 to make csr
-    MatRowMapKokkosViewHost Fdjperm_h("Fdjperm_h", FdnzDups), Fojperm_h("Fojperm_h", FonzDups);
+    MatColIdxKokkosViewHost Fdj_h(NoInit("Fdj_h"), Fdnz), Foj_h(NoInit("Foj_h"), Fonz);
+    MatRowMapKokkosViewHost Fdjmap_h(NoInit("Fdjmap_h"), Fdnz + 1), Fojmap_h(NoInit("Fojmap_h"), Fonz + 1); // +1 to make csr
+    MatRowMapKokkosViewHost Fdjperm_h(NoInit("Fdjperm_h"), FdnzDups), Fojperm_h(NoInit("Fojperm_h"), FonzDups);
     MatColIdxType          *Fdj = Fdj_h.data(), *Foj = Foj_h.data();
     MatRowMapType          *Fdjmap = Fdjmap_h.data(), *Fojmap = Fojmap_h.data();
     MatRowMapType          *Fdjperm = Fdjperm_h.data(), *Fojperm = Fojperm_h.data();
@@ -663,8 +663,8 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
 
     PetscCall(ReduceTwoSetsOfGlobalIndices(n1, garray1, Fonz, Foj, &n2, &garray2, map));
     mm->sf       = reduceSF;
-    mm->leafBuf  = MatScalarKokkosView("leafBuf", nleaves);
-    mm->rootBuf  = MatScalarKokkosView("rootBuf", nroots);
+    mm->leafBuf  = MatScalarKokkosView(NoInit("leafBuf"), nleaves);
+    mm->rootBuf  = MatScalarKokkosView(NoInit("rootBuf"), nroots);
     mm->garray   = garray2; // give ownership, so no free
     mm->n        = n2;
     mm->E_NzLeft = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), E_NzLeft_h);
@@ -674,10 +674,10 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
     mm->Fojperm  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Fojperm_h);
 
     // Output Fd and Fo in KokkosCsrMatrix format
-    MatScalarKokkosView Fda_d("Fda_d", Fdnz);
+    MatScalarKokkosView Fda_d(NoInit("Fda_d"), Fdnz);
     MatRowMapKokkosView Fdi_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Fdi_h);
     MatColIdxKokkosView Fdj_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Fdj_h);
-    MatScalarKokkosView Foa_d("Foa_d", Fonz);
+    MatScalarKokkosView Foa_d(NoInit("Foa_d"), Fonz);
     MatRowMapKokkosView Foi_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Foi_h);
     MatColIdxKokkosView Foj_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Foj_h);
 
@@ -823,7 +823,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
     PetscCall(MatGetOwnershipRangeColumn(E, &cstart, &cend));
 
     // Count how many nonzeros of each row in E are in the left of the diag block [cstart,cend)
-    PetscIntKokkosViewHost E_NzLeft_h("E_NzLeft_h", Em), E_RowLen_h("E_RowLen_h", Em);
+    PetscIntKokkosViewHost E_NzLeft_h(NoInit("E_NzLeft_h"), Em), E_RowLen_h(NoInit("E_RowLen_h"), Em);
     PetscInt              *E_NzLeft = E_NzLeft_h.data(), *E_RowLen = E_RowLen_h.data();
     for (PetscInt i = 0; i < Em; i++) {
       const PetscInt *first, *last, *it;
@@ -897,10 +897,10 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
     PetscCall(PetscFree3(sdisp, rdisp, reqs));
 
     // Build a plan (rowoffset, irootloc, E_NzLeft) to copy rows in E to rootdata of bcastSF in parallel
-    PetscIntKokkosViewHost rowoffset_h("rowoffset_h", ioffset[niranks] + 1);
+    PetscIntKokkosViewHost rowoffset_h(NoInit("rowoffset_h"), ioffset[niranks] + 1);
     PetscInt              *rowoffset = rowoffset_h.data(); // for each entry (row) indicated in irootloc[], we calculate its destinate offset in copying
     rowoffset[0]                     = 0;
-    for (PetscInt i = 0; i < ioffset[niranks]; i++) { rowoffset[i + 1] += rowoffset[i] + E_RowLen[irootloc[i]]; }
+    for (PetscInt i = 0; i < ioffset[niranks]; i++) { rowoffset[i + 1] = rowoffset[i] + E_RowLen[irootloc[i]]; }
 
     // Copy (global) column indices of the needed rows in E to a buffer, and then bcast to Fj[]
     PetscInt *jbuf, *Fj;
@@ -924,8 +924,8 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
     PetscCall(PetscSFBcastEnd(bcastSF, MPIU_INT, jbuf, Fj, MPI_REPLACE));
 
     // Build a plan (i.e., F_NzLeft) to split F into Fd and Fo
-    MatRowMapKokkosViewHost Fdi_h("Fdi_h", Fm + 1), Foi_h("Foi_h", Fm + 1); // row pointer of Fd, Fo
-    MatColIdxKokkosViewHost F_NzLeft_h("F_NzLeft_h", Fm);                   // split each row of F into Left, Diag, Right. We only need to record #nz in Left and Diag.
+    MatRowMapKokkosViewHost Fdi_h(NoInit("Fdi_h"), Fm + 1), Foi_h(NoInit("Foi_h"), Fm + 1); // row pointer of Fd, Fo
+    MatColIdxKokkosViewHost F_NzLeft_h(NoInit("F_NzLeft_h"), Fm);                           // split each row of F into Left, Diag, Right. We only need to record #nz in Left and Diag.
     MatRowMapType          *Fdi = Fdi_h.data(), *Foi = Foi_h.data();
     MatColIdxType          *F_NzLeft = F_NzLeft_h.data();
 
@@ -948,7 +948,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
 
     // Fill Fdj[] and Foj[], i.e., columns of Fd and Fo. Fdj[] are local, but Foj[] are not yet.
     PetscInt                Fdnz = Fdi[Fm], Fonz = Foi[Fm];
-    MatColIdxKokkosViewHost Fdj_h("Fdj_h", Fdnz), Foj_h("Foj_h", Fonz);
+    MatColIdxKokkosViewHost Fdj_h(NoInit("Fdj_h"), Fdnz), Foj_h(NoInit("Foj_h"), Fonz);
     MatColIdxType          *Fdj = Fdj_h.data(), *Foj = Foj_h.data(), gid;
 
     for (PetscInt i = 0; i < Fm; i++) {
@@ -974,20 +974,20 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
 
     // Record the plans built above, for reuse
     PetscIntKokkosViewHost tmp(const_cast<PetscInt *>(irootloc), ioffset[niranks]); // irootloc[] is owned by ownerSF. We create a copy for safety
-    PetscIntKokkosViewHost irootloc_h("irootloc_h", ioffset[niranks]);
+    PetscIntKokkosViewHost irootloc_h(NoInit("irootloc_h"), ioffset[niranks]);
     Kokkos::deep_copy(irootloc_h, tmp);
     mm->sf        = bcastSF;
     mm->E_NzLeft  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), E_NzLeft_h);
     mm->F_NzLeft  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), F_NzLeft_h);
     mm->irootloc  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), irootloc_h);
     mm->rowoffset = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), rowoffset_h);
-    mm->rootBuf   = MatScalarKokkosView("rootBuf", nroots);
-    mm->leafBuf   = MatScalarKokkosView("leafBuf", nleaves);
+    mm->rootBuf   = MatScalarKokkosView(NoInit("rootBuf"), nroots);
+    mm->leafBuf   = MatScalarKokkosView(NoInit("leafBuf"), nleaves);
     mm->garray    = garray2;
     mm->n         = n2;
 
     // Output Fd and Fo in KokkosCsrMatrix format
-    MatScalarKokkosView Fda_d("Fda_d", Fdnz), Foa_d("Foa_d", Fonz);
+    MatScalarKokkosView Fda_d(NoInit("Fda_d"), Fdnz), Foa_d(NoInit("Foa_d"), Fonz);
     MatRowMapKokkosView Fdi_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Fdi_h);
     MatColIdxKokkosView Fdj_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Fdj_h);
     MatRowMapKokkosView Foi_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), Foi_h);
@@ -1158,7 +1158,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, 
 #endif
 
   // Reduce E (i.e., C3 and C4)'s rows to form F, and overlap the communication
-  PetscIntKokkosViewHost map_h("map_h", bmpi->B->cmap->n);
+  PetscIntKokkosViewHost map_h(NoInit("map_h"), bmpi->B->cmap->n);
   PetscCall(MatGetOwnershipRangeColumn(B, &cstart, &cend));
   PetscCall(MatMPIAIJKokkosReduceBegin(comm, mm->C3, mm->C4, cstart, cend, bmpi->garray, ampi->Mvctx, MAT_INITIAL_MATRIX, map_h.data(), mm));
 
@@ -1175,7 +1175,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, 
   PetscCall(MatMPIAIJKokkosReduceEnd(comm, mm->C3, mm->C4, cstart, cend, bmpi->garray, ampi->Mvctx, MAT_INITIAL_MATRIX, map_h.data(), mm));
 
   // Create C2, which shares a, i arrays with C2_mid, but with new column indices and potentially larger column size
-  MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj("j", oldj.extent(0));
+  MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj(NoInit("j"), oldj.extent(0));
   PetscIntKokkosView  map  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), map_h);
   PetscCallCXX(Kokkos::parallel_for(
     oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
@@ -1260,7 +1260,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
   mm->kh4.create_spgemm_handle(spgemm_alg);
 
   // Bcast B's rows to form F, and overlap the communication
-  PetscIntKokkosViewHost map_h("map_h", bmpi->B->cmap->n);
+  PetscIntKokkosViewHost map_h(NoInit("map_h"), bmpi->B->cmap->n);
   PetscCall(MatMPIAIJKokkosBcastBegin(B, ampi->Mvctx, MAT_INITIAL_MATRIX, map_h.data(), mm));
 
   // A's diag * (B's diag + B's off-diag)
@@ -1288,7 +1288,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
 #endif
 
   // Create C2, which shares a, i arrays with C2_mid, but with new column indices and potentially larger column size
-  MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj("j", oldj.extent(0));
+  MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj(NoInit("j"), oldj.extent(0));
   PetscIntKokkosView  map  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), map_h);
   PetscCallCXX(Kokkos::parallel_for(
     oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));

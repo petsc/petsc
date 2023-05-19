@@ -5,6 +5,15 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <KokkosSparse_CrsMatrix.hpp>
 #include <KokkosSparse_spiluk.hpp>
+#include <string>
+
+namespace
+{
+PETSC_NODISCARD inline decltype(auto) NoInit(std::string label)
+{
+  return Kokkos::view_alloc(Kokkos::WithoutInitializing, std::move(label));
+}
+} // namespace
 
 using MatRowMapType = PetscInt;
 using MatColIdxType = PetscInt;
