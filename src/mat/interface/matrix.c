@@ -3672,7 +3672,6 @@ PetscErrorCode MatMatSolve(Mat A, Mat B, Mat X)
   PetscCheck(A->rmap->N == B->rmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Mat A,Mat B: global dim %" PetscInt_FMT " %" PetscInt_FMT, A->rmap->N, B->rmap->N);
   PetscCheck(X->cmap->N == B->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Solution matrix must have same number of columns as rhs matrix");
   if (!A->rmap->N && !A->cmap->N) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCheck(A->factortype, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Unfactored matrix");
   MatCheckPreallocated(A, 1);
 
   PetscCall(PetscLogEventBegin(MAT_MatSolve, A, B, X, 0));
@@ -3720,7 +3719,6 @@ PetscErrorCode MatMatSolveTranspose(Mat A, Mat B, Mat X)
   PetscCheck(A->rmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT, A->rmap->n, B->rmap->n);
   PetscCheck(X->cmap->N >= B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Solution matrix must have same number of columns as rhs matrix");
   if (!A->rmap->N && !A->cmap->N) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCheck(A->factortype, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Unfactored matrix");
   MatCheckPreallocated(A, 1);
 
   PetscCall(PetscLogEventBegin(MAT_MatSolve, A, B, X, 0));
