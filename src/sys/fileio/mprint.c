@@ -721,10 +721,11 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank != 0) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!fgets(string, len, fp)) {
-    string[0] = 0;
-    PetscCheck(feof(fp), PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file due to \"%s\"", strerror(errno));
+  if (rank == 0) {
+    if (!fgets(string, len, fp)) {
+      string[0] = 0;
+      PetscCheck(feof(fp), PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file due to \"%s\"", strerror(errno));
+    }
   }
   PetscCallMPI(MPI_Bcast(string, len, MPI_BYTE, 0, comm));
   PetscFunctionReturn(PETSC_SUCCESS);

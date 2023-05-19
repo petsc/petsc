@@ -3359,9 +3359,9 @@ PetscErrorCode SNESDestroy(SNES *snes)
          the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
    Options Database Keys:
-+    -snes_lag_jacobian_persists <true,false> - sets the persistence
++    -snes_lag_jacobian_persists <true,false> - sets the persistence through multiple SNES solves
 .    -snes_lag_jacobian <-2,1,2,...> - sets the lag
-.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
 -    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
    Notes:
@@ -3456,9 +3456,9 @@ PetscErrorCode SNESGetGridSequence(SNES snes, PetscInt *steps)
          the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
    Options Database Keys:
-+    -snes_lag_jacobian_persists <true,false> - sets the persistence
++    -snes_lag_jacobian_persists <true,false> - sets the persistence through multiple SNES solves
 .    -snes_lag_jacobian <-2,1,2,...> - sets the lag
-.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
 -    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
    Level: intermediate
@@ -3490,9 +3490,9 @@ PetscErrorCode SNESGetLagPreconditioner(SNES snes, PetscInt *lag)
          the Jacobian is built etc. -2 means rebuild at next chance but then never again
 
    Options Database Keys:
-+    -snes_lag_jacobian_persists <true,false> - sets the persistence
++    -snes_lag_jacobian_persists <true,false> - sets the persistence through multiple SNES solves
 .    -snes_lag_jacobian <-2,1,2,...> - sets the lag
-.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
 -    -snes_lag_preconditioner <-2,1,2,...> - sets the lag.
 
    Level: intermediate
@@ -3558,9 +3558,9 @@ PetscErrorCode SNESGetLagJacobian(SNES snes, PetscInt *lag)
 -   flg - jacobian lagging persists if true
 
    Options Database Keys:
-+    -snes_lag_jacobian_persists <true,false> - sets the persistence
++    -snes_lag_jacobian_persists <true,false> - sets the persistence through multiple SNES solves
 .    -snes_lag_jacobian <-2,1,2,...> - sets the lag
-.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
 -    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
    Level: advanced
@@ -3593,9 +3593,9 @@ PetscErrorCode SNESSetLagJacobianPersists(SNES snes, PetscBool flg)
 -   flg - preconditioner lagging persists if true
 
    Options Database Keys:
-+    -snes_lag_jacobian_persists <true,false> - sets the persistence
++    -snes_lag_jacobian_persists <true,false> - sets the persistence through multiple SNES solves
 .    -snes_lag_jacobian <-2,1,2,...> - sets the lag
-.    -snes_lag_preconditioner_persists <true,false> - sets the persistence
+.    -snes_lag_preconditioner_persists <true,false> - sets the persistence through multiple SNES solves
 -    -snes_lag_preconditioner <-2,1,2,...> - sets the lag
 
    Level: developer
