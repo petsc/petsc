@@ -476,7 +476,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     log.write("Preprocess output after filtering:\n"+(output if not output else output+'\n'))
     return output
 
-  def filterCompileOutput(self, output,flag = ''):
+  def filterCompileOutput(self, output,flag = '', filterAlways = 0):
     '''
        With --ignoreCompileOutput=1 (default), it filters all compiler messages
        With --ignoreCompileOutput=0 it filters only compiler messages known to be harmless
@@ -492,7 +492,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if output.find('warning #2650: attributes ignored here') >= 0: return output
     if output.find('Warning: attribute visibility is unsupported and will be skipped') >= 0: return output
     if output.find('(E) Invalid statement found within an interface block. Executable statement, statement function or syntax error encountered.') >= 0: return output
-    elif self.argDB['ignoreCompileOutput']:
+    elif self.argDB['ignoreCompileOutput'] and not filterAlways:
       output = ''
     elif output:
       self.log.write("Compiler output before filtering:\n"+(output if not output or output.endswith('\n') else output+'\n'))
@@ -536,14 +536,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.log.write("Compiler output after filtering:\n"+(output if not output else output+'\n'))
     return output
 
-  def filterLinkOutput(self, output):
+  def filterLinkOutput(self, output, filterAlways = 0):
     '''
        With --ignoreLinkOutput=1 it filters all linker messages
        With --ignoreLinkOutput=0 (default), it filters only linker messages known to be harmless
     '''
     output = output.strip()
     if output.find('relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol') >= 0: return output
-    elif self.argDB['ignoreLinkOutput']:
+    elif self.argDB['ignoreLinkOutput'] and not filterAlways:
       output = ''
     elif output:
       self.log.write("Linker output before filtering:\n"+(output if not output else output+'\n'))
