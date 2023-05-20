@@ -15,6 +15,7 @@ typedef struct {
     do { \
       PetscValidHeaderSpecific(x, VEC_CLASSID, xarg); \
       PetscValidHeaderSpecific(y, VEC_CLASSID, yarg); \
+      PetscCheckTypeName(x, VECNEST); \
       PetscCheckSameComm(x, xarg, y, yarg); \
       PetscCheckSameType(x, xarg, y, yarg); \
       PetscCheck(((Vec_Nest *)(x)->data)->setup_called, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", xarg); \
@@ -27,6 +28,7 @@ typedef struct {
       PetscValidHeaderSpecific(x, VEC_CLASSID, xarg); \
       PetscValidHeaderSpecific(y, VEC_CLASSID, yarg); \
       PetscValidHeaderSpecific(z, VEC_CLASSID, zarg); \
+      PetscCheckTypeName(x, VECNEST); \
       PetscCheckSameComm(x, xarg, y, yarg); \
       PetscCheckSameType(x, xarg, y, yarg); \
       PetscCheckSameComm(x, xarg, z, zarg); \
