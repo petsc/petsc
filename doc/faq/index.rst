@@ -485,8 +485,8 @@ This happens for generally one of two reasons:
 
 .. _mpi-network-misconfigure:
 
-What does it mean when ``make check`` errors on ``PetscOptionsInsertFile()``?
------------------------------------------------------------------------------
+What does it mean when ``make check`` hangs or errors on ``PetscOptionsInsertFile()``?
+--------------------------------------------------------------------------------------
 
 For example:
 
@@ -498,18 +498,34 @@ For example:
    [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
    [0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
 
-- You may be using the wrong ``mpiexec`` for the MPI you have linked PETSc with.
+or
 
-- You have VPN enabled on your machine whose network settings may not play well with MPI.
+.. code-block:: none
 
-The machine has a funky network configuration and for some reason MPICH is unable to
-communicate between processes with the socket connections it has established. This can
-happen even if you are running MPICH on just one machine. Often you will find that ``ping
-hostname`` fails with this network configuration; that is, processes on the machine cannot
-even connect to the same machine. You can try completely disconnecting your machine from
-the network and see if ``make check`` then works or speaking with your system
-administrator. You can also try the ``configure`` options ``--download-mpich`` or
-``--download-mpich-device=ch3:nemesis``.
+   $ make check
+   Running check examples to verify correct installation
+   Using PETSC_DIR=/Users/barrysmith/Src/petsc and PETSC_ARCH=arch-fix-mpiexec-hang-2-ranks
+   C/C++ example src/snes/tutorials/ex19 run successfully with 1 MPI process
+   PROGRAM SEEMS TO BE HANGING HERE
+
+This usually occurs when network settings are misconfigured (perhaps due to VPN) resulting in a failure or hang in system call ``gethostbyname()``.
+
+- Verify you are using the correct ``mpiexec`` for the MPI you have linked PETSc with.
+
+- If you have a VPN enabled on your machine, try turning it off and then running ``make check`` to
+  verify that it is not the VPN playing poorly with MPI.
+
+- If ``ping `hostname` `` (``/sbin/ping`` on macOS) fails or hangs do:
+
+  .. code-block:: none
+
+     echo 127.0.0.1 `hostname` | sudo tee -a /etc/hosts
+
+  and try ``make check`` again.
+
+- Try completely disconnecting your machine from the network and see if ``make check`` then works
+
+- Try the PETSc ``configure`` option ``--download-mpich-device=ch3:nemesis`` with ``--download-mpich``.
 
 --------------------------------------------------
 
