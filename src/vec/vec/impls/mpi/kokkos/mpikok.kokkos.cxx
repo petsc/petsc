@@ -241,7 +241,6 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->setvaluescoo        = VecSetValuesCOO_MPIKokkos;
 
   v->ops->errorwnorm = VecErrorWeightedNorms_MPIKokkos;
-  v->ops->errorwnorm = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
