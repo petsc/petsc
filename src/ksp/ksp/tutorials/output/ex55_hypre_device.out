@@ -47,6 +47,7 @@ PC Object: 4 MPI processes
       Measure type        local
       Coarsen type        PMIS
       Interpolation type  ext+i
+      SpGEMM type         hypre
   linear system matrix = precond matrix:
   Mat Object: 4 MPI processes
     type: hypre
