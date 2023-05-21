@@ -3,71 +3,71 @@ charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  0.000e+00
 n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
 thermal T (K): e= 2.321e+07 i= 1.160e+07  0.000e+00. Normalization grid 0: v_0= 1.876e+07 ( 6.256e-02c) n_0= 1.000e+20 t_0= 1.909e-05 1 batched, view batch 0
 Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) , 1: par= 5.835e-02 perp= 5.835e-02 (2) 
-[0] <vec> adaptToleranceFEM(): 0) Refine phase: Z1
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z1 cells
-[0] <vec> adaptToleranceFEM(): 	0) Refined 4 cells
-[0] <vec> adaptToleranceFEM(): 				0) 28 cells, 252 total quadrature points
-[0] <vec> adaptToleranceFEM(): 0) Refine phase: Z2
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) (debug) found Z2 cells
-[0] <vec> adaptToleranceFEM(): 	0) Refined 8 cells
-[0] <vec> adaptToleranceFEM(): 				0) 52 cells, 468 total quadrature points
-[0] <vec> adaptToleranceFEM(): 1) Refine phase: Origin
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=5.508970e-02, cell 0, qp 1/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=4.379594e-02, cell 0, qp 2/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=3.250658e-02, cell 0, qp 3/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=2.594060e-02, cell 4, qp 1/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=1.468071e-02, cell 4, qp 2/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=3.676391e-03, cell 4, qp 3/9
-[0] <vec> adaptToleranceFEM(): 			1) Found another inner r=3.676391e-03, cell 8, qp 1/9, d=0.000000e+00
-[0] <vec> adaptToleranceFEM(): 			1) Refined 2 origin cells 4,8 r=0.00367639
-[0] <vec> adaptToleranceFEM(): 				1) 22 cells, 198 total quadrature points
-[0] <vec> adaptToleranceFEM(): 1) Refine phase: Origin
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=5.508970e-02, cell 0, qp 1/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=4.379594e-02, cell 0, qp 2/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=3.250658e-02, cell 0, qp 3/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=2.754485e-02, cell 4, qp 1/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=2.189797e-02, cell 4, qp 2/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=1.625329e-02, cell 4, qp 3/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=1.297030e-02, cell 6, qp 1/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=7.340356e-03, cell 6, qp 2/9
-[0] <vec> adaptToleranceFEM(): 		1) Found first inner r=1.838196e-03, cell 6, qp 3/9
-[0] <vec> adaptToleranceFEM(): 			1) Found another inner r=1.838196e-03, cell 11, qp 1/9, d=0.000000e+00
-[0] <vec> adaptToleranceFEM(): 			1) Refined 2 origin cells 6,11 r=0.0018382
-[0] <vec> adaptToleranceFEM(): 				1) 28 cells, 252 total quadrature points
+[0] <vec:seq> adaptToleranceFEM(): 0) Refine phase: Z1
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z1 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) Refined 4 cells
+[0] <vec:seq> adaptToleranceFEM(): 				0) 28 cells, 252 total quadrature points
+[0] <vec:seq> adaptToleranceFEM(): 0) Refine phase: Z2
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) (debug) found Z2 cells
+[0] <vec:seq> adaptToleranceFEM(): 	0) Refined 8 cells
+[0] <vec:seq> adaptToleranceFEM(): 				0) 52 cells, 468 total quadrature points
+[0] <vec:seq> adaptToleranceFEM(): 1) Refine phase: Origin
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=5.508970e-02, cell 0, qp 1/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=4.379594e-02, cell 0, qp 2/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=3.250658e-02, cell 0, qp 3/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=2.594060e-02, cell 4, qp 1/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=1.468071e-02, cell 4, qp 2/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=3.676391e-03, cell 4, qp 3/9
+[0] <vec:seq> adaptToleranceFEM(): 			1) Found another inner r=3.676391e-03, cell 8, qp 1/9, d=0.000000e+00
+[0] <vec:seq> adaptToleranceFEM(): 			1) Refined 2 origin cells 4,8 r=0.00367639
+[0] <vec:seq> adaptToleranceFEM(): 				1) 22 cells, 198 total quadrature points
+[0] <vec:seq> adaptToleranceFEM(): 1) Refine phase: Origin
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=5.508970e-02, cell 0, qp 1/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=4.379594e-02, cell 0, qp 2/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=3.250658e-02, cell 0, qp 3/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=2.754485e-02, cell 4, qp 1/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=2.189797e-02, cell 4, qp 2/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=1.625329e-02, cell 4, qp 3/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=1.297030e-02, cell 6, qp 1/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=7.340356e-03, cell 6, qp 2/9
+[0] <vec:seq> adaptToleranceFEM(): 		1) Found first inner r=1.838196e-03, cell 6, qp 3/9
+[0] <vec:seq> adaptToleranceFEM(): 			1) Found another inner r=1.838196e-03, cell 11, qp 1/9, d=0.000000e+00
+[0] <vec:seq> adaptToleranceFEM(): 			1) Refined 2 origin cells 6,11 r=0.0018382
+[0] <vec:seq> adaptToleranceFEM(): 				1) 28 cells, 252 total quadrature points
 0) FormLandau 720 IPs, 80 cells total, Nb=9, Nq=9, dim=2, Tab: Nb=9 Nf=2 Np=9 cdim=2 N=354
 step    0) time= 5.000000e-02 temperature (eV): electron: T= 2.3470e+03 T_par= 1.8264e+03 T_perp= 2.6073e+03 ;ion: T= 1.2155e+03 T_par= 1.0861e+03 T_perp= 1.2801e+03 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0000e+02 NRL_e_perp= 3.9000e+02
   0) species-0: charge density= -1.6277448139963e+01 z-momentum=  2.1688411091105e-03 energy=  8.2717617826195e+04

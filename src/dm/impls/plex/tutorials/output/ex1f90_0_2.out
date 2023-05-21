@@ -1,2 +1,2 @@
-[0] <dm> DMPlexPartitionLabelInvert(): Using Alltoallv for mesh distribution
-[0] <dm> DMPlexGetFieldType_Internal(): Could not classify VTK output type of section field 2 "w"
+[0] <dm:plex> DMPlexPartitionLabelInvert(): Using Alltoallv for mesh distribution
+[0] <dm:plex> DMPlexGetFieldType_Internal(): Could not classify VTK output type of section field 2 "w"

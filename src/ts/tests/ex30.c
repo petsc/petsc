@@ -509,6 +509,7 @@ int main(int argc, char **argv)
   testset:
     requires: double defined(PETSC_USE_DMLANDAU_2D)
     output_file: output/ex30_0.out
+    filter: sed 's/vec:seqkokkos/vec:seq/g'
     args: -dim 2 -petscspace_degree 3 -dm_landau_type p4est -dm_landau_num_species_grid 1,1,1 -dm_landau_amr_levels_max 0,0,0 \
           -dm_landau_amr_post_refine 1 -number_particles_per_dimension 10 -dm_plex_hash_location \
           -dm_landau_batch_size 2 -number_spatial_vertices 3 -dm_landau_batch_view_idx 1 -view_vertex_target 2 -view_grid_target 1 \
@@ -530,6 +531,7 @@ int main(int argc, char **argv)
   testset:
     requires: double !defined(PETSC_USE_DMLANDAU_2D)
     output_file: output/ex30_3d.out
+    filter: sed 's/vec:seqkokkos/vec:seq/g'
     args: -dim 3 -petscspace_degree 2 -dm_landau_type p8est -dm_landau_num_species_grid 1,1,1 -dm_landau_amr_levels_max 0,0,0 \
           -dm_landau_amr_post_refine 0 -number_particles_per_dimension 5 -dm_plex_hash_location \
           -dm_landau_batch_size 1 -number_spatial_vertices 1 -dm_landau_batch_view_idx 0 -view_vertex_target 0 -view_grid_target 0 \
