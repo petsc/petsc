@@ -38,7 +38,8 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-debug')
     if not self.mpi.usingMPIUni:
       args.append('--enable-mpi')
-      args.append('PATH='+quote(os.environ['PATH']+':'+os.path.dirname(self.mpi.mpiexecExecutable)))
+      if self.mpi.mpiexecExecutable:
+        args.append('PATH='+quote(os.environ['PATH']+':'+os.path.dirname(self.mpi.mpiexecExecutable)))
     else:
       args.append('--disable-mpi')
     args.append('CPPFLAGS='+quote(self.headers.toStringNoDupes(self.dinclude)))
