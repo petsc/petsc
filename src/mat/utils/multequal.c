@@ -1,7 +1,7 @@
 
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
-static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *flg, PetscInt t, PetscBool add)
+static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *flg, PetscInt t, PetscInt add)
 {
   Vec         Ax = NULL, Bx = NULL, s1 = NULL, s2 = NULL, Ay = NULL, By = NULL;
   PetscRandom rctx;
@@ -9,7 +9,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *
   PetscInt    am, an, bm, bn, k;
   PetscScalar none = -1.0;
 #if defined(PETSC_USE_INFO)
-  const char *sops[] = {"MatMult", "MatMultAdd", "MatMultTranspose", "MatMultTransposeAdd", "MatMultHermitianTranspose", "MatMultHermitianTransposeAdd"};
+  const char *sops[] = {"MatMult", "MatMultAdd", "MatMultAdd (update)", "MatMultTranspose", "MatMultTransposeAdd", "MatMultTransposeAdd (update)", "MatMultHermitianTranspose", "MatMultHermitianTransposeAdd", "MatMultHermitianTransposeAdd (update)"};
   const char *sop;
 #endif
 
@@ -25,7 +25,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *
   PetscCall(MatGetLocalSize(B, &bm, &bn));
   PetscCheck(am == bm && an == bn, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT, am, bm, an, bn);
 #if defined(PETSC_USE_INFO)
-  sop = sops[(add ? 1 : 0) + 2 * t]; /* t = 0 => no transpose, t = 1 => transpose, t = 2 => Hermitian transpose */
+  sop = sops[add + 3 * t]; /* add = 0 => no add, add = 1 => add third vector, add = 2 => add update, t = 0 => no transpose, t = 1 => transpose, t = 2 => Hermitian transpose */
 #endif
   PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)A), &rctx));
   PetscCall(PetscRandomSetFromOptions(rctx));
@@ -43,32 +43,42 @@ static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *
 
   *flg = PETSC_TRUE;
   for (k = 0; k < n; k++) {
+    Vec Aadd = NULL, Badd = NULL;
+
     PetscCall(VecSetRandom(Ax, rctx));
     PetscCall(VecCopy(Ax, Bx));
     if (add) {
       PetscCall(VecSetRandom(Ay, rctx));
       PetscCall(VecCopy(Ay, By));
+      Aadd = Ay;
+      Badd = By;
+      if (add == 2) {
+        PetscCall(VecCopy(Ay, s1));
+        PetscCall(VecCopy(By, s2));
+        Aadd = s1;
+        Badd = s2;
+      }
     }
     if (t == 1) {
       if (add) {
-        PetscCall(MatMultTransposeAdd(A, Ax, Ay, s1));
-        PetscCall(MatMultTransposeAdd(B, Bx, By, s2));
+        PetscCall(MatMultTransposeAdd(A, Ax, Aadd, s1));
+        PetscCall(MatMultTransposeAdd(B, Bx, Badd, s2));
       } else {
         PetscCall(MatMultTranspose(A, Ax, s1));
         PetscCall(MatMultTranspose(B, Bx, s2));
       }
     } else if (t == 2) {
       if (add) {
-        PetscCall(MatMultHermitianTransposeAdd(A, Ax, Ay, s1));
-        PetscCall(MatMultHermitianTransposeAdd(B, Bx, By, s2));
+        PetscCall(MatMultHermitianTransposeAdd(A, Ax, Aadd, s1));
+        PetscCall(MatMultHermitianTransposeAdd(B, Bx, Badd, s2));
       } else {
         PetscCall(MatMultHermitianTranspose(A, Ax, s1));
         PetscCall(MatMultHermitianTranspose(B, Bx, s2));
       }
     } else {
       if (add) {
-        PetscCall(MatMultAdd(A, Ax, Ay, s1));
-        PetscCall(MatMultAdd(B, Bx, By, s2));
+        PetscCall(MatMultAdd(A, Ax, Aadd, s1));
+        PetscCall(MatMultAdd(B, Bx, Badd, s2));
       } else {
         PetscCall(MatMult(A, Ax, s1));
         PetscCall(MatMult(B, Bx, s2));
@@ -213,7 +223,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
 PetscErrorCode MatMultEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultEqual_Private(A, B, n, flg, 0, PETSC_FALSE));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -237,7 +247,8 @@ PetscErrorCode MatMultEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 PetscErrorCode MatMultAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultEqual_Private(A, B, n, flg, 0, PETSC_TRUE));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 0, 1));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 0, 2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -261,7 +272,7 @@ PetscErrorCode MatMultAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 PetscErrorCode MatMultTransposeEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultEqual_Private(A, B, n, flg, 1, PETSC_FALSE));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 1, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -285,7 +296,8 @@ PetscErrorCode MatMultTransposeEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 PetscErrorCode MatMultTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultEqual_Private(A, B, n, flg, 1, PETSC_TRUE));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 1, 1));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 1, 2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -309,7 +321,7 @@ PetscErrorCode MatMultTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg
 PetscErrorCode MatMultHermitianTransposeEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultEqual_Private(A, B, n, flg, 2, PETSC_FALSE));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 2, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -333,7 +345,8 @@ PetscErrorCode MatMultHermitianTransposeEqual(Mat A, Mat B, PetscInt n, PetscBoo
 PetscErrorCode MatMultHermitianTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultEqual_Private(A, B, n, flg, 2, PETSC_TRUE));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 2, 1));
+  PetscCall(MatMultEqual_Private(A, B, n, flg, 2, 2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
