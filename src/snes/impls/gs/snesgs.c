@@ -239,10 +239,10 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, 0, snes->norm));
 
     /* test convergence */
     PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESMonitor(snes, 0, snes->norm));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
@@ -259,26 +259,20 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
       PetscCall(SNESComputeFunction(snes, X, F));
       PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
       SNESCheckFunctionNorm(snes, fnorm);
-      /* Monitor convergence */
-      PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
-      snes->iter = i + 1;
-      snes->norm = fnorm;
-      PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-      PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-      PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     }
+    /* Monitor convergence */
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
+    snes->iter = i + 1;
+    snes->norm = fnorm;
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes, snes->norm, snes->iter));
     /* Test for convergence */
-    if (normschedule == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, 0.0, 0.0, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
   }
-  if (normschedule == SNES_NORM_ALWAYS) {
-    if (i == snes->max_its) {
-      PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", snes->max_its));
-      if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
-    }
-  } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* GS is meant to be used as a preconditioner */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

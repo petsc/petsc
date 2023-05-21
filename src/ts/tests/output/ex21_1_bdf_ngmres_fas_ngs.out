@@ -59,6 +59,7 @@ TS Object: 1 MPI process
           type: newtonls
           maximum iterations=50, maximum function evaluations=10000
           tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+          norm schedule ALWAYS
           SNESLineSearch Object: (npc_fas_coarse_) 1 MPI process
             type: bt
               interpolation: cubic
@@ -97,7 +98,7 @@ TS Object: 1 MPI process
         Down solver (pre-smoother) on level 1 -------------------------------
         SNES Object: (npc_fas_levels_1_) 1 MPI process
           type: ngs
-            Use finite difference secant approximation with coloring with h = 1e-08 
+            Use finite difference secant approximation with coloring with h = 1.49012e-08 
           maximum iterations=5, maximum function evaluations=30000
           tolerances: relative=0., absolute=0., solution=0.
           norm schedule FINALONLY
@@ -105,7 +106,7 @@ TS Object: 1 MPI process
         Down solver (pre-smoother) on level 2 -------------------------------
         SNES Object: (npc_fas_levels_2_) 1 MPI process
           type: ngs
-            Use finite difference secant approximation with coloring with h = 1e-08 
+            Use finite difference secant approximation with coloring with h = 1.49012e-08 
           maximum iterations=5, maximum function evaluations=30000
           tolerances: relative=0., absolute=0., solution=0.
           norm schedule FINALONLY

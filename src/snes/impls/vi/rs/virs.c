@@ -348,10 +348,10 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
-  PetscCall(SNESMonitor(snes, 0, fnorm));
 
   /* test convergence */
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+  PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   for (i = 0; i < maxits; i++) {
@@ -576,18 +576,14 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     snes->ynorm = ynorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, lits));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESConvergedSkip) PetscCall(VecNorm(X, NORM_2, &xnorm));
-    PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) break;
   }
   /* make sure that the VI information attached to the DM is removed if the for loop above was broken early due to some exceptional conditional */
   PetscCall(DMDestroyVI(snes->dm));
-  if (i == maxits) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
-    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

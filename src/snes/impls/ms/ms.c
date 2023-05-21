@@ -294,7 +294,7 @@ static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F)
   PetscReal fnorm;
 
   PetscFunctionBegin;
-  if (ms->norms) {
+  if (ms->norms || (iter == snes->max_its && snes->normschedule >= SNES_NORM_FINAL_ONLY)) {
     PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
     SNESCheckFunctionNorm(snes, fnorm);
     /* Monitor convergence */
@@ -303,9 +303,9 @@ static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F)
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     /* Test for convergence */
-    PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, 0.0, 0.0, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
   } else if (iter > 0) {
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = iter;
@@ -355,7 +355,6 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
     PetscCall(SNESMSStep_Norms(snes, i + 1, F));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

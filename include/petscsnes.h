@@ -73,6 +73,7 @@ PETSC_EXTERN PetscErrorCode SNESSetUp(SNES);
 PETSC_EXTERN PetscErrorCode SNESSolve(SNES, Vec, Vec);
 PETSC_EXTERN PetscErrorCode SNESSetErrorIfNotConverged(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetErrorIfNotConverged(SNES, PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESConverged(SNES, PetscInt, PetscReal, PetscReal, PetscReal);
 
 PETSC_EXTERN PetscErrorCode SNESSetWorkVecs(SNES, PetscInt);
 
