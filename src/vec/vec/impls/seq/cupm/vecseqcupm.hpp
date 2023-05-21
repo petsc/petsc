@@ -262,6 +262,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseUnary_(UnaryFuncT &&unary, Vec xi
           std::forward<UnaryFuncT>(unary)
         )
       );
+      // clang-format on
       PetscFunctionReturn(PETSC_SUCCESS);
     };
 
@@ -630,7 +631,7 @@ PETSC_KERNEL_DECL static void MAXPY_kernel(const PetscInt size, PetscScalar *PET
     auto sum = xptr[i];
 
     #pragma unroll
-    for (auto j = 0; j < N; ++j) sum += aptr_shmem[j]*yptr_p[j][i];
+    for (auto j = 0; j < N; ++j) sum += aptr_shmem[j] * yptr_p[j][i];
     xptr[i] = sum;
   #endif
   });
@@ -1314,104 +1315,131 @@ inline PetscErrorCode VecSeq_CUPM<T>::Norm(Vec xin, NormType type, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// v->ops->errorwnorm
 namespace detail
 {
-using errorwnorm_input_type  = thrust::tuple<PetscScalar, PetscScalar, PetscScalar, PetscScalar>;
-using errorwnormE_input_type = thrust::tuple<PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar>;
-using errorwnorm_value_type  = thrust::tuple<PetscReal, PetscReal, PetscReal, PetscInt, PetscInt, PetscInt>;
 
-template <int wnormtype>
-struct errorwnorm_transform : public thrust::unary_function<errorwnorm_input_type, errorwnorm_value_type> {
-  PETSC_HOSTDEVICE_DECL explicit errorwnorm_transform(PetscReal tol) { ignore_max = tol; }
+template <NormType wnormtype>
+class ErrorWNormTransformBase {
+public:
+  using result_type = thrust::tuple<PetscReal, PetscReal, PetscReal, PetscInt, PetscInt, PetscInt>;
 
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL errorwnorm_value_type operator()(const errorwnorm_input_type &x) const noexcept
+  constexpr explicit ErrorWNormTransformBase(PetscReal v) noexcept : ignore_max_{v} { }
+
+protected:
+  struct NormTuple {
+    PetscReal norm;
+    PetscInt  loc;
+  };
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL static NormTuple compute_norm_(PetscReal err, PetscReal tol) noexcept
   {
-    const PetscScalar u    = x.get<0>();
-    const PetscScalar y    = x.get<1>();
-    const PetscReal   au   = PetscAbsScalar(u);
-    const PetscReal   ay   = PetscAbsScalar(y);
-    const PetscReal   skip = (au < ignore_max || ay < ignore_max) ? 0.0 : 1.0;
-    const PetscReal   err  = PetscAbsScalar(u - y);
-    const PetscReal   tola = PetscRealPart(x.get<2>()) * skip;
-    const PetscReal   tolr = PetscRealPart(x.get<3>()) * PetscMax(au, ay) * skip;
-    const PetscReal   tol  = tola + tolr;
-    PetscReal         n = 0, na = 0, nr = 0;
-    PetscInt          n_loc = 0, na_loc = 0, nr_loc = 0;
-    if (tola > 0.) {
-      if (wnormtype == NORM_INFINITY) na = err / tola;
-      else na = PetscSqr(err / tola);
-      na_loc = 1;
-    }
-    if (tolr > 0.) {
-      if (wnormtype == NORM_INFINITY) nr = err / tolr;
-      else nr = PetscSqr(err / tolr);
-      nr_loc = 1;
-    }
     if (tol > 0.) {
-      if (wnormtype == NORM_INFINITY) n = err / tol;
-      else n = PetscSqr(err / tol);
-      n_loc = 1;
-    }
-    return {n, na, nr, n_loc, na_loc, nr_loc};
-  }
+      const auto val = err / tol;
 
-  PetscReal ignore_max;
-};
-
-template <int wnormtype>
-struct errorwnormE_transform : public thrust::unary_function<errorwnormE_input_type, errorwnorm_value_type> {
-  PETSC_HOSTDEVICE_DECL explicit errorwnormE_transform(PetscReal tol) { ignore_max = tol; }
-
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL errorwnorm_value_type operator()(const errorwnormE_input_type &x) const noexcept
-  {
-    const PetscScalar u    = x.get<0>();
-    const PetscScalar y    = x.get<1>();
-    const PetscReal   au   = PetscAbsScalar(u);
-    const PetscReal   ay   = PetscAbsScalar(y);
-    const PetscReal   skip = (au < ignore_max || ay < ignore_max) ? 0.0 : 1.0;
-    const PetscReal   err  = PetscAbsScalar(x.get<2>());
-    const PetscReal   tola = PetscRealPart(x.get<3>()) * skip;
-    const PetscReal   tolr = PetscRealPart(x.get<4>()) * PetscMax(au, ay) * skip;
-    const PetscReal   tol  = tola + tolr;
-    PetscReal         n = 0, na = 0, nr = 0;
-    PetscInt          n_loc = 0, na_loc = 0, nr_loc = 0;
-    if (tola > 0.) {
-      if (wnormtype == NORM_INFINITY) na = err / tola;
-      else na = PetscSqr(err / tola);
-      na_loc = 1;
-    }
-    if (tolr > 0.) {
-      if (wnormtype == NORM_INFINITY) nr = err / tolr;
-      else nr = PetscSqr(err / tolr);
-      nr_loc = 1;
-    }
-    if (tol > 0.) {
-      if (wnormtype == NORM_INFINITY) n = err / tol;
-      else n = PetscSqr(err / tol);
-      n_loc = 1;
-    }
-    return {n, na, nr, n_loc, na_loc, nr_loc};
-  }
-
-  PetscReal ignore_max;
-};
-
-template <int wnormtype>
-struct errorwnorm_reduce {
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL errorwnorm_value_type operator()(const errorwnorm_value_type &lhs, const errorwnorm_value_type &rhs) const noexcept
-  {
-    if (wnormtype == NORM_INFINITY) {
-      return {PetscMax(lhs.get<0>(), rhs.get<0>()), PetscMax(lhs.get<1>(), rhs.get<1>()), PetscMax(lhs.get<2>(), rhs.get<2>()), lhs.get<3>() + rhs.get<3>(), lhs.get<4>() + rhs.get<4>(), lhs.get<5>() + rhs.get<5>()};
+      return {wnormtype == NORM_INFINITY ? val : PetscSqr(val), 1};
     } else {
-      return {lhs.get<0>() + rhs.get<0>(), lhs.get<1>() + rhs.get<1>(), lhs.get<2>() + rhs.get<2>(), lhs.get<3>() + rhs.get<3>(), lhs.get<4>() + rhs.get<4>(), lhs.get<5>() + rhs.get<5>()};
+      return {0.0, 0};
+    }
+  }
+
+  PetscReal ignore_max_;
+};
+
+template <NormType wnormtype>
+struct ErrorWNormTransform : ErrorWNormTransformBase<wnormtype> {
+  using base_type     = ErrorWNormTransformBase<wnormtype>;
+  using result_type   = typename base_type::result_type;
+  using argument_type = thrust::tuple<PetscScalar, PetscScalar, PetscScalar, PetscScalar>;
+
+  using base_type::base_type;
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL result_type operator()(const argument_type &x) const noexcept
+  {
+    const auto u     = x.get<0>();
+    const auto y     = x.get<1>();
+    const auto au    = PetscAbsScalar(u);
+    const auto ay    = PetscAbsScalar(y);
+    const auto skip  = au < this->ignore_max_ || ay < this->ignore_max_;
+    const auto tola  = skip ? 0.0 : PetscRealPart(x.get<2>());
+    const auto tolr  = skip ? 0.0 : PetscRealPart(x.get<3>()) * PetscMax(au, ay);
+    const auto tol   = tola + tolr;
+    const auto err   = PetscAbsScalar(u - y);
+    const auto tup_a = this->compute_norm_(err, tola);
+    const auto tup_r = this->compute_norm_(err, tolr);
+    const auto tup_n = this->compute_norm_(err, tol);
+
+    return {tup_n.norm, tup_a.norm, tup_r.norm, tup_n.loc, tup_a.loc, tup_r.loc};
+  }
+};
+
+template <NormType wnormtype>
+struct ErrorWNormETransform : ErrorWNormTransformBase<wnormtype> {
+  using base_type     = ErrorWNormTransformBase<wnormtype>;
+  using result_type   = typename base_type::result_type;
+  using argument_type = thrust::tuple<PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar>;
+
+  using base_type::base_type;
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL result_type operator()(const argument_type &x) const noexcept
+  {
+    const auto au    = PetscAbsScalar(x.get<0>());
+    const auto ay    = PetscAbsScalar(x.get<1>());
+    const auto skip  = au < this->ignore_max_ || ay < this->ignore_max_;
+    const auto tola  = skip ? 0.0 : PetscRealPart(x.get<3>());
+    const auto tolr  = skip ? 0.0 : PetscRealPart(x.get<4>()) * PetscMax(au, ay);
+    const auto tol   = tola + tolr;
+    const auto err   = PetscAbsScalar(x.get<2>());
+    const auto tup_a = this->compute_norm_(err, tola);
+    const auto tup_r = this->compute_norm_(err, tolr);
+    const auto tup_n = this->compute_norm_(err, tol);
+
+    return {tup_n.norm, tup_a.norm, tup_r.norm, tup_n.loc, tup_a.loc, tup_r.loc};
+  }
+};
+
+template <NormType wnormtype>
+struct ErrorWNormReduce {
+  using value_type = typename ErrorWNormTransformBase<wnormtype>::result_type;
+
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL value_type operator()(const value_type &lhs, const value_type &rhs) const noexcept
+  {
+    // cannot use lhs.get<0>() etc since the using decl above ambiguates the fact that
+    // result_type is a template, so in order to fix this we would need to write:
+    //
+    // lhs.template get<0>()
+    //
+    // which is unseemly.
+    if (wnormtype == NORM_INFINITY) {
+      // clang-format off
+      return {
+        PetscMax(thrust::get<0>(lhs), thrust::get<0>(rhs)),
+        PetscMax(thrust::get<1>(lhs), thrust::get<1>(rhs)),
+        PetscMax(thrust::get<2>(lhs), thrust::get<2>(rhs)),
+        thrust::get<3>(lhs) + thrust::get<3>(rhs),
+        thrust::get<4>(lhs) + thrust::get<4>(rhs),
+        thrust::get<5>(lhs) + thrust::get<5>(rhs)
+      };
+      // clang-format on
+    } else {
+      // clang-format off
+      return {
+        thrust::get<0>(lhs) + thrust::get<0>(rhs),
+        thrust::get<1>(lhs) + thrust::get<1>(rhs),
+        thrust::get<2>(lhs) + thrust::get<2>(rhs),
+        thrust::get<3>(lhs) + thrust::get<3>(rhs),
+        thrust::get<4>(lhs) + thrust::get<4>(rhs),
+        thrust::get<5>(lhs) + thrust::get<5>(rhs)
+      };
+      // clang-format on
     }
   }
 };
 
-template <typename InputIterator, typename cupmStream_t>
-inline PetscErrorCode ExecuteWnorm(InputIterator first, InputIterator last, NormType wnormtype, cupmStream_t stream, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+template <template <NormType> class WNormTransformType, typename Tuple, typename cupmStream_t>
+inline PetscErrorCode ExecuteWNorm(Tuple &&first, Tuple &&last, NormType wnormtype, cupmStream_t stream, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc) noexcept
 {
+  auto      begin = thrust::make_zip_iterator(std::forward<Tuple>(first));
+  auto      end   = thrust::make_zip_iterator(std::forward<Tuple>(last));
   PetscReal n = 0, na = 0, nr = 0;
   PetscInt  n_loc = 0, na_loc = 0, nr_loc = 0;
 
@@ -1422,66 +1450,24 @@ inline PetscErrorCode ExecuteWnorm(InputIterator first, InputIterator last, Norm
       thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
         thrust::transform_reduce,
         stream,
-        first,
-        last,
-        detail::errorwnorm_transform<NORM_INFINITY>(ignore_max),
+        std::move(begin),
+        std::move(end),
+        WNormTransformType<NORM_INFINITY>{ignore_max},
         thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
-        detail::errorwnorm_reduce<NORM_INFINITY>()
-      );
+        ErrorWNormReduce<NORM_INFINITY>{}
+      )
     );
   } else {
     PetscCallThrust(
       thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
         thrust::transform_reduce,
         stream,
-        first,
-        last,
-        detail::errorwnorm_transform<NORM_2>(ignore_max),
+        std::move(begin),
+        std::move(end),
+        WNormTransformType<NORM_2>{ignore_max},
         thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
-        detail::errorwnorm_reduce<NORM_2>()
-      );
-    );
-  }
-  // clang-format on
-  if (wnormtype == NORM_2) {
-    *norm  = PetscSqrtReal(*norm);
-    *norma = PetscSqrtReal(*norma);
-    *normr = PetscSqrtReal(*normr);
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-template <typename InputIterator, typename cupmStream_t>
-inline PetscErrorCode ExecuteWEnorm(InputIterator first, InputIterator last, NormType wnormtype, cupmStream_t stream, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
-{
-  PetscReal n = 0, na = 0, nr = 0;
-  PetscInt  n_loc = 0, na_loc = 0, nr_loc = 0;
-
-  PetscFunctionBegin;
-  // clang-format off
-  if (wnormtype == NORM_INFINITY) {
-    PetscCallThrust(
-      thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
-        thrust::transform_reduce,
-        stream,
-        first,
-        last,
-        detail::errorwnormE_transform<NORM_INFINITY>(ignore_max),
-        thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
-        detail::errorwnorm_reduce<NORM_INFINITY>()
-      );
-    );
-  } else {
-    PetscCallThrust(
-      thrust::tie(*norm, *norma, *normr, *norm_loc, *norma_loc, *normr_loc) = THRUST_CALL(
-        thrust::transform_reduce,
-        stream,
-        first,
-        last,
-        detail::errorwnormE_transform<NORM_2>(ignore_max),
-        thrust::make_tuple(n, na, nr, n_loc, na_loc, nr_loc),
-        detail::errorwnorm_reduce<NORM_2>()
-      );
+        ErrorWNormReduce<NORM_2>{}
+      )
     );
   }
   // clang-format on
@@ -1495,71 +1481,125 @@ inline PetscErrorCode ExecuteWEnorm(InputIterator first, InputIterator last, Nor
 
 } // namespace detail
 
+// v->ops->errorwnorm
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::ErrorWnorm(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc) noexcept
 {
+  const auto         nl  = U->map->n;
+  auto               ait = thrust::make_constant_iterator(static_cast<PetscScalar>(atol));
+  auto               rit = thrust::make_constant_iterator(static_cast<PetscScalar>(rtol));
   PetscDeviceContext dctx;
   cupmStream_t       stream;
 
   PetscFunctionBegin;
   PetscCall(GetHandles_(&dctx, &stream));
   {
-    const PetscInt nl   = U->map->n;
-    const auto     uptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, U).data());
-    const auto     yptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, Y).data());
-    auto           ait  = thrust::make_constant_iterator(static_cast<PetscScalar>(atol));
-    auto           rit  = thrust::make_constant_iterator(static_cast<PetscScalar>(rtol));
+    const auto ConditionalDeviceArrayRead = [&](Vec v) {
+      if (v) {
+        return thrust::device_pointer_cast(DeviceArrayRead(dctx, v).data());
+      } else {
+        return thrust::device_ptr<PetscScalar>{nullptr};
+      }
+    };
+
+    const auto uarr = DeviceArrayRead(dctx, U);
+    const auto yarr = DeviceArrayRead(dctx, Y);
+    const auto uptr = thrust::device_pointer_cast(uarr.data());
+    const auto yptr = thrust::device_pointer_cast(yarr.data());
+    const auto eptr = ConditionalDeviceArrayRead(E);
+    const auto rptr = ConditionalDeviceArrayRead(vrtol);
+    const auto aptr = ConditionalDeviceArrayRead(vatol);
+
     if (!vatol && !vrtol) {
       if (E) {
-        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
-        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, ait, rit));
-        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, ait, rit));
-        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+        PetscCall(
+          detail::ExecuteWNorm<detail::ErrorWNormETransform>(
+            thrust::make_tuple(uptr, yptr, eptr, ait, rit),
+            thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, ait, rit),
+            wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+          )
+        );
+        // clang-format on
       } else {
-        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, ait, rit));
-        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, ait, rit));
-        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+        PetscCall(
+          detail::ExecuteWNorm<detail::ErrorWNormTransform>(
+            thrust::make_tuple(uptr, yptr, ait, rit),
+            thrust::make_tuple(uptr + nl, yptr + nl, ait, rit),
+            wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+          )
+        );
+        // clang-format on
       }
     } else if (!vatol) {
-      const auto rptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vrtol).data());
       if (E) {
-        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
-        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, ait, rptr));
-        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, ait, rptr + nl));
-        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+        PetscCall(
+          detail::ExecuteWNorm<detail::ErrorWNormETransform>(
+            thrust::make_tuple(uptr, yptr, eptr, ait, rptr),
+            thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, ait, rptr + nl),
+            wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+          )
+        );
+        // clang-format on
       } else {
-        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, ait, rptr));
-        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, ait, rptr + nl));
-        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+        PetscCall(
+          detail::ExecuteWNorm<detail::ErrorWNormTransform>(
+            thrust::make_tuple(uptr, yptr, ait, rptr),
+            thrust::make_tuple(uptr + nl, yptr + nl, ait, rptr + nl),
+            wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+          )
+        );
+        // clang-format on
       }
     } else if (!vrtol) {
-      const auto aptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vatol).data());
       if (E) {
-        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
-        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, aptr, rit));
-        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, aptr + nl, rit));
-        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+          PetscCall(
+            detail::ExecuteWNorm<detail::ErrorWNormETransform>(
+              thrust::make_tuple(uptr, yptr, eptr, aptr, rit),
+              thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, aptr + nl, rit),
+              wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+            )
+          );
+        // clang-format on
       } else {
-        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, aptr, rit));
-        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, aptr + nl, rit));
-        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+          PetscCall(
+            detail::ExecuteWNorm<detail::ErrorWNormTransform>(
+              thrust::make_tuple(uptr, yptr, aptr, rit),
+              thrust::make_tuple(uptr + nl, yptr + nl, aptr + nl, rit),
+              wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+            )
+          );
+        // clang-format on
       }
     } else {
-      const auto aptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vatol).data());
-      const auto rptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, vrtol).data());
       if (E) {
-        const auto eptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, E).data());
-        const auto fit  = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, eptr, aptr, rptr));
-        const auto lit  = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, aptr + nl, rptr + nl));
-        PetscCall(detail::ExecuteWEnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+          PetscCall(
+            detail::ExecuteWNorm<detail::ErrorWNormETransform>(
+              thrust::make_tuple(uptr, yptr, eptr, aptr, rptr),
+              thrust::make_tuple(uptr + nl, yptr + nl, eptr + nl, aptr + nl, rptr + nl),
+              wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+            )
+          );
+        // clang-format on
       } else {
-        const auto fit = thrust::make_zip_iterator(thrust::make_tuple(uptr, yptr, aptr, rptr));
-        const auto lit = thrust::make_zip_iterator(thrust::make_tuple(uptr + nl, yptr + nl, aptr + nl, rptr + nl));
-        PetscCall(detail::ExecuteWnorm(fit, lit, wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc));
+        // clang-format off
+          PetscCall(
+            detail::ExecuteWNorm<detail::ErrorWNormTransform>(
+              thrust::make_tuple(uptr, yptr, aptr, rptr),
+              thrust::make_tuple(uptr + nl, yptr + nl, aptr + nl, rptr + nl),
+              wnormtype, stream, ignore_max, norm, norm_loc, norma, norma_loc, normr, normr_loc
+            )
+          );
+        // clang-format on
       }
     }
   }
-  #undef call_wnorm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
