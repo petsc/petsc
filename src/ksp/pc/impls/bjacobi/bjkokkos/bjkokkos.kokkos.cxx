@@ -381,7 +381,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
     return PETSC_SUCCESS;
   }
   if (0 == maxit) {
-    metad->reason = KSP_DIVERGED_ITS;
+    metad->reason = KSP_CONVERGED_ITS;
     return PETSC_SUCCESS;
   }
 
@@ -413,6 +413,10 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
     parallel_reduce(
       Kokkos::TeamVectorRange(team, Nblk), [=](const int idx, PetscScalar &dot) { dot += V[idx] * PetscConj(RP[idx]); }, s);
     team.team_barrier();
+    if (s == 0) {
+      metad->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;
+      goto done;
+    }
     a = rhoold / s; /* a <- rho / s         */
     /* q <- u - a v    VecWAXPY(w,alpha,x,y): w = alpha x + y.     */
     /* t <- u + q           */
@@ -475,7 +479,10 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
       }
 #endif
       if (i + 1 == maxit) {
-        metad->reason = KSP_DIVERGED_ITS;
+        metad->reason = KSP_CONVERGED_ITS;
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
+        Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("ERROR block %d diverged: TFQMR %d:%d it, res=%e, r_0=%e r_res=%e\n", team.league_rank(), i, m, dpest, r0, dpest / r0); });
+#endif
         goto done;
       }
 
@@ -487,6 +494,10 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
     parallel_reduce(
       Kokkos::TeamVectorRange(team, Nblk), [=](const int idx, PetscScalar &dot) { dot += R[idx] * PetscConj(RP[idx]); }, rho);
     team.team_barrier();
+    if (rho == 0) {
+      metad->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;
+      goto done;
+    }
     b = rho / rhoold; /* b <- rho / rhoold   */
     /* u <- r + b q        */
     /* p <- u + b(q + b p) */
@@ -535,7 +546,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
   int                Nblk = end - start, i, stride = stride_shared, idx = 0; // start in shared mem
   PetscReal          dp, r0;
   const PetscScalar *Di  = &glb_idiag[start];
-  PetscScalar       *ptr = work_space_shared, dpi, a = 1.0, beta, betaold = 1.0, b, b2, ma, mac;
+  PetscScalar       *ptr = work_space_shared, dpi, a = 1.0, beta, betaold = 1.0, t1, t2;
 
   if (idx++ == nShareVec) {
     ptr    = work_space_global;
@@ -606,7 +617,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
     return PETSC_SUCCESS;
   }
   if (0 == maxit) {
-    metad->reason = KSP_DIVERGED_ITS;
+    metad->reason = KSP_CONVERGED_ITS;
     return PETSC_SUCCESS;
   }
   i = 0;
@@ -620,23 +631,23 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
     Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%7d beta = Z.R = %22.14e \n", i, (double)beta); });
   #endif
 #endif
+    if (beta == 0.0) {
+      metad->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;
+      goto done;
+    }
     if (!i) {
-      if (beta == 0.0) {
-        metad->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-        goto done;
-      }
       /*     p <- z          */
       parallel_for(Kokkos::TeamVectorRange(team, Nblk), [=](int idx) {
         Pr[idx] = Zr[idx];
         Pl[idx] = Zl[idx];
       });
     } else {
-      b = beta / betaold;
+      t1 = beta / betaold;
       /*     p <- z + b* p   */
-      b2 = PetscConj(b);
+      t2 = PetscConj(t1);
       parallel_for(Kokkos::TeamVectorRange(team, Nblk), [=](int idx) {
-        Pr[idx] = b * Pr[idx] + Zr[idx];
-        Pl[idx] = b2 * Pl[idx] + Zl[idx];
+        Pr[idx] = t1 * Pr[idx] + Zr[idx];
+        Pl[idx] = t2 * Pl[idx] + Zl[idx];
       });
     }
     team.team_barrier();
@@ -648,15 +659,19 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
     parallel_reduce(
       Kokkos::TeamVectorRange(team, Nblk), [=](const int idx, PetscScalar &lsum) { lsum += Zr[idx] * PetscConj(Pl[idx]); }, dpi);
     team.team_barrier();
+    if (dpi == 0) {
+      metad->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;
+      goto done;
+    }
     //
-    a   = beta / dpi; /*     a = beta/p'z    */
-    ma  = -a;
-    mac = PetscConj(ma);
+    a  = beta / dpi; /*     a = beta/p'z    */
+    t1 = -a;
+    t2 = PetscConj(t1);
     /*     x <- x + ap     */
     parallel_for(Kokkos::TeamVectorRange(team, Nblk), [=](int idx) {
       XX[idx] = XX[idx] + a * Pr[idx];
-      Rr[idx] = Rr[idx] + ma * Zr[idx];
-      Rl[idx] = Rl[idx] + mac * Zl[idx];
+      Rr[idx] = Rr[idx] + t1 * Zr[idx];
+      Rl[idx] = Rl[idx] + t2 * Zl[idx];
     });
     team.team_barrier();
     team.team_barrier();
@@ -679,7 +694,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
     if (dp / r0 > dtol) {
       metad->reason = KSP_DIVERGED_DTOL;
-      Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("ERROR block %d diverged: %d it, res=%e, r_0=%e\n", team.league_rank(), i, dp, r0); });
+      Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("ERROR block %d diverged: %d it, res=%e, r_0=%e (BICG does this)\n", team.league_rank(), i, dp, r0); });
       goto done;
     }
 #else
@@ -689,7 +704,10 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
     }
 #endif
     if (i + 1 == maxit) {
-      metad->reason = KSP_DIVERGED_ITS;
+      metad->reason = KSP_CONVERGED_ITS; // don't worry about hitting max iterations
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
+      Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("ERROR block %d diverged: BICG %d it, res=%e, r_0=%e r_res=%e\n", team.league_rank(), i, dp, r0, dp / r0); });
+#endif
       goto done;
     }
     /* z <- Br  */
@@ -964,7 +982,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
       // solve each block independently
       int scr_bytes_team_shared = 0, nShareVec = 0, nGlobBVec = 0;
       if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - todo: test efficiency loss
-        int         maximum_shared_mem_size = 64000;
+        size_t      maximum_shared_mem_size = 64000;
         PetscDevice device;
         PetscCall(PetscDeviceGetDefault_Internal(&device));
         PetscCall(PetscDeviceGetAttribute(device, PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK, &maximum_shared_mem_size));
@@ -1096,7 +1114,9 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
             if (h_metadata[blkID].its > jac->max_nits) jac->max_nits = h_metadata[blkID].its;
           }
         } else if (errsum) {
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "ERROR Kokkos batch solver did not converge in all solves\n"));
+          PetscMPIInt rank;
+          PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] ERROR Kokkos batch solver did not converge in all solves\n", (int)rank));
         }
       }
 #if defined(PETSC_HAVE_CUDA)

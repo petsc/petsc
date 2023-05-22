@@ -21,7 +21,7 @@ PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *, PetscInt)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
-PetscErrorCode LandauKokkosStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], LandauStaticData *)
+PetscErrorCode LandauKokkosStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], LandauStaticData *)
 {
   LANDAU_NOT_IMPLEMENTED;
 }
@@ -96,13 +96,13 @@ struct reduction_identity<landau_inner_red::TensorValueType> {
 } // namespace Kokkos
 
 extern "C" {
-PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps maps[], pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE], PetscInt Nf[], PetscInt Nq, PetscInt grid)
+PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps maps[], pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE], PetscInt Nf[], PetscInt grid)
 {
-  P4estVertexMaps                                                                                                                                     h_maps; /* host container */
-  const Kokkos::View<pointInterpolationP4est *[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>   h_points((pointInterpolationP4est *)pointMaps, maps[grid].num_reduced);
-  const Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ], Kokkos::LayoutRight, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_gidx((LandauIdx *)maps[grid].gIdx, maps[grid].num_elements);
-  Kokkos::View<pointInterpolationP4est *[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight>   *d_points = new Kokkos::View<pointInterpolationP4est *[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight>("points", maps[grid].num_reduced);
-  Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ], Kokkos::LayoutRight> *d_gidx   = new Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ], Kokkos::LayoutRight>("gIdx", maps[grid].num_elements);
+  P4estVertexMaps                                                                                                                                       h_maps; /* host container */
+  const Kokkos::View<pointInterpolationP4est *[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>     h_points((pointInterpolationP4est *)pointMaps, maps[grid].num_reduced);
+  const Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQND], Kokkos::LayoutRight, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_gidx((LandauIdx *)maps[grid].gIdx, maps[grid].num_elements);
+  Kokkos::View<pointInterpolationP4est *[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight>     *d_points = new Kokkos::View<pointInterpolationP4est *[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight>("points", maps[grid].num_reduced);
+  Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQND], Kokkos::LayoutRight> *d_gidx   = new Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQND], Kokkos::LayoutRight>("gIdx", maps[grid].num_elements);
 
   PetscFunctionBegin;
   Kokkos::deep_copy(*d_gidx, h_gidx);
@@ -115,7 +115,7 @@ PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps maps[], pointInterpolat
   h_maps.Nf           = Nf[grid];
   h_maps.c_maps       = (pointInterpolationP4est(*)[LANDAU_MAX_Q_FACE])d_points->data();
   maps[grid].vp1      = (void *)d_points;
-  h_maps.gIdx         = (LandauIdx(*)[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ])d_gidx->data();
+  h_maps.gIdx         = (LandauIdx(*)[LANDAU_MAX_SPECIES][LANDAU_MAX_NQND])d_gidx->data();
   maps[grid].vp2      = (void *)d_gidx;
   {
     Kokkos::View<P4estVertexMaps, Kokkos::HostSpace> h_maps_k(&h_maps);
@@ -131,7 +131,7 @@ PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps maps[], PetscInt num_g
   PetscFunctionBegin;
   for (PetscInt grid = 0; grid < num_grids; grid++) {
     auto a = static_cast<Kokkos::View<pointInterpolationP4est *[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight> *>(maps[grid].vp1);
-    auto b = static_cast<Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ], Kokkos::LayoutRight> *>(maps[grid].vp2);
+    auto b = static_cast<Kokkos::View<LandauIdx *[LANDAU_MAX_SPECIES][LANDAU_MAX_NQND], Kokkos::LayoutRight> *>(maps[grid].vp2);
     auto c = static_cast<Kokkos::View<P4estVertexMaps *> *>(maps[grid].vp3);
     delete a;
     delete b;
@@ -140,12 +140,12 @@ PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps maps[], PetscInt num_g
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal a_nu_alpha[], PetscReal a_nu_beta[], PetscReal a_invMass[], PetscReal a_lambdas[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
+PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const PetscInt Nb, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal a_nu_alpha[], PetscReal a_nu_beta[], PetscReal a_invMass[], PetscReal a_lambdas[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
 {
   PetscReal       *BB, *DD;
   PetscTabulation *Tf;
   PetscInt         dim;
-  PetscInt         Nb = Nq, ip_offset[LANDAU_MAX_GRIDS + 1], ipf_offset[LANDAU_MAX_GRIDS + 1], elem_offset[LANDAU_MAX_GRIDS + 1], nip, IPf_sz, Nftot;
+  PetscInt         ip_offset[LANDAU_MAX_GRIDS + 1], ipf_offset[LANDAU_MAX_GRIDS + 1], elem_offset[LANDAU_MAX_GRIDS + 1], nip, IPf_sz, Nftot;
   PetscDS          prob;
 
   PetscFunctionBegin;
@@ -260,8 +260,8 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
     auto                                                                                                            coo_elem_offsets = new Kokkos::View<LandauIdx *, Kokkos::LayoutLeft>("coo_elem_offsets", SData_d->coo_n_cellsTot + 1);
     const Kokkos::View<LandauIdx *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_coo_elem_fullNb((LandauIdx *)SData_d->coo_elem_fullNb, SData_d->coo_n_cellsTot);
     auto                                                                                                            coo_elem_fullNb = new Kokkos::View<LandauIdx *, Kokkos::LayoutLeft>("coo_elem_offsets", SData_d->coo_n_cellsTot);
-    const Kokkos::View<LandauIdx *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_coo_elem_point_offsets((LandauIdx *)SData_d->coo_elem_point_offsets, SData_d->coo_n_cellsTot * (LANDAU_MAX_NQ + 1));
-    auto coo_elem_point_offsets = new Kokkos::View<LandauIdx *, Kokkos::LayoutLeft>("coo_elem_point_offsets", SData_d->coo_n_cellsTot * (LANDAU_MAX_NQ + 1));
+    const Kokkos::View<LandauIdx *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_coo_elem_point_offsets((LandauIdx *)SData_d->coo_elem_point_offsets, SData_d->coo_n_cellsTot * (LANDAU_MAX_NQND + 1));
+    auto coo_elem_point_offsets = new Kokkos::View<LandauIdx *, Kokkos::LayoutLeft>("coo_elem_point_offsets", SData_d->coo_n_cellsTot * (LANDAU_MAX_NQND + 1));
     // assign & copy
     Kokkos::deep_copy(*coo_elem_offsets, h_coo_elem_offsets);
     Kokkos::deep_copy(*coo_elem_fullNb, h_coo_elem_fullNb);
@@ -346,7 +346,7 @@ PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *SData_d)
   #define KOKKOS_SHARED_LEVEL 0   // 0 is shared, 1 is global
 
 KOKKOS_INLINE_FUNCTION
-PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij, const PetscInt f, const PetscInt g, const PetscInt Nb, PetscInt moffset, const PetscInt elem, const PetscInt fieldA, const P4estVertexMaps *d_maps, const LandauIdx coo_elem_offsets[], const LandauIdx coo_elem_fullNb[], const LandauIdx (*coo_elem_point_offsets)[LANDAU_MAX_NQ + 1], const PetscInt glb_elem_idx, const PetscInt bid_coo_sz_batch)
+PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij, const PetscInt f, const PetscInt g, const PetscInt Nb, PetscInt moffset, const PetscInt elem, const PetscInt fieldA, const P4estVertexMaps *d_maps, const LandauIdx coo_elem_offsets[], const LandauIdx coo_elem_fullNb[], const LandauIdx (*coo_elem_point_offsets)[LANDAU_MAX_NQND + 1], const PetscInt glb_elem_idx, const PetscInt bid_coo_sz_batch)
 {
   PetscInt               idx, q, nr, nc;
   const LandauIdx *const Idxs                         = &d_maps->gIdx[elem][fieldA][0];
@@ -384,13 +384,13 @@ PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij,
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[], const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift, const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP)
+PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt Nb, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[], const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift, const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP)
 {
-  using scr_mem_t         = Kokkos::DefaultExecutionSpace::scratch_memory_space;
-  using real2_scr_t       = Kokkos::View<PetscScalar **, Kokkos::LayoutRight, scr_mem_t>;
-  using g2_scr_t          = Kokkos::View<PetscReal ***, Kokkos::LayoutRight, scr_mem_t>;
-  using g3_scr_t          = Kokkos::View<PetscReal ****, Kokkos::LayoutRight, scr_mem_t>;
-  PetscInt         Nb     = Nq, dim, num_cells_max, Nf_max, num_cells_batch;
+  using scr_mem_t   = Kokkos::DefaultExecutionSpace::scratch_memory_space;
+  using real2_scr_t = Kokkos::View<PetscScalar **, Kokkos::LayoutRight, scr_mem_t>;
+  using g2_scr_t    = Kokkos::View<PetscReal ***, Kokkos::LayoutRight, scr_mem_t>;
+  using g3_scr_t    = Kokkos::View<PetscReal ****, Kokkos::LayoutRight, scr_mem_t>;
+  PetscInt         dim, num_cells_max, Nf_max, num_cells_batch;
   int              nfaces = 0, vector_size = 512 / Nq;
   LandauCtx       *ctx;
   PetscReal       *d_Eq_m     = NULL;
@@ -441,14 +441,14 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   #endif
   auto                                            d_Eq_m_k           = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->Eq_m); // static storage, dynamci data - E(t), copy later, single vertex
   // COO
-  auto       d_coo_elem_offsets_k                         = static_cast<Kokkos::View<LandauIdx *, Kokkos::LayoutLeft> *>(SData_d->coo_elem_offsets);
-  LandauIdx *d_coo_elem_offsets                           = (SData_d->coo_size == 0) ? NULL : d_coo_elem_offsets_k->data();
-  auto       d_coo_elem_fullNb_k                          = static_cast<Kokkos::View<LandauIdx *, Kokkos::LayoutLeft> *>(SData_d->coo_elem_fullNb);
-  LandauIdx *d_coo_elem_fullNb                            = (SData_d->coo_size == 0) ? NULL : d_coo_elem_fullNb_k->data();
-  auto       d_coo_elem_point_offsets_k                   = static_cast<Kokkos::View<LandauIdx *, Kokkos::LayoutLeft> *>(SData_d->coo_elem_point_offsets);
-  LandauIdx(*d_coo_elem_point_offsets)[LANDAU_MAX_NQ + 1] = (SData_d->coo_size == 0) ? NULL : (LandauIdx(*)[LANDAU_MAX_NQ + 1]) d_coo_elem_point_offsets_k->data();
-  auto         d_coo_vals_k                               = static_cast<Kokkos::View<PetscScalar *, Kokkos::LayoutRight> *>(SData_d->coo_vals);
-  PetscScalar *d_coo_vals                                 = (SData_d->coo_size == 0) ? NULL : d_coo_vals_k->data();
+  auto       d_coo_elem_offsets_k                           = static_cast<Kokkos::View<LandauIdx *, Kokkos::LayoutLeft> *>(SData_d->coo_elem_offsets);
+  LandauIdx *d_coo_elem_offsets                             = (SData_d->coo_size == 0) ? NULL : d_coo_elem_offsets_k->data();
+  auto       d_coo_elem_fullNb_k                            = static_cast<Kokkos::View<LandauIdx *, Kokkos::LayoutLeft> *>(SData_d->coo_elem_fullNb);
+  LandauIdx *d_coo_elem_fullNb                              = (SData_d->coo_size == 0) ? NULL : d_coo_elem_fullNb_k->data();
+  auto       d_coo_elem_point_offsets_k                     = static_cast<Kokkos::View<LandauIdx *, Kokkos::LayoutLeft> *>(SData_d->coo_elem_point_offsets);
+  LandauIdx(*d_coo_elem_point_offsets)[LANDAU_MAX_NQND + 1] = (SData_d->coo_size == 0) ? NULL : (LandauIdx(*)[LANDAU_MAX_NQND + 1]) d_coo_elem_point_offsets_k->data();
+  auto         d_coo_vals_k                                 = static_cast<Kokkos::View<PetscScalar *, Kokkos::LayoutRight> *>(SData_d->coo_vals);
+  PetscScalar *d_coo_vals                                   = (SData_d->coo_size == 0) ? NULL : d_coo_vals_k->data();
 
   PetscFunctionBegin;
   while (vector_size & (vector_size - 1)) vector_size = vector_size & (vector_size - 1);
@@ -487,7 +487,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   }
   const int                                                                                                       elem_mat_num_cells_max_grid = container ? 0 : num_cells_max;
   #ifdef LAND_SUPPORT_CPU_ASS
-  const int                                                                                                       totDim_max = Nf_max * Nq, elem_mat_size_max = totDim_max * totDim_max;
+  const int                                                                                                       totDim_max = Nf_max * Nb, elem_mat_size_max = totDim_max * totDim_max;
   Kokkos::View<PetscScalar ****, Kokkos::LayoutRight>                                                             d_elem_mats("element matrices", batch_sz, num_grids, elem_mat_num_cells_max_grid, elem_mat_size_max); // not used (cpu assembly)
   #endif
   const Kokkos::View<PetscReal *, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>> h_Eq_m_k(a_Eq_m, Nftot);
@@ -504,7 +504,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
       PetscInt closure_sz = 0; // argh, don't have this on the host!!!
       for (PetscInt grid = 0; grid < num_grids; grid++) {
         PetscInt nfloc = a_species_offset[grid + 1] - a_species_offset[grid];
-        closure_sz += Nq * nfloc * a_numCells[grid];
+        closure_sz += Nb * nfloc * a_numCells[grid];
       }
       closure_sz *= batch_sz;
       d_vertex_f_k = new Kokkos::View<PetscScalar *, Kokkos::LayoutLeft>("closure", closure_sz);
@@ -603,7 +603,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         const PetscInt moffset = LAND_MOFFSET(b_id, grid, batch_sz, num_grids, d_mat_offset);
         const PetscInt f_off   = d_species_offset[grid];
   #ifdef LAND_SUPPORT_CPU_ASS
-        const PetscInt totDim  = loc_Nf * Nq;
+        const PetscInt totDim  = loc_Nf * Nb;
   #endif
         g2_scr_t       g2(team.team_scratch(jac_shared_level), dim, loc_Nf, Nq);
         g3_scr_t       g3(team.team_scratch(jac_shared_level), dim, dim, loc_Nf, Nq);
@@ -748,7 +748,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         {
           const PetscInt loc_Nf = d_species_offset[grid + 1] - d_species_offset[grid], loc_elem = b_elem_idx - d_elem_offset[grid], jpidx_0 = d_ip_offset[grid] + loc_elem * Nq;
   #ifdef LAND_SUPPORT_CPU_ASS
-          const PetscInt totDim  = loc_Nf * Nq;
+          const PetscInt totDim  = loc_Nf * Nb;
   #endif
           const PetscInt moffset = LAND_MOFFSET(b_id, grid, batch_sz, num_grids, d_mat_offset);
           for (int fieldA = 0; fieldA < loc_Nf; fieldA++) {
@@ -810,7 +810,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
           const PetscScalar *elMat = &h_elem_mats(b_id, grid, ej - cStart, 0);
           PetscCall(DMPlexMatSetClosure(plex[grid], section, globalSection, B, ej, elMat, ADD_VALUES));
           if (grid == 0 && ej == -1) {
-            const PetscInt loc_Nf = a_species_offset[grid + 1] - a_species_offset[grid], totDim = loc_Nf * Nq;
+            const PetscInt loc_Nf = a_species_offset[grid + 1] - a_species_offset[grid], totDim = loc_Nf * Nb;
             int            d, f;
             PetscPrintf(PETSC_COMM_SELF, "Kokkos Element matrix %d/%d\n", 1, (int)a_numCells[grid]);
             for (d = 0; d < totDim; ++d) {
