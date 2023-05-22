@@ -9,7 +9,6 @@ Labels:
   depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
   marker: 1 strata with value/size (1 (16))
   Face Sets: 1 strata with value/size (1 (8))
-dmcellscatter
 DM Object: Particles 1 MPI process
   type: swarm
 Particles in 2 dimensions:
