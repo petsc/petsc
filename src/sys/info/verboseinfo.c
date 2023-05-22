@@ -584,6 +584,7 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
   PetscBool    enabled = PETSC_FALSE;
   MPI_Comm     comm    = PETSC_COMM_SELF;
   PetscMPIInt  rank;
+  const char  *otype = NULL;
 
   PetscFunctionBegin;
   if (obj) {
@@ -593,7 +594,10 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
   PetscValidCharPointer(message, 3);
   PetscCall(PetscInfoEnabled(classid, &enabled));
   if (!enabled) PetscFunctionReturn(PETSC_SUCCESS);
-  if (obj) PetscCall(PetscObjectGetComm(obj, &comm));
+  if (obj) {
+    PetscCall(PetscObjectGetComm(obj, &comm));
+    PetscCall(PetscObjectGetType(obj, &otype));
+  }
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* rank > 0 always jumps out */
   if (rank) PetscFunctionReturn(PETSC_SUCCESS);
@@ -616,7 +620,11 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
 
     PetscLogPrintInfo = PETSC_FALSE;
     PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &urank));
-    PetscCall(PetscSNPrintf(string, PETSC_STATIC_ARRAY_LENGTH(string), "[%d] <%s> %s(): ", urank, PetscInfoNames[classid - PETSC_SMALLEST_CLASSID], func));
+    if (otype) {
+      PetscCall(PetscSNPrintf(string, PETSC_STATIC_ARRAY_LENGTH(string), "[%d] <%s:%s> %s(): ", urank, PetscInfoNames[classid - PETSC_SMALLEST_CLASSID], otype, func));
+    } else {
+      PetscCall(PetscSNPrintf(string, PETSC_STATIC_ARRAY_LENGTH(string), "[%d] <%s> %s(): ", urank, PetscInfoNames[classid - PETSC_SMALLEST_CLASSID], func));
+    }
     PetscCall(PetscStrlen(string, &len));
     va_start(Argp, message);
     PetscCall(PetscVSNPrintf(string + len, 8 * 1024 - len, message, &fullLength, Argp));

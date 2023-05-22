@@ -1,19 +1,19 @@
 [1] <(null)> PetscInfoSetFile(): Opened PetscInfo file ex182info.1
-[1] <mat> MatAssemblyBegin_MPIAIJ(): Stash has 0 entries, uses 0 mallocs.
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 10; storage space: 0 unneeded,0 used
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded,0 used
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded,5 used
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 1
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] <mat> MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
-[1] <mat> MatCheckCompressedRow(): Found the ratio (num_zerorows 0)/(num_localrows 5) < 0.6. Do not use CompressedRow routines.
-[1] <mat> MatCheckCompressedRow(): Found the ratio (num_zerorows 5)/(num_localrows 5) > 0.6. Use CompressedRow routines.
-[1] <mat> MatCheckCompressedRow(): Found the ratio (num_zerorows 5)/(num_localrows 5) > 0.6. Use CompressedRow routines.
-[1] <mat> MatSeqAIJCheckInode(): Found 0 nodes out of 5 rows. Not using Inode routines
-[1] <mat> MatSeqAIJCheckInode(): Found 0 nodes out of 5 rows. Not using Inode routines
-[1] <mat> MatSetUp_Seq_Hash(): Using hash-based MatSetValues() for MATSEQAIJ because no preallocation provided
-[1] <mat> MatSetUp_Seq_Hash(): Using hash-based MatSetValues() for MATSEQAIJ because no preallocation provided
+[1] <mat:seqaij> MatAssemblyBegin_MPIAIJ(): Stash has 0 entries, uses 0 mallocs.
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 10; storage space: 0 unneeded,0 used
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded,0 used
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Matrix size: 5 X 5; storage space: 0 unneeded,5 used
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 0
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 1
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
+[1] <mat:seqaij> MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
+[1] <mat:seqaij> MatCheckCompressedRow(): Found the ratio (num_zerorows 0)/(num_localrows 5) < 0.6. Do not use CompressedRow routines.
+[1] <mat:seqaij> MatCheckCompressedRow(): Found the ratio (num_zerorows 5)/(num_localrows 5) > 0.6. Use CompressedRow routines.
+[1] <mat:seqaij> MatCheckCompressedRow(): Found the ratio (num_zerorows 5)/(num_localrows 5) > 0.6. Use CompressedRow routines.
+[1] <mat:seqaij> MatSeqAIJCheckInode(): Found 0 nodes out of 5 rows. Not using Inode routines
+[1] <mat:seqaij> MatSeqAIJCheckInode(): Found 0 nodes out of 5 rows. Not using Inode routines
+[1] <mat:seqaij> MatSetUp_Seq_Hash(): Using hash-based MatSetValues() for MATSEQAIJ because no preallocation provided
+[1] <mat:seqaij> MatSetUp_Seq_Hash(): Using hash-based MatSetValues() for MATSEQAIJ because no preallocation provided
 [1] <sys> PetscFinalize(): PetscFinalize() called

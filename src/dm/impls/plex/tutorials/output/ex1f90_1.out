@@ -1,218 +1,218 @@
-[0] <dm> TetGenMeshDelaunizeVertices(): Constructing Delaunay tetrahedralization.
-[0] <dm> TetGenMeshDelaunizeVertices():   Sorting vertices by a bsp-tree.
-[0] <dm> TetGenMeshBTreeSort():   Depth 0, 8 verts.
-[0] <dm> TetGenMeshBTreeSort():   Bbox (0., 0., 0.),(1., 1., 1.). x-axis
-[0] <dm> TetGenMeshBTreeSort():     leftsize = 4, rightsize = 4
-[0] <dm> TetGenMeshDelaunizeVertices():   Number of tree nodes: 2.
-[0] <dm> TetGenMeshDelaunizeVertices():   Maximum tree node size: 4.
-[0] <dm> TetGenMeshDelaunizeVertices():   Maximum tree depth: 0.
-[0] <dm> TetGenMeshDelaunizeVertices():   Incrementally inserting vertices.
-[0] <dm> TetGenMeshDelaunayIncrFlip():     Create the first tet (0, 3, 5, 1).
-[0] <dm> TetGenMeshDelaunayIncrFlip():     Incrementally inserting points.
-[0] <dm> TetGenMeshInsertVertexBW():     Insert point 7
-[0] <dm> TetGenMeshInsertVertexBW():     Walk distance (# tets): 2
-[0] <dm> TetGenMeshInsertVertexBW():     Located (4) tet (3, 0, 5, 1).
-[0] <dm> TetGenMeshInsertVertexBW():     Insert a hull vertex.
-[0] <dm> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
-[0] <dm> TetGenMeshInsertVertexBW():     Insert point 6
-[0] <dm> TetGenMeshInsertVertexBW():     Walk distance (# tets): 2
-[0] <dm> TetGenMeshInsertVertexBW():     Located (4) tet (0, 5, 7, 1).
-[0] <dm> TetGenMeshInsertVertexBW():     Insert a hull vertex.
-[0] <dm> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
-[0] <dm> TetGenMeshInsertVertexBW():     Insert point 2
-[0] <dm> TetGenMeshBTreeSearch():     Get point 6 (cell size 1).
-[0] <dm> TetGenMeshInsertVertexBW():     Walk distance (# tets): 2
-[0] <dm> TetGenMeshInsertVertexBW():     Located (4) tet (3, 0, 6, 7).
-[0] <dm> TetGenMeshInsertVertexBW():     Insert a hull vertex.
-[0] <dm> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
-[0] <dm> TetGenMeshInsertVertexBW():     Insert point 4
-[0] <dm> TetGenMeshBTreeSearch():     Get point 6 (cell size 2).
-[0] <dm> TetGenMeshInsertVertexBW():     Walk distance (# tets): 3
-[0] <dm> TetGenMeshInsertVertexBW():     Located (4) tet (6, 0, 5, 7).
-[0] <dm> TetGenMeshInsertVertexBW():     Insert a hull vertex.
-[0] <dm> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
-[0] <dm> TetGenMeshMeshSurface(): Creating surface mesh.
-[0] <dm> TetGenMeshMakeIndex2PointMap():   Constructing mapping from indices to points.
-[0] <dm> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 1.
-[0] <dm> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 0 for facet 1.
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (4, 5).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (5, 7).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (7, 6).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (6, 4).
-[0] <dm> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 2.
-[0] <dm> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 6 for facet 2.
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (1, 0).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (0, 2).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (2, 3).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (3, 1).
-[0] <dm> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 3.
-[0] <dm> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 6 for facet 3.
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (0, 1).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (1, 5).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (5, 4).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (4, 0).
-[0] <dm> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 4.
-[0] <dm> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 0 for facet 4.
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (6, 7).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (7, 3).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (3, 2).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (2, 6).
-[0] <dm> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 5.
-[0] <dm> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 7 for facet 5.
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (0, 4).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (4, 6).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (6, 2).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (2, 0).
-[0] <dm> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 6.
-[0] <dm> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 0 for facet 6.
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (5, 1).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (1, 3).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (3, 7).
-[0] <dm> TetGenMeshRecoverSegment():     Insert seg (7, 5).
-[0] <dm> TetGenMeshUnifySegments():   Unifying segments.
-[0] <dm> TetGenMeshMakeSubfaceMap():   Constructing mapping from points to subfaces.
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (5  4).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (5, 4, 7) and (5, 4, 0).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (5, 4, 0) and (5, 4, 7).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (5  7).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (5, 7, 4) and (5, 7, 3).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (5, 7, 3) and (5, 7, 4).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (6  7).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (6, 7, 4) and (6, 7, 3).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (6, 7, 3) and (6, 7, 4).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (4  6).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (4, 6, 7) and (4, 6, 0).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (4, 6, 0) and (4, 6, 7).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (0  1).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (0, 1, 2) and (0, 1, 5).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (0, 1, 5) and (0, 1, 2).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (0  2).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (0, 2, 1) and (0, 2, 6).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (0, 2, 6) and (0, 2, 1).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (3  2).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (3, 2, 1) and (3, 2, 6).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (3, 2, 6) and (3, 2, 1).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (1  3).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (1, 3, 2) and (1, 3, 5).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (1, 3, 5) and (1, 3, 2).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (1  5).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (1, 5, 0) and (1, 5, 3).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (1, 5, 3) and (1, 5, 0).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (0  4).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (0, 4, 5) and (0, 4, 6).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (0, 4, 6) and (0, 4, 5).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (7  3).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (7, 3, 6) and (7, 3, 5).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (7, 3, 5) and (7, 3, 6).
-[0] <dm> TetGenMeshUnifySegments():     Identifying 2 segments of (6  2).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (6, 2, 3) and (6, 2, 0).
-[0] <dm> TetGenMeshUnifySegments():     Bond subfaces (6, 2, 0) and (6, 2, 3).
-[0] <dm> TetGenMeshMergeFacets():   Merging coplanar facets.
-[0] <dm> TetGenMeshMakePoint2SegMap():   Constructing mapping from points to segments.
-[0] <dm> TetGenMeshMarkAcuteVertices():   Marking acute vertices.
-[0] <dm> TetGenMeshMakeSegmentMap():   Constructing mapping from points to segments.
-[0] <dm> TetGenMeshMarkAcuteVertices():   0 acute vertices.
-[0] <dm> TetGenMeshFormSkeleton(): Recovering boundaries.
-[0] <dm> TetGenMeshDelaunizeSegments2():   Delaunizing segments.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (0, 1).
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 1.
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 4, 5) to 1.
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 5, 1) to 1.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (0, 2).
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 2.
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 6, 7, 2) to 2.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (1, 5).
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (3, 2).
-[0] <dm> TetGenMeshFindDirection2():       From tet (3, 0, 7, 2) to 2.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (6, 7).
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (6, 2).
-[0] <dm> TetGenMeshFindDirection2():       From tet (6, 0, 7, 4) to 2.
-[0] <dm> TetGenMeshFindDirection2():       From tet (6, 7, 0, 2) to 2.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (5, 4).
-[0] <dm> TetGenMeshFindDirection2():       From tet (5, 7, 0, 4) to 4.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (5, 7).
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (7, 3).
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 3.
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 0, 6, 2) to 3.
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 0, 2, 3) to 3.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (1, 3).
-[0] <dm> TetGenMeshFindDirection2():       From tet (1, 0, 5, 7) to 3.
-[0] <dm> TetGenMeshFindDirection2():       From tet (1, 0, 7, 3) to 3.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (0, 4).
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 4.
-[0] <dm> TetGenMeshScoutSegment2():     Scout seg (4, 6).
-[0] <dm> TetGenMeshDelaunizeSegments2():   0 protecting points.
-[0] <dm> TetGenMeshConstrainedFacets2():   Constraining facets.
-[0] <dm> TetGenMeshConstrainedFacets2():   Recover facet #1: 2 subfaces, 4 vertices.
-[0] <dm> TetGenMeshFindDirection2():       From tet (3, 0, 7, 2) to 5.
-[0] <dm> TetGenMeshFindDirection2():       From tet (3, 7, 0, 1) to 5.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (5, 7, 3) (11).
-[0] <dm> TetGenMeshScoutCrossTet():     Found a co-facet face (5, 7, 1) op (0).
-[0] <dm> TetGenMeshFlip22Sub():     Flip subedge (5, 3) to (7, 1).
-[0] <dm> TetGenMeshFindDirection2():       From tet (1, 0, 5, 7) to 3.
-[0] <dm> TetGenMeshFindDirection2():       From tet (1, 0, 7, 3) to 3.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (1, 3, 7) (11).
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 1.
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 4, 0, 5) to 1.
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 5, 0, 1) to 1.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (7, 1, 5) (11).
-[0] <dm> TetGenMeshConstrainedFacets2():   Recover facet #2: 2 subfaces, 4 vertices.
-[0] <dm> TetGenMeshFindDirection2():       From tet (4, 6, 7, 0) to 5.
-[0] <dm> TetGenMeshFindDirection2():       From tet (4, 0, 7, 5) to 5.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (4, 5, 7) (10).
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 4.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (7, 4, 6) (10).
-[0] <dm> TetGenMeshConstrainedFacets2():   Recover facet #3: 2 subfaces, 4 vertices.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (6, 0, 2) (9).
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 4.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (0, 4, 6) (9).
-[0] <dm> TetGenMeshConstrainedFacets2():   Recover facet #4: 2 subfaces, 4 vertices.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (5, 0, 4) (8).
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 1.
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 4, 5) to 1.
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 5, 1) to 1.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (0, 1, 5) (8).
-[0] <dm> TetGenMeshConstrainedFacets2():   Recover facet #5: 2 subfaces, 4 vertices.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (1, 0, 2) (7).
-[0] <dm> TetGenMeshScoutCrossTet():     Found a co-facet face (1, 0, 3) op (7).
-[0] <dm> TetGenMeshFlip22Sub():     Flip subedge (1, 2) to (0, 3).
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 3.
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 6, 7, 2) to 3.
-[0] <dm> TetGenMeshFindDirection2():       From tet (0, 2, 7, 3) to 3.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (0, 3, 2) (7).
-[0] <dm> TetGenMeshFindDirection2():       From tet (3, 0, 7, 2) to 1.
-[0] <dm> TetGenMeshFindDirection2():       From tet (3, 7, 0, 1) to 1.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (3, 1, 0) (7).
-[0] <dm> TetGenMeshConstrainedFacets2():   Recover facet #6: 2 subfaces, 4 vertices.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (6, 7, 3) (2).
-[0] <dm> TetGenMeshScoutCrossTet():     Found a co-facet face (7, 6, 2) op (0).
-[0] <dm> TetGenMeshFlip22Sub():     Flip subedge (6, 3) to (7, 2).
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 2.
-[0] <dm> TetGenMeshFindDirection2():       From tet (7, 0, 6, 2) to 2.
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (7, 2, 3) (2).
-[0] <dm> TetGenMeshScoutSubface():     Scout subface (2, 6, 7) (2).
-[0] <dm> TetGenMeshConstrainedFacets2():   3 subedge flips  0 cavities remeshed.
-[0] <dm> TetGenMeshCarveHoles(): Removing exterior tetrahedra.
-[0] <dm> TetGenMeshInfectHull():   Marking concavities for elimination.
-[0] <dm> TetGenMeshPlague():   Marking neighbors of marked tetrahedra.
-[0] <dm> TetGenMeshRemoveHoleTets():   Deleting marked tetrahedra.
-[0] <dm> TetGenMeshMakePoint2TetMap():   Constructing mapping from points to tetrahedra.
-[0] <dm> TetGenMeshOptimize(): Repairing mesh.
-[0] <dm> TetGenMeshEnforceQuality(): Adding Steiner points to enforce quality.
-[0] <dm> TetGenMeshMarkSharpSegments():   Marking sharp segments.
-[0] <dm> TetGenMeshDecideFeaturePointSizes():   Deciding feature-point sizes.
-[0] <dm> TetGenMeshMakeSegmentMap():   Constructing mapping from points to segments.
-[0] <dm> TetGenMeshDecideFeaturePointSizes():   0 feature points.
-[0] <dm> TetGenMeshEnforceQuality():   0 split points.
-[0] <dm> TetGenMeshEnforceQuality():   0 split points.
-[0] <dm> TetGenMeshEnforceQuality():   0 refinement points.
-[0] <dm> TetGenMeshEnforceQuality():   Totally added 0 points.
-[0] <dm> TetGenMeshOptimize(): Optimizing mesh.
-[0] <dm> TetGenMeshOptimize():   level = 3.
-[0] <dm> TetGenMeshOptimize():   level = 3 pass 0.
-[0] <dm> TetGenMeshOutputNodes(): Writing nodes.
-[0] <dm> TetGenMeshOutputElements(): Writing elements.
-[0] <dm> TetGenMeshOutputSubfaces(): Writing faces.
+[0] <dm:plex> TetGenMeshDelaunizeVertices(): Constructing Delaunay tetrahedralization.
+[0] <dm:plex> TetGenMeshDelaunizeVertices():   Sorting vertices by a bsp-tree.
+[0] <dm:plex> TetGenMeshBTreeSort():   Depth 0, 8 verts.
+[0] <dm:plex> TetGenMeshBTreeSort():   Bbox (0., 0., 0.),(1., 1., 1.). x-axis
+[0] <dm:plex> TetGenMeshBTreeSort():     leftsize = 4, rightsize = 4
+[0] <dm:plex> TetGenMeshDelaunizeVertices():   Number of tree nodes: 2.
+[0] <dm:plex> TetGenMeshDelaunizeVertices():   Maximum tree node size: 4.
+[0] <dm:plex> TetGenMeshDelaunizeVertices():   Maximum tree depth: 0.
+[0] <dm:plex> TetGenMeshDelaunizeVertices():   Incrementally inserting vertices.
+[0] <dm:plex> TetGenMeshDelaunayIncrFlip():     Create the first tet (0, 3, 5, 1).
+[0] <dm:plex> TetGenMeshDelaunayIncrFlip():     Incrementally inserting points.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert point 7
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Walk distance (# tets): 2
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Located (4) tet (3, 0, 5, 1).
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert a hull vertex.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert point 6
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Walk distance (# tets): 2
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Located (4) tet (0, 5, 7, 1).
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert a hull vertex.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert point 2
+[0] <dm:plex> TetGenMeshBTreeSearch():     Get point 6 (cell size 1).
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Walk distance (# tets): 2
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Located (4) tet (3, 0, 6, 7).
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert a hull vertex.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert point 4
+[0] <dm:plex> TetGenMeshBTreeSearch():     Get point 6 (cell size 2).
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Walk distance (# tets): 3
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Located (4) tet (6, 0, 5, 7).
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Insert a hull vertex.
+[0] <dm:plex> TetGenMeshInsertVertexBW():     Cavity formed: 2 tets, 2 faces.
+[0] <dm:plex> TetGenMeshMeshSurface(): Creating surface mesh.
+[0] <dm:plex> TetGenMeshMakeIndex2PointMap():   Constructing mapping from indices to points.
+[0] <dm:plex> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 1.
+[0] <dm:plex> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 0 for facet 1.
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (4, 5).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (5, 7).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (7, 6).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (6, 4).
+[0] <dm:plex> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 2.
+[0] <dm:plex> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 6 for facet 2.
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (1, 0).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (0, 2).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (2, 3).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (3, 1).
+[0] <dm:plex> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 3.
+[0] <dm:plex> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 6 for facet 3.
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (0, 1).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (1, 5).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (5, 4).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (4, 0).
+[0] <dm:plex> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 4.
+[0] <dm:plex> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 0 for facet 4.
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (6, 7).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (7, 3).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (3, 2).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (2, 6).
+[0] <dm:plex> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 5.
+[0] <dm:plex> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 7 for facet 5.
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (0, 4).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (4, 6).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (6, 2).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (2, 0).
+[0] <dm:plex> TetGenMeshTriangulate():     4 vertices, 4 segments, 0 holes, shmark: 6.
+[0] <dm:plex> TetGenMeshGetFacetAbovePoint():     Chosen abovepoint 0 for facet 6.
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (5, 1).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (1, 3).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (3, 7).
+[0] <dm:plex> TetGenMeshRecoverSegment():     Insert seg (7, 5).
+[0] <dm:plex> TetGenMeshUnifySegments():   Unifying segments.
+[0] <dm:plex> TetGenMeshMakeSubfaceMap():   Constructing mapping from points to subfaces.
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (5  4).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (5, 4, 7) and (5, 4, 0).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (5, 4, 0) and (5, 4, 7).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (5  7).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (5, 7, 4) and (5, 7, 3).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (5, 7, 3) and (5, 7, 4).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (6  7).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (6, 7, 4) and (6, 7, 3).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (6, 7, 3) and (6, 7, 4).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (4  6).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (4, 6, 7) and (4, 6, 0).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (4, 6, 0) and (4, 6, 7).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (0  1).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (0, 1, 2) and (0, 1, 5).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (0, 1, 5) and (0, 1, 2).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (0  2).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (0, 2, 1) and (0, 2, 6).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (0, 2, 6) and (0, 2, 1).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (3  2).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (3, 2, 1) and (3, 2, 6).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (3, 2, 6) and (3, 2, 1).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (1  3).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (1, 3, 2) and (1, 3, 5).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (1, 3, 5) and (1, 3, 2).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (1  5).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (1, 5, 0) and (1, 5, 3).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (1, 5, 3) and (1, 5, 0).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (0  4).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (0, 4, 5) and (0, 4, 6).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (0, 4, 6) and (0, 4, 5).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (7  3).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (7, 3, 6) and (7, 3, 5).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (7, 3, 5) and (7, 3, 6).
+[0] <dm:plex> TetGenMeshUnifySegments():     Identifying 2 segments of (6  2).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (6, 2, 3) and (6, 2, 0).
+[0] <dm:plex> TetGenMeshUnifySegments():     Bond subfaces (6, 2, 0) and (6, 2, 3).
+[0] <dm:plex> TetGenMeshMergeFacets():   Merging coplanar facets.
+[0] <dm:plex> TetGenMeshMakePoint2SegMap():   Constructing mapping from points to segments.
+[0] <dm:plex> TetGenMeshMarkAcuteVertices():   Marking acute vertices.
+[0] <dm:plex> TetGenMeshMakeSegmentMap():   Constructing mapping from points to segments.
+[0] <dm:plex> TetGenMeshMarkAcuteVertices():   0 acute vertices.
+[0] <dm:plex> TetGenMeshFormSkeleton(): Recovering boundaries.
+[0] <dm:plex> TetGenMeshDelaunizeSegments2():   Delaunizing segments.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (0, 1).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 1.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 4, 5) to 1.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 5, 1) to 1.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (0, 2).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 2.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 6, 7, 2) to 2.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (1, 5).
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (3, 2).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (3, 0, 7, 2) to 2.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (6, 7).
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (6, 2).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (6, 0, 7, 4) to 2.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (6, 7, 0, 2) to 2.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (5, 4).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (5, 7, 0, 4) to 4.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (5, 7).
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (7, 3).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 3.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 0, 6, 2) to 3.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 0, 2, 3) to 3.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (1, 3).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (1, 0, 5, 7) to 3.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (1, 0, 7, 3) to 3.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (0, 4).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 4.
+[0] <dm:plex> TetGenMeshScoutSegment2():     Scout seg (4, 6).
+[0] <dm:plex> TetGenMeshDelaunizeSegments2():   0 protecting points.
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   Constraining facets.
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   Recover facet #1: 2 subfaces, 4 vertices.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (3, 0, 7, 2) to 5.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (3, 7, 0, 1) to 5.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (5, 7, 3) (11).
+[0] <dm:plex> TetGenMeshScoutCrossTet():     Found a co-facet face (5, 7, 1) op (0).
+[0] <dm:plex> TetGenMeshFlip22Sub():     Flip subedge (5, 3) to (7, 1).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (1, 0, 5, 7) to 3.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (1, 0, 7, 3) to 3.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (1, 3, 7) (11).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 1.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 4, 0, 5) to 1.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 5, 0, 1) to 1.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (7, 1, 5) (11).
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   Recover facet #2: 2 subfaces, 4 vertices.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (4, 6, 7, 0) to 5.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (4, 0, 7, 5) to 5.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (4, 5, 7) (10).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 4.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (7, 4, 6) (10).
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   Recover facet #3: 2 subfaces, 4 vertices.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (6, 0, 2) (9).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 4.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (0, 4, 6) (9).
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   Recover facet #4: 2 subfaces, 4 vertices.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (5, 0, 4) (8).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 1.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 4, 5) to 1.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 5, 1) to 1.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (0, 1, 5) (8).
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   Recover facet #5: 2 subfaces, 4 vertices.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (1, 0, 2) (7).
+[0] <dm:plex> TetGenMeshScoutCrossTet():     Found a co-facet face (1, 0, 3) op (7).
+[0] <dm:plex> TetGenMeshFlip22Sub():     Flip subedge (1, 2) to (0, 3).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 7, 6, 4) to 3.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 6, 7, 2) to 3.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (0, 2, 7, 3) to 3.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (0, 3, 2) (7).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (3, 0, 7, 2) to 1.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (3, 7, 0, 1) to 1.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (3, 1, 0) (7).
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   Recover facet #6: 2 subfaces, 4 vertices.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (6, 7, 3) (2).
+[0] <dm:plex> TetGenMeshScoutCrossTet():     Found a co-facet face (7, 6, 2) op (0).
+[0] <dm:plex> TetGenMeshFlip22Sub():     Flip subedge (6, 3) to (7, 2).
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 6, 0, 4) to 2.
+[0] <dm:plex> TetGenMeshFindDirection2():       From tet (7, 0, 6, 2) to 2.
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (7, 2, 3) (2).
+[0] <dm:plex> TetGenMeshScoutSubface():     Scout subface (2, 6, 7) (2).
+[0] <dm:plex> TetGenMeshConstrainedFacets2():   3 subedge flips  0 cavities remeshed.
+[0] <dm:plex> TetGenMeshCarveHoles(): Removing exterior tetrahedra.
+[0] <dm:plex> TetGenMeshInfectHull():   Marking concavities for elimination.
+[0] <dm:plex> TetGenMeshPlague():   Marking neighbors of marked tetrahedra.
+[0] <dm:plex> TetGenMeshRemoveHoleTets():   Deleting marked tetrahedra.
+[0] <dm:plex> TetGenMeshMakePoint2TetMap():   Constructing mapping from points to tetrahedra.
+[0] <dm:plex> TetGenMeshOptimize(): Repairing mesh.
+[0] <dm:plex> TetGenMeshEnforceQuality(): Adding Steiner points to enforce quality.
+[0] <dm:plex> TetGenMeshMarkSharpSegments():   Marking sharp segments.
+[0] <dm:plex> TetGenMeshDecideFeaturePointSizes():   Deciding feature-point sizes.
+[0] <dm:plex> TetGenMeshMakeSegmentMap():   Constructing mapping from points to segments.
+[0] <dm:plex> TetGenMeshDecideFeaturePointSizes():   0 feature points.
+[0] <dm:plex> TetGenMeshEnforceQuality():   0 split points.
+[0] <dm:plex> TetGenMeshEnforceQuality():   0 split points.
+[0] <dm:plex> TetGenMeshEnforceQuality():   0 refinement points.
+[0] <dm:plex> TetGenMeshEnforceQuality():   Totally added 0 points.
+[0] <dm:plex> TetGenMeshOptimize(): Optimizing mesh.
+[0] <dm:plex> TetGenMeshOptimize():   level = 3.
+[0] <dm:plex> TetGenMeshOptimize():   level = 3 pass 0.
+[0] <dm:plex> TetGenMeshOutputNodes(): Writing nodes.
+[0] <dm:plex> TetGenMeshOutputElements(): Writing elements.
+[0] <dm:plex> TetGenMeshOutputSubfaces(): Writing faces.
 PetscSection Object: 1 MPI process
   type not yet set
 3 fields
@@ -375,4 +375,4 @@ Process 0:
   (  48) dim  0 offset  62
   (  49) dim  0 offset  62
   (  50) dim  0 offset  62
-[0] <dm> DMPlexGetFieldType_Internal(): Could not classify VTK output type of section field 2 "w"
+[0] <dm:plex> DMPlexGetFieldType_Internal(): Could not classify VTK output type of section field 2 "w"
