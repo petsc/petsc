@@ -480,6 +480,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def filterCompileOutput(self, output,flag = ''):
     '''
        With --ignoreCompileOutput=1 (default), it filters all compiler messages
+       With --ignoreCompileOutput=0 it filters only compiler messages known to be harmless
     '''
     if flag and output.find("ignoring unknown option '"+flag+"'"): return output
     if flag and output.find("invalid value"): return output
@@ -539,7 +540,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterLinkOutput(self, output):
     '''
-       With --ignoreCompileOutput=0 it filters only compiler messages known to be harmless
+       With --ignoreLinkOutput=1 it filters all linker messages
+       With --ignoreLinkOutput=0 (default), it filters only linker messages known to be harmless
     '''
     if output.find('relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol') >= 0: return output
     elif self.argDB['ignoreLinkOutput']:
