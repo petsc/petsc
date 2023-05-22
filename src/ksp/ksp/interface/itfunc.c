@@ -2169,7 +2169,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
           (may be `NULL`)
 
    Calling Sequence of `monitor`:
-$  PetscErrorCode  monitor (KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
+$  PetscErrorCode  monitor(KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
 +  ksp - iterative context obtained from `KSPCreate()`
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
@@ -2346,9 +2346,9 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscInt na, PetscB
 
    Fortran Note:
      The Fortran version of this routine has a calling sequence
-$   call `KSPGetResidualHistory`(`KSP` ksp, integer na, integer ierr)
+$   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
     note that you have passed a Fortran array into `KSPSetResidualHistory()` and you need
-    to access the residual values from this Fortran array you provided. Only the na (number of
+    to access the residual values from this Fortran array you provided. Only the `na` (number of
     residual norms currently held) is set.
 
 .seealso: [](chapter_ksp), `KSPSetResidualHistory()`, `KSP`
@@ -2426,7 +2426,7 @@ PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscInt na, PetscBool
   The Fortran version of this routine has a calling sequence
 $   call KSPGetErrorHistory(KSP ksp, integer na, integer ierr)
   note that you have passed a Fortran array into `KSPSetErrorHistory()` and you need
-  to access the residual values from this Fortran array you provided. Only the na (number of
+  to access the residual values from this Fortran array you provided. Only the `na` (number of
   residual norms currently held) is set.
 
 .seealso: [](chapter_ksp), `KSPSetErrorHistory()`, `KSPGetResidualHistory()`, `KSP`
@@ -2531,7 +2531,7 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
 -  destroy - a routine for destroying the context (may be null)
 
    Calling sequence of `converge`:
-$  PetscErrorCode converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *mctx)
+$  PetscErrorCode converge(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *mctx)
 +  ksp - iterative context obtained from `KSPCreate()`
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
@@ -2584,7 +2584,7 @@ PetscErrorCode KSPSetConvergenceTest(KSP ksp, PetscErrorCode (*converge)(KSP, Pe
 -  destroy - a routine for destroying the context (may be null)
 
    Calling sequence of `converge`:
-$  PetscErrorCode converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *mctx)
+$  PetscErrorCode converge(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *mctx)
 +  ksp - iterative context obtained from `KSPCreate()`
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
@@ -2622,7 +2622,7 @@ PetscErrorCode KSPGetConvergenceTest(KSP ksp, PetscErrorCode (**converge)(KSP, P
 -  destroy - a routine for destroying the context
 
    Calling sequence of `converge`:
-$  PetscErrorCode converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *mctx)
+$  PetscErrorCode converge(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *mctx)
 +  ksp - iterative context obtained from `KSPCreate()`
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual

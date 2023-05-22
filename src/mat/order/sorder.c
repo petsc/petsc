@@ -95,7 +95,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
 .ve
 
    Then, your partitioner can be chosen with the procedural interface via
-$     MatOrderingSetType(part,"my_order)
+$     MatOrderingSetType(part, "my_order)
    or at runtime via the option
 $     -pc_factor_mat_ordering_type my_order
 

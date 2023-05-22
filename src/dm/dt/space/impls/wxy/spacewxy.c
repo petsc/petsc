@@ -376,10 +376,14 @@ static PetscErrorCode PetscSpaceInitialize_WXY(PetscSpace sp)
 
 /*MC
   PETSCSPACEWXY = "wxy" - A `PetscSpace` object that encapsulates the Wheeler-Xu-Yotov enrichments.
-$ curl {{0, 0, y^2 z}, {x z^2, 0, 0}, {y z^2, 0, 0}, {0, -x z^2, 0}, {0, -3/2 x^2 z, -1/2 x^2 y}, {3/2 y^2 z, 0, 1/2 y^2 x}}
-$ = {{2 y z, 0, 0}, {0, 2 x z, 0}, {0, 2 y z, -z^2}, {2 x z, 0, -z^2}, {x^2, x y, -3 x z}, {x y, y^2, -3 y z}}
 
   Level: intermediate
+
+  Note:
+.vb
+  curl {{0, 0, y^2 z}, {x z^2, 0, 0}, {y z^2, 0, 0}, {0, -x z^2, 0}, {0, -3/2 x^2 z, -1/2 x^2 y}, {3/2 y^2 z, 0, 1/2 y^2 x}}
+  = {{2 y z, 0, 0}, {0, 2 x z, 0}, {0, 2 y z, -z^2}, {2 x z, 0, -z^2}, {x^2, x y, -3 x z}, {x y, y^2, -3 y z}}
+.ve
 
 .seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 M*/

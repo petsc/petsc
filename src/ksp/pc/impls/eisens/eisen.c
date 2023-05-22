@@ -269,8 +269,7 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
    and right preconditioning.
 
    To use SSOR without the Eisenstat trick, employ the `PCSOR` preconditioner,
-   which can be chosen with the database options
-$    -pc_type  sor  -pc_sor_symmetric
+   which can be chosen with the database options `-pc_type sor -pc_sor_symmetric`
 
 .seealso: `PCSORSetOmega()`, `PCEISENSTAT`
 @*/
@@ -335,8 +334,7 @@ PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
    and right preconditioning.
 
    To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner,
-   which can be chosen with the database options
-$    -pc_type  sor  -pc_sor_symmetric
+   which can be chosen with the database options `-pc_type sor -pc_sor_symmetric`
 
    Level: intermediate
 

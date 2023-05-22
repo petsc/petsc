@@ -1311,9 +1311,7 @@ PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
   Level: advanced
 
   Note:
-  The default file name is
-$    Log.<rank>
-  where <rank> is the processor number. If no name is specified,
+  The default file name is Log.<rank> where <rank> is the MPI process rank. If no name is specified,
   this file will be used.
 
 .seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogView()`
@@ -1848,6 +1846,7 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n"));
   PetscCall(PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
   if (PetscLogMemory) {
+    PetscCall(PetscFPrintf(comm, fd, "   Memory usage is summed over all MPI processes, it is given in mega-bytes\n"));
     PetscCall(PetscFPrintf(comm, fd, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event). May be negative\n"));
     PetscCall(PetscFPrintf(comm, fd, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events). Never negative\n"));
     PetscCall(PetscFPrintf(comm, fd, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event). Never negative\n"));

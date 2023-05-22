@@ -263,11 +263,11 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 
    Sample usage:
 .vb
-   MatRegister("my_mat",MyMatCreate);
+   MatRegister("my_mat", MyMatCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     MatSetType(Mat,"my_mat")
+$     MatSetType(Mat, "my_mat")
    or at runtime via the option
 $     -mat_type my_mat
 

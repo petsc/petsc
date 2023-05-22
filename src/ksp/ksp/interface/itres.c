@@ -27,7 +27,7 @@ $     CA x = Cb (left preconditioning).
    This means that the calculated residual will be scaled and/or preconditioned;
    the true residual
 $     b-Ax
-   is returned in the vt2 temporary.
+   is returned in the `vt2` temporary.
 
 .seealso: [](chapter_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
 @*/

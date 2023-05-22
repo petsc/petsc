@@ -58,7 +58,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
    Note:
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
-$      XXXView(XXX object,PETSC_VIEWER_STDOUT_(comm));
+$      XXXView(XXX object, PETSC_VIEWER_STDOUT_(comm));
 
 .seealso: [](sec_viewers), `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
           `PETSC_VIEWER_STDOUT_SELF`
@@ -134,7 +134,7 @@ PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer)
    Notes:
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
-$      XXXView(XXX object,PETSC_VIEWER_STDERR_(comm));
+$      XXXView(XXX object, PETSC_VIEWER_STDERR_(comm));
 
    `PetscViewerASCIIGetStderr()` is preferred  since it allows error checking
 

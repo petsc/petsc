@@ -735,7 +735,7 @@ PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
      Note:
      Unlike almost all other PETSc routines, `PETSC_VIEWER_DRAW_()` does not return
      an error code.  The window is usually used in the form
-$       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
+$       XXXView(XXX object, PETSC_VIEWER_DRAW_(comm));
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewer`, `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`, `PetscViewerDrawOpen()`,
 @*/

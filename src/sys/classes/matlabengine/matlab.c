@@ -306,7 +306,7 @@ static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
    Note:
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
-$      PetscMatlabEngineYYY(XXX object,PETSC_MATLAB_ENGINE_(comm));
+$      PetscMatlabEngineYYY(XXX object, PETSC_MATLAB_ENGINE_(comm));
 
 .seealso: `PetscMatlabEngineDestroy()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineGet()`,
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePrintOutput()`,

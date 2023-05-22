@@ -56,11 +56,11 @@ PetscErrorCode PetscSFRegisterAll(void)
 
    Sample usage:
 .vb
-   PetscSFRegister("my_impl",MyImplCreate);
+   PetscSFRegister("my_impl", MyImplCreate);
 .ve
 
    Then, this implementation can be chosen with the procedural interface via
-$     PetscSFSetType(sf,"my_impl")
+$     PetscSFSetType(sf, "my_impl")
    or at runtime via the option
 $     -sf_type my_impl
 

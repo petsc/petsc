@@ -151,7 +151,7 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   Level: developer
 
   Fortran Note:
-  This is similar to MatSetValuesStencil(). The binding is
+  This is similar to `MatSetValuesStencil()`. The binding is
 $   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecGetValuesSection()`

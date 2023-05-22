@@ -168,7 +168,7 @@ PetscErrorCode PetscPopErrorHandler(void)
    Most users need not directly employ this routine and the other error
    handlers, but can instead use the simplified interface `SETERRQ()`, which has
    the calling sequence
-$     SETERRQ(comm,number,mess)
+$     SETERRQ(comm, number, mess)
 
    `PetscIgnoreErrorHandler()` does the same thing as this function, but is deprecated, you should use this function.
 
@@ -353,7 +353,7 @@ static void PetscCxxErrorThrow()
 
    Fortran Note:
    This routine is used differently from Fortran
-$    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
+$    PetscError(MPI_Comm comm, PetscErrorCode n, PetscErrorType p, char *message)
 
    Developer Note:
    Since this is called after an error condition it should not be calling any error handlers (currently it ignores any error codes)

@@ -1602,7 +1602,7 @@ PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
      Note:
      Unlike almost all other PETSc routines, `PETSC_VIEWER_BINARY_` does not return
      an error code.  The binary PetscViewer is usually used in the form
-$       XXXView(XXX object,PETSC_VIEWER_BINARY_(comm));
+$       XXXView(XXX object, PETSC_VIEWER_BINARY_(comm));
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PETSC_VIEWER_BINARY_WORLD`, `PETSC_VIEWER_BINARY_SELF`, `PetscViewerBinaryOpen()`, `PetscViewerCreate()`,
           `PetscViewerDestroy()`

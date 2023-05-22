@@ -3,7 +3,7 @@
 BuildSystem
 -----------
 
-``BuildSystem`` is used for configuring PETSc before it gets compiled.
+``BuildSystem`` (located in ``config/BuildSystem``) configures PETSc before PETSc is compiled with make.
 It is much like `GNU Autoconf (configure) <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.71/html_node/index.html#Top>`__
 but written in Python especially for PETSc.
 
@@ -11,22 +11,11 @@ but written in Python especially for PETSc.
 What is a build?
 ~~~~~~~~~~~~~~~~
 
-The build stage compiles source to object files, stores them somehow
+The build stage compiles source to object files, stores them
 (usually in archives), and links shared libraries and executables. These
 are mechanical operations that reduce to applying a construction rule to
 sets of files. The `Make <http://www.gnu.org/software/make/>`__ tool is
-great at this job. However, other parts of Make are not as useful, and
-we should distinguish the two.
-
-Make uses a single predicate, "older than", to decide whether to apply a
-rule. This is a disaster. A useful upgrade to make would expand the list
-of available predicates, including things like "md5sum has changed" and
-"flags have changed". There have been attempts to use Make to determine
-whether a file has changed, for example by using stamp files. However,
-it cannot be done without severe contortions which make it much harder
-to see what Make is doing and maintain the system. Right now, we can
-combine make with the `ccache <https://ccache.samba.org/>`__ utility to
-minimize recompiling and relinking.
+great at this job.
 
 Why is configure necessary?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,7 +47,7 @@ Namespacing
 the test results. Thus results are accessed using normal Python
 namespacing. As rudimentary as this sounds, no namespacing beyond the
 use of variable name prefixes is present in Autoconf, CMake, and SCons.
-Instead, a flat namespace is used, mirroring the situation in C. This
+Instead, a flat namespace is used. This
 tendency appears again when composing command lines for external tools,
 such as the compiler and linker. In the traditional configure tools,
 options are aggregated in a single bucket variable, such as ``INCLUDE``
@@ -103,13 +92,12 @@ Subpackages
 The most complicated, yet perhaps most useful, part of ``BuildSystem`` is
 support for dependent packages. It provides an object scaffolding for
 including a 3rd party package (more than 100 are now available) so that
-PETSc downloads, builds, and tests the package for inclusion. The native
+PETSc downloads and builds the package for use by PETSc. The native
 configure and build system for the package is used, and special support
 exists for Autoconf and CMake packages. No similar system exists in the other
 tools, which rely on static declarations, such as ``pkg-config`` or
 ``FindPackage.cmake`` files, that are not tested and often become
-obsolete. They also require that any dependent packages use the same
-configuration and build system.
+obsolete. 
 
 Batch environments
 ^^^^^^^^^^^^^^^^^^
@@ -142,7 +130,7 @@ The cognitive load is usually larger for larger code bases,
 and our observation is that the addition of logic to Autoconf
 and CMake is often quite cumbersome and verbose as they do not employ a modern,
 higher level language. Although ``BuildSystem`` itself is not widely used,
-it has the advantage of being written in a widely-understood, high-level
+it has the advantage of being written in Python, a widely-understood, high-level
 language.
 
 
@@ -338,7 +326,7 @@ However, this is not the intended future usage. The use of configure
 modules by other modules in the same run provides a model for the
 suggested interaction of a new build system with the Framework. If a
 module requires another, it merely executes a ``require()``. For
-instance, the PETSc configure module for HYPRE requires information
+instance, the PETSc configure module for hypre requires information
 about MPI, and thus contains
 
 .. code-block:: python
@@ -346,10 +334,10 @@ about MPI, and thus contains
        self.mpi = self.framework.require("config.packages.MPI", self)
 
 Notice that passing self for the last arguments means that the MPI
-module will run before the HYPRE module. Furthermore, we save the
+module will run before the hypre module. Furthermore, we save the
 resulting object as ``self.mpi`` so that we may interrogate it later.
-HYPRE can initially test whether MPI was indeed found using
-``self.mpi.found``. When HYPRE requires the list of MPI libraries in
+hypre can initially test whether MPI was indeed found using
+``self.mpi.found``. When hypre requires the list of MPI libraries in
 order to link a test object, the module can use ``self.mpi.lib``.
 
 Base

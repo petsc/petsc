@@ -2134,11 +2134,11 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 
    Sample usage:
 .vb
-   TaoRegister("my_solver",MySolverCreate);
+   TaoRegister("my_solver", MySolverCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     TaoSetType(tao,"my_solver")
+$     TaoSetType(tao, "my_solver")
    or at runtime via the option
 $     -tao_type my_solver
 

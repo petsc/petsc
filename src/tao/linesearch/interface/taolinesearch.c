@@ -1161,11 +1161,11 @@ PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch ls, PetscReal *s)
 
    Sample usage:
 .vb
-   TaoLineSearchRegister("my_linesearch",MyLinesearchCreate);
+   TaoLineSearchRegister("my_linesearch", MyLinesearchCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     TaoLineSearchSetType(ls,"my_linesearch")
+$     TaoLineSearchSetType(ls, "my_linesearch")
    or at runtime via the option
 $     -tao_ls_type my_linesearch
 

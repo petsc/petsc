@@ -283,11 +283,11 @@ PetscErrorCode PFView(PF pf, PetscViewer viewer)
 
    Sample usage:
 .vb
-   PFRegister("my_function",MyFunctionSetCreate);
+   PFRegister("my_function", MyFunctionSetCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     PFSetType(pf,"my_function")
+$     PFSetType(pf, "my_function")
    or at runtime via the option
 $     -pf_type my_function
 

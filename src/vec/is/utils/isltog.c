@@ -1904,11 +1904,11 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
 
    Sample usage:
 .vb
-   ISLocalToGlobalMappingRegister("my_mapper",MyCreate);
+   ISLocalToGlobalMappingRegister("my_mapper", MyCreate);
 .ve
 
    Then, your mapping can be chosen with the procedural interface via
-$     ISLocalToGlobalMappingSetType(ltog,"my_mapper")
+$     ISLocalToGlobalMappingSetType(ltog, "my_mapper")
    or at runtime via the option
 $     -islocaltoglobalmapping_type my_mapper
 

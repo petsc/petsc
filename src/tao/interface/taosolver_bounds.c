@@ -41,7 +41,7 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
 - ctx - [optional] user-defined context for private data for the bounds computation (may be `NULL`)
 
   Calling sequence of `func`:
-$ PetscErrorCode func (Tao tao, Vec xl, Vec xu, void *ctx);
+$ PetscErrorCode func(Tao tao, Vec xl, Vec xu, void *ctx);
 + tao - the `Tao` solver
 . xl  - vector of lower bounds
 . xu  - vector of upper bounds

@@ -2099,35 +2099,13 @@ PetscErrorCode SNESGetFunctionType(SNES snes, SNESFunctionType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-    SNESNGSFunction - function used to apply a Gauss-Seidel sweep on the nonlinear function
-
-     Synopsis:
-     #include <petscsnes.h>
-$    SNESNGSFunction(SNES snes,Vec x,Vec b,void *ctx);
-
-     Collective
-
-     Input Parameters:
-+  X   - solution vector
-.  B   - RHS vector
--  ctx - optional user-defined Gauss-Seidel context
-
-     Output Parameter:
-.  X   - solution vector
-
-   Level: intermediate
-
-.seealso: [](chapter_snes), `SNESNGS`, `SNESSetNGS()`, `SNESGetNGS()`
-M*/
-
 /*@C
    SNESSetNGS - Sets the user nonlinear Gauss-Seidel routine for
    use with composed nonlinear solvers.
 
    Input Parameters:
 +  snes   - the `SNES` context
-.  f - function evaluation routine to apply Gauss-Seidel see `SNESNGSFunction`
+.  f - function evaluation routine to apply Gauss-Seidel
 -  ctx    - [optional] user-defined context for private data for the
             smoother evaluation routine (may be `NULL`)
 
@@ -2144,7 +2122,7 @@ $  PetscErrorCode f(SNES snes, Vec X, Vec B, void *ctx)
    The `SNESNGS` routines are used by the composed nonlinear solver to generate
     a problem appropriate update to the solution, particularly `SNESFAS`.
 
-.seealso: [](chapter_snes), `SNESGetNGS()`, `SNESNGSFunction`, `SNESNCG`, `SNESGetFunction()`, `SNESComputeNGS()`
+.seealso: [](chapter_snes), `SNESGetNGS()`, `SNESNCG`, `SNESGetFunction()`, `SNESComputeNGS()`
 @*/
 PetscErrorCode SNESSetNGS(SNES snes, PetscErrorCode (*f)(SNES, Vec, Vec, void *), void *ctx)
 {
@@ -3941,7 +3919,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
 
      Synopsis:
      #include <petscsnes.h>
-$    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,void *mctx)
+    PetscErrorCode SNESMonitorFunction(SNES snes, PetscInt its, PetscReal norm, void *mctx)
 
      Collective
 
@@ -4044,7 +4022,7 @@ PetscErrorCode SNESMonitorCancel(SNES snes)
 
      Synopsis:
      #include <petscsnes.h>
-$     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
+     PetscErrorCode SNESConvergenceTest(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *cctx)
 
      Collective
 
@@ -4929,13 +4907,13 @@ PetscErrorCode SNESGetFunction(SNES snes, Vec *r, PetscErrorCode (**f)(SNES, Vec
 }
 
 /*@C
-   SNESGetNGS - Returns the `SNESNGS` function and context set with `SNESSetNGS()`
+   SNESGetNGS - Returns the function and context set with `SNESSetNGS()`
 
    Input Parameter:
 .  snes - the `SNES` context
 
    Output Parameters:
-+  f - the function (or `NULL`) see `SNESNGSFunction` for details
++  f - the function (or `NULL`) see `SNESSetNGS()` for details
 -  ctx    - the function context (or `NULL`)
 
    Level: advanced
@@ -5062,11 +5040,11 @@ PetscErrorCode SNESGetOptionsPrefix(SNES snes, const char *prefix[])
 
    Sample usage:
 .vb
-   SNESRegister("my_solver",MySolverCreate);
+   SNESRegister("my_solver", MySolverCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     SNESSetType(snes,"my_solver")
+$     SNESSetType(snes, "my_solver")
    or at runtime via the option
 $     -snes_type my_solver
 

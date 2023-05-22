@@ -303,7 +303,7 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
 .ve
 
    Then, your specific graphics package can be chosen with the procedural interface via
-$     PetscDrawSetType(ksp,"my_draw_type")
+$     PetscDrawSetType(ksp, "my_draw_type")
    or at runtime via the option
 $     -draw_type my_draw_type
 
