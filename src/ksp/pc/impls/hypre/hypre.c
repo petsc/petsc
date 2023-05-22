@@ -716,7 +716,7 @@ static PetscErrorCode PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc, 
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   jac->spgemm_type = NULL;
-  SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown HYPRE SpGEM type %s; Choices are cusparse, hypre", name);
+  SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown HYPRE SpGEMM type %s; Choices are cusparse, hypre", name);
 #endif
 }
 
@@ -967,8 +967,12 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
   // global parameter but is closely associated with BoomerAMG
   PetscCall(PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm", "Type of SpGEMM to use in hypre (only for now)", "PCMGGalerkinSetMatProductAlgorithm", PCHYPRESpgemmTypes, PETSC_STATIC_ARRAY_LENGTH(PCHYPRESpgemmTypes), PCHYPRESpgemmTypes[0], &indx, &flg));
+  #if defined(PETSC_HAVE_HYPRE_DEVICE)
   if (!flg) indx = 0;
   PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc, PCHYPRESpgemmTypes[indx]));
+  #else
+  PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc, "hypre"));
+  #endif
 #endif
   /* AIR */
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
@@ -1127,6 +1131,8 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc, PetscViewer viewer)
     if (jac->nodal_relax) PetscCall(PetscViewerASCIIPrintf(viewer, "    Using nodal relaxation via Schwarz smoothing on levels %" PetscInt_FMT "\n", jac->nodal_relax_levels));
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
     PetscCall(PetscViewerASCIIPrintf(viewer, "    SpGEMM type         %s\n", jac->spgemm_type));
+#else
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    SpGEMM type         %s\n", "hypre"));
 #endif
     /* AIR */
     if (jac->Rtype) {
