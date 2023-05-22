@@ -1262,6 +1262,7 @@ class Configure(config.base.Configure):
         return
       if not self.checkLink(linkLanguage=linkLanguage,includes=includes,body=body):
         msg = 'Cannot compile/link {} with {}.'.format(language,compiler)
+        msg = '\nIf the above linker messages do not indicate failure of the compiler you can rerun with the option --ignoreLinkOutput=1'
         raise RuntimeError(msg)
       oldlibs     = self.LIBS
       compilerObj = self.framework.getCompilerObject(linkLanguage if linkLanguage else language)
