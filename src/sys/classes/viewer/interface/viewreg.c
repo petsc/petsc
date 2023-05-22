@@ -446,11 +446,11 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 
    Sample usage:
 .vb
-   PetscViewerRegister("my_viewer_type",MyViewerCreate);
+   PetscViewerRegister("my_viewer_type", MyViewerCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     PetscViewerSetType(viewer,"my_viewer_type")
+$     PetscViewerSetType(viewer, "my_viewer_type")
    or at runtime via the option
 $     -viewer_type my_viewer_type
 

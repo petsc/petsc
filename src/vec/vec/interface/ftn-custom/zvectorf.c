@@ -207,25 +207,27 @@ PETSC_EXTERN void vecview_(Vec *x, PetscViewer *vin, PetscErrorCode *ierr)
      Notes:
     Allows code such as
 
-$     type  :: Field
-$        PetscScalar :: p1
-$        PetscScalar :: p2
-$      end type Field
-$
-$      type(Field)       :: lx_v(0:1)
-$
-$      call VecGetArray(localX, lx_v, lx_i, ierr)
-$      call InitialGuessLocal(lx_v(lx_i/2),ierr)
-$
-$      subroutine InitialGuessLocal(a,ierr)
-$      type(Field)     :: a(*)
+.vb
+     type  :: Field
+        PetscScalar :: p1
+        PetscScalar :: p2
+      end type Field
 
-     If you have not called VecGetArrayAligned() the code may generate incorrect data
+      type(Field)       :: lx_v(0:1)
+
+      call VecGetArray(localX, lx_v, lx_i, ierr)
+      call InitialGuessLocal(lx_v(lx_i/2), ierr)
+
+      subroutine InitialGuessLocal(a,ierr)
+      type(Field)     :: a(*)
+.ve
+
+     If you have not called `VecGetArrayAligned()` the code may generate incorrect data
      or crash.
 
      lx_i needs to be divided by the number of entries in Field (in this case 2)
 
-     You do NOT need VecGetArrayAligned() if lx_v and a are arrays of PetscScalar
+     You do NOT need `VecGetArrayAligned()` if lx_v and a are arrays of `PetscScalar`
 
 .seealso: `VecGetArray()`, `VecGetArrayF90()`
 M*/

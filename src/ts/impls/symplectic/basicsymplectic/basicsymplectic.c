@@ -184,17 +184,20 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscI
 /*
 The simplified form of the equations are:
 
-$ p_{i+1} = p_i + c_i*g(q_i)*h
-$ q_{i+1} = q_i + d_i*f(p_{i+1},t_{i+1})*h
+.vb
+ p_{i+1} = p_i + c_i*g(q_i)*h
+ q_{i+1} = q_i + d_i*f(p_{i+1},t_{i+1})*h
+.ve
 
 Several symplectic integrators are given below. An illustrative way to use them is to consider a particle with position q and velocity p.
 
 To apply a timestep with values c_{1,2},d_{1,2} to the particle, carry out the following steps:
-
+.vb
 - Update the velocity of the particle by adding to it its acceleration multiplied by c_1
 - Update the position of the particle by adding to it its (updated) velocity multiplied by d_1
 - Update the velocity of the particle by adding to it its acceleration (at the updated position) multiplied by c_2
 - Update the position of the particle by adding to it its (double-updated) velocity multiplied by d_2
+.ve
 
 */
 static PetscErrorCode TSStep_BasicSymplectic(TS ts)

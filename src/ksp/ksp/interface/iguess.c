@@ -17,11 +17,11 @@ static PetscBool  KSPGuessRegisterAllCalled;
 
    Sample usage:
 .vb
-   KSPGuessRegister("my_initial_guess",MyInitialGuessCreate);
+   KSPGuessRegister("my_initial_guess", MyInitialGuessCreate);
 .ve
 
    Then, it can be chosen with the procedural interface via
-$     KSPSetGuessType(ksp,"my_initial_guess")
+$     KSPSetGuessType(ksp, "my_initial_guess")
    or at runtime via the option
 $     -ksp_guess_type my_initial_guess
 

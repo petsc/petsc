@@ -26,8 +26,10 @@ static void sigpipe_handle(int x) { }
     Level: advanced
 
     If PETSc was ./configure -with-ssl-certificate requires the user have created a self-signed certificate with
-$    saws/CA.pl  -newcert  (using the passphrase of password)
-$    cat newkey.pem newcert.pem > sslclient.pem
+.vb
+    saws/CA.pl  -newcert  (using the passphrase of password)
+    cat newkey.pem newcert.pem > sslclient.pem
+.ve
 
     and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
     silly but it was all I could figure out.

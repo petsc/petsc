@@ -275,7 +275,7 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
 . refinementFunc - Function giving the maximum cell volume in the refined mesh
 
   Calling Sequence of `refinementFunc`:
-$  refinementFunc(const PetscReal coords[], PetscReal *limit)
+$ PetscErrorCode refinementFunc(const PetscReal coords[], PetscReal *limit)
 + coords - Coordinates of the current point, usually a cell centroid
 - limit  - The maximum cell volume for a cell containing this point
 

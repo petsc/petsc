@@ -1608,8 +1608,10 @@ $  A = Alpha Gamma^{-1}, bt^T = b^T Gamma^{-1}
 
   to rewrite the method as
 
-$  [M/(h gamma_ii) - J] y_i = f(u_0 + sum_j a_ij y_j) + M sum_j (c_ij/h) y_j
-$  u_1 = u_0 + sum_j bt_j y_j
+.vb
+  [M/(h gamma_ii) - J] y_i = f(u_0 + sum_j a_ij y_j) + M sum_j (c_ij/h) y_j
+  u_1 = u_0 + sum_j bt_j y_j
+.ve
 
    where we have introduced the mass matrix M. Continue by defining
 

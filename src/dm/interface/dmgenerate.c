@@ -80,11 +80,11 @@ PetscErrorCode DMGenerateRegisterAll(void)
 
    Sample usage:
 .vb
-   DMGenerateRegister("my_generator",MyGeneratorCreate,MyGeneratorRefiner,MyGeneratorAdaptor,dim);
+   DMGenerateRegister("my_generator", MyGeneratorCreate, MyGeneratorRefiner, MyGeneratorAdaptor, dim);
 .ve
 
    Then, your generator can be chosen with the procedural interface via
-$     DMGenerate(dm,"my_generator",...)
+$     DMGenerate(dm, "my_generator",...)
    or at runtime via the option
 $     -dm_generator my_generator
 

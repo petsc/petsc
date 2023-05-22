@@ -2004,7 +2004,7 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
     sequence as the usual matrix interface routines, since they
     are intended to be accessed via the usual matrix interface
     routines, e.g.,
-$       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
+$       MatMult(Mat, Vec, Vec) -> usermult(Mat, Vec, Vec)
 
     In particular each function MUST return an error code of 0 on success and
     nonzero on failure.
@@ -2054,7 +2054,7 @@ PetscErrorCode MatShellSetOperation(Mat mat, MatOperation op, void (*g)(void))
     sequence as the usual matrix interface routines, since they
     are intended to be accessed via the usual matrix interface
     routines, e.g.,
-$       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
+$       MatMult(Mat, Vec, Vec) -> usermult(Mat, Vec, Vec)
 
     Within each user-defined routine, the user should call
     `MatShellGetContext()` to obtain the user-defined context that was

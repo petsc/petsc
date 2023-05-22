@@ -1311,9 +1311,7 @@ PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
   Level: advanced
 
   Note:
-  The default file name is
-$    Log.<rank>
-  where <rank> is the processor number. If no name is specified,
+  The default file name is Log.<rank> where <rank> is the MPI process rank. If no name is specified,
   this file will be used.
 
 .seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogView()`

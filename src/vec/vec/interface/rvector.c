@@ -417,11 +417,11 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
    Level: intermediate
 
    Notes for Users of Complex Numbers:
-   For complex vectors, VecTDot() computes the indefinite form
+   For complex vectors, `VecTDot()` computes the indefinite form
 $     val = (x,y) = y^T x,
    where y^T denotes the transpose of y.
 
-   Use VecDot() for the inner product
+   Use `VecDot()` for the inner product
 $     val = (x,y) = y^H x,
    where y^H denotes the conjugate transpose of y.
 

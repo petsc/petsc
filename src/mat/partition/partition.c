@@ -174,11 +174,11 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
    Sample usage:
 .vb
-   MatPartitioningRegister("my_part",MyPartCreate);
+   MatPartitioningRegister("my_part", MyPartCreate);
 .ve
 
    Then, your partitioner can be chosen with the procedural interface via
-$     MatPartitioningSetType(part,"my_part")
+$     MatPartitioningSetType(part, "my_part")
    or at runtime via the option
 $     -mat_partitioning_type my_part
 

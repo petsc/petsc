@@ -176,20 +176,20 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
    and work space for performing finite difference approximations of
    Jacobian-vector products, J(u)*a, via
 
-$       J(u)*a = [J(u+h*a) - J(u)]/h,
-$   where by default
-$        h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
-$          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
-$   where
-$        error_rel = square root of relative error in
-$                    function evaluation
-$        umin = minimum iterate parameter
-$   Alternatively, the differencing parameter, h, can be set using
-$   Jorge's nifty new strategy if one specifies the option
-$          -snes_mf_jorge
+.vb
+       J(u)*a = [J(u+h*a) - J(u)]/h,
+   where by default
+        h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
+   where
+        error_rel = square root of relative error in function evaluation
+        umin = minimum iterate parameter
+   Alternatively, the differencing parameter, h, can be set using
+   Jorge's nifty new strategy if one specifies the option
+          -snes_mf_jorge
+.ve
 
    The user can set these parameters via `MatMFFDSetFunctionError()`.
-   See Users-Manual: ch_snes for details
 
    The user should call `MatDestroy()` when finished with the matrix-free
    matrix context.
