@@ -1,11 +1,10 @@
 #ifndef PETSC_CPP_TYPE_TRAITS_HPP
 #define PETSC_CPP_TYPE_TRAITS_HPP
 
-#if defined(__cplusplus)
-  #include <petsc/private/petscimpl.h> // _p_PetscObject
-  #include <petsc/private/cpp/macros.hpp>
+#include <petsc/private/petscimpl.h> // _p_PetscObject
+#include <petsc/private/cpp/macros.hpp>
 
-  #include <type_traits>
+#include <type_traits>
 
 namespace Petsc
 {
@@ -13,7 +12,7 @@ namespace Petsc
 namespace util
 {
 
-  #if PETSC_CPP_VERSION >= 14
+#if PETSC_CPP_VERSION >= 14
 using std::add_const_t;
 using std::add_pointer_t;
 using std::conditional_t;
@@ -26,7 +25,7 @@ using std::remove_pointer_t;
 using std::remove_reference_t;
 using std::underlying_type_t;
 using std::common_type_t;
-  #else  // C++14
+#else  // C++14
 template <bool B, class T = void>
 using enable_if_t = typename std::enable_if<B, T>::type;
 template <bool B, class T, class F>
@@ -51,14 +50,14 @@ template <class T>
 using remove_extent_t = typename std::remove_extent<T>::type;
 template <class... T>
 using common_type_t = typename std::common_type<T...>::type;
-  #endif // C++14
+#endif // C++14
 
-  #if PETSC_CPP_VERSION >= 17
+#if PETSC_CPP_VERSION >= 17
 using std::void_t;
 using std::invoke_result_t;
 using std::disjunction;
 using std::conjunction;
-  #else
+#else
 template <class...>
 using void_t = void;
 
@@ -78,14 +77,14 @@ template <class B1>
 struct conjunction<B1> : B1 { };
 template <class B1, class... Bn>
 struct conjunction<B1, Bn...> : conditional_t<bool(B1::value), conjunction<Bn...>, B1> { };
-  #endif
+#endif
 
-  #if PETSC_CPP_VERSION >= 20
+#if PETSC_CPP_VERSION >= 20
 using std::remove_cvref;
 using std::remove_cvref_t;
 using std::type_identity;
 using std::type_identity_t;
-  #else
+#else
 template <class T>
 struct remove_cvref {
   using type = remove_cv_t<remove_reference_t<T>>;
@@ -101,11 +100,11 @@ struct type_identity {
 
 template <class T>
 using type_identity_t = typename type_identity<T>::type;
-  #endif // C++20
+#endif // C++20
 
-  #if PETSC_CPP_VERSION >= 23
+#if PETSC_CPP_VERSION >= 23
 using std::to_underlying;
-  #else
+#else
 template <typename T>
 static inline constexpr underlying_type_t<T> to_underlying(T value) noexcept
 {
@@ -113,7 +112,7 @@ static inline constexpr underlying_type_t<T> to_underlying(T value) noexcept
   return static_cast<underlying_type_t<T>>(value);
 }
 
-  #endif
+#endif
 
 template <typename... T>
 struct always_false : std::false_type { };
@@ -261,11 +260,5 @@ PETSC_NODISCARD inline constexpr auto PetscObjectComm(T &&obj) noexcept -> Petsc
 }
 
 } // anonymous namespace
-
-#else // __cplusplus
-
-  #define PetscObjectCast(...) ((PetscObject)(__VA_ARGS__))
-
-#endif // __cplusplus
 
 #endif // PETSC_CPP_TYPE_TRAITS_HPP

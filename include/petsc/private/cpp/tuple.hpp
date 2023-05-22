@@ -1,11 +1,10 @@
 #ifndef PETSC_CPP_TUPLE_HPP
 #define PETSC_CPP_TUPLE_HPP
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/type_traits.hpp>
-  #include <petsc/private/cpp/utility.hpp>
+#include <petsc/private/cpp/type_traits.hpp>
+#include <petsc/private/cpp/utility.hpp>
 
-  #include <tuple>
+#include <tuple>
 
 namespace Petsc
 {
@@ -13,12 +12,12 @@ namespace Petsc
 namespace util
 {
 
-  #if PETSC_CPP_VERSION >= 14
+#if PETSC_CPP_VERSION >= 14
 using std::tuple_element_t;
-  #else
+#else
 template <std::size_t Idx, class T>
 using tuple_element_t = typename std::tuple_element<Idx, T>::type;
-  #endif
+#endif
 
 // tuple_for_each
 namespace detail
@@ -49,7 +48,5 @@ constexpr inline F &&tuple_for_each(T &&tuple, F &&f)
 } // namespace util
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_CPP_TUPLE_HPP

@@ -3,8 +3,6 @@
 
 #include <petscdevice_cupm.h>
 
-#if defined(__cplusplus)
-
 namespace Petsc
 {
 
@@ -103,7 +101,5 @@ PETSC_HOSTDEVICE_INLINE_DECL constexpr axpy<T> make_axpy(const T &v) noexcept
 } // namespace device
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_DEVICE_CUPM_KERNELS_HPP

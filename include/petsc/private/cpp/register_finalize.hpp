@@ -3,9 +3,8 @@
 
 #include <petscsys.h>
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/crtp.hpp>
-  #include <petsc/private/cpp/type_traits.hpp>
+#include <petsc/private/cpp/crtp.hpp>
+#include <petsc/private/cpp/type_traits.hpp>
 
 namespace
 {
@@ -209,7 +208,5 @@ inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(Args &&...args)
 }
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_CPP_REGISTER_FINALIZE_HPP

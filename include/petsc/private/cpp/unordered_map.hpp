@@ -1,28 +1,27 @@
 #ifndef PETSC_CPP_UNORDERED_MAP_HPP
 #define PETSC_CPP_UNORDERED_MAP_HPP
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/type_traits.hpp>
-  #include <petsc/private/cpp/utility.hpp>    // std ::pair
-  #include <petsc/private/cpp/functional.hpp> // std::hash, std::equal_to
+#include <petsc/private/cpp/type_traits.hpp>
+#include <petsc/private/cpp/utility.hpp>    // std ::pair
+#include <petsc/private/cpp/functional.hpp> // std::hash, std::equal_to
 
-  #if PETSC_CPP_VERSION >= 17
-    #include <optional>
-    #define PETSC_OPTIONAL_GET_KEY(...)  *(__VA_ARGS__)
-    #define PETSC_KHASH_MAP_USE_OPTIONAL 1
-  #else
-    #define PETSC_OPTIONAL_GET_KEY(...)  __VA_ARGS__
-    #define PETSC_KHASH_MAP_USE_OPTIONAL 0
-  #endif
+#if PETSC_CPP_VERSION >= 17
+  #include <optional>
+  #define PETSC_OPTIONAL_GET_KEY(...)  *(__VA_ARGS__)
+  #define PETSC_KHASH_MAP_USE_OPTIONAL 1
+#else
+  #define PETSC_OPTIONAL_GET_KEY(...)  __VA_ARGS__
+  #define PETSC_KHASH_MAP_USE_OPTIONAL 0
+#endif
 
-  #include <unordered_map>
+#include <unordered_map>
 
-  #include <cstdint>   // std::uint32_t
-  #include <climits>   // CHAR_BIT
-  #include <iterator>  // std::inserter
-  #include <limits>    // std::numeric_limits
-  #include <algorithm> // std::fill
-  #include <vector>
+#include <cstdint>   // std::uint32_t
+#include <climits>   // CHAR_BIT
+#include <iterator>  // std::inserter
+#include <limits>    // std::numeric_limits
+#include <algorithm> // std::fill
+#include <vector>
 
 namespace Petsc
 {
@@ -255,11 +254,11 @@ private:
   PetscErrorCode khash_maybe_rehash_() noexcept;
   PetscErrorCode khash_erase_(khash_int) noexcept;
 
-  #if PETSC_KHASH_MAP_USE_OPTIONAL
+#if PETSC_KHASH_MAP_USE_OPTIONAL
   using internal_value_type = std::optional<value_type>;
-  #else
+#else
   using internal_value_type = value_type;
-  #endif
+#endif
 
   std::vector<internal_value_type> values_{};
   std::vector<flags_type>          flags_{};
@@ -883,40 +882,40 @@ static inline PETSC_CONSTEXPR_14 T round_up_to_next_pow2(T v) noexcept
   return v;
 }
 
-  // compilers sadly don't yet recognize that the above is just searching for the next nonzero
-  // bit (https://godbolt.org/z/3q1qxqK4a) and won't emit the versions below, which usually
-  // boil down to a single tailor-made instruction.
-  //
-  // __builtin_clz():
-  // Returns the number of leading 0-bits in x, starting at the most significant bit
-  // position. If x is 0, the result is undefined.
-  //
-  // see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+// compilers sadly don't yet recognize that the above is just searching for the next nonzero
+// bit (https://godbolt.org/z/3q1qxqK4a) and won't emit the versions below, which usually
+// boil down to a single tailor-made instruction.
+//
+// __builtin_clz():
+// Returns the number of leading 0-bits in x, starting at the most significant bit
+// position. If x is 0, the result is undefined.
+//
+// see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
 
-  #if PetscHasBuiltin(__builtin_clz)
+#if PetscHasBuiltin(__builtin_clz)
 template <>
 inline constexpr unsigned int round_up_to_next_pow2(unsigned int v) noexcept
 {
   return v <= 1 ? 1 : 1 << ((sizeof(v) * CHAR_BIT) - __builtin_clz(v - 1));
 }
-  #endif
+#endif
 
-  #if PetscHasBuiltin(__builtin_clzl)
+#if PetscHasBuiltin(__builtin_clzl)
 template <>
 inline constexpr unsigned long round_up_to_next_pow2(unsigned long v) noexcept
 {
   return v <= 1 ? 1 : 1 << ((sizeof(v) * CHAR_BIT) - __builtin_clzl(v - 1));
 }
-  #endif
+#endif
 
-  // both MSVC and Intel compilers lie about having __builtin_clzll so just disable this
-  #if PetscHasBuiltin(__builtin_clzll) && !PetscDefined(HAVE_WINDOWS_COMPILERS)
+// both MSVC and Intel compilers lie about having __builtin_clzll so just disable this
+#if PetscHasBuiltin(__builtin_clzll) && !PetscDefined(HAVE_WINDOWS_COMPILERS)
 template <>
 inline constexpr unsigned long long round_up_to_next_pow2(unsigned long long v) noexcept
 {
   return v <= 1 ? 1 : 1 << ((sizeof(v) * CHAR_BIT) - __builtin_clzll(v - 1));
 }
-  #endif
+#endif
 
 template <typename T>
 static inline constexpr unsigned integer_log2(T x) noexcept
@@ -1201,11 +1200,11 @@ struct indirect_equal : KeyEqual {
 //                                             | erased                | erased
 // ==========================================================================================
 template <typename K, typename T, typename H = std::hash<K>,
-  #if PETSC_CPP_VERSION >= 14
+#if PETSC_CPP_VERSION >= 14
           typename KE = std::equal_to<>
-  #else
+#else
           typename KE = std::equal_to<K>
-  #endif
+#endif
           >
 class UnorderedMap;
 
@@ -1388,8 +1387,6 @@ PETSC_NODISCARD bool operator!=(const UnorderedMap<K, T, H, KE> &lhs, const Unor
 
 } // namespace Petsc
 
-  #undef PETSC_OPTIONAL_GET_KEY
-
-#endif // __cplusplus
+#undef PETSC_OPTIONAL_GET_KEY
 
 #endif // PETSC_CPP_UNORDERED_MAP_HPP

@@ -1,16 +1,15 @@
 #ifndef IMPLDEVICEBASE_HPP
 #define IMPLDEVICEBASE_HPP
 
-#if defined(__cplusplus)
-  #include <petsc/private/deviceimpl.h>
-  #include <petsc/private/viewerimpl.h>
+#include <petsc/private/deviceimpl.h>
+#include <petsc/private/viewerimpl.h>
 
-  #include <petsc/private/cpp/crtp.hpp>
-  #include <petsc/private/cpp/type_traits.hpp>
-  #include <petsc/private/cpp/utility.hpp>
-  #include <petsc/private/cpp/array.hpp>
+#include <petsc/private/cpp/crtp.hpp>
+#include <petsc/private/cpp/type_traits.hpp>
+#include <petsc/private/cpp/utility.hpp>
+#include <petsc/private/cpp/array.hpp>
 
-  #include <cstring> // for std::strlen
+#include <cstring> // for std::strlen
 
 namespace Petsc
 {
@@ -242,11 +241,9 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceAll(MPI_Comm comm, std::pa
 
 } // namespace Petsc
 
-  #define PETSC_DEVICE_IMPL_BASE_CLASS_HEADER(base_name, T) \
-    using base_name = ::Petsc::device::impl::DeviceBase<T>; \
-    friend base_name; \
-    using base_name::base_name
-
-#endif // __cplusplus
+#define PETSC_DEVICE_IMPL_BASE_CLASS_HEADER(base_name, T) \
+  using base_name = ::Petsc::device::impl::DeviceBase<T>; \
+  friend base_name; \
+  using base_name::base_name
 
 #endif // IMPLDEVICEBASE_HPP
