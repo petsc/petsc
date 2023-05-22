@@ -685,10 +685,54 @@ static PetscErrorCode VecRestoreLocalVectorRead_Nest(Vec v, Vec w)
 static PetscErrorCode VecSetRandom_Nest(Vec v, PetscRandom r)
 {
   Vec_Nest *bv = (Vec_Nest *)v->data;
-  PetscInt  i;
 
   PetscFunctionBegin;
-  for (i = 0; i < bv->nb; i++) PetscCall(VecSetRandom(bv->v[i], r));
+  for (PetscInt i = 0; i < bv->nb; i++) PetscCall(VecSetRandom(bv->v[i], r));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode VecErrorWeightedNorms_Nest(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  Vec_Nest *bu = (Vec_Nest *)U->data;
+  Vec_Nest *by = (Vec_Nest *)Y->data;
+  Vec_Nest *be = E ? (Vec_Nest *)E->data : NULL;
+  Vec_Nest *ba = vatol ? (Vec_Nest *)vatol->data : NULL;
+  Vec_Nest *br = vrtol ? (Vec_Nest *)vrtol->data : NULL;
+
+  PetscFunctionBegin;
+  VecNestCheckCompatible2(U, 1, Y, 2);
+  if (E) VecNestCheckCompatible2(U, 1, E, 3);
+  if (vatol) VecNestCheckCompatible2(U, 1, vatol, 6);
+  if (vrtol) VecNestCheckCompatible2(U, 1, vrtol, 8);
+  *norm      = 0.0;
+  *norma     = 0.0;
+  *normr     = 0.0;
+  *norm_loc  = 0;
+  *norma_loc = 0;
+  *normr_loc = 0;
+  for (PetscInt i = 0; i < bu->nb; i++) {
+    PetscReal n, na, nr;
+    PetscInt  n_loc, na_loc, nr_loc;
+
+    PetscCall(VecErrorWeightedNorms(bu->v[i], by->v[i], be ? be->v[i] : NULL, wnormtype, atol, ba ? ba->v[i] : NULL, rtol, br ? br->v[i] : NULL, ignore_max, &n, &n_loc, &na, &na_loc, &nr, &nr_loc));
+    if (wnormtype == NORM_INFINITY) {
+      *norm  = PetscMax(*norm, n);
+      *norma = PetscMax(*norma, na);
+      *normr = PetscMax(*normr, nr);
+    } else {
+      *norm += PetscSqr(n);
+      *norma += PetscSqr(na);
+      *normr += PetscSqr(nr);
+    }
+    *norm_loc += n_loc;
+    *norma_loc += na_loc;
+    *normr_loc += nr_loc;
+  }
+  if (wnormtype == NORM_2) {
+    *norm  = PetscSqrtReal(*norm);
+    *norma = PetscSqrtReal(*norma);
+    *normr = PetscSqrtReal(*normr);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -768,6 +812,7 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
   ops->restorelocalvector      = VecRestoreLocalVector_Nest;
   ops->restorelocalvectorread  = VecRestoreLocalVectorRead_Nest;
   ops->setrandom               = VecSetRandom_Nest;
+  ops->errorwnorm              = VecErrorWeightedNorms_Nest;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

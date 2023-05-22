@@ -122,6 +122,7 @@ PETSC_INTERN PetscErrorCode VecAXPBY_SeqKokkos(Vec, PetscScalar, PetscScalar, Ve
 PETSC_INTERN PetscErrorCode VecDuplicate_SeqKokkos(Vec, Vec *);
 PETSC_INTERN PetscErrorCode VecConjugate_SeqKokkos(Vec xin);
 PETSC_INTERN PetscErrorCode VecNorm_SeqKokkos(Vec, NormType, PetscReal *);
+PETSC_INTERN PetscErrorCode VecErrorWeightedNorms_SeqKokkos(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
 PETSC_EXTERN PetscErrorCode VecCreate_SeqKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_SeqKokkos_Private(Vec, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos(Vec);

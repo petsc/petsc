@@ -539,6 +539,7 @@ PETSC_EXTERN PetscErrorCode VecTDotBegin(Vec, Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecTDotEnd(Vec, Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecNormBegin(Vec, NormType, PetscReal *);
 PETSC_EXTERN PetscErrorCode VecNormEnd(Vec, NormType, PetscReal *);
+PETSC_EXTERN PetscErrorCode VecErrorWeightedNorms(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode VecMDotBegin(Vec, PetscInt, const Vec[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecMDotEnd(Vec, PetscInt, const Vec[], PetscScalar[]);

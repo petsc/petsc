@@ -281,6 +281,6 @@ Solving ODE "hull1972a3" with dt 0.010000, final time 5.000000 and system size 1
       TSAdapt glee glee 0:35 step  47 accepted t=0.761515   + 3.851e-14 dt=3.466e-14  wlte=0.334  wltea=    1 wlter=0.502
       TSAdapt glee glee 0:35 step  48 accepted t=0.761515   + 3.466e-14 dt=3.120e-14  wlte=0.334  wltea=    1 wlter=0.502
       TSAdapt glee glee 0:35 step  49 accepted t=0.761515   + 3.120e-14 dt=2.808e-14  wlte=0.334  wltea=    1 wlter=0.502
-Estimated Error = 1.000000E-04.
+Estimated Error = 1.000000e-04.
 Note: There is a difference between the prescribed final time 5. and the actual final time, 0.761515.
 Error           = 7.818286E-05.

@@ -108,6 +108,7 @@ struct _VecOps {
   PetscErrorCode (*sum)(Vec, PetscScalar *);
   PetscErrorCode (*setpreallocationcoo)(Vec, PetscCount, const PetscInt[]);
   PetscErrorCode (*setvaluescoo)(Vec, const PetscScalar[], InsertMode);
+  PetscErrorCode (*errorwnorm)(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
 };
 
 #if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 23))

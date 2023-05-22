@@ -748,6 +748,107 @@ PetscErrorCode VecNorm_SeqKokkos(Vec xin, NormType type, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecErrorWeightedNorms_SeqKokkos(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
+{
+  ConstPetscScalarKokkosView u, y, erra, atola, rtola;
+  PetscBool                  has_E = PETSC_FALSE, has_atol = PETSC_FALSE, has_rtol = PETSC_FALSE;
+  PetscInt                   n, n_loc = 0, na_loc = 0, nr_loc = 0;
+  PetscReal                  nrm = 0, nrma = 0, nrmr = 0;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(U, &n));
+  PetscCall(VecGetKokkosView(U, &u));
+  PetscCall(VecGetKokkosView(Y, &y));
+  if (E) {
+    PetscCall(VecGetKokkosView(E, &erra));
+    has_E = PETSC_TRUE;
+  }
+  if (vatol) {
+    PetscCall(VecGetKokkosView(vatol, &atola));
+    has_atol = PETSC_TRUE;
+  }
+  if (vrtol) {
+    PetscCall(VecGetKokkosView(vrtol, &rtola));
+    has_rtol = PETSC_TRUE;
+  }
+
+  if (wnormtype == NORM_INFINITY) {
+    PetscCallCXX(Kokkos::parallel_reduce(
+      "VecErrorWeightedNorms_INFINITY", n,
+      KOKKOS_LAMBDA(const PetscInt i, PetscReal &l_nrm, PetscReal &l_nrma, PetscReal &l_nrmr, PetscInt &l_n_loc, PetscInt &l_na_loc, PetscInt &l_nr_loc) {
+        PetscReal err, tol, tola, tolr, l_atol, l_rtol;
+        if (PetscAbsScalar(y(i)) >= ignore_max && PetscAbsScalar(u(i)) >= ignore_max) {
+          l_atol = has_atol ? PetscRealPart(atola(i)) : atol;
+          l_rtol = has_rtol ? PetscRealPart(rtola(i)) : rtol;
+          err    = has_E ? PetscAbsScalar(erra(i)) : PetscAbsScalar(y(i) - u(i));
+          tola   = l_atol;
+          tolr   = l_rtol * PetscMax(PetscAbsScalar(u(i)), PetscAbsScalar(y(i)));
+          tol    = tola + tolr;
+          if (tola > 0.) {
+            l_nrma = PetscMax(l_nrma, err / tola);
+            l_na_loc++;
+          }
+          if (tolr > 0.) {
+            l_nrmr = PetscMax(l_nrmr, err / tolr);
+            l_nr_loc++;
+          }
+          if (tol > 0.) {
+            l_nrm = PetscMax(l_nrm, err / tol);
+            l_n_loc++;
+          }
+        }
+      },
+      Kokkos::Max<PetscReal>(nrm), Kokkos::Max<PetscReal>(nrma), Kokkos::Max<PetscReal>(nrmr), n_loc, na_loc, nr_loc));
+  } else {
+    PetscCallCXX(Kokkos::parallel_reduce(
+      "VecErrorWeightedNorms_NORM_2", n,
+      KOKKOS_LAMBDA(const PetscInt i, PetscReal &l_nrm, PetscReal &l_nrma, PetscReal &l_nrmr, PetscInt &l_n_loc, PetscInt &l_na_loc, PetscInt &l_nr_loc) {
+        PetscReal err, tol, tola, tolr, l_atol, l_rtol;
+        if (PetscAbsScalar(y(i)) >= ignore_max && PetscAbsScalar(u(i)) >= ignore_max) {
+          l_atol = has_atol ? PetscRealPart(atola(i)) : atol;
+          l_rtol = has_rtol ? PetscRealPart(rtola(i)) : rtol;
+          err    = has_E ? PetscAbsScalar(erra(i)) : PetscAbsScalar(y(i) - u(i));
+          tola   = l_atol;
+          tolr   = l_rtol * PetscMax(PetscAbsScalar(u(i)), PetscAbsScalar(y(i)));
+          tol    = tola + tolr;
+          if (tola > 0.) {
+            l_nrma += PetscSqr(err / tola);
+            l_na_loc++;
+          }
+          if (tolr > 0.) {
+            l_nrmr += PetscSqr(err / tolr);
+            l_nr_loc++;
+          }
+          if (tol > 0.) {
+            l_nrm += PetscSqr(err / tol);
+            l_n_loc++;
+          }
+        }
+      },
+      nrm, nrma, nrmr, n_loc, na_loc, nr_loc));
+  }
+
+  if (wnormtype == NORM_2) {
+    *norm  = PetscSqrtReal(nrm);
+    *norma = PetscSqrtReal(nrma);
+    *normr = PetscSqrtReal(nrmr);
+  } else {
+    *norm  = nrm;
+    *norma = nrma;
+    *normr = nrmr;
+  }
+  *norm_loc  = n_loc;
+  *norma_loc = na_loc;
+  *normr_loc = nr_loc;
+
+  if (E) PetscCall(VecRestoreKokkosView(E, &erra));
+  if (vatol) PetscCall(VecRestoreKokkosView(vatol, &atola));
+  if (vrtol) PetscCall(VecRestoreKokkosView(vrtol, &rtola));
+  PetscCall(VecRestoreKokkosView(U, &u));
+  PetscCall(VecRestoreKokkosView(Y, &y));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* A functor for DotNorm2 so that we can compute dp and nm in one kernel */
 struct DotNorm2 {
   typedef PetscScalar                           value_type[];
@@ -1151,6 +1252,7 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   v->ops->aypx                   = VecAYPX_SeqKokkos;
   v->ops->waxpy                  = VecWAXPY_SeqKokkos;
   v->ops->dotnorm2               = VecDotNorm2_SeqKokkos;
+  v->ops->errorwnorm             = VecErrorWeightedNorms_SeqKokkos;
   v->ops->placearray             = VecPlaceArray_SeqKokkos;
   v->ops->replacearray           = VecReplaceArray_SeqKokkos;
   v->ops->resetarray             = VecResetArray_SeqKokkos;

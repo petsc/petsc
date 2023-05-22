@@ -34,6 +34,8 @@ Changes: Development
 
 .. rubric:: Vec:
 
+- Add ``VecErrorWeightedNorms()`` to unify weighted local truncation error norms used in ``TS``
+
 .. rubric:: PetscSection:
 
 .. rubric:: PetscPartitioner:
@@ -62,6 +64,8 @@ Changes: Development
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
+
+- Remove ``TSErrorWeightedNormInfinity()``, ``TSErrorWeightedNorm2()``, ``TSErrorWeightedENormInfinity()``, ``TSErrorWeightedENorm2()`` since the same functionality can be obtained with ``VecErrorWeightedNorms()``
 
 .. rubric:: TAO:
 
