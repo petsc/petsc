@@ -1903,7 +1903,6 @@ cdef extern from * nogil:
         PetscKSP ksp
 
 cdef extern from * nogil: # custom.h
-    PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscSNESConvergedReason*)
     PetscErrorCode SNESLogHistory(PetscSNES,PetscReal,PetscInt)
 
 
@@ -2090,7 +2089,6 @@ cdef PetscErrorCode SNESSolve_Python(
     CHKERR( SNESGetSolution(snes, &x) )
     #
     snes.iter = 0
-    snes.reason = SNES_CONVERGED_ITERATING
     #
     cdef solve = PySNES(snes).solve
     if solve is not None:
@@ -2122,14 +2120,15 @@ cdef PetscErrorCode SNESSolve_Python_default(
     CHKERR( VecNorm(X, PETSC_NORM_2, &xnorm) )
     CHKERR( VecNorm(F, PETSC_NORM_2, &fnorm) )
     #
-    CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
     CHKERR( SNESLogHistory(snes, snes.norm, lits) )
+    CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm) )
     CHKERR( SNESMonitor(snes, snes.iter, snes.norm) )
+    if snes.reason:
+        return FunctionEnd()
 
     cdef PetscObjectState ostate = -1
     cdef PetscObjectState nstate = -1
     for its from 0 <= its < snes.max_its:
-        if snes.reason: break
         CHKERR( PetscObjectStateGet(<PetscObject>X, &ostate) )
         SNESPreStep_Python(snes)
         CHKERR( PetscObjectStateGet(<PetscObject>X, &nstate) )
@@ -2146,12 +2145,10 @@ cdef PetscErrorCode SNESSolve_Python_default(
         snes.iter += 1
         #
         SNESPostStep_Python(snes)
-        CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
         CHKERR( SNESLogHistory(snes, snes.norm, lits) )
+        CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm) )
         CHKERR( SNESMonitor(snes, snes.iter, snes.norm) )
-    if snes.iter == snes.max_its:
-        if snes.reason == SNES_CONVERGED_ITERATING:
-            snes.reason = SNES_DIVERGED_MAX_IT
+        if snes.reason: break
     #
     return FunctionEnd()
 

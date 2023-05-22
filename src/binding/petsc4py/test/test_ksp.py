@@ -69,21 +69,21 @@ class BaseTestKSP(object):
         reason = PETSc.KSP.ConvergedReason.CONVERGED_ITS
         ksp.reason = reason
         self.assertEqual(ksp.reason, reason)
-        self.assertTrue(ksp.converged)
-        self.assertFalse(ksp.diverged)
-        self.assertFalse(ksp.iterating)
+        self.assertTrue(ksp.is_converged)
+        self.assertFalse(ksp.is_diverged)
+        self.assertFalse(ksp.is_iterating)
         reason = PETSc.KSP.ConvergedReason.DIVERGED_MAX_IT
         ksp.reason = reason
         self.assertEqual(ksp.reason, reason)
-        self.assertFalse(ksp.converged)
-        self.assertTrue(ksp.diverged)
-        self.assertFalse(ksp.iterating)
+        self.assertFalse(ksp.is_converged)
+        self.assertTrue(ksp.is_diverged)
+        self.assertFalse(ksp.is_iterating)
         reason = PETSc.KSP.ConvergedReason.CONVERGED_ITERATING
         ksp.reason = reason
         self.assertEqual(ksp.reason, reason)
-        self.assertFalse(ksp.converged)
-        self.assertFalse(ksp.diverged)
-        self.assertTrue(ksp.iterating)
+        self.assertFalse(ksp.is_converged)
+        self.assertFalse(ksp.is_diverged)
+        self.assertTrue(ksp.is_iterating)
 
     def testGetSetPC(self):
         oldpc = self.ksp.getPC()

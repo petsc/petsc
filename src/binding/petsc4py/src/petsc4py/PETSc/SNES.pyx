@@ -1183,6 +1183,34 @@ cdef class SNES(Object):
                                         rval1, rval2, rval3, &reason) )
         return reason
 
+    def converged(self, its: int, xnorm: float, ynorm: float, fnorm: float) -> None:
+        """Compute the convergence test and update the solver converged reason.
+
+        Collective.
+
+        Parameters
+        ----------
+        its
+            Iteration number.
+        xnorm
+            Solution norm.
+        ynorm
+            Update norm.
+        fnorm
+            Function norm.
+
+        See Also
+        --------
+        setConvergenceTest, getConvergenceTest, petsc.SNESConverged
+
+        """
+        cdef PetscInt  ival  = asInt(its)
+        cdef PetscReal rval1 = asReal(xnorm)
+        cdef PetscReal rval2 = asReal(ynorm)
+        cdef PetscReal rval3 = asReal(fnorm)
+        CHKERR( SNESConverged(self.snes, ival, rval1, rval2, rval3) )
+
+
     def setConvergenceHistory(self, length=None, reset=False) -> None:
         """Set the convergence history.
 
@@ -2281,17 +2309,17 @@ cdef class SNES(Object):
         def __set__(self, value):
             self.setConvergedReason(value)
 
-    property iterating:
+    property is_iterating:
         """Boolean indicating if the solver has not converged yet."""
         def __get__(self) -> bool:
             return self.reason == 0
 
-    property converged:
+    property is_converged:
         """Boolean indicating if the solver has converged."""
         def __get__(self) -> bool:
             return self.reason > 0
 
-    property diverged:
+    property is_diverged:
         """Boolean indicating if the solver has failed."""
         def __get__(self) -> bool:
             return self.reason < 0

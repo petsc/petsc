@@ -160,6 +160,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESSetTolerances(PetscSNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt)
     PetscErrorCode SNESGetTolerances(PetscSNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*)
 
+    PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal)
     PetscErrorCode SNESSetConvergenceTest(PetscSNES,PetscSNESConvergedFunction,void*,PetscSNESCtxDel*)
     PetscErrorCode SNESConvergedDefault(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
                              PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
