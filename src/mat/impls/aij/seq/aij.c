@@ -1198,16 +1198,6 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat A)
-{
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
-
-  PetscFunctionBegin;
-  PetscCall(PetscFree(a->perm));
-  PetscCall(PetscFree(a->jmap));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
@@ -1217,7 +1207,6 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscCall(PetscLogObjectState((PetscObject)A, "Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT, A->rmap->n, A->cmap->n, a->nz));
 #endif
   PetscCall(MatSeqXAIJFreeAIJ(A, &a->a, &a->j, &a->i));
-  PetscCall(MatResetPreallocationCOO_SeqAIJ(A));
   PetscCall(ISDestroy(&a->row));
   PetscCall(ISDestroy(&a->col));
   PetscCall(PetscFree(a->diag));
@@ -4611,21 +4600,32 @@ PetscErrorCode MatSeqAIJGetMaxRowNonzeros(Mat A, PetscInt *nz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatCOOStructDestroy_SeqAIJ(void *data)
+{
+  MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)data;
+  PetscFunctionBegin;
+  PetscCall(PetscFree(coo->perm));
+  PetscCall(PetscFree(coo->jmap));
+  PetscCall(PetscFree(coo));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
-  MPI_Comm     comm;
-  PetscInt    *i, *j;
-  PetscInt     M, N, row;
-  PetscCount   k, p, q, nneg, nnz, start, end; /* Index the coo array, so use PetscCount as their type */
-  PetscInt    *Ai;                             /* Change to PetscCount once we use it for row pointers */
-  PetscInt    *Aj;
-  PetscScalar *Aa;
-  Mat_SeqAIJ  *seqaij = (Mat_SeqAIJ *)(mat->data);
-  MatType      rtype;
-  PetscCount  *perm, *jmap;
+  MPI_Comm             comm;
+  PetscInt            *i, *j;
+  PetscInt             M, N, row;
+  PetscCount           k, p, q, nneg, nnz, start, end; /* Index the coo array, so use PetscCount as their type */
+  PetscInt            *Ai;                             /* Change to PetscCount once we use it for row pointers */
+  PetscInt            *Aj;
+  PetscScalar         *Aa;
+  Mat_SeqAIJ          *seqaij = (Mat_SeqAIJ *)(mat->data);
+  MatType              rtype;
+  PetscCount          *perm, *jmap;
+  PetscContainer       container;
+  MatCOOStruct_SeqAIJ *coo;
 
   PetscFunctionBegin;
-  PetscCall(MatResetPreallocationCOO_SeqAIJ(mat));
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCall(MatGetSize(mat, &M, &N));
   i = coo_i;
@@ -4713,22 +4713,37 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   seqaij->singlemalloc = PETSC_FALSE;            /* Ai, Aj and Aa are not allocated in one big malloc */
   seqaij->free_a = seqaij->free_ij = PETSC_TRUE; /* Let newmat own Ai, Aj and Aa */
-  /* Record COO fields */
-  seqaij->coo_n = coo_n;
-  seqaij->Atot  = coo_n - nneg; /* Annz is seqaij->nz, so no need to record that again */
-  seqaij->jmap  = jmap;         /* of length nnz+1 */
-  seqaij->perm  = perm;
+
+  // Put the COO struct in a container and then attach that to the matrix
+  PetscCall(PetscMalloc1(1, &coo));
+  coo->nz   = nnz;
+  coo->n    = coo_n;
+  coo->Atot = coo_n - nneg; // Annz is seqaij->nz, so no need to record that again
+  coo->jmap = jmap;         // of length nnz+1
+  coo->perm = perm;
+  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
+  PetscCall(PetscContainerSetPointer(container, coo));
+  PetscCall(PetscContainerSetUserDestroy(container, MatCOOStructDestroy_SeqAIJ));
+  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject)container));
+  PetscCall(PetscContainerDestroy(&container));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesCOO_SeqAIJ(Mat A, const PetscScalar v[], InsertMode imode)
 {
-  Mat_SeqAIJ  *aseq = (Mat_SeqAIJ *)A->data;
-  PetscCount   i, j, Annz = aseq->nz;
-  PetscCount  *perm = aseq->perm, *jmap = aseq->jmap;
-  PetscScalar *Aa;
+  Mat_SeqAIJ          *aseq = (Mat_SeqAIJ *)A->data;
+  PetscCount           i, j, Annz = aseq->nz;
+  PetscCount          *perm, *jmap;
+  PetscScalar         *Aa;
+  PetscContainer       container;
+  MatCOOStruct_SeqAIJ *coo;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container));
+  PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not found MatCOOStruct on this matrix");
+  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+  perm = coo->perm;
+  jmap = coo->jmap;
   PetscCall(MatSeqAIJGetArray(A, &Aa));
   for (i = 0; i < Annz; i++) {
     PetscScalar sum = 0.0;

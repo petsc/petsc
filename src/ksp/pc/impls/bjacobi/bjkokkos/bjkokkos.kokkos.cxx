@@ -4,7 +4,7 @@
 #include <petsc/private/kspimpl.h>
 #include <petscksp.h> /*I "petscksp.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <../src/mat/impls/aij/mpi/kokkos/mpiaijkok.hpp>
+#include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 #include "petscsection.h"
 #include <petscdmcomposite.h>
 #include "Kokkos_Core.hpp"

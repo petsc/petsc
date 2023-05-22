@@ -4825,7 +4825,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
   Mat         B;
   VecType     vtype;
   PetscInt    i;
-  PetscObject dm;
+  PetscObject dm, container_h, container_d;
   void (*viewf)(void);
 
   PetscFunctionBegin;
@@ -4859,6 +4859,10 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
 
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_dm", &dm));
   if (dm) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_dm", dm));
+  PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", &container_h));
+  if (container_h) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_MatCOOStruct_Host", container_h));
+  PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", &container_d));
+  if (container_d) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_MatCOOStruct_Device", container_d));
   PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

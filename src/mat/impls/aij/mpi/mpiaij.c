@@ -29,9 +29,6 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   PetscCall(PetscFree2(aij->rowvalues, aij->rowindices));
   PetscCall(PetscFree(aij->ld));
 
-  /* Free COO */
-  PetscCall(MatResetPreallocationCOO_MPIAIJ(mat));
-
   PetscCall(PetscFree(mat->data));
 
   /* may be created by MatCreateMPIAIJSumSeqAIJSymbolic */
@@ -1176,30 +1173,6 @@ PetscErrorCode MatScale_MPIAIJ(Mat A, PetscScalar aa)
   PetscFunctionBegin;
   PetscCall(MatScale(a->A, aa));
   PetscCall(MatScale(a->B, aa));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* Free COO stuff; must match allocation methods in MatSetPreallocationCOO_MPIAIJ() */
-PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat mat)
-{
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
-
-  PetscFunctionBegin;
-  PetscCall(PetscSFDestroy(&aij->coo_sf));
-  PetscCall(PetscFree(aij->Aperm1));
-  PetscCall(PetscFree(aij->Bperm1));
-  PetscCall(PetscFree(aij->Ajmap1));
-  PetscCall(PetscFree(aij->Bjmap1));
-
-  PetscCall(PetscFree(aij->Aimap2));
-  PetscCall(PetscFree(aij->Bimap2));
-  PetscCall(PetscFree(aij->Aperm2));
-  PetscCall(PetscFree(aij->Bperm2));
-  PetscCall(PetscFree(aij->Ajmap2));
-  PetscCall(PetscFree(aij->Bjmap2));
-
-  PetscCall(PetscFree2(aij->sendbuf, aij->recvbuf));
-  PetscCall(PetscFree(aij->Cperm1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -6398,13 +6371,37 @@ static PetscErrorCode ExpandJmap_Internal(PetscCount nnz1, PetscCount nnz, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatCOOStructDestroy_MPIAIJ(void *data)
+{
+  MatCOOStruct_MPIAIJ *coo = (MatCOOStruct_MPIAIJ *)data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFDestroy(&coo->sf));
+  PetscCall(PetscFree(coo->Aperm1));
+  PetscCall(PetscFree(coo->Bperm1));
+  PetscCall(PetscFree(coo->Ajmap1));
+  PetscCall(PetscFree(coo->Bjmap1));
+  PetscCall(PetscFree(coo->Aimap2));
+  PetscCall(PetscFree(coo->Bimap2));
+  PetscCall(PetscFree(coo->Aperm2));
+  PetscCall(PetscFree(coo->Bperm2));
+  PetscCall(PetscFree(coo->Ajmap2));
+  PetscCall(PetscFree(coo->Bjmap2));
+  PetscCall(PetscFree(coo->Cperm1));
+  PetscCall(PetscFree2(coo->sendbuf, coo->recvbuf));
+  PetscCall(PetscFree(coo));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
-  MPI_Comm    comm;
-  PetscMPIInt rank, size;
-  PetscInt    m, n, M, N, rstart, rend, cstart, cend; /* Sizes, indices of row/col, therefore with type PetscInt */
-  PetscCount  k, p, q, rem;                           /* Loop variables over coo arrays */
-  Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)mat->data;
+  MPI_Comm             comm;
+  PetscMPIInt          rank, size;
+  PetscInt             m, n, M, N, rstart, rend, cstart, cend; /* Sizes, indices of row/col, therefore with type PetscInt */
+  PetscCount           k, p, q, rem;                           /* Loop variables over coo arrays */
+  Mat_MPIAIJ          *mpiaij = (Mat_MPIAIJ *)mat->data;
+  PetscContainer       container;
+  MatCOOStruct_MPIAIJ *coo;
 
   PetscFunctionBegin;
   PetscCall(PetscFree(mpiaij->garray));
@@ -6417,7 +6414,6 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(VecScatterDestroy(&mpiaij->Mvctx));
   mat->assembled     = PETSC_FALSE;
   mat->was_assembled = PETSC_FALSE;
-  PetscCall(MatResetPreallocationCOO_MPIAIJ(mat));
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -6664,83 +6660,98 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(VecDestroy(&mpiaij->lvec));
   PetscCall(MatCreateVecs(mpiaij->B, &mpiaij->lvec, NULL));
 
-  mpiaij->coo_n   = coo_n;
-  mpiaij->coo_sf  = sf2;
-  mpiaij->sendlen = nleaves;
-  mpiaij->recvlen = nroots;
-
-  mpiaij->Annz = Annz;
-  mpiaij->Bnnz = Bnnz;
-
-  mpiaij->Annz2 = Annz2;
-  mpiaij->Bnnz2 = Bnnz2;
-
-  mpiaij->Atot1 = Atot1;
-  mpiaij->Atot2 = Atot2;
-  mpiaij->Btot1 = Btot1;
-  mpiaij->Btot2 = Btot2;
-
-  mpiaij->Ajmap1 = Ajmap1;
-  mpiaij->Aperm1 = Aperm1;
-
-  mpiaij->Bjmap1 = Bjmap1;
-  mpiaij->Bperm1 = Bperm1;
-
-  mpiaij->Aimap2 = Aimap2;
-  mpiaij->Ajmap2 = Ajmap2;
-  mpiaij->Aperm2 = Aperm2;
-
-  mpiaij->Bimap2 = Bimap2;
-  mpiaij->Bjmap2 = Bjmap2;
-  mpiaij->Bperm2 = Bperm2;
-
-  mpiaij->Cperm1 = Cperm1;
-
-  /* Allocate in preallocation. If not used, it has zero cost on host */
-  PetscCall(PetscMalloc2(mpiaij->sendlen, &mpiaij->sendbuf, mpiaij->recvlen, &mpiaij->recvbuf));
+  // Put the COO struct in a container and then attach that to the matrix
+  PetscCall(PetscMalloc1(1, &coo));
+  coo->n       = coo_n;
+  coo->sf      = sf2;
+  coo->sendlen = nleaves;
+  coo->recvlen = nroots;
+  coo->Annz    = Annz;
+  coo->Bnnz    = Bnnz;
+  coo->Annz2   = Annz2;
+  coo->Bnnz2   = Bnnz2;
+  coo->Atot1   = Atot1;
+  coo->Atot2   = Atot2;
+  coo->Btot1   = Btot1;
+  coo->Btot2   = Btot2;
+  coo->Ajmap1  = Ajmap1;
+  coo->Aperm1  = Aperm1;
+  coo->Bjmap1  = Bjmap1;
+  coo->Bperm1  = Bperm1;
+  coo->Aimap2  = Aimap2;
+  coo->Ajmap2  = Ajmap2;
+  coo->Aperm2  = Aperm2;
+  coo->Bimap2  = Bimap2;
+  coo->Bjmap2  = Bjmap2;
+  coo->Bperm2  = Bperm2;
+  coo->Cperm1  = Cperm1;
+  // Allocate in preallocation. If not used, it has zero cost on host
+  PetscCall(PetscMalloc2(coo->sendlen, &coo->sendbuf, coo->recvlen, &coo->recvbuf));
+  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
+  PetscCall(PetscContainerSetPointer(container, coo));
+  PetscCall(PetscContainerSetUserDestroy(container, MatCOOStructDestroy_MPIAIJ));
+  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject)container));
+  PetscCall(PetscContainerDestroy(&container));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat, const PetscScalar v[], InsertMode imode)
 {
-  Mat_MPIAIJ       *mpiaij = (Mat_MPIAIJ *)mat->data;
-  Mat               A = mpiaij->A, B = mpiaij->B;
-  PetscCount        Annz = mpiaij->Annz, Annz2 = mpiaij->Annz2, Bnnz = mpiaij->Bnnz, Bnnz2 = mpiaij->Bnnz2;
-  PetscScalar      *Aa, *Ba;
-  PetscScalar      *sendbuf = mpiaij->sendbuf;
-  PetscScalar      *recvbuf = mpiaij->recvbuf;
-  const PetscCount *Ajmap1 = mpiaij->Ajmap1, *Ajmap2 = mpiaij->Ajmap2, *Aimap2 = mpiaij->Aimap2;
-  const PetscCount *Bjmap1 = mpiaij->Bjmap1, *Bjmap2 = mpiaij->Bjmap2, *Bimap2 = mpiaij->Bimap2;
-  const PetscCount *Aperm1 = mpiaij->Aperm1, *Aperm2 = mpiaij->Aperm2, *Bperm1 = mpiaij->Bperm1, *Bperm2 = mpiaij->Bperm2;
-  const PetscCount *Cperm1 = mpiaij->Cperm1;
+  Mat_MPIAIJ          *mpiaij = (Mat_MPIAIJ *)mat->data;
+  Mat                  A = mpiaij->A, B = mpiaij->B;
+  PetscScalar         *Aa, *Ba;
+  PetscScalar         *sendbuf, *recvbuf;
+  const PetscCount    *Ajmap1, *Ajmap2, *Aimap2;
+  const PetscCount    *Bjmap1, *Bjmap2, *Bimap2;
+  const PetscCount    *Aperm1, *Aperm2, *Bperm1, *Bperm2;
+  const PetscCount    *Cperm1;
+  PetscContainer       container;
+  MatCOOStruct_MPIAIJ *coo;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container));
+  PetscCheck(container, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not found MatCOOStruct on this matrix");
+  PetscCall(PetscContainerGetPointer(container, (void **)&coo));
+  sendbuf = coo->sendbuf;
+  recvbuf = coo->recvbuf;
+  Ajmap1  = coo->Ajmap1;
+  Ajmap2  = coo->Ajmap2;
+  Aimap2  = coo->Aimap2;
+  Bjmap1  = coo->Bjmap1;
+  Bjmap2  = coo->Bjmap2;
+  Bimap2  = coo->Bimap2;
+  Aperm1  = coo->Aperm1;
+  Aperm2  = coo->Aperm2;
+  Bperm1  = coo->Bperm1;
+  Bperm2  = coo->Bperm2;
+  Cperm1  = coo->Cperm1;
+
   PetscCall(MatSeqAIJGetArray(A, &Aa)); /* Might read and write matrix values */
   PetscCall(MatSeqAIJGetArray(B, &Ba));
 
   /* Pack entries to be sent to remote */
-  for (PetscCount i = 0; i < mpiaij->sendlen; i++) sendbuf[i] = v[Cperm1[i]];
+  for (PetscCount i = 0; i < coo->sendlen; i++) sendbuf[i] = v[Cperm1[i]];
 
   /* Send remote entries to their owner and overlap the communication with local computation */
-  PetscCall(PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf, MPIU_SCALAR, PETSC_MEMTYPE_HOST, sendbuf, PETSC_MEMTYPE_HOST, recvbuf, MPI_REPLACE));
+  PetscCall(PetscSFReduceWithMemTypeBegin(coo->sf, MPIU_SCALAR, PETSC_MEMTYPE_HOST, sendbuf, PETSC_MEMTYPE_HOST, recvbuf, MPI_REPLACE));
   /* Add local entries to A and B */
-  for (PetscCount i = 0; i < Annz; i++) { /* All nonzeros in A are either zero'ed or added with a value (i.e., initialized) */
-    PetscScalar sum = 0.0;                /* Do partial summation first to improve numerical stability */
+  for (PetscCount i = 0; i < coo->Annz; i++) { /* All nonzeros in A are either zero'ed or added with a value (i.e., initialized) */
+    PetscScalar sum = 0.0;                     /* Do partial summation first to improve numerical stability */
     for (PetscCount k = Ajmap1[i]; k < Ajmap1[i + 1]; k++) sum += v[Aperm1[k]];
     Aa[i] = (imode == INSERT_VALUES ? 0.0 : Aa[i]) + sum;
   }
-  for (PetscCount i = 0; i < Bnnz; i++) {
+  for (PetscCount i = 0; i < coo->Bnnz; i++) {
     PetscScalar sum = 0.0;
     for (PetscCount k = Bjmap1[i]; k < Bjmap1[i + 1]; k++) sum += v[Bperm1[k]];
     Ba[i] = (imode == INSERT_VALUES ? 0.0 : Ba[i]) + sum;
   }
-  PetscCall(PetscSFReduceEnd(mpiaij->coo_sf, MPIU_SCALAR, sendbuf, recvbuf, MPI_REPLACE));
+  PetscCall(PetscSFReduceEnd(coo->sf, MPIU_SCALAR, sendbuf, recvbuf, MPI_REPLACE));
 
   /* Add received remote entries to A and B */
-  for (PetscCount i = 0; i < Annz2; i++) {
+  for (PetscCount i = 0; i < coo->Annz2; i++) {
     for (PetscCount k = Ajmap2[i]; k < Ajmap2[i + 1]; k++) Aa[Aimap2[i]] += recvbuf[Aperm2[k]];
   }
-  for (PetscCount i = 0; i < Bnnz2; i++) {
+  for (PetscCount i = 0; i < coo->Bnnz2; i++) {
     for (PetscCount k = Bjmap2[i]; k < Bjmap2[i + 1]; k++) Ba[Bimap2[i]] += recvbuf[Bperm2[k]];
   }
   PetscCall(MatSeqAIJRestoreArray(A, &Aa));

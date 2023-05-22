@@ -137,7 +137,7 @@ static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe, Mat A)
 
 int main(int argc, char **args)
 {
-  Mat         A;
+  Mat         A, B;
   FEStruct    fe;
   PetscMPIInt size;
   PetscBool   is_kokkos, is_cuda;
@@ -148,7 +148,10 @@ int main(int argc, char **args)
   PetscCheck(size <= 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Demonstration is only for sequential runs");
 
   PetscCall(CreateFEStruct(&fe));
-  PetscCall(CreateMatrix(&fe, &A));
+
+  PetscCall(CreateMatrix(&fe, &B));
+  PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &A));
+  PetscCall(MatDestroy(&B));
 
   PetscCall(FillMatrixCPU(&fe, A));
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
@@ -196,5 +199,10 @@ int main(int argc, char **args)
       suffix: cuda
       requires: cuda
       args: -mat_type aijcusparse
+
+    test:
+      suffix: hip
+      requires: hip
+      args: -mat_type aijhipsparse
 
 TEST*/

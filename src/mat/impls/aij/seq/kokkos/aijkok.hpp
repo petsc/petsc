@@ -94,10 +94,6 @@ struct Mat_SeqAIJKokkos {
   PetscBool           transpose_updated, hermitian_updated; /* Are At, Ah updated wrt the matrix? */
   MatRowMapKokkosView transpose_perm;                       // A permutation array making Ta(i) = Aa(perm(i)), where T = A^t
 
-  /* COO stuff */
-  PetscCountKokkosView jmap_d; /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
-  PetscCountKokkosView perm_d; /* The permutation array in sorting (i,j) by row and then by col */
-
   /* Construct a nrows by ncols matrix with nnz nonzeros from the given (i,j,a) on host. Caller also specifies a nonzero state */
   Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, const MatRowMapType *i, MatColIdxType *j, MatScalarType *a, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
   {
@@ -159,12 +155,6 @@ struct Mat_SeqAIJKokkos {
 
   /* Change the csrmat size to n */
   void SetColSize(MatColIdxType n) { csrmat = KokkosCsrMatrix("csrmat", n, a_dual.view_device(), csrmat.graph); }
-
-  void SetUpCOO(const Mat_SeqAIJ *aij)
-  {
-    jmap_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(aij->jmap, aij->nz + 1));
-    perm_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(aij->perm, aij->Atot));
-  }
 
   void SetDiagonal(const MatRowMapType *diag)
   {
