@@ -1201,7 +1201,7 @@ cdef class SNES(Object):
 
         See Also
         --------
-        setConvergenceTest, getConvergenceTest, petsc.SNESConverged
+        setConvergenceTest, getConvergenceTest
 
         """
         cdef PetscInt  ival  = asInt(its)
