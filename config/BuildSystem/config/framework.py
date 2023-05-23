@@ -171,7 +171,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
     help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
     help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler terminal output when checking if compiles succeed'))
-    help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 0, 'Ignore linker terminal output when checking if links succeed'))
+    help.addArgument('Framework', '-ignoreLinkOutput=<bool>',    nargs.ArgBool(None, 1, 'Ignore linker terminal output when checking if links succeed'))
     help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings in terminal output when checking if it succeeded'))
     help.addArgument('Framework', '-doCleanup=<bool>',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
     help.addArgument('Framework', '-with-executables-search-path', nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
@@ -538,8 +538,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterLinkOutput(self, output, filterAlways = 0):
     '''
-       With --ignoreLinkOutput=1 it filters all linker messages
-       With --ignoreLinkOutput=0 (default), it filters only linker messages known to be harmless
+       With --ignoreLinkOutput=1 (default), it filters all linker messages
+       With --ignoreLinkOutput=0 it filters only linker messages known to be harmless
     '''
     output = output.strip()
     if output.find('relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol') >= 0: return output
