@@ -47,4 +47,4 @@ SNES Object: 1 MPI process
         not using I-node routines
 number of SNES iterations = 6
 
-Norm of error 1.01199e-13, Iterations 6
+Norm of error 1.01208e-13, Iterations 6

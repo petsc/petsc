@@ -62,6 +62,9 @@ Changes: Development
 
 .. rubric:: SNES:
 
+- Add a convenient, developer-level ``SNESConverged()`` function that runs the convergence test and updates the internal converged reason.
+- Swap the order of monitor and convergence test. Now monitors are always called after a convergence test.
+
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:

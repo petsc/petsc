@@ -1015,9 +1015,9 @@ cdef class KSP(Object):
         converged
             Callback which computes the convergence.
         args
-            Positional arguments for callback function ``converged``.
+            Positional arguments for callback function.
         kargs
-            Keyword arguments for callback function ``converged``.
+            Keyword arguments for callback function.
 
         Notes
         -----
@@ -1192,9 +1192,9 @@ cdef class KSP(Object):
         monitor
             Callback which monitors the convergence.
         args
-            Positional arguments for callback function ``converged``.
+            Positional arguments for callback function.
         kargs
-            Keyword arguments for callback function ``converged``.
+            Keyword arguments for callback function.
 
         Notes
         -----
@@ -1644,8 +1644,7 @@ cdef class KSP(Object):
 
         If using a direct method (e.g., via the KSP solver
         `Type.PREONLY` and a preconditioner such as `PC.Type.LU` or
-        `PC.Type.ILU`, then its=1. See `setTolerances` and
-        `converged` for more details.
+        `PC.Type.ILU`, then its=1. See `setTolerances` for more details.
 
         **Understanding Convergence**
 
@@ -1655,8 +1654,8 @@ cdef class KSP(Object):
 
         See Also
         --------
-        create, setUp, destroy, setTolerances, converged, solveTranspose, its
-        Mat.setNullSpace, Mat.setTransposeNullSpace, Type, converged
+        create, setUp, destroy, setTolerances, is_converged, solveTranspose, its
+        Mat.setNullSpace, Mat.setTransposeNullSpace, Type,
         setErrorIfNotConverged petsc_options, petsc.KSPSolve
 
         """
@@ -2353,18 +2352,18 @@ cdef class KSP(Object):
         def __set__(self, value):
             self.setConvergedReason(value)
 
-    property iterating:
-        """Whether the solver is still iterating."""
+    property is_iterating:
+        """Boolean indicating if the solver has not converged yet."""
         def __get__(self) -> bool:
             return self.reason == 0
 
-    property converged:
-        """Whether the solver has converged."""
+    property is_converged:
+        """Boolean indicating if the solver has converged."""
         def __get__(self) -> bool:
             return self.reason > 0
 
-    property diverged:
-        """Whether the solver has diverged."""
+    property is_diverged:
+        """Boolean indicating if the solver has failed."""
         def __get__(self) -> bool:
             return self.reason < 0
 

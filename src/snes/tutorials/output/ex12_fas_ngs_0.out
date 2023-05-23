@@ -51,7 +51,7 @@
       2 SNES Function norm < 1.e-11
     1 SNES Function norm 1.13316e-07 
   8 SNES Function norm 1.13316e-07 
-L_2 Error: 0.0199796
+L_2 Error: 0.0198799
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 8
 SNES Object: 1 MPI process
   type: fas
@@ -64,6 +64,7 @@ SNES Object: 1 MPI process
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=2
       total number of function evaluations=2
+      norm schedule ALWAYS
       SNESLineSearch Object: (fas_coarse_) 1 MPI process
         type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12
@@ -91,7 +92,7 @@ SNES Object: 1 MPI process
     Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 1 MPI process
       type: ngs
-        Use finite difference secant approximation with coloring with h = 1e-08 
+        Use finite difference secant approximation with coloring with h = 1.49012e-08 
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       total number of function evaluations=2

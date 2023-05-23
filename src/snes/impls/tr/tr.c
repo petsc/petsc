@@ -375,11 +375,11 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   deltaM     = neP->deltaM;
   neP->delta = delta;
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
-  PetscCall(SNESMonitor(snes, 0, fnorm));
 
   /* test convergence */
   rho_satisfied = PETSC_FALSE;
-  PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
+  PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (has_objective) PetscCall(SNESComputeObjective(snes, X, &fk));
@@ -553,7 +553,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       PetscCall(PetscInfo(snes, "Trying again in smaller region\n"));
       /* check to see if progress is hopeless */
       PetscCall(SNESTR_Converged_Private(snes, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP));
-      if (!snes->reason) PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
+      if (!snes->reason) PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
       if (snes->reason == SNES_CONVERGED_SNORM_RELATIVE) snes->reason = SNES_DIVERGED_TR_DELTA;
       snes->numFailures++;
       /* We're not progressing, so return with the current iterate */
@@ -577,19 +577,15 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       snes->ynorm = ynorm;
       PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
       PetscCall(SNESLogConvergenceHistory(snes, snes->norm, lits));
-      PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
 
       /* Test for convergence, xnorm = || X || */
       PetscCall(VecNorm(X, NORM_2, &xnorm));
-      PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
+      PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
+      PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
       if (snes->reason) break;
     }
   }
 
-  if (snes->iter == maxits) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
-    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
-  }
   if (clear_converged_test) {
     PetscCall(KSPGetAndClearConvergenceTest(ksp, &ctx->convtest, &ctx->convctx, &ctx->convdestroy));
     PetscCall(PetscFree(ctx));

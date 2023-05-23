@@ -3884,6 +3884,41 @@ PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, void *
 }
 
 /*@
+   SNESConverged - Run the convergence test and update the `SNESConvergedReason`.
+
+   Collective
+
+   Input Parameters:
++    snes - the `SNES` context
+.    it - current iteration
+.    xnorm - 2-norm of current iterate
+.    snorm - 2-norm of current step
+-    fnorm - 2-norm of function
+
+   Level: developer
+
+   Note:
+   This routine is called by the `SNES` implementations.
+   It does not typically need to be called by the user.
+
+.seealso: [](chapter_snes), `SNES`, `SNESSolve`, `SNESSetConvergenceTest()`, `SNESGetConvergenceTest()`
+@*/
+PetscErrorCode SNESConverged(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm)
+{
+  PetscFunctionBegin;
+  if (!snes->reason) {
+    if (snes->normschedule == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes, converged, it, xnorm, snorm, fnorm, &snes->reason, snes->cnvP);
+    if (it == snes->max_its && !snes->reason) {
+      if (snes->normschedule == SNES_NORM_ALWAYS) {
+        PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", snes->max_its));
+        snes->reason = SNES_DIVERGED_MAX_IT;
+      } else snes->reason = SNES_CONVERGED_ITS;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
    SNESMonitor - runs the user provided monitor routines, if they exist
 
    Collective
@@ -4637,10 +4672,11 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
       snes->numFailures = 0;
     }
 
+    snes->reason = SNES_CONVERGED_ITERATING;
     PetscCall(PetscLogEventBegin(SNES_Solve, snes, 0, 0, 0));
     PetscUseTypeMethod(snes, solve);
     PetscCall(PetscLogEventEnd(SNES_Solve, snes, 0, 0, 0));
-    PetscCheck(snes->reason, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error, solver returned without setting converged reason");
+    PetscCheck(snes->reason, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error, solver %s returned without setting converged reason", ((PetscObject)snes)->type_name);
     snes->domainerror = PETSC_FALSE; /* clear the flag if it has been set */
 
     if (snes->lagjac_persist) snes->jac_iter += snes->iter;

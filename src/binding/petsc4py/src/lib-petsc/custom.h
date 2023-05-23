@@ -413,28 +413,7 @@ PetscErrorCode SNESConvergenceTestCall(SNES snes, PetscInt its, PetscReal xnorm,
   PetscCheck(xnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
   PetscCheck(ynorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");
   PetscCheck(fnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
-  PetscUseTypeMethod(snes,converged ,its,xnorm,ynorm,fnorm,reason,snes->cnvP);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static
-PetscErrorCode SNESConverged(SNES snes,PetscInt iter,PetscReal xnorm,PetscReal ynorm,PetscReal fnorm,SNESConvergedReason *reason)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (reason) PetscValidPointer(reason,2);
-  if (!iter) {
-    snes->reason = SNES_CONVERGED_ITERATING;
-    snes->ttol = fnorm*snes->rtol;
-  }
-  if (snes->ops->converged) {
-    PetscUseTypeMethod(snes,converged ,iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
-  } else {
-    PetscCall(SNESConvergedSkip(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0));
-    /*PetscCall(SNESConvergedDefault(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0));*/
-  }
-  snes->norm = fnorm;
-  if (reason) *reason = snes->reason;
+  PetscUseTypeMethod(snes,converged,its,xnorm,ynorm,fnorm,reason,snes->cnvP);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

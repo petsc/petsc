@@ -5,49 +5,49 @@
       1 SNES Function norm 55.8605 
       2 SNES Function norm 69.0578 
       3 SNES Function norm 17.2709 
-      4 SNES Function norm 2.50332 
-      5 SNES Function norm 0.0362589 
-      6 SNES Function norm 8.67078e-06 
+      4 SNES Function norm 2.50333 
+      5 SNES Function norm 0.0362593 
+      6 SNES Function norm 8.67106e-06 
       7 SNES Function norm < 1.e-11
     0 SNES Function norm 68.4529 
     1 SNES Function norm 20.5996 
   1 SNES Function norm 20.5996 
     0 SNES Function norm 20.5996 
-    1 SNES Function norm 6.96931 
+    1 SNES Function norm 6.96932 
       0 SNES Function norm 4.90654 
-      1 SNES Function norm 1.23849 
-      2 SNES Function norm 0.0505996 
-      3 SNES Function norm 0.000529147 
-      4 SNES Function norm 4.85565e-08 
+      1 SNES Function norm 1.23848 
+      2 SNES Function norm 0.0505983 
+      3 SNES Function norm 0.000529124 
+      4 SNES Function norm 4.85532e-08 
     0 SNES Function norm 16.6477 
-    1 SNES Function norm 11.6306 
-  2 SNES Function norm 11.6306 
-    0 SNES Function norm 11.6306 
-    1 SNES Function norm 3.2244 
-      0 SNES Function norm 2.39651 
-      1 SNES Function norm 0.342881 
-      2 SNES Function norm 0.0136093 
-      3 SNES Function norm 2.36146e-05 
-      4 SNES Function norm 7.267e-11 
-    0 SNES Function norm 1.96251 
-    1 SNES Function norm 0.32281 
-  3 SNES Function norm 0.32281 
-    0 SNES Function norm 0.32281 
-    1 SNES Function norm 0.0148169 
-      0 SNES Function norm 0.00758821 
-      1 SNES Function norm 6.45461e-06 
+    1 SNES Function norm 11.6307 
+  2 SNES Function norm 11.6307 
+    0 SNES Function norm 11.6307 
+    1 SNES Function norm 3.22446 
+      0 SNES Function norm 2.39658 
+      1 SNES Function norm 0.342897 
+      2 SNES Function norm 0.0136105 
+      3 SNES Function norm 2.36185e-05 
+      4 SNES Function norm 7.269e-11 
+    0 SNES Function norm 1.96253 
+    1 SNES Function norm 0.322793 
+  3 SNES Function norm 0.322793 
+    0 SNES Function norm 0.322793 
+    1 SNES Function norm 0.0148152 
+      0 SNES Function norm 0.00758764 
+      1 SNES Function norm 6.45362e-06 
       2 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.0129697 
-    1 SNES Function norm 1.75964e-05 
-  4 SNES Function norm 1.75964e-05 
-    0 SNES Function norm 1.75964e-05 
-    1 SNES Function norm 5.752e-11 
-      0 SNES Function norm 2.219e-11 
+    0 SNES Function norm 0.0129681 
+    1 SNES Function norm 1.75916e-05 
+  4 SNES Function norm 1.75916e-05 
+    0 SNES Function norm 1.75916e-05 
+    1 SNES Function norm 5.749e-11 
+      0 SNES Function norm 2.218e-11 
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 5.307e-11 
+    0 SNES Function norm 5.304e-11 
     1 SNES Function norm < 1.e-11
   5 SNES Function norm < 1.e-11
-L_2 Error: 0.00435416
+L_2 Error: 0.00433493
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 SNES Object: 1 MPI process
   type: fas
@@ -60,6 +60,7 @@ SNES Object: 1 MPI process
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=1
       total number of function evaluations=1
+      norm schedule ALWAYS
       SNESLineSearch Object: (fas_coarse_) 1 MPI process
         type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12

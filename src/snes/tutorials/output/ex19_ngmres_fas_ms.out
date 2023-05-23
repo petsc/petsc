@@ -1,11 +1,12 @@
 lid velocity = 200., prandtl # = 1., grashof # = 10000.
       0 SNES Function norm 2240.15 
       1 SNES Function norm 0.590311 
-      2 SNES Function norm 5.84956e-06 
+      2 SNES Function norm 5.84955e-06 
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
     0 SNES Function norm 3455.4 
     1 SNES Function norm 201221. 
-  Nonlinear solve did not converge due to DIVERGED_INNER iterations 1
+    2 SNES Function norm 2.47608e+09 
+  Nonlinear solve did not converge due to DIVERGED_DTOL iterations 2
   SNES Object: 2 MPI processes
     type: ngmres
       Number of stored past updates: 30
@@ -14,7 +15,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
       Restart on F_M residual increase: FALSE
     maximum iterations=10000, maximum function evaluations=30000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-    total number of function evaluations=2
+    total number of function evaluations=3
     norm schedule ALWAYS
     total number of grid sequence refinements=2
     Jacobian is built using a DMDA local Jacobian
@@ -34,6 +35,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
           tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
           total number of linear solver iterations=8
           total number of function evaluations=43
+          norm schedule ALWAYS
           Jacobian is built using colored finite differences on a DMDA
           SNESLineSearch Object: (npc_fas_coarse_) 2 MPI processes
             type: bt
@@ -105,4 +107,4 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
       total number of function evaluations=0
       norm schedule FINALONLY
       Jacobian is built using a DMDA local Jacobian
-Number of SNES iterations = 1
+Number of SNES iterations = 2

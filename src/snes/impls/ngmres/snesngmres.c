@@ -208,8 +208,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
   PetscCall(SNESMonitor(snes, 0, fnorm));
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(SNESNGMRESUpdateSubspace_Private(snes, 0, 0, F, fnorm, X));
 
@@ -309,8 +309,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     snes->norm = fnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, snes->iter));
+    PetscCall(SNESConverged(snes, snes->iter, 0, 0, fnorm));
     PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
-    PetscUseTypeMethod(snes, converged, snes->iter, 0, 0, fnorm, &snes->reason, snes->cnvP);
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;

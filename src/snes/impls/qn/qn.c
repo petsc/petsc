@@ -93,7 +93,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscCall(SNESMonitor(snes, 0, fnorm));
 
   /* test convergence */
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (snes->npc && snes->npcside == PC_RIGHT) {
@@ -166,10 +166,10 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     snes->ynorm = ynorm;
 
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, snes->iter));
-    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
 
     /* set parameter for default relative tolerance convergence test */
-    PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
+    PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
     if (snes->npc && snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       PetscCall(SNESApplyNPC(snes, X, F, D));
@@ -222,10 +222,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       }
       PetscCall(MatLMVMReset(qn->B, PETSC_FALSE));
     }
-  }
-  if (i == snes->max_its) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", snes->max_its));
-    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -16,24 +16,24 @@
    11 KSP Residual norm 1.04203e-06 
     0 KSP Residual norm 0.00484667 
     1 KSP Residual norm 0.00238315 
-    2 KSP Residual norm 0.000683336 
+    2 KSP Residual norm 0.000683337 
     3 KSP Residual norm 0.000220464 
     4 KSP Residual norm 6.71826e-05 
     5 KSP Residual norm 1.42507e-05 
     6 KSP Residual norm 3.09073e-06 
-    7 KSP Residual norm 8.42638e-07 
+    7 KSP Residual norm 8.42639e-07 
     8 KSP Residual norm 2.72023e-07 
     9 KSP Residual norm 1.057e-07 
    10 KSP Residual norm 3.23319e-08 
-    0 KSP Residual norm 2.3035e-06 
+    0 KSP Residual norm 2.30349e-06 
     1 KSP Residual norm 1.14791e-06 
-    2 KSP Residual norm 3.80804e-07 
-    3 KSP Residual norm 1.22777e-07 
-    4 KSP Residual norm 3.63873e-08 
-    5 KSP Residual norm 8.37108e-09 
-    6 KSP Residual norm 1.90824e-09 
+    2 KSP Residual norm 3.80808e-07 
+    3 KSP Residual norm 1.22779e-07 
+    4 KSP Residual norm 3.63875e-08 
+    5 KSP Residual norm 8.37107e-09 
+    6 KSP Residual norm 1.90825e-09 
     7 KSP Residual norm 5.820e-10 
     8 KSP Residual norm 1.360e-10 
-    9 KSP Residual norm 3.896e-11 
+    9 KSP Residual norm 3.897e-11 
    10 KSP Residual norm < 1.e-11
-Number of SNES iterations = 5 fnorm 6.11675e-12
+Number of SNES iterations = 5 fnorm 6.11657e-12
