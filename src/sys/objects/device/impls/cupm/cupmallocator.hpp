@@ -1,16 +1,15 @@
 #ifndef CUPMALLOCATOR_HPP
 #define CUPMALLOCATOR_HPP
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/object_pool.hpp>
+#include <petsc/private/cpp/object_pool.hpp>
 
-  #include "../segmentedmempool.hpp"
-  #include "cupmthrustutility.hpp"
+#include "../segmentedmempool.hpp"
+#include "cupmthrustutility.hpp"
 
-  #include <thrust/device_ptr.h>
-  #include <thrust/fill.h>
+#include <thrust/device_ptr.h>
+#include <thrust/fill.h>
 
-  #include <limits> // std::numeric_limits
+#include <limits> // std::numeric_limits
 
 namespace Petsc
 {
@@ -155,7 +154,5 @@ inline PetscErrorCode DeviceAllocator<T, P>::set_canary(value_type *ptr, size_ty
 } // namespace device
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // CUPMALLOCATOR_HPP
