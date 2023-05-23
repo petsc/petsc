@@ -44,10 +44,8 @@ PetscErrorCode PetscGetWorkingDirectory(char path[], size_t len)
   PetscCheck(getcwd(path, len), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in getcwd() due to \"%s\"", strerror(errno));
 #elif defined(PETSC_HAVE__GETCWD)
   _getcwd(path, len);
-#elif defined(PETSC_HAVE_GETWD)
-  getwd(path);
 #else
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Could not find getcwd() or getwd()");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Could not find getcwd()");
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

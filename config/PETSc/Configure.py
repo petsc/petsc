@@ -141,7 +141,7 @@ class Configure(config.base.Configure):
                                             'sys/socket','sys/wait','netinet/in','netdb','direct','time','Ws2tcpip','sys/types',
                                             'WindowsX','float','ieeefp','stdint','inttypes','immintrin'])
     functions = ['access','_access','clock','drand48','getcwd','_getcwd','getdomainname','gethostname',
-                 'getwd','posix_memalign','popen','PXFGETARG','rand','getpagesize',
+                 'posix_memalign','popen','PXFGETARG','rand','getpagesize',
                  'readlink','realpath','usleep','sleep','_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
