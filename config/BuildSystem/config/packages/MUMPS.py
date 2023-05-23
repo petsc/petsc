@@ -179,7 +179,7 @@ class Configure(config.package.Package):
         self.logPrintBox('Compiling MUMPS; this may take several minutes')
         output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp+' prerequisites', cwd=self.packageDir, timeout=2500, log = self.log)
         output3,err3,ret3 = config.package.Package.executeShellCommand(self.make.make_jnp+' all', cwd=os.path.join(self.packageDir,'src'), timeout=2500, log = self.log)
-        libDir     = os.path.join(self.installDir, self.libdir)
+        libDir     = self.libDir
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing MUMPS; this may take several minutes')
         output,err,ret = config.package.Package.executeShellCommandSeq(

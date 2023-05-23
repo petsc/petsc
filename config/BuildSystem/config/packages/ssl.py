@@ -32,7 +32,7 @@ class Configure(config.package.GNUPackage):
     ## prefix
     args.append('--prefix='+self.installDir)
     args.append('MAKE='+self.make.make)
-    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+    args.append('--libdir='+self.libDir)
     ## compiler args
     self.pushLanguage('C')
     if not self.installwithbatch and hasattr(self.setCompilers,'cross_cc'):

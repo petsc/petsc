@@ -203,7 +203,7 @@ class Configure(config.package.Package):
         # copy files directly instead of invoking the rule
         if 'sparse-lib' not in self.makerulename:
           incDir = os.path.join(self.installDir,'include')
-          libDir = os.path.join(self.installDir,'lib')
+          libDir = self.libDir
           output,err,ret = config.package.Package.executeShellCommand(self.make.make + ' install_dirs', cwd=self.packageDir, timeout=2500, log = self.log)
           output,err,ret = config.package.Package.executeShellCommand(self.make.make + ' pkgconfig', cwd=self.packageDir, timeout=2500, log = self.log)
           output,err,ret = config.package.Package.executeShellCommand('cp '+os.path.join(self.packageDir,'include','*.h')+' '+incDir, timeout=100, log=self.log)

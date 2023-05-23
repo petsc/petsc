@@ -20,7 +20,7 @@ class Configure(config.package.Package):
   def Install(self):
     import os, glob
 
-    libDir         = os.path.join(self.installDir, 'lib')
+    libDir         = self.libDir
     includeDir     = os.path.join(self.installDir, 'include')
     shareDir       = os.path.join(self.installDir, 'share')
 

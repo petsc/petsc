@@ -23,7 +23,7 @@ class Configure(config.package.Package):
     import config.base
     import fileinput
 
-    libDir         = os.path.join(self.installDir, 'lib')
+    libDir         = self.libDir
     includeDir     = os.path.join(self.installDir, 'include')
     makeinc        = os.path.join(self.packageDir, 'make.inc')
     configheader   = os.path.join(self.packageDir, 'configureheader.h')

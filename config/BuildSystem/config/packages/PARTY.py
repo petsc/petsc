@@ -31,7 +31,7 @@ class Configure(config.package.Package):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling party; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean && make all && cd .. && mkdir -p '+os.path.join(self.installDir,self.libdir)+'&& cp -f *.a '+os.path.join(self.installDir,self.libdir,'')+' && mkdir -p '+os.path.join(self.installDir,self.includedir)+' && cp -f party_lib.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean && make all && cd .. && mkdir -p '+self.libDir+'&& cp -f *.a '+os.path.join(self.libDir,'')+' && mkdir -p '+os.path.join(self.installDir,self.includedir)+' && cp -f party_lib.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on PARTY: '+str(e))
       self.postInstall(output+err,'make.inc')

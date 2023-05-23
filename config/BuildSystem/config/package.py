@@ -81,8 +81,7 @@ class Package(config.base.Configure):
                                          # language, but can have multiple, such as ['FC', 'Cxx']. In PETSc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
                                          # We use the first language in the list to check include headers, library functions and versions.
     self.noMPIUni               = 0    # 1 means requires a real MPI
-    self.libdir                 = 'lib'     # location of libraries in the package directory tree
-    self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
+    self.libDirs                = ['lib']   # locations of libraries in the package directory tree; self.libDir is self.installDir + self.libDirs[0]
     self.includedir             = 'include' # location of includes in the package directory tree
     self.license                = None # optional license text
     self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
@@ -489,7 +488,7 @@ Specified prefix-dir: %s is read-only! "%s" cannot install at this location! Sug
 Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.package, prefixdir, prefixdir)
       raise RuntimeError(msg)
     self.includeDir = os.path.join(self.installDir, 'include')
-    self.libDir     = os.path.join(self.installDir, 'lib')
+    self.libDir = os.path.join(self.installDir, self.libDirs[0])
     installDir = self.Install()
     if not installDir:
       raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
@@ -554,7 +553,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     if d:
       if not self.liblist or not self.liblist[0] or self.builtafterpetsc :
         yield('Download '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
-      for libdir in [self.libdir, self.altlibdir]:
+      for libdir in self.libDirs:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
           self.logPrint(self.PACKAGE+': Downloaded DirPath not found.. skipping: '+libdirpath)
@@ -593,7 +592,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       if not self.liblist or not self.liblist[0]:
           yield('User specified root directory '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
 
-      for libdir in [self.libdir, self.altlibdir]:
+      for libdir in self.libDirs:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
           self.logPrint(self.PACKAGE+': UserSpecified DirPath not found.. skipping: '+libdirpath)
@@ -647,7 +646,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
           self.logPrint(self.PACKAGE+': SearchDir DirPath not found.. skipping: '+d)
           continue
         includedir = self.getIncludeDirs(d, self.includedir)
-        for libdir in [self.libdir, self.altlibdir]:
+        for libdir in self.libDirs:
           libdirpath = os.path.join(d, libdir)
           if not os.path.isdir(libdirpath):
             self.logPrint(self.PACKAGE+': DirPath not found.. skipping: '+libdirpath)
@@ -1002,10 +1001,10 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         self.logPrint('Checking for library in '+location+': '+str(lib))
         if directory:
           self.logPrint('Contents of '+directory+': '+str(os.listdir(directory)))
-          if os.path.isdir(os.path.join(directory, self.libdir)):
-            self.logPrint('Contents '+os.path.join(directory,self.libdir)+': '+str(os.listdir(os.path.join(directory,self.libdir))))
-          if os.path.isdir(os.path.join(directory, self.altlibdir)):
-            self.logPrint('Contents '+os.path.join(directory,self.altlibdir)+': '+str(os.listdir(os.path.join(directory,self.altlibdir))))
+          for libdir in self.libDirs:
+            flibdir = os.path.join(directory, libdir)
+            if os.path.isdir(flibdir):
+              self.logPrint('Contents '+os.path.join(flibdir)+': '+str(os.listdir(os.path.join(directory,flibdir))))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
@@ -1551,7 +1550,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
             set the following instance variables, creating directories, if necessary:
             self.installDir   /* This is where the package will be installed, after it is built. */
             self.includeDir   /* subdir of self.installDir */
-            self.libDir       /* subdir of self.installDir */
+            self.libDir       /* subdir of self.installDir, defined as self.installDir + self.libDirs[0] */
             self.confDir      /* where packages private to the configure/build process are built, such as --download-make */
                               /* The subdirectory of this 'conf' is where where the configuration information will be stored for the package */
             self.packageDir = /* this dir is where the source is unpacked and built */
@@ -1676,7 +1675,7 @@ class GNUPackage(Package):
     ## prefix
     args.append('--prefix='+self.installDir)
     args.append('MAKE='+self.make.make)
-    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+    args.append('--libdir='+self.libDir)
     ## compiler args
     self.pushLanguage('C')
     if not self.installwithbatch and hasattr(self.setCompilers,'cross_cc'):
@@ -1869,7 +1868,7 @@ class CMakePackage(Package):
       pass
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
-    args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+    args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+self.libDir+'"')
     args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     if self.compilerFlags.debugging:

@@ -54,7 +54,7 @@ class Configure(config.package.Package):
       # TODO: Use openblas_get_config() or openblas_config.h to determine use of OpenMP and 64-bit indices for prebuilt OpenBLAS libraries
       if not hasattr(self,'usesopenmp'): self.usesopenmp = 'unknown'
       if self.directory:
-        self.libDir = os.path.join(self.directory,'lib')
+        self.libDir = os.path.join(self.directory,self.libDirs[0])
         self.include = [os.path.join(self.directory,'include')]
       else:
         self.libDir = None

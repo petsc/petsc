@@ -114,9 +114,9 @@ class Configure(config.package.Package):
         os.unlink(os.path.join(self.packageDir,'include','metis.h'))
       except: pass
 
-      libDir     = os.path.join(self.installDir, self.libdir)
+      libDir     = self.libDir
       includeDir = os.path.join(self.installDir, self.includedir)
       self.logPrintBox('Installing PTScotch; this may take several minutes')
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,includeDir)+' && mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && cp -f lib/*.a '+libDir+'/. && cp -f include/*.h '+includeDir+'/.', timeout=60, log = self.log)
+      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,includeDir)+' && mkdir -p '+libDir+' && cd '+self.packageDir+' && cp -f lib/*.a '+libDir+'/. && cp -f include/*.h '+includeDir+'/.', timeout=60, log = self.log)
       self.postInstall(output+err,os.path.join('src','Makefile.inc'))
     return self.installDir
