@@ -1,6 +1,6 @@
-DM Object: Mesh 1 MPI process
+DM Object: box 1 MPI process
   type: plex
-Mesh in 3 dimensions:
+box in 3 dimensions:
   Number of 0-cells per rank: 27
   Number of 1-cells per rank: 54
   Number of 2-cells per rank: 36
