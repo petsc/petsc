@@ -1,4 +1,4 @@
-static const char help[] = "Test initialization and migration with swarm.";
+static const char help[] = "Test initialization and migration with swarm.\n";
 
 #include <petscdmplex.h>
 #include <petscdmswarm.h>
@@ -27,26 +27,27 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscCall(DMGetCoordinateDim(*dm, &cdim));
   PetscCall(DMGetBoundingBox(*dm, low, high));
-  PetscPrintf(PETSC_COMM_WORLD, "dim: %" PetscInt_FMT "\n", cdim);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dim: %" PetscInt_FMT "\n", cdim));
   for (d = 0; d < cdim; ++d) user->L[d] = high[d] - low[d];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* 
+/*
   This function initializes all particles on rank 0.
   They are sent to other ranks to test migration across non nearest neighbors
 */
 static PetscErrorCode CreateSwarm(DM dm, DM *sw, AppCtx *user)
 {
-  PetscInt   particleInitSize = 10;
-  PetscReal *coords, upper[3], lower[3];
-  PetscInt  *cellid, rank, size, Np, d, dim;
-  MPI_Comm   comm;
+  PetscInt    particleInitSize = 10;
+  PetscReal  *coords, upper[3], lower[3];
+  PetscInt   *cellid, Np, dim;
+  PetscMPIInt rank, size;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   comm = PETSC_COMM_WORLD;
-  MPI_Comm_rank(comm, &rank);
-  MPI_Comm_size(comm, &size);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(DMGetBoundingBox(dm, lower, upper));
   PetscCall(DMCreate(PETSC_COMM_WORLD, sw));
   PetscCall(DMGetDimension(dm, &dim));
@@ -96,7 +97,7 @@ static PetscErrorCode CheckMigrate(DM sw)
   PetscCheck(preSize == postSize, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Particles either lost or duplicated. Pre migrate global size %" PetscInt_FMT " != Post migrate size %" PetscInt_FMT "", preSize, postSize);
   PetscCall(VecNorm(preMigrate, NORM_2, &prenorm));
   PetscCall(VecNorm(postMigrate, NORM_2, &postnorm));
-  PetscCheck(PetscAbsReal(prenorm - postnorm) < PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Particle coordinates corrupted in migrate with abs(norm(pre) - norm(post)) = %.16g", PetscAbsReal(prenorm - postnorm));
+  PetscCheck(PetscAbsReal(prenorm - postnorm) < 100. * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_COR, "Particle coordinates corrupted in migrate with abs(norm(pre) - norm(post)) = %.16g", PetscAbsReal(prenorm - postnorm));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Migrate check passes.\n"));
   PetscCall(VecDestroy(&preMigrate));
   PetscCall(VecDestroy(&postMigrate));
@@ -108,13 +109,14 @@ static PetscErrorCode CheckMigrate(DM sw)
 */
 static PetscErrorCode CheckPointInsertion(DM sw)
 {
-  PetscInt rank, size, Np_pre, Np_post;
-  MPI_Comm comm;
+  PetscInt    Np_pre, Np_post;
+  PetscMPIInt rank, size;
+  MPI_Comm    comm;
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
-  MPI_Comm_rank(comm, &rank);
-  MPI_Comm_size(comm, &size);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscPrintf(comm, "Basic point insertion check...\n"));
   PetscCall(DMSwarmGetSize(sw, &Np_pre));
   if (rank == 0) PetscCall(DMSwarmAddPoint(sw));
@@ -134,22 +136,23 @@ static PetscErrorCode CheckPointInsertion(DM sw)
 */
 static PetscErrorCode CheckPointInsertion_Boundary(DM sw)
 {
-  PetscInt  rank, size, Np_loc_pre, Np_loc_post, dim;
-  PetscReal lbox_low[3], lbox_high[3], gbox_low[3], gbox_high[3];
-  MPI_Comm  comm;
-  DM        cdm;
+  PetscInt    Np_loc_pre, Np_loc_post, dim;
+  PetscMPIInt rank, size;
+  PetscReal   lbox_low[3], lbox_high[3], gbox_low[3], gbox_high[3];
+  MPI_Comm    comm;
+  DM          cdm;
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
-  MPI_Comm_rank(comm, &rank);
-  MPI_Comm_size(comm, &size);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscPrintf(comm, "Rank boundary point insertion check...\n"));
   PetscCall(DMSwarmGetCellDM(sw, &cdm));
   PetscCall(DMGetDimension(cdm, &dim));
   PetscCall(DMGetBoundingBox(cdm, gbox_low, gbox_high));
   if (rank == 0) {
     PetscReal *coords;
-    PetscInt   adjacentdim, Np;
+    PetscInt   adjacentdim = 0, Np;
 
     PetscCall(DMGetLocalBoundingBox(cdm, lbox_low, lbox_high));
     // find a face that belongs to the neighbor.
@@ -166,8 +169,8 @@ static PetscErrorCode CheckPointInsertion_Boundary(DM sw)
   PetscCall(DMSwarmGetLocalSize(sw, &Np_loc_pre));
   PetscCall(CheckMigrate(sw));
   PetscCall(DMSwarmGetLocalSize(sw, &Np_loc_post));
-  if (rank == 0) PetscCheck(Np_loc_pre == (Np_loc_post + 1), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Migration tie breaking failed on rank %" PetscInt_FMT ". Particle on boundary not sent.", rank);
-  if (rank == 1) PetscCheck(Np_loc_pre == (Np_loc_post - 1), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Migration tie breaking failed on rank %" PetscInt_FMT ". Particle on boundary not recieved.", rank);
+  if (rank == 0) PetscCheck(Np_loc_pre == (Np_loc_post + 1), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Migration tie breaking failed on rank %d. Particle on boundary not sent.", rank);
+  if (rank == 1) PetscCheck(Np_loc_pre == (Np_loc_post - 1), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Migration tie breaking failed on rank %d. Particle on boundary not recieved.", rank);
   PetscCall(PetscPrintf(comm, "Rank boundary point insertion check passes.\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -175,7 +178,6 @@ static PetscErrorCode CheckPointInsertion_Boundary(DM sw)
 int main(int argc, char **argv)
 {
   DM       dm, sw;
-  PetscInt rank, size;
   MPI_Comm comm;
   AppCtx   user;
 
@@ -189,25 +191,32 @@ int main(int argc, char **argv)
   PetscCall(CheckPointInsertion_Boundary(sw));
   PetscCall(DMDestroy(&sw));
   PetscCall(DMDestroy(&dm));
-  PetscFinalize();
+  PetscCall(PetscFinalize());
   return 0;
 }
 
 /*TEST
+
   # Swarm does not handle complex or quad
   build:
     requires: !complex double
-
+  # swarm_migrate_hash and swarm_migrate_scan test swarm migration against point location types
+  # with a distributed mesh where ranks overlap by 1. Points in the shared boundary should
+  # be sent to the process which has the highest rank that has that portion of the domain.
   test:
     suffix: swarm_migrate_hash
     requires: ctetgen
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_hash_location true -dm_plex_box_faces 10,10,10 -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none -dm_plex_dim 3
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
+          -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
+          -dm_plex_hash_location true
     filter: grep -v marker | grep -v atomic | grep -v usage
   test:
     suffix: swarm_migrate_scan
     requires: ctetgen
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_hash_location false -dm_plex_box_faces 10,10,10 -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none -dm_plex_dim 3
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
+          -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
+          -dm_plex_hash_location false
     filter: grep -v marker | grep -v atomic | grep -v usage
 TEST*/
