@@ -201,10 +201,6 @@ class CompilerOptions(config.base.Configure):
             flags.extend(['-MT','-GR','-EHsc']) # removing GX in favor of EHsc
           # cause compiler to handle preprocessor per the standard https://docs.microsoft.com/en-us/cpp/build/reference/zc-preprocessor?view=msvc-170
           flags.extend(['-Zc:preprocessor ','-experimental:preprocessor'])
-          # cause compiler to emit the correct value for __cplusplus macro as per the
-          # standard
-          # https://learn.microsoft.com/en-us/cpp/build/reference/zc-cplusplus?view=msvc-170
-          flags.extend(['-Zc:__cplusplus'])
         elif bopt == 'g':
           flags.extend(['-Z7','-Zm200','-Od'])
         elif bopt == 'O':

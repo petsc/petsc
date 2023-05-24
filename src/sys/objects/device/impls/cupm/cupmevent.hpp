@@ -5,8 +5,8 @@
 #include <petsc/private/cpp/memory.hpp>
 #include <petsc/private/cpp/object_pool.hpp>
 
-#include <stack>
-
+#if defined(__cplusplus)
+  #include <stack>
 namespace Petsc
 {
 
@@ -177,5 +177,6 @@ inline CUPMEvent<T>::operator bool() const noexcept
 } // namespace device
 
 } // namespace Petsc
+#endif // __cplusplus
 
 #endif // PETSC_CUPMEVENT_HPP

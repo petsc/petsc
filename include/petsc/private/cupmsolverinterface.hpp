@@ -1,8 +1,9 @@
 #ifndef PETSCCUPMSOLVERINTERFACE_HPP
 #define PETSCCUPMSOLVERINTERFACE_HPP
 
-#include <petsc/private/cupmblasinterface.hpp>
-#include <petsc/private/petscadvancedmacros.h>
+#if defined(__cplusplus)
+  #include <petsc/private/cupmblasinterface.hpp>
+  #include <petsc/private/petscadvancedmacros.h>
 
 namespace Petsc
 {
@@ -16,40 +17,36 @@ namespace cupm
 namespace impl
 {
 
-#define PetscCallCUPMSOLVER_(__abort_fn__, __comm__, ...) \
-  do { \
-    PetscStackUpdateLine; \
-    const cupmSolverError_t cupmsolver_stat_p_ = __VA_ARGS__; \
-    if (PetscUnlikely(cupmsolver_stat_p_ != CUPMSOLVER_STATUS_SUCCESS)) { \
-      if (((cupmsolver_stat_p_ == CUPMSOLVER_STATUS_NOT_INITIALIZED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_ALLOC_FAILED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_INTERNAL_ERROR)) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
-        __abort_fn__(__comm__, PETSC_ERR_GPU_RESOURCE, \
-                     "%s error %d (%s). " \
-                     "This indicates the GPU may have run out resources", \
-                     cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
+  #define PetscCallCUPMSOLVER(...) \
+    do { \
+      const cupmSolverError_t cupmsolver_stat_p_ = __VA_ARGS__; \
+      if (PetscUnlikely(cupmsolver_stat_p_ != CUPMSOLVER_STATUS_SUCCESS)) { \
+        if (((cupmsolver_stat_p_ == CUPMSOLVER_STATUS_NOT_INITIALIZED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_ALLOC_FAILED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_INTERNAL_ERROR)) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
+                  "%s error %d (%s). " \
+                  "This indicates the GPU may have run out resources", \
+                  cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
+        } \
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "%s error %d (%s)", cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
       } \
-      __abort_fn__(__comm__, PETSC_ERR_GPU, "%s error %d (%s)", cupmSolverName(), static_cast<PetscErrorCode>(cupmsolver_stat_p_), cupmSolverGetErrorName(cupmsolver_stat_p_)); \
-    } \
-  } while (0)
+    } while (0)
 
-#define PetscCallCUPMSOLVER(...)             PetscCallCUPMSOLVER_(SETERRQ, PETSC_COMM_SELF, __VA_ARGS__)
-#define PetscCallCUPMSOLVERAbort(comm_, ...) PetscCallCUPMSOLVER_(SETERRABORT, comm_, __VA_ARGS__)
+  #ifndef PetscConcat3
+    #define PetscConcat3(a, b, c) PetscConcat(PetscConcat(a, b), c)
+  #endif
 
-#ifndef PetscConcat3
-  #define PetscConcat3(a, b, c) PetscConcat(PetscConcat(a, b), c)
-#endif
+  #if PetscDefined(USE_COMPLEX)
+    #define PETSC_CUPMSOLVER_FP_TYPE_SPECIAL un
+  #else
+    #define PETSC_CUPMSOLVER_FP_TYPE_SPECIAL or
+  #endif // USE_COMPLEX
 
-#if PetscDefined(USE_COMPLEX)
-  #define PETSC_CUPMSOLVER_FP_TYPE_SPECIAL un
-#else
-  #define PETSC_CUPMSOLVER_FP_TYPE_SPECIAL or
-#endif // USE_COMPLEX
-
-#define PETSC_CUPMSOLVER_ALIAS_BLAS_FUNCTION(cupm_name, their_prefix, fp_type, suffix) PETSC_CUPM_ALIAS_FUNCTION(cupm_name, PetscConcat3(their_prefix, fp_type, suffix))
+  #define PETSC_CUPMSOLVER_ALIAS_BLAS_FUNCTION(cupm_name, their_prefix, fp_type, suffix) PETSC_CUPM_ALIAS_FUNCTION(cupm_name, PetscConcat3(their_prefix, fp_type, suffix))
 
 template <DeviceType>
 struct SolverInterfaceImpl;
 
-#if PetscDefined(HAVE_CUDA)
+  #if PetscDefined(HAVE_CUDA)
 template <>
 struct SolverInterfaceImpl<DeviceType::CUDA> : BlasInterface<DeviceType::CUDA> {
   // typedefs
@@ -163,9 +160,9 @@ struct SolverInterfaceImpl<DeviceType::CUDA> : BlasInterface<DeviceType::CUDA> {
 
   PETSC_NODISCARD static const char *cupmSolverGetErrorName(cupmSolverError_t status) noexcept { return PetscCUSolverGetErrorName(status); }
 };
-#endif
+  #endif
 
-#if PetscDefined(HAVE_HIP)
+  #if PetscDefined(HAVE_HIP)
 template <>
 struct SolverInterfaceImpl<DeviceType::HIP> : BlasInterface<DeviceType::HIP> {
   // typedefs
@@ -220,61 +217,61 @@ struct SolverInterfaceImpl<DeviceType::HIP> : BlasInterface<DeviceType::HIP> {
 
   PETSC_NODISCARD static const char *cupmSolverGetErrorName(cupmSolverError_t status) noexcept { return PetscHIPSolverGetErrorName(status); }
 };
-#endif
+  #endif
 
-#define PETSC_CUPMSOLVER_IMPL_CLASS_HEADER(T) \
-  PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(T); \
-  /* introspection */ \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverGetErrorName; \
-  /* types */ \
-  using cupmSolverHandle_t    = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverHandle_t; \
-  using cupmSolverError_t     = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverError_t; \
-  using cupmSolverFillMode_t  = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverFillMode_t; \
-  using cupmSolverOperation_t = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverOperation_t; \
-  /* error codes */ \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_SUCCESS; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_NOT_INITIALIZED; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_ALLOC_FAILED; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_INTERNAL_ERROR; \
-  /* values */ \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_OP_T; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_OP_N; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_OP_C; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_FILL_MODE_LOWER; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_FILL_MODE_UPPER; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_SIDE_LEFT; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_SIDE_RIGHT; \
-  /* utility functions */ \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverCreate; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverDestroy; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverGetStream; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverSetStream; \
-  /* blas functions */ \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrf_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrf; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrs_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrs; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotri_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotri; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXsytrf_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXsytrf; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrf_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrf; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrs_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrs; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgeqrf_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgeqrf; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXormqr_bufferSize; \
-  using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXormqr
+  #define PETSC_CUPMSOLVER_IMPL_CLASS_HEADER(T) \
+    PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(T); \
+    /* introspection */ \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverGetErrorName; \
+    /* types */ \
+    using cupmSolverHandle_t    = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverHandle_t; \
+    using cupmSolverError_t     = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverError_t; \
+    using cupmSolverFillMode_t  = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverFillMode_t; \
+    using cupmSolverOperation_t = typename ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverOperation_t; \
+    /* error codes */ \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_SUCCESS; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_NOT_INITIALIZED; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_ALLOC_FAILED; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_STATUS_INTERNAL_ERROR; \
+    /* values */ \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_OP_T; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_OP_N; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_OP_C; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_FILL_MODE_LOWER; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_FILL_MODE_UPPER; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_SIDE_LEFT; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::CUPMSOLVER_SIDE_RIGHT; \
+    /* utility functions */ \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverCreate; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverDestroy; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverGetStream; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverSetStream; \
+    /* blas functions */ \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrf_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrf; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrs_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotrs; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotri_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXpotri; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXsytrf_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXsytrf; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrf_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrf; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrs_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgetrs; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgeqrf_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXgeqrf; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXormqr_bufferSize; \
+    using ::Petsc::device::cupm::impl::SolverInterfaceImpl<T>::cupmSolverXormqr
 
 template <DeviceType T>
 struct SolverInterface : SolverInterfaceImpl<T> {
   PETSC_NODISCARD static constexpr const char *cupmSolverName() noexcept { return T == DeviceType::CUDA ? "cusolverDn" : "hipsolver"; }
 };
 
-#define PETSC_CUPMSOLVER_INHERIT_INTERFACE_TYPEDEFS_USING(T) \
-  PETSC_CUPMSOLVER_IMPL_CLASS_HEADER(T); \
-  using ::Petsc::device::cupm::impl::SolverInterface<T>::cupmSolverName
+  #define PETSC_CUPMSOLVER_INHERIT_INTERFACE_TYPEDEFS_USING(T) \
+    PETSC_CUPMSOLVER_IMPL_CLASS_HEADER(T); \
+    using ::Petsc::device::cupm::impl::SolverInterface<T>::cupmSolverName
 
 } // namespace impl
 
@@ -283,5 +280,7 @@ struct SolverInterface : SolverInterfaceImpl<T> {
 } // namespace device
 
 } // namespace Petsc
+
+#endif // __cplusplus
 
 #endif // PETSCCUPMSOLVERINTERFACE_HPP

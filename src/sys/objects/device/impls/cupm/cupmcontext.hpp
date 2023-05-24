@@ -12,6 +12,8 @@
 #include "cupmstream.hpp"
 #include "cupmevent.hpp"
 
+#if defined(__cplusplus)
+
 namespace Petsc
 {
 
@@ -52,9 +54,9 @@ public:
     cupmEvent_t event{};
     cupmEvent_t begin{}; // timer-only
     cupmEvent_t end{};   // timer-only
-#if PetscDefined(USE_DEBUG)
+  #if PetscDefined(USE_DEBUG)
     PetscBool timerInUse{};
-#endif
+  #endif
     cupmBlasHandle_t   blas{};
     cupmSolverHandle_t solver{};
 
@@ -297,9 +299,9 @@ inline PetscErrorCode DeviceContext<T>::setUp(PetscDeviceContext dctx) noexcept
   PetscCall(check_current_device_(dctx));
   PetscCall(dci->stream.change_type(dctx->streamType));
   if (!event) PetscCall(cupm_fast_event_pool<T>().allocate(&event));
-#if PetscDefined(USE_DEBUG)
+  #if PetscDefined(USE_DEBUG)
   dci->timerInUse = PETSC_FALSE;
-#endif
+  #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -366,10 +368,10 @@ inline PetscErrorCode DeviceContext<T>::beginTimer(PetscDeviceContext dctx) noex
 
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
-#if PetscDefined(USE_DEBUG)
+  #if PetscDefined(USE_DEBUG)
   PetscCheck(!dci->timerInUse, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Forgot to call PetscLogGpuTimeEnd()?");
   dci->timerInUse = PETSC_TRUE;
-#endif
+  #endif
   if (!dci->begin) {
     PetscAssert(!dci->end, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Don't have a 'begin' event, but somehow have an end event");
     PetscCallCUPM(cupmEventCreate(&dci->begin));
@@ -388,10 +390,10 @@ inline PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceContext dctx, PetscL
 
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
-#if PetscDefined(USE_DEBUG)
+  #if PetscDefined(USE_DEBUG)
   PetscCheck(dci->timerInUse, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Forgot to call PetscLogGpuTimeBegin()?");
   dci->timerInUse = PETSC_FALSE;
-#endif
+  #endif
   PetscCallCUPM(cupmEventRecord(end, dci->stream.get_stream()));
   PetscCallCUPM(cupmEventSynchronize(end));
   PetscCallCUPM(cupmEventElapsedTime(&gtime, dci->begin, end));
@@ -531,13 +533,15 @@ constexpr _DeviceContextOps DeviceContext<T>::ops;
 using CUPMContextCuda = impl::DeviceContext<DeviceType::CUDA>;
 using CUPMContextHip  = impl::DeviceContext<DeviceType::HIP>;
 
-// shorthand for what is an EXTREMELY long name
-#define PetscDeviceContext_(IMPLS) ::Petsc::device::cupm::impl::DeviceContext<::Petsc::device::cupm::DeviceType::IMPLS>::PetscDeviceContext_IMPLS
+  // shorthand for what is an EXTREMELY long name
+  #define PetscDeviceContext_(IMPLS) ::Petsc::device::cupm::impl::DeviceContext<::Petsc::device::cupm::DeviceType::IMPLS>::PetscDeviceContext_IMPLS
 
 } // namespace cupm
 
 } // namespace device
 
 } // namespace Petsc
+
+#endif // __cplusplus
 
 #endif // PETSCDEVICECONTEXTCUDA_HPP

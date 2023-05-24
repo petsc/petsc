@@ -1,11 +1,12 @@
 #ifndef PETSCCUPMDEVICE_HPP
 #define PETSCCUPMDEVICE_HPP
 
-#include <petsc/private/cupminterface.hpp>
-#include <petsc/private/cpp/memory.hpp>
-#include <petsc/private/cpp/array.hpp>
+#if defined(__cplusplus)
+  #include <petsc/private/cupminterface.hpp>
+  #include <petsc/private/cpp/memory.hpp>
+  #include <petsc/private/cpp/array.hpp>
 
-#include "../impldevicebase.hpp" /* I "petscdevice.h" */
+  #include "../impldevicebase.hpp" /* I "petscdevice.h" */
 
 namespace Petsc
 {
@@ -16,11 +17,11 @@ namespace device
 namespace cupm
 {
 
-#if defined(PETSC_CUPM_DEVICE_NONE)
-  #error redefinition of PETSC_CUPM_DEVICE_NONE
-#endif
+  #if defined(PETSC_CUPM_DEVICE_NONE)
+    #error redefinition of PETSC_CUPM_DEVICE_NONE
+  #endif
 
-#define PETSC_CUPM_DEVICE_NONE -3
+  #define PETSC_CUPM_DEVICE_NONE -3
 
 template <DeviceType T>
 class Device : public ::Petsc::device::impl::DeviceBase<Device<T>>, impl::Interface<T> {
@@ -70,5 +71,7 @@ bool Device<T>::initialized_ = false;
 } // namespace device
 
 } // namespace Petsc
+
+#endif // __cplusplus
 
 #endif /* PETSCCUPMDEVICE_HPP */
