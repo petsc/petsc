@@ -1099,8 +1099,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&b));
-  A->data = (void *)b;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  A->data   = (void *)b;
+  A->ops[0] = MatOps_Values;
 
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));

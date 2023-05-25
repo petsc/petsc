@@ -1362,7 +1362,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt            optv1;
 
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  A->ops[0]     = MatOps_Values;
   A->insertmode = NOT_SET_VALUES;
 
   PetscCall(PetscNew(&a));

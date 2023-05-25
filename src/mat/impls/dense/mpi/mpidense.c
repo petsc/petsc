@@ -1609,8 +1609,8 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&a));
-  mat->data = (void *)a;
-  PetscCall(PetscMemcpy(mat->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  mat->data   = (void *)a;
+  mat->ops[0] = MatOps_Values;
 
   mat->insertmode = NOT_SET_VALUES;
 

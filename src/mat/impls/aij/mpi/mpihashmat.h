@@ -86,7 +86,7 @@ static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
 
   A->insertmode = NOT_SET_VALUES; /* this was set by the previous calls to MatSetValues() */
 
-  PetscCall(PetscMemcpy(&A->ops, &a->cops, sizeof(*(A->ops))));
+  A->ops[0]      = a->cops;
   A->hash_active = PETSC_FALSE;
 
   PetscCall(MatAssemblyBegin(a->A, MAT_FINAL_ASSEMBLY));
@@ -179,8 +179,7 @@ static PetscErrorCode MatSetUp_MPI_Hash(Mat A)
   PetscCall(MatSetUp(a->B));
 
   /* keep a record of the operations so they can be reset when the hash handling is complete */
-  PetscCall(PetscMemcpy(&a->cops, &A->ops, sizeof(*(A->ops))));
-
+  a->cops                  = A->ops[0];
   A->ops->assemblybegin    = MatAssemblyBegin_MPI_Hash;
   A->ops->assemblyend      = MatAssemblyEnd_MPI_Hash;
   A->ops->setvalues        = MatSetValues_MPI_Hash;

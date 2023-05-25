@@ -384,8 +384,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscCheck(isapp, PetscObjectComm((PetscObject)ao), PETSC_ERR_ARG_WRONGSTATE, "AOSetIS() must be called before AOSetType()");
   /* create special struct aomems */
   PetscCall(PetscNew(&aomems));
-  ao->data = (void *)aomems;
-  PetscCall(PetscMemcpy(ao->ops, &AOOps_MemoryScalable, sizeof(struct _AOOps)));
+  ao->data   = (void *)aomems;
+  ao->ops[0] = AOOps_MemoryScalable;
   PetscCall(PetscObjectChangeTypeName((PetscObject)ao, AOMEMORYSCALABLE));
 
   /* transmit all local lengths of isapp to all processors */

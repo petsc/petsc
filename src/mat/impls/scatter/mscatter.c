@@ -261,7 +261,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
   Mat_Scatter *b;
 
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  A->ops[0] = MatOps_Values;
   PetscCall(PetscNew(&b));
 
   A->data = (void *)b;

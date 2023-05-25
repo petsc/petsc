@@ -60,7 +60,7 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom r)
 {
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
+  r->ops[0] = PetscRandomOps_Values;
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRAND48));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
