@@ -140,45 +140,51 @@ PetscErrorCode VecReciprocal_SeqKokkos(Vec xin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-template <template <typename...> class FunctorType_, template <typename...> class CompareType_, typename IndexType, typename ScalarType>
-static PetscErrorCode VecMinMax_SeqKokkos_Private(Vec xin, IndexType *p, ScalarType *val, const char name[])
+PetscErrorCode VecMin_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 {
-  using FunctorType = FunctorType_<ScalarType, IndexType>;
-  using CompareType = CompareType_<ScalarType>;
-  using ResultType  = typename FunctorType::value_type;
-  ResultType                 result;
-  ConstPetscScalarKokkosView xv;
+  ConstPetscScalarKokkosView                      xv;
+  Kokkos::MinLoc<PetscReal, PetscInt>::value_type result;
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
   PetscCall(VecGetKokkosView(xin, &xv));
-  Kokkos::parallel_reduce(
-    name, xin->map->n,
-    KOKKOS_LAMBDA(IndexType i, ResultType & loc) {
-      if (CompareType{}(PetscRealPart(xv(i)), loc.val)) {
-        loc.val = PetscRealPart(xv(i));
-        loc.loc = i;
+  PetscCallCXX(Kokkos::parallel_reduce(
+    "VecMin", xin->map->n,
+    KOKKOS_LAMBDA(const PetscInt &i, Kokkos::MinLoc<PetscReal, PetscInt>::value_type &lupdate) {
+      if (PetscRealPart(xv(i)) < lupdate.val) {
+        lupdate.val = PetscRealPart(xv(i));
+        lupdate.loc = i;
       }
     },
-    FunctorType{result}); /* Kokkos will set minloc properly even if xin is zero-lengthed */
-  if (p) *p = result.loc;
+    Kokkos::MinLoc<PetscReal, PetscInt>(result)));
   *val = result.val;
+  if (p) *p = result.loc;
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecMin_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
-{
-  PetscFunctionBegin;
-  PetscCall(VecMinMax_SeqKokkos_Private<Kokkos::MinLoc, Kokkos::less>(xin, p, val, "VecMin"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode VecMax_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 {
+  ConstPetscScalarKokkosView                      xv;
+  Kokkos::MaxLoc<PetscReal, PetscInt>::value_type result;
+
   PetscFunctionBegin;
-  PetscCall(VecMinMax_SeqKokkos_Private<Kokkos::MaxLoc, Kokkos::greater>(xin, p, val, "VecMax"));
+  PetscCall(PetscLogGpuTimeBegin());
+  PetscCall(VecGetKokkosView(xin, &xv));
+  PetscCallCXX(Kokkos::parallel_reduce(
+    "VecMax", xin->map->n,
+    KOKKOS_LAMBDA(const PetscInt &i, Kokkos::MaxLoc<PetscReal, PetscInt>::value_type &lupdate) {
+      if (PetscRealPart(xv(i)) > lupdate.val) {
+        lupdate.val = PetscRealPart(xv(i));
+        lupdate.loc = i;
+      }
+    },
+    Kokkos::MaxLoc<PetscReal, PetscInt>(result)));
+  *val = result.val;
+  if (p) *p = result.loc;
+  PetscCall(VecRestoreKokkosView(xin, &xv));
+  PetscCall(PetscLogGpuTimeEnd());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
