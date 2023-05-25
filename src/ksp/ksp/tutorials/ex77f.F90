@@ -21,9 +21,7 @@
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',name,flg,ierr))
-      if (flg .eqv. PETSC_FALSE) then
-        SETERRA(PETSC_COMM_WORLD,PETSC_ERR_SUP,'Must provide a binary file for the matrix')
-      endif
+      PetscCheckA(flg .neqv. PETSC_FALSE,PETSC_COMM_WORLD,PETSC_ERR_SUP,'Must provide a binary file for the matrix')
       K = 5
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',K,flg,ierr))
       PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
@@ -53,9 +51,7 @@
         alpha = -1.0
         PetscCallA(MatAYPX(B,alpha,X,SAME_NONZERO_PATTERN,ierr))
         PetscCallA(MatNorm(B,NORM_INFINITY,norm,ierr))
-        if (norm > 100*PETSC_MACHINE_EPSILON) then
-          SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'KSPMatSolve() and MatMatSolve() difference has nonzero norm')
-        endif
+        PetscCheckA(norm < 100*PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,'KSPMatSolve() and MatMatSolve() difference has nonzero norm')
       endif
       PetscCallA(MatDestroy(X,ierr))
       PetscCallA(MatDestroy(B,ierr))

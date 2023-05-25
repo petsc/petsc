@@ -122,7 +122,7 @@
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
+      PetscCheckA(size .eq. 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only')
 
 !  Initialize problem parameters
       i5 = 5
@@ -134,7 +134,7 @@
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr))
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr))
       PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr))
-      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda out of range '); endif
+      PetscCheckA(lambda .lt. lambda_max .and. lambda .gt. lambda_min,PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda out of range ')
       N  = mx*my
       pc = PETSC_FALSE
       PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pc',pc,PETSC_NULL_BOOL,ierr))

@@ -5,7 +5,7 @@ program main
   implicit none
 
   PetscErrorCode ierr
-  PetscMPIInt ::   mySize
+  PetscMPIInt ::   size
   integer     ::      fd
   PetscInt    ::   i,sz
   PetscInt,parameter   ::   m = 10
@@ -20,13 +20,10 @@ program main
 
   PetscCallA(PetscInitialize(ierr))
 
-  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr))
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+  PetscCheckA(size .eq. 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only!')
 
-  if (mySize /= 1) then
-    SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!")
-  endif
-
-  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr))
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr))
 
   ! ----------------------------------------------------------------------
   !          PART 1: Write some data to a file in binary format
@@ -42,7 +39,7 @@ program main
   allocate(t(1))
   t(1) = m
   ! Open viewer for binary output
-  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_WRITE,view_out,ierr))
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF,'input.dat',FILE_MODE_WRITE,view_out,ierr))
   PetscCallA(PetscViewerBinaryGetDescriptor(view_out,fd,ierr))
 
   ! Write binary output
@@ -58,7 +55,7 @@ program main
   ! ----------------------------------------------------------------------
 
   ! Open input binary viewer
-  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_READ,view_in,ierr))
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF,'input.dat',FILE_MODE_READ,view_in,ierr))
   PetscCallA(PetscViewerBinaryGetDescriptor(view_in,fd,ierr))
 
   ! Create vector and get pointer to data space
@@ -73,11 +70,9 @@ program main
   PetscCallA(PetscBinaryRead(fd,t,one,PETSC_NULL_INTEGER,PETSC_INT,ierr))
   sz=t(1)
 
-  if (sz <= 0) then
-   SETERRA(PETSC_COMM_SELF,PETSC_ERR_USER,"Error: Must have array length > 0")
-  endif
+  PetscCheckA(sz >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,'Error: Must have array length > 0')
 
-  write(outstring,'(a,i2.2,a)') "reading data in binary from input.dat, sz =", sz, " ...\n"
+  write(outstring,'(a,i2.2,a)') 'reading data in binary from input.dat, sz =', sz, ' ...\n'
   PetscCallA(PetscPrintf(PETSC_COMM_SELF,trim(outstring),ierr))
 
   PetscCallA(PetscBinaryRead(fd,avec,sz,PETSC_NULL_INTEGER,PETSC_SCALAR,ierr))

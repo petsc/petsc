@@ -57,7 +57,7 @@
 #endif
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'Uniprocessor example'); endif
+      PetscCheckA(size .eq. 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'Uniprocessor example')
 
       i2  = 2
       i20 = 20

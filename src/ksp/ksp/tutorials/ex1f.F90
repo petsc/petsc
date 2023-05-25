@@ -59,7 +59,7 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
+      PetscCheckA(size .eq. 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only')
       none = -1.0
       one  = 1.0
       n    = 10
@@ -68,8 +68,8 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
       i3 = 3
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
 
-      PetscCallA(PetscLogStageRegister("MatVec Assembly",stages(1),ierr))
-      PetscCallA(PetscLogStageRegister("KSP Solve",stages(2),ierr))
+      PetscCallA(PetscLogStageRegister('MatVec Assembly',stages(1),ierr))
+      PetscCallA(PetscLogStageRegister('KSP Solve',stages(2),ierr))
       PetscCallA(PetscLogStagePush(stages(1),ierr))
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define

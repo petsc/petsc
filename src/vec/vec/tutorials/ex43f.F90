@@ -3,7 +3,7 @@
 #include <petsc/finclude/petscvec.h>
       use,intrinsic :: iso_c_binding
       interface
-        subroutine fillupvector(vaddr,err) bind ( C, name = "fillupvector")
+        subroutine fillupvector(vaddr,err) bind ( C, name = 'fillupvector')
 !
 !     We need to use iso_c_binding variables or otherwise we get compiler warnings
 !     Warning: Variable 'vaddr' at (1) is a dummy argument of the BIND(C)

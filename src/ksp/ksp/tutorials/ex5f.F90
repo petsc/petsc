@@ -41,15 +41,15 @@ program main
 
       ! Set flag if we are doing a nonsymmetric problem; the default is symmetric.
 
-      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-mat_nonsym",mat_nonsymmetric,flg,ierr))
-      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-test_scaledMat",testscaledMat,flg,ierr))
+      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mat_nonsym',mat_nonsymmetric,flg,ierr))
+      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-test_scaledMat',testscaledMat,flg,ierr))
 
       ! Register two stages for separate profiling of the two linear solves.
       ! Use the runtime option -log_view for a printout of performance
       ! statistics at the program's conlusion.
 
-      PetscCallA(PetscLogStageRegister("Original Solve",stages(0),ierr))
-      PetscCallA(PetscLogStageRegister("Second Solve",stages(1),ierr))
+      PetscCallA(PetscLogStageRegister('Original Solve',stages(0),ierr))
+      PetscCallA(PetscLogStageRegister('Second Solve',stages(1),ierr))
 
       ! -------------- Stage 0: Solve Original System ----------------------
       ! Indicate to PETSc profiling that we're beginning the first stage
@@ -309,7 +309,7 @@ program main
 
       endif
 
-      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-test_newMat",testnewC,flg,ierr))
+      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-test_newMat',testnewC,flg,ierr))
 
       if (testnewC) then
       ! User may use a new matrix C with same nonzero pattern, e.g.

@@ -92,3 +92,5 @@ Changes: Development
 .. rubric:: DT:
 
 .. rubric:: Fortran:
+
+- Add ``PetscCheck()`` and ``PetscCheckA()`` for Fortran

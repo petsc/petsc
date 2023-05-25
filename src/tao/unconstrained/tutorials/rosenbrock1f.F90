@@ -47,7 +47,7 @@
       PetscCallA(PetscInitialize(ierr))
 
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
-      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
+      PetscCheckA(size .eq. 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only')
 
 !  Initialize problem parameters
       n     = 2

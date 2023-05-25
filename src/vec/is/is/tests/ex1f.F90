@@ -23,7 +23,7 @@
        n = 0
        PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr))
        PetscCallA(ISGetLocalSize(is,n,ierr))
-       if (n .ne. 0) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting size of zero IS'); endif
+       PetscCheckA(n .eq. 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting size of zero IS')
        PetscCallA(ISDestroy(is,ierr))
 
 !     Create large IS and test ISGetIndices(,ierr))
@@ -35,7 +35,7 @@
       PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr))
       PetscCallA(ISGetIndicesF90(is,ii,ierr))
       do 20, i=1,n
-        if (ii(i) .ne. indices(i)) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting indices'); endif
+        PetscCheckA(ii(i) .eq. indices(i),PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting indices')
  20   continue
       PetscCallA(ISRestoreIndicesF90(is,ii,ierr))
 
@@ -44,38 +44,36 @@
       compute = PETSC_TRUE
       permanent = PETSC_FALSE
       PetscCallA(ISPermutation(is,flag,ierr))
-      if (flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation'); endif
+      PetscCheckA(.not. flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation')
       PetscCallA(ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,flag,ierr))
-      !if ((rank .eq. 0) .and. (.not. flag)) SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)")
-      !if (rank .eq. 0 .and. flag) SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)")
       PetscCallA(ISIdentity(is,flag,ierr))
-      if ((rank .eq. 0) .and. (.not. flag)) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity'); endif
-      if ((rank .ne. 0) .and. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity'); endif
+      PetscCheckA((rank .ne. 0) .or. flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity')
+      PetscCheckA((rank .eq. 0) .or. (.not. flag),PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity')
       PetscCallA(ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE,ierr))
       PetscCallA(ISSetInfo(is,IS_IDENTITY,IS_LOCAL,permanent,PETSC_TRUE,ierr))
       PetscCallA(ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,flag,ierr))
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation second time'); endif
+      PetscCheckA(flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking permutation second time')
       PetscCallA(ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,flag,ierr))
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity second time'); endif
+      PetscCheckA(flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking identity second time')
       PetscCallA(ISClearInfoCache(is,PETSC_TRUE,ierr))
 
 !     Check equality of index sets
 
       PetscCallA(ISEqual(is,is,flag,ierr))
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking equal'); endif
+      PetscCheckA(flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking equal')
 
 !     Sorting
 
       PetscCallA(ISSort(is,ierr))
       PetscCallA(ISSorted(is,flag,ierr))
-      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking sorted'); endif
+      PetscCheckA(flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking sorted')
 
 !     Thinks it is a different type?
 
       PetscCallA(PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr))
-      if (flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking stride'); endif
+      PetscCheckA(.not. flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking stride')
       PetscCallA(PetscObjectTypeCompare(is,ISBLOCK,flag,ierr))
-      if (flag) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking block'); endif
+      PetscCheckA(.not. flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error checking block')
 
       PetscCallA(ISDestroy(is,ierr))
 
@@ -90,7 +88,7 @@
       PetscCallA(ISInvertPermutation(is,PETSC_DECIDE,newis,ierr))
       PetscCallA(ISGetIndicesF90(newis,ii,ierr))
       do 40, i=1,n
-        if (ii(i) .ne. n - i) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting permutation indices'); endif
+        PetscCheckA(ii(i) .eq. n - i,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting permutation indices')
  40   continue
       PetscCallA(ISRestoreIndicesF90(newis,ii,ierr))
       PetscCallA(ISDestroy(newis,ierr))

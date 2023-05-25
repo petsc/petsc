@@ -12,7 +12,7 @@ program main
 
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
-      PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-no_signal_handler","true",ierr))
+      PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,'-no_signal_handler','true',ierr))
       PetscCallA(PetscInitialize(ierr))
 
       ! We can now change the communicator universe for PETSc

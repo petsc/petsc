@@ -14,13 +14,13 @@ program ex60F90
     PetscCallA(PetscInitialize(ierr))
     nopt = 3
     allocate(bopt(nopt))
-    PetscCallA(PetscOptionsGetBoolArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-bopt",bopt,nopt,flg,ierr))
+    PetscCallA(PetscOptionsGetBoolArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-bopt',bopt,nopt,flg,ierr))
     Write(outputString,'("bopt: ",3(l7,"  ")," nopt: ",i3," flg ",l7,"\n")' ) bopt,nopt,flg
     PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))
 
     nopt = 3
     allocate(sopt(nopt))
-    PetscCallA(PetscOptionsGetScalarArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-sopt",sopt,nopt,flg,ierr))
+    PetscCallA(PetscOptionsGetScalarArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-sopt',sopt,nopt,flg,ierr))
     Write(outputString,'("sopt: ",3(es12.5,"  ")," nopt: ",i3," flg ",l7,"\n")' ) sopt,nopt,flg
     PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))
 

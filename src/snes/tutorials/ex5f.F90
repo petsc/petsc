@@ -1,6 +1,11 @@
 !
 !  This example shows how to avoid Fortran line lengths larger than 132 characters.
+!  It avoids used of certain macros such as PetscCallA() and PetscCheckA() that
+!  generate very long lines
+!
 !  We recommend starting from src/snes/tutorials/ex5f90.F90 instead of this example
+!  because that does not have the restricted formatting that makes this version
+!  more difficult to read
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -90,7 +95,8 @@
 
 ! this statement is split into multiple-lines to keep lines under 132 char limit - required by 'make check'
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
-        ierr = PETSC_ERR_ARG_OUTOFRANGE; SETERRA(PETSC_COMM_WORLD,ierr,'Lambda')
+         ierr = PETSC_ERR_ARG_OUTOFRANGE;
+         SETERRA(PETSC_COMM_WORLD,ierr,'Lambda')
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

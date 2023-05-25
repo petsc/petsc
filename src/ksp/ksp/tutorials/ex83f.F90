@@ -73,9 +73,7 @@
       PetscCallA(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,n,n,ia,ja,a,J,ierr))
       PetscCallA(MatCreateSeqAIJFromTriple(PETSC_COMM_SELF,n,n,rows,cols,a,Jt,nz,PETSC_FALSE,ierr))
       PetscCallA(MatEqual(J,Jt,equal,ierr))
-      if (equal .neqv. PETSC_TRUE) then
-         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jt should be equal')
-      endif
+      PetscCheckA(equal .eqv. PETSC_TRUE,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jt must be equal')
       PetscCallA(MatDestroy(Jt,ierr))
       PetscCallA(MatCreate(PETSC_COMM_SELF,Jr,ierr))
       PetscCallA(MatSetSizes(Jr,n,n,n,n,ierr))
@@ -83,9 +81,7 @@
       PetscCallA(MatSetPreallocationCOO(Jr,nz,rows,cols,ierr))
       PetscCallA(MatSetValuesCOO(Jr,a,INSERT_VALUES,ierr))
       PetscCallA(MatEqual(J,Jr,equal,ierr))
-      if (equal .neqv. PETSC_TRUE) then
-         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jr should be equal')
-      endif
+      PetscCheckA(equal .eqv. PETSC_TRUE,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jr must be equal')
 
       PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,b,rhs,ierr))
       PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,x,solution,ierr))
@@ -107,9 +103,7 @@
       PetscCallA(PetscObjectStateIncrease(J,ierr))
       PetscCallA(MatSetValuesCOO(Jr,a,INSERT_VALUES,ierr))
       PetscCallA(MatEqual(J,Jr,equal,ierr))
-      if (equal .neqv. PETSC_TRUE) then
-         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jr should be equal')
-      endif
+      PetscCheckA(equal .eqv. PETSC_TRUE,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jr should be equal')
       PetscCallA(MatDestroy(Jr,ierr))
 
       PetscCallA(KSPSolve(ksp,rhs,solution,ierr))

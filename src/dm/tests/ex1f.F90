@@ -31,7 +31,7 @@ program main
   !print *,myid, 'xv1d', xv1d, ':', xv1d
   PetscCallA(VecRestoreArrayF90(gVec, xv1d, ierr))
 
-  PetscCallA(PetscObjectViewFromOptions(gVec, PETSC_NULL_VEC, "-show_gVec", ierr))
+  PetscCallA(PetscObjectViewFromOptions(gVec, PETSC_NULL_VEC, '-show_gVec', ierr))
 
   PetscCallA(VecDestroy(gVec, ierr))
   PetscCallA(DMDestroy(da, ierr))
