@@ -181,7 +181,10 @@ class Package(config.base.Configure):
         help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename,url>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build of '+self.name))
+      if hasattr(self, 'download_git'):
+        help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'Switch from installing release tarballs to git repo - using the specified commit of '+self.name))
+      else:
+        help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build of '+self.name))
       help.addDownload(self.package,self.download)
     return
 
@@ -754,7 +757,10 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
       if not (hasattr(self, 'gitcommit') and self.gitcommit):
-        raise RuntimeError('Trying to update '+self.package+' package source directory '+self.packageDir+' which is supposed to be a git repository, but no gitcommit is set for this package.\n\
+        if hasattr(self, 'download_git'):
+          self.gitcommit = 'HEAD'
+        else:
+          raise RuntimeError('Trying to update '+self.package+' package source directory '+self.packageDir+' which is supposed to be a git repository, but no gitcommit is set for this package.\n\
 Try to delete '+self.packageDir+' and rerun configure.\n\
 If the problem persists, please send your configure.log to petsc-maint@mcs.anl.gov')
       # verify that packageDir is actually a git clone
@@ -1270,6 +1276,8 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
         self.download = [downloadPackageVal]
     if self.download and self.argDB['download-'+self.downloadname.lower()+'-commit']:
       self.gitcommit = self.argDB['download-'+self.downloadname.lower()+'-commit']
+      if hasattr(self, 'download_git'):
+        self.download = self.download_git
     elif self.gitcommitmain and not self.petscdir.versionRelease:
       self.gitcommit = self.gitcommitmain
     if not 'with-'+self.package in self.argDB:

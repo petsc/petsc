@@ -13,6 +13,8 @@ Changes: Development
 
 .. rubric:: Configure/Build:
 
+- Add support for external-packages to prefer tarball download for regular use - as currently all packages  prefer git clones. MPICH is a package using this feature. Here MPICH tarball will be downloaded for regular use. However on providing ``--download-mpich-commit=main`` option - configure download and builds from MPICH git repository
+
 .. rubric:: Sys:
 
 - Add ``PetscDeviceContextGetStreamHandle()`` to return a handle to the stream the current device context is using
