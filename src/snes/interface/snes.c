@@ -4320,52 +4320,6 @@ PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, PetscInt))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   SNESScaleStep_Private - Scales a step so that its length is less than the
-   positive parameter delta.
-
-    Input Parameters:
-+   snes - the `SNES` context
-.   y - approximate solution of linear system
-.   fnorm - 2-norm of current function
--   delta - trust region size
-
-    Output Parameters:
-+   gpnorm - predicted function norm at the new point, assuming local
-    linearization.  The value is zero if the step lies within the trust
-    region, and exceeds zero otherwise.
--   ynorm - 2-norm of the step
-
-    Level: developer
-
-    Note:
-    For non-trust region methods such as `SNESNEWTONLS`, the parameter delta
-    is set to be the maximum allowable step size.
-*/
-PetscErrorCode SNESScaleStep_Private(SNES snes, Vec y, PetscReal *fnorm, PetscReal *delta, PetscReal *gpnorm, PetscReal *ynorm)
-{
-  PetscReal   nrm;
-  PetscScalar cnorm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
-  PetscCheckSameComm(snes, 1, y, 2);
-
-  PetscCall(VecNorm(y, NORM_2, &nrm));
-  if (nrm > *delta) {
-    nrm     = *delta / nrm;
-    *gpnorm = (1.0 - nrm) * (*fnorm);
-    cnorm   = nrm;
-    PetscCall(VecScale(y, cnorm));
-    *ynorm = *delta;
-  } else {
-    *gpnorm = 0.0;
-    *ynorm  = nrm;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@C
    SNESConvergedReasonView - Displays the reason a `SNES` solve converged or diverged to a viewer
 
