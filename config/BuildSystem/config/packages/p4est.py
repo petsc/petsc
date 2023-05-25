@@ -32,16 +32,18 @@ class Configure(config.package.GNUPackage):
     return
 
   def formGNUConfigureArgs(self):
+    from shlex import quote
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     if self.argDB['with-p4est-debugging']:
       args.append('--enable-debug')
     if not self.mpi.usingMPIUni:
       args.append('--enable-mpi')
-      args.append('PATH='+os.environ['PATH']+':'+os.path.dirname(self.mpi.mpiexecExecutable))
+      if self.mpi.mpiexecExecutable:
+        args.append('PATH='+quote(os.environ['PATH']+':'+os.path.dirname(self.mpi.mpiexecExecutable)))
     else:
       args.append('--disable-mpi')
-    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
-    args.append('LIBS="'+self.libraries.toString(self.dlib)+'"')
+    args.append('CPPFLAGS='+quote(self.headers.toStringNoDupes(self.dinclude)))
+    args.append('LIBS='+quote(self.libraries.toString(self.dlib)))
     args.append('--enable-memalign='+self.memalign)
     return args
 
