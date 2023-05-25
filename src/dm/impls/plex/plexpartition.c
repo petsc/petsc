@@ -1808,7 +1808,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     }
   } else {
     PetscInt base, ms;
-    PetscCall(MPIU_Allreduce(&numExclusivelyOwned, &base, 1, MPIU_INT, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(&numExclusivelyOwned, &base, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     PetscCall(MatGetSize(A, &ms, NULL));
     ms -= size;
     base      = PetscMax(base, ms);
