@@ -466,6 +466,7 @@ help-nontest:
 	-@echo "   clean - delete libraries and Fortran module files (used in $PETSC_DIR)"
 	-@echo "           delete compilied examples, .o and related files (used in tutorials or test directories)"
 	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
+	-@echo "   clang-tidy - run clang-tidy on the PETSc C code"
 	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
 	-@echo "   deletefortranstubs - delete the generated Fortran stubs/interface definitions"
 	-@echo "   checkbadSource - check the source code for violations of coding standards"
