@@ -178,6 +178,9 @@ PetscErrorCode           PetscOptionsEnd(void);
       options available so they need to be redisplayed so the user can change the. Changing `PetscOptionsObjects.changedmethod` is never
       currently set.
 
+   Fortran Note:
+   Returns ierr error code per PETSc Fortran API
+
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
@@ -248,6 +251,9 @@ M*/
     Needs to be preceded by a call to `PetscOptionsBegin()` or `PetscObjectOptionsBegin()`
 
     This is a macro that handles its own error checking, it does not return an error code.
+
+  Fortran Note:
+   Returns ierr error code per PETSc Fortran API
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`

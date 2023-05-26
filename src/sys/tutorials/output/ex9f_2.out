@@ -1,0 +1,9 @@
+The bool value was set to F 
+The bool array was set to T F T 
+The integer value was set to       22 
+The integer array was set to        2        3        4 
+The real value was set to  2.34000E+00 
+The real array was set to -3.00000E+00 -4.00000E+00  5.50000E+00 
+The scalar value was set to  7.89000E+00 
+The scalar array was set to  1.00000E+00  2.00000E+00  3.00000E+00 
+The string value was set to This_is_a_test_of_the_emergency_alert_system 
