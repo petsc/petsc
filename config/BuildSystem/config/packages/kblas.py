@@ -102,7 +102,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling KBLAS; this may take several minutes')
         output2,err2,ret2 = config.package.Package.executeShellCommand('cd src && ' + self.make.make_jnp, cwd=self.packageDir, timeout=2500, log = self.log)
-        libDir     = os.path.join(self.installDir, self.libdir)
+        libDir     = self.libDir
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing KBLAS; this may take several minutes')
         output,err,ret = config.package.Package.executeShellCommandSeq(

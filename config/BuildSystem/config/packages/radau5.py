@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.gitcommit         = 'dc161a92a1919ca4a7661ee47fc5c89e3860f258' #master dec-1-2018
     self.download          = ['git://https://bitbucket.org/petsc/pkg-radau5.git','https://bitbucket.org/petsc/pkg-radau5/get/'+self.gitcommit+'.tar.gz']
     self.liblist           = [['libradau5.a']]
-    self.libdir            = ''
+    self.libDirs           = ['']
     self.precisions        = ['double']
     self.requires32bitint  = 1;
     self.complex           = 0;

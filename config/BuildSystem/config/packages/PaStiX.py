@@ -235,7 +235,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling PaStiX; this may take several minutes')
         output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make all',timeout=2500, log = self.log)
-        libDir     = os.path.join(self.installDir, self.libdir)
+        libDir     = self.libDir
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing PaStiX; this may take several minutes')
         output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && mkdir -p '+libDir+' && cp -f install/*.a '+libDir+'/. && mkdir -p '+includeDir+' && cp -f install/*.h '+includeDir+'/.', timeout=2500, log = self.log)

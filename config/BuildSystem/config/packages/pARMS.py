@@ -71,7 +71,7 @@ class Configure(config.package.Package):
     if self.installNeeded('makefile.in'):
       try:
         self.logPrintBox('Compiling pARMS; this may take several minutes')
-        libDir = os.path.join(self.installDir, self.libdir,'')
+        libDir = self.libDir
         incDir = os.path.join(self.installDir, self.includedir,'')
         if not os.path.isdir(libDir):
           os.mkdir(libDir)

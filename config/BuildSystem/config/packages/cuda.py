@@ -32,6 +32,7 @@ class Configure(config.package.Package):
     self.functionsDefine   = ['cusolverDnDpotri']
     self.isnvhpc           = 0
     self.devicePackage     = 1
+    self.libDirs           = ['lib', 'lib64']
     return
 
   def setupHelp(self, help):

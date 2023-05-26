@@ -16,6 +16,8 @@ class Configure(config.package.Package):
     self.required            = 1
     self.alternativedownload = 'f2cblaslapack'
     self.missingRoutines     = []
+    self.libDirs             = [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64',\
+                                'ia64','em64t','intel64', os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -295,8 +297,7 @@ class Configure(config.package.Package):
         mkl_blacs_32=[[]]
       if useCPardiso or usePardiso:
         self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for C/Pardiso')
-        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64',
-                       os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+        for libdir in self.libDirs:
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
@@ -323,7 +324,7 @@ class Configure(config.package.Package):
       for ITHREAD in ITHREADS:
         yield ('User specified MKL11/12 and later', None, [os.path.join(dir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
       # Some new MKL 11/12 variations
-      for libdir in [os.path.join('lib','intel64'),os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+      for libdir in self.libDirs:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
@@ -331,7 +332,7 @@ class Configure(config.package.Package):
           for ITHREAD in ITHREADS:
             yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
             yield ('User specified MKL11/12 Linux32 for static linking (Cray)', None, ['-Wl,--start-group',os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'-Wl,--end-group','pthread'],known,ompthread)
-      for libdir in [os.path.join('lib','intel64'),os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64','']:
+      for libdir in self.libDirs:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
@@ -341,7 +342,7 @@ class Configure(config.package.Package):
             yield ('User specified MKL11+ Mac-64', None, [os.path.join(dir,libdir,'libmkl_intel'+ILP64+'.a'),'mkl_core','mkl_'+ITHREAD,'pthread'],known,ompthread)
       # Older Linux MKL checks
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'],'32','no')
-      for libdir in ['32','64','em64t']:
+      for libdir in self.libDirs:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
