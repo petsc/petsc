@@ -56,45 +56,55 @@ struct Vec_Kokkos {
      assuming the given array contains the latest value for this vector.
    */
   template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
-  void UpdateArray(PetscScalar *array)
+  PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
+    PetscFunctionBegin;
     /* Kokkos said they would add error-checking so that users won't accidentally pass two different Views in this case */
-    v_dual = PetscScalarKokkosDualView(v_h, v_h);
+    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_h, v_h));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<!std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
-  void UpdateArray(PetscScalar *array)
+  PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
-    v_dual = PetscScalarKokkosDualView(v_dual.view<DefaultMemorySpace>(), v_h);
-    v_dual.modify_host();
+    PetscFunctionBegin;
+    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_dual.view<DefaultMemorySpace>(), v_h));
+    PetscCallCXX(v_dual.modify_host());
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename MemorySpace, std::enable_if_t<!std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
-  void UpdateArray(PetscScalar *array)
+  PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosView v_d(array, v_dual.extent(0));
-    v_dual = PetscScalarKokkosDualView(v_d, v_dual.view<Kokkos::HostSpace>());
-    v_dual.modify_device();
+    PetscFunctionBegin;
+    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_d, v_dual.view<Kokkos::HostSpace>()));
+    PetscCallCXX(v_dual.modify_device());
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  void SetUpCOO(const Vec_Seq *vecseq, PetscInt m)
+  PetscErrorCode SetUpCOO(const Vec_Seq *vecseq, PetscInt m)
   {
-    jmap1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecseq->jmap1, m + 1));
-    perm1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecseq->perm1, vecseq->tot1));
+    PetscFunctionBegin;
+    PetscCallCXX(jmap1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecseq->jmap1, m + 1)));
+    PetscCallCXX(perm1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecseq->perm1, vecseq->tot1)));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  void SetUpCOO(const Vec_MPI *vecmpi, PetscInt m)
+  PetscErrorCode SetUpCOO(const Vec_MPI *vecmpi, PetscInt m)
   {
-    jmap1_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->jmap1, m + 1));
-    perm1_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->perm1, vecmpi->tot1));
-    imap2_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->imap2, vecmpi->nnz2));
-    jmap2_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->jmap2, vecmpi->nnz2 + 1));
-    perm2_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->perm2, vecmpi->recvlen));
-    Cperm_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->Cperm, vecmpi->sendlen));
-    sendbuf_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscScalarKokkosViewHost(vecmpi->sendbuf, vecmpi->sendlen));
-    recvbuf_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscScalarKokkosViewHost(vecmpi->recvbuf, vecmpi->recvlen));
+    PetscFunctionBegin;
+    PetscCallCXX(jmap1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->jmap1, m + 1)));
+    PetscCallCXX(perm1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->perm1, vecmpi->tot1)));
+    PetscCallCXX(imap2_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->imap2, vecmpi->nnz2)));
+    PetscCallCXX(jmap2_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->jmap2, vecmpi->nnz2 + 1)));
+    PetscCallCXX(perm2_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->perm2, vecmpi->recvlen)));
+    PetscCallCXX(Cperm_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->Cperm, vecmpi->sendlen)));
+    PetscCallCXX(sendbuf_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscScalarKokkosViewHost(vecmpi->sendbuf, vecmpi->sendlen)));
+    PetscCallCXX(recvbuf_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscScalarKokkosViewHost(vecmpi->recvbuf, vecmpi->recvlen)));
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 

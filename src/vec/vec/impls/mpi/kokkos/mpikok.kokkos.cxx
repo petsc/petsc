@@ -125,7 +125,7 @@ static PetscErrorCode VecSetPreallocationCOO_MPIKokkos(Vec x, PetscCount ncoo, c
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(x, &m));
   PetscCall(VecSetPreallocationCOO_MPI(x, ncoo, coo_i));
-  PetscCallCXX(veckok->SetUpCOO(vecmpi, m));
+  PetscCall(veckok->SetUpCOO(vecmpi, m));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
