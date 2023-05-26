@@ -11,6 +11,9 @@ Changes: Development
 
 .. rubric:: General:
 
+- Add ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscOptionsInt()``, ``PetscOptionsBool()``, ``PetscOptionsIntArray()``,
+  ``PetscOptionsReal()``, ``PetscOptionsRealArray()``, and ``PetscOptionsScalar()`` for Fortran
+
 .. rubric:: Configure/Build:
 
 .. rubric:: Sys:
