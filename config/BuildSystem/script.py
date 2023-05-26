@@ -253,6 +253,7 @@ class Script(logger.Logger):
 
     (output, error, status) = runInShell(commandseq, log, cwd, env)
     output = logOutput(log, output,logOutputflg)
+    logOutput(log, error,logOutputflg)
     checkCommand(commandseq, status, output, error)
     return (output, error, status)
 
