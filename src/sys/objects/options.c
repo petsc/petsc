@@ -3248,9 +3248,9 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
       PetscCall(PetscStrlcat(msg, oldname, sizeof(msg)));
       PetscCall(PetscStrlcat(msg, " is deprecated as of version ", sizeof(msg)));
       PetscCall(PetscStrlcat(msg, version, sizeof(msg)));
-      PetscCall(PetscStrlcat(msg, " and will be removed in a future release.", sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, " and will be removed in a future release.\n", sizeof(msg)));
       if (newname) {
-        PetscCall(PetscStrlcat(msg, " Please use the option ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, "   Use the option ", sizeof(msg)));
         PetscCall(PetscStrlcat(msg, newname, sizeof(msg)));
         PetscCall(PetscStrlcat(msg, " instead.", sizeof(msg)));
       }
