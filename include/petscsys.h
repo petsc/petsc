@@ -129,10 +129,10 @@ PETSC_EXTERN MPI_Datatype MPIU_BOOL PETSC_ATTRIBUTE_MPI_TYPE_TAG(PetscBool);
 
    Level: beginner
 
-   Notes:
+   Note:
    In MPI calls that require an MPI datatype that matches a `PetscInt` or array of `PetscInt` values, pass this value.
 
-.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_COUNT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
 M*/
 
 PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
@@ -142,6 +142,21 @@ PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
 #else
   #define MPIU_INT MPI_INT
 #endif
+
+/*MC
+   MPIU_COUNT - Portable MPI datatype corresponding to `PetscCount` independent of the precision of `PetscCount`
+
+   Level: beginner
+
+   Note:
+   In MPI calls that require an MPI datatype that matches a `PetscCount` or array of `PetscCount` values, pass this value.
+
+  Developer Note:
+  It seems MPI_AINT is unsigned so this may be the wrong choice here since `PetscCount` is signed
+
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_INT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
+M*/
+#define MPIU_COUNT MPI_AINT
 
 /*
     For the rare cases when one needs to send a size_t object with MPI

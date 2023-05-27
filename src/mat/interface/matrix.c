@@ -1012,11 +1012,11 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
    The user can open alternative visualization contexts with
 +    `PetscViewerASCIIOpen()` - Outputs matrix to a specified file
 .    `PetscViewerBinaryOpen()` - Outputs matrix in binary to a
-         specified file; corresponding input uses MatLoad()
+         specified file; corresponding input uses `MatLoad()`
 .    `PetscViewerDrawOpen()` - Outputs nonzero matrix structure to
          an X window display
 -    `PetscViewerSocketOpen()` - Outputs matrix to Socket viewer.
-         Currently only the sequential dense and AIJ
+         Currently only the `MATSEQDENSE` and `MATAIJ`
          matrix types support the Socket viewer.
 
    The user can call `PetscViewerPushFormat()` to specify the output
@@ -1224,13 +1224,13 @@ $ -viewer_type {binary, hdf5}
    and src/mat/tutorials/ex10.c with the second approach.
 
    In case of `PETSCVIEWERBINARY`, a native PETSc binary format is used. Each of the blocks
-   is read onto rank 0 and then shipped to its destination rank, one after another.
+   is read onto MPI rank 0 and then shipped to its destination MPI rank, one after another.
    Multiple objects, both matrices and vectors, can be stored within the same file.
-   Their PetscObject name is ignored; they are loaded in the order of their storage.
+   Their `PetscObject` name is ignored; they are loaded in the order of their storage.
 
    Most users should not need to know the details of the binary storage
    format, since `MatLoad()` and `MatView()` completely hide these details.
-   But for anyone who's interested, the standard binary matrix storage
+   But for anyone who is interested, the standard binary matrix storage
    format is
 
 .vb
@@ -1242,14 +1242,17 @@ $ -viewer_type {binary, hdf5}
     PetscInt    *column indices of all nonzeros (starting index is zero)
     PetscScalar *values of all nonzeros
 .ve
+   If PETSc was not configured with `--with-64-bit-indices` then only `MATMPIAIJ` matrices with more than `PETSC_INT_MAX` non-zeros can be
+   stored or loaded (each MPI process part of the matrix must have less than `PETSC_INT_MAX` nonzeros). Since the total nonzero count in this
+   case will not fit in a (32-bit) `PetscInt` the value `PETSC_INT_MAX` is used for the header entry `total number of nonzeros`.
 
    PETSc automatically does the byte swapping for
-machines that store the bytes reversed. Thus if you write your own binary
-read/write routines you have to swap the bytes; see `PetscBinaryRead()`
-and `PetscBinaryWrite()` to see how this may be done.
+   machines that store the bytes reversed. Thus if you write your own binary
+   read/write routines you have to swap the bytes; see `PetscBinaryRead()`
+   and `PetscBinaryWrite()` to see how this may be done.
 
    In case of `PETSCVIEWERHDF5`, a parallel HDF5 reader is used.
-   Each processor's chunk is loaded independently by its owning rank.
+   Each processor's chunk is loaded independently by its owning MPI process.
    Multiple objects, both matrices and vectors, can be stored within the same file.
    They are looked up by their PetscObject name.
 
@@ -2043,7 +2046,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], P
      Negative row or column indices will be ignored and those locations in `v` will be
      left unchanged.
 
-     For the standard row-based matrix formats, `idxm` can only contain rows owned by the requesting MPI rank.
+     For the standard row-based matrix formats, `idxm` can only contain rows owned by the requesting MPI process.
      That is, rows with global index greater than or equal to rstart and less than rend where rstart and rend are obtainable
      from `MatGetOwnershipRange`(mat,&rstart,&rend).
 
@@ -2089,9 +2092,9 @@ PetscErrorCode MatGetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
    Notes:
      If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call `MatSetLocalToGlobalMapping()` before using this routine.
 
-     This routine can only return values that are owned by the requesting MPI rank. That is, for standard matrix formats, rows that, in the global numbering,
+     This routine can only return values that are owned by the requesting MPI process. That is, for standard matrix formats, rows that, in the global numbering,
      are greater than or equal to rstart and less than rend where rstart and rend are obtainable from `MatGetOwnershipRange`(mat,&rstart,&rend). One can
-     determine if the resulting global row associated with the local row r is owned by the requesting MPI rank by applying the `ISLocalToGlobalMapping` set
+     determine if the resulting global row associated with the local row r is owned by the requesting MPI process by applying the `ISLocalToGlobalMapping` set
      with `MatSetLocalToGlobalMapping()`.
 
    Developer Note:
@@ -5608,7 +5611,7 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    Level: beginner
 
    Notes:
-   `MatSetValues()` generally caches the values that belong to other MPI ranks.  The matrix is ready to
+   `MatSetValues()` generally caches the values that belong to other MPI processes.  The matrix is ready to
    use only after `MatAssemblyBegin()` and `MatAssemblyEnd()` have been called.
 
    Use `MAT_FLUSH_ASSEMBLY` when switching between `ADD_VALUES` and `INSERT_VALUES`
@@ -6693,7 +6696,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
 
 /*@C
    MatGetOwnershipRange - For matrices that own values by row, excludes `MATELEMENTAL` and `MATSCALAPACK`, returns the range of matrix rows owned by
-   this MPI rank. For all matrices  it returns the range of matrix rows associated with rows of a vector that would contain the result of a matrix
+   this MPI process. For all matrices  it returns the range of matrix rows associated with rows of a vector that would contain the result of a matrix
    vector product with this matrix. See :any:`<sec_matlayout>` for details on matrix layouts
 
    Not Collective
@@ -7640,7 +7643,7 @@ PetscErrorCode MatInvertVariableBlockEnvelope(Mat A, MatReuse reuse, Mat *C)
    Notes:
     Currently used by `PCVPBJACOBI` for `MATAIJ` matrices
 
-    Each variable point-block set of degrees of freedom must live on a single MPI rank. That is a point block cannot straddle two MPI ranks.
+    Each variable point-block set of degrees of freedom must live on a single MPI process. That is a point block cannot straddle two MPI processes.
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`, `MatGetVariableBlockSizes()`,
           `MatComputeVariableBlockEnvelope()`, `PCVPBJACOBI`
@@ -10329,7 +10332,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
   the `subMat`. However the offDiagMat looses some columns - and this is
   reconstructed with `MatSetValues()`
 
-  This is used by `PCBJACOBI` when a single block spans multiple MPI ranks
+  This is used by `PCBJACOBI` when a single block spans multiple MPI processes.
 
 .seealso: [](chapter_matrices), `Mat`, `MatCreateRedundantMatrix()`, `MatCreateSubMatrices()`, `PCBJACOBI`
 @*/
@@ -10521,7 +10524,7 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
    Notes:
    The size of the blocks is determined by the block size of the matrix.
 
-   The blocks never overlap between two MPI ranks, use `MatInvertVariableBlockEnvelope()` for that case
+   The blocks never overlap between two MPI processes, use `MatInvertVariableBlockEnvelope()` for that case
 
    The blocks all have the same size, use `MatInvertVariableBlockDiagonal()` for variable block size
 
@@ -10555,7 +10558,7 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
   Notes:
   Use `MatInvertBlockDiagonal()` if all blocks have the same size
 
-  The blocks never overlap between two MPI ranks, use `MatInvertVariableBlockEnvelope()` for that case
+  The blocks never overlap between two MPI processes, use `MatInvertVariableBlockEnvelope()` for that case
 
 .seealso: [](chapter_matrices), `Mat`, `MatInvertBlockDiagonal()`, `MatSetVariableBlockSizes()`, `MatInvertVariableBlockEnvelope()`
 @*/
@@ -10824,7 +10827,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm, Mat seqmat, Petsc
 }
 
 /*@
-     MatSubdomainsCreateCoalesce - Creates index subdomains by coalescing adjacent ranks' ownership ranges.
+     MatSubdomainsCreateCoalesce - Creates index subdomains by coalescing adjacent MPI ranks' ownership ranges.
 
     Collective
 
@@ -10833,8 +10836,8 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm, Mat seqmat, Petsc
 -    N   - requested number of subdomains
 
    Output Parameters:
-+    n   - number of subdomains resulting on this rank
--    iss - `IS` list with indices of subdomains on this rank
++    n   - number of subdomains resulting on this MPI process
+-    iss - `IS` list with indices of subdomains on this MPI process
 
     Level: advanced
 
