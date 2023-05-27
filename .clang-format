@@ -179,3 +179,4 @@ WhitespaceSensitiveMacros:
   - _Pragma
 TypenameMacros:
   - khash_t
+InsertNewlineAtEOF: true
