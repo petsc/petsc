@@ -673,7 +673,7 @@ static PetscErrorCode KSPSetFromOptions_MINRES(KSP ksp, PetscOptionItems *PetscO
     Note:
     By default, the QLP variant is not used.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMINRES`, `KSPMINRESGetUseQLP()`
+.seealso: [](ch_ksp), `KSP`, `KSPMINRES`, `KSPMINRESGetUseQLP()`
 @*/
 PetscErrorCode KSPMINRESSetUseQLP(KSP ksp, PetscBool qlp)
 {
@@ -698,7 +698,7 @@ PetscErrorCode KSPMINRESSetUseQLP(KSP ksp, PetscBool qlp)
     Options Database Key:
 .   -ksp_minres_radius <real> - maximum allowed solution norm
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMINRES`, `KSPMINRESSetUseQLP()`
+.seealso: [](ch_ksp), `KSP`, `KSPMINRES`, `KSPMINRESSetUseQLP()`
 @*/
 PetscErrorCode KSPMINRESSetRadius(KSP ksp, PetscReal radius)
 {
@@ -722,7 +722,7 @@ PetscErrorCode KSPMINRESSetRadius(KSP ksp, PetscReal radius)
 
     Level: beginner
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMINRES`, `KSPMINRESSetUseQLP()`
+.seealso: [](ch_ksp), `KSP`, `KSPMINRES`, `KSPMINRESSetUseQLP()`
 @*/
 PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
 {
@@ -756,7 +756,7 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
    Original MINRES code contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
    QLP variant adapted from: https://stanford.edu/group/SOL/software/minresqlp/minresqlp-matlab/CPS11.zip
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {

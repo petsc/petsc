@@ -510,7 +510,7 @@ static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRe
   Dynamics with Improved Numerical Dissipation: The Generalized-alpha
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
-.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 {
@@ -569,7 +569,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 {
@@ -615,7 +615,7 @@ PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
   (i.e. high-frequency damping) in order so select optimal values for
   these parameters.
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2GetParams()`
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma, PetscReal beta)
 {
@@ -652,7 +652,7 @@ PetscErrorCode TSAlpha2SetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pe
   radius of the method) in order so select optimal values for these
   parameters.
 
-.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 @*/
 PetscErrorCode TSAlpha2GetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma, PetscReal *beta)
 {

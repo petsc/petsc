@@ -21,7 +21,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `KSPGLTR`, `KSPGLTRGetLambda()`
+.seealso: [](ch_ksp), `KSPGLTR`, `KSPGLTRGetLambda()`
 @*/
 PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
@@ -44,7 +44,7 @@ t
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `KSPGLTR`, `KSPGLTRGetMinEig()`
+.seealso: [](ch_ksp), `KSPGLTR`, `KSPGLTRGetMinEig()`
 @*/
 PetscErrorCode KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
@@ -1329,7 +1329,7 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscO
 . * -  Gould, N. and Lucidi, S. and Roma, M. and Toint, P., Solving the Trust-Region Subproblem using the Lanczos Method,
    SIAM Journal on Optimization, volume 9, number 2, 1999, 504-525
 
-.seealso: [](chapter_ksp), `KSPQCG`, `KSPNASH`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`, `KSPCG`
+.seealso: [](ch_ksp), `KSPQCG`, `KSPNASH`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`, `KSPCG`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)

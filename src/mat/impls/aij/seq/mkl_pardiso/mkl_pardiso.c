@@ -876,7 +876,7 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F, PetscInt icntl, PetscInt
    References:
 .  * - Mkl_Pardiso Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MATSOLVERMKL_PARDISO`, `MatGetFactor()`
+.seealso: [](ch_matrices), `Mat`, `MATSOLVERMKL_PARDISO`, `MatGetFactor()`
 @*/
 PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
 {
@@ -925,7 +925,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F, PetscInt icntl, PetscInt ival)
 
     For more information on the options check the MKL_Pardiso manual
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQAIJ`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMkl_PardisoSetCntl()`
+.seealso: [](ch_matrices), `Mat`, `MATSEQAIJ`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMkl_PardisoSetCntl()`
 M*/
 static PetscErrorCode MatFactorGetSolverType_mkl_pardiso(Mat A, MatSolverType *type)
 {

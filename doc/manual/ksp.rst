@@ -1,4 +1,4 @@
-.. _chapter_ksp:
+.. _ch_ksp:
 
 KSP: Linear System Solvers
 --------------------------

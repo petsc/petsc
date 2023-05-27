@@ -27,7 +27,7 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RH
 
    Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `IS`, `TSRHSSplitGetIS()`
+.seealso: [](ch_ts), `TS`, `IS`, `TSRHSSplitGetIS()`
 @*/
 PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
 {
@@ -75,7 +75,7 @@ PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
 
    Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `IS`, `TSRHSSplitSetIS()`
+.seealso: [](ch_ts), `TS`, `IS`, `TSRHSSplitSetIS()`
 @*/
 PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
 {
@@ -112,7 +112,7 @@ $  PetscErrorCode rhsfunc(TS ts, PetscReal t, Vec u, Vec f,ctx)
 
  Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSRHSFunction`, `IS`, `TSRHSSplitSetIS()`
+.seealso: [](ch_ts), `TS`, `TSRHSFunction`, `IS`, `TSRHSSplitSetIS()`
 @*/
 PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunction rhsfunc, void *ctx)
 {
@@ -165,7 +165,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
 
    Level: advanced
 
-.seealso: [](chapter_ts), `TS`, `IS`, `TSGetRHSSplitFunction()`
+.seealso: [](ch_ts), `TS`, `IS`, `TSGetRHSSplitFunction()`
 @*/
 PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
 {
@@ -199,7 +199,7 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
    After `TSRHSSplitGetSubTS()` the array of `TS`s is to be freed by the user with `PetscFree()`
    (not the `TS` in the array just the array that contains them).
 
-.seealso: [](chapter_ts), `TS`, `IS`, `TSGetRHSSplitFunction()`
+.seealso: [](ch_ts), `TS`, `IS`, `TSGetRHSSplitFunction()`
 @*/
 PetscErrorCode TSRHSSplitGetSubTSs(TS ts, PetscInt *n, TS *subts[])
 {

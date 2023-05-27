@@ -287,7 +287,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
    Because `MATSEQAIJSELL` is a subtype of `MATSEQAIJ`, the option `-mat_seqaij_type seqaijsell` can be used to make
    sequential `MATSEQAIJ` matrices default to being instances of `MATSEQAIJSELL`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJSELL()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAIJSELL()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateSeqAIJSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {

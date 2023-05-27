@@ -139,7 +139,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat, MatFactorType, Mat *);
 
   Level: developer
 
-.seealso: [](chapter_matrices), `Mat`, `PetscInitialize()`, `MatFinalizePackage()`
+.seealso: [](ch_matrices), `Mat`, `PetscInitialize()`, `MatFinalizePackage()`
 @*/
 PetscErrorCode MatInitializePackage(void)
 {

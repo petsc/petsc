@@ -2,7 +2,7 @@
 
 The time-stepping (`TS`) component provides ODE and DAE integrators as well as
 pseudo-timestepping.  `TS` internally
-employs `SNES` to solve the nonlinear problems that arise with implicit methods. User guide chapter: [](chapter_ts).
+employs `SNES` to solve the nonlinear problems that arise with implicit methods. User guide chapter: [](ch_ts).
 
 
 <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/index.html">Examples</A><BR>

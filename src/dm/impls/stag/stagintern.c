@@ -29,7 +29,7 @@
 
   This is an internal function but we provide a man page in case it's made public
 
-.seealso: [](chapter_stag), `DMSTAG`, `DM`, `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
+.seealso: [](ch_stag), `DMSTAG`, `DM`, `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
 {

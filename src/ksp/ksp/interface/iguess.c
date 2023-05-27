@@ -27,7 +27,7 @@ $     -ksp_guess_type my_initial_guess
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessRegisterAll()`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGuessRegisterAll()`
 @*/
 PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(KSPGuess))
 {
@@ -44,7 +44,7 @@ PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(K
 
   Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSPRegisterAll()`, `KSPInitializePackage()`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPRegisterAll()`, `KSPInitializePackage()`
 @*/
 PetscErrorCode KSPGuessRegisterAll(void)
 {
@@ -66,7 +66,7 @@ PetscErrorCode KSPGuessRegisterAll(void)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSPGetGuess()`, `KSPSetGuessType()`, `KSPGuessType`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGetGuess()`, `KSPSetGuessType()`, `KSPGuessType`
 @*/
 PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 {
@@ -87,7 +87,7 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessSetFromOptions()`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessSetFromOptions()`
 @*/
 PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 {
@@ -107,7 +107,7 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`, `KSPGuessType`
+.seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`, `KSPGuessType`
 @*/
 PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
 {
@@ -135,7 +135,7 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
 
   Level: developer
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`, `PetscViewer`
+.seealso: [](ch_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`, `PetscViewer`
 @*/
 PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view)
 {
@@ -169,7 +169,7 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGuessDestroy()`, `KSPGuess`, `KSPGuessType`, `KSP`
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGuessDestroy()`, `KSPGuess`, `KSPGuessType`, `KSP`
 @*/
 PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 {
@@ -199,7 +199,7 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 
   Level: developer
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`
 @*/
 PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 {
@@ -237,7 +237,7 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessSetType()`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGuessSetType()`
 @*/
 PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
 {
@@ -260,7 +260,7 @@ PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`
+.seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
 PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 {
@@ -284,7 +284,7 @@ PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`
+.seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
 PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 {
@@ -306,7 +306,7 @@ PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`
+.seealso: [](ch_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
 PetscErrorCode KSPGuessSetUp(KSPGuess guess)
 {

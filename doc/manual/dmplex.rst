@@ -1,4 +1,4 @@
-.. _chapter_unstructured:
+.. _ch_unstructured:
 
 DMPlex: Unstructured Grids
 --------------------------

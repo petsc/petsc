@@ -1901,7 +1901,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj, Petsc
 
    Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsRAM()`, `TSTrajectoryMemoryType`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsRAM()`, `TSTrajectoryMemoryType`
 @*/
 PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj, TSTrajectoryMemoryType tj_memory_type)
 {
@@ -1923,7 +1923,7 @@ PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj, TSTrajectoryMemoryType
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsRAM()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj, PetscInt max_cps_ram)
 {
@@ -1945,7 +1945,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj, PetscInt max_cps_ram)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsDisk()`, `TSTrajectorySetMaxUnitsRAM()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsDisk()`, `TSTrajectorySetMaxUnitsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj, PetscInt max_cps_disk)
 {
@@ -1967,7 +1967,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj, PetscInt max_cps_disk)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxCpsRAM()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetMaxCpsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj, PetscInt max_units_ram)
 {
@@ -1989,7 +1989,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj, PetscInt max_units_ra
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxCpsDisk()`
+.seealso: [](ch_ts), `TSTrajectory`, `TSTrajectorySetMaxCpsDisk()`
 @*/
 PetscErrorCode TSTrajectorySetMaxUnitsDisk(TSTrajectory tj, PetscInt max_units_disk)
 {
@@ -2255,7 +2255,7 @@ static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectory`
+.seealso: [](ch_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectory`
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj, TS ts)
 {

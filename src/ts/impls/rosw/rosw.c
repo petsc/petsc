@@ -70,7 +70,7 @@ typedef struct {
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -80,7 +80,7 @@ M*/
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -90,7 +90,7 @@ M*/
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -100,7 +100,7 @@ M*/
 
      Level: intermediate
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -115,7 +115,7 @@ M*/
      References:
 .  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -130,7 +130,7 @@ M*/
      References:
 .  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
@@ -145,7 +145,7 @@ M*/
      References:
 .  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWSANDU3`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWSANDU3`
 M*/
 
 /*MC
@@ -163,7 +163,7 @@ M*/
      References:
 .  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWRODAS3`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWRODAS3`
 M*/
 
 /*MC
@@ -178,7 +178,7 @@ M*/
      References:
 . * - Emil Constantinescu
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
 M*/
 
 /*MC
@@ -193,7 +193,7 @@ M*/
      References:
 . * - Emil Constantinescu
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -208,7 +208,7 @@ M*/
      References:
 . * - Emil Constantinescu
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -228,7 +228,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -248,7 +248,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -268,7 +268,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -287,7 +287,7 @@ M*/
 
      Hairer's code ros4.f
 
-.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
+.seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*@C
@@ -297,7 +297,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSROSW`, `TSRosWRegisterDestroy()`
+.seealso: [](ch_ts), `TSROSW`, `TSRosWRegisterDestroy()`
 @*/
 PetscErrorCode TSRosWRegisterAll(void)
 {
@@ -590,7 +590,7 @@ PetscErrorCode TSRosWRegisterAll(void)
 
    Level: advanced
 
-.seealso: [](chapter_ts), `TSRosWRegister()`, `TSRosWRegisterAll()`
+.seealso: [](ch_ts), `TSRosWRegister()`, `TSRosWRegisterAll()`
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
 {
@@ -617,7 +617,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSROSW`, `PetscInitialize()`, `TSRosWFinalizePackage()`
+.seealso: [](ch_ts), `TSROSW`, `PetscInitialize()`, `TSRosWFinalizePackage()`
 @*/
 PetscErrorCode TSRosWInitializePackage(void)
 {
@@ -635,7 +635,7 @@ PetscErrorCode TSRosWInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSROSW`, `PetscFinalize()`, `TSRosWInitializePackage()`
+.seealso: [](ch_ts), `TSROSW`, `PetscFinalize()`, `TSRosWInitializePackage()`
 @*/
 PetscErrorCode TSRosWFinalizePackage(void)
 {
@@ -666,7 +666,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
    Note:
    Several Rosenbrock W methods are provided, this function is only needed to create new methods.
 
-.seealso: [](chapter_ts), `TSROSW`
+.seealso: [](ch_ts), `TSROSW`
 @*/
 PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const PetscReal A[], const PetscReal Gamma[], const PetscReal b[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[])
 {
@@ -797,7 +797,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
    It is used here to implement several methods from the book and can be used to experiment with new methods.
    It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
-.seealso: [](chapter_ts), `TSRosW`, `TSRosWRegister()`
+.seealso: [](ch_ts), `TSRosW`, `TSRosWRegister()`
 @*/
 PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2, PetscReal a3, PetscReal b3, PetscReal e4)
 {
@@ -1454,7 +1454,7 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: [](chapter_ts), `TSRosWGetType()`, `TSROSW`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWARK3`
+.seealso: [](ch_ts), `TSRosWGetType()`, `TSROSW`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWARK3`
 @*/
 PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
 {
@@ -1478,7 +1478,7 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSRosWType`, `TSRosWSetType()`
+.seealso: [](ch_ts), `TSRosWType`, `TSRosWSetType()`
 @*/
 PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
 {
@@ -1499,7 +1499,7 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSRosWType`, `TSRosWGetType()`
+.seealso: [](ch_ts), `TSRosWType`, `TSRosWGetType()`
 @*/
 PetscErrorCode TSRosWSetRecomputeJacobian(TS ts, PetscBool flg)
 {
@@ -1629,7 +1629,7 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
    with initial guess y_i = 0.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
           `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)

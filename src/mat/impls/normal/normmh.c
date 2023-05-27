@@ -287,7 +287,7 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
+.seealso: [](ch_matrices), `Mat`, `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
 @*/
 PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M)
 {
@@ -349,7 +349,7 @@ PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse re
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateNormalHermitian()`, `MatMult()`, `MatNormalHermitianGetMat()`, `MATNORMAL`, `MatCreateNormal()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateNormalHermitian()`, `MatMult()`, `MatNormalHermitianGetMat()`, `MATNORMAL`, `MatCreateNormal()`
 M*/
 
 /*@
@@ -370,7 +370,7 @@ M*/
           object performs the matrix-vector product, `MatMult()`, by first multiplying by
           A and then (A*)'
 
-.seealso: [](chapter_matrices), `Mat`, `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
+.seealso: [](ch_matrices), `Mat`, `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
 @*/
 PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
 {

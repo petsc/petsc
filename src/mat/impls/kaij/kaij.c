@@ -43,7 +43,7 @@
    Note:
    The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateKAIJ()`, `MATKAIJ`, `MATAIJ`
+.seealso: [](ch_matrices), `Mat`, `MatCreateKAIJ()`, `MATKAIJ`, `MATAIJ`
 @*/
 PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
 {
@@ -82,7 +82,7 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
    Note:
    All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
 {
@@ -112,7 +112,7 @@ PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
    Note:
    All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **S)
 {
@@ -139,7 +139,7 @@ PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar **S)
 {
@@ -164,7 +164,7 @@ PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar **S)
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
 {
@@ -191,7 +191,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
    Note:
    All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
 {
@@ -221,7 +221,7 @@ PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
    Note:
    All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **T)
 {
@@ -248,7 +248,7 @@ PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar **T)
 {
@@ -273,7 +273,7 @@ PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar **T)
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar **T)
 {
@@ -298,7 +298,7 @@ PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar **T)
 
    Changes to the entries of the `MATAIJ` matrix will immediately affect the `MATKAIJ` matrix.
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`
 @*/
 PetscErrorCode MatKAIJSetAIJ(Mat A, Mat B)
 {
@@ -338,7 +338,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A, Mat B)
 
    The `S` matrix is copied, so the user can destroy this array.
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJSetT()`, `MatKAIJSetAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJSetT()`, `MatKAIJSetAIJ()`
 @*/
 PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 {
@@ -369,7 +369,7 @@ PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 
    Level: Advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetT()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetT()`
 @*/
 PetscErrorCode MatKAIJGetScaledIdentity(Mat A, PetscBool *identity)
 {
@@ -415,7 +415,7 @@ PetscErrorCode MatKAIJGetScaledIdentity(Mat A, PetscBool *identity)
 
    The `T` matrix is copied, so the user can destroy this array.
 
-.seealso: [](chapter_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJSetS()`, `MatKAIJSetAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJSetS()`, `MatKAIJSetAIJ()`
 @*/
 PetscErrorCode MatKAIJSetT(Mat A, PetscInt p, PetscInt q, const PetscScalar T[])
 {
@@ -1399,7 +1399,7 @@ static PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatRe
   rebuilding 'AIJ' and 'OAIJ' just before executing operations with the `MATMPIKAIJ` matrix. If new types of operations are added,
   routines implementing those must also ensure these are rebuilt when needed (by calling the internal MatKAIJ_build_AIJ_OAIJ() routine).
 
-.seealso: [](chapter_matrices), `Mat`, `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MATKAIJ`
+.seealso: [](ch_matrices), `Mat`, `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MATKAIJ`
 @*/
 PetscErrorCode MatCreateKAIJ(Mat A, PetscInt p, PetscInt q, const PetscScalar S[], const PetscScalar T[], Mat *kaij)
 {
@@ -1433,7 +1433,7 @@ PetscErrorCode MatCreateKAIJ(Mat A, PetscInt p, PetscInt q, const PetscScalar S[
   A linear system with multiple right-hand sides, AX = B, can be expressed in the KAIJ-friendly form of (A \otimes I) x = b,
   where x and b are column vectors containing the row-major representations of X and B.
 
-.seealso: [](chapter_matrices), `Mat`, `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MatCreateKAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MatCreateKAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)

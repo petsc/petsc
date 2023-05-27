@@ -55,7 +55,7 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, void *ctx)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `DMKSPCreate()`, `DMKSPDestroy()`
+.seealso: [](ch_ksp), `DMKSPCreate()`, `DMKSPDestroy()`
 @*/
 PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
 {
@@ -99,7 +99,7 @@ PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
    Note:
    Use `DMGetDMKSPWrite()` if write access is needed. The DMKSPSetXXX API should be used wherever possible.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSPWrite()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSPWrite()`
 @*/
 PetscErrorCode DMGetDMKSP(DM dm, DMKSP *kspdm)
 {
@@ -130,7 +130,7 @@ PetscErrorCode DMGetDMKSP(DM dm, DMKSP *kspdm)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`
 @*/
 PetscErrorCode DMGetDMKSPWrite(DM dm, DMKSP *kspdm)
 {
@@ -167,7 +167,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm, DMKSP *kspdm)
    Note:
    The context is copied by reference. This function does not ensure that a context exists.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`, `KSPSetDM()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMGetDMKSP()`, `KSPSetDM()`
 @*/
 PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
 {
@@ -202,7 +202,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
    Developer Note:
    If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`
 @*/
 PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, Mat, void *), void *ctx)
 {
@@ -230,7 +230,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, 
 
    Level: developer
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`
 @*/
 PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat, Mat, void *), void *ctx)
 {
@@ -264,7 +264,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat,
    Developer Note:
    If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
 @*/
 PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *), void *ctx)
 {
@@ -294,7 +294,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *
    `KSPSetComputeInitialGuess()` is normally used, but it calls this function internally because the user context is actually
    associated with the `DM`.
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
 @*/
 PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Vec, void *), void *ctx)
 {
@@ -322,7 +322,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Ve
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
 @*/
 PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void *), void *ctx)
 {
@@ -350,7 +350,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void 
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
 @*/
 PetscErrorCode DMKSPGetComputeInitialGuess(DM dm, PetscErrorCode (**func)(KSP, Vec, void *), void *ctx)
 {

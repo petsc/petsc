@@ -234,7 +234,7 @@ $ PetscErrorCode destroy(void *ctx)
  Developer Note:
  The API should make uniform for all flexible types, [](sec_flexibleksp), and not have separate function calls for each type.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGCR`, `KSPGCRModifyPCNoChange()`, [](sec_flexibleksp)
+.seealso: [](ch_ksp), `KSP`, `KSPGCR`, `KSPGCRModifyPCNoChange()`, [](sec_flexibleksp)
  @*/
 PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
 {
@@ -283,7 +283,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
    Developer Note:
    The API could be made uniform for all `KSP` methods have have a restart.
 
-.seealso: [](chapter_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
+.seealso: [](ch_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
 @*/
 PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 {
@@ -305,7 +305,7 @@ PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRSetRestart()`, `KSPGMRESGetRestart()`
+.seealso: [](ch_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRSetRestart()`, `KSPGMRESGetRestart()`
 @*/
 PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
 {
@@ -381,7 +381,7 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 .   * - S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
            nonsymmetric systems of linear equations. SIAM J. Numer. Anal., 20, 1983
 
-.seealso: [](chapter_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGCRSetRestart()`, `KSPGCRGetRestart()`,
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGCRSetRestart()`, `KSPGCRGetRestart()`,
           `KSPGCRSetRestart()`, `KSPGCRSetModifyPC()`, `KSPGMRES`, `KSPFGMRES`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)

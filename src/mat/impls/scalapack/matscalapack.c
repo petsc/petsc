@@ -1652,7 +1652,7 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A, PetscInt mb, Pe
    Note:
    This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKSetBlockSizes(Mat A, PetscInt mb, PetscInt nb)
 {
@@ -1692,7 +1692,7 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A, PetscInt *mb, P
    Note:
    This block size has a different meaning from the block size associated with `MatSetBlockSize()` used for sparse matrices
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKGetBlockSizes(Mat A, PetscInt *mb, PetscInt *nb)
 {
@@ -1723,7 +1723,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
    range of rows on an MPI rank. Use `MatGetOwnershipIS()` to determine what values are stored on
    the given rank.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`, `MatCreateScaLAPACK()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`, `MatCreateScaLAPACK()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
@@ -1847,7 +1847,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
    significance and are thus ignored. The block sizes refer to the values
    used for the distributed matrix, not the same meaning as in `MATBAIJ`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateScaLAPACK(MPI_Comm comm, PetscInt mb, PetscInt nb, PetscInt M, PetscInt N, PetscInt rsrc, PetscInt csrc, Mat *A)
 {

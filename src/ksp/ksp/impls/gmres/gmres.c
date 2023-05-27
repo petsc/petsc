@@ -508,7 +508,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
    Note:
     A new `PETSCVIEWERDRAW` is created for each Krylov vector so they can all be simultaneously viewed
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `PetscViewersCreate()`, `PetscViewersDestroy()`
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, void *dummy)
 {
@@ -676,7 +676,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
           `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType type)
@@ -705,7 +705,7 @@ PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType t
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
           `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *type)
@@ -733,7 +733,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
     Note:
     The default value is 30.
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`
 @*/
 PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 {
@@ -757,7 +757,7 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`
 @*/
 PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 {
@@ -785,7 +785,7 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
    a certain number of iterations. If you attempt more iterations after this point unstable
    things can happen hence very occasionally you may need to set this value to detect this condition
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`
 @*/
 PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 {
@@ -812,7 +812,7 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
    Note:
    Divergence breakdown occurs when GMRES residual increases significantly during restart
 
-.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetHapTol()`
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetHapTol()`
 @*/
 PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 {
@@ -845,7 +845,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 .  [1] - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
           SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`

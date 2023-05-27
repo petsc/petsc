@@ -215,7 +215,7 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
      the symbolic phase took advantage of their symmetry, the product is cleared and `MatProductSetFromOptions()`
      and `MatProductSymbolic()` are invoked again.
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
 @*/
 PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D)
 {
@@ -525,7 +525,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
    Note:
    The `-mat_product_clear` option reduces memory usage but means that the matrix cannot be re-used for a matrix-matrix product operation
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatSetFromOptions()`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductNumeric()`,
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatSetFromOptions()`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductNumeric()`,
           `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductAlgorithm`
 @*/
 PetscErrorCode MatProductSetFromOptions(Mat mat)
@@ -554,7 +554,7 @@ PetscErrorCode MatProductSetFromOptions(Mat mat)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `MatProductType`, `Mat`, `MatProductSetFromOptions()`, `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
+.seealso: [](ch_matrices), `MatProductType`, `Mat`, `MatProductSetFromOptions()`, `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
 @*/
 PetscErrorCode MatProductView(Mat mat, PetscViewer viewer)
 {
@@ -643,7 +643,7 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat)
    Note:
    `MatProductSymbolic()` must have been called on `mat` before calling this function
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductSetAlgorithm()`, `MatProductSetType()`, `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductSetAlgorithm()`, `MatProductSetType()`, `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
 @*/
 PetscErrorCode MatProductNumeric(Mat mat)
 {
@@ -760,7 +760,7 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
    Note:
    `MatProductSetFromOptions()` must have been called on `mat` before calling this function
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
 PetscErrorCode MatProductSymbolic(Mat mat)
 {
@@ -830,7 +830,7 @@ PetscErrorCode MatProductSymbolic(Mat mat)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
 {
@@ -856,7 +856,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductClear()`, `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductClear()`, `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`
 @*/
 PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
 {
@@ -883,7 +883,7 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
    Note:
    The small t represents the transpose operation.
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductType`, `MatProductType`,
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductType`, `MatProductType`,
           `MATPRODUCT_AB`, `MATPRODUCT_AtB`, `MATPRODUCT_ABt`, `MATPRODUCT_PtAP`, `MATPRODUCT_RARt`, `MATPRODUCT_ABC`
 @*/
 PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
@@ -921,7 +921,7 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
 
    After having called this function, matrix-matrix product operations can no longer be used on `mat`
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreate()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductClear(Mat mat)
 {
@@ -990,7 +990,7 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D)
 
    Any product data currently attached to `D` will be cleared
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductType`, `MatProductSetType()`, `MatProductAlgorithm`,
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductType`, `MatProductSetType()`, `MatProductAlgorithm`,
           `MatProductSetAlgorithm`, `MatProductCreate()`, `MatProductClear()`
 @*/
 PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
@@ -1065,7 +1065,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
    It is undocumented what happens if the nonzero structure of the input matrices changes. Is the symbolic stage automatically redone? Does it crash?
    Is there error checking for it?
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`
 @*/
 PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
 {
@@ -1220,7 +1220,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`, `MatProductType`, `MatProductAlgorithm`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`, `MatProductType`, `MatProductAlgorithm`
 @*/
 PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
 {
@@ -1247,7 +1247,7 @@ PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
 {

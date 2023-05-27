@@ -144,7 +144,7 @@ PetscErrorCode TSDestroy_Radau5(TS ts)
 
     Can only handle ODEs of the form \cdot{u} = -F(t,u) + G(t,u)
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts)
 {

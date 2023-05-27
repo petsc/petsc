@@ -181,7 +181,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
    Note:
    Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSUBMATRIX`, `MATLOCALREF`, `MatCreateLocalRef()`, `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
+.seealso: [](ch_matrices), `Mat`, `MATSUBMATRIX`, `MATLOCALREF`, `MatCreateLocalRef()`, `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
 @*/
 PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
 {
@@ -254,7 +254,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
    The `MatType` is `MATSUBMATRIX` but the routines associated have `SubMatrixVirtual` in them, the `MatType` name should likely be changed to
    `MATSUBMATRIXVIRTUAL`
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrix()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrixVirtual()`, `MatCreateSubMatrix()`
 M*/
 
 /*@
@@ -273,7 +273,7 @@ M*/
    Note:
    Most will use `MatCreateSubMatrix()` which provides a more efficient representation if it is available.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
+.seealso: [](ch_matrices), `Mat`, `MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
 @*/
 PetscErrorCode MatSubMatrixVirtualUpdate(Mat N, Mat A, IS isrow, IS iscol)
 {

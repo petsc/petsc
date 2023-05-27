@@ -1211,7 +1211,7 @@ $  Y_i = X + h sum_j a_ij Y'_j
 
    is interpreted as a formula for Y'_i in terms of Y_i and known values (Y'_j, j<i)
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 {
@@ -1282,7 +1282,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   Note:
   Use of this function is normally only required to hack `TSTHETA` to use a modified integration scheme.
 
-.seealso: [](chapter_ts), `TSThetaSetTheta()`, `TSTHETA`
+.seealso: [](ch_ts), `TSThetaSetTheta()`, `TSTHETA`
 @*/
 PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 {
@@ -1307,7 +1307,7 @@ PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSThetaGetTheta()`, `TSTHETA`, `TSCN`
+.seealso: [](ch_ts), `TSThetaGetTheta()`, `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
 {
@@ -1330,7 +1330,7 @@ PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSThetaSetEndpoint()`, `TSTHETA`, `TSCN`
+.seealso: [](ch_ts), `TSThetaSetEndpoint()`, `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
 {
@@ -1355,7 +1355,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSTHETA`, `TSCN`
+.seealso: [](ch_ts), `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaSetEndpoint(TS ts, PetscBool flg)
 {
@@ -1395,7 +1395,7 @@ static PetscErrorCode TSView_BEuler(TS ts, PetscViewer viewer)
   Note:
   `TSBEULER` is equivalent to `TSTHETA` with Theta=1.0 or `-ts_type theta -ts_theta_theta 1.0`
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
 {
@@ -1438,7 +1438,7 @@ static PetscErrorCode TSView_CN(TS ts, PetscViewer viewer)
   -ts_theta_endpoint
 .ve
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`, `TSType`,
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`, `TSType`,
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
 {

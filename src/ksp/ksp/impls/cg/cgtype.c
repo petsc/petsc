@@ -25,7 +25,7 @@
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCG`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`
 @*/
 PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type)
 {
@@ -60,7 +60,7 @@ PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type)
 .   [1] - Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead
      Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999.
 
-.seealso: [](chapter_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG`
+.seealso: [](ch_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG`
 @*/
 PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
 {
@@ -85,7 +85,7 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
     Note:
     When radius is greater then 0, the Steihaugh-Toint trick is used
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
 {
@@ -112,7 +112,7 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
            1/2 x_k * A * x_k - b * x_k is smaller than obj if obj is negative.
            Otherwise the test is ignored.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
 {
@@ -134,7 +134,7 @@ PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
@@ -155,7 +155,7 @@ PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {

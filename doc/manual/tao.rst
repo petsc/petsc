@@ -1,13 +1,25 @@
-.. _chapter_tao:
+.. _ch_tao:
 
 TAO: Optimization Solvers
 =========================
 
 The Toolkit for Advanced Optimization (TAO) focuses on algorithms for the
 solution of large-scale optimization problems on high-performance
+<<<<<<< HEAD
 architectures.  Methods are available for unconstrained, bound-constrained and
 generally constrained optimization, nonlinear least squares problems,
 variational inequalities and complementarity constraints.
+=======
+architectures.  Methods are available for
+
+- :any:`sec_tao_leastsquares`
+- :any:`sec_tao_quadratic`
+- :any:`sec_tao_unconstrained`
+- :any:`sec_tao_bound`
+- :any:`sec_tao_constrained`
+- :any:`sec_tao_complementary`
+- :any:`sec_tao_pde_constrained`
+>>>>>>> a676b9cb958 (fixup! fixes for tutorials)
 
 .. _sec_tao_getting_started:
 
@@ -28,7 +40,7 @@ defined by
 where :math:`n = 2m` is the number of variables. Note that while we use
 the C language to introduce the TAO software, the package is fully
 usable from C++ and Fortran.
-:any:`chapter_fortran` discusses additional
+:any:`ch_fortran` discusses additional
 issues concerning Fortran usage.
 
 The code in :any:`the example <tao-example1>` contains many of

@@ -103,7 +103,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
    Note:
    See `MatType` for possible values
 
-.seealso: [](chapter_matrices), `Mat`, `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
+.seealso: [](ch_matrices), `Mat`, `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
 @*/
 PetscErrorCode MatSetType(Mat mat, MatType matype)
 {
@@ -187,7 +187,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatSetType()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatSetType()`
 @*/
 PetscErrorCode MatGetType(Mat mat, MatType *type)
 {
@@ -211,7 +211,7 @@ PetscErrorCode MatGetType(Mat mat, MatType *type)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `Mat`, `MatSetVecType()`, `VecType`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `Mat`, `MatSetVecType()`, `VecType`
 @*/
 PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
 {
@@ -236,7 +236,7 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
    Note:
      This is rarely needed in practice since each matrix object internally sets the proper vector type.
 
-.seealso: [](chapter_matrices), `Mat`, `VecType`, `VecSetType()`, `MatGetVecType()`
+.seealso: [](ch_matrices), `Mat`, `VecType`, `VecSetType()`, `MatGetVecType()`
 @*/
 PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 {
@@ -271,7 +271,7 @@ $     MatSetType(Mat, "my_mat")
    or at runtime via the option
 $     -mat_type my_mat
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/
 PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
 {
@@ -304,7 +304,7 @@ MatRootName MatRootNameList = NULL;
       appropriate creation routine. Why have two different ways of implementing the same functionality for different types of objects? It is
       confusing.
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `PetscObjectBaseTypeCompare()`
 @*/
 PetscErrorCode MatRegisterRootName(const char rname[], const char sname[], const char mname[])
 {

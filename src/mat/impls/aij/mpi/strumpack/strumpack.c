@@ -55,7 +55,7 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReo
    References:
 .  * - STRUMPACK manual
 
-.seealso: [](chapter_matrices), `Mat`, `MatSTRUMPACKReordering`, `MatGetFactor()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+.seealso: [](ch_matrices), `Mat`, `MatSTRUMPACKReordering`, `MatGetFactor()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
           `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetReordering(Mat F, MatSTRUMPACKReordering reordering)
@@ -93,7 +93,7 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm)
    References:
 .  * - STRUMPACK manual
 
-.seealso: [](chapter_matrices), `MatSTRUMPACKSetReordering()`, `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetHSSRelTol()`, `MatSTRUMPACKSetHSSAbsTol()`,
+.seealso: [](ch_matrices), `MatSTRUMPACKSetReordering()`, `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetHSSRelTol()`, `MatSTRUMPACKSetHSSAbsTol()`,
           `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetColPerm(Mat F, PetscBool cperm)
@@ -131,7 +131,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol)
    References:
 .  * - STRUMPACK manual
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSAbsTol()`,
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSAbsTol()`,
           `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F, PetscReal rtol)
@@ -169,7 +169,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol)
    References:
 .  * - STRUMPACK manual
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
           `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F, PetscReal atol)
@@ -207,7 +207,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmax
    References:
 .  * - STRUMPACK manual
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
           `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F, PetscInt hssmaxrank)
@@ -245,7 +245,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_
    References:
 .  * - STRUMPACK manual
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
           `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSMinSepSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F, PetscInt leaf_size)
@@ -283,7 +283,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hss
    References:
 .  * - STRUMPACK manual
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
           `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F, PetscInt hssminsize)
@@ -508,7 +508,7 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
 
  Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`,
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`,
           `MatGetFactor()`, `MatSTRUMPACKSetReordering()`, `MatSTRUMPACKSetColPerm()`, `MatSTRUMPACKSetHSSRelTol()`,
           `MatSTRUMPACKSetHSSAbsTol()`, `MatSTRUMPACKSetHSSMaxRank()`, `MatSTRUMPACKSetHSSLeafSize()`, `MatSTRUMPACKSetHSSMinSepSize()`
 M*/

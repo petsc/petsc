@@ -439,7 +439,7 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess, PetscViewer viewer)
 
     Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessCreate()`, `KSPSetGuess()`, `KSPGetGuess()`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessCreate()`, `KSPSetGuess()`, `KSPGetGuess()`
 @*/
 PetscErrorCode KSPGuessCreate_POD(KSPGuess guess)
 {

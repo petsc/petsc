@@ -34,7 +34,7 @@
   If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
   `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
 {

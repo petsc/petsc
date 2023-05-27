@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode MatPythonSetType(Mat mat, const char pyname[])
 {
@@ -38,7 +38,7 @@ PetscErrorCode MatPythonSetType(Mat mat, const char pyname[])
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`, `MatPythonSetType()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`, `MatPythonSetType()`
 @*/
 PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[])
 {
@@ -67,7 +67,7 @@ PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[])
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatType`, `MATPYTHON`, `MatPythonSetType()`, `PetscPythonInitialize()`
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MATPYTHON`, `MatPythonSetType()`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode MatPythonCreate(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const char pyname[], Mat *A)
 {

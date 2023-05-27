@@ -171,7 +171,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
     The API that includes `MatGetSchurComplement()`, `MatCreateSchurComplement()`, `MatSchurComplementGetPmat()` should be refactored to
     remove redundancy and be clearer and simpler.
 
-.seealso: [](chapter_ksp), `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatSchurComplementUpdateSubMatrices()`, `MatCreateTranspose()`, `MatGetSchurComplement()`,
+.seealso: [](ch_ksp), `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatSchurComplementUpdateSubMatrices()`, `MatCreateTranspose()`, `MatGetSchurComplement()`,
           `MatSchurComplementGetPmat()`, `MatSchurComplementSetSubMatrices()`
 @*/
 PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11, Mat *S)
@@ -214,7 +214,7 @@ PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat
 .ve
     while `MatSchurComplementUpdateSubMatrices()` should only be called after `MatCreateSchurComplement()` or `MatSchurComplementSetSubMatrices()`
 
-.seealso: [](chapter_ksp), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatSchurComplementUpdateSubMatrices()`, `MatCreateTranspose()`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`
+.seealso: [](ch_ksp), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatSchurComplementUpdateSubMatrices()`, `MatCreateTranspose()`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`
 @*/
 PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11)
 {
@@ -276,7 +276,7 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `Mat`, `MatSchurComplementSetKSP()`, `MatCreateSchurComplement()`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`
+.seealso: [](ch_ksp), `Mat`, `MatSchurComplementSetKSP()`, `MatCreateSchurComplement()`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`
 @*/
 PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
 {
@@ -308,7 +308,7 @@ PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
     This is used in `PCFIELDSPLIT` to reuse the 0-split `KSP` to implement ksp(A00,Ap00) in S.
     The `KSP` operators are overwritten with A00 and Ap00 currently set in S.
 
-.seealso: [](chapter_ksp), `Mat`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MATSCHURCOMPLEMENT`
+.seealso: [](ch_ksp), `Mat`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MATSCHURCOMPLEMENT`
 @*/
 PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 {
@@ -356,7 +356,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
    Developer Note:
      This code is almost identical to `MatSchurComplementSetSubMatrices()`. The API should be refactored.
 
-.seealso: [](chapter_ksp), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`
+.seealso: [](ch_ksp), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`
 @*/
 PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11)
 {
@@ -430,7 +430,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
 
   The reference counts of the submatrices are not increased before they are returned and the matrices should not be modified or destroyed.
 
-.seealso: [](chapter_ksp), `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`, `MatSchurComplementUpdateSubMatrices()`
+.seealso: [](ch_ksp), `MatCreateNormal()`, `MatMult()`, `MatCreate()`, `MatSchurComplementGetKSP()`, `MatCreateSchurComplement()`, `MatSchurComplementUpdateSubMatrices()`
 @*/
 PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat *A01, Mat *A10, Mat *A11)
 {
@@ -469,7 +469,7 @@ PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat 
 
   Level: advanced
 
-.seealso: [](chapter_ksp), `MatCreateSchurComplement()`, `MatSchurComplementUpdate()`, `MatSchurComplementGetPmat()`
+.seealso: [](ch_ksp), `MatCreateSchurComplement()`, `MatSchurComplementUpdate()`, `MatSchurComplementGetPmat()`
 @*/
 PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
 {
@@ -603,7 +603,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
     The API that includes `MatGetSchurComplement()`, `MatCreateSchurComplement()`, `MatSchurComplementGetPmat()` should be refactored to
     remove redundancy and be clearer and simpler.
 
-.seealso: [](chapter_ksp), `MatCreateSubMatrix()`, `PCFIELDSPLIT`, `MatCreateSchurComplement()`, `MatSchurComplementAinvType`
+.seealso: [](ch_ksp), `MatCreateSubMatrix()`, `PCFIELDSPLIT`, `MatCreateSchurComplement()`, `MatSchurComplementAinvType`
 @*/
 PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS iscol1, MatReuse mreuse, Mat *S, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp)
 {
@@ -645,7 +645,7 @@ PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS 
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `MatSchurComplementAinvType`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementGetAinvType()`
+.seealso: [](ch_ksp), `MatSchurComplementAinvType`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementGetAinvType()`
 @*/
 PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType ainvtype)
 {
@@ -677,7 +677,7 @@ PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType a
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `MatSchurComplementAinvType`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementSetAinvType()`
+.seealso: [](ch_ksp), `MatSchurComplementAinvType`, `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementSetAinvType()`
 @*/
 PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *ainvtype)
 {
@@ -712,7 +712,7 @@ PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementAinvType`
+.seealso: [](ch_ksp), `MatCreateSchurComplement()`, `MatGetSchurComplement()`, `MatSchurComplementGetPmat()`, `MatSchurComplementAinvType`
 @*/
 PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, MatSchurComplementAinvType ainvtype, MatReuse preuse, Mat *Sp)
 {
@@ -823,7 +823,7 @@ PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Mat *Sp)
 
     This routine should be called `MatSchurComplementCreatePmat()`
 
-.seealso: [](chapter_ksp), `MatCreateSubMatrix()`, `PCFIELDSPLIT`, `MatGetSchurComplement()`, `MatCreateSchurComplement()`, `MatSchurComplementSetAinvType()`
+.seealso: [](ch_ksp), `MatCreateSubMatrix()`, `PCFIELDSPLIT`, `MatGetSchurComplement()`, `MatCreateSchurComplement()`, `MatSchurComplementSetAinvType()`
 @*/
 PetscErrorCode MatSchurComplementGetPmat(Mat S, MatReuse preuse, Mat *Sp)
 {
@@ -916,7 +916,7 @@ static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatType`, `MatCreateSchurComplement()`, `MatSchurComplementComputeExplicitOperator()`,
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatType`, `MatCreateSchurComplement()`, `MatSchurComplementComputeExplicitOperator()`,
           `MatSchurComplementGetSubMatrices()`, `MatSchurComplementGetKSP()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)

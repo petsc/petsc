@@ -1,4 +1,4 @@
-.. _chapter_stag:
+.. _ch_stag:
 
 DMSTAG: Staggered, Structured Grid
 ----------------------------------
@@ -31,7 +31,7 @@ are referred to as *faces* and the 1-dimensional boundaries between faces are re
 The set of cells of a given dimension is referred to as a *stratum* (which one can think of as a level in DAG representation of the mesh); a ``DMSTAG`` object of dimension :math:`d`
 represents a complete cell complex with :math:`d+1` *strata* (levels).
 
-In the description of any:`chapter_unstructured` the cells at each level are referred to as *points*. Thus we adopt that terminology uniformly in PETSc and so furthermore in this document, 
+In the description of any:`ch_unstructured` the cells at each level are referred to as *points*. Thus we adopt that terminology uniformly in PETSc and so furthermore in this document, 
 point will refer to a cell.
 
 Each stratum has a constant number of unknowns (which may be zero) associated with each point (cell) on that level.

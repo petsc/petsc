@@ -26,7 +26,7 @@
    Notes:
      In general this is much slower than `KSPGMRESClassicalGramSchmidtOrthogonalization()` but has better stability properties.
 
-.seealso: [](chapter_ksp), `KSPGMRESSetOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetOrthogonalization()`
+.seealso: [](ch_ksp), `KSPGMRESSetOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it)
 {

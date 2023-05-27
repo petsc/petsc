@@ -332,7 +332,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
                      Architectures. L. T. Yang and R. Brent, Proceedings of the Fifth International Conference on Algorithms and
                      Architectures for Parallel Processing, 2002, IEEE.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPIBCGS`, `KSPSetLagNorm()`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPIBCGS`, `KSPSetLagNorm()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)

@@ -84,7 +84,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat, Mat, IS, const Mat
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat, MatSolverType *type)

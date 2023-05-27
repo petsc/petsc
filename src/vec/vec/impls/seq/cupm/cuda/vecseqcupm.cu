@@ -32,7 +32,7 @@ PetscErrorCode VecCreate_SeqCUDA(Vec v)
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](chapter_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqCUDAWithArray()`,
+.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqCUDAWithArray()`,
           `VecCreateMPI()`, `VecCreateMPICUDA()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
 PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm, PetscInt n, Vec *v)
@@ -73,7 +73,7 @@ PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm, PetscInt n, Vec *v)
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](chapter_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeqWithArray()`, `VecCreateSeqCUDA()`,
+.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeqWithArray()`, `VecCreateSeqCUDA()`,
           `VecCreateSeqCUDAWithArray()`, `VecCreateMPICUDA()`, `VecCreateMPICUDAWithArray()`,
           `VecCreateMPICUDAWithArrays()`, `VecCUDAPlaceArray()`
 C@*/
@@ -114,7 +114,7 @@ PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](chapter_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
+.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
           `VecCreateMPIWithArray()`, `VecCreateSeqCUDA()`, `VecCreateMPICUDAWithArray()`, `VecCUDAPlaceArray()`,
           `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
@@ -154,7 +154,7 @@ PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
   If the device memory hasn't been allocated previously it will be allocated as part of this
   routine.
 
-.seealso: [](chapter_vectors), `VecCUDARestoreArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecCUDARestoreArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`, `VecGetArrayWrite()`
 @*/
 PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
@@ -180,7 +180,7 @@ PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
   host data as out of date. Subsequent access to the vector data on the host side via
   `VecGetArray()` will incur a (synchronous) data transfer.
 
-.seealso: [](chapter_vectors), `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
@@ -214,7 +214,7 @@ PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
   host is up to date. Accessing data on the host side does not incur a device to host data
   transfer.
 
-.seealso: [](chapter_vectors), `VecCUDARestoreArrayRead()`, `VecCUDAGetArray()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecCUDARestoreArrayRead()`, `VecCUDAGetArray()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`
 @*/
 PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
@@ -240,7 +240,7 @@ PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
   This routine does not modify the corresponding array on the host in any way. The pointer is
   invalid after this function returns.
 
-.seealso: [](chapter_vectors), `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
@@ -273,7 +273,7 @@ PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
   released the host data of the vector is marked as out of data. Subsequent access of the host
   data with e.g. VecGetArray() incurs a device to host data transfer.
 
-.seealso: [](chapter_vectors), `VecCUDARestoreArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`,
+.seealso: [](ch_vectors), `VecCUDARestoreArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`,
           `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
@@ -299,7 +299,7 @@ PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
   Data on the host will be marked as out of date. Subsequent access of the data on the host
   side e.g. with `VecGetArray()` will incur a device to host data transfer.
 
-.seealso: [](chapter_vectors), `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`,
+.seealso: [](ch_vectors), `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`,
           `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
@@ -333,7 +333,7 @@ PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
   array restored with `VecCUDAResetArray()` or permanently replaced with
   `VecCUDAReplaceArray()`.
 
-.seealso: [](chapter_vectors), `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`,
+.seealso: [](ch_vectors), `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`,
           `VecResetArray()`, `VecCUDAResetArray()`, `VecCUDAReplaceArray()`
 @*/
 PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
@@ -362,7 +362,7 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
   passed array so it CANNOT be freed by the user. It will be freed when the vector is
   destroyed.
 
-.seealso: [](chapter_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`,
+.seealso: [](ch_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`,
           `VecCUDAResetArray()`, `VecCUDAPlaceArray()`, `VecReplaceArray()`
 @*/
 PetscErrorCode VecCUDAReplaceArray(Vec vin, const PetscScalar a[])
@@ -385,7 +385,7 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin, const PetscScalar a[])
   Note:
   Call this after the use of `VecCUDAPlaceArray()`.
 
-.seealso: [](chapter_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`,
+.seealso: [](ch_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`,
           `VecResetArray()`, `VecCUDAPlaceArray()`, `VecCUDAReplaceArray()`
 @*/
 PetscErrorCode VecCUDAResetArray(Vec vin)

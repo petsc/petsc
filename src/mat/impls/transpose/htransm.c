@@ -215,7 +215,7 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `MatCreateHermitianTranspose()`
 @*/
 PetscErrorCode MatHermitianTransposeGetMat(Mat A, Mat *M)
 {
@@ -268,7 +268,7 @@ PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
 M*/
 
 /*@
@@ -289,7 +289,7 @@ M*/
           object performs the matrix-vector product, `MatMult()`, by using the `MatMultHermitianTranspose()` on
           the original matrix
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`,
+.seealso: [](ch_matrices), `Mat`, `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`,
           `MATTRANSPOSEVIRTUAL`, `MatCreateTranspose()`, `MatHermitianTransposeGetMat()`, `MATNORMAL`, `MATNORMALHERMITIAN`
 @*/
 PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N)

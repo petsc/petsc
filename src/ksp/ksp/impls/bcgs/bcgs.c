@@ -195,7 +195,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
    Reference:
 .  * - van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
-.seealso: [](chapter_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
+.seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
 {

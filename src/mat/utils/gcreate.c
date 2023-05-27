@@ -58,7 +58,7 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
+.seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,
           `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
@@ -111,7 +111,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
    If this flag is not set then the matrix operation will note the error and continue. The error may cause a later `PC` or `KSP` error
    or result in a `KSPConvergedReason` indicating the method did not converge.
 
-.seealso: [](chapter_matrices), `Mat`, `PCSetErrorIfFailure()`, `KSPConvergedReason`, `SNESConvergedReason`
+.seealso: [](ch_matrices), `Mat`, `PCSetErrorIfFailure()`, `KSPConvergedReason`, `SNESConvergedReason`
 @*/
 PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
 {
@@ -152,7 +152,7 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
 
    The sizes must be set before `MatSetUp()` or MatXXXSetPreallocation() is called.
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetSize()`, `PetscSplitOwnership()`
+.seealso: [](ch_matrices), `Mat`, `MatGetSize()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
@@ -198,7 +198,7 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
+.seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,
           `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
@@ -280,7 +280,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`,
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`,
           `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`,
           `PetscSplitOwnership()`
 @*/
@@ -464,7 +464,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatBoundToCPU()`
+.seealso: [](ch_matrices), `Mat`, `MatBoundToCPU()`
 @*/
 PetscErrorCode MatBindToCPU(Mat A, PetscBool flg)
 {
@@ -490,7 +490,7 @@ PetscErrorCode MatBindToCPU(Mat A, PetscBool flg)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatBindToCPU()`
+.seealso: [](ch_matrices), `Mat`, `MatBindToCPU()`
 @*/
 PetscErrorCode MatBoundToCPU(Mat A, PetscBool *flg)
 {
@@ -584,7 +584,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
    If you just want to create a sequential AIJ matrix (`MATSEQAIJ`), and your matrix entries in COO format are unique, you can also use
    `MatCreateSeqAIJFromTriple()`. But that is not recommended for iterative applications.
 
-.seealso: [](chapter_matrices), `Mat`, `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`,
+.seealso: [](ch_matrices), `Mat`, `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`,
           `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`,
           `DMSetMatrixPreallocateSkip()`, `MatCreateSeqAIJFromTriple()`
 @*/
@@ -638,7 +638,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
    but will be ignored. The corresponding entries in `MatSetValuesCOO()` will be ignored too. Remote entries
    are allowed and will be properly added or inserted to the matrix.
 
-.seealso: [](chapter_matrices), `Mat`, `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`,
+.seealso: [](ch_matrices), `Mat`, `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`,
           `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOO()`,
           `DMSetMatrixPreallocateSkip()`
 @*/
@@ -690,7 +690,7 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 
           `MatAssemblyBegin()` and `MatAssemblyEnd()` do not need to be called after this routine. It automatically handles the assembly process.
 
-.seealso: [](chapter_matrices), `Mat`, `MatSetPreallocationCOO()`, `MatSetPreallocationCOOLocal()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
+.seealso: [](ch_matrices), `Mat`, `MatSetPreallocationCOO()`, `MatSetPreallocationCOOLocal()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
 @*/
 PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
 {
@@ -734,7 +734,7 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
    If the fine-scale `DMDA` has the `-dm_bind_below` option set to true, then `DMCreateInterpolationScale()` calls `MatSetBindingPropagates()`
    on the restriction/interpolation operator to set the bindingpropagates flag to true.
 
-.seealso: [](chapter_matrices), `Mat`, `VecSetBindingPropagates()`, `MatGetBindingPropagates()`
+.seealso: [](ch_matrices), `Mat`, `VecSetBindingPropagates()`, `MatGetBindingPropagates()`
 @*/
 PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg)
 {
@@ -757,7 +757,7 @@ PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg)
 
    Level: developer
 
-.seealso: [](chapter_matrices), `Mat`, `MatSetBindingPropagates()`
+.seealso: [](ch_matrices), `Mat`, `MatSetBindingPropagates()`
 @*/
 PetscErrorCode MatGetBindingPropagates(Mat A, PetscBool *flg)
 {

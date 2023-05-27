@@ -431,7 +431,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLo
 
   The caller is responsible for destroying the created `DMDA` and `Vec`.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMDA`, `DMStagStencilLocation`, `DM`, `Vec`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
+.seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagStencilLocation`, `DM`, `Vec`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
 @*/
 PetscErrorCode DMStagVecSplitToDMDA(DM dm, Vec vec, DMStagStencilLocation loc, PetscInt c, DM *pda, Vec *pdavec)
 {

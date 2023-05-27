@@ -4584,7 +4584,7 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
    The contents of the sizes[] array should not be changed.
    `NULL` may be passed for information not needed
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetInfo()`
+.seealso: [](ch_matrices), `Mat`, `MatGetInfo()`
 @*/
 PetscErrorCode MatInodeGetInodeSizes(Mat A, PetscInt *node_count, PetscInt *sizes[], PetscInt *limit)
 {

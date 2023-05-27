@@ -50,7 +50,7 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts, PetscInt n, Vec **work)
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
 M*/
 static PetscErrorCode TSSSPStep_RK_2(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 {
@@ -82,7 +82,7 @@ static PetscErrorCode TSSSPStep_RK_2(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
 M*/
 static PetscErrorCode TSSSPStep_RK_3(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 {
@@ -141,7 +141,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSSP`, `TSSSPSetType()`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPSetType()`
 M*/
 static PetscErrorCode TSSSPStep_RK_10_4(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 {
@@ -256,7 +256,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
 {
@@ -280,7 +280,7 @@ PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSSP`, `TSSSPSettype()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPSettype()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPGetType(TS ts, TSSSPType *type)
 {
@@ -306,7 +306,7 @@ PetscErrorCode TSSSPGetType(TS ts, TSSSPType *type)
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSSP`, `TSSSPGetNumStages()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPGetNumStages()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPSetNumStages(TS ts, PetscInt nstages)
 {
@@ -329,7 +329,7 @@ PetscErrorCode TSSSPSetNumStages(TS ts, PetscInt nstages)
 
    Level: beginner
 
-.seealso: [](chapter_ts), `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPGetNumStages(TS ts, PetscInt *nstages)
 {
@@ -459,7 +459,7 @@ static PetscErrorCode TSView_SSP(TS ts, PetscViewer viewer)
 +  * - Ketcheson, Highly efficient strong stability preserving Runge Kutta methods with low storage implementations, SISC, 2008.
 -  * - Gottlieb, Ketcheson, and Shu, High order strong stability preserving time discretizations, J Scientific Computing, 2009.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
@@ -494,7 +494,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `TSSSPFinalizePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `PetscInitialize()`, `TSSSPFinalizePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSSSPInitializePackage(void)
 {
@@ -514,7 +514,7 @@ PetscErrorCode TSSSPInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `TSSSPInitiallizePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `PetscFinalize()`, `TSSSPInitiallizePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSSSPFinalizePackage(void)
 {

@@ -1,4 +1,4 @@
-.. _chapter_dt:
+.. _ch_dt:
 
 PetscDT: Discretization Technology in PETSc
 -------------------------------------------

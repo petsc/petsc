@@ -935,7 +935,7 @@ PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B)
 
    The matrix `B` should be destroyed with `MatDestroy()`. The arrays are not copied, so `B` should be destroyed before `A` is destroyed.
 
-.seealso: [](chapter_matrices), `Mat`, `MATMPIADJ`, `MatCreateMPIAdj()`
+.seealso: [](ch_matrices), `Mat`, `MATMPIADJ`, `MatCreateMPIAdj()`
 @*/
 PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A, Mat *B)
 {
@@ -955,7 +955,7 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A, Mat *B)
     You can provide values to the matrix using `MatMPIAdjSetPreallocation()`, `MatCreateMPIAdj()`, or
     by calling `MatSetValues()` and `MatAssemblyBegin()` followed by `MatAssemblyEnd()`
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateMPIAdj()`, `MatMPIAdjSetPreallocation()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateMPIAdj()`, `MatMPIAdjSetPreallocation()`, `MatSetValues()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 {
@@ -989,7 +989,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeqRankZero()`
+.seealso: [](ch_matrices), `Mat`, `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeqRankZero()`
 @*/
 PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B)
 {
@@ -1016,7 +1016,7 @@ PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B)
      is stored on the first node, instead of the number of ranks copies. This can allow partitioning much larger
      parallel graph sequentially.
 
-.seealso: [](chapter_matrices), `Mat`, `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeq()`
+.seealso: [](ch_matrices), `Mat`, `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeq()`
 @*/
 PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B)
 {
@@ -1039,7 +1039,7 @@ PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MATMPIADJ`, `MatCreateMPIAdj()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MATMPIADJ`, `MatCreateMPIAdj()`
 @*/
 PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscInt *values)
 {
@@ -1081,7 +1081,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
 
    Possible values for `MatSetOption()` - `MAT_STRUCTURALLY_SYMMETRIC`
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/
 PetscErrorCode MatCreateMPIAdj(MPI_Comm comm, PetscInt m, PetscInt N, PetscInt *i, PetscInt *j, PetscInt *values, Mat *A)
 {

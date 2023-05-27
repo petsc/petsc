@@ -429,7 +429,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
   Developer Note:
   How come `MatCreateVecs()` doesn't produce the correctly padded vectors automatically?
 
-.seealso: [](chapter_matrices), `Mat`, `MATFFTW`, `MatCreateFFT()`, `MatCreateVecs()`
+.seealso: [](ch_matrices), `Mat`, `MATFFTW`, `MatCreateFFT()`, `MatCreateVecs()`
 @*/
 PetscErrorCode MatCreateVecsFFTW(Mat A, Vec *x, Vec *y, Vec *z)
 {
@@ -696,7 +696,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
    one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra
    zeros. This routine does that job by scattering operation.
 
-.seealso: [](chapter_matrices), `Mat`, `MATFFTW`, `VecScatterFFTWToPetsc()`, `MatCreateVecsFFTW()`
+.seealso: [](ch_matrices), `Mat`, `MATFFTW`, `VecScatterFFTWToPetsc()`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode VecScatterPetscToFFTW(Mat A, Vec x, Vec y)
 {
@@ -930,7 +930,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
    While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
    `VecScatterFFTWToPetsc()` removes those extra zeros.
 
-.seealso: [](chapter_matrices), `Mat`, `VecScatterPetscToFFTW()`, `MATFFTW`, `MatCreateVecsFFTW()`
+.seealso: [](ch_matrices), `Mat`, `VecScatterPetscToFFTW()`, `MATFFTW`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode VecScatterFFTWToPetsc(Mat A, Vec x, Vec y)
 {
@@ -1142,7 +1142,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatType`, `MatCreateFFT()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatType`, `MatCreateFFT()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 {

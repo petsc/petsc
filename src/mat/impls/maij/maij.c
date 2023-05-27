@@ -18,7 +18,7 @@
    Note:
     The reference count on the `MATAIJ` matrix is not increased so you should not destroy it.
 
-.seealso: [](chapter_matrices), `Mat`, `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATMAIJ`, `MATAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B)
 {
@@ -55,7 +55,7 @@ PetscErrorCode MatMAIJGetAIJ(Mat A, Mat *B)
 
    Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATMAIJ`, `MatCreateMAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATMAIJ`, `MatCreateMAIJ()`
 @*/
 PetscErrorCode MatMAIJRedimension(Mat A, PetscInt dof, Mat *B)
 {
@@ -142,7 +142,7 @@ static PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
@@ -1039,7 +1039,7 @@ static PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat, PetscInt n, const IS ir
     MatView()
 .ve
 
-.seealso: [](chapter_matrices), `Mat`, `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
+.seealso: [](ch_matrices), `Mat`, `MATAIJ`, `MATMAIJ`, `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
 @*/
 PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
 {

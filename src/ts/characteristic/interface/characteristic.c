@@ -138,7 +138,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   choosing the appropriate method.  In other words, this routine is
   not for beginners.
 
-.seealso: [](chapter_ts), `CharacteristicType`
+.seealso: [](ch_ts), `CharacteristicType`
 @*/
 PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 {
@@ -178,7 +178,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 
    Level: developer
 
-.seealso: [](chapter_ts), `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
+.seealso: [](ch_ts), `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
 @*/
 PetscErrorCode CharacteristicSetUp(Characteristic c)
 {
@@ -225,7 +225,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
    Notes:
    CharacteristicRegister() may be called multiple times to add several user-defined solvers.
 
-.seealso: [](chapter_ts), `CharacteristicRegisterAll()`, `CharacteristicRegisterDestroy()`
+.seealso: [](ch_ts), `CharacteristicRegisterAll()`, `CharacteristicRegisterDestroy()`
 @*/
 PetscErrorCode CharacteristicRegister(const char sname[], PetscErrorCode (*function)(Characteristic))
 {

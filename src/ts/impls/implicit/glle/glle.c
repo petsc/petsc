@@ -635,7 +635,7 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
    program, and the user's application is taking responsibility for
    choosing the appropriate method.
 
-.seealso: [](chapter_ts), `TS`, `TSGLLEType`, `TSGLLE`
+.seealso: [](ch_ts), `TS`, `TSGLLEType`, `TSGLLE`
 @*/
 PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 {
@@ -663,7 +663,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 
    Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSGLLE`, `TSGLLEAcceptRegister()`, `TSGLLEAdapt`
+.seealso: [](ch_ts), `TS`, `TSGLLE`, `TSGLLEAcceptRegister()`, `TSGLLEAdapt`
 @*/
 PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
 {
@@ -691,7 +691,7 @@ PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
    This allows the user set options on the `TSGLLEAdapt` object.  Usually it is better to do this using the options
    database, so this function is rarely needed.
 
-.seealso: [](chapter_ts), `TS`, `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegister()`
+.seealso: [](ch_ts), `TS`, `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegister()`
 @*/
 PetscErrorCode TSGLLEGetAdapt(TS ts, TSGLLEAdapt *adapt)
 {
@@ -1219,7 +1219,7 @@ $     TSGLLESetType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_gl_type my_scheme
 
-.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`
 @*/
 PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS))
 {
@@ -1253,7 +1253,7 @@ $     TSGLLESetAcceptType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_gl_accept_type my_scheme
 
-.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAcceptFunction`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAcceptFunction`
 @*/
 PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFunction function)
 {
@@ -1269,7 +1269,7 @@ PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFunction fun
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSGLLE`, `TSGLLERegisterDestroy()`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLERegisterDestroy()`
 @*/
 PetscErrorCode TSGLLERegisterAll(void)
 {
@@ -1288,7 +1288,7 @@ PetscErrorCode TSGLLERegisterAll(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `TSInitializePackage()`, `TSGLLEFinalizePackage()`
+.seealso: [](ch_ts), `PetscInitialize()`, `TSInitializePackage()`, `TSGLLEFinalizePackage()`
 @*/
 PetscErrorCode TSGLLEInitializePackage(void)
 {
@@ -1306,7 +1306,7 @@ PetscErrorCode TSGLLEInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `TSGLLEInitializePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `PetscFinalize()`, `TSGLLEInitializePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSGLLEFinalizePackage(void)
 {
@@ -1407,7 +1407,7 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   ordinary differential equations, Journal of Complexity, Vol 23, 2007.
 - * - John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS ts)
 {
