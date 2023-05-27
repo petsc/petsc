@@ -1009,7 +1009,7 @@ PetscErrorCode PetscOptionsLeftError(void)
     }
   }
   if (nopt) {
-    PetscCall((*PetscErrorPrintf)("WARNING! There are option(s) set that were not used! Could be the program crashed before they were used or a spelling mistake, etc!\n"));
+    PetscCall((*PetscErrorPrintf)("WARNING! There are unused option(s) set! Could be the program crashed before usage or a spelling mistake, etc!\n"));
     for (i = 0; i < defaultoptions->N; i++) {
       if (!defaultoptions->used[i]) {
         if (PetscCIOption(defaultoptions->names[i])) continue;
