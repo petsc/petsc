@@ -40,7 +40,7 @@
    Options Database Key:
 +  -memory_view - Print memory usage at end of run
 .  -log_view_memory - Display memory information for each logged event
--  -malloc_log - Activate logging of memory usage
+-  -malloc_view - Print usage of `PetscMalloc()` in `PetscFinalize()`
 
    Level: intermediate
 
@@ -128,7 +128,7 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
    Options Database Key:
 +  -memory_view - Print memory usage at end of run
 .  -log_view_memory - Print memory information per event
--  -malloc_log - Activate logging of memory usage
+-  -malloc_view - Print usage of `PetscMalloc()` in `PetscFinalize()`
 
    Level: intermediate
 
@@ -159,7 +159,7 @@ PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
    Options Database Key:
 +  -memory_view - Print memory usage at end of run
 .  -log_view_memory - Print memory information per event
--  -malloc_log - Activate logging of memory usage
+-  -malloc_view - Print usage of `PetscMalloc()` in `PetscFinalize()`
 
    Level: intermediate
 

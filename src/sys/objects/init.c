@@ -315,7 +315,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   /* ignore this option if malloc is already set */
   if (flg1 && !petscsetmallocvisited) PetscCall(PetscSetUseHBWMalloc_Private());
 
-  PetscCall(PetscOptionsDeprecatedNoObject("-malloc_info","-memory_view","3.15", "Use -memory_view"));
+  PetscCall(PetscOptionsDeprecatedNoObject("-malloc_info", "-memory_view", "3.15", NULL));
   flg1 = PETSC_FALSE;
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-memory_view", &flg1, NULL));
