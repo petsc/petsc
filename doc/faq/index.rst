@@ -2025,20 +2025,10 @@ to determine exactly what line is causing the problem.
 
 If ``-malloc_debug`` does not help: on NVIDIA CUDA systems you can use https://docs.nvidia.com/cuda/cuda-memcheck/index.html
 
-If ``-malloc_debug`` does not help: on GNU/Linux and (supported) macOS machines - you can
+If ``-malloc_debug`` does not help: on GNU/Linux (not macOS machines) - you can
 use `valgrind <http://valgrind.org>`__. Follow the below instructions:
 
-#. ``configure`` PETSc with ``--download-mpich --with-debugging``.
-
-#. On macOS you need to:
-
-   #. use valgrind from https://github.com/LouisBrunner/valgrind-macos. Follow the Usage
-      instructions in the README.md on that page (no need to clone the repository).
-
-   #. use the additional ``configure`` options ``--download-fblaslapack`` or
-      ``--download-f2cblaslapack``
-
-   #. use the additional valgrind option ``--dsymutil=yes``
+#. ``configure`` PETSc with ``--download-mpich --with-debugging`` (You can use other MPI implementations but most produce spurious Valgrind messages)
 
 #. Compile your application code with this build of PETSc.
 
