@@ -27,7 +27,8 @@ For MRs from forks:
 
 -  Make sure the fork is public -- as GitLab merge request process does not work well with a private fork.
 -  Select the correct target repository ``petsc/petsc`` along with the target branch.
--  GitLab does not allow you to set labels, so  `@`-mention one of the developers in a comment so they can assign someone to the MR to add labels, run pipelines, and generally assist with the MR. The submitter and this assignee should be listed in the upper right corner as assignees to the MR.
+-  Select the "Allow commits from members who can merge to the target branch" option.
+-  GitLab does not allow you to set labels, so  `@`-mention one of the developers in a comment so they can assign someone to the MR to add labels, run pipelines, and generally assist with the MR. The assignee and submitter should be listed in the upper right corner as assignees to the MR.
 
 .. _sec_workflow_labels:
 
