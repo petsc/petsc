@@ -1072,6 +1072,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
   PetscCall(PetscLogGetStageLog(&stageLog));
   eventRegInfo = stageLog->eventLog->eventInfo;
   name         = eventRegInfo[(PetscLogEvent)tree[iStart].nstEvent].name;
+  PetscCheck(name != NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Event name is NULL");
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
 
   PetscCall(PetscLogNestedTreeGetChildrenCount(tree, nTimers, iStart, depth, &nChildren));
@@ -1105,7 +1106,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
 
         PetscCall(PetscStrlen(name, &len));
         PetscCall(PetscMalloc1(len + 16, &otherName));
-        PetscCall(PetscSNPrintf(otherName, len + 16, "%s: other-timed", name));
+        PetscCall(PetscSNPrintf(otherName, len + 16, "%s: other-timed", name ? name : "(none)"));
         PetscCall(PetscLogNestedTreePrintLine(viewer, otherPerfInfo, 1, 1, depth + 1, otherName, totalTime, &childWasPrinted));
         PetscCall(PetscFree(otherName));
         if (childWasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
