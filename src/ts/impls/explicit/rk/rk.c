@@ -454,6 +454,7 @@ PetscErrorCode TSRKRegister(TSRKType name, PetscInt order, PetscInt s, const Pet
   if (c) PetscValidRealPointer(c, 6);
   if (bembed) PetscValidRealPointer(bembed, 7);
   if (binterp || p > 1) PetscValidRealPointer(binterp, 9);
+  PetscCheck(s >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected number of stages s %" PetscInt_FMT " >= 0", s);
 
   PetscCall(TSRKInitializePackage());
   PetscCall(PetscNew(&link));
