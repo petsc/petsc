@@ -6,6 +6,7 @@
 #include "../segmentedmempool.hpp"
 #include "cupmevent.hpp"
 
+#if defined(__cplusplus)
 namespace Petsc
 {
 
@@ -145,5 +146,6 @@ inline PetscErrorCode CUPMStream<T>::wait_for_(event_type &event) const noexcept
 } // namespace device
 
 } // namespace Petsc
+#endif // __cplusplus
 
 #endif // PETSC_CUPMSTREAM_HPP
