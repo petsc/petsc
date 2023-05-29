@@ -1,4 +1,4 @@
-const char help[] = "Test VecCreateMatDense()\n\n";
+const char help[] = "Test MatCreateDenseFromVecType()\n\n";
 
 #include <petscdevice_cuda.h>
 #include <petscmat.h>
