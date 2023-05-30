@@ -108,9 +108,6 @@ struct is_derived_petsc_object_impl<T, decltype(T::hdr)> : conditional_t<std::is
 namespace test
 {
 
-namespace
-{
-
 struct Empty { };
 
 struct IntHdr {
@@ -141,8 +138,6 @@ static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CPetscObject>:
 static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CxxPetscObject>::value, "");
 static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CxxDerivedPetscObject>::value, "");
 
-} // anonymous namespace
-
 } // namespace test
 
 } // namespace detail
@@ -153,9 +148,6 @@ using is_derived_petsc_object = detail::is_derived_petsc_object_impl<remove_poin
 } // namespace util
 
 } // namespace Petsc
-
-namespace
-{
 
 template <typename T>
 PETSC_NODISCARD inline constexpr Petsc::util::remove_const_t<T> &PetscRemoveConstCast(T &object) noexcept
@@ -213,8 +205,6 @@ PETSC_NODISCARD inline constexpr PetscObject PetscObjectCast(PetscObject object)
 {
   return object;
 }
-
-} // anonymous namespace
 
 #else // __cplusplus
 
