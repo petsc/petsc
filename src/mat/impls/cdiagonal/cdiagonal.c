@@ -15,6 +15,16 @@ static PetscErrorCode MatAXPY_ConstantDiagonal(Mat Y, PetscScalar a, Mat X, MatS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatEqual_ConstantDiagonal(Mat Y, Mat X, PetscBool *equal)
+{
+  Mat_ConstantDiagonal *yctx = (Mat_ConstantDiagonal *)Y->data;
+  Mat_ConstantDiagonal *xctx = (Mat_ConstantDiagonal *)X->data;
+
+  PetscFunctionBegin;
+  *equal = (yctx->diag == xctx->diag) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatGetRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt *cols[], PetscScalar *vals[])
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)A->data;
@@ -41,15 +51,6 @@ static PetscErrorCode MatRestoreRow_ConstantDiagonal(Mat A, PetscInt row, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMultTranspose_ConstantDiagonal(Mat A, Vec x, Vec y)
-{
-  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)A->data;
-
-  PetscFunctionBegin;
-  PetscCall(VecAXPBY(y, ctx->diag, 0.0, x));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatMultAdd_ConstantDiagonal(Mat mat, Vec v1, Vec v2, Vec v3)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)mat->data;
@@ -63,15 +64,15 @@ static PetscErrorCode MatMultAdd_ConstantDiagonal(Mat mat, Vec v1, Vec v2, Vec v
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMultTransposeAdd_ConstantDiagonal(Mat mat, Vec v1, Vec v2, Vec v3)
+static PetscErrorCode MatMultHermitianTransposeAdd_ConstantDiagonal(Mat mat, Vec v1, Vec v2, Vec v3)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)mat->data;
 
   PetscFunctionBegin;
   if (v2 == v3) {
-    PetscCall(VecAXPBY(v3, ctx->diag, 1.0, v1));
+    PetscCall(VecAXPBY(v3, PetscConj(ctx->diag), 1.0, v1));
   } else {
-    PetscCall(VecAXPBYPCZ(v3, ctx->diag, 1.0, 0.0, v1, v2));
+    PetscCall(VecAXPBYPCZ(v3, PetscConj(ctx->diag), 1.0, 0.0, v1, v2));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -127,6 +128,8 @@ static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(mat->data));
+  mat->structural_symmetry_eternal = PETSC_FALSE;
+  mat->symmetry_eternal            = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -166,7 +169,16 @@ static PetscErrorCode MatMult_ConstantDiagonal(Mat J, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetDiagonal_ConstantDiagonal(Mat J, Vec x)
+static PetscErrorCode MatMultHermitianTranspose_ConstantDiagonal(Mat J, Vec x, Vec y)
+{
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)J->data;
+
+  PetscFunctionBegin;
+  PetscCall(VecAXPBY(y, PetscConj(ctx->diag), 0.0, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatGetDiagonal_ConstantDiagonal(Mat J, Vec x)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)J->data;
 
@@ -202,14 +214,21 @@ static PetscErrorCode MatZeroEntries_ConstantDiagonal(Mat Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSOR_ConstantDiagonal(Mat matin, Vec x, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec y)
+static PetscErrorCode MatSolve_ConstantDiagonal(Mat matin, Vec b, Vec x)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)matin->data;
 
   PetscFunctionBegin;
   if (ctx->diag == 0.0) matin->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   else matin->factorerrortype = MAT_FACTOR_NOERROR;
-  PetscCall(VecAXPBY(y, 1.0 / ctx->diag, 0.0, x));
+  PetscCall(VecAXPBY(x, 1.0 / ctx->diag, 0.0, b));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatSOR_ConstantDiagonal(Mat matin, Vec x, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec y)
+{
+  PetscFunctionBegin;
+  PetscCall(MatSolve_ConstantDiagonal(matin, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -282,29 +301,39 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat A)
   ctx->diag = 0.0;
   A->data   = (void *)ctx;
 
-  A->assembled    = PETSC_TRUE;
-  A->preallocated = PETSC_TRUE;
+  A->assembled                   = PETSC_TRUE;
+  A->preallocated                = PETSC_TRUE;
+  A->structurally_symmetric      = PETSC_BOOL3_TRUE;
+  A->structural_symmetry_eternal = PETSC_TRUE;
+  A->symmetric                   = PETSC_BOOL3_TRUE;
+  if (!PetscDefined(USE_COMPLEX)) A->hermitian = PETSC_BOOL3_TRUE;
+  A->symmetry_eternal = PETSC_TRUE;
 
-  A->ops->mult              = MatMult_ConstantDiagonal;
-  A->ops->multadd           = MatMultAdd_ConstantDiagonal;
-  A->ops->multtranspose     = MatMultTranspose_ConstantDiagonal;
-  A->ops->multtransposeadd  = MatMultTransposeAdd_ConstantDiagonal;
-  A->ops->norm              = MatNorm_ConstantDiagonal;
-  A->ops->createsubmatrices = MatCreateSubMatrices_ConstantDiagonal;
-  A->ops->duplicate         = MatDuplicate_ConstantDiagonal;
-  A->ops->missingdiagonal   = MatMissingDiagonal_ConstantDiagonal;
-  A->ops->getrow            = MatGetRow_ConstantDiagonal;
-  A->ops->restorerow        = MatRestoreRow_ConstantDiagonal;
-  A->ops->sor               = MatSOR_ConstantDiagonal;
-  A->ops->shift             = MatShift_ConstantDiagonal;
-  A->ops->scale             = MatScale_ConstantDiagonal;
-  A->ops->getdiagonal       = MatGetDiagonal_ConstantDiagonal;
-  A->ops->view              = MatView_ConstantDiagonal;
-  A->ops->zeroentries       = MatZeroEntries_ConstantDiagonal;
-  A->ops->assemblyend       = MatAssemblyEnd_ConstantDiagonal;
-  A->ops->destroy           = MatDestroy_ConstantDiagonal;
-  A->ops->getinfo           = MatGetInfo_ConstantDiagonal;
-  A->ops->axpy              = MatAXPY_ConstantDiagonal;
+  A->ops->mult                      = MatMult_ConstantDiagonal;
+  A->ops->multadd                   = MatMultAdd_ConstantDiagonal;
+  A->ops->multtranspose             = MatMult_ConstantDiagonal;
+  A->ops->multtransposeadd          = MatMultAdd_ConstantDiagonal;
+  A->ops->multhermitiantranspose    = MatMultHermitianTranspose_ConstantDiagonal;
+  A->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_ConstantDiagonal;
+  A->ops->solve                     = MatSolve_ConstantDiagonal;
+  A->ops->solvetranspose            = MatSolve_ConstantDiagonal;
+  A->ops->norm                      = MatNorm_ConstantDiagonal;
+  A->ops->createsubmatrices         = MatCreateSubMatrices_ConstantDiagonal;
+  A->ops->duplicate                 = MatDuplicate_ConstantDiagonal;
+  A->ops->missingdiagonal           = MatMissingDiagonal_ConstantDiagonal;
+  A->ops->getrow                    = MatGetRow_ConstantDiagonal;
+  A->ops->restorerow                = MatRestoreRow_ConstantDiagonal;
+  A->ops->sor                       = MatSOR_ConstantDiagonal;
+  A->ops->shift                     = MatShift_ConstantDiagonal;
+  A->ops->scale                     = MatScale_ConstantDiagonal;
+  A->ops->getdiagonal               = MatGetDiagonal_ConstantDiagonal;
+  A->ops->view                      = MatView_ConstantDiagonal;
+  A->ops->zeroentries               = MatZeroEntries_ConstantDiagonal;
+  A->ops->assemblyend               = MatAssemblyEnd_ConstantDiagonal;
+  A->ops->destroy                   = MatDestroy_ConstantDiagonal;
+  A->ops->getinfo                   = MatGetInfo_ConstantDiagonal;
+  A->ops->equal                     = MatEqual_ConstantDiagonal;
+  A->ops->axpy                      = MatAXPY_ConstantDiagonal;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATCONSTANTDIAGONAL));
   PetscFunctionReturn(PETSC_SUCCESS);
