@@ -529,6 +529,9 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatIsTranspose_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISELLSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpiaij_C", NULL));
+#if defined(PETSC_HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisell_mpisellcuda_C", NULL));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDiagonalScaleLocal_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1831,6 +1834,10 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(PETSC_HAVE_CUDA)
+PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPISELLCUDA(Mat, MatType, MatReuse, Mat *);
+#endif
+
 /*MC
    MATMPISELL - MATMPISELL = "MPISELL" - A matrix type to be used for parallel sparse matrices.
 
@@ -1877,6 +1884,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatIsTranspose_C", MatIsTranspose_MPISELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPISELLSetPreallocation_C", MatMPISELLSetPreallocation_MPISELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpiaij_C", MatConvert_MPISELL_MPIAIJ));
+#if defined(PETSC_HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisell_mpisellcuda_C", MatConvert_MPISELL_MPISELLCUDA));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDiagonalScaleLocal_C", MatDiagonalScaleLocal_MPISELL));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPISELL));
   PetscFunctionReturn(PETSC_SUCCESS);

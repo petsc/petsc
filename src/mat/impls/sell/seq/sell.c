@@ -899,9 +899,9 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLRestoreArray_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_SeqSELL_SeqAIJ_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqsell_seqaij_C", NULL));
 #if defined(PETSC_HAVE_CUDA)
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_SeqSELL_SeqSELLCUDA_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqsell_seqsellcuda_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetFillRatio_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqSELLGetMaxSliceWidth_C", NULL));
@@ -2233,9 +2233,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatStoreValues_C", MatStoreValues_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatRetrieveValues_C", MatRetrieveValues_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLSetPreallocation_C", MatSeqSELLSetPreallocation_SeqSELL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_SeqSELL_SeqAIJ_C", MatConvert_SeqSELL_SeqAIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqsell_seqaij_C", MatConvert_SeqSELL_SeqAIJ));
 #if defined(PETSC_HAVE_CUDA)
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_SeqSELL_SeqSELLCUDA_C", MatConvert_SeqSELL_SeqSELLCUDA));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqsell_seqsellcuda_C", MatConvert_SeqSELL_SeqSELLCUDA));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLGetFillRatio_C", MatSeqSELLGetFillRatio_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqSELLGetMaxSliceWidth_C", MatSeqSELLGetMaxSliceWidth_SeqSELL));
