@@ -25,7 +25,6 @@ static SNESMSTableauLink SNESMSTableauList;
 typedef struct {
   SNESMSTableau tableau; /* Tableau in low-storage form */
   PetscReal     damping; /* Damping parameter, like length of (pseudo) time step */
-  PetscBool     norms;   /* Compute norms, usually only for monitoring purposes */
 } SNES_MS;
 
 /*@C
@@ -290,11 +289,10 @@ static PetscErrorCode SNESMSStep_Step(SNES snes, Vec X, Vec F)
 
 static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F)
 {
-  SNES_MS  *ms = (SNES_MS *)snes->data;
   PetscReal fnorm;
 
   PetscFunctionBegin;
-  if (ms->norms || (iter == snes->max_its && snes->normschedule >= SNES_NORM_FINAL_ONLY)) {
+  if (SNESNeedNorm_Private(snes, iter)) {
     PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
     SNESCheckFunctionNorm(snes, fnorm);
     /* Monitor convergence */
@@ -316,7 +314,6 @@ static PetscErrorCode SNESMSStep_Norms(SNES snes, PetscInt iter, Vec F)
 
 static PetscErrorCode SNESSolve_MS(SNES snes)
 {
-  SNES_MS *ms = (SNES_MS *)snes->data;
   Vec      X = snes->vec_sol, F = snes->vec_func;
   PetscInt i;
 
@@ -350,7 +347,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
 
     PetscCall(SNESMSStep_Step(snes, X, F));
 
-    if (i < snes->max_its - 1 || ms->norms) PetscCall(SNESComputeFunction(snes, X, F));
+    if (i < snes->max_its - 1 || SNESNeedNorm_Private(snes, i + 1)) PetscCall(SNESComputeFunction(snes, X, F));
 
     PetscCall(SNESMSStep_Norms(snes, i + 1, F));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
@@ -403,8 +400,6 @@ static PetscErrorCode SNESView_MS(SNES snes, PetscViewer viewer)
 
 static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
-  SNES_MS *ms = (SNES_MS *)snes->data;
-
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES MS options");
   {
@@ -414,6 +409,7 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOp
     const char      **namelist;
     SNESMSType        mstype;
     PetscReal         damping;
+    PetscBool         norms = PETSC_FALSE;
 
     PetscCall(SNESMSGetType(snes, &mstype));
     for (link = SNESMSTableauList, count = 0; link; link = link->next, count++)
@@ -426,7 +422,11 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOp
     PetscCall(SNESMSGetDamping(snes, &damping));
     PetscCall(PetscOptionsReal("-snes_ms_damping", "Damping for multistage method", "SNESMSSetDamping", damping, &damping, &flg));
     if (flg) PetscCall(SNESMSSetDamping(snes, damping));
-    PetscCall(PetscOptionsBool("-snes_ms_norms", "Compute norms for monitoring", "none", ms->norms, &ms->norms, NULL));
+
+    /* deprecated option */
+    PetscCall(PetscOptionsDeprecated("-snes_ms_norms", NULL, "3.20", "Use -snes_norm_schedule always"));
+    PetscCall(PetscOptionsBool("-snes_ms_norms", NULL, NULL, norms, &norms, NULL));
+    if (norms) PetscCall(SNESSetNormSchedule(snes, SNES_NORM_ALWAYS));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -623,7 +623,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   PetscCall(PetscNew(&ms));
   snes->data  = (void *)ms;
   ms->damping = 0.9;
-  ms->norms   = PETSC_FALSE;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSGetType_C", SNESMSGetType_MS));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSSetType_C", SNESMSSetType_MS));

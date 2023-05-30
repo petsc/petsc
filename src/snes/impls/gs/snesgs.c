@@ -241,7 +241,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
 
     /* test convergence */
-    PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+    PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
     PetscCall(SNESMonitor(snes, 0, snes->norm));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   } else {

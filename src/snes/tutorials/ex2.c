@@ -376,8 +376,8 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *ctx)
 
    test:
       suffix: 5
-      filter: grep -v atol
-      args: -nox -snes_type {{newtonls newtontr ncg ngmres qn anderson nrichardson}} -snes_max_it 1
+      filter: grep -v atol | sed -e "s/CONVERGED_ITS/DIVERGED_MAX_IT/g" | sed -e "s/CONVERGED_FNORM_RELATIVE/DIVERGED_MAX_IT/g"
+      args: -nox -snes_type {{newtonls newtontr ncg ngmres qn anderson nrichardson ms ksponly ksptransposeonly vinewtonrsls vinewtonssls fas ms}} -snes_max_it 1
       requires: !single
 
 TEST*/

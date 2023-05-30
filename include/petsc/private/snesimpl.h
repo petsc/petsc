@@ -261,7 +261,6 @@ PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES, SNESVIComput
 PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES, Vec, Vec);
 PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 
-PetscErrorCode              SNESScaleStep_Private(SNES, Vec, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESCheck_Internal(SNES, DM, Vec);
@@ -340,5 +339,9 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
       } \
     } \
   } while (0)
+
+#define SNESNeedNorm_Private(snes, iter) \
+  (((iter) == (snes)->max_its && ((snes)->normschedule == SNES_NORM_FINAL_ONLY || (snes)->normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) || ((iter) == 0 && ((snes)->normschedule == SNES_NORM_INITIAL_ONLY || (snes)->normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) || \
+   (snes)->normschedule == SNES_NORM_ALWAYS)
 
 #endif

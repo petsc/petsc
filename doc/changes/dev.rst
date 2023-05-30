@@ -68,6 +68,7 @@ Changes: Development
 
 - Add a convenient, developer-level ``SNESConverged()`` function that runs the convergence test and updates the internal converged reason.
 - Swap the order of monitor and convergence test. Now monitors are always called after a convergence test.
+- Deprecate option ``-snes_ms_norms``. Use ``-snes_norm_schedule always``.
 
 .. rubric:: SNESLineSearch:
 

@@ -181,7 +181,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
 
   /* test convergence */
-  PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
+  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
   PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
