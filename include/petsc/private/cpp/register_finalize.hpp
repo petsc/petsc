@@ -3,11 +3,7 @@
 
 #include <petscsys.h>
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/crtp.hpp>
-
-namespace
-{
+#include <petsc/private/cpp/crtp.hpp>
 
 template <typename T>
 inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
@@ -27,8 +23,6 @@ inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PET
   PetscCall(PetscObjectRegisterDestroy(reinterpret_cast<PetscObject>(contain)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-} // anonymous namespace
 
 namespace Petsc
 {
@@ -159,7 +153,5 @@ inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(Args &&...args)
 }
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_CPP_REGISTER_FINALIZE_HPP

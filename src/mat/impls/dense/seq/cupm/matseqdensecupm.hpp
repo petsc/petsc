@@ -4,17 +4,16 @@
 #include <petsc/private/matdensecupmimpl.h> /*I <petscmat.h> I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
-#if defined(__cplusplus)
-  #include <petsc/private/deviceimpl.h> // PetscDeviceContextGetOptionalNullContext_Internal()
-  #include <petsc/private/randomimpl.h> // _p_PetscRandom
-  #include <petsc/private/vecimpl.h>    // _p_Vec
-  #include <petsc/private/cupmobject.hpp>
-  #include <petsc/private/cupmsolverinterface.hpp>
+#include <petsc/private/deviceimpl.h> // PetscDeviceContextGetOptionalNullContext_Internal()
+#include <petsc/private/randomimpl.h> // _p_PetscRandom
+#include <petsc/private/vecimpl.h>    // _p_Vec
+#include <petsc/private/cupmobject.hpp>
+#include <petsc/private/cupmsolverinterface.hpp>
 
-  #include <petsc/private/cpp/type_traits.hpp> // PetscObjectCast()
-  #include <petsc/private/cpp/utility.hpp>     // util::exchange()
+#include <petsc/private/cpp/type_traits.hpp> // PetscObjectCast()
+#include <petsc/private/cpp/utility.hpp>     // util::exchange()
 
-  #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> // for VecSeq_CUPM
+#include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> // for VecSeq_CUPM
 
 namespace Petsc
 {
@@ -490,7 +489,7 @@ struct MatDense_Seq_CUPM<T>::SolveCholesky : SolveCommon<SolveCholesky> {
     }
     PetscCall(PetscLogGpuFlops(1.0 * n * n * n / 3.0));
 
-  #if 0
+#if 0
     // At the time of writing this interface (cuda 10.0), cusolverDn does not implement *sytrs
     // and *hetr* routines. The code below should work, and it can be activated when *sytrs
     // routines will be available
@@ -503,7 +502,7 @@ struct MatDense_Seq_CUPM<T>::SolveCholesky : SolveCommon<SolveCholesky> {
     PetscCall(PetscLogGpuTimeBegin());
     PetscCallCUPMSOLVER(cupmSolverXsytrf(handle, CUPMSOLVER_FILL_MODE_LOWER, n, da, lda, mcu->d_fact_ipiv, mcu->d_fact_work, mcu->d_fact_lwork, mcu->d_fact_info));
     PetscCall(PetscLogGpuTimeEnd());
-  #endif
+#endif
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -1677,10 +1676,10 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::InvertFactors(Mat A) noexcept
   cupmStream_t       stream;
 
   PetscFunctionBegin;
-  #if PetscDefined(HAVE_CUDA) && PetscDefined(USING_NVCC)
+#if PetscDefined(HAVE_CUDA) && PetscDefined(USING_NVCC)
   // HIP appears to have this by default??
   PetscCheck(PETSC_PKG_CUDA_VERSION_GE(10, 1, 0), PETSC_COMM_SELF, PETSC_ERR_SUP, "Upgrade to CUDA version 10.1.0 or higher");
-  #endif
+#endif
   if (!n || !A->rmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(A->factortype == MAT_FACTOR_CHOLESKY, PETSC_COMM_SELF, PETSC_ERR_LIB, "Factor type %s not implemented", MatFactorTypes[A->factortype]);
   // spd
@@ -1842,7 +1841,5 @@ inline PetscErrorCode MatSolverTypeRegister_DENSECUPM() noexcept
 } // namespace mat
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSCMATSEQDENSECUPM_HPP

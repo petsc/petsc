@@ -1,14 +1,10 @@
 #ifndef PETSC_PRIVATE_CUPMOBJECT_HPP
 #define PETSC_PRIVATE_CUPMOBJECT_HPP
 
-#ifdef __cplusplus
-  #include <petsc/private/deviceimpl.h>
-  #include <petsc/private/cupmsolverinterface.hpp>
+#include <petsc/private/deviceimpl.h>
+#include <petsc/private/cupmsolverinterface.hpp>
 
-  #include <cstring> // std::memset
-
-namespace
-{
+#include <cstring> // std::memset
 
 inline PetscErrorCode PetscStrFreeAllocpy(const char target[], char **dest) noexcept
 {
@@ -21,8 +17,6 @@ inline PetscErrorCode PetscStrFreeAllocpy(const char target[], char **dest) noex
   PetscCall(PetscStrallocpy(target, dest));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-} // namespace
 
 namespace Petsc
 {
@@ -56,19 +50,19 @@ public:
   PETSC_NODISCARD bool value() const noexcept;
 
 private:
-    // would have loved to just do
-    //
-    // const auto oldmalloc = PetscTrMalloc;
-    //
-    // but in order to use auto the member needs to be static; in order to be static it must
-    // also be constexpr -- which in turn requires an initializer (also implicitly required by
-    // auto). But constexpr needs a constant expression initializer, so we can't initialize it
-    // with global (mutable) variables...
-  #define DECLTYPE_AUTO(left, right) decltype(right) left = right
+  // would have loved to just do
+  //
+  // const auto oldmalloc = PetscTrMalloc;
+  //
+  // but in order to use auto the member needs to be static; in order to be static it must
+  // also be constexpr -- which in turn requires an initializer (also implicitly required by
+  // auto). But constexpr needs a constant expression initializer, so we can't initialize it
+  // with global (mutable) variables...
+#define DECLTYPE_AUTO(left, right) decltype(right) left = right
   const DECLTYPE_AUTO(oldmalloc_, PetscTrMalloc);
   const DECLTYPE_AUTO(oldfree_, PetscTrFree);
   const DECLTYPE_AUTO(oldrealloc_, PetscTrRealloc);
-  #undef DECLTYPE_AUTO
+#undef DECLTYPE_AUTO
   bool v_;
 };
 
@@ -392,13 +386,13 @@ inline PetscErrorCode CUPMObject<T>::CheckPointerMatchesMemType_(const void *ptr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  #define PETSC_CUPMOBJECT_HEADER(T) \
-    PETSC_CUPMSOLVER_INHERIT_INTERFACE_TYPEDEFS_USING(T); \
-    using ::Petsc::device::cupm::impl::CUPMObject<T>::UseCUPMHostAlloc; \
-    using ::Petsc::device::cupm::impl::CUPMObject<T>::GetHandles_; \
-    using ::Petsc::device::cupm::impl::CUPMObject<T>::GetHandlesFrom_; \
-    using ::Petsc::device::cupm::impl::CUPMObject<T>::PETSCDEVICERAND; \
-    using ::Petsc::device::cupm::impl::CUPMObject<T>::CheckPointerMatchesMemType_
+#define PETSC_CUPMOBJECT_HEADER(T) \
+  PETSC_CUPMSOLVER_INHERIT_INTERFACE_TYPEDEFS_USING(T); \
+  using ::Petsc::device::cupm::impl::CUPMObject<T>::UseCUPMHostAlloc; \
+  using ::Petsc::device::cupm::impl::CUPMObject<T>::GetHandles_; \
+  using ::Petsc::device::cupm::impl::CUPMObject<T>::GetHandlesFrom_; \
+  using ::Petsc::device::cupm::impl::CUPMObject<T>::PETSCDEVICERAND; \
+  using ::Petsc::device::cupm::impl::CUPMObject<T>::CheckPointerMatchesMemType_
 
 } // namespace impl
 
@@ -407,7 +401,5 @@ inline PetscErrorCode CUPMObject<T>::CheckPointerMatchesMemType_(const void *ptr
 } // namespace device
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_PRIVATE_CUPMOBJECT_HPP

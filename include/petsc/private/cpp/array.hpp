@@ -1,12 +1,11 @@
 #ifndef PETSC_CPP_ARRAY_HPP
 #define PETSC_CPP_ARRAY_HPP
 
-#if defined(__cplusplus)
-  #include <petsc/private/cpp/macros.hpp>  // PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS
-  #include <petsc/private/cpp/utility.hpp> // index_sequence
-  #include <petsc/private/cpp/type_traits.hpp>
+#include <petsc/private/cpp/macros.hpp>  // PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS
+#include <petsc/private/cpp/utility.hpp> // index_sequence
+#include <petsc/private/cpp/type_traits.hpp>
 
-  #include <array>
+#include <array>
 
 namespace Petsc
 {
@@ -48,7 +47,5 @@ PETSC_NODISCARD inline constexpr auto concat_array(const std::array<T, NL> &l, c
 } // namespace util
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_CPP_ARRAY_HPP

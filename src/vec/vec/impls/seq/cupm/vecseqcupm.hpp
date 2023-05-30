@@ -3,26 +3,25 @@
 
 #include <petsc/private/veccupmimpl.h>
 
-#if defined(__cplusplus)
-  #include <petsc/private/randomimpl.h> // for _p_PetscRandom
+#include <petsc/private/randomimpl.h> // for _p_PetscRandom
 
-  #include <petsc/private/cpp/utility.hpp> // util::exchange, util::index_sequence
+#include <petsc/private/cpp/utility.hpp> // util::exchange, util::index_sequence
 
-  #include "../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp"
-  #include "../src/sys/objects/device/impls/cupm/kernels.hpp"
+#include "../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp"
+#include "../src/sys/objects/device/impls/cupm/kernels.hpp"
 
-  #if PetscDefined(USE_COMPLEX)
-    #include <thrust/transform_reduce.h>
-  #endif
-  #include <thrust/transform.h>
-  #include <thrust/reduce.h>
-  #include <thrust/functional.h>
-  #include <thrust/tuple.h>
-  #include <thrust/device_ptr.h>
-  #include <thrust/iterator/zip_iterator.h>
-  #include <thrust/iterator/counting_iterator.h>
-  #include <thrust/iterator/constant_iterator.h>
-  #include <thrust/inner_product.h>
+#if PetscDefined(USE_COMPLEX)
+  #include <thrust/transform_reduce.h>
+#endif
+#include <thrust/transform.h>
+#include <thrust/reduce.h>
+#include <thrust/functional.h>
+#include <thrust/tuple.h>
+#include <thrust/device_ptr.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/inner_product.h>
 
 namespace Petsc
 {
@@ -620,20 +619,20 @@ PETSC_KERNEL_DECL static void MAXPY_kernel(const PetscInt size, PetscScalar *PET
   __syncthreads();
 
   ::Petsc::device::cupm::kernels::util::grid_stride_1D(size, [&](PetscInt i) {
-    // these may look the same but give different results!
-  #if 0
+  // these may look the same but give different results!
+#if 0
     PetscScalar sum = 0.0;
 
-    #pragma unroll
+  #pragma unroll
     for (auto j = 0; j < N; ++j) sum += aptr_shmem[j]*yptr_p[j][i];
     xptr[i] += sum;
-  #else
+#else
     auto sum = xptr[i];
 
-    #pragma unroll
+  #pragma unroll
     for (auto j = 0; j < N; ++j) sum += aptr_shmem[j] * yptr_p[j][i];
     xptr[i] = sum;
-  #endif
+#endif
   });
   return;
 }
@@ -760,8 +759,8 @@ inline PetscErrorCode VecSeq_CUPM<T>::Dot(Vec xin, Vec yin, PetscScalar *z) noex
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  #define MDOT_WORKGROUP_NUM  128
-  #define MDOT_WORKGROUP_SIZE MDOT_WORKGROUP_NUM
+#define MDOT_WORKGROUP_NUM  128
+#define MDOT_WORKGROUP_SIZE MDOT_WORKGROUP_NUM
 
 namespace kernels
 {
@@ -792,24 +791,24 @@ PETSC_KERNEL_DECL static void MDot_kernel(const PetscScalar *PETSC_RESTRICT x, c
   const auto begin    = tx + bx * worksize;
   const auto end      = min((bx + 1) * worksize, size);
 
-  #pragma unroll
+#pragma unroll
   for (auto i = 0; i < N; ++i) sumlocal[i] = 0;
 
   for (auto i = begin; i < end; i += bdx) {
     const auto xi = x[i]; // load only once from global memory!
 
-  #pragma unroll
+#pragma unroll
     for (auto j = 0; j < N; ++j) sumlocal[j] += ylocal[j][i] * xi;
   }
 
-  #pragma unroll
+#pragma unroll
   for (auto i = 0; i < N; ++i) shmem[tx + i * MDOT_WORKGROUP_SIZE] = sumlocal[i];
 
   // parallel reduction
   for (auto stride = bdx / 2; stride > 0; stride /= 2) {
     __syncthreads();
     if (tx < stride) {
-  #pragma unroll
+#pragma unroll
       for (auto i = 0; i < N; ++i) shmem[tx + i * MDOT_WORKGROUP_SIZE] += shmem[tx + stride + i * MDOT_WORKGROUP_SIZE];
     }
   }
@@ -985,8 +984,8 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  #undef MDOT_WORKGROUP_NUM
-  #undef MDOT_WORKGROUP_SIZE
+#undef MDOT_WORKGROUP_NUM
+#undef MDOT_WORKGROUP_SIZE
 
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::true_type, Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z, PetscDeviceContext dctx) noexcept
@@ -1139,9 +1138,9 @@ inline PetscErrorCode VecSeq_CUPM<T>::Copy(Vec xin, Vec yout) noexcept
         break;
       }
     } // fall-through if unallocated and not cupm
-  #if PETSC_CPP_VERSION >= 17
+#if PETSC_CPP_VERSION >= 17
       [[fallthrough]];
-  #endif
+#endif
     case PETSC_OFFLOAD_CPU:
       mode = PetscOffloadHost(xmask) ? cupmMemcpyHostToHost : cupmMemcpyDeviceToHost;
       break;
@@ -1286,9 +1285,9 @@ inline PetscErrorCode VecSeq_CUPM<T>::Norm(Vec xin, NormType type, PetscReal *z)
       flopCount = std::max(n - 1, 0);
       if (type == NORM_1) break;
       ++z; // fall-through
-  #if PETSC_CPP_VERSION >= 17
+#if PETSC_CPP_VERSION >= 17
       [[fallthrough]];
-  #endif
+#endif
     case NORM_2:
     case NORM_FROBENIUS:
       PetscCallCUPMBLAS(cupmBlasXnrm2(cupmBlasHandle, n, xptr.cupmdata(), 1, cupmRealPtrCast(z)));
@@ -1716,14 +1715,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::MinMax_(TupleFuncT &&tuple_ftr, UnaryFuncT
     cupmStream_t       stream;
 
     PetscCall(GetHandles_(&dctx, &stream));
-      // needed to:
-      // 1. switch between transform_reduce and reduce
-      // 2. strip the real_part functor from the arguments
-  #if PetscDefined(USE_COMPLEX)
-    #define THRUST_MINMAX_REDUCE(...) THRUST_CALL(thrust::transform_reduce, __VA_ARGS__)
-  #else
-    #define THRUST_MINMAX_REDUCE(s, b, e, real_part__, ...) THRUST_CALL(thrust::reduce, s, b, e, __VA_ARGS__)
-  #endif
+    // needed to:
+    // 1. switch between transform_reduce and reduce
+    // 2. strip the real_part functor from the arguments
+#if PetscDefined(USE_COMPLEX)
+  #define THRUST_MINMAX_REDUCE(...) THRUST_CALL(thrust::transform_reduce, __VA_ARGS__)
+#else
+  #define THRUST_MINMAX_REDUCE(s, b, e, real_part__, ...) THRUST_CALL(thrust::reduce, s, b, e, __VA_ARGS__)
+#endif
     {
       const auto vptr = thrust::device_pointer_cast(DeviceArrayRead(dctx, v).data());
 
@@ -1755,7 +1754,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::MinMax_(TupleFuncT &&tuple_ftr, UnaryFuncT
         // clang-format on
       }
     }
-  #undef THRUST_MINMAX_REDUCE
+#undef THRUST_MINMAX_REDUCE
   }
   // REVIEW ME: flops?
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1883,7 +1882,7 @@ PETSC_KERNEL_DECL void add_coo_values(const PetscScalar *PETSC_RESTRICT v, Petsc
 
 } // namespace
 
-  #if PetscDefined(USING_HCC)
+#if PetscDefined(USING_HCC)
 namespace do_not_use
 {
 
@@ -1906,7 +1905,7 @@ inline void silence_warning_function_add_coo_values_is_not_needed_and_will_not_b
 }
 
 } // namespace do_not_use
-  #endif
+#endif
 
 } // namespace kernels
 
@@ -2074,7 +2073,5 @@ inline PetscErrorCode VecCUPMResetArrayAsync(Vec vin) noexcept
 } // namespace vec
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSCVECSEQCUPM_HPP

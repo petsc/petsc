@@ -9,11 +9,10 @@
 #include <petsc/private/cpp/unordered_map.hpp>
 #include <petsc/private/cpp/memory.hpp> // std::align()
 
-#if defined(__cplusplus)
-  #include <cstddef> // std::max_align_t
-  #include <limits>  // std::numeric_limits
-  #include <deque>   // std::take_a_wild_guess
-  #include <new>     // std::nothrow
+#include <cstddef> // std::max_align_t
+#include <limits>  // std::numeric_limits
+#include <deque>   // std::take_a_wild_guess
+#include <new>     // std::nothrow
 
 namespace Petsc
 {
@@ -33,10 +32,10 @@ namespace std
 
 template <>
 struct hash<::Petsc::memory::align_val_t> {
-  #if PETSC_CPP_VERSION < 17
+#if PETSC_CPP_VERSION < 17
   using argument_type = ::Petsc::memory::align_val_t;
   using result_type   = size_t;
-  #endif
+#endif
 
   constexpr size_t operator()(const ::Petsc::memory::align_val_t &x) const noexcept { return static_cast<size_t>(x); }
 };
@@ -75,7 +74,7 @@ public:
   PoolAllocator(const PoolAllocator &)            = delete;
   PoolAllocator &operator=(const PoolAllocator &) = delete;
 
-  #if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG)
   // in debug mode we check that we haven't leaked anything
   ~PoolAllocator() noexcept
   {
@@ -86,7 +85,7 @@ public:
     PetscCheckAbort(leaked == 0, PETSC_COMM_SELF, PETSC_ERR_MEM, "%zu objects remaining in the pool are leaked", leaked);
     PetscFunctionReturnVoid();
   }
-  #endif
+#endif
 
   PetscErrorCode        try_allocate(void **, size_type, align_type, bool *) noexcept;
   PetscErrorCode        allocate(void **, size_type, align_type, bool        * = nullptr) noexcept;
@@ -158,13 +157,13 @@ inline constexpr PoolAllocator::AllocationHeader::AllocationHeader(size_type siz
 */
 inline constexpr PoolAllocator::align_type PoolAllocator::AllocationHeader::max_alignment() noexcept
 {
-  #if PETSC_CPP_VERSION >= 14
+#if PETSC_CPP_VERSION >= 14
   constexpr auto max_align = std::numeric_limits<unsigned char>::max() + 1;
   static_assert(!(max_align & (max_align - 1)), "Maximum alignment must be a power of 2");
   return static_cast<align_type>(max_align);
-  #else
+#else
   return static_cast<align_type>(std::numeric_limits<unsigned char>::max() + 1);
-  #endif
+#endif
 }
 
 /*
@@ -716,10 +715,10 @@ public:
   PETSC_NODISCARD static void *operator new(size_type) noexcept;
   static void operator delete(void *) noexcept;
 
-  #if PETSC_CPP_VERSION >= 17
+#if PETSC_CPP_VERSION >= 17
   PETSC_NODISCARD static void *operator new(size_type, std::align_val_t) noexcept;
   static void operator delete(void *, std::align_val_t) noexcept;
-  #endif
+#endif
 
 protected:
   PETSC_NODISCARD static allocator_type &pool() noexcept;
@@ -755,7 +754,7 @@ inline void PoolAllocated<D>::operator delete(void *ptr) noexcept
   PetscFunctionReturnVoid();
 }
 
-  #if PETSC_CPP_VERSION >= 17
+#if PETSC_CPP_VERSION >= 17
 template <typename D>
 inline void *PoolAllocated<D>::operator new(size_type size, std::align_val_t align) noexcept
 {
@@ -778,7 +777,7 @@ inline void PoolAllocated<D>::operator delete(void *ptr, std::align_val_t align)
   }
   PetscFunctionReturnVoid();
 }
-  #endif
+#endif
 
 template <typename D>
 inline typename PoolAllocated<D>::allocator_type &PoolAllocated<D>::pool() noexcept
@@ -1030,7 +1029,5 @@ inline PetscErrorCode ObjectPool<T, Constructor>::deallocate(value_type **obj) n
 }
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_CPP_OBJECT_POOL_HPP

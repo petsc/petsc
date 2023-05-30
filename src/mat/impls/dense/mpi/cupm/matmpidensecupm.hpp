@@ -4,9 +4,8 @@
 #include <petsc/private/matdensecupmimpl.h> /*I <petscmat.h> I*/
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-#ifdef __cplusplus
-  #include <../src/mat/impls/dense/seq/cupm/matseqdensecupm.hpp>
-  #include <../src/vec/vec/impls/mpi/cupm/vecmpicupm.hpp>
+#include <../src/mat/impls/dense/seq/cupm/matseqdensecupm.hpp>
+#include <../src/vec/vec/impls/mpi/cupm/vecmpicupm.hpp>
 
 namespace Petsc
 {
@@ -445,7 +444,5 @@ inline PetscErrorCode MatCreateDenseCUPM(MPI_Comm comm, PetscInt n, PetscInt m, 
 } // namespace mat
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSCMATMPIDENSECUPM_HPP

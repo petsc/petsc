@@ -1,8 +1,6 @@
 #ifndef PETSC_CPP_CRTP_HPP
 #define PETSC_CPP_CRTP_HPP
 
-#if defined(__cplusplus)
-
 namespace Petsc
 {
 
@@ -26,7 +24,5 @@ private:
 } // namespace util
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSC_CPP_CRTP_HPP
