@@ -89,6 +89,7 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
   rend   = A->rmap->rend;
   cstart = A->cmap->rstart;
   cend   = A->cmap->rend;
+  PetscHYPREInitialize();
   PetscCallExternal(HYPRE_IJMatrixCreate, hA->comm, rstart, rend - 1, cstart, cend - 1, &hA->ij);
   PetscCallExternal(HYPRE_IJMatrixSetObjectType, hA->ij, HYPRE_PARCSR);
   {
@@ -663,6 +664,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isseqaij));
   PetscCheck(ismpiaij || isseqaij, comm, PETSC_ERR_SUP, "Unsupported type %s", ((PetscObject)A)->type_name);
+  PetscHYPREInitialize();
   if (ismpiaij) {
     Mat_MPIAIJ *a = (Mat_MPIAIJ *)(A->data);
 
@@ -2394,6 +2396,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscCall(MatSetVecType(B, VECCUDA));
   #endif
 #endif
+  PetscHYPREInitialize();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

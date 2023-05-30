@@ -626,11 +626,9 @@ int main(int argc, char **args)
       test:
          suffix: boomeramg_euclid
          args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01
-         TODO: Need to determine if deprecated
       test:
          suffix: boomeramg_euclid_bj
          args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj
-         TODO: Need to determine if deprecated
       test:
          suffix: boomeramg_parasails
          args: -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2
