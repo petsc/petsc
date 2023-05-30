@@ -939,6 +939,15 @@ PetscErrorCode MatSetUp(Mat A)
   #include <petscviewersaws.h>
 #endif
 
+/*
+   If threadsafety is on extraneous matrices may be printed
+
+   This flag cannot be stored in the matrix because the original matrix in MatView() may assemble a new matrix which is passed into MatViewFromOptions()
+*/
+#if !defined(PETSC_HAVE_THREADSAFETY)
+static PetscInt insidematview = 0;
+#endif
+
 /*@C
    MatViewFromOptions - View properties of the matrix based on options set in the options database
 
@@ -972,6 +981,9 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+#if !defined(PETSC_HAVE_THREADSAFETY)
+  if (insidematview) PetscFunctionReturn(PETSC_SUCCESS);
+#endif
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1073,6 +1085,9 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(PETSC_SUCCESS);
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
+  insidematview++;
+#endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
@@ -1082,10 +1097,18 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
   if (isascii) {
     if (!mat->preallocated) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix has not been preallocated yet\n"));
+#if !defined(PETSC_HAVE_THREADSAFETY)
+      insidematview--;
+#endif
+      PetscCall(PetscLogEventEnd(MAT_View, mat, viewer, 0, 0));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (!mat->assembled) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix has not been assembled yet\n"));
+#if !defined(PETSC_HAVE_THREADSAFETY)
+      insidematview--;
+#endif
+      PetscCall(PetscLogEventEnd(MAT_View, mat, viewer, 0, 0));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mat, viewer));
@@ -1148,6 +1171,9 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscCall(PetscLogEventEnd(MAT_View, mat, viewer, 0, 0));
+#if !defined(PETSC_HAVE_THREADSAFETY)
+  insidematview--;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
