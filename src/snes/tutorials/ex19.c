@@ -1081,7 +1081,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: tut_3
       nsize: 4
       requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
-      args: -da_refine 5 -snes_monitor -snes_converged_reason -pc_type hypre
+      args: -da_refine 5 -snes_monitor -snes_converged_reason -pc_type hypre -dm_mat_type {{aij baij}}
+
+   test:
+      suffix: tut_3_seq
+      nsize: 1
+      requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
+      args: -da_refine 1 -snes_monitor -snes_converged_reason -pc_type hypre -dm_mat_type {{seqaij mpiaij seqbaij mpibaij}}
 
    test:
       suffix: tut_8
