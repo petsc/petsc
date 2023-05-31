@@ -4638,9 +4638,10 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   /* Sort by row */
   PetscCall(PetscSortIntWithIntCountArrayPair(coo_n, i, j, perm));
-  for (k = 0; k < coo_n; k++) {
+
+  /* Advance k to the first row with a non-negative index */
+  for (k = 0; k < coo_n; k++)
     if (i[k] >= 0) break;
-  } /* Advance k to the first row with a non-negative index */
   nneg = k;
   PetscCall(PetscMalloc1(coo_n - nneg + 1, &jmap)); /* +1 to make a CSR-like data structure. jmap[i] originally is the number of repeats for i-th nonzero */
   nnz = 0;                                          /* Total number of unique nonzeros to be counted */
@@ -4648,6 +4649,12 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   PetscCall(PetscCalloc1(M + 1, &Ai));        /* CSR of A */
   PetscCall(PetscMalloc1(coo_n - nneg, &Aj)); /* We have at most coo_n-nneg unique nonzeros */
+
+  /* Support for HYPRE */
+  PetscBool   hypre;
+  const char *name;
+  PetscCall(PetscObjectGetName((PetscObject)mat, &name));
+  PetscCall(PetscStrcmp("_internal_COO_mat_for_hypre", name, &hypre));
 
   /* In each row, sort by column, then unique column indices to get row length */
   Ai++;  /* Inc by 1 for convenience */
@@ -4657,10 +4664,26 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
     start = k; /* [start,end) indices for this row */
     while (k < coo_n && i[k] == row) k++;
     end = k;
+    /* hack for HYPRE: swap min column to diag so that diagonal values will go first */
+    if (hypre) {
+      PetscInt  minj    = PETSC_MAX_INT;
+      PetscBool hasdiag = PETSC_FALSE;
+      for (p = start; p < end; p++) {
+        hasdiag = (PetscBool)(hasdiag || (j[p] == row));
+        minj    = PetscMin(minj, j[p]);
+      }
+      if (hasdiag) {
+        for (p = start; p < end; p++) {
+          if (j[p] == minj) j[p] = row;
+          else if (j[p] == row) j[p] = minj;
+        }
+      }
+    }
     PetscCall(PetscSortIntWithCountArray(end - start, j + start, perm + start));
+
     /* Find number of unique col entries in this row */
     Aj[q]   = j[start]; /* Log the first nonzero in this row */
-    jmap[q] = 1;        /* Number of repeats of this nozero entry */
+    jmap[q] = 1;        /* Number of repeats of this nonzero entry */
     Ai[row] = 1;
     nnz++;
 
@@ -4677,7 +4700,6 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
     }
     q++; /* Move to next row and thus next unique nonzero */
   }
-
   Ai--; /* Back to the beginning of Ai[] */
   for (k = 0; k < M; k++) Ai[k + 1] += Ai[k];
   jmap--; /* Back to the beginning of jmap[] */
