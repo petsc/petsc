@@ -17,6 +17,9 @@
 
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"  I*/
 #include <signal.h>
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
+#endif
 
 struct PetscFPTrapLink {
   PetscFPTrap             trapmode;

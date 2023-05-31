@@ -4,6 +4,9 @@
   by taking advantage of rows with identical nonzero structure (I-nodes).
 */
 #include <../src/mat/impls/aij/seq/aij.h>
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
+#endif
 
 static PetscErrorCode MatCreateColInode_Private(Mat A, PetscInt *size, PetscInt **ns)
 {
