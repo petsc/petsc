@@ -695,7 +695,7 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao)
 
 .seealso: `TaoADMMSetMisfitHessianChangeStatus()`, `TaoADMMSetRegHessianChangeStatus()`, `TaoADMMGetSpectralPenalty()`,
           `TaoADMMGetMisfitSubsolver()`, `TaoADMMGetRegularizationSubsolver()`, `TaoADMMSetConstraintVectorRHS()`,
-          `TaoADMMSetMinimumSpectralPenalty()`, `TaoADMMSetRegularizerCoefficient()`,
+          `TaoADMMSetMinimumSpectralPenalty()`, `TaoADMMSetRegularizerCoefficient()`, `TaoADMMGetRegularizerCoefficient()`,
           `TaoADMMSetRegularizerConstraintJacobian()`, `TaoADMMSetMisfitConstraintJacobian()`,
           `TaoADMMSetMisfitObjectiveAndGradientRoutine()`, `TaoADMMSetMisfitHessianRoutine()`,
           `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`, `TaoADMMSetRegularizerHessianRoutine()`,
@@ -965,6 +965,28 @@ PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
 
   PetscFunctionBegin;
   am->lambda = lambda;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TaoADMMGetRegularizerCoefficient - Set the regularization coefficient lambda for L1 norm regularization case
+
+  Collective
+
+  Input Parameters:
++  tao - the `Tao` solver context
+-  lambda - L1-norm regularizer coefficient
+
+  Level: advanced
+
+.seealso: `TaoADMMSetMisfitConstraintJacobian()`, `TaoADMMSetRegularizerConstraintJacobian()`, `TAOADMM`
+@*/
+PetscErrorCode TaoADMMGetRegularizerCoefficient(Tao tao, PetscReal *lambda)
+{
+  TAO_ADMM *am = (TAO_ADMM *)tao->data;
+
+  PetscFunctionBegin;
+  *lambda = am->lambda;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
