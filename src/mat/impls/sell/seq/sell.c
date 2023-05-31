@@ -2203,9 +2203,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
 
   PetscCall(PetscNew(&b));
 
-  B->data = (void *)b;
-
-  PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  B->data   = (void *)b;
+  B->ops[0] = MatOps_Values;
 
   b->row                = NULL;
   b->col                = NULL;

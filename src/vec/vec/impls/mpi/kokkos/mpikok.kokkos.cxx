@@ -90,7 +90,7 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
   /* Reuse VecDuplicate_MPI, which contains a lot of stuff */
   PetscCall(VecDuplicate_MPI(win, &v)); /* after the call, v is a VECMPI, with data zero'ed */
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
-  PetscCall(PetscMemcpy(v->ops, win->ops, sizeof(*win->ops)));
+  v->ops[0] = win->ops[0];
 
   /* Build the Vec_Kokkos struct */
   vecmpi = static_cast<Vec_MPI *>(v->data);

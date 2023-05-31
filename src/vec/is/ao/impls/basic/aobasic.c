@@ -174,8 +174,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   PetscFunctionBegin;
   /* create special struct aobasic */
   PetscCall(PetscNew(&aobasic));
-  ao->data = (void *)aobasic;
-  PetscCall(PetscMemcpy(ao->ops, &AOOps_Basic, sizeof(struct _AOOps)));
+  ao->data   = (void *)aobasic;
+  ao->ops[0] = AOOps_Basic;
   PetscCall(PetscObjectChangeTypeName((PetscObject)ao, AOBASIC));
 
   PetscCall(ISGetLocalSize(isapp, &napp));

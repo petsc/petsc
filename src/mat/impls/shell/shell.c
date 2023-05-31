@@ -935,8 +935,8 @@ static PetscErrorCode MatCopy_Shell(Mat A, Mat B, MatStructure str)
   PetscCall(MatIsShell(B, &matflg));
   PetscCheck(matflg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Matrix %s not derived from MATSHELL", ((PetscObject)B)->type_name);
 
-  PetscCall(PetscMemcpy(B->ops, A->ops, sizeof(struct _MatOps)));
-  PetscCall(PetscMemcpy(shellB->ops, shellA->ops, sizeof(struct _MatShellOps)));
+  B->ops[0]      = A->ops[0];
+  shellB->ops[0] = shellA->ops[0];
 
   if (shellA->ops->copy) PetscCall((*shellA->ops->copy)(A, B, str));
   shellB->vscale = shellA->vscale;
@@ -1623,10 +1623,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   Mat_Shell *b;
 
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
-
   PetscCall(PetscNew(&b));
-  A->data = (void *)b;
+  A->data   = (void *)b;
+  A->ops[0] = MatOps_Values;
 
   b->ctxcontainer        = NULL;
   b->vshift              = 0.0;

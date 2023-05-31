@@ -581,7 +581,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw, PetscDraw *sdraw)
   PetscFunctionBegin;
   PetscCall(PetscDrawCreate(PETSC_COMM_SELF, draw->display, draw->title, draw->x, draw->y, draw->w, draw->h, sdraw));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*sdraw, PETSC_DRAW_X));
-  PetscCall(PetscMemcpy((*sdraw)->ops, &DvOps, sizeof(DvOps)));
+  (*sdraw)->ops[0] = DvOps;
 
   if (draw->popup) PetscCall(PetscDrawGetSingleton(draw->popup, &(*sdraw)->popup));
   (*sdraw)->pause   = draw->pause;
@@ -813,8 +813,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   PetscCheck(rank != 0 || (w > 0 && h > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative window width or height");
 
   PetscCall(PetscNew(&Xwin));
-  PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
-  draw->data = (void *)Xwin;
+  draw->ops[0] = DvOps;
+  draw->data   = (void *)Xwin;
 
   PetscCall(PetscDrawXiInit(Xwin, draw->display));
   if (!dvirtual) {

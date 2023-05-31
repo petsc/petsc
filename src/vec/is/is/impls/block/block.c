@@ -644,8 +644,8 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&sub));
-  is->data = (void *)sub;
-  PetscCall(PetscMemcpy(is->ops, &myops, sizeof(myops)));
+  is->data   = (void *)sub;
+  is->ops[0] = myops;
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockSetIndices_C", ISBlockSetIndices_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockGetIndices_C", ISBlockGetIndices_Block));
   PetscCall(PetscObjectComposeFunction((PetscObject)is, "ISBlockRestoreIndices_C", ISBlockRestoreIndices_Block));

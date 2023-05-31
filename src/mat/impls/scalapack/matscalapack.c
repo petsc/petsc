@@ -1737,7 +1737,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   PetscMPIInt         size;
 
   PetscFunctionBegin;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  A->ops[0]     = MatOps_Values;
   A->insertmode = NOT_SET_VALUES;
 
   PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)A), 1, &A->stash));

@@ -168,7 +168,7 @@ inline PetscErrorCode VecMPI_CUPM<T>::Duplicate(Vec v, Vec *y) noexcept
     PetscCall(VecGetArray(*y, &array));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, std::abs(v->map->bs), v->map->n + nghost, array, &ylocrep));
     PetscCall(VecRestoreArray(*y, &array));
-    PetscCall(PetscArraycpy(ylocrep->ops, locrep->ops, 1));
+    ylocrep->ops[0] = locrep->ops[0];
     if (auto &scatter = (yimpl->localupdate = vimpl->localupdate)) PetscCall(PetscObjectReference(PetscObjectCast(scatter)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

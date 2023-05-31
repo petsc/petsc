@@ -250,8 +250,8 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
 
   PetscCall(PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));
   PetscCall(PetscNew(&aomap));
-  PetscCall(PetscMemcpy(ao->ops, &AOps, sizeof(AOps)));
-  ao->data = (void *)aomap;
+  ao->ops[0] = AOps;
+  ao->data   = (void *)aomap;
 
   /* transmit all lengths to all processors */
   PetscCallMPI(MPI_Comm_size(comm, &size));

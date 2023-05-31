@@ -3940,7 +3940,7 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
 
   PetscFunctionBegin;
   if (B->hash_active) {
-    PetscCall(PetscMemcpy(&B->ops, &b->cops, sizeof(*(B->ops))));
+    B->ops[0] = b->cops;
     PetscCall(PetscHMapIJVDestroy(&b->ht));
     PetscCall(PetscFree(b->dnz));
     B->hash_active = PETSC_FALSE;
@@ -4775,9 +4775,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 
   PetscCall(PetscNew(&b));
 
-  B->data = (void *)b;
-
-  PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  B->data   = (void *)b;
+  B->ops[0] = MatOps_Values;
   if (B->sortedfull) B->ops->setvalues = MatSetValues_SeqAIJ_SortedFull;
 
   b->row                = NULL;

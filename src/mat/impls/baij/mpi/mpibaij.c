@@ -2685,7 +2685,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B, PetscInt bs, PetscInt d
 
   PetscFunctionBegin;
   if (B->hash_active) {
-    PetscCall(PetscMemcpy(&B->ops, &b->cops, sizeof(*(B->ops))));
+    B->ops[0]      = b->cops;
     B->hash_active = PETSC_FALSE;
   }
   if (!B->preallocated) PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)B), bs, &B->bstash));
@@ -2862,9 +2862,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&b));
-  B->data = (void *)b;
-
-  PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  B->data      = (void *)b;
+  B->ops[0]    = MatOps_Values;
   B->assembled = PETSC_FALSE;
 
   B->insertmode = NOT_SET_VALUES;

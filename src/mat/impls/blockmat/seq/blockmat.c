@@ -925,9 +925,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&b));
-  A->data = (void *)b;
-  PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
-
+  A->data         = (void *)b;
+  A->ops[0]       = MatOps_Values;
   A->assembled    = PETSC_TRUE;
   A->preallocated = PETSC_FALSE;
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATBLOCKMAT));

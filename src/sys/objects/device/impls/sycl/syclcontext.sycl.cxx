@@ -154,6 +154,6 @@ PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext dctx)
 
   PetscFunctionBegin;
   PetscCallCXX(dctx->data = new DeviceContext::PetscDeviceContext_SYCL());
-  PetscCall(PetscMemcpy(dctx->ops, &syclctx.ops, sizeof(syclctx.ops)));
+  dctx->ops[0] = syclctx.ops;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

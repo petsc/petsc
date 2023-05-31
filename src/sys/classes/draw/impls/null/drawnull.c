@@ -169,8 +169,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
   draw->port_yr = 1;
   PetscCall(PetscDrawDestroy(&draw->popup));
 
-  PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
-  draw->data = NULL;
+  draw->ops[0] = DvOps;
+  draw->data   = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

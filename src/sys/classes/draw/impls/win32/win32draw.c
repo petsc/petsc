@@ -658,7 +658,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw draw)
 
   /* the following is temporary fix for initializing a global datastructure */
   if (!g_hWindowListMutex) g_hWindowListMutex = CreateMutex(NULL, FALSE, NULL);
-  PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
+  draw->ops[0] = DvOps;
 
   windraw->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   /* makes call to MessageLoopThread to creat window and attach a thread */

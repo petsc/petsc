@@ -5320,7 +5320,7 @@ PetscErrorCode TSClone(TS tsin, TS *tsout)
   t->cfltime_local    = tsin->cfltime_local;
   t->exact_final_time = tsin->exact_final_time;
 
-  PetscCall(PetscMemcpy(t->ops, tsin->ops, sizeof(struct _TSOps)));
+  t->ops[0] = tsin->ops[0];
 
   if (((PetscObject)tsin)->fortran_func_pointers) {
     PetscInt i;

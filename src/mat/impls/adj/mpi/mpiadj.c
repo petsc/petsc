@@ -963,8 +963,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&b));
-  B->data = (void *)b;
-  PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  B->data         = (void *)b;
+  B->ops[0]       = MatOps_Values;
   B->assembled    = PETSC_FALSE;
   B->preallocated = PETSC_TRUE; /* so that MatSetValues() may be used */
 

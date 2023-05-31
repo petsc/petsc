@@ -1856,8 +1856,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
   PetscCall(PetscNew(&b));
-  B->data = (void *)b;
-  PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
+  B->data       = (void *)b;
+  B->ops[0]     = MatOps_Values;
   B->assembled  = PETSC_FALSE;
   B->insertmode = NOT_SET_VALUES;
   b->size       = size;

@@ -947,7 +947,7 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::Duplicate_CUPMBase(Vec v, Vec *y, Pets
   // ops
   if (v->boundtocpu) PetscCall(HostAllocateCheck_(dctx, *y));
   // in case the user has done some VecSetOps() tomfoolery
-  PetscCall(PetscArraycpy((*y)->ops, v->ops, 1));
+  (*y)->ops[0] = v->ops[0];
   {
     const auto yobj = PetscObjectCast(*y);
 

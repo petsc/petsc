@@ -29,14 +29,14 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
   PetscCall(PetscLayoutReference(win->map, &(*v)->map));
 
   PetscCall(VecCreate_MPI_Private(*v, PETSC_TRUE, w->nghost, NULL));
-  vw = (Vec_MPI *)(*v)->data;
-  PetscCall(PetscMemcpy((*v)->ops, win->ops, sizeof(*win->ops)));
+  vw           = (Vec_MPI *)(*v)->data;
+  (*v)->ops[0] = win->ops[0];
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     PetscCall(VecGetArray(*v, &array));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscAbs(win->map->bs), win->map->n + w->nghost, array, &vw->localrep));
-    PetscCall(PetscMemcpy(vw->localrep->ops, w->localrep->ops, sizeof(*w->localrep->ops)));
+    vw->localrep->ops[0] = w->localrep->ops[0];
     PetscCall(VecRestoreArray(*v, &array));
 
     vw->localupdate = w->localupdate;
@@ -471,8 +471,8 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&s));
-  v->data = (void *)s;
-  PetscCall(PetscMemcpy(v->ops, &DvOps, sizeof(DvOps)));
+  v->data        = (void *)s;
+  v->ops[0]      = DvOps;
   s->nghost      = nghost;
   v->petscnative = PETSC_TRUE;
   if (array) v->offloadmask = PETSC_OFFLOAD_CPU;
