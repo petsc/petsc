@@ -242,9 +242,6 @@ public:
 namespace compressed_pair_test
 {
 
-namespace
-{
-
 struct Empty { };
 
 static_assert(std::is_empty<Empty>::value, "");
@@ -294,8 +291,6 @@ static_assert(sizeof(compressed_pair<EmptyMember, NotEmpty>) >= (sizeof(EmptyMem
 // flipping template param order changes nothing
 static_assert(!std::is_empty<compressed_pair<NotEmpty, EmptyMember>>::value, "");
 static_assert(sizeof(compressed_pair<NotEmpty, EmptyMember>) >= (sizeof(NotEmpty) + sizeof(EmptyMember)), "");
-
-} // anonymous namespace
 
 } // namespace compressed_pair_test
 
