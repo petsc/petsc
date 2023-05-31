@@ -9,7 +9,8 @@ class Configure(config.package.GNUPackage):
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
-    self.gitcommit       = 'v'+self.version
+    # self.gitcommit       = 'v'+self.version
+    self.gitcommit       = 'ec86992c4bf898795b5820eace7c8ac226c87ff5' # master, may-18-2023
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
@@ -105,8 +106,6 @@ class Configure(config.package.GNUPackage):
       devflags = devflags.replace('-fvisibility=hidden','')
       self.popLanguage()
     elif self.cuda.found:
-      if self.cuda.version_tuple[0] >= 12:
-        raise RuntimeError('Package '+self.PACKAGE+' cannot be used with CUDA 12 or higher')
       stdflag   = '-std=c++11'
       cudabuild = True
       args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')

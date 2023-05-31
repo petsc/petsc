@@ -2349,6 +2349,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
   #endif
 #endif
+  PetscHYPREInitialize();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2574,6 +2575,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
   pc->ops->setup           = PCSetUp_PFMG;
 
   PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc), &ex->hcomm));
+  PetscHYPREInitialize();
   PetscCallExternal(HYPRE_StructPFMGCreate, ex->hcomm, &ex->hsolver);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2806,6 +2808,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)
   pc->ops->setup           = PCSetUp_SysPFMG;
 
   PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc), &ex->hcomm));
+  PetscHYPREInitialize();
   PetscCallExternal(HYPRE_SStructSysPFMGCreate, ex->hcomm, &ex->ss_solver);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3000,6 +3003,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SMG(PC pc)
   pc->ops->setup           = PCSetUp_SMG;
 
   PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc), &ex->hcomm));
+  PetscHYPREInitialize();
   PetscCallExternal(HYPRE_StructSMGCreate, ex->hcomm, &ex->hsolver);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -12,7 +12,7 @@ if __name__ == '__main__':
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-make-test-np=2',
     '--download-openmpi=1',
-    # '--download-hypre=1', # does not support cuda-12 yet
+    '--download-hypre=1',
     '--download-hwloc=1',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
