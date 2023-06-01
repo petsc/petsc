@@ -969,13 +969,15 @@ PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
 }
 
 /*@
-  TaoADMMGetRegularizerCoefficient - Set the regularization coefficient lambda for L1 norm regularization case
+  TaoADMMGetRegularizerCoefficient - Get the regularization coefficient lambda for L1 norm regularization case
 
   Collective
 
-  Input Parameters:
-+  tao - the `Tao` solver context
--  lambda - L1-norm regularizer coefficient
+  Input Parameter:
+.  tao - the `Tao` solver context
+
+  Output Parameter:
+.  lambda - L1-norm regularizer coefficient
 
   Level: advanced
 
