@@ -361,7 +361,7 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw, PetscReal x,
   r.right  = x1 + 1;
   r.top    = yone - 30;
 
-  logfont.lfEscapement     = 2700; /* Causes verticle text drawing */
+  logfont.lfEscapement     = 2700; /* Causes vertical text drawing */
   logfont.lfHeight         = windraw->stringheight;
   logfont.lfWidth          = windraw->stringwidth;
   logfont.lfOrientation    = 0;
