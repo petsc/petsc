@@ -847,7 +847,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
    Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
    allocation.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
 @*/
 PetscErrorCode MatBlockMatSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[])
 {
@@ -916,7 +916,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateBlockMat()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateBlockMat()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
@@ -963,7 +963,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
    Developer Note:
    I don't like the name, it is not `MATNESTMAT`
 
-.seealso: [](chapter_matrices), `Mat`, `MATBLOCKMAT`, `MatCreateNest()`
+.seealso: [](ch_matrices), `Mat`, `MATBLOCKMAT`, `MatCreateNest()`
 @*/
 PetscErrorCode MatCreateBlockMat(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt bs, PetscInt nz, PetscInt *nnz, Mat *A)
 {

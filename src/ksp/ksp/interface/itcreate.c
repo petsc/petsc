@@ -650,7 +650,7 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Ve
    Note:
    The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
 
-.seealso: [](chapter_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`
 @*/
 PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 {
@@ -747,7 +747,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   Developer Note:
   `KSPRegister()` is used to add Krylov types to `KSPList` from which they are accessed by `KSPSetType()`.
 
-.seealso: [](chapter_ksp), `PCSetType()`, `KSPType`, `KSPRegister()`, `KSPCreate()`, `KSP`
+.seealso: [](ch_ksp), `PCSetType()`, `KSPType`, `KSPRegister()`, `KSPCreate()`, `KSP`
 @*/
 PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 {
@@ -794,7 +794,7 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPType`, `KSP`, `KSPSetType()`
+.seealso: [](ch_ksp), `KSPType`, `KSP`, `KSPSetType()`
 @*/
 PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 {
@@ -829,7 +829,7 @@ $    ` KSPSetType`(ksp, "my_solver")
    or at runtime via the option
 $     -ksp_type my_solver
 
-.seealso: [](chapter_ksp), `KSP`, `KSPType`, `KSPSetType`, `KSPRegisterAll()`
+.seealso: [](ch_ksp), `KSP`, `KSPType`, `KSPSetType`, `KSPRegisterAll()`
 @*/
 PetscErrorCode KSPRegister(const char sname[], PetscErrorCode (*function)(KSP))
 {
@@ -878,7 +878,7 @@ $     KSPMonitorSetFromOptions(ksp, "-ksp_monitor_my_monitor", "my_monitor", NUL
   or at runtime via the option
 $     -ksp_monitor_my_monitor
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorRegisterAll()`, `KSPMonitorSetFromOptions()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorRegisterAll()`, `KSPMonitorSetFromOptions()`
 @*/
 PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format, PetscErrorCode (*monitor)(KSP, PetscInt, PetscReal, PetscViewerAndFormat *), PetscErrorCode (*create)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **), PetscErrorCode (*destroy)(PetscViewerAndFormat **))
 {

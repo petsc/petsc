@@ -38,7 +38,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
    Note:
    This serves as a base class for all FFT marix classes, currently `MATFFTW` or `MATSEQCUFFT`
 
-.seealso: [](chapter_matrices), `Mat`, `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
+.seealso: [](ch_matrices), `Mat`, `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], MatType mattype, Mat *A)
 {

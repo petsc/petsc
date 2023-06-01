@@ -83,7 +83,7 @@
    We search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
-.seealso: [](chapter_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJPERM`, `MatCreate()`, `MatCreateSeqAIJPERM()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJPERM`, `MatCreate()`, `MatCreateSeqAIJPERM()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateMPIAIJPERM(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {
@@ -149,5 +149,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat A)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateMPIAIJPERM()`, `MATSEQAIJPERM`, `MATMPIAIJPERM`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQAIJMKL`, `MATMPIAIJMKL`, `MATSEQAIJSELL`, `MATMPIAIJSELL`
+.seealso: [](ch_matrices), `Mat`, `MatCreateMPIAIJPERM()`, `MATSEQAIJPERM`, `MATMPIAIJPERM`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQAIJMKL`, `MATMPIAIJMKL`, `MATSEQAIJSELL`, `MATMPIAIJSELL`
 M*/

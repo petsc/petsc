@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
 
   Level: advanced
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecRegister()`, `VecRegisterDestroy()`, `VecRegister()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecRegister()`, `VecRegisterDestroy()`, `VecRegister()`
 @*/
 PetscErrorCode VecRegisterAll(void)
 {

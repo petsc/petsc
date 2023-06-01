@@ -529,7 +529,7 @@ PETSC_INTERN PetscErrorCode MatGetInfo_CHOLMOD(Mat F, MatInfoType flag, MatInfo 
    Note:
    CHOLMOD is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: [](chapter_matrices), `Mat`, `PCCHOLESKY`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCCHOLESKY`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A, MatFactorType ftype, Mat *F)

@@ -938,7 +938,7 @@ Computing the Jacobian or preconditioner is time consuming. Is there any way to 
 
 PETSc has a variety of ways of lagging the computation of the Jacobian or the
 preconditioner. They are documented in the manual page for ``SNESComputeJacobian()``
-and in the :ref:`users manual <chapter_snes>`:
+and in the :ref:`users manual <ch_snes>`:
 
 -snes_lag_jacobian  (``SNESSetLagJacobian()``) How often Jacobian is rebuilt (use -1 to
                     never rebuild, use -2 to rebuild the next time requested and then

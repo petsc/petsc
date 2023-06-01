@@ -23,7 +23,7 @@
    Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
    same type as an existing vector.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
 PetscErrorCode VecCreateSeq(MPI_Comm comm, PetscInt n, Vec *v)
 {

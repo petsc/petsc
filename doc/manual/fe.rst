@@ -1,4 +1,4 @@
-.. _chapter_fe:
+.. _ch_fe:
 
 PetscFE: Finite Element Infrastructure in PETSc
 -----------------------------------------------

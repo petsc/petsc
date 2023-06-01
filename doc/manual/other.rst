@@ -50,7 +50,7 @@ One could then override this choice at runtime with the option
    -ksp_type tfqmr
 
 to select the Transpose-Free QMR algorithm. (See
-:any:`chapter_ksp` for details.)
+:any:`ch_ksp` for details.)
 
 The remainder of this section discusses details of runtime options.
 

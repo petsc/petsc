@@ -1,4 +1,4 @@
-.. _chapter_matrices:
+.. _ch_matrices:
 
 Matrices
 --------

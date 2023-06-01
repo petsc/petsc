@@ -43,7 +43,7 @@ struct _n_TSMonitorSPEigCtx {
 
    Currently only works for ODEs u_t - F(t,u) = 0; that is with no mass matrix.
 
-.seealso: [](chapter_ts), `TSMonitorSPEigTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`
+.seealso: [](ch_ts), `TSMonitorSPEigTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`
 @*/
 PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorSPEigCtx *ctx)
 {
@@ -188,7 +188,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
    Note:
    Should be passed to `TSMonitorSet()` along with `TSMonitorSPEig()` an the context created with `TSMonitorSPEigCtxCreate()`
 
-.seealso: [](chapter_ts), `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig();`
+.seealso: [](ch_ts), `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig();`
 @*/
 PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
 {

@@ -72,7 +72,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   If the dynamics are stiff, a conservative (small) step should be used.
   If not, then a larger time-step can be used.
 
-.seealso: [](chapter_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
 {
@@ -104,7 +104,7 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
    The tolerance is some measure of how close the event function is to zero for the event detector to stop
    and declare the time of the event has been detected.
 
-.seealso: [](chapter_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 {
@@ -169,7 +169,7 @@ $   PetscErrorCode postevent(TS ts, PetscInt nevents_zero, PetscInt events_zero[
    The `eventhandler` is actually the event detector function and the `postevent` function actually handles the desired changes that
    should take place at the time of the event
 
-.seealso: [](chapter_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
+.seealso: [](ch_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
 PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *ctx)
 {
@@ -601,7 +601,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEvent`, `TSSetEventHandler()`
+.seealso: [](ch_ts), `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSGetNumEvents(TS ts, PetscInt *nevents)
 {

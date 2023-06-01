@@ -406,7 +406,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
    mmax + 1 directions are stored (mmax previous ones along with the current one)
   and whether all are used in each iteration also depends on the truncation strategy, see `KSPPIPEFCGSetTruncationType()`
 
-.seealso: [](chapter_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax)
 {
@@ -435,7 +435,7 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`
 @*/
 PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
 {
@@ -461,7 +461,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
 
   Level: advanced
 
-.seealso: [](chapter_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`
 @*/
 PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
 {
@@ -487,7 +487,7 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGSetNprealloc()`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGSetNprealloc()`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`
 @*/
 PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 {
@@ -517,7 +517,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {
@@ -546,7 +546,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -602,7 +602,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *Petsc
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPFCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGCR`, `KSPPIPEGCR`, `KSPFGMRES`, `KSPCG`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`, `KSPPIPEFCGSetNprealloc()`,
+.seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPFCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGCR`, `KSPPIPEGCR`, `KSPFGMRES`, `KSPCG`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`, `KSPPIPEFCGSetNprealloc()`,
           `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetTruncationType()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)

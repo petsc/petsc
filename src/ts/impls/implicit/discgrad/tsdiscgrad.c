@@ -408,7 +408,7 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
 $ u_t = S(u) grad F(u)
   where S(u) is a linear operator, and F is a functional of u.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
+.seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 {
@@ -467,7 +467,7 @@ $ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
+.seealso: [](ch_ts), `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
 @*/
 PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
 {
@@ -503,7 +503,7 @@ $ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
 
   Level: Intermediate
 
-.seealso: [](chapter_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`
 @*/
 PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
 {
@@ -529,7 +529,7 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, Petsc
 
   Level: Advanced
 
-.seealso: [](chapter_ts), `TSDISCGRAD`, `TSDiscGradUseGonzalez()`, `TSDISCGRAD`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradUseGonzalez()`, `TSDISCGRAD`
 @*/
 PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 {
@@ -555,7 +555,7 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
 
   Level: Intermediate
 
-.seealso: [](chapter_ts), `TSDISCGRAD`
+.seealso: [](ch_ts), `TSDISCGRAD`
 @*/
 PetscErrorCode TSDiscGradUseGonzalez(TS ts, PetscBool flg)
 {

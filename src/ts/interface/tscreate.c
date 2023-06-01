@@ -24,7 +24,7 @@ const char *const *TSConvergedReasons = TSConvergedReasons_Shifted + 4;
                     in `TSView()`. `TSSetFromOptions(`) does call `SNESSetFromOptions()` which can lead to users being confused
                     by help messages about meaningless `SNES` options.
 
-.seealso: [](chapter_ts), `TS`, `SNES`, `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`
+.seealso: [](ch_ts), `TS`, `SNES`, `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`
 @*/
 PetscErrorCode TSCreate(MPI_Comm comm, TS *ts)
 {

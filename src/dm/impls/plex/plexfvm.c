@@ -156,7 +156,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `Vec`, `DMPlexGetGradientDM()`
+.seealso: [](ch_unstructured), `DM`, `Vec`, `DMPlexGetGradientDM()`
 @*/
 PetscErrorCode DMPlexReconstructGradientsFVM(DM dm, Vec locX, Vec grad)
 {

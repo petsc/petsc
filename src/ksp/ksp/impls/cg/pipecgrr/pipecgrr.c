@@ -267,7 +267,7 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
    propagation on the maximal attainable accuracy of the pipelined Conjugate Gradients method",
    SIAM Journal on Matrix Analysis and Applications (SIMAX), 39(1):426--450, 2018.
 
-.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPIPECG`, `KSPPGMRES`, `KSPCG`, `KSPPIPEBCGS`, `KSPCGUseSingleReduction()`
+.seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPIPECG`, `KSPPGMRES`, `KSPCG`, `KSPPIPEBCGS`, `KSPCGUseSingleReduction()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
 {

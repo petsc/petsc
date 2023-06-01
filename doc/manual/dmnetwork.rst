@@ -1,5 +1,5 @@
 
-.. _chapter_network:
+.. _ch_network:
 
 Networks
 --------

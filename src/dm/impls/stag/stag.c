@@ -918,7 +918,7 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
   This naming is reflected when viewing a `DMSTAG` object with `DMView()`, and in forming
   convenient options prefixes when creating a decomposition with `DMCreateFieldDecomposition()`.
 
-.seealso: [](chapter_stag), `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`,
+.seealso: [](ch_stag), `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`,
           `DMSetType()`, `DMStagVecSplitToDMDA()`
 M*/
 

@@ -6,6 +6,16 @@
 Guide to the Stokes Equations using Finite Elements
 ===================================================
 
+The Stokes equations
+
+.. math::
+
+    \begin{aligned}
+    -\nabla \cdot \left(\mu \left(\nabla u + \nabla u^T \right)\right) + \nabla p + f &= 0 \\
+    \nabla\cdot u &= 0 \end{aligned}
+
+describe slow flow of an incompressible fluid with velocity :math:`u`, pressure :math:`p`, and body force :math:`f`.
+
 This guide accompanies `SNES Example 62 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex62.c.html>`__ and `SNES Example 69 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex69.c.html>`__.
 
 The Stokes equations for a fluid, a steady-state form of the Navier-Stokes equations, start with the balance of momentum, just as in elastostatics,

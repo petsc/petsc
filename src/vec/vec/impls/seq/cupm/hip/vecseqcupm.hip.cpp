@@ -32,7 +32,7 @@ PetscErrorCode VecCreate_SeqHIP(Vec v)
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](chapter_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqHIPWithArray()`,
+.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqHIPWithArray()`,
           `VecCreateMPI()`, `VecCreateMPIHIP()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
 PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
@@ -73,7 +73,7 @@ PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](chapter_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeqWithArray()`, `VecCreateSeqHIP()`,
+.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeqWithArray()`, `VecCreateSeqHIP()`,
           `VecCreateSeqHIPWithArray()`, `VecCreateMPIHIP()`, `VecCreateMPIHIPWithArray()`,
           `VecCreateMPIHIPWithArrays()`, `VecHIPPlaceArray()`
 C@*/
@@ -114,7 +114,7 @@ PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](chapter_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
+.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
           `VecCreateMPIWithArray()`, `VecCreateSeqHIP()`, `VecCreateMPIHIPWithArray()`, `VecHIPPlaceArray()`,
           `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
@@ -154,7 +154,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
   If the device memory hasn't been allocated previously it will be allocated as part of this
   routine.
 
-.seealso: [](chapter_vectors), `VecHIPRestoreArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecHIPRestoreArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`, `VecGetArrayWrite()`
 @*/
 PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
@@ -180,7 +180,7 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
   host data as out of date. Subsequent access to the vector data on the host side via
   `VecGetArray()` will incur a (synchronous) data transfer.
 
-.seealso: [](chapter_vectors), `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
@@ -214,7 +214,7 @@ PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
   host is up to date. Accessing data on the host side does not incur a device to host data
   transfer.
 
-.seealso: [](chapter_vectors), `VecHIPRestoreArrayRead()`, `VecHIPGetArray()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecHIPRestoreArrayRead()`, `VecHIPGetArray()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`
 @*/
 PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
@@ -240,7 +240,7 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
   This routine does not modify the corresponding array on the host in any way. The pointer is
   invalid after this function returns.
 
-.seealso: [](chapter_vectors), `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecGetArray()`,
+.seealso: [](ch_vectors), `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
@@ -273,7 +273,7 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
   released the host data of the vector is marked as out of data. Subsequent access of the host
   data with e.g. `VecGetArray()` incurs a device to host data transfer.
 
-.seealso: [](chapter_vectors), `VecHIPRestoreArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`,
+.seealso: [](ch_vectors), `VecHIPRestoreArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`,
           `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
@@ -299,7 +299,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
   Data on the host will be marked as out of date. Subsequent access of the data on the host
   side e.g. with `VecGetArray()` will incur a device to host data transfer.
 
-.seealso: [](chapter_vectors), `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`,
+.seealso: [](ch_vectors), `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`,
           `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
 PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
@@ -333,7 +333,7 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
   array restored with `VecHIPResetArray()` or permanently replaced with
   `VecHIPReplaceArray()`.
 
-.seealso: [](chapter_vectors), `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`,
+.seealso: [](ch_vectors), `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`,
           `VecResetArray()`, `VecHIPResetArray()`, `VecHIPReplaceArray()`
 @*/
 PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
@@ -362,7 +362,7 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
   passed array so it CANNOT be freed by the user. It will be freed when the vector is
   destroyed.
 
-.seealso: [](chapter_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`,
+.seealso: [](ch_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`,
           `VecHIPResetArray()`, `VecHIPPlaceArray()`, `VecReplaceArray()`
 @*/
 PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
@@ -385,7 +385,7 @@ PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
   Note:
   Call this after the use of `VecHIPPlaceArray()`.
 
-.seealso: [](chapter_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`,
+.seealso: [](ch_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`,
           `VecResetArray()`, `VecHIPPlaceArray()`, `VecHIPReplaceArray()`
 @*/
 PetscErrorCode VecHIPResetArray(Vec vin)

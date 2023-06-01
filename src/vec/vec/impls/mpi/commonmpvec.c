@@ -63,7 +63,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
     One should call `VecGhostRestoreLocalForm()` or `VecDestroy()` once one is
     finished using the object.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
 {
@@ -104,7 +104,7 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
 
     Level: advanced
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`, `VecGhostGetLocalForm()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`, `VecGhostGetLocalForm()`
 @*/
 PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
 {
@@ -143,7 +143,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
     returns a sequential vector that includes the locations for the ghost values
     and their current values.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostGetLocalForm()`, `VecCreateGhostWithArray()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostGetLocalForm()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
 {
@@ -190,7 +190,7 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
        VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
 .ve
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostUpdateEnd()`, `VecGhostGetLocalForm()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostUpdateEnd()`, `VecGhostGetLocalForm()`,
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode scattermode)
@@ -252,7 +252,7 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
        VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
 .ve
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostUpdateBegin()`, `VecGhostGetLocalForm()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostUpdateBegin()`, `VecGhostGetLocalForm()`,
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecGhostUpdateEnd(Vec g, InsertMode insertmode, ScatterMode scattermode)

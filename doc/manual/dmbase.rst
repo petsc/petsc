@@ -1,4 +1,4 @@
-.. _chapter_dmbase:
+.. _ch_dmbase:
 
 DM Basics
 ----------
@@ -9,11 +9,11 @@ will not get widely used. Thus PETSc provides a set of abstractions represented 
 mechanism for translating the problem specification of a model and its discretization to the language and API of solvers.
 
 Some of the model
-classes ``DM`` currently supports are PDEs on structured and staggered grids with finite difference methods (``DMDA`` and ``DMSTAG`` -- :any:`chapter_stag`),
+classes ``DM`` currently supports are PDEs on structured and staggered grids with finite difference methods (``DMDA`` and ``DMSTAG`` -- :any:`ch_stag`),
 PDEs on unstructured
-grids with finite element and finite volume methods (``DMPLEX`` -- :any:`chapter_unstructured`), PDEs on quad and octree-grids (``DMFOREST``), models on
+grids with finite element and finite volume methods (``DMPLEX`` -- :any:`ch_unstructured`), PDEs on quad and octree-grids (``DMFOREST``), models on
 networks (graphs) such
-as the power grid or river networks (``DMNETWORK`` -- :any:`chapter_network`), and particle-in-cell simulations (``DMSWARM``).
+as the power grid or river networks (``DMNETWORK`` -- :any:`ch_network`), and particle-in-cell simulations (``DMSWARM``).
 
 In previous chapters, we have demonstrated some simple usage of ``DM`` to provide the input for the solvers. In this chapter, and those that follow,
 we will dive deep into the capabilities of ``DM``.

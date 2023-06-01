@@ -67,7 +67,7 @@ typedef struct _n_ISColoring *ISColoring;
    Each PETSc `Vec` contains a `PetscLayout` object which can be obtained with `VecGetLayout()`. For convenience `Vec` provides an API to access the layout information directly,
    for example with `VecGetLocalSize()` and `VecGetOwnershipRange()`.
 
-   Similarly PETSc matrices have layouts, these are discussed in [](chapter_matrices).
+   Similarly PETSc matrices have layouts, these are discussed in [](ch_matrices).
 
 .seealso: `PetscLayoutCreate()`, `PetscLayoutDestroy()`, `PetscLayoutGetRange()`, `PetscLayoutGetLocalSize()`, `PetscLayoutGetSize()`,
           `PetscLayoutGetBlockSize()`, `PetscLayoutGetRanges()`, `PetscLayoutFindOwner()`,  `PetscLayoutFindOwnerIndex()`,

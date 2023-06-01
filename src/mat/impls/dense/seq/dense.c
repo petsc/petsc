@@ -2111,7 +2111,7 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A, PetscScalar **array)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseSetLDA()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseSetLDA()`
 @*/
 PetscErrorCode MatDenseGetLDA(Mat A, PetscInt *lda)
 {
@@ -2134,7 +2134,7 @@ PetscErrorCode MatDenseGetLDA(Mat A, PetscInt *lda)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetLDA()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetLDA()`
 @*/
 PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
 {
@@ -2160,7 +2160,7 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
    Fortran Note:
    `MatDenseGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseGetArrayF90()`
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
 {
@@ -2185,7 +2185,7 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
    Fortran Note:
    `MatDenseRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseRestoreArrayF90()`
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 {
@@ -2213,7 +2213,7 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
 {
@@ -2235,7 +2235,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 {
@@ -2259,7 +2259,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
 {
@@ -2281,7 +2281,7 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 {
@@ -2314,7 +2314,7 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
    If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
    an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArrayRead()`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArrayRead()`,
    `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
 @*/
 PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
@@ -2354,7 +2354,7 @@ PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemTy
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
 {
@@ -2399,7 +2399,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
    If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
    an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`,
    `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
 @*/
 PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, PetscMemType *mtype)
@@ -2438,7 +2438,7 @@ PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, 
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **array)
 {
@@ -2482,7 +2482,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
    If the matrix is of a device type such as `MATDENSECUDA`, `MATDENSEHIP`, etc.,
    an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWriteAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayRead()`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWriteAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayRead()`,
   `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
 @*/
 PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
@@ -2521,7 +2521,7 @@ PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, Petsc
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar **array)
 {
@@ -3264,7 +3264,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
    who wish to allocate their own matrix memory space.  Most users should
    set `data` = `NULL`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateSeqDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscScalar *data, Mat *A)
 {
@@ -3292,7 +3292,7 @@ PetscErrorCode MatCreateSeqDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscSca
    who wish to allocate their own matrix memory space.  Most users should
    need not call this routine.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`, `MatDenseSetLDA()`
+.seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`, `MatDenseSetLDA()`
 @*/
 PetscErrorCode MatSeqDenseSetPreallocation(Mat B, PetscScalar data[])
 {
@@ -3525,7 +3525,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A, Mat *v)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSE`, `MatCreateSeqDense()`
+.seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MatCreateSeqDense()`
 M*/
 PetscErrorCode MatCreate_SeqDense(Mat B)
 {
@@ -3610,7 +3610,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
    Note:
    Use `MatDenseGetColumnVec()` to get access to a column of a `MATDENSE` treated as a `Vec`
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreColumn()`, `MatDenseGetColumnVec()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreColumn()`, `MatDenseGetColumnVec()`
 @*/
 PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar **vals)
 {
@@ -3633,7 +3633,7 @@ PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar **vals)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetColumn()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetColumn()`
 @*/
 PetscErrorCode MatDenseRestoreColumn(Mat A, PetscScalar **vals)
 {
@@ -3663,7 +3663,7 @@ PetscErrorCode MatDenseRestoreColumn(Mat A, PetscScalar **vals)
 
      Use `MatDenseGetColumnVecRead()` to obtain read-only access or `MatDenseGetColumnVecWrite()` for write-only access.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`, `MatDenseGetColumn()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`, `MatDenseGetColumn()`
 @*/
 PetscErrorCode MatDenseGetColumnVec(Mat A, PetscInt col, Vec *v)
 {
@@ -3690,7 +3690,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A, PetscInt col, Vec *v)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
 {
@@ -3725,7 +3725,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
 
      Use `MatDenseGetColumnVec()` to obtain read-write access or `MatDenseGetColumnVecWrite()` for write-only access.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseGetColumnVecRead(Mat A, PetscInt col, Vec *v)
 {
@@ -3752,7 +3752,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A, PetscInt col, Vec *v)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVecRead(Mat A, PetscInt col, Vec *v)
 {
@@ -3785,7 +3785,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A, PetscInt col, Vec *v)
 
      Use `MatDenseGetColumnVec()` to obtain read-write access or `MatDenseGetColumnVecRead()` for read-only access.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseGetColumnVecWrite(Mat A, PetscInt col, Vec *v)
 {
@@ -3812,7 +3812,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A, PetscInt col, Vec *v)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
 {
@@ -3848,7 +3848,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
 
      The output matrix is not redistributed by PETSc, so depending on the values of `rbegin` and `rend`, some processes may have no local rows.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreSubMatrix()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreSubMatrix()`
 @*/
 PetscErrorCode MatDenseGetSubMatrix(Mat A, PetscInt rbegin, PetscInt rend, PetscInt cbegin, PetscInt cend, Mat *v)
 {
@@ -3884,7 +3884,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A, PetscInt rbegin, PetscInt rend, Petsc
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseGetSubMatrix()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseGetSubMatrix()`
 @*/
 PetscErrorCode MatDenseRestoreSubMatrix(Mat A, Mat *v)
 {

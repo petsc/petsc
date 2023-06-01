@@ -17,7 +17,7 @@
    The order of the enum entries is significant, as it corresponds to the canonical numbering
    of DOFs, and the fact that the numbering starts at 0 may also be used by the implementation.
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
 E*/
 typedef enum {
   DMSTAG_NULL_LOCATION = 0,
@@ -63,7 +63,7 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
   Note:
   The component (c) field must always be set, even if there is a single component at a given location (in which case c should be set to 0).
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
+.seealso: [](ch_stag), `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
           `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`, `DMStagStencilLocation`
 S*/
 typedef struct {
@@ -76,7 +76,7 @@ typedef struct {
 
   Level: beginner
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`
 E*/
 
 typedef enum {

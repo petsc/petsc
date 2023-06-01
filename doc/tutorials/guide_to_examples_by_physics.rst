@@ -46,7 +46,7 @@ where the strain tensor :math:`\bm \varepsilon` is given by
 
   \bm \varepsilon = \frac{1}{2} \left(\nabla \bm u + (\nabla \bm u)^T \right)
 
-where :math:`\bm u` is the infinitesimal displacement of the body.
+where :math:`\bm u` is the infinitesimal displacement of the body. The resulting discretizations use PETSc's nonlinear solvers
 
 Finite Element
   :2D: `SNES example 17 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex17.c.html>`_
@@ -71,7 +71,7 @@ so that
 
   \frac{\mu}{2} \left( \mathrm{Tr}(C) - 3 \right) + J p + \frac{\kappa}{2} (J - 1) = 0
 
-In the example itself, everything can be expressed in terms of determinants and cofactors of :math:`F`.
+In the example everything is expressed in terms of determinants and cofactors of :math:`F`.
 
   Finite Element
     :3D: `SNES example 77 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex77.c.html>`_
@@ -80,27 +80,17 @@ In the example itself, everything can be expressed in terms of determinants and 
 Stokes
 ======
 
-The Stokes equations (see :doc:`physics/guide_to_stokes` for a detailed discussion)
-
-.. math::
-
-    \begin{aligned}
-    -\nabla \cdot \left(\mu \left(\nabla u + \nabla u^T \right)\right) + \nabla p + f &= 0 \\
-    \nabla\cdot u &= 0 \end{aligned}
-
-describe slow flow of an incompressible fluid with velocity :math:`u`, pressure :math:`p`, and body force :math:`f`.
-
-  Finite Element
-    :2D: `SNES example 62 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex62.c.html>`_
-    :3D: `SNES example 62 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex62.c.html>`_
+:doc:`physics/guide_to_stokes`
 
 Euler
 =====
 
+Not yet developed
+
 Heat equation
 =============
 
-The heat equation
+The time-dependent heat equation
 
 .. math::
 
@@ -115,7 +105,7 @@ is used to model heat flow, time-dependent diffusion, and other physical process
 Navier-Stokes
 =============
 
-The incompressible Navier-Stokes equations
+The time-dependent incompressible Navier-Stokes equations
 
 .. math::
 

@@ -490,7 +490,7 @@ static PetscErrorCode TSBDFGetOrder_BDF(TS ts, PetscInt *order)
 
   Level: beginner
 
-.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSType`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 {

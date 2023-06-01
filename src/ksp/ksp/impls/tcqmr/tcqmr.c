@@ -173,7 +173,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 . [1] - Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Transpose free formulations of Lanczos type methods for nonsymmetric linear systems,
   Numerical Algorithms, Volume 17, 1998.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTFQMR`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTFQMR`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)

@@ -92,7 +92,7 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
    Even though this method does not use any norms, the user is allowed to set the `KSPNormType` to any value.
    This is so the users does not have to change `KSPNormType` options when they switch from other `KSP` methods to this one.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPRICHARDSON`, `KSPCHEBYSHEV`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPRICHARDSON`, `KSPCHEBYSHEV`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)

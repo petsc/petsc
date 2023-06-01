@@ -23,7 +23,7 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 
    Level: beginner
 
-.seealso: [](chapter_dmbase), `DMSetType()`, `DMCreate()`, `DM`
+.seealso: [](ch_dmbase), `DMSetType()`, `DMCreate()`, `DM`
 J*/
 typedef const char *DMType;
 #define DMDA        "da"

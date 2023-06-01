@@ -651,7 +651,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
     SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
     DOI: 10.1137/15M1049130
 
-.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
+.seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESMonitorKrylov()`, `KSPPIPEFGMRESSetShift()`
 M*/
 
@@ -750,7 +750,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
   This can be achieved with PETSc itself by using a few iterations of a Krylov method.
   See `KSPComputeEigenvalues()` (and note the caveats there).
 
-.seealso: [](chapter_ksp), `KSPPIPEFGMRES`, `KSPComputeEigenvalues()`
+.seealso: [](ch_ksp), `KSPPIPEFGMRES`, `KSPComputeEigenvalues()`
 @*/
 PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp, PetscScalar shift)
 {

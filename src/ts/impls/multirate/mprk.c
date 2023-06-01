@@ -136,7 +136,7 @@ static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio, PetscInt s, const P
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A23 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -149,7 +149,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A32 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -162,7 +162,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A33 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -175,7 +175,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK3P2M - Third Order Multirate Partitioned Runge-Kutta scheme.
@@ -187,7 +187,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP2 - Second Order Multirate Partitioned Runge-Kutta scheme.
@@ -199,7 +199,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP3 - Third Order Multirate Partitioned Runge-Kutta scheme.
@@ -211,7 +211,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 
 /*@C
@@ -221,7 +221,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKRegisterDestroy()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKRegisterDestroy()`
 @*/
 PetscErrorCode TSMPRKRegisterAll(void)
 {
@@ -374,7 +374,7 @@ PetscErrorCode TSMPRKRegisterAll(void)
 
    Level: advanced
 
-.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKRegister()`, `TSMPRKRegisterAll()`
+.seealso: [](ch_ts), `TSMPRK`, `TSMPRKRegister()`, `TSMPRKRegisterAll()`
 @*/
 PetscErrorCode TSMPRKRegisterDestroy(void)
 {
@@ -403,7 +403,7 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSMPRK`, `PetscInitialize()`
+.seealso: [](ch_ts), `TSMPRK`, `PetscInitialize()`
 @*/
 PetscErrorCode TSMPRKInitializePackage(void)
 {
@@ -421,7 +421,7 @@ PetscErrorCode TSMPRKInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSMPRK`, `PetscFinalize()`
+.seealso: [](ch_ts), `TSMPRK`, `PetscFinalize()`
 @*/
 PetscErrorCode TSMPRKFinalizePackage(void)
 {
@@ -454,7 +454,7 @@ PetscErrorCode TSMPRKFinalizePackage(void)
    Note:
    Several `TSMPRK` methods are provided, this function is only needed to create new methods.
 
-.seealso: [](chapter_ts), `TSMPRK`
+.seealso: [](ch_ts), `TSMPRK`
 @*/
 PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, PetscInt ratio1, PetscInt ratio2, const PetscReal Asb[], const PetscReal bsb[], const PetscReal csb[], const PetscInt rsb[], const PetscReal Amb[], const PetscReal bmb[], const PetscReal cmb[], const PetscInt rmb[], const PetscReal Af[], const PetscReal bf[], const PetscReal cf[])
 {
@@ -1149,7 +1149,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
+.seealso: [](ch_ts), `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
 @*/
 PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 {
@@ -1173,7 +1173,7 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSMPRKGetType()`, `TSMPRK`
+.seealso: [](ch_ts), `TSMPRKGetType()`, `TSMPRK`
 @*/
 PetscErrorCode TSMPRKGetType(TS ts, TSMPRKType *mprktype)
 {
@@ -1249,7 +1249,7 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
   Note:
   The default is `TSMPRKPM2`, it can be changed with `TSMPRKSetType()` or -ts_mprk_type
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
           `TSMPRKM2`, `TSMPRKM3`, `TSMPRKRFSMR3`, `TSMPRKRFSMR2`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)

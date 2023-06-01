@@ -1,8 +1,8 @@
 .. _handson:
 
-===========================================
-Hands-On Tutorials, by Mathematical Problem
-===========================================
+==================================
+Tutorials, by Mathematical Problem
+==================================
 
 TODO: Add link to Python example here
 

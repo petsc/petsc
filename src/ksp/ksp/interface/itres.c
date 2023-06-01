@@ -29,7 +29,7 @@ $     CA x = Cb (left preconditioning).
 $     b-Ax
    is returned in the `vt2` temporary.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
 @*/
 
 PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres, Vec vb)
@@ -94,7 +94,7 @@ PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetPCSide()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetPCSide()`
 @*/
 PetscErrorCode KSPUnwindPreconditioner(KSP ksp, Vec vsoln, Vec vt1)
 {

@@ -317,7 +317,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
    References:
 .  * - http://dx.doi.org/10.1145/641876.641877
 
-.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`
+.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`
 @*/
 PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
 {
@@ -345,7 +345,7 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
    References:
 .  * - http://dx.doi.org/10.1016/j.cam.2005.03.008
 
-.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetFilter()`
+.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetFilter()`
 @*/
 PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, PetscReal kkD)
 {
@@ -373,7 +373,7 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, Pet
 +  * - http://dx.doi.org/10.1145/641876.641877
 -  * - http://dx.doi.org/10.1016/j.cam.2005.03.008
 
-.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`, `TSAdaptDSPSetFilter()`, `TSAdaptType`
+.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`, `TSAdaptDSPSetFilter()`, `TSAdaptType`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
 {

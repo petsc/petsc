@@ -197,7 +197,7 @@ PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
    Reference:
 . * - Paige & Saunders, Solution of sparse indefinite systems of linear equations, SIAM J. Numer. Anal. 12, 1975.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 {

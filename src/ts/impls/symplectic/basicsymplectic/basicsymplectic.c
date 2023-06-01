@@ -34,7 +34,7 @@ typedef struct {
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 M*/
 
 /*MC
@@ -42,7 +42,7 @@ M*/
 
 Level: intermediate
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 M*/
 
 /*@C
@@ -52,7 +52,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticRegisterDestroy()`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticRegisterDestroy()`
 @*/
 PetscErrorCode TSBasicSymplecticRegisterAll(void)
 {
@@ -86,7 +86,7 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
 
    Level: advanced
 
-.seealso: [](chapter_ts), `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`, `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`, `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 {
@@ -110,7 +110,7 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `PetscInitialize()`, `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticInitializePackage(void)
 {
@@ -128,7 +128,7 @@ PetscErrorCode TSBasicSymplecticInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `PetscFinalize()`, `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 {
@@ -155,7 +155,7 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
    Notes:
    Several symplectic methods are provided, this function is only needed to create new methods.
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 @*/
 PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscInt s, PetscReal c[], PetscReal d[])
 {
@@ -387,7 +387,7 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
     The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
     that is intended to store the user-provided RHS function.
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
 @*/
 PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
 {
@@ -408,7 +408,7 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
+.seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
 @*/
 PetscErrorCode TSBasicSymplecticGetType(TS ts, TSBasicSymplecticType *bsymptype)
 {
@@ -485,7 +485,7 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
   Reference:
 . * -  wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
 
-.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts)
 {
