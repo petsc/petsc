@@ -118,7 +118,7 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(DMFieldList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested DMField type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)field), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested DMField type %s", type);
   /* Destroy the previous private DMField context */
   PetscTryTypeMethod(field, destroy);
 

@@ -1455,7 +1455,7 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
   PetscFunctionBegin;
   pc_gamg->type = type;
   PetscCall(PetscFunctionListFind(GAMGList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown GAMG type %s given", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown GAMG type %s given", type);
   if (pc_gamg->ops->destroy) {
     PetscCall((*pc_gamg->ops->destroy)(pc));
     PetscCall(PetscMemzero(pc_gamg->ops, sizeof(struct _PCGAMGOps)));

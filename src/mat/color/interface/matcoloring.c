@@ -150,7 +150,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
   PetscCall(PetscObjectTypeCompare((PetscObject)mc, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(MatColoringList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested MatColoring type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)mc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested MatColoring type %s", type);
   if (mc->ops->destroy) {
     PetscCall((*(mc)->ops->destroy)(mc));
     mc->ops->destroy = NULL;

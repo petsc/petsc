@@ -36,7 +36,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PetscRandomList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)rnd), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
   PetscTryTypeMethod(rnd, destroy);
   rnd->ops->destroy = NULL;

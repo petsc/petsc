@@ -347,7 +347,7 @@ static PetscErrorCode TSSSPSetType_SSP(TS ts, TSSSPType type)
 
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(TSSSPList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS_SSP type %s given", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS_SSP type %s given", type);
   ssp->onestep = r;
   PetscCall(PetscFree(ssp->type_name));
   PetscCall(PetscStrallocpy(type, &ssp->type_name));

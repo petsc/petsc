@@ -251,7 +251,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
   }
 
   PetscCall(PetscFunctionListFind(PetscDrawList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDraw type given: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)draw), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDraw type given: %s", type);
   PetscTryTypeMethod(draw, destroy);
   PetscCall(PetscMemzero(draw->ops, sizeof(struct _PetscDrawOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)draw, type));

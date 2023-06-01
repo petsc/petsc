@@ -759,7 +759,7 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts, TSGLLEType type)
   }
 
   PetscCall(PetscFunctionListFind(TSGLLEList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSGLLE type \"%s\" given", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSGLLE type \"%s\" given", type);
   PetscCall((*r)(ts));
   PetscCall(PetscStrncpy(gl->type_name, type, sizeof(gl->type_name)));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -772,7 +772,7 @@ static PetscErrorCode TSGLLESetAcceptType_GLLE(TS ts, TSGLLEAcceptType type)
 
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(TSGLLEAcceptList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSGLLEAccept type \"%s\" given", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSGLLEAccept type \"%s\" given", type);
   gl->Accept = r;
   PetscCall(PetscStrncpy(gl->accept_name, type, sizeof(gl->accept_name)));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1150,7 +1150,7 @@ static PetscErrorCode TSSetFromOptions_GLLE(TS ts, PetscOptionItems *PetscOption
       PetscCall(PetscStrcmp(completef, "rescale-and-modify", &match2));
       if (match1) gl->CompleteStep = TSGLLECompleteStep_Rescale;
       else if (match2) gl->CompleteStep = TSGLLECompleteStep_RescaleAndModify;
-      else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "%s", completef);
+      else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "%s", completef);
     }
     {
       char type[256] = TSGLLEACCEPT_ALWAYS;

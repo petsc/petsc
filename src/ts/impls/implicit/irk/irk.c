@@ -775,7 +775,7 @@ static PetscErrorCode TSIRKSetType_IRK(TS ts, TSIRKType irktype)
     PetscCall(TSIRKTableauReset(ts));
   }
   PetscCall(PetscFunctionListFind(TSIRKList, irktype, &irkcreate));
-  PetscCheck(irkcreate, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSIRK type \"%s\" given", irktype);
+  PetscCheck(irkcreate, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSIRK type \"%s\" given", irktype);
   PetscCall((*irkcreate)(ts));
   PetscCall(PetscStrallocpy(irktype, &irk->method_name));
   PetscFunctionReturn(PETSC_SUCCESS);

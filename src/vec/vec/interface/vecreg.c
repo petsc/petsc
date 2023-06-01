@@ -139,7 +139,7 @@ PetscErrorCode VecSetType(Vec vec, VecType newType)
   /* Other conversion scenarios: create a new vector but retain old value */
 newvec:
   PetscCall(PetscFunctionListFind(VecList, newType, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", newType);
+  PetscCheck(r, PetscObjectComm((PetscObject)vec), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", newType);
   if (curType) { /* no need to destroy a vec without type */
     const PetscScalar *array;
     PetscCall(VecGetArrayRead(vec, &array));
