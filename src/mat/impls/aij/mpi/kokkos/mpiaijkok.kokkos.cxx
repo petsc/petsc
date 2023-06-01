@@ -796,7 +796,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm comm, KokkosCsrMatrix A,
 
    Input Parameters:
 +   E       - the MPIAIJKOKKOS matrix
-.   ownerSF - the ownership SF (nonsignificant in MAT_REUSE_MATRIX)
+.   ownerSF - the ownership SF (insignificant in MAT_REUSE_MATRIX)
 .   reuse   - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 -   mm      - to stash matproduct intermediate data structures
 

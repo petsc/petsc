@@ -10082,7 +10082,7 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 
    Options Database Keys:
 .  -matmattransmult_mpidense_mpidense_via {allgatherv,cyclic} - Choose between algorithms for `MATMPIDENSE` matrices: the
-              first redundantly copies the transposed B matrix on each process and requiers O(log P) communication complexity;
+              first redundantly copies the transposed B matrix on each process and requires O(log P) communication complexity;
               the second never stores more than one portion of the B matrix at a time by requires O(P) communication complexity.
 
 .seealso: [](ch_matrices), `Mat`, `MatProductCreate()`, `MATPRODUCT_ABt`, `MatMatMult()`, `MatTransposeMatMult()` `MatPtAP()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`, `MATPRODUCT_ABt`
