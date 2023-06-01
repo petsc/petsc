@@ -1,9 +1,11 @@
+#ifndef PETSC_CUPMATOMICS_HPP
+#define PETSC_CUPMATOMICS_HPP
+
 /*====================================================================================*/
 /*                             Atomic operations on device                            */
 /*====================================================================================*/
-#if defined(__cplusplus)
-  #include <petscdevice_cupm.h>
-  #include <petscsystypes.h>
+#include <petscdevice_cupm.h>
+#include <petscsystypes.h>
 
 /* In terms of function overloading, long long int is a different type than int64_t, which PetscInt might be defined to.
    We prefer long long int over PetscInt (int64_t), since CUDA atomics are built around (unsigned) long long int.
@@ -11,7 +13,7 @@
 typedef long long int          llint;
 typedef unsigned long long int ullint;
 
-  #if PetscDefined(USING_NVCC)
+#if PetscDefined(USING_NVCC)
 /*
   Atomic Insert (exchange) operations
 
@@ -52,8 +54,8 @@ struct AtomicInsert {
   __device__ Type operator()(Type &x, Type y) const { return atomicExch(&x, y); }
 };
 
-    #if defined(PETSC_HAVE_COMPLEX)
-      #if defined(PETSC_USE_REAL_DOUBLE)
+  #if defined(PETSC_HAVE_COMPLEX)
+    #if defined(PETSC_USE_REAL_DOUBLE)
 /* CUDA does not support 128-bit atomics. Users should not insert different 128-bit PetscComplex values to the same location */
 template <>
 struct AtomicInsert<PetscComplex> {
@@ -67,7 +69,7 @@ struct AtomicInsert<PetscComplex> {
     return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
   }
 };
-      #elif defined(PETSC_USE_REAL_SINGLE)
+    #elif defined(PETSC_USE_REAL_SINGLE)
 template <>
 struct AtomicInsert<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -77,8 +79,8 @@ struct AtomicInsert<PetscComplex> {
     return op(xp[0], yp[0]);
   }
 };
-      #endif
     #endif
+  #endif
 
 /*
   Atomic add operations
@@ -118,9 +120,9 @@ template <>
 struct AtomicAdd<double> {
   __device__ double operator()(double &x, double y) const
   {
-    #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 600)
+  #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 600)
     return atomicAdd(&x, y);
-    #else
+  #else
     double *address = &x, val = y;
     ullint *address_as_ull = (ullint *)address;
     ullint  old            = *address_as_ull, assumed;
@@ -130,7 +132,7 @@ struct AtomicAdd<double> {
       /* Note: uses integer comparison to avoid hang in case of NaN (since NaN !=NaN) */
     } while (assumed != old);
     return __longlong_as_double(old);
-    #endif
+  #endif
   }
 };
 
@@ -138,9 +140,9 @@ template <>
 struct AtomicAdd<float> {
   __device__ float operator()(float &x, float y) const
   {
-    #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 200)
+  #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 200)
     return atomicAdd(&x, y);
-    #else
+  #else
     float *address = &x, val = y;
     int   *address_as_int = (int *)address;
     int    old            = *address_as_int, assumed;
@@ -150,11 +152,11 @@ struct AtomicAdd<float> {
       /* Note: uses integer comparison to avoid hang in case of NaN (since NaN !=NaN) */
     } while (assumed != old);
     return __int_as_float(old);
-    #endif
+  #endif
   }
 };
 
-    #if defined(PETSC_HAVE_COMPLEX)
+  #if defined(PETSC_HAVE_COMPLEX)
 template <>
 struct AtomicAdd<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -167,14 +169,14 @@ struct AtomicAdd<PetscComplex> {
     return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
   }
 };
-    #endif
+  #endif
 
-    /*
+  /*
   Atomic Mult operations:
 
   CUDA has no atomicMult at all, so we build our own with atomicCAS
  */
-    #if defined(PETSC_USE_REAL_DOUBLE)
+  #if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicMult(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -186,7 +188,7 @@ __device__ static double atomicMult(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-    #elif defined(PETSC_USE_REAL_SINGLE)
+  #elif defined(PETSC_USE_REAL_SINGLE)
 __device__ static float atomicMult(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -197,7 +199,7 @@ __device__ static float atomicMult(float *address, float val)
   } while (assumed != old);
   return __int_as_float(old);
 }
-    #endif
+  #endif
 
 __device__ static int atomicMult(int *address, int val)
 {
@@ -244,7 +246,7 @@ struct AtomicMult {
   atomicMax() is similar.
  */
 
-    #if defined(PETSC_USE_REAL_DOUBLE)
+  #if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicMin(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -266,7 +268,7 @@ __device__ static double atomicMax(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-    #elif defined(PETSC_USE_REAL_SINGLE)
+  #elif defined(PETSC_USE_REAL_SINGLE)
 __device__ static float atomicMin(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -288,9 +290,9 @@ __device__ static float atomicMax(float *address, float val)
   } while (assumed != old);
   return __int_as_float(old);
 }
-    #endif
+  #endif
 
-    /*
+  /*
   atomicMin/Max(long long *, long long) are not in Nvidia's documentation. But on OLCF Summit we found
   atomicMin/Max/And/Or/Xor(long long *, long long) in /sw/summit/cuda/10.1.243/include/sm_32_atomic_functions.h.
   This causes compilation errors with pgi compilers and 64-bit indices:
@@ -298,7 +300,7 @@ __device__ static float atomicMax(float *address, float val)
 
   So we add extra conditions defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320)
 */
-    #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320)
+  #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320)
 __device__ static llint atomicMin(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -320,7 +322,7 @@ __device__ static llint atomicMax(llint *address, llint val)
   } while (assumed != old);
   return (llint)old;
 }
-    #endif
+  #endif
 
 template <typename Type>
 struct AtomicMin {
@@ -350,7 +352,7 @@ struct AtomicMax {
   atomicOr() and atomicXor are similar.
 */
 
-    #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320) /* Why 320? see comments at atomicMin() above */
+  #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 320) /* Why 320? see comments at atomicMin() above */
 __device__ static llint atomicAnd(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -382,7 +384,7 @@ __device__ static llint atomicXor(llint *address, llint val)
   } while (assumed != old);
   return (llint)old;
 }
-    #endif
+  #endif
 
 template <typename Type>
 struct AtomicBAND {
@@ -478,19 +480,19 @@ struct AtomicLXOR {
   }
 };
 
-  #elif PetscDefined(USING_HCC)
+#elif PetscDefined(USING_HCC)
 
-    /*
+  /*
   Atomic Insert (exchange) operations
 
   See Cuda version
 */
-    #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
+  #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
 __device__ static double atomicExch(double *address, double val)
 {
   return __longlong_as_double(atomicExch((ullint *)address, __double_as_longlong(val)));
 }
-    #endif
+  #endif
 
 __device__ static llint atomicExch(llint *address, llint val)
 {
@@ -502,8 +504,8 @@ struct AtomicInsert {
   __device__ Type operator()(Type &x, Type y) const { return atomicExch(&x, y); }
 };
 
-    #if defined(PETSC_HAVE_COMPLEX)
-      #if defined(PETSC_USE_REAL_DOUBLE)
+  #if defined(PETSC_HAVE_COMPLEX)
+    #if defined(PETSC_USE_REAL_DOUBLE)
 template <>
 struct AtomicInsert<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -516,7 +518,7 @@ struct AtomicInsert<PetscComplex> {
     return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
   }
 };
-      #elif defined(PETSC_USE_REAL_SINGLE)
+    #elif defined(PETSC_USE_REAL_SINGLE)
 template <>
 struct AtomicInsert<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -526,8 +528,8 @@ struct AtomicInsert<PetscComplex> {
     return op(xp[0], yp[0]);
   }
 };
-      #endif
     #endif
+  #endif
 
 /*
   Atomic add operations
@@ -561,7 +563,7 @@ struct AtomicAdd<float> {
   }
 };
 
-    #if defined(PETSC_HAVE_COMPLEX)
+  #if defined(PETSC_HAVE_COMPLEX)
 template <>
 struct AtomicAdd<PetscComplex> {
   __device__ PetscComplex operator()(PetscComplex &x, PetscComplex y) const
@@ -574,14 +576,14 @@ struct AtomicAdd<PetscComplex> {
     return old; /* The returned value may not be atomic. It can be mix of two ops. Caller should discard it. */
   }
 };
-    #endif
+  #endif
 
-    /*
+  /*
   Atomic Mult operations:
 
   HIP has no atomicMult at all, so we build our own with atomicCAS
  */
-    #if defined(PETSC_USE_REAL_DOUBLE)
+  #if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicMult(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -593,7 +595,7 @@ __device__ static double atomicMult(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-    #elif defined(PETSC_USE_REAL_SINGLE)
+  #elif defined(PETSC_USE_REAL_SINGLE)
 __device__ static float atomicMult(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -604,7 +606,7 @@ __device__ static float atomicMult(float *address, float val)
   } while (assumed != old);
   return __int_as_float(old);
 }
-    #endif
+  #endif
 
 __device__ static int atomicMult(int *address, int val)
 {
@@ -633,13 +635,13 @@ struct AtomicMult {
   __device__ Type operator()(Type &x, Type y) const { return atomicMult(&x, y); }
 };
 
-    /*
+  /*
   Atomic Min/Max operations
 
   See CUDA version for comments.
  */
-    #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
-      #if defined(PETSC_USE_REAL_DOUBLE)
+  #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
+    #if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicMin(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -661,7 +663,7 @@ __device__ static double atomicMax(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-      #elif defined(PETSC_USE_REAL_SINGLE)
+    #elif defined(PETSC_USE_REAL_SINGLE)
 __device__ static float atomicMin(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -683,8 +685,8 @@ __device__ static float atomicMax(float *address, float val)
   } while (assumed != old);
   return __int_as_float(old);
 }
-      #endif
     #endif
+  #endif
 
 /* As of ROCm 3.10 llint atomicMin/Max(llint*, llint) is not supported */
 __device__ static llint atomicMin(llint *address, llint val)
@@ -848,5 +850,6 @@ struct AtomicLXOR {
     return op(x, y);
   }
 };
-  #endif
 #endif
+
+#endif // PETSC_CUPMATOMICS_HPP

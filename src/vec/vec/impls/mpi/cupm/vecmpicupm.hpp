@@ -1,11 +1,10 @@
 #ifndef PETSCVECMPICUPM_HPP
 #define PETSCVECMPICUPM_HPP
 
-#if defined(__cplusplus)
-  #include <petsc/private/veccupmimpl.h> /*I <petscvec.h> I*/
-  #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp>
-  #include <../src/vec/vec/impls/mpi/pvecimpl.h>
-  #include <petsc/private/sfimpl.h> // for vec->localupdate (_p_VecScatter) in duplicate()
+#include <petsc/private/veccupmimpl.h> /*I <petscvec.h> I*/
+#include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp>
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>
+#include <petsc/private/sfimpl.h> // for vec->localupdate (_p_VecScatter) in duplicate()
 
 namespace Petsc
 {
@@ -319,7 +318,7 @@ PETSC_KERNEL_DECL void add_remote_coo_values(const PetscScalar *PETSC_RESTRICT v
 
 } // namespace
 
-  #if PetscDefined(USING_HCC)
+#if PetscDefined(USING_HCC)
 namespace do_not_use
 {
 
@@ -342,7 +341,7 @@ inline void silence_warning_function_add_remote_coo_values_is_not_needed_and_wil
 }
 
 } // namespace do_not_use
-  #endif
+#endif
 
 } // namespace kernels
 
@@ -467,7 +466,5 @@ inline PetscErrorCode VecCreateMPICUPMWithArray(MPI_Comm comm, PetscInt bs, Pets
 } // namespace vec
 
 } // namespace Petsc
-
-#endif // __cplusplus
 
 #endif // PETSCVECMPICUPM_HPP
