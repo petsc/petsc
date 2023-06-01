@@ -132,6 +132,13 @@ BLAS_EXTERN void LAPACKREALsteqr_(const char *, const PetscBLASInt *, PetscReal 
   #define LAPACKsteqr_(a, b, c, d, e, f, g, h)     PetscMissingLapack("STEQR", a, b, c, d, e, f, g, h)
   #define LAPACKREALsteqr_(a, b, c, d, e, f, g, h) PetscMissingLapack("STEQR", a, b, c, d, e, f, g, h)
 #endif
+#if !defined(PETSC_MISSING_LAPACK_STEV)
+BLAS_EXTERN void LAPACKstev_(const char *, const PetscBLASInt *, PetscReal *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscBLASInt *);
+BLAS_EXTERN void LAPACKREALstev_(const char *, const PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, const PetscBLASInt *, PetscReal *, PetscBLASInt *);
+#else
+  #define LAPACKstev_(a, b, c, d, e, f, g, h)     PetscMissingLapack("STEV", a, b, c, d, e, f, g, h)
+  #define LAPACKREALstev_(a, b, c, d, e, f, g, h) PetscMissingLapack("STEV", a, b, c, d, e, f, g, h)
+#endif
 #if !defined(PETSC_MISSING_LAPACK_HGEQZ)
 BLAS_EXTERN void LAPACKhgeqz_(const char *, const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *);
 #else
