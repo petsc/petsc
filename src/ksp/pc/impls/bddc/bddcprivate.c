@@ -6429,7 +6429,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&Blas_M, &Blas_N, qr_basis, &Blas_LDA, qr_tau, &lqr_work_t, &lqr_work, &lierr));
       PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to GEQRF Lapack routine %d", (int)lierr);
       PetscCall(PetscBLASIntCast((PetscInt)PetscRealPart(lqr_work_t), &lqr_work));
-      PetscCall(PetscMalloc1((PetscInt)PetscRealPart(lqr_work_t), &qr_work));
+      PetscCall(PetscMalloc1(lqr_work, &qr_work));
       lgqr_work = -1;
       PetscCall(PetscBLASIntCast(max_size_of_constraint, &Blas_M));
       PetscCall(PetscBLASIntCast(max_size_of_constraint, &Blas_N));
@@ -6439,7 +6439,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&Blas_M, &Blas_N, &Blas_K, qr_basis, &Blas_LDA, qr_tau, &lgqr_work_t, &lgqr_work, &lierr));
       PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to ORGQR/UNGQR Lapack routine %d", (int)lierr);
       PetscCall(PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t), &lgqr_work));
-      PetscCall(PetscMalloc1((PetscInt)PetscRealPart(lgqr_work_t), &gqr_work));
+      PetscCall(PetscMalloc1(lgqr_work, &gqr_work));
       /* array to store rhs and solution of triangular solver */
       PetscCall(PetscMalloc1(max_constraints * max_constraints, &trs_rhs));
       /* allocating workspace for check */
