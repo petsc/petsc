@@ -3,6 +3,7 @@
 
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
+#include <../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp>
 #include <petsc/private/petsclegacycupmblas.h>
 
 #include <cusparse_v2.h>

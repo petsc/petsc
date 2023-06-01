@@ -1,7 +1,10 @@
 #include "../vecmpicupm.hpp" /*I <petscvec.h> I*/
+#include "../vecmpicupm_impl.hpp"
 
 using namespace Petsc::vec::cupm;
 using Petsc::device::cupm::DeviceType;
+
+template class impl::VecMPI_CUPM<DeviceType::HIP>;
 
 static constexpr auto VecMPI_HIP = impl::VecMPI_CUPM<DeviceType::HIP>{};
 
