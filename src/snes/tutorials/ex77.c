@@ -254,13 +254,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  /* TODO The P1 coordinate space gives wrong results when compared to the affine version. Track this down */
-  if (0) {
-    PetscCall(DMPlexCreateBoxMesh(comm, 3, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm));
-  } else {
-    PetscCall(DMCreate(comm, dm));
-    PetscCall(DMSetType(*dm, DMPLEX));
-  }
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   /* Label the faces (bit of a hack here, until it is properly implemented for simplices) */
   PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
@@ -458,6 +453,7 @@ int main(int argc, char **argv)
   PetscCall(SetupNearNullSpace(dm, &user));
 
   PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(PetscObjectSetName((PetscObject)u, "u"));
   PetscCall(VecDuplicate(u, &r));
 
   PetscCall(DMSetMatType(dm, MATAIJ));
