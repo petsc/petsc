@@ -9,6 +9,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
+import re
 import os
 import shutil
 import sys
@@ -29,16 +30,27 @@ _today = datetime.datetime.now()
 
 package = 'petsc4py'
 
+docdir = os.path.abspath(os.path.dirname(__file__))
+topdir = os.path.abspath(os.path.join(docdir, *[os.path.pardir]*2))
 
 def pkg_version():
-    import re
-    here = os.path.dirname(__file__)
-    pardir = [os.path.pardir] * 2
-    topdir = os.path.join(here, *pardir)
-    srcdir = os.path.join(topdir, 'src')
-    with open(os.path.join(srcdir, 'petsc4py', '__init__.py')) as f:
+    with open(os.path.join(topdir, 'src', package, '__init__.py')) as f:
         m = re.search(r"__version__\s*=\s*'(.*)'", f.read())
         return m.groups()[0]
+
+
+def get_doc_branch():
+    release = 1
+    if topdir.endswith(os.path.join(os.path.sep, 'src', 'binding', package)):
+        rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
+        rootname = package.replace('4py', '')
+        version_h = os.path.join(rootdir, 'include', f'{rootname}version.h')
+        if os.path.exists(version_h) and os.path.isfile(version_h):
+            release_macro = f'{rootname.upper()}_VERSION_RELEASE'
+            version_re = re.compile(rf"#define\s+{release_macro}\s+([-]*\d+)")
+            with open(version_h, 'r') as f:
+                release = int(version_re.search(f.read()).groups()[0])
+    return 'release' if release else 'main'
 
 
 project = 'PETSc for Python'
@@ -101,6 +113,25 @@ autosummary_context = {
 www = 'https://gitlab.com/petsc/petsc/-/tree/main'
 extlinks = {'sources': (f'{www}/src/binding/petsc4py/src/%s','')}
 
+napoleon_preprocess_types = True
+
+try:
+    import sphinx_rtd_theme
+    if 'sphinx_rtd_theme' not in extensions:
+        extensions.append('sphinx_rtd_theme')
+except ImportError:
+    sphinx_rtd_theme = None
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'numpydoc': ('https://numpydoc.readthedocs.io/en/latest/', None),
+    'mpi4py': ('https://mpi4py.readthedocs.io/en/stable/', None),
+    'pyopencl': ('https://documen.tician.de/pyopencl/', None),
+    'dlpack': ('https://dmlc.github.io/dlpack/latest/', None),
+    'petsc': ('https://petsc.org/release/', None),
+}
+
 def _mangle_petsc_intersphinx():
     """Preprocess the keys in PETSc's intersphinx inventory.
 
@@ -114,39 +145,33 @@ def _mangle_petsc_intersphinx():
 
     This function downloads their object inventory and strips the leading path
     elements so that references to PETSc names actually resolve."""
-    inv = sphobjinv.Inventory(url="https://petsc.org/main/objects.inv")
+    website = intersphinx_mapping['petsc'][0].partition('/release/')[0]
+    branch = get_doc_branch()
+    base_doc_url = f"{website}/{branch}/"
 
-    for obj in inv.objects:
+    running_on_ci = False  # os.environ.get("CI", "false") == "true"
+    if running_on_ci:
+        local_petsc_docs = "path/to/petsc/documentation" # TODO
+        local_inventory_filename = os.path.join(local_petsc_docs, "objects.inv")
+        inventory = sphobjinv.Inventory(local_inventory_filename)
+    else:
+        inventory = sphobjinv.Inventory(url=f"{base_doc_url}objects.inv")
+
+    for obj in inventory.objects:
         if obj.name.startswith("manualpages"):
             obj.name = "petsc." + "/".join(obj.name.split("/")[2:])
             obj.role = "class"
             obj.domain = "py"
 
-    sphobjinv.writebytes("petsc_objects.inv",
-                         sphobjinv.compress(inv.data_file(contract=True)))
+    new_inventory_filename = "petsc_objects.inv"
+    sphobjinv.writebytes(
+        new_inventory_filename,
+        sphobjinv.compress(inventory.data_file(contract=True))
+    )
+    intersphinx_mapping['petsc'] = (base_doc_url, new_inventory_filename)
 
 
 _mangle_petsc_intersphinx()
-
-
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'numpydoc': ('https://numpydoc.readthedocs.io/en/latest/', None),
-    'mpi4py': ('https://mpi4py.readthedocs.io/en/stable/', None),
-    'pyopencl': ('https://documen.tician.de/pyopencl/', None),
-    'dlpack': ('https://dmlc.github.io/dlpack/latest/', None),
-    'petsc': ('https://petsc.org/main/', 'petsc_objects.inv'),
-}
-
-napoleon_preprocess_types = True
-
-try:
-    import sphinx_rtd_theme
-    if 'sphinx_rtd_theme' not in extensions:
-        extensions.append('sphinx_rtd_theme')
-except ImportError:
-    sphinx_rtd_theme = None
 
 
 def _setup_mpi4py_typing():
