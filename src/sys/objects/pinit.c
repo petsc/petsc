@@ -1338,8 +1338,9 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 .  -objects_dump [all] - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
 .  -mpidump - Calls PetscMPIDump()
 .  -malloc_dump <optional filename> - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
-.  -malloc_info - Prints total memory usage
--  -malloc_view <optional filename> - Prints list of all memory allocated and where
+.  -memory_view - Prints total memory usage
+.  -malloc_info - Prints total memory usage (deprecated, use -memory_view)
+-  -malloc_view <optional filename> - Prints list of all memory allocated and in what functions
 
    Level: beginner
 
@@ -1469,11 +1470,7 @@ PetscErrorCode PetscFinalize(void)
 #endif
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_info", &flg2, NULL));
-  if (!flg2) {
-    flg2 = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-memory_view", &flg2, NULL));
-  }
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-memory_view", &flg2, NULL));
   if (flg2) PetscCall(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD, "Summary of Memory Usage in PETSc\n"));
 #endif
 

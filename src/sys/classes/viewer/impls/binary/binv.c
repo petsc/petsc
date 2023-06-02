@@ -262,7 +262,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer, MPI_File 
 -   use - `PETSC_TRUE` means MPI-IO will be used
 
     Options Database Key:
-    -viewer_binary_mpiio : Flag for using MPI-IO
+.    -viewer_binary_mpiio - <true or false> flag for using MPI-IO
 
     Level: advanced
 
@@ -917,7 +917,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer, void *
 /*@C
    PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  viewer - the `PETSCVIEWERBINARY` viewer
@@ -958,7 +958,7 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer, void *data, PetscInt nu
 /*@C
    PetscViewerBinaryWrite - writes to a binary file, only from the first MPI rank
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  viewer - the `PETSCVIEWERBINARY` viewer
@@ -993,7 +993,7 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer, const void *data, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBool write, void *data, PetscInt count, PetscInt start, PetscInt total, PetscDataType dtype)
+static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBool write, void *data, PetscInt count, PetscInt64 start, PetscInt64 total, PetscDataType dtype)
 {
   MPI_Comm              comm = PetscObjectComm((PetscObject)viewer);
   PetscMPIInt           size, rank;
@@ -1022,12 +1022,13 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
     PetscMPIInt cnt;
 
     if (start == PETSC_DETERMINE) {
-      PetscCallMPI(MPI_Scan(&count, &start, 1, MPIU_INT, MPI_SUM, comm));
+      PetscInt64 pcnt = count;
+      PetscCallMPI(MPI_Scan(&pcnt, &start, 1, MPIU_INT64, MPI_SUM, comm));
       start -= count;
     }
     if (total == PETSC_DETERMINE) {
       total = start + count;
-      PetscCallMPI(MPI_Bcast(&total, 1, MPIU_INT, size - 1, comm));
+      PetscCallMPI(MPI_Bcast(&total, 1, MPIU_INT64, size - 1, comm));
     }
     PetscCall(PetscMPIIntCast(count, &cnt));
     PetscCall(PetscViewerBinaryGetMPIIODescriptor(viewer, &mfdes));
@@ -1095,7 +1096,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
 /*@C
    PetscViewerBinaryReadAll - reads from a binary file from all MPI processes, each rank receives its own portion of the data
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  viewer - the `PETSCVIEWERBINARY` viewer
@@ -1111,7 +1112,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryRead()`, `PetscViewerBinaryWriteAll()`
 @*/
-PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt count, PetscInt start, PetscInt total, PetscDataType dtype)
+PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt count, PetscInt64 start, PetscInt64 total, PetscDataType dtype)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryWriteReadAll(viewer, PETSC_FALSE, data, count, start, total, dtype));
@@ -1121,7 +1122,7 @@ PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt
 /*@C
    PetscViewerBinaryWriteAll - writes to a binary file from all MPI processes, each rank writes its own portion of the data
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  viewer - the `PETSCVIEWERBINARY` viewer
@@ -1135,7 +1136,7 @@ PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryWriteAll()`, `PetscViewerBinaryReadAll()`
 @*/
-PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, PetscInt count, PetscInt start, PetscInt total, PetscDataType dtype)
+PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, PetscInt count, PetscInt64 start, PetscInt64 total, PetscDataType dtype)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryWriteReadAll(viewer, PETSC_TRUE, (void *)data, count, start, total, dtype));
@@ -1145,7 +1146,7 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, P
 /*@C
    PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first MPI rank, an array of strings
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  viewer - the `PETSCVIEWERBINARY` viewer
@@ -1186,7 +1187,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char 
 /*@C
    PetscViewerBinaryReadStringArray - reads a binary file an array of strings to all MPI processes
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameter:
 .  viewer - the `PETSCVIEWERBINARY` viewer

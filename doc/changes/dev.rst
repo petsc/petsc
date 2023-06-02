@@ -22,6 +22,7 @@ Changes: Development
 
 - Add ``PetscDeviceContextGetStreamHandle()`` to return a handle to the stream the current device context is using
 - Add ``PetscStrcmpAny()`` to compare against multiple non-empty strings
+- Change arguments 4 and 5 of ``PetscViewerBinaryReadAll()`` and ``PetscViewerBinaryWriteAll()`` to ``PetscInt64``
 
 .. rubric:: Event Logging:
 
@@ -59,6 +60,7 @@ Changes: Development
 - Add ``-pc_precision single`` option for use with ``MATSOLVERSUPERLU_DIST``
 - Add ``MATDIAGONAL`` which can be created with ``MatCreateDiagonal()``
 - Add ``MatDiagonalGetDiagonal()``, ``MatDiagonalRestoreDiagonal()``, ``MatDiagonalGetInverseDiagonal()``, and ``MatDiagonalRestoreInverseDiagonal()``
+- Add support for ``MatLoad()`` and ``MatView()`` to load and store ``MPIAIJ`` matrices that have more than ``PETSC_INT_MAX`` nonzeros, so long as each rank has fewer than ``PETSC_INT_MAX``
 
 .. rubric:: MatCoarsen:
 

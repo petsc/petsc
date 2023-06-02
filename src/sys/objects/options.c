@@ -1009,7 +1009,7 @@ PetscErrorCode PetscOptionsLeftError(void)
     }
   }
   if (nopt) {
-    PetscCall((*PetscErrorPrintf)("WARNING! There are option(s) set that were not used! Could be the program crashed before they were used or a spelling mistake, etc!\n"));
+    PetscCall((*PetscErrorPrintf)("WARNING! There are unused option(s) set! Could be the program crashed before usage or a spelling mistake, etc!\n"));
     for (i = 0; i < defaultoptions->N; i++) {
       if (!defaultoptions->used[i]) {
         if (PetscCIOption(defaultoptions->names[i])) continue;
@@ -3248,9 +3248,9 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
       PetscCall(PetscStrlcat(msg, oldname, sizeof(msg)));
       PetscCall(PetscStrlcat(msg, " is deprecated as of version ", sizeof(msg)));
       PetscCall(PetscStrlcat(msg, version, sizeof(msg)));
-      PetscCall(PetscStrlcat(msg, " and will be removed in a future release.", sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, " and will be removed in a future release.\n", sizeof(msg)));
       if (newname) {
-        PetscCall(PetscStrlcat(msg, " Please use the option ", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, "   Use the option ", sizeof(msg)));
         PetscCall(PetscStrlcat(msg, newname, sizeof(msg)));
         PetscCall(PetscStrlcat(msg, " instead.", sizeof(msg)));
       }

@@ -343,12 +343,12 @@ static PetscBool petscmalloccoalesce =
 .  coalesce - `PETSC_TRUE` to use coalesced malloc for multi-memory allocation.
 
    Options Database Key:
-.  -malloc_coalesce - turn coalesced malloc on or off
+.  -malloc_coalesce - turn coalesced `PetscMallocN()` on or off
 
    Level: developer
 
    Notes:
-   PETSc uses coalesced malloc by default for optimized builds and not for debugging builds.
+   PETSc uses coalesced `PetscMallocN()` by default for optimized builds and not for debugging builds.
 
    This default can be changed via the command-line option `-malloc_coalesce` or by calling this function.
 
@@ -424,7 +424,7 @@ PetscErrorCode PetscMallocA(int n, PetscBool clear, int lineno, const char *func
 }
 
 /*@C
-   PetscFreeA - Free one or more memory locations, possibly allocated using coalesced malloc
+   PetscFreeA - Free one or more memory locations, possibly allocated using coalesced `PetscMallocN()`
 
    Not Collective
 
