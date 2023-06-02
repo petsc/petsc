@@ -84,6 +84,8 @@ Changes: Development
 
 .. rubric:: TAO:
 
+- Add ``TaoADMMGetRegularizerCoefficient``
+
 .. rubric:: DM/DA:
 
 .. rubric:: DMSwarm:
