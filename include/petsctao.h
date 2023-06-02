@@ -482,6 +482,7 @@ PETSC_EXTERN PetscErrorCode TaoADMMSetSpectralPenalty(Tao, PetscReal);
 PETSC_EXTERN PetscErrorCode TaoGetADMMParentTao(Tao, Tao *);
 PETSC_EXTERN PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao, Vec);
 PETSC_EXTERN PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao, PetscReal);
+PETSC_EXTERN PetscErrorCode TaoADMMGetRegularizerCoefficient(Tao, PetscReal *);
 PETSC_EXTERN PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
