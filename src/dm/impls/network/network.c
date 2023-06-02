@@ -18,6 +18,10 @@ static PetscErrorCode SetUpNetworkHeaderComponentValue(DM dm, DMNetworkComponent
    If the data header struct changes then this header size calculation needs to be updated. */
   header->hsize = sizeof(struct _p_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
   header->hsize /= sizeof(DMNetworkComponentGenericDataType);
+#if defined(__NEC__)
+  /* NEC/LG: quick hack to keep data aligned on 8 bytes. */
+  header->hsize = (header->hsize + (8 - 1)) & ~(8 - 1);
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1385,8 +1389,11 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
 
     /* Recalculate header size */
     header->hsize = sizeof(struct _p_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
-
     header->hsize /= sizeof(DMNetworkComponentGenericDataType);
+#if defined(__NEC__)
+    /* NEC/LG: quick hack to keep data aligned on 8 bytes. */
+    header->hsize = (header->hsize + (8 - 1)) & ~(8 - 1);
+#endif
 
     /* Copy over component info */
     PetscCall(PetscMemcpy(compsize, header->size, header->ndata * sizeof(PetscInt)));
