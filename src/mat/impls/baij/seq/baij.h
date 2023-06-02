@@ -7,6 +7,11 @@
 #include <petsc/private/hashmapijv.h>
 #include <petsc/private/hashsetij.h>
 
+// This is sometimes needed for PETSC_Prefetch.
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
+#endif
+
 /*
   MATSEQBAIJ format - Block compressed row storage. The i[] and j[]
   arrays start at 0.

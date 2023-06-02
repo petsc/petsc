@@ -1415,10 +1415,6 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
 #include <stddef.h>
 #include <stdlib.h>
 
-#if defined(PETSC_HAVE_XMMINTRIN_H) && !defined(__CUDACC__)
-  #include <xmmintrin.h>
-#endif
-
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
   #define PetscPrefetchBlock(a, b, c, d)
 #else

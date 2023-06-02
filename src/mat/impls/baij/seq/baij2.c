@@ -6,6 +6,8 @@
 
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   #include <immintrin.h>
+#elif defined(PETSC_HAVE_XMMINTRIN_H)
+  #include <xmmintrin.h>
 #endif
 
 PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A, PetscInt is_max, IS is[], PetscInt ov)
