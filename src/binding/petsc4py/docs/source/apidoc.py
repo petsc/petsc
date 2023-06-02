@@ -208,7 +208,7 @@ def visit_class(cls, outer=None, done=None):
         '__le__',
         '__ge__',
         '__gt__',
-        '__enum2str',  # FIXME refactor implemetation
+        '__enum2str',  # FIXME refactor implementation
         '_traceback_', # FIXME maybe refactor?
     }
     special = {

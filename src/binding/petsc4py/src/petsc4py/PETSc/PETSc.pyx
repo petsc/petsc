@@ -413,26 +413,26 @@ cdef PetscErrorCode (*prevfprintf)(FILE*,const char*,va_list) nogil
 prevfprintf = NULL
 
 cdef PetscErrorCode PetscVFPrintf_PythonStdStream(
-    FILE *fd, const char formt[], va_list ap,
+    FILE *fd, const char fmt[], va_list ap,
 ) with gil:
     import sys
     cdef char cstring[8192]
     cdef size_t stringlen = sizeof(cstring)
     cdef size_t final_pos
     if (fd == PETSC_STDOUT) and not (sys.stdout == sys.__stdout__):
-        CHKERR( PetscVSNPrintf(&cstring[0],stringlen,formt,&final_pos,ap))
+        CHKERR( PetscVSNPrintf(&cstring[0], stringlen, fmt, &final_pos,ap))
         if final_pos > 0 and cstring[final_pos-1] == '\x00':
             final_pos -= 1
         ustring = cstring[:final_pos].decode('UTF-8')
         sys.stdout.write(ustring)
     elif (fd == PETSC_STDERR) and not (sys.stderr == sys.__stderr__):
-        CHKERR( PetscVSNPrintf(&cstring[0],stringlen,formt,&final_pos,ap))
+        CHKERR( PetscVSNPrintf(&cstring[0], stringlen, fmt, &final_pos,ap))
         if final_pos > 0 and cstring[final_pos-1] == '\x00':
             final_pos -= 1
         ustring = cstring[:final_pos].decode('UTF-8')
         sys.stderr.write(ustring)
     else:
-        PetscVFPrintfDefault(fd, formt, ap)
+        PetscVFPrintfDefault(fd, fmt, ap)
     return PETSC_SUCCESS
 
 cdef int _push_vfprintf(
