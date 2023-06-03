@@ -372,9 +372,6 @@ cdef class KSP(Object):
     This is the object that manages the linear solves in PETSc (even
     those such as direct solvers that do no use Krylov accelerators).
 
-    Krylov solvers are further documented in
-    `the PETSc manual <petsc:chapter_ksp>`
-
     Notes
     -----
     When a direct solver is used, but no Krylov solver is used, the KSP
