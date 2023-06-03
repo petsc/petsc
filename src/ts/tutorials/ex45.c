@@ -178,19 +178,16 @@ static void f0_trig_trig(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
 
 static void f1_temp_exp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = -u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = -u_x[d];
 }
 static void f1_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = u_x[d];
+  for (PetscInt d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
 static void g3_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
+  for (PetscInt d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
 static void g0_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
@@ -274,16 +271,14 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   DM             cdm = dm;
   PetscFE        fe;
   DMPolytopeType ct;
-  PetscBool      simplex;
   PetscInt       dim, cStart;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
   PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
-  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "temp_", -1, &fe));
+  PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 1, ct, "temp_", -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, "temperature"));
   /* Set discretization and boundary conditions for each mesh */
   PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
@@ -533,7 +528,7 @@ int main(int argc, char **argv)
     suffix: egads_sphere
     requires: egads ctetgen
     args: -sol_type quadratic_linear \
-          -dm_plex_boundary_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_plex_boundary_label marker -bd_dm_plex_scale 40 \
+          -dm_plex_boundary_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sphere_example.egadslite -dm_plex_boundary_label marker \
           -temp_petscspace_degree 2 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
 

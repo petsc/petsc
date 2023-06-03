@@ -42,6 +42,7 @@ const char *deformTypes[NUM_DEFORM_TYPES + 1] = {"none", "shear", "step", "unkno
 typedef struct {
   PetscScalar mu;     /* shear modulus */
   PetscScalar lambda; /* Lame's first parameter */
+  PetscScalar N;      /* Tension force on right wall */
 } Parameter;
 
 typedef struct {
@@ -124,11 +125,10 @@ static void f0_vlap_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
 */
 static void f0_elas_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscReal mu     = 1.0;
-  const PetscReal lambda = 1.0;
-  PetscInt        d;
+  const PetscReal mu     = PetscRealPart(constants[0]);
+  const PetscReal lambda = PetscRealPart(constants[1]);
 
-  for (d = 0; d < dim - 1; ++d) f0[d] += 2.0 * mu;
+  for (PetscInt d = 0; d < dim - 1; ++d) f0[d] += 2.0 * mu;
   f0[dim - 1] += 2.0 * lambda + 4.0 * mu;
 }
 
@@ -198,24 +198,28 @@ static void f0_vlap_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
 */
 static void f0_elas_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscReal mu     = 1.0;
-  const PetscReal lambda = 1.0;
+  const PetscReal mu     = PetscRealPart(constants[0]);
+  const PetscReal lambda = PetscRealPart(constants[1]);
   const PetscReal fact   = 4.0 * PetscSqr(PETSC_PI);
-  PetscInt        d;
 
-  for (d = 0; d < dim; ++d) f0[d] += -(2.0 * mu + lambda) * fact * PetscSinReal(2.0 * PETSC_PI * x[d]) - (d < dim - 1 ? 2.0 * (mu + lambda) : 0.0);
+  for (PetscInt d = 0; d < dim; ++d) f0[d] += -(2.0 * mu + lambda) * fact * PetscSinReal(2.0 * PETSC_PI * x[d]) - (d < dim - 1 ? 2.0 * (mu + lambda) : 0.0);
 }
 
 static PetscErrorCode axial_disp_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
-  const PetscReal mu     = 1.0;
-  const PetscReal lambda = 1.0;
-  const PetscReal N      = 1.0;
-  PetscInt        d;
+  AppCtx    *user = (AppCtx *)ctx;
+  Parameter *param;
 
-  u[0] = (3. * lambda * lambda + 8. * lambda * mu + 4 * mu * mu) / (4 * mu * (3 * lambda * lambda + 5. * lambda * mu + 2 * mu * mu)) * N * x[0];
-  u[1] = -0.25 * lambda / mu / (lambda + mu) * N * x[1];
-  for (d = 2; d < dim; ++d) u[d] = 0.0;
+  PetscCall(PetscBagGetData(user->bag, (void **)&param));
+  {
+    const PetscReal mu     = PetscRealPart(param->mu);
+    const PetscReal lambda = PetscRealPart(param->lambda);
+    const PetscReal N      = PetscRealPart(param->N);
+
+    u[0] = (3. * lambda * lambda + 8. * lambda * mu + 4 * mu * mu) / (4 * mu * (3 * lambda * lambda + 5. * lambda * mu + 2 * mu * mu)) * N * x[0];
+    u[1] = 0.25 * lambda / mu / (lambda + mu) * N * x[1];
+    for (PetscInt d = 2; d < dim; ++d) u[d] = 0.0;
+  }
   return PETSC_SUCCESS;
 }
 
@@ -250,7 +254,7 @@ static PetscErrorCode axial_disp_u(PetscInt dim, PetscReal time, const PetscReal
 */
 static void f0_elas_axial_disp_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscReal N = -1.0;
+  const PetscReal N = PetscRealPart(constants[2]);
 
   f0[0] = N;
 }
@@ -287,13 +291,12 @@ static void f1_vlap_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
 
 static void f1_elas_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
+  const PetscReal mu     = PetscRealPart(constants[0]);
+  const PetscReal lambda = PetscRealPart(constants[1]);
   const PetscInt  Nc     = dim;
-  const PetscReal mu     = 1.0;
-  const PetscReal lambda = 1.0;
-  PetscInt        c, d;
 
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
+  for (PetscInt c = 0; c < Nc; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) {
       f1[c * dim + d] += mu * (u_x[c * dim + d] + u_x[d * dim + c]);
       f1[c * dim + c] += lambda * u_x[d * dim + d];
     }
@@ -326,13 +329,12 @@ static void g3_vlap_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt
 */
 static void g3_elas_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
+  const PetscReal mu     = PetscRealPart(constants[0]);
+  const PetscReal lambda = PetscRealPart(constants[1]);
   const PetscInt  Nc     = dim;
-  const PetscReal mu     = 1.0;
-  const PetscReal lambda = 1.0;
-  PetscInt        c, d;
 
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
+  for (PetscInt c = 0; c < Nc; ++c) {
+    for (PetscInt d = 0; d < dim; ++d) {
       g3[((c * Nc + c) * dim + d) * dim + d] += mu;
       g3[((c * Nc + d) * dim + d) * dim + c] += mu;
       g3[((c * Nc + d) * dim + c) * dim + d] += lambda;
@@ -373,6 +375,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
   bag = ctx->bag;
   PetscCall(PetscBagRegisterScalar(bag, &p->mu, 1.0, "mu", "Shear Modulus, Pa"));
   PetscCall(PetscBagRegisterScalar(bag, &p->lambda, 1.0, "lambda", "Lame's first parameter, Pa"));
+  PetscCall(PetscBagRegisterScalar(bag, &p->N, -1.0, "N", "Tension on right wall, Pa"));
   PetscCall(PetscBagSetFromOptions(bag));
   {
     PetscViewer       viewer;
@@ -585,11 +588,12 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   }
   /* Setup constants */
   {
-    PetscScalar constants[2];
+    PetscScalar constants[3];
 
     constants[0] = param->mu;     /* shear modulus, Pa */
     constants[1] = param->lambda; /* Lame's first parameter, Pa */
-    PetscCall(PetscDSSetConstants(ds, 2, constants));
+    constants[2] = param->N;      /* Tension on right wall, Pa */
+    PetscCall(PetscDSSetConstants(ds, 3, constants));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -608,7 +612,6 @@ PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, App
   PetscFE        fe;
   char           prefix[PETSC_MAX_PATH_LEN];
   DMPolytopeType ct;
-  PetscBool      simplex;
   PetscInt       dim, cStart;
 
   PetscFunctionBegin;
@@ -616,9 +619,8 @@ PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, App
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
   PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
-  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)dm), dim, dim, simplex, name ? prefix : NULL, -1, &fe));
+  PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, dim, ct, name ? prefix : NULL, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject)fe, name));
   /* Set discretization and boundary conditions for each mesh */
   PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
@@ -627,7 +629,6 @@ PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, App
   while (cdm) {
     PetscCall(DMCopyDisc(dm, cdm));
     if (user->useNearNullspace) PetscCall(DMSetNearNullSpaceConstructor(cdm, 0, CreateElasticityNullSpace));
-    /* TODO: Check whether the boundary of coarse meshes is marked */
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe));
@@ -951,6 +952,16 @@ int main(int argc, char **argv)
               -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 \
               -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi \
               -matptap_via scalable
+    test:
+      suffix: ge_q1_gmg
+      args: -displacement_petscspace_degree 1 \
+            -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
+            -snes_max_it 2 -snes_rtol 1.e-10 \
+            -ksp_type cg -ksp_rtol 1.e-10 -ksp_max_it 100 -ksp_norm_type unpreconditioned \
+            -pc_type mg -pc_mg_type full \
+              -mg_levels_ksp_max_it 4 -mg_levels_esteig_ksp_type cg \
+              -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.1,0,1.1 \
+              -mg_levels_pc_type jacobi
     test:
       nsize: 5
       suffix: ge_q1_gdsw
