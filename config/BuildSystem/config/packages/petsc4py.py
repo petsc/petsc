@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.functions              = []
     self.includes               = []
-    self.skippackagewithoptions = 1
     self.useddirectly           = 0
     self.linkedbypetsc          = 0
     self.builtafterpetsc        = 1
