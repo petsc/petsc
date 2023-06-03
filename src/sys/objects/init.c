@@ -589,7 +589,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_dump <optional filename>: dump list of unfreed memory at conclusion\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc: use PETSc error checking malloc (deprecated, use -malloc_debug)\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc no: don't use PETSc error checking malloc (deprecated, use -malloc_debug no)\n"));
-    PetscCall((*PetscHelpPrintf)(comm, " -malloc_info: prints total memory usage (deprecated, use -memory_view\n"));
+    PetscCall((*PetscHelpPrintf)(comm, " -malloc_info: prints total memory usage (deprecated, use -memory_view)\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -malloc_debug <true or false>: enables or disables extended checking for memory corruption\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -options_view: dump list of options inputted\n"));
