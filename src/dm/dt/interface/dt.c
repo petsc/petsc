@@ -3110,7 +3110,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, Petsc
   PetscCall(PetscFree((*AA)[0]));
   PetscCall(PetscFree(*AA));
   *AA = NULL;
-  if (*AAT) {
+  if (AAT) {
     PetscCall(PetscFree((*AAT)[0]));
     PetscCall(PetscFree(*AAT));
     *AAT = NULL;

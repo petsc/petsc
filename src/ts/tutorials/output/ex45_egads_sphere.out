@@ -1,6 +1,9 @@
-L_2 Error: 3.08201e-16
-L_2 Residual: 3.54742e-15
+ EGADS WARNING: OpenCASCADE 7.5.0 NOT an Authorized Release!
+  STEP Reader Info: Using METRE
+ EGADS Info: 137 Objects, 182 Reference in Use (of 319) at Close!
+L_2 Error: 3.78596e-16
+L_2 Residual: 3.38681e-15
 Function appears to be linear
-L_2 Error: 9.64375e-16
-L_2 Residual: 9.03685e-15
+L_2 Error: 1.02902e-15
+L_2 Residual: 8.43785e-15
 Function appears to be linear

@@ -294,6 +294,7 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Wall', '-fdiag-vector=0', '-fdiag-parallel=0', '-fdiag-inline=0'])
         elif bopt == 'O':
           flags.append('-O2')
+          flags.append('-fno-reciprocal-math')
         elif bopt == 'g':
           flags.append('-g')
           flags.append('-traceback=verbose')
