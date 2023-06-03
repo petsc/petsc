@@ -361,12 +361,130 @@ PetscErrorCode VecMultiDot_Private(Vec xin, PetscInt nv, const Vec yin[], PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecMultiDot_Verbose(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+{
+  PetscInt                   ngroup = nv / 8, rem = nv % 8, N = xin->map->n;
+  ConstPetscScalarKokkosView xv, y0, y1, y2, y3, y4, y5, y6, y7;
+  PetscScalar               *zp = z;
+  const Vec                 *yp = yin;
+
+  // clang-format off
+  PetscFunctionBegin;
+  PetscCall(VecGetKokkosView(xin, &xv));
+  for (PetscInt k = 0; k < ngroup; k++) { // 8 y's per group
+    PetscCall(VecGetKokkosView(yp[0], &y0));
+    PetscCall(VecGetKokkosView(yp[1], &y1));
+    PetscCall(VecGetKokkosView(yp[2], &y2));
+    PetscCall(VecGetKokkosView(yp[3], &y3));
+    PetscCall(VecGetKokkosView(yp[4], &y4));
+    PetscCall(VecGetKokkosView(yp[5], &y5));
+    PetscCall(VecGetKokkosView(yp[6], &y6));
+    PetscCall(VecGetKokkosView(yp[7], &y7));
+    Kokkos::parallel_reduce(
+      "VecMDot8", N,
+      KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0, PetscScalar &lsum1, PetscScalar &lsum2, PetscScalar &lsum3, PetscScalar &lsum4, PetscScalar &lsum5, PetscScalar &lsum6, PetscScalar &lsum7) {
+        lsum0 += xv(i) * PetscConj(y0(i)); lsum1 += xv(i) * PetscConj(y1(i)); lsum2 += xv(i) * PetscConj(y2(i)); lsum3 += xv(i) * PetscConj(y3(i));
+        lsum4 += xv(i) * PetscConj(y4(i)); lsum5 += xv(i) * PetscConj(y5(i)); lsum6 += xv(i) * PetscConj(y6(i)); lsum7 += xv(i) * PetscConj(y7(i));
+      }, zp[0], zp[1], zp[2], zp[3], zp[4], zp[5], zp[6], zp[7]);
+    PetscCall(VecRestoreKokkosView(yp[0], &y0));
+    PetscCall(VecRestoreKokkosView(yp[1], &y1));
+    PetscCall(VecRestoreKokkosView(yp[2], &y2));
+    PetscCall(VecRestoreKokkosView(yp[3], &y3));
+    PetscCall(VecRestoreKokkosView(yp[4], &y4));
+    PetscCall(VecRestoreKokkosView(yp[5], &y5));
+    PetscCall(VecRestoreKokkosView(yp[6], &y6));
+    PetscCall(VecRestoreKokkosView(yp[7], &y7));
+    yp += 8;
+    zp += 8;
+  }
+
+  if (rem) { /* The remaining */
+    if (rem > 0) PetscCall(VecGetKokkosView(yp[0], &y0));
+    if (rem > 1) PetscCall(VecGetKokkosView(yp[1], &y1));
+    if (rem > 2) PetscCall(VecGetKokkosView(yp[2], &y2));
+    if (rem > 3) PetscCall(VecGetKokkosView(yp[3], &y3));
+    if (rem > 4) PetscCall(VecGetKokkosView(yp[4], &y4));
+    if (rem > 5) PetscCall(VecGetKokkosView(yp[5], &y5));
+    if (rem > 6) PetscCall(VecGetKokkosView(yp[6], &y6));
+    switch (rem) {
+    case 7:
+      Kokkos::parallel_reduce(
+        "VecMDot7", N,
+        KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0, PetscScalar &lsum1, PetscScalar &lsum2, PetscScalar &lsum3, PetscScalar &lsum4, PetscScalar &lsum5, PetscScalar &lsum6) {
+        lsum0 += xv(i) * PetscConj(y0(i)); lsum1 += xv(i) * PetscConj(y1(i)); lsum2 += xv(i) * PetscConj(y2(i)); lsum3 += xv(i) * PetscConj(y3(i));
+        lsum4 += xv(i) * PetscConj(y4(i)); lsum5 += xv(i) * PetscConj(y5(i)); lsum6 += xv(i) * PetscConj(y6(i));
+      }, zp[0], zp[1], zp[2], zp[3], zp[4], zp[5], zp[6]);
+      break;
+    case 6:
+      Kokkos::parallel_reduce(
+        "VecMDot6", N,
+        KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0, PetscScalar &lsum1, PetscScalar &lsum2, PetscScalar &lsum3, PetscScalar &lsum4, PetscScalar &lsum5) {
+        lsum0 += xv(i) * PetscConj(y0(i)); lsum1 += xv(i) * PetscConj(y1(i)); lsum2 += xv(i) * PetscConj(y2(i)); lsum3 += xv(i) * PetscConj(y3(i));
+        lsum4 += xv(i) * PetscConj(y4(i)); lsum5 += xv(i) * PetscConj(y5(i));
+      }, zp[0], zp[1], zp[2], zp[3], zp[4], zp[5]);
+      break;
+    case 5:
+      Kokkos::parallel_reduce(
+        "VecMDot5", N,
+        KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0, PetscScalar &lsum1, PetscScalar &lsum2, PetscScalar &lsum3, PetscScalar &lsum4) {
+        lsum0 += xv(i) * PetscConj(y0(i)); lsum1 += xv(i) * PetscConj(y1(i)); lsum2 += xv(i) * PetscConj(y2(i)); lsum3 += xv(i) * PetscConj(y3(i));
+        lsum4 += xv(i) * PetscConj(y4(i));
+      }, zp[0], zp[1], zp[2], zp[3], zp[4]);
+      break;
+    case 4:
+      Kokkos::parallel_reduce(
+        "VecMDot4", N,
+        KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0, PetscScalar &lsum1, PetscScalar &lsum2, PetscScalar &lsum3) {
+        lsum0 += xv(i) * PetscConj(y0(i)); lsum1 += xv(i) * PetscConj(y1(i)); lsum2 += xv(i) * PetscConj(y2(i)); lsum3 += xv(i) * PetscConj(y3(i));
+      }, zp[0], zp[1], zp[2], zp[3]);
+      break;
+    case 3:
+      Kokkos::parallel_reduce(
+        "VecMDot3", N,
+        KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0, PetscScalar &lsum1, PetscScalar &lsum2) {
+        lsum0 += xv(i) * PetscConj(y0(i)); lsum1 += xv(i) * PetscConj(y1(i)); lsum2 += xv(i) * PetscConj(y2(i));
+      }, zp[0], zp[1], zp[2]);
+      break;
+    case 2:
+      Kokkos::parallel_reduce(
+        "VecMDot2", N,
+        KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0, PetscScalar &lsum1) {
+        lsum0 += xv(i) * PetscConj(y0(i)); lsum1 += xv(i) * PetscConj(y1(i));
+      }, zp[0], zp[1]);
+      break;
+    case 1:
+      Kokkos::parallel_reduce(
+        "VecMDot1", N,
+        KOKKOS_LAMBDA(const PetscInt &i, PetscScalar &lsum0) {
+        lsum0 += xv(i) * PetscConj(y0(i));
+      }, zp[0]);
+      break;
+    }
+    if (rem > 0) PetscCall(VecRestoreKokkosView(yp[0], &y0));
+    if (rem > 1) PetscCall(VecRestoreKokkosView(yp[1], &y1));
+    if (rem > 2) PetscCall(VecRestoreKokkosView(yp[2], &y2));
+    if (rem > 3) PetscCall(VecRestoreKokkosView(yp[3], &y3));
+    if (rem > 4) PetscCall(VecRestoreKokkosView(yp[4], &y4));
+    if (rem > 5) PetscCall(VecRestoreKokkosView(yp[5], &y5));
+    if (rem > 6) PetscCall(VecRestoreKokkosView(yp[6], &y6));
+  }
+  PetscCall(VecRestoreKokkosView(xin, &xv));
+  PetscFunctionReturn(PETSC_SUCCESS);
+  // clang-foramt on
+}
+
 /* z[i] = (x,y_i) = y_i^H x */
 PetscErrorCode VecMDot_SeqKokkos(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
 {
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
+  // With no good reason, VecMultiDot_Private() performs much worse than VecMultiDot_Verbose() with HIP,
+  // but they are on par with CUDA. Kokkos team is investigating this problem.
+#if 0
   PetscCall(VecMultiDot_Private<ConjugateDotTag>(xin, nv, yin, z));
+#else
+  PetscCall(VecMultiDot_Verbose(xin, nv, yin, z));
+#endif
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(PetscMax(nv * (2.0 * xin->map->n - 1), 0.0)));
   PetscFunctionReturn(PETSC_SUCCESS);
