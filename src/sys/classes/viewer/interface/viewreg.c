@@ -346,7 +346,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 
         PetscCall(PetscEnumFind(PetscViewerFormats, loc2_fmt, (PetscEnum *)&tfmt, &flag));
         if (format) *format = tfmt;
-        PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown viewer format %s", loc2_fmt);
+        PetscCheck(flag, comm, PETSC_ERR_SUP, "Unknown viewer format %s", loc2_fmt);
       } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
         PetscCall(PetscViewerGetFormat(*viewer, format));
       }
@@ -423,7 +423,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
   PetscCall(PetscMemzero(viewer->ops, sizeof(struct _PetscViewerOps)));
 
   PetscCall(PetscFunctionListFind(PetscViewerList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscViewer type given: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscViewer type given: %s", type);
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)viewer, type));
   PetscCall((*r)(viewer));

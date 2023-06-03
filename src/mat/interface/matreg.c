@@ -142,7 +142,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(MatList, matype, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Mat type given: %s", matype);
+  PetscCheck(r, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Mat type given: %s", matype);
 
   if (mat->assembled && ((PetscObject)mat)->type_name) PetscCall(PetscStrbeginswith(matype, ((PetscObject)mat)->type_name, &subclass));
   if (subclass) { /* mat is a subclass of the requested 'matype'? */

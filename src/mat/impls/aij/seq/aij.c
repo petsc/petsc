@@ -47,7 +47,7 @@ PetscErrorCode MatGetColumnReductions_SeqAIJ(Mat A, PetscInt type, PetscReal *re
     for (i = 0; i < aij->i[m]; i++) reductions[aij->j[i]] += PetscRealPart(aij->a[i]);
   } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
     for (i = 0; i < aij->i[m]; i++) reductions[aij->j[i]] += PetscImaginaryPart(aij->a[i]);
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown reduction type");
+  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
 
   if (type == NORM_2) {
     for (i = 0; i < n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
@@ -5402,7 +5402,7 @@ PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype)
   if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(MatSeqAIJList, matype, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Mat type given: %s", matype);
+  PetscCheck(r, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Mat type given: %s", matype);
   PetscCall((*r)(mat, matype, MAT_INPLACE_MATRIX, &mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

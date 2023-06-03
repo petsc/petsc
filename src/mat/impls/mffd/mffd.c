@@ -85,7 +85,7 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype)
   PetscTryTypeMethod(ctx, destroy);
 
   PetscCall(PetscFunctionListFind(MatMFFDList, ftype, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown MatMFFD type %s given", ftype);
+  PetscCheck(r, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown MatMFFD type %s given", ftype);
   PetscCall((*r)(ctx));
   PetscCall(PetscObjectChangeTypeName((PetscObject)ctx, ftype));
   PetscFunctionReturn(PETSC_SUCCESS);

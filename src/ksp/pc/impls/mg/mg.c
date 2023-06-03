@@ -1143,7 +1143,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->cr) PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->cr, PETSC_TRUE));
     if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     PetscCall(KSPSetUp(mglevels[i]->smoothd));
-    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
+    if (mglevels[i]->smoothd->reason) pc->failedreason = PC_SUBPC_ERROR;
     if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     if (!mglevels[i]->residual) {
       Mat mat;
@@ -1170,7 +1170,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->smoothu, PETSC_TRUE));
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
       PetscCall(KSPSetUp(mglevels[i]->smoothu));
-      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
+      if (mglevels[i]->smoothu->reason) pc->failedreason = PC_SUBPC_ERROR;
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     }
     if (mglevels[i]->cr) {
@@ -1186,14 +1186,14 @@ PetscErrorCode PCSetUp_MG(PC pc)
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->cr, PETSC_TRUE));
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
       PetscCall(KSPSetUp(mglevels[i]->cr));
-      if (mglevels[i]->cr->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
+      if (mglevels[i]->cr->reason) pc->failedreason = PC_SUBPC_ERROR;
       if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     }
   }
 
   if (mglevels[0]->eventsmoothsetup) PetscCall(PetscLogEventBegin(mglevels[0]->eventsmoothsetup, 0, 0, 0, 0));
   PetscCall(KSPSetUp(mglevels[0]->smoothd));
-  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
+  if (mglevels[0]->smoothd->reason) pc->failedreason = PC_SUBPC_ERROR;
   if (mglevels[0]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[0]->eventsmoothsetup, 0, 0, 0, 0));
 
     /*

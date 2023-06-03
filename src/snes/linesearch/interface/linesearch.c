@@ -933,7 +933,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(SNESLineSearchList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested Line Search type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested Line Search type %s", type);
   /* Destroy the previous private linesearch context */
   if (linesearch->ops->destroy) {
     PetscCall((*(linesearch)->ops->destroy)(linesearch));

@@ -180,7 +180,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PetscSFList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested PetscSF type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested PetscSF type %s", type);
   /* Destroy the previous PetscSF implementation context */
   PetscTryTypeMethod(sf, Destroy);
   PetscCall(PetscMemzero(sf->ops, sizeof(*sf->ops)));

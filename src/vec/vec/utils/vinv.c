@@ -456,7 +456,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
       }
     }
     PetscCall(MPIU_Allreduce(tnorm, nrm, bs, MPIU_REAL, MPIU_MAX, comm));
-  } else SETERRQ(comm, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
+  } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -715,7 +715,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
       jj += bss[j];
     }
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
+  } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
 
   PetscCall(VecRestoreArrayRead(v, &x));
   for (i = 0; i < nv; i++) PetscCall(VecRestoreArray(s[i], &y[i]));
@@ -806,7 +806,7 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
       jj += bss[j];
     }
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
+  } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
 
   PetscCall(VecRestoreArray(v, &x));
   for (i = 0; i < nv; i++) PetscCall(VecRestoreArrayRead(s[i], &y[i]));
@@ -998,7 +998,7 @@ PetscErrorCode VecStrideGather_Default(Vec v, PetscInt start, Vec s, InsertMode 
   } else if (addv == MAX_VALUES) {
     for (i = 0; i < n; i++) y[i] = PetscMax(y[i], x[bs * i]);
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
+  } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscCall(VecRestoreArray(s, &y));
@@ -1030,7 +1030,7 @@ PetscErrorCode VecStrideScatter_Default(Vec s, PetscInt start, Vec v, InsertMode
   } else if (addv == MAX_VALUES) {
     for (i = 0; i < n; i++) x[bs * i] = PetscMax(y[i], x[bs * i]);
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
+  } else SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
 
   PetscCall(VecRestoreArray(v, &x));
   PetscCall(VecRestoreArrayRead(s, &y));
@@ -1094,7 +1094,7 @@ PetscErrorCode VecStrideSubSetGather_Default(Vec v, PetscInt nidx, const PetscIn
       }
     }
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
+  } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscCall(VecRestoreArray(s, &y));
@@ -1160,7 +1160,7 @@ PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscI
       }
     }
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown insert type");
+  } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
 
   PetscCall(VecRestoreArray(v, &x));
   PetscCall(VecRestoreArrayRead(s, &y));

@@ -3155,7 +3155,7 @@ PetscErrorCode PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType m
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PetscSectionSymList, method, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
+  PetscCheck(r, PetscObjectComm((PetscObject)sym), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
   PetscTryTypeMethod(sym, destroy);
   sym->ops->destroy = NULL;
 

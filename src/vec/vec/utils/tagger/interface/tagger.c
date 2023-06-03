@@ -85,7 +85,7 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger, VecTaggerType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(VecTaggerList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested VecTagger type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)tagger), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested VecTagger type %s", type);
   /* Destroy the previous private VecTagger context */
   PetscTryTypeMethod(tagger, destroy);
   PetscCall(PetscMemzero(tagger->ops, sizeof(*tagger->ops)));

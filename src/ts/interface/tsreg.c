@@ -50,7 +50,7 @@ PetscErrorCode TSSetType(TS ts, TSType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(TSList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   PetscTryTypeMethod(ts, destroy);
   PetscCall(PetscMemzero(ts->ops, sizeof(*ts->ops)));
   ts->usessnes           = PETSC_FALSE;

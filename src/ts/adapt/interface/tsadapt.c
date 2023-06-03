@@ -134,7 +134,7 @@ PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
   PetscCall(PetscObjectTypeCompare((PetscObject)adapt, type, &match));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(TSAdaptList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSAdapt type \"%s\" given", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)adapt), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSAdapt type \"%s\" given", type);
   PetscTryTypeMethod(adapt, destroy);
   PetscCall(PetscMemzero(adapt->ops, sizeof(struct _TSAdaptOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)adapt, type));

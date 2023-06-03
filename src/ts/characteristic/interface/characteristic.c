@@ -160,7 +160,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
   }
 
   PetscCall(PetscFunctionListFind(CharacteristicList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)c), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   PetscCall((*r)(c));
   PetscCall(PetscObjectChangeTypeName((PetscObject)c, type));

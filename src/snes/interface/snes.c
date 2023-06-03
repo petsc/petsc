@@ -4728,7 +4728,7 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(SNESList, type, &r));
-  PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested SNES type %s", type);
+  PetscCheck(r, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested SNES type %s", type);
   /* Destroy the previous private SNES context */
   PetscTryTypeMethod(snes, destroy);
   /* Reinitialize function pointers in SNESOps structure */
