@@ -36,7 +36,7 @@
       -sys2_ksp_type bcgs  -sys2_ksp_rtol 1.e-4
 .ve
 
-.seealso: [](chapter_ksp), `KSP`, `KSPAppendOptionsPrefix()`, `KSPGetOptionsPrefix()`, `KSPSetFromOptions()`
+.seealso: [](ch_ksp), `KSP`, `KSPAppendOptionsPrefix()`, `KSPGetOptionsPrefix()`, `KSPSetFromOptions()`
 @*/
 PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 {
@@ -64,7 +64,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPGetOptionsPrefix()`, `KSPSetFromOptions()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPGetOptionsPrefix()`, `KSPSetFromOptions()`
 @*/
 PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 {
@@ -91,7 +91,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSPGuess`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSPGuess`
 @*/
 PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
 {
@@ -125,7 +125,7 @@ PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
           This increases the reference count of the guess object, you must destroy the object with `KSPGuessDestroy()`
           before the end of the program.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGuess`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPGetGuess()`
+.seealso: [](ch_ksp), `KSP`, `KSPGuess`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPGetGuess()`
 @*/
 PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
 {
@@ -152,7 +152,7 @@ PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`
+.seealso: [](ch_ksp), `KSPGuess`, `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`
 @*/
 PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 {
@@ -189,7 +189,7 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
 @*/
 PetscErrorCode KSPGetOptionsPrefix(KSP ksp, const char *prefix[])
 {
@@ -220,7 +220,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSPMonitorRegister()`, `KSPMonitorSet()`, `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_ksp), `KSPMonitorRegister()`, `KSPMonitorSet()`, `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -313,11 +313,11 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 
    Notes:
    To see all options, run your program with the -help option
-   or consult [](chapter_ksp)
+   or consult [](ch_ksp)
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
 @*/
 PetscErrorCode KSPSetFromOptions(KSP ksp)
 {
@@ -635,7 +635,7 @@ skipoptions:
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`
+.seealso: [](ch_ksp), `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`
 @*/
 PetscErrorCode KSPResetFromOptions(KSP ksp)
 {

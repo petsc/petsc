@@ -1,4 +1,4 @@
 # Graphs and Networks (DMNETWORK)
 
 The `DMNETWORK` subclass of `DM`, encapsulates a graph topology. It is designed to handle very large scale graphs, such as those that arise in power system or wireless communication modeling.
-Users guide chapter: [](chapter_network).
+Users guide chapter: [](ch_network).

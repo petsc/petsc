@@ -246,5 +246,5 @@ PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

@@ -16,7 +16,7 @@
 
     Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPRICHARDSON`, `KSPRichardsonSetSelfScale()`
+.seealso: [](ch_ksp), `KSPRICHARDSON`, `KSPRichardsonSetSelfScale()`
 @*/
 PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
 {
@@ -48,7 +48,7 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
     Developer Note:
     Could also minimize the 2-norm of the true residual with one less work vector
 
-.seealso: [](chapter_ksp), `KSPRICHARDSON`, `KSPRichardsonSetScale()`
+.seealso: [](ch_ksp), `KSPRICHARDSON`, `KSPRichardsonSetScale()`
 @*/
 PetscErrorCode KSPRichardsonSetSelfScale(KSP ksp, PetscBool scale)
 {

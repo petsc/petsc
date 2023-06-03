@@ -434,7 +434,7 @@ PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
+.seealso: [](ch_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/
 
 PetscErrorCode MatGetInfo_PaStiX(Mat A, MatInfoType flag, MatInfo *info)

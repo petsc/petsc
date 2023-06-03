@@ -8,7 +8,7 @@
 
    Level: intermediate
 
-.seealso: [](chapter_dmbase), `DMType`, `DMGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
+.seealso: [](ch_dmbase), `DMType`, `DMGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
 S*/
 typedef struct _p_DM *DM;
 
@@ -229,7 +229,7 @@ typedef enum {
   While most operations only need the topology information in the `DMPLEX`, we must sometimes have the
   user specify a polytope. For instance, when interpolating from a cell-vertex mesh, the type of
   polytope can be ambiguous. Also, `DMPLEX` allows different symmetries of a prism cell with the same
-  constituent points. Normally these types are autoamtically inferred and the user does not specify
+  constituent points. Normally these types are automatically inferred and the user does not specify
   them.
 
 .seealso: `DM`, `DMPlexComputeCellTypes()`

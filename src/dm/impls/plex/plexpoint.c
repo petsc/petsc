@@ -18,7 +18,7 @@
    Note:
    This is a half open interval [start, end)
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
 @*/
 PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
@@ -57,7 +57,7 @@ PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, Petsc
   x = 2*ptr->foo + 3*ptr->bar + 5*ptr->baz;
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`
 @*/
 PetscErrorCode DMPlexPointLocalRead(DM dm, PetscInt point, const PetscScalar *array, void *ptr)
 {
@@ -95,7 +95,7 @@ PetscErrorCode DMPlexPointLocalRead(DM dm, PetscInt point, const PetscScalar *ar
   ptr->foo = 2; ptr->bar = 3; ptr->baz = 5;
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexPointLocalRef(DM dm, PetscInt point, PetscScalar *array, void *ptr)
 {
@@ -129,7 +129,7 @@ PetscErrorCode DMPlexPointLocalRef(DM dm, PetscInt point, PetscScalar *array, vo
   Note:
   This is a half open interval [start, end)
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointLocal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRead()`, `DMPlexPointLocalRef()`
 @*/
 PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
@@ -161,7 +161,7 @@ PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, P
 
    Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexPointLocalFieldRead(DM dm, PetscInt point, PetscInt field, const PetscScalar *array, void *ptr)
 {
@@ -192,7 +192,7 @@ PetscErrorCode DMPlexPointLocalFieldRead(DM dm, PetscInt point, PetscInt field, 
 
    Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexPointLocalFieldRef(DM dm, PetscInt point, PetscInt field, PetscScalar *array, void *ptr)
 {
@@ -225,7 +225,7 @@ PetscErrorCode DMPlexPointLocalFieldRef(DM dm, PetscInt point, PetscInt field, P
   Note:
   This is a half open interval [start, end)
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobalField()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
@@ -264,7 +264,7 @@ PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, Pets
   x = 2*ptr->foo + 3*ptr->bar + 5*ptr->baz;
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRead()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRead()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexPointGlobalRead(DM dm, PetscInt point, const PetscScalar *array, const void *ptr)
 {
@@ -302,7 +302,7 @@ PetscErrorCode DMPlexPointGlobalRead(DM dm, PetscInt point, const PetscScalar *a
   ptr->foo = 2; ptr->bar = 3; ptr->baz = 5;
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRef()`, `DMPlexPointGlobalRead()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRef()`, `DMPlexPointGlobalRead()`
 @*/
 PetscErrorCode DMPlexPointGlobalRef(DM dm, PetscInt point, PetscScalar *array, void *ptr)
 {
@@ -336,7 +336,7 @@ PetscErrorCode DMPlexPointGlobalRef(DM dm, PetscInt point, PetscScalar *array, v
   Note:
   This is a half open interval [start, end)
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetPointGlobal()`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexPointGlobalRead()`, `DMPlexGetPointLocal()`, `DMPlexPointGlobalRead()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
@@ -368,7 +368,7 @@ PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, 
 
    Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRead()`, `DMPlexPointGlobalRef()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRead()`, `DMPlexPointGlobalRef()`
 @*/
 PetscErrorCode DMPlexPointGlobalFieldRead(DM dm, PetscInt point, PetscInt field, const PetscScalar *array, void *ptr)
 {
@@ -399,7 +399,7 @@ PetscErrorCode DMPlexPointGlobalFieldRead(DM dm, PetscInt point, PetscInt field,
 
    Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRef()`, `DMPlexPointGlobalRead()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMGetLocalSection()`, `PetscSectionGetOffset()`, `PetscSectionGetDof()`, `DMPlexGetPointGlobal()`, `DMPlexPointLocalRef()`, `DMPlexPointGlobalRead()`
 @*/
 PetscErrorCode DMPlexPointGlobalFieldRef(DM dm, PetscInt point, PetscInt field, PetscScalar *array, void *ptr)
 {

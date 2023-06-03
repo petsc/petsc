@@ -27,7 +27,7 @@ $   PetscErrorCode fcn(KSP ksp, PetscInt it);
 
    Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is used to increase stability.
 
-.seealso: [](chapter_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESSetOrthogonalization()`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`
 @*/
 PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt))
@@ -68,7 +68,7 @@ PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP, 
 
    Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is used to increase stability.
 
-.seealso: [](chapter_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESSetOrthogonalization()`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`
 @*/
 PetscErrorCode KSPGMRESGetOrthogonalization(KSP ksp, PetscErrorCode (**fcn)(KSP, PetscInt))

@@ -19,7 +19,7 @@
    If you never  call `VecSetType()` or `VecSetFromOptions()` it will generate an
    error when you try to use the vector.
 
-.seealso: [](chapter_vectors), `Vec`, `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
+.seealso: [](ch_vectors), `Vec`, `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
           `VecDuplicateVecs()`, `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)

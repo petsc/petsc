@@ -46,7 +46,7 @@ $     TSGLLEAdaptSetType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_adapt_type my_scheme
 
-.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
 @*/
 PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function)(TSGLLEAdapt))
 {
@@ -63,7 +63,7 @@ PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSGLLEAdapt`, `TSGLLE`, `TSGLLEAdaptRegisterDestroy()`
+.seealso: [](ch_ts), `TSGLLEAdapt`, `TSGLLE`, `TSGLLEAdaptRegisterDestroy()`
 @*/
 PetscErrorCode TSGLLEAdaptRegisterAll(void)
 {
@@ -82,7 +82,7 @@ PetscErrorCode TSGLLEAdaptRegisterAll(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `TSGLLEAdapt`, `TSGLLEAdaptInitializePackage()`
+.seealso: [](ch_ts), `PetscFinalize()`, `TSGLLEAdapt`, `TSGLLEAdaptInitializePackage()`
 @*/
 PetscErrorCode TSGLLEAdaptFinalizePackage(void)
 {
@@ -99,7 +99,7 @@ PetscErrorCode TSGLLEAdaptFinalizePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `TSGLLEAdapt`, `TSGLLEAdaptFinalizePackage()`
+.seealso: [](ch_ts), `PetscInitialize()`, `TSGLLEAdapt`, `TSGLLEAdaptFinalizePackage()`
 @*/
 PetscErrorCode TSGLLEAdaptInitializePackage(void)
 {

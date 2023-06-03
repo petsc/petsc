@@ -1,4 +1,4 @@
-.. _chapter_ts:
+.. _ch_ts:
 
 TS: Scalable ODE and DAE Solvers
 --------------------------------

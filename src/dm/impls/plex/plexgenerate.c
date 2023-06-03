@@ -12,7 +12,7 @@
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 {
@@ -75,7 +75,7 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
 {
@@ -98,7 +98,7 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 {
@@ -123,7 +123,7 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 {
@@ -156,7 +156,7 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMRefine()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMRefine()`
 @*/
 PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh)
 {

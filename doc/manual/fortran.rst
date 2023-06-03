@@ -1,4 +1,4 @@
-.. _chapter_fortran:
+.. _ch_fortran:
 
 PETSc for Fortran Users
 -----------------------

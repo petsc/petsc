@@ -45,7 +45,7 @@ PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateLRC()`, `MatCreateComposite()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateLRC()`, `MatCreateComposite()`
 @*/
 PetscErrorCode MatCreateCentering(MPI_Comm comm, PetscInt n, PetscInt N, Mat *C)
 {

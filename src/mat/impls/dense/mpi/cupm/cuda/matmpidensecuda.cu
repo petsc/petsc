@@ -17,7 +17,7 @@ static constexpr impl::MatDense_MPI_CUPM<DeviceType::CUDA> mat_cupm{};
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`,
+.seealso: [](ch_matrices), `Mat`, `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`,
 `MATMPIDENSEHIP`, `MATDENSE`
 M*/
 
@@ -31,7 +31,7 @@ M*/
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MATMPIDENSE`, `MATSEQDENSE`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSECUDA`, `MATMPIDENSE`, `MATSEQDENSE`,
 `MATSEQDENSECUDA`, `MATSEQDENSEHIP`
 M*/
 PETSC_INTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat A)

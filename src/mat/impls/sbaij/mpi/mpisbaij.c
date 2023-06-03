@@ -2081,7 +2081,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs, const
      The number of rows in the matrix must be less than or equal to the number of columns. Similarly the number of rows in the
      diagonal portion of the matrix of each process has to less than or equal the number of columns.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSBAIJ`, `MATBAIJ`, `MatCreateBAIJ()`, `MATSEQSBAIJ`, `MatType`
+.seealso: [](ch_matrices), `Mat`, `MATSBAIJ`, `MATBAIJ`, `MatCreateBAIJ()`, `MATSEQSBAIJ`, `MatType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
@@ -2196,7 +2196,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQSBAIJ`, `MATMPISBAIJ`, `MatCreateSBAIJ()`, `MATSEQSBAIJ`, `MATMPISBAIJ`
+.seealso: [](ch_matrices), `Mat`, `MATSEQSBAIJ`, `MATMPISBAIJ`, `MatCreateSBAIJ()`, `MATSEQSBAIJ`, `MATMPISBAIJ`
 M*/
 
 /*@C
@@ -2278,7 +2278,7 @@ M*/
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects `d_nz` >> `o_nz`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATMPISBAIJ`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `PetscSplitOwnership()`
+.seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
@@ -2386,7 +2386,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects `d_nz` >> `o_nz`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/
 
 PetscErrorCode MatCreateSBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
@@ -2759,7 +2759,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
 
        The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
-.seealso: [](chapter_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+.seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)
@@ -2794,7 +2794,7 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
 
    Any entries below the diagonal are ignored
 
-.seealso: [](chapter_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`
+.seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MPIAIJ`
 @*/
 PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {

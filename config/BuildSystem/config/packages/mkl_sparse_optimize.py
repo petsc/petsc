@@ -13,6 +13,10 @@ class Configure(config.package.Package):
     self.skippackagewithoptions = 1
     return
 
+  def setupHelp(self, help):
+    import nargs
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
+
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)

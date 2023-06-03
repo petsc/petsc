@@ -2522,7 +2522,7 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
 {
   PetscFunctionBegin;
   if (!PetscLogPLB || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
-  if (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)) {
+  if (PetscDefined(HAVE_DEVICE)) {
     PetscDeviceContext dctx;
 
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
@@ -2544,7 +2544,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
 {
   PetscFunctionBegin;
   if (!PetscLogPLE || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
-  if (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)) {
+  if (PetscDefined(HAVE_DEVICE)) {
     PetscDeviceContext dctx;
     PetscLogDouble     elapsed;
 

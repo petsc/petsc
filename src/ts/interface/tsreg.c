@@ -36,7 +36,7 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
    choosing the appropriate method.  In other words, this routine is
    not for beginners.
 
-.seealso: [](chapter_ts), `TS`, `TSSolve()`, `TSCreate()`, `TSSetFromOptions()`, `TSDestroy()`, `TSType`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSCreate()`, `TSSetFromOptions()`, `TSDestroy()`, `TSType`
 @*/
 PetscErrorCode TSSetType(TS ts, TSType type)
 {
@@ -76,7 +76,7 @@ PetscErrorCode TSSetType(TS ts, TSType type)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TS`, `TSType`, `TSSetType()`
+.seealso: [](ch_ts), `TS`, `TSType`, `TSSetType()`
 @*/
 PetscErrorCode TSGetType(TS ts, TSType *type)
 {
@@ -119,7 +119,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
     -ts_type my_ts
 .ve
 
-.seealso: [](chapter_ts), `TSSetType()`, `TSType`, `TSRegisterAll()`, `TSRegisterDestroy()`
+.seealso: [](ch_ts), `TSSetType()`, `TSType`, `TSRegisterAll()`, `TSRegisterDestroy()`
 @*/
 PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS))
 {

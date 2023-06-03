@@ -75,7 +75,7 @@ typedef struct {
      References:
 .    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXA2 - Second order ARK IMEX scheme with A-stable implicit part.
@@ -87,7 +87,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part.
@@ -102,7 +102,7 @@ M*/
     References:
 .   * -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX1BEE - First order backward Euler represented as an ARK IMEX scheme with extrapolation as error estimator. This is a 3-stage method.
@@ -114,7 +114,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2C - Second order ARK IMEX scheme with L-stable implicit part.
@@ -126,7 +126,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
@@ -138,7 +138,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
@@ -150,7 +150,7 @@ M*/
 
     Level: advanced
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme.
@@ -167,7 +167,7 @@ M*/
 
      Level: advanced
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
@@ -182,7 +182,7 @@ M*/
      References:
 .    * -  Kennedy and Carpenter 2003.
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXARS443 - Third order ARK IMEX scheme.
@@ -198,7 +198,7 @@ M*/
 +    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 -    * -  This method is referred to as ARS(4,4,3) in https://arxiv.org/abs/1110.4375
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXBPR3 - Third order ARK IMEX scheme.
@@ -213,7 +213,7 @@ M*/
      References:
 .    * - This method is referred to as ARK3 in https://arxiv.org/abs/1110.4375
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part.
@@ -228,7 +228,7 @@ M*/
      References:
 .    * - Kennedy and Carpenter 2003.
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part.
@@ -243,7 +243,7 @@ M*/
      References:
 .    * - Kennedy and Carpenter 2003.
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*@C
@@ -253,7 +253,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TS`, `TSARKIMEX`, `TSARKIMEXRegisterDestroy()`
+.seealso: [](ch_ts), `TS`, `TSARKIMEX`, `TSARKIMEXRegisterDestroy()`
 @*/
 PetscErrorCode TSARKIMEXRegisterAll(void)
 {
@@ -419,7 +419,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
 
    Level: advanced
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
 @*/
 PetscErrorCode TSARKIMEXRegisterDestroy(void)
 {
@@ -445,7 +445,7 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscInitialize()`, `TSARKIMEXFinalizePackage()`
+.seealso: [](ch_ts), `PetscInitialize()`, `TSARKIMEXFinalizePackage()`
 @*/
 PetscErrorCode TSARKIMEXInitializePackage(void)
 {
@@ -463,7 +463,7 @@ PetscErrorCode TSARKIMEXInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `PetscFinalize()`, `TSARKIMEXInitializePackage()`
+.seealso: [](ch_ts), `PetscFinalize()`, `TSARKIMEXInitializePackage()`
 @*/
 PetscErrorCode TSARKIMEXFinalizePackage(void)
 {
@@ -499,7 +499,7 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
    Note:
    Several `TSARKIMEX` methods are provided, this function is only needed to create new methods.
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSType`, `TS`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSType`, `TS`
 @*/
 PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s, const PetscReal At[], const PetscReal bt[], const PetscReal ct[], const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembedt[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[], const PetscReal binterp[])
 {
@@ -1385,7 +1385,7 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
+.seealso: [](ch_ts), `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
           `TSARKIMEX3`, `TSARKIMEXBPR3`, `TSARKIMEXARS443`, `TSARKIMEX4`, `TSARKIMEX5`
 @*/
 PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
@@ -1410,7 +1410,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSARKIMEX`c, `TSARKIMEXGetType()`
+.seealso: [](ch_ts), `TSARKIMEX`c, `TSARKIMEXGetType()`
 @*/
 PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 {
@@ -1431,7 +1431,7 @@ PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
 @*/
 PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
 {
@@ -1455,7 +1455,7 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
+.seealso: [](ch_ts), `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
 @*/
 PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg)
 {
@@ -1551,7 +1551,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 
   Consider trying `TSROSW` if the stiff part is linear or weakly nonlinear.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSARKIMEXSetType()`, `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`, `TSARKIMEXGetFullyImplicit()`,
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSARKIMEXSetType()`, `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`, `TSARKIMEXGetFullyImplicit()`,
           `TSARKIMEX1BEE`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEX3`, `TSARKIMEXL2`, `TSARKIMEXA2`, `TSARKIMEXARS122`,
           `TSARKIMEX4`, `TSARKIMEX5`, `TSARKIMEXPRSSP2`, `TSARKIMEXARS443`, `TSARKIMEXBPR3`, `TSARKIMEXType`, `TSARKIMEXRegister()`, `TSType`
 M*/

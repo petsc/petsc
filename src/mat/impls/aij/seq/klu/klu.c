@@ -263,7 +263,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type)
    Note:
    KLU is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, Mat *F)

@@ -27,7 +27,7 @@
 
    The type of norm used by the method can be controlled with `KSPSetNormType()`
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetNormType()`, `KSPBuildResidual()`, `KSPNormType`
+.seealso: [](ch_ksp), `KSP`, `KSPSetNormType()`, `KSPBuildResidual()`, `KSPNormType`
 @*/
 PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm)
 {
@@ -54,7 +54,7 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm)
    Note:
    During the ith iteration this returns i-1
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGetResidualNorm()`, `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetTotalIterations()`
+.seealso: [](ch_ksp), `KSP`, `KSPGetResidualNorm()`, `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetTotalIterations()`
 @*/
 PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its)
 {
@@ -82,7 +82,7 @@ PetscErrorCode KSPGetIterationNumber(KSP ksp, PetscInt *its)
     Use `KSPGetIterationNumber()` to get the count for the most recent solve only
    If this is called within a `KSPSolve()` (such as in a `KSPMonitor` routine) then it does not include iterations within that current solve
 
-.seealso: [](chapter_ksp), `KSP`, `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetIterationNumber()`
+.seealso: [](ch_ksp), `KSP`, `KSPBuildResidual()`, `KSPGetResidualNorm()`, `KSPGetIterationNumber()`
 @*/
 PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
 {
@@ -117,7 +117,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the KSP solve.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidualDrawLG()`,
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidualDrawLG()`,
           `KSPMonitorResidualRange()`, `KSPMonitorTrueResidualDraw()`, `KSPMonitorTrueResidualDrawLG()`, `KSPMonitorTrueResidualMax()`,
           `KSPMonitorSingularValue()`, `KSPMonitorSolutionDrawLG()`, `KSPMonitorSolutionDraw()`, `KSPMonitorSolution()`,
           `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDraw()`, KSPMonitorError()`
@@ -162,7 +162,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidual()`, `KSPMonitorResidualDrawLG()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidual()`, `KSPMonitorResidualDrawLG()`
 @*/
 PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -205,7 +205,7 @@ PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
   Use `KSPMonitorResidualDrawLGCreate()` to create the context used with this monitor
 
-.seealso: [](chapter_ksp), `KSP`, `PETSCVIEWERDRAW`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidual()`
+.seealso: [](ch_ksp), `KSP`, `PETSCVIEWERDRAW`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidual()`
 @*/
 PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -248,7 +248,7 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSP`, `PETSCVIEWERDRAW`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDrawLG()`,
+.seealso: [](ch_ksp), `KSP`, `PETSCVIEWERDRAW`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDrawLG()`,
           `PetscViewerFormat`, `PetscViewer`, `PetscViewerAndFormat`
 @*/
 PetscErrorCode KSPMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
@@ -331,7 +331,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`
 @*/
 PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -381,7 +381,7 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`, `PetscViewerAndFormat`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`, `PetscViewerAndFormat`
 @*/
 PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -437,7 +437,7 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidual()`,
+.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidual()`,
           `KSPMonitorTrueResidualDrawLG()`, `PetscViewerAndFormat`
 @*/
 PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
@@ -481,7 +481,7 @@ PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, 
 
   Call `KSPMonitorTrueResidualDrawLGCreate()` to create the context needed for this monitor
 
-.seealso: [](chapter_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorTrueResidualDraw()`, `KSPMonitorResidual`,
+.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorTrueResidualDraw()`, `KSPMonitorResidual`,
           `KSPMonitorTrueResidualDrawLGCreate()`
 @*/
 PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
@@ -532,7 +532,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `PetscViewerAndFormat`
+.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `PetscViewerAndFormat`
 @*/
 PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -565,7 +565,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
 @*/
 PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -617,7 +617,7 @@ PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, P
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
 @*/
 PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -680,7 +680,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewer
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDrawLG()`
+.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDrawLG()`
 @*/
 PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -728,7 +728,7 @@ PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscVi
 
   Call `KSPMonitorErrorDrawLGCreate()` to create the context used with this monitor
 
-.seealso: [](chapter_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDraw()`
+.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDraw()`
 @*/
 PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -786,7 +786,7 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDrawLG()`
+.seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDrawLG()`
 @*/
 PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -839,7 +839,7 @@ PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: [](ch_ksp), `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
 PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -885,7 +885,7 @@ PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: [](ch_ksp), `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
 PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -927,7 +927,7 @@ PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
    Call `KSPMonitorSolutionDrawLGCreate()` to create the context needed with this monitor
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorSolutionDrawLGCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorSolutionDrawLGCreate()`
 @*/
 PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -977,7 +977,7 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](chapter_ksp), `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: [](ch_ksp), `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
 PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -1014,7 +1014,7 @@ PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFor
 
   Call `KSPMonitorSingularValueCreate()` to create the context needed by this monitor
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPComputeExtremeSingularValues()`, `KSPMonitorSingularValueCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPComputeExtremeSingularValues()`, `KSPMonitorSingularValueCreate()`
 @*/
 PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -1058,7 +1058,7 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSingularValue()`, `PetscViewer`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSingularValue()`, `PetscViewer`
 @*/
 PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -1259,7 +1259,7 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
    of iterations have been reached. Useful when one is using `KSPCG` or
    `KSPBCGS`. [](sec_flexibleksp)
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPBCGS`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPSetNormType()`, [](sec_flexibleksp),
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPBCGS`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPSetNormType()`, [](sec_flexibleksp),
           `KSPConvergedReason`
 @*/
 PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *dummy)
@@ -1289,7 +1289,7 @@ PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConverg
    Notes:
    This is currently used only by a subset of the Krylov solvers, namely `KSPCG`, `KSPSTCG`, `KSPQCG`, `KSPGLTR`, `KSPNASH`, and `KSPMINRES`.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPConvergedReason`, `KSPGetConvergedNegativeCurvature()`
+.seealso: [](ch_ksp), `KSP`, `KSPConvergedReason`, `KSPGetConvergedNegativeCurvature()`
 @*/
 PetscErrorCode KSPSetConvergedNegativeCurvature(KSP ksp, PetscBool flg)
 {
@@ -1313,7 +1313,7 @@ PetscErrorCode KSPSetConvergedNegativeCurvature(KSP ksp, PetscBool flg)
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPConvergedReason`, `KSPSetConvergedNegativeCurvature()`
+.seealso: [](ch_ksp), `KSP`, `KSPConvergedReason`, `KSPSetConvergedNegativeCurvature()`
 @*/
 PetscErrorCode KSPGetConvergedNegativeCurvature(KSP ksp, PetscBool *flg)
 {
@@ -1334,7 +1334,7 @@ PetscErrorCode KSPGetConvergedNegativeCurvature(KSP ksp, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSP`, `KSPConvergedDefault()`, `KSPConvergedDefaultDestroy()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`,
+.seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPConvergedDefaultDestroy()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`,
           `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`,
           `KSPConvergedDefaultSetConvergedMaxits()`
 @*/
@@ -1373,7 +1373,7 @@ PetscErrorCode KSPConvergedDefaultCreate(void **ctx)
 
    If right preconditioning is being used then B does not appear in the above formula.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
 @*/
 PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
 {
@@ -1407,7 +1407,7 @@ PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
    The precise values of reason are macros such as `KSP_CONVERGED_RTOL`, which
    are defined in petscksp.h.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`
 @*/
 PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 {
@@ -1438,7 +1438,7 @@ PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp)
    Note:
    The precise values of reason available in `KSPConvergedReason`
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetUIRNorm()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetUIRNorm()`
 @*/
 PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 {
@@ -1507,7 +1507,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 
    Call `KSPSetConvergenceTest()` with the ctx, as created above and the destruction function `KSPConvergedDefaultDestroy()`
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPSetMinimumIterations()`,
+.seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPSetMinimumIterations()`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`
 @*/
 PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *ctx)
@@ -1619,7 +1619,7 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
    Note:
    Pass this function name into `KSPSetConvergenceTest()` along with the context obtained with `KSPConvergedDefaultCreate()` and `KSPConvergedDefault()`
 
-.seealso: [](chapter_ksp), `KSP`, `KSPConvergedDefault()`, `KSPConvergedDefaultCreate()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`,
+.seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPConvergedDefaultCreate()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`,
           `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`
 @*/
 PetscErrorCode KSPConvergedDefaultDestroy(void *ctx)
@@ -1649,7 +1649,7 @@ PetscErrorCode KSPConvergedDefaultDestroy(void *ctx)
    Developers Note:
    This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`
+.seealso: [](ch_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`
 */
 PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
 {
@@ -1704,7 +1704,7 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
    Developers Note:
    This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
 
-.seealso: [](chapter_ksp), `KSP`, `KSPBuildSolutionDefault()`
+.seealso: [](ch_ksp), `KSP`, `KSPBuildSolutionDefault()`
 */
 PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
 {
@@ -1746,7 +1746,7 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
    First tries to duplicate the rhs and solution vectors of the `KSP`, if they do not exist tries to get them from the matrix, if
    that does not exist tries to get them from the `DM` (if it is provided).
 
-.seealso: [](chapter_ksp), `MatCreateVecs()`, `VecDestroyVecs()`, `KSPSetWorkVecs()`
+.seealso: [](ch_ksp), `MatCreateVecs()`, `VecDestroyVecs()`, `KSPSetWorkVecs()`
 @*/
 PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt leftn, Vec **left)
 {
@@ -1838,7 +1838,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
   Developers Note:
   This is PETSC_EXTERN because it may be used by user written plugin `KSPType` implementations
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCreateVecs()`
+.seealso: [](ch_ksp), `KSP`, `KSPCreateVecs()`
 @*/
 PetscErrorCode KSPSetWorkVecs(KSP ksp, PetscInt nw)
 {
@@ -1886,7 +1886,7 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
    Notes:
     If this routine is called before or doing the `KSPSolve()` the value of `KSP_CONVERGED_ITERATING` is returned
 
-.seealso: [](chapter_ksp), `KSPConvergedReason`, `KSP`, `KSPSetConvergenceTest()`, `KSPConvergedDefault()`, `KSPSetTolerances()`, `KSPConvergedReason`,
+.seealso: [](ch_ksp), `KSPConvergedReason`, `KSP`, `KSPSetConvergenceTest()`, `KSPConvergedDefault()`, `KSPSetTolerances()`, `KSPConvergedReason`,
           `KSPConvergedReasonView()`
 @*/
 PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
@@ -1911,7 +1911,7 @@ PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
 
    Level: beginner
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGetConvergedReason()`
+.seealso: [](ch_ksp), `KSP`, `KSPGetConvergedReason()`
 @*/
 PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason)
 {
@@ -1943,7 +1943,7 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason)
    even when not using interfaces like `DMKSPSetComputeOperators()`.  Use `DMClone()` to get a distinct `DM` when solving
    different problems using the same function space.
 
-.seealso: [](chapter_ksp), `KSP`, `DM`, `KSPGetDM()`, `KSPSetDMActive()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`, `DMKSPSetComputeOperators()`, `DMKSPSetComputeRHS()`, `DMKSPSetComputeInitialGuess()`
+.seealso: [](ch_ksp), `KSP`, `DM`, `KSPGetDM()`, `KSPSetDMActive()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`, `DMKSPSetComputeOperators()`, `DMKSPSetComputeRHS()`, `DMKSPSetComputeInitialGuess()`
 @*/
 PetscErrorCode KSPSetDM(KSP ksp, DM dm)
 {
@@ -1984,7 +1984,7 @@ PetscErrorCode KSPSetDM(KSP ksp, DM dm)
    Note:
    By default `KSPSetDM()` sets the `DM` as active, call `KSPSetDMActive`(ksp,`PETSC_FALSE`); after `KSPSetDM`(ksp,dm) to not have the `KSP` object use the `DM` to generate the matrices.
 
-.seealso: [](chapter_ksp), `KSP`, `DM`, `KSPGetDM()`, `KSPSetDM()`, `SNESSetDM()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`
+.seealso: [](ch_ksp), `KSP`, `DM`, `KSPGetDM()`, `KSPSetDM()`, `SNESSetDM()`, `KSPSetComputeOperators()`, `KSPSetComputeRHS()`, `KSPSetComputeInitialGuess()`
 @*/
 PetscErrorCode KSPSetDMActive(KSP ksp, PetscBool flg)
 {
@@ -2008,7 +2008,7 @@ PetscErrorCode KSPSetDMActive(KSP ksp, PetscBool flg)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSP`, `DM`, `KSPSetDM()`, `KSPSetDMActive()`
+.seealso: [](ch_ksp), `KSP`, `DM`, `KSPSetDM()`, `KSPSetDMActive()`
 @*/
 PetscErrorCode KSPGetDM(KSP ksp, DM *dm)
 {
@@ -2042,7 +2042,7 @@ PetscErrorCode KSPGetDM(KSP ksp, DM *dm)
    To use this from Fortran you must write a Fortran interface definition for this
    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPGetApplicationContext()`
+.seealso: [](ch_ksp), `KSP`, `KSPGetApplicationContext()`
 @*/
 PetscErrorCode KSPSetApplicationContext(KSP ksp, void *usrP)
 {
@@ -2073,7 +2073,7 @@ PetscErrorCode KSPSetApplicationContext(KSP ksp, void *usrP)
    To use this from Fortran you must write a Fortran interface definition for this
    function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: [](chapter_ksp), `KSP`, `KSPSetApplicationContext()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetApplicationContext()`
 @*/
 PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP)
 {
@@ -2108,7 +2108,7 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP)
    Developer Note:
    This is used to manage returning with appropriate information from preconditioners whose inner `KSP` solvers have failed in some way
 
-.seealso: [](chapter_ksp), `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckDot()`
+.seealso: [](ch_ksp), `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckDot()`
 @*/
 PetscErrorCode KSPCheckSolve(KSP ksp, PC pc, Vec vec)
 {

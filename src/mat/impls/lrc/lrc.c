@@ -151,7 +151,7 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
 
    `U`, `c`, `V` may be `NULL` if not needed
 
-.seealso: [](chapter_matrices), `Mat`, `MATLRC`, `MatCreateLRC()`
+.seealso: [](ch_matrices), `Mat`, `MATLRC`, `MatCreateLRC()`
 @*/
 PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
 {
@@ -169,7 +169,7 @@ PetscErrorCode MatLRCGetMats(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateLRC()`, `MatMult()`, `MatLRCGetMats()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateLRC()`, `MatMult()`, `MatLRCGetMats()`
 M*/
 
 /*@
@@ -204,7 +204,7 @@ M*/
    If a sequential `c` vector is used for a parallel matrix,
    PETSc assumes that the values of the vector are consistently set across processors.
 
-.seealso: [](chapter_matrices), `Mat`, `MATLRC`, `MatLRCGetMats()`
+.seealso: [](ch_matrices), `Mat`, `MATLRC`, `MatLRCGetMats()`
 @*/
 PetscErrorCode MatCreateLRC(Mat A, Mat U, Vec c, Mat V, Mat *N)
 {

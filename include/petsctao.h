@@ -24,7 +24,7 @@ PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 
   Level: intermediate
 
-.seealso: [](chapter_tao), `TaoVecGetSubVec()`, `TaoMatGetSubMat()`, `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
+.seealso: [](ch_tao), `TaoVecGetSubVec()`, `TaoMatGetSubMat()`, `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 E*/
 typedef enum {
   TAO_SUBSET_SUBVEC,
@@ -38,7 +38,7 @@ PETSC_EXTERN const char *const TaoSubsetTypes[];
 
    Level: advanced
 
-.seealso: [](doc_taosolve), [](chapter_tao), `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
+.seealso: [](doc_taosolve), [](ch_tao), `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
 typedef struct _p_Tao *Tao;
 
@@ -47,7 +47,7 @@ typedef struct _p_Tao *Tao;
 
   Level: advanced
 
-.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`
+.seealso: [](ch_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`
 E*/
 typedef enum {
   TAO_ADMM_UPDATE_BASIC,
@@ -64,7 +64,7 @@ PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
   Note:
   Most basic implementation of `TAOADMM`. Generally slower than adaptive or adaptive relaxed version.
 
-.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_ADAPTIVE`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
+.seealso: [](ch_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_ADAPTIVE`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
 
 /*MC
@@ -75,7 +75,7 @@ M*/
   Note:
   Adaptively updates spectral penalty of `TAOADMM` by using both steepest descent and minimum gradient.
 
-.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
+.seealso: [](ch_tao), `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
 
 /*MC
@@ -86,7 +86,7 @@ M*/
   Note:
   With adaptive spectral penalty update, it also relaxes x vector update by a factor.
 
-.seealso: [](chapter_tao), `Tao`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE`
+.seealso: [](ch_tao), `Tao`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE`
 M*/
 
 /*E
@@ -94,7 +94,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`
+.seealso: [](ch_tao), `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`
 E*/
 typedef enum {
   TAO_ADMM_REGULARIZER_USER,
@@ -110,7 +110,7 @@ PETSC_EXTERN const char *const TaoADMMRegularizerTypes[];
   Note:
   User needs to provided appropriate routines and type for regularizer solver
 
-.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_SOFT_THRESH`
+.seealso: [](ch_tao), `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_SOFT_THRESH`
 M*/
 
 /*MC
@@ -121,7 +121,7 @@ M*/
   Note:
   Utilizes built-in SoftThreshold routines
 
-.seealso: [](chapter_tao), `Tao`, `TAOADMM`, `TaoSoftThreshold()`, `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`,
+.seealso: [](ch_tao), `Tao`, `TAOADMM`, `TaoSoftThreshold()`, `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`,
           `TaoADMMSetRegularizerHessianRoutine()`, `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_USER`
 M*/
 
@@ -134,7 +134,7 @@ M*/
 
   Level: advanced
 
-.seealso: [](chapter_tao), `Tao`, `TAOALMM`, `TaoALMMSetType()`, `TaoALMMGetType()`
+.seealso: [](ch_tao), `Tao`, `TAOALMM`, `TaoALMMSetType()`, `TaoALMMGetType()`
 E*/
 typedef enum {
   TAO_ALMM_CLASSIC,
@@ -160,7 +160,7 @@ PETSC_EXTERN const char *const TaoALMMTypes[];
 
        Level: beginner
 
-.seealso: [](doc_taosolve), [](chapter_tao), `Tao`, `TaoCreate()`, `TaoSetType()`
+.seealso: [](doc_taosolve), [](ch_tao), `Tao`, `TaoCreate()`, `TaoSetType()`
 J*/
 typedef const char *TaoType;
 #define TAOLMVM     "lmvm"
@@ -239,7 +239,7 @@ PETSC_EXTERN PetscFunctionList TaoList;
    Developer Note:
    The names in `KSPConvergedReason`, `SNESConvergedReason`, and `TaoConvergedReason` should be uniformized
 
-.seealso: [](chapter_tao), `Tao`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`
+.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`
 E*/
 typedef enum {               /* converged */
   TAO_CONVERGED_GATOL   = 3, /* ||g(X)|| < gatol */

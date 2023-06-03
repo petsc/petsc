@@ -274,7 +274,7 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, cons
    Note:
    SPQR is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: [](chapter_matrices), `Mat`, `PCQR`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCQR`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat A, MatFactorType ftype, Mat *F)

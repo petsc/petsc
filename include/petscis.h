@@ -21,7 +21,7 @@ PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
     ISType - String with the name of a PETSc index set type
 
    Values:
-+  `ISGENERAL` - the values are stored with an arry of indices and generally have no structure
++  `ISGENERAL` - the values are stored with an array of indices and generally have no structure
 .  `ISSTRIDE` - the values have a simple structure of an initial offset and then a step size between values
 -  `ISBLOCK` - values are an array of indices, each representing a block of values
 

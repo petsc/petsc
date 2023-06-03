@@ -236,7 +236,7 @@ $ PetscErrorCode func(DMDALocalInfo *info, PetscReal t, void *x, void *f, void *
 
    Level: beginner
 
-.seealso: [](chapter_ts), `DMDA`, `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
+.seealso: [](ch_ts), `DMDA`, `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
 PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunctionLocal func, void *ctx)
 {
@@ -275,7 +275,7 @@ $ PetscErrorCode func(DMDALocalInfo *info, PetscReal t, void* x, Mat J, Mat B, v
 
    Level: beginner
 
-.seealso: [](chapter_ts), `DMDA`, `DMTSSetRHSJacobian()`, `DMDATSSetRHSFunctionLocal()`, `DMDASNESSetJacobianLocal()`
+.seealso: [](ch_ts), `DMDA`, `DMTSSetRHSJacobian()`, `DMDATSSetRHSFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, void *ctx)
 {
@@ -313,7 +313,7 @@ $  PetscErrorCode func(DMDALocalInfo *info, PetscReal t, Vec x, Vec xdot, Vec f,
 
    Level: beginner
 
-.seealso: [](chapter_ts), `DMDA`, `DMTSSetIFunction()`, `DMDATSSetIJacobianLocal()`, `DMDASNESSetFunctionLocal()`
+.seealso: [](ch_ts), `DMDA`, `DMTSSetIFunction()`, `DMDATSSetIJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
 PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionLocal func, void *ctx)
 {
@@ -354,7 +354,7 @@ $ PetscErrorCode func(DMDALocalInfo *info, PetscReal t, void* x, void *xdot, Pet
 
    Level: beginner
 
-.seealso: [](chapter_ts), `DMDA`, `DMTSSetJacobian()`, `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
+.seealso: [](ch_ts), `DMDA`, `DMTSSetJacobian()`, `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocal func, void *ctx)
 {

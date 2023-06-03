@@ -32,7 +32,7 @@ $ PetscErrorCode d(void *ctx)
    Note:
    Several modifypc routines are predefined, including  `KSPFGMRESModifyPCNoChange()`, and  `KSPFGMRESModifyPCKSP()`
 
-.seealso: [](chapter_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 @*/
 PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt, PetscInt, PetscReal, void *), void *ctx, PetscErrorCode (*d)(void *))
 {
@@ -55,7 +55,7 @@ PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, PetscErrorCode (*fcn)(KSP, PetscInt
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 @*/
 PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy)
 {
@@ -78,7 +78,7 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt l
    Note:
     You can use this as a template for writing a custom monification callback
 
-.seealso: [](chapter_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 @*/
 PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_its, PetscReal res_norm, void *dummy)
 {

@@ -125,7 +125,7 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A, MatCUSPAR
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `Mat`, `MATSEQAIJCUSPARSE`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
+.seealso: [](ch_matrices), `Mat`, `Mat`, `MATSEQAIJCUSPARSE`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 @*/
 PetscErrorCode MatCUSPARSESetFormat(Mat A, MatCUSPARSEFormatOperation op, MatCUSPARSEStorageFormat format)
 {
@@ -158,7 +158,7 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetUseCPUSolve_SeqAIJCUSPARSE(Mat A, Pets
    and moves the factors to the GPU for the solve. We have observed better performance keeping the data on the CPU and computing the solve there.
    This method to specify if the solve is done on the CPU or GPU (GPU is the default).
 
-.seealso: [](chapter_matrices), `Mat`, `MatSolve()`, `MATSEQAIJCUSPARSE`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
+.seealso: [](ch_matrices), `Mat`, `MatSolve()`, `MATSEQAIJCUSPARSE`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 @*/
 PetscErrorCode MatCUSPARSESetUseCPUSolve(Mat A, PetscBool use_cpu)
 {
@@ -2250,7 +2250,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat, MatSolverType *type)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQAIJCUSPARSE`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatCreateSeqAIJCUSPARSE()`,
+.seealso: [](ch_matrices), `Mat`, `MATSEQAIJCUSPARSE`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatCreateSeqAIJCUSPARSE()`,
           `MATAIJCUSPARSE`, `MatCreateAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 M*/
 
@@ -3740,7 +3740,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
    Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
    allocation.
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQAIJCUSPARSE`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATSEQAIJCUSPARSE`, `MATAIJCUSPARSE`
+.seealso: [](ch_matrices), `Mat`, `MATSEQAIJCUSPARSE`, `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`, `MATSEQAIJCUSPARSE`, `MATAIJCUSPARSE`
 @*/
 PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {
@@ -4065,7 +4065,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqAIJCUSPARSE()`, `MatCUSPARSESetUseCPUSolve()`, `MATAIJCUSPARSE`, `MatCreateAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
+.seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJCUSPARSE()`, `MatCUSPARSESetUseCPUSolve()`, `MATAIJCUSPARSE`, `MatCreateAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
@@ -4384,7 +4384,7 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
     Note:
       When compressed is true, the CSR structure does not contain empty rows
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSERestoreIJ()`, `MatSeqAIJCUSPARSEGetArrayRead()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSERestoreIJ()`, `MatSeqAIJCUSPARSEGetArrayRead()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const int **i, const int **j)
 {
@@ -4427,7 +4427,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const int **i
 
     Level: developer
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetIJ()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSEGetIJ()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const int **i, const int **j)
 {
@@ -4456,7 +4456,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const int
    Note:
    May trigger host-device copies if up-to-date matrix data is on host
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArray()`, `MatSeqAIJCUSPARSEGetArrayWrite()`, `MatSeqAIJCUSPARSERestoreArrayRead()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArray()`, `MatSeqAIJCUSPARSEGetArrayWrite()`, `MatSeqAIJCUSPARSERestoreArrayRead()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar **a)
 {
@@ -4487,7 +4487,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar **a)
 
    Level: developer
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArrayRead()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArrayRead()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar **a)
 {
@@ -4515,7 +4515,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar **a)
    Note:
    May trigger host-device copies if up-to-date matrix data is on host
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArrayRead()`, `MatSeqAIJCUSPARSEGetArrayWrite()`, `MatSeqAIJCUSPARSERestoreArray()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArrayRead()`, `MatSeqAIJCUSPARSEGetArrayWrite()`, `MatSeqAIJCUSPARSERestoreArray()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar **a)
 {
@@ -4547,7 +4547,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar **a)
 
    Level: developer
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArray()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArray()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar **a)
 {
@@ -4577,7 +4577,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar **a)
    Note:
    Does not trigger host-device copies and flags data validity on the GPU
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArray()`, `MatSeqAIJCUSPARSEGetArrayRead()`, `MatSeqAIJCUSPARSERestoreArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArray()`, `MatSeqAIJCUSPARSEGetArrayRead()`, `MatSeqAIJCUSPARSERestoreArrayWrite()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar **a)
 {
@@ -4609,7 +4609,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar **a)
 
    Level: developer
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArrayWrite()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqAIJCUSPARSEGetArrayWrite()`
 @*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar **a)
 {

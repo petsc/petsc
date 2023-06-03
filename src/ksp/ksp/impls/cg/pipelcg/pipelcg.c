@@ -477,7 +477,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
         "Numerically Stable Recurrence Relations for the Communication Hiding Pipelined Conjugate Gradient Method"
         Submitted to IEEE Transactions on Parallel and Distributed Systems, 2019.
 
-.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
+.seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
           `KSPPIPEBCGS`, `KSPSetPCSide()`, `KSPGROPPCG`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPELCG(KSP ksp)

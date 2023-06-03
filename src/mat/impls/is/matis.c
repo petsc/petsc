@@ -1537,7 +1537,7 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
 
    Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatPtAP()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatPtAP()`
 @*/
 PetscErrorCode MatISStoreL2L(Mat A, PetscBool store)
 {
@@ -1573,7 +1573,7 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
    Note:
    When `fix` is `PETSC_TRUE`, new local matrices and l2g maps are generated during the final assembly process.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatAssemblyEnd()`, `MAT_FINAL_ASSEMBLY`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatAssemblyEnd()`, `MAT_FINAL_ASSEMBLY`
 @*/
 PetscErrorCode MatISFixLocalEmpty(Mat A, PetscBool fix)
 {
@@ -1626,7 +1626,7 @@ static PetscErrorCode MatISFixLocalEmpty_IS(Mat A, PetscBool fix)
    from the asssembled format to the unassembled one. It overestimates the preallocation of `MATIS` local
    matrices; for exact preallocation, the user should set the preallocation directly on local matrix objects.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatMPIAIJSetPreallocation()`, `MatISGetLocalMat()`, `MATIS`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatMPIAIJSetPreallocation()`, `MatISGetLocalMat()`, `MATIS`
 @*/
 PetscErrorCode MatISSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
@@ -2062,7 +2062,7 @@ general_assembly:
   Note:
     This function has been deprecated and it will be removed in future releases. Update your code to use the `MatConvert()` interface.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatConvert()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatConvert()`
 @*/
 PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
 {
@@ -2835,7 +2835,7 @@ static PetscErrorCode MatISRestoreLocalMat_IS(Mat mat, Mat *local)
 
   Call `MatISRestoreLocalMat()` when finished with the local matrix.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatISRestoreLocalMat()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISRestoreLocalMat()`
 @*/
 PetscErrorCode MatISGetLocalMat(Mat mat, Mat *local)
 {
@@ -2855,7 +2855,7 @@ PetscErrorCode MatISGetLocalMat(Mat mat, Mat *local)
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatISGetLocalMat()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISGetLocalMat()`
 @*/
 PetscErrorCode MatISRestoreLocalMat(Mat mat, Mat *local)
 {
@@ -2886,7 +2886,7 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat, MatType mtype)
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatSetType()`, `MatType`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatSetType()`, `MatType`
 @*/
 PetscErrorCode MatISSetLocalMatType(Mat mat, MatType mtype)
 {
@@ -2938,7 +2938,7 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
   This can be called if you have precomputed the local matrix and
   want to provide it to the matrix object `MATIS`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatISSetLocalMatType`, `MatISGetLocalMat()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISSetLocalMatType`, `MatISGetLocalMat()`
 @*/
 PetscErrorCode MatISSetLocalMat(Mat mat, Mat local)
 {
@@ -3126,7 +3126,7 @@ static PetscErrorCode MatSetFromOptions_IS(Mat A, PetscOptionItems *PetscOptions
 
     If `rmap` (`cmap`) is `NULL`, then the local row (column) spaces matches the global space.
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `MatSetLocalToGlobalMapping()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatCreateIS(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, ISLocalToGlobalMapping rmap, ISLocalToGlobalMapping cmap, Mat *A)
 {
@@ -3331,7 +3331,7 @@ static PetscErrorCode MatIncreaseOverlap_IS(Mat A, PetscInt n, IS is[], PetscInt
    Note:
    The returned map can be different from the one used to construct the `MATIS` object, since it will not contain negative or repeated indices.
 
-.seealso: [](chapter_matrices), `Mat`, `MatIS`, `MatSetLocalToGlobalMapping()`
+.seealso: [](ch_matrices), `Mat`, `MatIS`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatISGetLocalToGlobalMapping(Mat A, ISLocalToGlobalMapping *rmapping, ISLocalToGlobalMapping *cmapping)
 {
@@ -3374,7 +3374,7 @@ static PetscErrorCode MatISGetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMapp
    You can do matrix preallocation on the local matrix after you obtain it with
    `MatISGetLocalMat()`; otherwise, you could use `MatISSetPreallocation()`
 
-.seealso: [](chapter_matrices), `Mat`, `MATIS`, `Mat`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `Mat`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
 {

@@ -2618,7 +2618,7 @@ static PetscErrorCode MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat, const PetscInt
 
     MUST be called before any calls to `MatSetValues()`
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQBAIJ`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MATSEQBAIJ`, `MatSetValues()`
 @*/
 PetscErrorCode MatSeqBAIJSetColumnIndices(Mat mat, PetscInt *indices)
 {
@@ -3399,7 +3399,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B, PetscInt bs, const P
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQBAIJ`, `MatSeqBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
+.seealso: [](ch_matrices), `Mat`, `MATSEQBAIJ`, `MatSeqBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
 PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar **array)
 {
@@ -3419,7 +3419,7 @@ PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar **array)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatSeqBAIJGetArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
+.seealso: [](ch_matrices), `Mat`, `MatSeqBAIJGetArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
 PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar **array)
 {
@@ -3444,7 +3444,7 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar **array)
 
    Run with `-info` to see what version of the matrix-vector product is being used
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateSeqBAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateSeqBAIJ()`
 M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType, MatReuse, Mat *);
@@ -3756,7 +3756,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer)
    allocation.  See [Sparse Matrices](sec_matsparse) for details.
    matrices.
 
-.seealso: [](chapter_matrices), `Mat`, [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
+.seealso: [](ch_matrices), `Mat`, [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/
 PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
 {
@@ -3806,7 +3806,7 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
    Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
    allocation.  See [Sparse Matrices](sec_matsparse) for details.
 
-.seealso: [](chapter_matrices), `Mat`, [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatGetInfo()`
+.seealso: [](ch_matrices), `Mat`, [Sparse Matrices](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatGetInfo()`
 @*/
 PetscErrorCode MatSeqBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const PetscInt nnz[])
 {
@@ -3841,7 +3841,7 @@ PetscErrorCode MatSeqBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const
 
    Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatSeqBAIJSetPreallocation()`, `MATSEQBAIJ`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatSeqBAIJSetPreallocation()`, `MATSEQBAIJ`
 @*/
 PetscErrorCode MatSeqBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {
@@ -3887,7 +3887,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt 
       block, followed by the second column of the first block etc etc.  That is, the blocks are contiguous in memory
       with column-major ordering within blocks.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateBAIJ()`, `MatCreateSeqBAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateBAIJ()`, `MatCreateSeqBAIJ()`
 @*/
 PetscErrorCode MatCreateSeqBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt i[], PetscInt j[], PetscScalar a[], Mat *mat)
 {

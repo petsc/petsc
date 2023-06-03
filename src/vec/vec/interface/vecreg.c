@@ -49,7 +49,7 @@ static inline PetscErrorCode VecTypeCompareAny_Private(VecType srcType, PetscBoo
 
   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the same type as an existing vector.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecGetType()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecGetType()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecSetType(Vec vec, VecType newType)
 {
@@ -181,7 +181,7 @@ newvec:
 
   Level: intermediate
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecGetType()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecGetType()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecGetType(Vec vec, VecType *type)
 {

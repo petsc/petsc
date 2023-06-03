@@ -392,7 +392,7 @@ static PetscErrorCode TSView_EIMEX(TS ts, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](ch_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 {
@@ -414,7 +414,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEIMEXSetMaxRows()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](ch_ts), `TSEIMEXSetMaxRows()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 {
@@ -435,7 +435,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](ch_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 {
@@ -515,7 +515,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
  Reference:
 . [1] -  E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific Computing, 31 (2010), pp. 4452-4477.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSType`
  M*/
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
 {

@@ -71,7 +71,7 @@ Matrix Factorization
 ~~~~~~~~~~~~~~~~~~~~
 
 Normally, PETSc users will access the matrix solvers through the ``KSP``
-interface, as discussed in :any:`chapter_ksp`, but the
+interface, as discussed in :any:`ch_ksp`, but the
 underlying factorization and triangular solve routines are also directly
 accessible to the user.
 

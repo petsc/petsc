@@ -324,7 +324,7 @@ static PetscErrorCode TSComputeLinearStability_Mimex(TS ts, PetscReal xr, PetscR
 
   Level: beginner
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS ts)
 {

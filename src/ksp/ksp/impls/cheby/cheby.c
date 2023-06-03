@@ -158,7 +158,7 @@ static PetscErrorCode KSPChebyshevGetKind_Chebyshev(KSP ksp, KSPChebyshevKind *k
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`,
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`,
 @*/
 PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emin)
 {
@@ -202,7 +202,7 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`, `KSPChebyshevEstEigGetKSP()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`, `KSPChebyshevEstEigGetKSP()`
 @*/
 PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscReal c, PetscReal d)
 {
@@ -233,7 +233,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigGetKSP()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigGetKSP()`
 @*/
 PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
 {
@@ -257,7 +257,7 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
 
   Level: advanced
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 {
@@ -295,7 +295,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 +  * - Malachi Phillips and Paul Fischer, Optimal Chebyshev Smoothers and One-sided V-cycles, https://arxiv.org/abs/2210.03179.
 -  * - James Lottes, Optimal Polynomial Smoothers for Multigrid V-cycles, https://arxiv.org/abs/2202.08830.
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevGetKind()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevGetKind()`
 @*/
 PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
 {
@@ -317,7 +317,7 @@ PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevSetKind()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevSetKind()`
 @*/
 PetscErrorCode KSPChebyshevGetKind(KSP ksp, KSPChebyshevKind *kind)
 {
@@ -901,7 +901,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
    The user should call `KSPChebyshevSetEigenvalues()` to get eigenvalue estimates.
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`
           `KSPRICHARDSON`, `KSPCG`, `PCMG`
 M*/

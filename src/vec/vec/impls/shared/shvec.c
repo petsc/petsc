@@ -175,7 +175,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
    Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
    same type as an existing vector.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecCreateMPI()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecCreateMPI()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`
 @*/
 PetscErrorCode VecCreateShared(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)

@@ -19,7 +19,7 @@
 
     Level: advanced
 
-.seealso: [](chapter_stag), `DMSTAG`, `DM`, `DMRestrict()`, `DMCoarsen()`, `DMSTAG`, `DMCreateInjection()`
+.seealso: [](ch_stag), `DMSTAG`, `DM`, `DMRestrict()`, `DMCoarsen()`, `DMSTAG`, `DMCreateInjection()`
 @*/
 PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
 {

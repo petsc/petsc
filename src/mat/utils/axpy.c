@@ -47,7 +47,7 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatAYPX()`
+.seealso: [](ch_matrices), `Mat`, `MatAYPX()`
  @*/
 PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
@@ -282,7 +282,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
 
    To form Y = Y + diag(V) use `MatDiagonalSet()`
 
-.seealso: [](chapter_matrices), `Mat`, `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
+.seealso: [](ch_matrices), `Mat`, `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
  @*/
 PetscErrorCode MatShift(Mat Y, PetscScalar a)
 {
@@ -334,7 +334,7 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is)
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
 
-.seealso: [](chapter_matrices), `Mat`, `MatShift()`, `MatScale()`, `MatDiagonalScale()`
+.seealso: [](ch_matrices), `Mat`, `MatShift()`, `MatScale()`, `MatDiagonalScale()`
 @*/
 PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 {
@@ -365,7 +365,7 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatAXPY()`
+.seealso: [](ch_matrices), `Mat`, `MatAXPY()`
  @*/
 PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
@@ -394,7 +394,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
     This routine is costly in general, and is recommended for use only with relatively small systems.
     Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperatorTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperatorTranspose()`
 @*/
 PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
 {
@@ -425,7 +425,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
     This routine is costly in general, and is recommended for use only with relatively small systems.
     Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperator()`
+.seealso: [](ch_matrices), `Mat`, `MatConvert()`, `MatMult()`, `MatComputeOperator()`
 @*/
 PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 {
@@ -449,7 +449,7 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatZeroEntries()`
  @*/
 PetscErrorCode MatChop(Mat A, PetscReal tol)
 {

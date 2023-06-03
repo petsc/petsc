@@ -2689,7 +2689,7 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *ival)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
 PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival)
 {
@@ -2720,7 +2720,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
 PetscErrorCode MatMumpsGetIcntl(Mat F, PetscInt icntl, PetscInt *ival)
 {
@@ -2787,7 +2787,7 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *val)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
 PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val)
 {
@@ -2818,7 +2818,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
 PetscErrorCode MatMumpsGetCntl(Mat F, PetscInt icntl, PetscReal *val)
 {
@@ -2957,7 +2957,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`
 @*/
 PetscErrorCode MatMumpsGetInverse(Mat F, Mat spRHS)
 {
@@ -2995,7 +2995,7 @@ PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`, `MatMumpsGetInverse()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`, `MatMumpsGetInverse()`
 @*/
 PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
 {
@@ -3028,7 +3028,7 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
 PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival)
 {
@@ -3057,7 +3057,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
 PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival)
 {
@@ -3086,7 +3086,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfog()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfog()`
 @*/
 PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val)
 {
@@ -3115,7 +3115,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
 @*/
 PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
 {
@@ -3145,7 +3145,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
    References:
 .  * - MUMPS Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
 @*/
 PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 {
@@ -3278,7 +3278,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 +  * - Heroux, Michael A., R. Brightwell, and Michael M. Wolf. "Bi-modal MPI and MPI+ threads computing on scalable multicore systems." IJHPCA (Submitted) (2011).
 -  * - Gutierrez, Samuel K., et al. "Accommodating Thread-Level Heterogeneity in Coupled Parallel Applications." Parallel and Distributed Processing Symposium (IPDPS), 2017 IEEE International. IEEE, 2017.
 
-.seealso: [](chapter_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`, `KSPGetPC()`, `PCFactorGetMatrix()`
+.seealso: [](ch_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`, `KSPGetPC()`, `PCFactorGetMatrix()`
 M*/
 
 static PetscErrorCode MatFactorGetSolverType_mumps(Mat A, MatSolverType *type)

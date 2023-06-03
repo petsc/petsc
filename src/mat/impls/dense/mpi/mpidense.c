@@ -21,7 +21,7 @@
 
     Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MATMPIDENSE`, `MATSEQDENSE`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MATMPIDENSE`, `MATSEQDENSE`
 @*/
 PetscErrorCode MatDenseGetLocalMatrix(Mat A, Mat *B)
 {
@@ -1601,7 +1601,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A, Mat *v)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateDense()`, `MATSEQDENSE`, `MATDENSE`
+.seealso: [](ch_matrices), `Mat`, `MatCreateDense()`, `MATSEQDENSE`, `MATDENSE`
 M*/
 PetscErrorCode MatCreate_MPIDense(Mat mat)
 {
@@ -1683,7 +1683,7 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`, `MATDENSEHIP`
+.seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`, `MATDENSEHIP`
 M*/
 
 /*@C
@@ -1706,7 +1706,7 @@ M*/
    who wish to allocate their own matrix memory space.  Most users should
    set `data` to `NULL`.
 
-.seealso: [](chapter_matrices), `Mat`, `MATMPIDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MATMPIDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatMPIDenseSetPreallocation(Mat B, PetscScalar *data)
 {
@@ -1733,7 +1733,7 @@ PetscErrorCode MatMPIDenseSetPreallocation(Mat B, PetscScalar *data)
    You can return to the original array with a call to `MatDenseResetArray()`. The user is responsible for freeing this array; it will not be
    freed when the matrix is destroyed.
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseResetArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseResetArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`,
           `MatDenseReplaceArray()`
 @*/
 PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
@@ -1761,7 +1761,7 @@ PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
    Note:
    You can only call this after a call to `MatDensePlaceArray()`
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDensePlaceArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDensePlaceArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 @*/
 PetscErrorCode MatDenseResetArray(Mat mat)
 {
@@ -1789,7 +1789,7 @@ PetscErrorCode MatDenseResetArray(Mat mat)
    The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
    freed by the user. It will be freed when the matrix is destroyed.
 
-.seealso: [](chapter_matrices), `Mat`, `MatDensePlaceArray()`, `MatDenseGetArray()`, `VecReplaceArray()`
+.seealso: [](ch_matrices), `Mat`, `MatDensePlaceArray()`, `MatDenseGetArray()`, `VecReplaceArray()`
 @*/
 PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
 {
@@ -1836,7 +1836,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar *data, Mat *A)
 {

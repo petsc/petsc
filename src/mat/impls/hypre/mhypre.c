@@ -1534,7 +1534,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
    Note:
     If the *nnz parameter is given then the *nz parameter is ignored; for sequential matrices, `onz` and `onnz` are ignored.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatMPIAIJSetPreallocation()`, `MATHYPRE`, `MATAIJ`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatMPIAIJSetPreallocation()`, `MATHYPRE`, `MATAIJ`
 @*/
 PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
 {
@@ -1560,7 +1560,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
+.seealso: [](ch_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
 @*/
 PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatType mtype, PetscCopyMode copymode, Mat *A)
 {
@@ -1710,7 +1710,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
+.seealso: [](ch_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
 @*/
 PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
 {
@@ -2324,7 +2324,7 @@ static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], Inse
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatHYPRESetPreallocation`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatHYPRESetPreallocation`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)

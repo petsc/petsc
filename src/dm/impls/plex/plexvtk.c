@@ -646,7 +646,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   The reason for this odd model is that the VTK file format does not provide any way to write one field at a time.
   Instead, metadata for the entire file needs to be available up-front before you can start writing the file.
 
-.seealso: [](chapter_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `PETSCVIEWERVTK`
+.seealso: [](ch_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `PETSCVIEWERVTK`
 @*/
 PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
 {

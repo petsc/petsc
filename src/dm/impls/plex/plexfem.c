@@ -99,7 +99,7 @@ static PetscErrorCode DMPlexRestoreFEGeom(DMField coordField, IS pointIS, PetscQ
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetScale()`, `PetscUnit`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetScale()`, `PetscUnit`
 @*/
 PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 {
@@ -124,7 +124,7 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetScale()`, `PetscUnit`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetScale()`, `PetscUnit`
 @*/
 PetscErrorCode DMPlexSetScale(DM dm, PetscUnit unit, PetscReal scale)
 {
@@ -178,7 +178,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   Note:
   This is necessary to provide a suitable coarse space for algebraic multigrid
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `MatNullSpaceCreate()`, `PCGAMG`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `MatNullSpaceCreate()`, `PCGAMG`
 @*/
 PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
 {
@@ -257,7 +257,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   Note:
   This is necessary to provide a suitable coarse space for algebraic multigrid
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `MatNullSpaceCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `MatNullSpaceCreate()`
 @*/
 PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const PetscInt nids[], const PetscInt ids[], MatNullSpace *sp)
 {
@@ -324,7 +324,7 @@ PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const 
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
 @*/
 PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
 {
@@ -348,7 +348,7 @@ PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
 @*/
 PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 {
@@ -678,7 +678,7 @@ static PetscErrorCode DMPlexBasisTransform_Internal(DM dm, Vec lv, PetscBool l2g
   Note:
   This method is only intended to be called inside `DMGlobalToLocal()`. It is unlikely that a user will have a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexLocalToGlobalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexLocalToGlobalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
 @*/
 PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
 {
@@ -704,7 +704,7 @@ PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
   Note:
   This method is only intended to be called inside `DMGlobalToLocal()`. It is unlikely that a user would want a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGlobalToLocalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGlobalToLocalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
 @*/
 PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
 {
@@ -736,7 +736,7 @@ PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
    The XYZ system rotates a third time about the z axis by gamma.
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGlobalToLocalBasis()`, `DMPlexLocalToGlobalBasis()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGlobalToLocalBasis()`, `DMPlexLocalToGlobalBasis()`
 @*/
 PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta, PetscReal gamma)
 {
@@ -779,7 +779,7 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMLabel`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMLabel`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx, Vec locX)
 {
@@ -818,7 +818,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, Vec locU, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void *ctx, Vec locX)
 {
@@ -859,7 +859,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectBdFieldLabelLocal()`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectBdFieldLabelLocal()`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time, Vec locU, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void *ctx, Vec locX)
 {
@@ -903,7 +903,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time,
   Note:
   This implementation currently ignores the numcomps/comps argument from `DMAddBoundary()`
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec faceGeometry, Vec cellGeometry, Vec Grad, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscReal, const PetscReal *, const PetscReal *, const PetscScalar *, PetscScalar *, void *), void *ctx, Vec locX)
 {
@@ -1141,7 +1141,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunctionLabelLocal()`, `DMAddBoundary()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunctionLabelLocal()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
@@ -1171,7 +1171,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunctionLabelLocal()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunctionLabelLocal()`
 @*/
 PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM dm, PetscBool insertEssential, Vec locX_t, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
@@ -1216,7 +1216,7 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, Vec localX, PetscReal *diff)
 {
@@ -1632,7 +1632,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, Vec D)
 {
@@ -1757,7 +1757,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   Note:
   $ u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| $ where $ |T_i| $ is the cell volume
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
 {
@@ -1889,7 +1889,7 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
   Note:
   $\nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| $ where $ |T_i| $ is the cell volume
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC)
 {
@@ -2215,7 +2215,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSNESComputeResidualFEM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSNESComputeResidualFEM()`
 @*/
 PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, void *user)
 {
@@ -2265,7 +2265,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSNESComputeResidualFEM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSNESComputeResidualFEM()`
 @*/
 PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
 {
@@ -2451,7 +2451,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeIntegralFEM()`, `DMPlexComputeBdResidualFEM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeIntegralFEM()`, `DMPlexComputeBdResidualFEM()`
 @*/
 PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt numVals, const PetscInt vals[], void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscScalar *integral, void *user)
 {
@@ -2524,7 +2524,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefined, Mat In, void *user)
 {
@@ -2761,7 +2761,7 @@ PetscErrorCode DMPlexComputeMassMatrixNested(DM dmc, DM dmf, Mat mass, void *use
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *user)
 {
@@ -2933,7 +2933,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeMassMatrixNested()`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeMassMatrixNested()`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *user)
 {
@@ -3168,7 +3168,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *user)
 {
@@ -3342,7 +3342,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
 {
@@ -3428,7 +3428,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexRestoreCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
 {
@@ -3676,7 +3676,7 @@ static PetscErrorCode DMPlexRestoreHybridFields(DM dm, DM dmX[], PetscDS dsX[], 
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
 @*/
 PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
 {
@@ -3840,7 +3840,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
 {
@@ -3867,7 +3867,7 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
 @*/
 PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
 {
@@ -3937,7 +3937,7 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
 {
@@ -4433,7 +4433,7 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMTSSetRHSFunctionLocal()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMTSSetRHSFunctionLocal()`
 @*/
 PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
 {
@@ -4462,7 +4462,7 @@ PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscRe
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetGeometryFVM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetGeometryFVM()`
 @*/
 PetscErrorCode DMPlexGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 {

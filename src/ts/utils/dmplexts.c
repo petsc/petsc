@@ -44,7 +44,7 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 
   Level: developer
 
-.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
+.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
 {
@@ -82,7 +82,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 
   Level: developer
 
-.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
+.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user)
 {
@@ -128,7 +128,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
   Level: developer
 
-.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
+.seealso: [](ch_ts), `DMPLEX`, `TS`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
@@ -185,7 +185,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
+.seealso: [](ch_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
@@ -246,7 +246,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Level: developer
 
-.seealso: [](chapter_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
+.seealso: [](ch_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
 @*/
 PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
 {
@@ -302,7 +302,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
 
   Level: developer
 
-.seealso: [](chapter_ts), `DM`, `DMTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
+.seealso: [](ch_ts), `DM`, `DMTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
 @*/
 PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual)
 {
@@ -354,7 +354,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 
   Level: developer
 
-.seealso: [](chapter_ts), `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
+.seealso: [](ch_ts), `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
 @*/
 PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate)
 {

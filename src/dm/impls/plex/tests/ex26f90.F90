@@ -530,7 +530,7 @@ end program ex62f90
 !   nsize: 2
 !   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
 ! test:
-!   # Something is now broken with parallel read/write for wahtever shape H is
+!   # Something is now broken with parallel read/write for whatever shape H is
 !   TODO: broken
 !   suffix: 11
 !   nsize: 2

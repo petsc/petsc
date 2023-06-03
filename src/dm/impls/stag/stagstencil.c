@@ -25,7 +25,7 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
 
   Level: advanced
 
-.seealso: [](chapter_stag), `DMSTAG`, `IS`, `DMStagStencil`, `DMCreateGlobalVector`
+.seealso: [](ch_stag), `DMSTAG`, `IS`, `DMStagStencil`, `DMCreateGlobalVector`
 @*/
 PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStencil *stencils, IS *is)
 {
@@ -134,7 +134,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
 
   Level: intermediate
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMDAGetDof()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMDAGetDof()`
 @*/
 PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *dof)
 {
@@ -301,7 +301,7 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
 
   Level: advanced
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
 @*/
 PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, PetscScalar *val)
 {
@@ -340,7 +340,7 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
 
   Level: intermediate
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatGetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatGetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
 @*/
 PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, const PetscScalar *val, InsertMode insertMode)
 {
@@ -381,7 +381,7 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
 
   Level: developer
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMGetLocalVector`, `DMCreateLocalVector`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMGetLocalVector`, `DMCreateLocalVector`
 @*/
 PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const DMStagStencil *pos, PetscInt *ix)
 {
@@ -444,7 +444,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
 
   Level: advanced
 
-.seealso: [](chapter_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMStagVecGetArray()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMStagVecGetArray()`
 @*/
 PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, PetscScalar *val)
 {
@@ -488,7 +488,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
 
   Level: advanced
 
-.seealso: [](chapter_stag), `DMSTAG`, `Vec`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMStagVecGetArray()`
+.seealso: [](ch_stag), `DMSTAG`, `Vec`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMStagVecGetArray()`
 @*/
 PetscErrorCode DMStagVecSetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, const PetscScalar *val, InsertMode insertMode)
 {

@@ -23,7 +23,7 @@ $  PetscErrorCode func(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx);
 
    Level: beginner
 
-.seealso: [](chapter_tao), `Tao`, `TaoTypes`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
+.seealso: [](ch_tao), `Tao`, `TaoTypes`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
 @*/
 PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -76,7 +76,7 @@ $  PetscErrorCode func(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx);
 
    Level: beginner
 
-.seealso: [](chapter_tao), `Tao`, TaoType`, `TaoGetObjective()`, `TaoGetGradient()`, `TaoGetObjectiveAndGradient()`, `TaoSetHessian()`
+.seealso: [](ch_tao), `Tao`, TaoType`, `TaoGetObjective()`, `TaoGetGradient()`, `TaoGetObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoGetHessian(Tao tao, Mat *H, Mat *Hpre, PetscErrorCode (**func)(Tao, Vec, Mat, Mat, void *), void **ctx)
 {
@@ -247,7 +247,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
    Developer Note:
    The Hessian test mechanism follows `SNESTestJacobian()`.
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetHessian()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 {
@@ -292,7 +292,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
    implementations, so most users would not generally call this routine
    themselves.
 
-.seealso: [](chapter_tao), `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianRoutine()`
+.seealso: [](ch_tao), `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianRoutine()`
 @*/
 PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -333,7 +333,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    implementations, so most users would not generally call this routine
    themselves.
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeResidual()`, `TaoSetJacobianResidual()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeResidual()`, `TaoSetJacobianResidual()`
 @*/
 PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -371,7 +371,7 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    Most users should not need to explicitly call this routine, as it
    is used internally within the optimization algorithms.
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv)
 {
@@ -407,7 +407,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
    Most users should not need to explicitly call this routine, as it
    is used internally within the optimization algorithms.
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 {
@@ -447,7 +447,7 @@ $  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx);
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
+.seealso: [](ch_tao), `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -500,7 +500,7 @@ $  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx);
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
+.seealso: [](ch_tao), `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -556,7 +556,7 @@ $   PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, Mat Jinv, void *ctx);
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianState()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeJacobianState()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, Mat, void *), void *ctx)
 {
@@ -617,7 +617,7 @@ $  PetscErrorCode func(Tao tao, Vec x, Mat J, void *ctx);
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianDesign()`, `TaoSetJacobianStateRoutine()`, `TaoSetStateDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeJacobianDesign()`, `TaoSetJacobianStateRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func)(Tao, Vec, Mat, void *), void *ctx)
 {
@@ -651,7 +651,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoSetJacobianStateRoutine()`, `TaoSetJacobianDesignRoutine()`
+.seealso: [](ch_tao), `Tao`, `TaoSetJacobianStateRoutine()`, `TaoSetJacobianDesignRoutine()`
 @*/
 PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 {
@@ -685,7 +685,7 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
    Most users should not need to explicitly call this routine, as it
    is used internally within the optimization algorithms.
 
-.seealso: [](chapter_tao), `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: [](ch_tao), `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -722,7 +722,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers.
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -764,7 +764,7 @@ $  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx)
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianEquality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetEqualityDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeJacobianEquality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetEqualityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -818,7 +818,7 @@ $  PetscErrorCode func(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx);
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `Tao`, `TaoComputeJacobianInequality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetInequalityDesignIS()`
+.seealso: [](ch_tao), `Tao`, `TaoComputeJacobianInequality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetInequalityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
 {

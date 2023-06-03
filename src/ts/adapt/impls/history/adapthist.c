@@ -74,7 +74,7 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
    Note:
    The time history is internally copied, and the user can free the hist array. The user still needs to specify the termination of the solve via `TSSetMaxSteps()`.
 
-.seealso: [](chapter_ts), `TS`, `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
+.seealso: [](ch_ts), `TS`, `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
 @*/
 PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t, PetscReal *dt)
 {
@@ -108,7 +108,7 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
    Note:
    The time history is internally copied, and the user can free the hist array. The user still needs to specify the termination of the solve via `TSSetMaxSteps()`.
 
-.seealso: [](chapter_ts), `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
+.seealso: [](ch_ts), `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
 @*/
 PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal hist[], PetscBool backward)
 {
@@ -147,7 +147,7 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
 
    The user still needs to specify the termination of the solve via `TSSetMaxSteps()`.
 
-.seealso: [](chapter_ts), `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetHistory()`, `TSADAPTHISTORY`, `TSAdapt`
+.seealso: [](ch_ts), `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetHistory()`, `TSADAPTHISTORY`, `TSAdapt`
 @*/
 PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, PetscBool backward)
 {
@@ -168,7 +168,7 @@ PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, Petsc
 
    Level: developer
 
-.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptHistorySetHistory()`, `TSAdaptType`
+.seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptHistorySetHistory()`, `TSAdaptType`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt adapt)
 {

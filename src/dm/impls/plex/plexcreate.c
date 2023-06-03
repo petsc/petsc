@@ -186,7 +186,7 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscPointFunc`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFunc`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
 @*/
 PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFunc coordFunc)
 {
@@ -250,7 +250,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simplex, PetscBool interpolate, PetscReal refinementLimit, DM *newdm)
 {
@@ -744,7 +744,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Internal(DM dm, PetscInt dim, c
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateBoxMesh()`, `DMPlexCreateFromFile()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateBoxMesh()`, `DMPlexCreateFromFile()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateBoxSurfaceMesh(MPI_Comm comm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], PetscBool interpolate, DM *dm)
 {
@@ -1373,7 +1373,7 @@ and for simplicial cells
   8----4----9----5----10
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateFromFile()`, `DMPlexCreateHexCylinderMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateFromFile()`, `DMPlexCreateHexCylinderMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
 {
@@ -1442,7 +1442,7 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateWedgeCylinderMesh()`, `DMExtrude()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateWedgeCylinderMesh()`, `DMExtrude()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool orderHeight, PetscBool interpolate, DM *dm)
 {
@@ -1717,7 +1717,7 @@ PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const Pet
   A hyphen (-) must NOT be given at the beginning of the prefix name.
   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `SNESSetFromOptions()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `SNESSetFromOptions()`
 @*/
 PetscErrorCode DMPlexSetOptionsPrefix(DM dm, const char prefix[])
 {
@@ -2177,7 +2177,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
        20-----15
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodicZ, DM *dm)
 {
@@ -2290,7 +2290,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateHexCylinderMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBool interpolate, DM *dm)
 {
@@ -3527,7 +3527,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 . * - Maskery et al, Insights into the mechanical properties of several triply periodic minimal surface lattice structures made by polymer additive manufacturing, 2017.
     https://doi.org/10.1016/j.polymer.2017.11.049
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const PetscInt extent[], const DMBoundaryType periodic[], PetscBool tps_distribute, PetscInt refinements, PetscInt layers, PetscReal thickness, DM *dm)
 {
@@ -3554,7 +3554,7 @@ PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const P
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBallMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBallMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, PetscReal R, DM *dm)
 {
@@ -3606,7 +3606,7 @@ static PetscErrorCode DMPlexCreateBallMesh_Internal(DM dm, PetscInt dim, PetscRe
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateBallMesh(MPI_Comm comm, PetscInt dim, PetscReal R, DM *dm)
 {
@@ -3772,7 +3772,7 @@ static PetscErrorCode DMPlexCreateReferenceCell_Internal(DM rdm, DMPolytopeType 
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateReferenceCell()`, `DMPlexCreateBoxMesh()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateReferenceCell()`, `DMPlexCreateBoxMesh()`
 @*/
 PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, DMPolytopeType ct, DM *refdm)
 {
@@ -4593,7 +4593,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 
   Level: intermediate
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`, `PetscSection`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`, `PetscSection`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
@@ -4643,7 +4643,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   Level: beginner
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMType`, `DMPlexCreate()`, `DMCreate()`, `DMSetType()`
 @*/
 PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 {
@@ -4714,7 +4714,7 @@ which would result in the `DMPLEX`
 
   The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
           `PetscSF`
 @*/
 PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, const PetscInt cells[], PetscSF *vertexSF, PetscInt **verticesAdjSaved)
@@ -4814,7 +4814,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellListParallel()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellListParallel()`
 @*/
 PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceDim, PetscSF sfVert, const PetscReal vertexCoords[])
 {
@@ -4907,7 +4907,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
 
   See `DMPlexBuildCoordinatesFromCellListParallel()` for details about the geometry-related parameters.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, PetscInt **verticesAdj, DM *dm)
 {
@@ -4982,7 +4982,7 @@ which would result in the `DMPLEX`
 
   If numVertices is `PETSC_DETERMINE`, it is computed by PETSc as the maximum vertex index in cells + 1.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListPetsc()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListPetsc()`
 @*/
 PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const PetscInt cells[])
 {
@@ -5031,7 +5031,7 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
 
   Level: advanced
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellList()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellList()`
 @*/
 PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, const PetscReal vertexCoords[])
 {
@@ -5100,7 +5100,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   See `DMPlexBuildCoordinatesFromCellList()` for details about the geometry-related parameters.
   See `DMPlexCreateFromCellListParallelPetsc()` for parallel input
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellList()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellList()`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], DM *dm)
 {
@@ -5164,7 +5164,7 @@ which would result in the DMPlex
 .ve
  Notice that all points are numbered consecutively, unlike `DMPlexCreateFromCellListPetsc()`
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoints[], const PetscInt coneSize[], const PetscInt cones[], const PetscInt coneOrientations[], const PetscScalar vertexCoords[])
 {
@@ -5248,7 +5248,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   Developer Note:
   Should use a `PetscViewer` not a filename
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateMedFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateMedFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
 static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -5436,7 +5436,7 @@ $ -dm_plex_create_viewer_hdf5_collective
   The input parameter name is thus used to name the `DMPLEX` object when `DMPlexCreateFromFile()` internally
   calls `DMLoad()`. Currently, name is ignored for other viewer types and/or formats.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromDAG()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`, `PetscObjectSetName()`, `DMView()`, `DMLoad()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromDAG()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`, `PetscObjectSetName()`, `DMView()`, `DMLoad()`
 @*/
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const char plexname[], PetscBool interpolate, DM *dm)
 {

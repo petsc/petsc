@@ -62,7 +62,7 @@ typedef struct {
 
    Level: advanced
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegister()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegister()`
 @*/
 PetscErrorCode TSIRKTableauCreate(TS ts, PetscInt nstages, const PetscReal *A, const PetscReal *b, const PetscReal *c, const PetscReal *binterp, const PetscScalar *A_inv, const PetscScalar *A_inv_rowsum, const PetscScalar *I_s)
 {
@@ -180,7 +180,7 @@ $     TSIRKSetType(ts, "my_scheme")
    or at runtime via the option
 $     -ts_irk_type my_scheme
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegisterAll()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegisterAll()`
 @*/
 PetscErrorCode TSIRKRegister(const char sname[], PetscErrorCode (*function)(TS))
 {
@@ -197,7 +197,7 @@ PetscErrorCode TSIRKRegister(const char sname[], PetscErrorCode (*function)(TS))
 
   Level: advanced
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegisterDestroy()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegisterDestroy()`
 @*/
 PetscErrorCode TSIRKRegisterAll(void)
 {
@@ -216,7 +216,7 @@ PetscErrorCode TSIRKRegisterAll(void)
 
    Level: advanced
 
-.seealso: [](chapter_ts), `TSIRK`, `TSIRKRegister()`, `TSIRKRegisterAll()`
+.seealso: [](ch_ts), `TSIRK`, `TSIRKRegister()`, `TSIRKRegisterAll()`
 @*/
 PetscErrorCode TSIRKRegisterDestroy(void)
 {
@@ -231,7 +231,7 @@ PetscErrorCode TSIRKRegisterDestroy(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSIRK`, `PetscInitialize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `TSIRK`, `PetscInitialize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSIRKInitializePackage(void)
 {
@@ -249,7 +249,7 @@ PetscErrorCode TSIRKInitializePackage(void)
 
   Level: developer
 
-.seealso: [](chapter_ts), `TSIRK`, `PetscFinalize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
+.seealso: [](ch_ts), `TSIRK`, `PetscFinalize()`, `TSIRKFinalizePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSIRKFinalizePackage(void)
 {
@@ -675,7 +675,7 @@ static PetscErrorCode TSLoad_IRK(TS ts, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
+.seealso: [](ch_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
 @*/
 PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
 {
@@ -699,7 +699,7 @@ PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
+.seealso: [](ch_ts), `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
 @*/
 PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
 {
@@ -723,7 +723,7 @@ PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKGetNumStages()`, `TSIRK`
+.seealso: [](ch_ts), `TSIRKGetNumStages()`, `TSIRK`
 @*/
 PetscErrorCode TSIRKSetNumStages(TS ts, PetscInt nstages)
 {
@@ -744,7 +744,7 @@ PetscErrorCode TSIRKSetNumStages(TS ts, PetscInt nstages)
 
   Level: intermediate
 
-.seealso: [](chapter_ts), `TSIRKSetNumStages()`, `TSIRK`
+.seealso: [](ch_ts), `TSIRKSetNumStages()`, `TSIRK`
 @*/
 PetscErrorCode TSIRKGetNumStages(TS ts, PetscInt *nstages)
 {
@@ -829,7 +829,7 @@ static PetscErrorCode TSDestroy_IRK(TS ts)
   when using s stages. The default method uses three stages and thus has an order of six. The number of stages (thus order) can be set with
   -ts_irk_nstages or `TSIRKSetNumStages()`.
 
-.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSIRKSetType()`, `TSIRKGetType()`, `TSIRKGAUSS`, `TSIRKRegister()`, `TSIRKSetNumStages()`, `TSType`
+.seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSIRKSetType()`, `TSIRKGetType()`, `TSIRKGAUSS`, `TSIRKRegister()`, `TSIRKSetNumStages()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS ts)
 {

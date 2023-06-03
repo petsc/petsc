@@ -21,7 +21,7 @@ typedef struct {
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWs()`, `KSPMonitorSAWsDestroy()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWs()`, `KSPMonitorSAWsDestroy()`
 @*/
 PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
 {
@@ -45,7 +45,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
 
    Level: developer
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`
 @*/
 PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 {
@@ -73,7 +73,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
    Note:
    Create the ctx with `KSPMonitorSAWsCreate()` then call `KSPMonitorSet()` with the context, this function, and `KSPMonitorSAWsDestroy()`
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`, `KSPMonitorSAWsDestroy()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `PetscViewerSAWsOpen()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`, `KSPMonitorSAWsDestroy()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `PetscViewerSAWsOpen()`
 @*/
 PetscErrorCode KSPMonitorSAWs(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
 {

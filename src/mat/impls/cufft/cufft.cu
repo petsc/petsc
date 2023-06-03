@@ -120,7 +120,7 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATSEQCUFFT`
+.seealso: [](ch_matrices), `Mat`, `MATSEQCUFFT`
 @*/
 PetscErrorCode MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], Mat *A)
 {

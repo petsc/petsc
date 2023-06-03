@@ -385,7 +385,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer)
 
    Level: advanced
 
-.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessCreate()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSP`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGuessCreate()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSP`
 @*/
 PetscErrorCode KSPGuessFischerSetModel(KSPGuess guess, PetscInt model, PetscInt size)
 {

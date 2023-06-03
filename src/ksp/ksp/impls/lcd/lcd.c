@@ -212,7 +212,7 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
   Contributed by:
   Lucia Catabriga <luciac@ices.utexas.edu>
 
-.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPCGSetType()`, `KSPLCDSetRestart()`, `KSPLCDSetHapTol()`
 M*/
 

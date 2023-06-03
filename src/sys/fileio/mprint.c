@@ -485,7 +485,7 @@ static inline PetscErrorCode PetscSynchronizedFPrintf_Private(MPI_Comm comm, FIL
 }
 
 /*@C
-    PetscSynchronizedPrintf - Prints synchronized output from multple MPI processes.
+    PetscSynchronizedPrintf - Prints synchronized output from multiple MPI processes.
     Output of the first processor is followed by that of the second, etc.
 
     Not Collective

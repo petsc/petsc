@@ -77,7 +77,7 @@
    MatMPIAIJSetPreallocation(A,...);
 .ve
 
-.seealso: [](chapter_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATSEQAIJSELL`, `MATMPIAIJSELL`, `MATAIJSELL`, `MatCreate()`, `MatCreateSeqAIJSELL()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATSEQAIJSELL`, `MATMPIAIJSELL`, `MATAIJSELL`, `MatCreate()`, `MatCreateSeqAIJSELL()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateMPIAIJSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {
@@ -145,5 +145,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJSELL(Mat A)
 
   Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateMPIAIJSELL()`, `MATSEQAIJSELL`, `MATMPIAIJSELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQAIJPERM`, `MATMPIAIJPERM`, `MATSEQAIJMKL`, `MATMPIAIJMKL`
+.seealso: [](ch_matrices), `Mat`, `MatCreateMPIAIJSELL()`, `MATSEQAIJSELL`, `MATMPIAIJSELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQAIJPERM`, `MATMPIAIJPERM`, `MATSEQAIJMKL`, `MATMPIAIJMKL`
 M*/

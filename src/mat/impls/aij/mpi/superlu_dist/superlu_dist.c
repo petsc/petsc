@@ -962,5 +962,5 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
   Note:
     If PETSc was configured with `--with-cuda` then this solver will automatically use the GPUs.
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/

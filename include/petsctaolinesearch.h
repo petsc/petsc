@@ -8,7 +8,7 @@
 
    Level: intermediate
 
-.seealso: [](chapter_tao), `TaoLineSearchType`, `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
+.seealso: [](ch_tao), `TaoLineSearchType`, `Tao`, `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
 typedef struct _p_TaoLineSearch *TaoLineSearch;
 
@@ -31,7 +31,7 @@ typedef struct _p_TaoLineSearch *TaoLineSearch;
 
    Level: beginner
 
-.seealso: [](chapter_tao), `Tao`, `TaoLineSearch`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`
+.seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`
 E*/
 typedef enum {
   TAOLINESEARCH_FAILED_INFORNAN     = -1,
@@ -64,7 +64,7 @@ typedef enum {
 
   Level: beginner
 
-.seealso: [](chapter_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchSetType()`, `TaoCreate()`, `TaoSetType()`
+.seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchSetType()`, `TaoCreate()`, `TaoSetType()`
 J*/
 typedef const char *TaoLineSearchType;
 #define TAOLINESEARCHUNIT     "unit"

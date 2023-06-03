@@ -23,7 +23,7 @@ typedef struct {
 
     Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCATTER`, `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MATSCATTER`
+.seealso: [](ch_matrices), `Mat`, `MATSCATTER`, `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter)
 {
@@ -253,7 +253,7 @@ static struct _MatOps MatOps_Values = {NULL,
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, ``MATSCATTER`, MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
+.seealso: [](ch_matrices), `Mat`, ``MATSCATTER`, MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
@@ -304,7 +304,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
    This directly accesses information inside the `VecScatter` associated with the matrix-vector product
    for this matrix. This is not desirable..
 
-.seealso: [](chapter_matrices), `Mat`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`, `MATSCATTER`
+.seealso: [](ch_matrices), `Mat`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
 {
@@ -328,7 +328,7 @@ PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
 
    Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MATSCATTER`, `MatCreateScatter()`, `MATSCATTER`
+.seealso: [](ch_matrices), `Mat`, `MATSCATTER`, `MatCreateScatter()`, `MATSCATTER`
 @*/
 PetscErrorCode MatScatterSetVecScatter(Mat mat, VecScatter scatter)
 {

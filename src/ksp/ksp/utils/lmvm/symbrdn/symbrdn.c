@@ -654,7 +654,7 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
 .   MAT_LMVM_SYMBROYDEN_SCALE_SCALAR - use the Shanno scalar as the initial Hessian
 -   MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL - use a diagonalized BFGS update as the initial Hessian
 
-.seealso: [](chapter_ksp), `MATLMVMSYMBROYDEN`, `MatCreateLMVMSymBroyden()`
+.seealso: [](ch_ksp), `MATLMVMSYMBROYDEN`, `MatCreateLMVMSymBroyden()`
 @*/
 PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType stype)
 {
@@ -705,7 +705,7 @@ PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType s
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+.seealso: [](ch_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

@@ -75,7 +75,7 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 
     Level: advanced
 
-.seealso: [](chapter_ksp), `KSPQCG`
+.seealso: [](ch_ksp), `KSPQCG`
 @*/
 PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
 {
@@ -370,7 +370,7 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObje
 . * - Trond Steihaug, The Conjugate Gradient Method and Trust Regions in Large Scale Optimization,
    SIAM Journal on Numerical Analysis, Vol. 20, No. 3 (Jun., 1983).
 
-.seealso: [](chapter_ksp), 'KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
+.seealso: [](ch_ksp), 'KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
           `KSPQCGGetTrialStepNorm()`, `KSPQCGGetQuadratic()`
 M*/
 

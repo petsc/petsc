@@ -182,7 +182,7 @@ $     MatPartitioningSetType(part, "my_part")
    or at runtime via the option
 $     -mat_partitioning_type my_part
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
 @*/
 PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*function)(MatPartitioning))
 {
@@ -206,7 +206,7 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
 @*/
 PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning, MatPartitioningType *type)
 {
@@ -230,7 +230,7 @@ PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning, MatPartition
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningApply()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningApply()`
 @*/
 PetscErrorCode MatPartitioningSetNParts(MatPartitioning part, PetscInt n)
 {
@@ -256,7 +256,7 @@ PetscErrorCode MatPartitioningSetNParts(MatPartitioning part, PetscInt n)
    Note:
    The user can define additional partitionings; see `MatPartitioningRegister()`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioningApplyND()`, `MatPartitioningRegister()`, `MatPartitioningCreate()`,
+.seealso: [](ch_matrices), `Mat`, `MatPartitioningApplyND()`, `MatPartitioningRegister()`, `MatPartitioningCreate()`,
           `MatPartitioningDestroy()`, `MatPartitioningSetAdjacency()`, `ISPartitioningToNumbering()`,
           `ISPartitioningCount()`
 @*/
@@ -296,7 +296,7 @@ PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning)
 
    The user can define additional partitionings; see `MatPartitioningRegister()`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningRegister()`, `MatPartitioningCreate()`,
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningRegister()`, `MatPartitioningCreate()`,
           `MatPartitioningDestroy()`, `MatPartitioningSetAdjacency()`, `ISPartitioningToNumbering()`,
           `ISPartitioningCount()`
 @*/
@@ -344,7 +344,7 @@ PetscErrorCode MatPartitioningApply(MatPartitioning matp, IS *partitioning)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningApply()`, `MatPartitioningCreate()`,
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningApply()`, `MatPartitioningCreate()`,
           `MatPartitioningDestroy()`, `MatPartitioningSetAdjacency()`, `ISPartitioningToNumbering()`,
           `ISPartitioningCount()`
 @*/
@@ -376,7 +376,7 @@ PetscErrorCode MatPartitioningImprove(MatPartitioning matp, IS *partitioning)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningApply()`, `MatPartitioningView()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningApply()`, `MatPartitioningView()`
 @*/
 PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitioning)
 {
@@ -420,7 +420,7 @@ PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitionin
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`
 @*/
 PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning part, Mat adj)
 {
@@ -441,7 +441,7 @@ PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning part, Mat adj)
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`
 @*/
 PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
 {
@@ -478,7 +478,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
 
    The weights may not be used by some partitioners
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetPartitionWeights()`, `MatPartitioningSetNumberVertexWeights()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetPartitionWeights()`, `MatPartitioningSetNumberVertexWeights()`
 @*/
 PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const PetscInt weights[])
 {
@@ -509,7 +509,7 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const Petsc
       The array weights is freed by PETSc so the user should not free the array. In C/C++
    the array must be obtained with a call to `PetscMalloc()`, not malloc().
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetVertexWeights()`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetVertexWeights()`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`
 @*/
 PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const PetscReal weights[])
 {
@@ -536,7 +536,7 @@ PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const Pe
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`, `MatPartitioningSetPartitionWeights()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`, `MatPartitioningSetPartitionWeights()`
 @*/
 PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning part, PetscBool use_edge_weights)
 {
@@ -559,7 +559,7 @@ PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning part, PetscBool 
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`, `MatPartitioningSetPartitionWeights()`,
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`, `MatPartitioningSetPartitionWeights()`,
           `MatPartitioningSetUseEdgeWeights`
 @*/
 PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning part, PetscBool *use_edge_weights)
@@ -584,7 +584,7 @@ PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning part, PetscBool 
 
    Level: beginner
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetType()`, `MatPartitioningApply()`, `MatPartitioningDestroy()`,
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetType()`, `MatPartitioningApply()`, `MatPartitioningDestroy()`,
           `MatPartitioningSetAdjacency()`
 @*/
 PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
@@ -636,7 +636,7 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
        saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 .ve
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningView()`, `PetscObjectViewFromOptions()`, `MatPartitioningCreate()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningView()`, `PetscObjectViewFromOptions()`, `MatPartitioningCreate()`
 @*/
 PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj, const char name[])
 {
@@ -668,7 +668,7 @@ PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj
    The user can open alternative visualization contexts with
 .     `PetscViewerASCIIOpen()` - output to a specified file
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `PetscViewer`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `PetscViewer`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
 {
@@ -705,7 +705,7 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningApply()`, `MatPartitioningType`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningApply()`, `MatPartitioningType`
 @*/
 PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType type)
 {
@@ -755,7 +755,7 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
     If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
    no installed partitioners it does no repartioning.
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`
 @*/
 PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part)
 {
@@ -808,7 +808,7 @@ PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part)
 
    Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetVertexWeights()`
+.seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetVertexWeights()`
 @*/
 PetscErrorCode MatPartitioningSetNumberVertexWeights(MatPartitioning partitioning, PetscInt ncon)
 {

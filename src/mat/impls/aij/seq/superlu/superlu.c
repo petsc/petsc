@@ -500,7 +500,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
    References:
 .  * - SuperLU Users' Guide
 
-.seealso: [](chapter_matrices), `Mat`, `MatGetFactor()`, `MATSOLVERSUPERLU`
+.seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MATSOLVERSUPERLU`
 @*/
 PetscErrorCode MatSuperluSetILUDropTol(Mat F, PetscReal dtol)
 {
@@ -552,7 +552,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType *type)
 
     Cannot use ordering provided by PETSc, provides its own.
 
-.seealso: [](chapter_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
+.seealso: [](ch_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A, MatFactorType ftype, Mat *F)

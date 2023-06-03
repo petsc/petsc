@@ -14,7 +14,7 @@
   Note:
   This should greatly improve the performance of the closure operations, at the cost of additional memory.
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSection`, `DMPlexVecGetClosure()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscSection`, `DMPlexVecGetClosure()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
 PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
 {

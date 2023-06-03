@@ -741,7 +741,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 
    The code will be slightly faster if `MatFDColoringSetBlockSize`(coloring,`PETSC_DEFAULT`,nc); is called immediately after creating the coloring
 
-.seealso: [](chapter_matrices), `Mat`, `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
+.seealso: [](ch_matrices), `Mat`, `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
 @*/
 PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y)
 {

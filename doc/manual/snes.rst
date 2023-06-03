@@ -1,4 +1,4 @@
-.. _chapter_snes:
+.. _ch_snes:
 
 SNES: Nonlinear Solvers
 -----------------------
@@ -110,7 +110,7 @@ various parameters and customized routines (e.g., specialized line
 search variants), prescribe the convergence tolerance, and set
 monitoring routines. With this routine the user can also control all
 linear solver options in the ``KSP``, and ``PC`` modules, as discussed
-in :any:`chapter_ksp`.
+in :any:`ch_ksp`.
 
 After having set these routines and options, the user solves the problem
 by calling
@@ -175,7 +175,7 @@ same as ``Amat``); and an optional user-defined Jacobian context,
 ``ctx``, for application-specific data. Note that the ``SNES`` solvers
 are all data-structure neutral, so the full range of PETSc matrix
 formats (including “matrix-free” methods) can be used.
-:any:`chapter_matrices` discusses information regarding
+:any:`ch_matrices` discusses information regarding
 available matrix formats and options, while :any:`sec_nlmatrixfree` focuses on matrix-free methods in
 ``SNES``. We briefly touch on a few details of matrix usage that are
 particularly important for efficient use of the nonlinear solvers.
@@ -769,7 +769,7 @@ computational work. Within the class of inexact Newton methods, of
 particular interest are Newton-Krylov methods, where the subsidiary
 iterative technique for solving the Newton system is chosen from the
 class of Krylov subspace projection methods. Note that at runtime the
-user can set any of the linear solver options discussed in :any:`chapter_ksp`,
+user can set any of the linear solver options discussed in :any:`ch_ksp`,
 such as ``-ksp_type <ksp_method>`` and
 ``-pc_type <pc_method>``, to set the Krylov subspace and preconditioner
 methods.
@@ -1037,7 +1037,7 @@ problem dependent, but fortunately, for most structured grid problems
 knows the stencil used for the nonlinear function one can usually fairly
 easily obtain an estimate of the location of nonzeros in the matrix.
 This is harder in the unstructured case, but one typically knows where the nonzero entries are from the mesh topology and distribution of degrees of freedom.
-If using ``DMPlex`` (:any:`chapter_unstructured`) for unstructured meshes, the nonzero locations will be identified in ``DMCreateMatrix()`` and the procedure above can be used.
+If using ``DMPlex`` (:any:`ch_unstructured`) for unstructured meshes, the nonzero locations will be identified in ``DMCreateMatrix()`` and the procedure above can be used.
 Most external packages for unstructured meshes have similar functionality.
 
 One need not necessarily use a ``MatColoring`` object to determine a

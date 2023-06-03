@@ -58,7 +58,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
 
   Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPRegister()`, `KSPType`
+.seealso: [](ch_ksp), `KSP`, `KSPRegister()`, `KSPType`
 @*/
 PetscErrorCode KSPRegisterAll(void)
 {
@@ -127,7 +127,7 @@ PetscErrorCode KSPRegisterAll(void)
 
   Level: advanced
 
-.seealso: [](chapter_ksp), `KSP`, `KSPMonitorRegister()`, `KSPRegister()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorRegister()`, `KSPRegister()`
 @*/
 PetscErrorCode KSPMonitorRegisterAll(void)
 {

@@ -44,7 +44,7 @@ would v1, v2, e1 and e2.
   v0--- original ----v3
 .ve
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMExtrude()`, `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeSetTensor()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMExtrude()`, `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeSetTensor()`
 @*/
 PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, const PetscReal normal[], const PetscReal thicknesses[], DM *edm)
 {

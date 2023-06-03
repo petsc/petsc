@@ -15,7 +15,7 @@
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetActivePoint()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetActivePoint()`
 @*/
 PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 {
@@ -35,7 +35,7 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetActivePoint()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetActivePoint()`
 @*/
 PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 {
@@ -65,7 +65,7 @@ PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 
   Level: developer
 
-.seealso:[](chapter_unstructured), `DM`, `DMPLEX`, `PetscDS`, `PetscFEGeom`, `PetscFVCellGeom`, `PetscDualSpace`
+.seealso:[](ch_unstructured), `DM`, `DMPLEX`, `PetscDS`, `PetscFEGeom`, `PetscFVCellGeom`, `PetscDualSpace`
 */
 static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, PetscDS dsIn, PetscReal time, PetscFEGeom *fegeom, PetscFVCellGeom *fvgeom, PetscBool isFE[], PetscDualSpace sp[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, PetscScalar values[])
 {
@@ -465,7 +465,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
 
   Level: developer
 
-.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetActivePoint()`, `DMLabel`, `PetscDS`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetActivePoint()`, `DMLabel`, `PetscDS`
 @*/
 PetscErrorCode DMGetFirstLabeledPoint(DM dm, DM odm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *point, PetscDS *ds)
 {

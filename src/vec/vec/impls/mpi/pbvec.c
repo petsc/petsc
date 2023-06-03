@@ -518,7 +518,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
 
   Level: beginner
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
 M*/
 
 PetscErrorCode VecCreate_MPI(Vec vv)
@@ -536,7 +536,7 @@ PetscErrorCode VecCreate_MPI(Vec vv)
 
   Level: beginner
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreateMPI()`
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreateMPI()`
 M*/
 
 PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
@@ -582,7 +582,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
 
    The user should not free `array` until the vector is destroyed.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
           `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar array[], Vec *vv)
@@ -622,7 +622,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
 
    This also automatically sets the `ISLocalToGlobalMapping()` for this vector.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhost()`, `VecCreateSeqWithArray()`, `VecCreateMPIWithArray()`,
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`
 @*/
@@ -694,7 +694,7 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
 
    This also automatically sets the `ISLocalToGlobalMapping()` for this vector.
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
           `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`, `VecGhostUpdateBegin()`,
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecGhostUpdateEnd()`,
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`
@@ -727,7 +727,7 @@ PetscErrorCode VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt ng
 
    You must call this AFTER you have set the type of the vector (with` VecSetType()`) and the size (with `VecSetSizes()`).
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
           `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`, `VecGhostUpdateBegin()`,
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecGhostUpdateEnd()`,
           `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`
@@ -815,7 +815,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
    is the number of blocks in the ghost portion, i.e. the number of elements in the ghost
    portion is bs*nghost
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhost()`, `VecCreateSeqWithArray()`, `VecCreateMPIWithArray()`,
           `VecCreateGhostWithArray()`, `VecCreateGhostBlock()`
 @*/
@@ -897,7 +897,7 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt
    is the number of blocks in the ghost portion, i.e. the number of elements in the ghost
    portion is `bs*nghost`
 
-.seealso: [](chapter_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
+.seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
           `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecCreateGhostBlockWithArray()`
 @*/
