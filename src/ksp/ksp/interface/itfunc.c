@@ -1663,7 +1663,7 @@ PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, Petsc
    See `KSPConvergedDefault()` for details on how these parameters are used in the default convergence test. See also `KSPSetConvergenceTest()`
    for setting user-defined stopping criteria.
 
-.seealso: [](chapter_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetTolerances()`, `KSPGetMinimumIterations()`, `KSPGetTolerances()`
+.seealso: [](ch_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetTolerances()`, `KSPGetMinimumIterations()`, `KSPGetTolerances()`
 @*/
 PetscErrorCode KSPSetMinimumIterations(KSP ksp, PetscInt minit)
 {
@@ -1689,7 +1689,7 @@ PetscErrorCode KSPSetMinimumIterations(KSP ksp, PetscInt minit)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetTolerances()`, `KSPSetMinimumIterations()`, `KSPGetTolerances()`
+.seealso: [](ch_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetTolerances()`, `KSPSetMinimumIterations()`, `KSPGetTolerances()`
 @*/
 PetscErrorCode KSPGetMinimumIterations(KSP ksp, PetscInt *minit)
 {

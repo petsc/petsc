@@ -324,7 +324,7 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSECUDA`, `MatCreate()`, `MatCreateDenseCUDA()`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSECUDA`, `MatCreate()`, `MatCreateDenseCUDA()`,
 `MatSetValues()`, `MatDenseSetLDA()`
 @*/
 PetscErrorCode MatDenseCUDASetPreallocation(Mat A, PetscScalar *device_array)

@@ -2313,7 +2313,7 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
    Notes:
      This is primarily used for computing weighted local truncation errors in ``TS``.
 
-.seealso: [](chapter_vectors), `Vec`, `NormType`, ``TSErrorWeightedNorm()``, ``TSErrorWeightedENorm()``
+.seealso: [](ch_vectors), `Vec`, `NormType`, ``TSErrorWeightedNorm()``, ``TSErrorWeightedENorm()``
 @*/
 PetscErrorCode VecErrorWeightedNorms(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
 {

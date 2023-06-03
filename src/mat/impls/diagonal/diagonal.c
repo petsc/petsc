@@ -133,7 +133,7 @@ static PetscErrorCode MatDuplicate_Diagonal(Mat A, MatDuplicateOption op, Mat *B
 
   Any changes to the obtained vector immediately change the action of the `Mat`. The matrix can be changed more efficiently by accessing this vector and changing its values, instead of filling a work vector and using `MatDiagonalSet()`
 
-.seealso: [](chapter_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`, `MatGetDiagonal()`
+.seealso: [](ch_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`, `MatGetDiagonal()`
 @*/
 PetscErrorCode MatDiagonalGetDiagonal(Mat A, Vec *diag)
 {
@@ -169,7 +169,7 @@ static PetscErrorCode MatDiagonalGetDiagonal_Diagonal(Mat A, Vec *diag)
   Note:
   Use `MatDiagonalSet()` to change the values by copy, rather than reference.
 
-.seealso: [](chapter_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalGetDiagonal()`
+.seealso: [](ch_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalGetDiagonal()`
 @*/
 PetscErrorCode MatDiagonalRestoreDiagonal(Mat A, Vec *diag)
 {
@@ -216,7 +216,7 @@ static PetscErrorCode MatDiagonalRestoreDiagonal_Diagonal(Mat A, Vec *diag)
   using `MatDiagonalGetInverseDiagonal()` and `MatDiagonalRestoreInverseDiagonal()` avoids copies
   and avoids any call to `VecReciprocal()`.
 
-.seealso: [](chapter_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MATLMVMBROYDEN`, `MatSolve()`
+.seealso: [](ch_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MATLMVMBROYDEN`, `MatSolve()`
 @*/
 PetscErrorCode MatDiagonalGetInverseDiagonal(Mat A, Vec *inv_diag)
 {
@@ -249,7 +249,7 @@ static PetscErrorCode MatDiagonalGetInverseDiagonal_Diagonal(Mat A, Vec *inv_dia
 
   Level: developer
 
-.seealso: [](chapter_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalGetInverseDiagonal()`
+.seealso: [](ch_matrices), `MATDIAGONAL`, `MatCreateDiagonal()`, `MatDiagonalGetInverseDiagonal()`
 @*/
 PetscErrorCode MatDiagonalRestoreInverseDiagonal(Mat A, Vec *inv_diag)
 {
@@ -473,7 +473,7 @@ PetscErrorCode MatGetInfo_Diagonal(Mat A, MatInfoType flag, MatInfo *info)
     The input vector `diag` will be referenced internally: any changes to `diag`
     will affect the matrix `J`.
 
-.seealso: [](chapter_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatSolve()`
           `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`
 @*/
 PetscErrorCode MatCreateDiagonal(Vec diag, Mat *J)
@@ -512,7 +512,7 @@ PetscErrorCode MatCreateDiagonal(Vec diag, Mat *J)
 
   Level: advanced
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreateDiagonal()`, `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`
+.seealso: [](ch_matrices), `Mat`, `MatCreateDiagonal()`, `MatDiagonalRestoreInverseDiagonal()`, `MatDiagonalGetDiagonal()`, `MatDiagonalRestoreDiagonal()`, `MatDiagonalGetInverseDiagonal()`
 M*/
 PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat A)
 {

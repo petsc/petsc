@@ -190,7 +190,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELLCUDA(Mat A)
    Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
    allocation.
 
-.seealso: [](chapter_matrices), `Mat`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MATMPISELLCUDA`, `MATSELLCUDA`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MATMPISELLCUDA`, `MATSELLCUDA`
 @*/
 PetscErrorCode MatCreateSELLCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

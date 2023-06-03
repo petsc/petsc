@@ -325,7 +325,7 @@ PetscErrorCode MatDenseHIPRestoreArray(Mat A, PetscScalar **a)
 
   Level: intermediate
 
-.seealso: [](chapter_matrices), `Mat`, `MATDENSEHIP`, `MatCreate()`, `MatCreateDenseHIP()`,
+.seealso: [](ch_matrices), `Mat`, `MATDENSEHIP`, `MatCreate()`, `MatCreateDenseHIP()`,
 `MatSetValues()`, `MatDenseSetLDA()`
 @*/
 PetscErrorCode MatDenseHIPSetPreallocation(Mat A, PetscScalar *device_array)
