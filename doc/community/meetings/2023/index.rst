@@ -334,7 +334,15 @@ Abstracts
 
 .. topic:: *Derek Gaston*, **Multiscale, Multiphysics Simulation Through Application Composition Using MOOSE**
 
-    Abstract is not available at this time.
+    Eight years ago, at the PETSc 20 meeting, I introduced the idea of
+    "Simplifying Multiphysics Through Application Composition" -- the idea
+    that physics applications can be built in such a way that they can
+    instantly be combined to tackle complicated multiphysics problems.
+    This talk will serve as an update on those plans.  I will detail the
+    evolution of that idea, how we’re using it in practice, how well it’s
+    working, and where we’re going next.  Motivating examples will be drawn
+    from nuclear engineering, and practical aspects, such as testing, will
+    be explored.
 
 .. _`Alex Grant`:
 
