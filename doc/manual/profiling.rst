@@ -153,8 +153,8 @@ and then solves the resulting linear system; the program then repeats
 this process for a second linear system. This particular case was run on
 four processors of an Intel x86_64 Linux cluster, using restarted GMRES
 and the block Jacobi preconditioner, where each block was solved with
-ILU. The two input files ``medium`` and ``arco6`` can be downloaded from
-`this FTP link <http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/>`__.
+ILU. The two input files ``medium`` and ``arco6`` can be obtained from
+`datafiles  <https://gitlab.com/petsc/datafiles>`__, see :any:`petsc_repositories`.
 
 The first :any:`listing <listing_exparprof>` presents an overall
 performance summary, including times, floating-point operations,
