@@ -87,17 +87,34 @@ def signature(obj):
     sig = doc.partition('\n')[0].split('.', 1)[-1]
     return sig or None
 
+# XXX
+# baselink = 'https://gitlab.com/petsc/petsc/-/tree/main'
 
 def docstring(obj):
     doc = obj.__doc__
     doc = doc or '' # FIXME
+    link = None
     if is_class(obj):
         doc = doc.strip()
     else:
         doc = doc.partition('\n')[2]
+        doc, _, link = doc.rpartition('\n')
+
     summary, _, docbody = doc.partition('\n')
     summary = summary.strip()
     docbody = textwrap.dedent(docbody).strip()
+    if link:
+        linkloc = link.replace(':','#L')
+        section = ''
+        #section = f'References\n----------`'
+        #linkbody = f'`Source code at {link} <{baselink}/src/binding/petsc4py/src/{linkloc}>`__'
+        linkbody = f':sources:`Source code at {link} <{linkloc}>`'
+        linkbody = f'{section}\n\n{linkbody}'
+        if docbody:
+            docbody = f'{docbody}\n\n{linkbody}'
+        else:
+            docbody = linkbody
+
     if docbody:
         doc = f'"""{summary}\n\n{docbody}\n\n"""'
     else:

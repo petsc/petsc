@@ -1158,15 +1158,14 @@ cdef class KSP(Object):
     def logConvergenceHistory(self, rnorm: float) -> None:
         """Add residual to convergence history.
 
+        Logically collective.
+
         Parameters
         ----------
         rnorm
             Residual norm to be added to convergence history.
 
         """
-        # Note that no documentation exists for the PETSc function
-        # `KSPLogResidualHistory`
-        # as of 29/03/2023
         cdef PetscReal rval = asReal(rnorm)
         CHKERR( KSPLogResidualHistory(self.ksp, rval) )
 
@@ -1902,7 +1901,7 @@ cdef class KSP(Object):
         Parameters
         ----------
         x
-            Optional vector to use to store the solution.
+            Optional vector to store the solution.
 
         See Also
         --------

@@ -381,6 +381,8 @@ cdef class TS(Object):
     def getEquationType(self) -> EquationType:
         """Get the type of the equation that `TS` is solving.
 
+        Not collective.
+
         See Also
         --------
         petsc.TSGetEquationType
@@ -392,6 +394,8 @@ cdef class TS(Object):
 
     def setOptionsPrefix(self, prefix : str) -> None:
         """Set the prefix used for all the `TS` options.
+
+        Logically collective.
 
         Parameters
         ----------
@@ -414,6 +418,8 @@ cdef class TS(Object):
     def getOptionsPrefix(self) -> str:
         """Return the prefix used for all the `TS` options.
 
+        Not collective.
+
         See Also
         --------
         petsc.TSGetOptionsPrefix
@@ -425,6 +431,8 @@ cdef class TS(Object):
 
     def appendOptionsPrefix(self, prefix: str) -> None:
         """Append to the prefix used for all the `TS` options.
+
+        Logically collective.
 
         Parameters
         ----------
@@ -447,6 +455,8 @@ cdef class TS(Object):
     def setFromOptions(self) -> None:
         """Set various `TS` parameters from user options.
 
+        Collective.
+
         See Also
         --------
         petsc_options, petsc.TSSetFromOptions
@@ -458,6 +468,8 @@ cdef class TS(Object):
 
     def setAppCtx(self, appctx: Any) -> None:
         """Set the application context.
+
+        Not collective.
 
         Parameters
         ----------
