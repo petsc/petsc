@@ -472,7 +472,7 @@ cdef class Mat(Object):
 
         Once created, the user should call `setType` or
         `setFromOptions` before using the matrix. Alternatively, specific
-        creation routines can be used such as `createAIJ` or
+        creation routines such as `createAIJ` or
         `createBAIJ` can be used.
 
         Parameters
@@ -4048,7 +4048,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatMatMult, petsc.MatReuse
 
@@ -4096,7 +4096,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatMatTransposeMult, petsc.MatReuse
 
@@ -4144,7 +4144,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatTransposeMatMult, petsc.MatReuse
 
@@ -4196,7 +4196,7 @@ cdef class Mat(Object):
         `petsc.MatProductCreate` and set the desired options before the
         computation is done.
 
-        See also
+        See Also
         --------
         petsc.MatPtAP, petsc.MatReuse
 
@@ -4244,7 +4244,7 @@ cdef class Mat(Object):
         To determine the correct fill value, run with -info and search
         for the string "Fill ratio" to see the value actually needed.
 
-        See also
+        See Also
         --------
         petsc.MatRARt, petsc.MatReuse
 
@@ -4290,7 +4290,7 @@ cdef class Mat(Object):
         result : Mat
             The resultant product matrix D.
 
-        See also
+        See Also
         --------
         petsc.MatMatMatMult, petsc.MatReuse
 
@@ -4326,7 +4326,7 @@ cdef class Mat(Object):
         result : Mat
             The resultant matrix C, the Kronecker product of A and B.
 
-        See also
+        See Also
         --------
         petsc.MatSeqAIJKron, petsc.MatReuse
 
@@ -4349,7 +4349,7 @@ cdef class Mat(Object):
         flg
             Bind to the CPU if `True`.
 
-        See also
+        See Also
         --------
         petsc.MatBindToCPU
 
@@ -4360,7 +4360,7 @@ cdef class Mat(Object):
     def boundToCPU(self) -> bool:
         """Query if a matrix is bound to the CPU.
 
-        See also
+        See Also
         --------
         petsc.MatBoundToCPU
 

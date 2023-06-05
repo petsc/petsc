@@ -1902,7 +1902,7 @@ cdef class DMPlex(DM):
         See Also
         --------
         DM, DMPlex, DMPlex.getPointLocalField, Section.getOffset
-        Section.getDof, `DMPlex.pointLocalRef`, petsc.DMPlexGetPointLocal
+        Section.getDof, petsc.DMPlexGetPointLocal
 
         """
         cdef PetscInt start = 0, end = 0
@@ -2320,7 +2320,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricSetRestrictAnisotropyFirst(self.dm, bval) )
 
     def metricRestrictAnisotropyFirst(self) -> bool:
-        """Return the flag indicating whether anisotropy is restricted before normalization or after?
+        """Return the flag indicating whether anisotropy is restricted before or after normalization.
 
         See Also
         --------
@@ -2335,8 +2335,8 @@ cdef class DMPlex(DM):
     def metricSetNoInsertion(self, noInsert: bool) -> None:
         """Set the flag indicating whether node insertion and deletion should be turned off.
 
-        Prameters
-        ---------
+        Parameters
+        ----------
         noInsert
             Flag indicating whether node insertion and deletion should be turned off.
 

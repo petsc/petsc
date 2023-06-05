@@ -418,8 +418,8 @@ cdef class PC(Object):
         `TS.setRHSJacobian`, `TS.setIJacobian`, `SNES.setJacobian`,
         `KSP.setOperators` or `PC.setOperators` not the ``P``.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         flag
             Set True to use ``A`` and False to use ``P``.
 
