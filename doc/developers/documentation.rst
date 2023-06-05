@@ -177,6 +177,14 @@ Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for
 * Use restraint in adding new Sphinx extensions, in particular, those which aren't
   widely used and well-supported, or those with hidden system dependencies.
 
+.. _petsc_repositories:
+
+Other PETSc repositories
+========================
+
+In addition to the `PETSc repository  <https://gitlab.com/petsc/petsc>`__, there are three other PETSc repositories which contain large data files that are unnecessary for most PETSc usages and thus
+are not stored in the main repository. `Images  <https://gitlab.com/petsc/images>`__ contains images that are used in the PETSc documentation or have other uses. `Annual-Meetings  <https://gitlab.com/petsc/annual-meetings>`__ contains the slides etc. from the :any:`meetings`. `Datafiles  <https://gitlab.com/petsc/datafiles>`__ contains large matrices, meshes, and various other data files that are used in the :any:`PETSc CI<test_harness>`. Other repositories containing software PETSc uses are located at  `GitLab <https://gitlab.com/petsc/>`__ and `BitBucket <https://bitbucket.org/petsc/workspace/repositories>`__. The BitBucket location is used for historical reasons, there are many links on the web to these locations thus the repositories have not be migrated to GitLab.
+
 .. _docs_images:
 
 Images
@@ -186,7 +194,7 @@ PETSc's documentation is tightly coupled to the source code and tests and
 is tracked in the primary PETSc Git repository. However, image files are
 too large to track directly this way (especially because they persist in the integration branches' histories).
 
-Therefore, we store image files in a separate Git repository. This repository is automatically cloned if 
+Therefore, we store image files in a separate Git repository, `Images  <https://gitlab.com/petsc/petsc>`__. This repository is automatically cloned if 
 not already available when building the documentation. It can also be cloned by running
 ``make images`` in the ``doc/`` directory.
 Any new images required must be added to the currently-used branch of this repository.
