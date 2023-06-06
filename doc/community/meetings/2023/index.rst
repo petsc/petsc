@@ -90,6 +90,7 @@ Monday, June 5
 | 2:00 pm    | `MultiFlow: A coupled balanced-force framework to solve multiphase flows in arbitrary domains <https://petsc.gitlab.io/annual-meetings/2023/slides/BerendvanWachem.pdf>`__  | `Berend van Wachem`_      |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 2:30 pm    | Mini tutorial: `PNODE, PyTorch, and petsc4py <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.pdf>`__                                                       | Hong Zhang (Mr.)          |
+|            | `IPython code <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.ipynb>`__                                                                                    |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 2:45 pm    | **Coffee Break**                                                                                                                                                            |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
