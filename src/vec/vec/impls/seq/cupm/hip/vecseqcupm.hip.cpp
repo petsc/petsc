@@ -1,7 +1,10 @@
 #include "../vecseqcupm.hpp" /*I <petscvec.h> I*/
+#include "../vecseqcupm_impl.hpp"
 
-using namespace Petsc::vec::cupm;
+using namespace ::Petsc::vec::cupm;
 using ::Petsc::device::cupm::DeviceType;
+
+template class impl::VecSeq_CUPM<DeviceType::HIP>;
 
 static constexpr auto VecSeq_HIP = impl::VecSeq_CUPM<DeviceType::HIP>{};
 
