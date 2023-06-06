@@ -307,9 +307,91 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj, PetscBool *match, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define MAXREGDESOBJS 256
-static int         PetscObjectRegisterDestroy_Count = 0;
-static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
+typedef struct {
+  PetscErrorCode (*func)(void);
+} PetscFinalizeFunction;
+
+typedef struct {
+  PetscErrorCode (*func)(void *);
+  void *ctx;
+} PetscFinalizeFunctionWithCtx;
+
+typedef enum {
+  PETSC_FINALIZE_EMPTY,
+  PETSC_FINALIZE_OBJECT,
+  PETSC_FINALIZE_FUNC,
+  PETSC_FINALIZE_FUNC_WITH_CTX
+} PetscFinalizeType;
+
+static const char *const PetscFinalizeTypes[] = {"PETSC_FINALIZE_EMPTY", "PETSC_FINALIZE_OBJECT", "PETSC_FINALIZE_FUNC", "PETSC_FINALIZE_FUNC_WITH_CTX", PETSC_NULLPTR};
+
+typedef struct {
+  union ThunkUnion
+  {
+    PetscObject                  obj;
+    PetscFinalizeFunction        fn;
+    PetscFinalizeFunctionWithCtx fnctx;
+  } thunk;
+  PetscFinalizeType type;
+} PetscFinalizerContainer;
+
+#define PETSC_MAX_REGISTERED_FINALIZERS 256
+static int                     reg_count = 0;
+static PetscFinalizerContainer regfin[PETSC_MAX_REGISTERED_FINALIZERS];
+
+PetscErrorCode PetscRunRegisteredFinalizers(void)
+{
+  PetscFunctionBegin;
+  while (reg_count) {
+    PetscFinalizerContainer top = regfin[--reg_count];
+
+    regfin[reg_count].type = PETSC_FINALIZE_EMPTY;
+    PetscCall(PetscArrayzero(&regfin[reg_count].thunk, 1));
+    switch (top.type) {
+    case PETSC_FINALIZE_OBJECT:
+      PetscCall(PetscObjectDestroy(&top.thunk.obj));
+      break;
+    case PETSC_FINALIZE_FUNC:
+      PetscCall((*top.thunk.fn.func)());
+      break;
+    case PETSC_FINALIZE_FUNC_WITH_CTX:
+      PetscCall((*top.thunk.fnctx.func)(top.thunk.fnctx.ctx));
+      break;
+    case PETSC_FINALIZE_EMPTY:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Finalizer at position %d is empty, yet registration count %d != 0", reg_count, reg_count);
+      break;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static int PetscFinalizerContainerEqual(const PetscFinalizerContainer *a, const PetscFinalizerContainer *b)
+{
+  if (a->type != b->type) return 0;
+  switch (a->type) {
+  case PETSC_FINALIZE_EMPTY:
+    break;
+  case PETSC_FINALIZE_OBJECT:
+    return a->thunk.obj == b->thunk.obj;
+  case PETSC_FINALIZE_FUNC:
+    return a->thunk.fn.func == b->thunk.fn.func;
+  case PETSC_FINALIZE_FUNC_WITH_CTX:
+    return a->thunk.fnctx.func == b->thunk.fnctx.func && a->thunk.fnctx.ctx == b->thunk.fnctx.ctx;
+  }
+  return 1;
+}
+
+static PetscErrorCode RegisterFinalizer(PetscFinalizerContainer container)
+{
+  PetscFunctionBegin;
+  PetscAssert(reg_count < (int)PETSC_STATIC_ARRAY_LENGTH(regfin), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "No more room in array, limit %zu, recompile %s with larger value for " PetscStringize(regfin), PETSC_STATIC_ARRAY_LENGTH(regfin), __FILE__);
+  PetscAssert(regfin[reg_count].type == PETSC_FINALIZE_EMPTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Finalizer type (%s) at position %d is not PETSC_FINALIZE_EMPTY!", PetscFinalizeTypes[regfin[reg_count].type], reg_count);
+  if (PetscDefined(USE_DEBUG)) {
+    for (int i = 0; i < reg_count; ++i) PetscCheck(!PetscFinalizerContainerEqual(regfin + i, &container), PETSC_COMM_SELF, PETSC_ERR_ORDER, "Finalizer (of type %s) already registered!", PetscFinalizeTypes[container.type]);
+  }
+  regfin[reg_count++] = container;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*@C
   PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
@@ -332,10 +414,13 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 @*/
 PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
 {
+  PetscFinalizerContainer container;
+
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscCheck(PetscObjectRegisterDestroy_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGDESOBJS), PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), __FILE__);
-  PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
+  container.thunk.obj = obj;
+  container.type      = PETSC_FINALIZE_OBJECT;
+  PetscCall(RegisterFinalizer(container));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -352,14 +437,9 @@ PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
 PetscErrorCode PetscObjectRegisterDestroyAll(void)
 {
   PetscFunctionBegin;
-  for (PetscInt i = 0; i < PetscObjectRegisterDestroy_Count; i++) PetscCall(PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]));
-  PetscObjectRegisterDestroy_Count = 0;
+  PetscCall(PetscRunRegisteredFinalizers());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#define MAXREGFIN 256
-static int PetscRegisterFinalize_Count = 0;
-static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
 
 /*@C
   PetscRegisterFinalize - Registers a function that is to be called in `PetscFinalize()`
@@ -380,12 +460,13 @@ static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
 @*/
 PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
+  PetscFinalizerContainer container;
+
   PetscFunctionBegin;
-  for (PetscInt i = 0; i < PetscRegisterFinalize_Count; i++) {
-    if (f == PetscRegisterFinalize_Functions[i]) PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  PetscCheck(PetscRegisterFinalize_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGFIN), PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), __FILE__);
-  PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
+  PetscValidFunction(f, 1);
+  container.thunk.fn.func = f;
+  container.type          = PETSC_FINALIZE_FUNC;
+  PetscCall(RegisterFinalizer(container));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -401,7 +482,6 @@ PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 PetscErrorCode PetscRegisterFinalizeAll(void)
 {
   PetscFunctionBegin;
-  for (PetscInt i = 0; i < PetscRegisterFinalize_Count; i++) PetscCall((*PetscRegisterFinalize_Functions[i])());
-  PetscRegisterFinalize_Count = 0;
+  PetscCall(PetscRunRegisteredFinalizers());
   PetscFunctionReturn(PETSC_SUCCESS);
 }

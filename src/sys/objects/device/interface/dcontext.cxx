@@ -859,7 +859,8 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
   PetscValidDevice(device, 2);
   PetscAssertPointer(dctx, 3);
   if (PetscUnlikely(!nullContextsFinalizer)) {
-    const auto finalizer = [] {
+    nullContextsFinalizer = true;
+    PetscCall(PetscRegisterFinalize([] {
       PetscFunctionBegin;
       for (auto &&dvec : nullContexts) {
         for (auto &&dctx : dvec) PetscCall(PetscDeviceContextDestroy(&dctx));
@@ -867,10 +868,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
       }
       nullContextsFinalizer = false;
       PetscFunctionReturn(PETSC_SUCCESS);
-    };
-
-    nullContextsFinalizer = true;
-    PetscCall(PetscRegisterFinalize(std::move(finalizer)));
+    }));
   }
   PetscCall(PetscDeviceGetDeviceId(device, &devid));
   PetscCall(PetscDeviceGetType(device, &dtype));

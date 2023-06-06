@@ -99,8 +99,8 @@ inline auto cupm_timer_event_pool() noexcept -> decltype(cupm_event_pool<T, impl
 // event-stream pairing for the async allocator. It is also used as the data member of
 // PetscEvent.
 template <DeviceType T>
-class CUPMEvent : impl::Interface<T>, public memory::PoolAllocated<CUPMEvent<T>> {
-  using pool_type = memory::PoolAllocated<CUPMEvent<T>>;
+class CUPMEvent : impl::Interface<T>, public memory::PoolAllocated {
+  using pool_type = memory::PoolAllocated;
 
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);

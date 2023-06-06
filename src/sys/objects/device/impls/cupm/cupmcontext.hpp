@@ -47,7 +47,7 @@ public:
   // header, but since we are using the power of templates it must be declared part of
   // this class to have easy access the same typedefs. Technically one can make a
   // templated struct outside the class but it's more code for the same result.
-  struct PetscDeviceContext_IMPLS : memory::PoolAllocated<PetscDeviceContext_IMPLS> {
+  struct PetscDeviceContext_IMPLS {
     stream_type stream{};
     cupmEvent_t event{};
     cupmEvent_t begin{}; // timer-only
@@ -163,7 +163,6 @@ private:
         handle = nullptr;
       }
     }
-
     for (auto &&handle : solverhandles_) {
       if (handle) {
         PetscCallCUPMSOLVER(cupmSolverDestroy(handle));
@@ -496,7 +495,7 @@ template <DeviceType T>
 inline PetscErrorCode DeviceContext<T>::createEvent(PetscDeviceContext, PetscEvent event) noexcept
 {
   PetscFunctionBegin;
-  PetscCallCXX(event->data = new event_type());
+  PetscCallCXX(event->data = new event_type{});
   event->destroy = [](PetscEvent event) {
     PetscFunctionBegin;
     delete event_cast_(event);

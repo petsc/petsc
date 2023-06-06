@@ -7,13 +7,14 @@
 #include <petsc/private/cpp/register_finalize.hpp>
 #include <petsc/private/cpp/utility.hpp> // util::exchange()
 #include <petsc/private/cpp/unordered_map.hpp>
-#include <petsc/private/cpp/memory.hpp> // std::align()
+#include <petsc/private/cpp/memory.hpp> // std::align(), std::unique_ptr
 
 #include <cstddef>   // std::max_align_t
 #include <limits>    // std::numeric_limits
 #include <vector>    // std::take_a_wild_guess
 #include <new>       // std::nothrow
 #include <algorithm> // std::lower_bound()
+#include <cstdio>    // std::printf
 
 namespace Petsc
 {
@@ -60,6 +61,22 @@ class PoolAllocator : public RegisterFinalizeable<PoolAllocator> {
   using base_type = RegisterFinalizeable<PoolAllocator>;
   friend base_type;
 
+  class LockGuard {
+  public:
+    LockGuard() = delete;
+
+  private:
+    friend class PoolAllocator;
+
+    explicit LockGuard(PoolAllocator *pool) noexcept : pool_{pool} { ++pool_->locked_; }
+
+    struct PoolUnlocker {
+      void operator()(PoolAllocator *pool) const noexcept { --pool->locked_; }
+    };
+
+    std::unique_ptr<PoolAllocator, PoolUnlocker> pool_{};
+  };
+
 public:
   // define the size and alignment as separate types, this helps to disambiguate them at the
   // callsite!
@@ -75,18 +92,7 @@ public:
   PoolAllocator(const PoolAllocator &)            = delete;
   PoolAllocator &operator=(const PoolAllocator &) = delete;
 
-#if PetscDefined(USE_DEBUG)
-  // in debug mode we check that we haven't leaked anything
-  ~PoolAllocator() noexcept
-  {
-    size_type leaked = 0;
-
-    PetscFunctionBegin;
-    PetscCallAbort(PETSC_COMM_SELF, clear_(&leaked));
-    PetscCheckAbort(leaked == 0, PETSC_COMM_SELF, PETSC_ERR_MEM_LEAK, "%zu objects remaining in the pool are leaked", leaked);
-    PetscFunctionReturnVoid();
-  }
-#endif
+  ~PoolAllocator() noexcept;
 
   PetscErrorCode        try_allocate(void **, size_type, align_type, bool *) noexcept;
   PetscErrorCode        allocate(void **, size_type, align_type, bool        * = nullptr) noexcept;
@@ -99,8 +105,11 @@ public:
   template <typename T>
   PetscErrorCode for_each(T &&) noexcept;
 
+  LockGuard lock_guard() noexcept;
+
 private:
   pool_type pool_{};
+  int       locked_{};
 
   class AllocationHeader;
 
@@ -118,6 +127,7 @@ private:
   PETSC_NODISCARD typename pool_type::iterator       find_align_(align_type) noexcept;
   PETSC_NODISCARD typename pool_type::const_iterator find_align_(align_type) const noexcept;
 
+public:
   PetscErrorCode clear_(size_type * = nullptr) noexcept;
   PetscErrorCode finalize_() noexcept;
 };
@@ -152,7 +162,7 @@ public:
 /*
   PoolAlocator::AllocationHeader::AllocationHeader
 */
-inline constexpr PoolAllocator::AllocationHeader::AllocationHeader(size_type size, align_type align) noexcept : size(size), align(align) { }
+inline constexpr PoolAllocator::AllocationHeader::AllocationHeader(size_type size, align_type align) noexcept : size{size}, align{align} { }
 
 /*
   PoolAllocator::AllocationHeader::max_alignment
@@ -260,12 +270,12 @@ inline PetscErrorCode PoolAllocator::delete_ptr_(void **in_ptr) noexcept
 */
 inline typename PoolAllocator::pool_type::iterator PoolAllocator::find_align_(align_type align) noexcept
 {
-  return std::lower_bound(pool().begin(), pool().end(), align, [](const typename pool_type::value_type &pair, const align_type &align) { return pair.first < align; });
+  return std::lower_bound(this->pool().begin(), this->pool().end(), align, [](const typename pool_type::value_type &pair, const align_type &align) { return pair.first < align; });
 }
 
 inline typename PoolAllocator::pool_type::const_iterator PoolAllocator::find_align_(align_type align) const noexcept
 {
-  return std::lower_bound(pool().begin(), pool().end(), align, [](const typename pool_type::value_type &pair, const align_type &align) { return pair.first < align; });
+  return std::lower_bound(this->pool().begin(), this->pool().end(), align, [](const typename pool_type::value_type &pair, const align_type &align) { return pair.first < align; });
 }
 
 /*
@@ -300,7 +310,7 @@ inline PetscErrorCode PoolAllocator::clear_(size_type *remaining) noexcept
     })
   );
   // clang-format on
-  PetscCallCXX(pool().clear());
+  PetscCallCXX(this->pool().clear());
   if (remaining) *remaining = remain;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -469,6 +479,16 @@ inline PetscErrorCode PoolAllocator::allocate_ptr_(size_type size, align_type al
 // PoolAllocator -- Public API
 // ==========================================================================================
 
+inline PoolAllocator::~PoolAllocator() noexcept
+{
+  size_type leaked = 0;
+
+  PetscFunctionBegin;
+  PetscCallAbort(PETSC_COMM_SELF, clear_(&leaked));
+  PetscCheckAbort(leaked == 0, PETSC_COMM_SELF, PETSC_ERR_MEM_LEAK, "%zu objects remaining in the pool are leaked", leaked);
+  PetscFunctionReturnVoid();
+}
+
 /*
   PoolAllocator::get_attributes - Get the size and alignment of an allocated pointer
 
@@ -523,17 +543,18 @@ inline PetscErrorCode PoolAllocator::get_attributes(const void *ptr, size_type *
 */
 inline PetscErrorCode PoolAllocator::try_allocate(void **out_ptr, size_type size, align_type align, bool *success) noexcept
 {
-  void *ptr   = nullptr;
-  auto  found = false;
+  void *ptr{};
+  bool  found{};
 
   PetscFunctionBegin;
   PetscAssertPointer(out_ptr, 1);
   PetscAssertPointer(success, 3);
   PetscCall(valid_alignment_(align));
+  PetscCall(this->register_finalize());
   if (PetscLikely(size)) {
     const auto align_it = find_align_(align);
 
-    if (align_it != pool().end() && align_it->first == align) {
+    if (align_it != this->pool().end() && align_it->first == align) {
       auto     &&size_map = align_it->second;
       const auto size_it  = size_map.find(size);
 
@@ -570,16 +591,13 @@ inline PetscErrorCode PoolAllocator::try_allocate(void **out_ptr, size_type size
 */
 inline PetscErrorCode PoolAllocator::allocate(void **out_ptr, size_type size, align_type align, bool *allocated_from_pool) noexcept
 {
-  bool success;
+  bool success{};
 
   PetscFunctionBegin;
   PetscAssertPointer(out_ptr, 1);
   if (allocated_from_pool) PetscAssertPointer(allocated_from_pool, 3);
   PetscCall(try_allocate(out_ptr, size, align, &success));
-  if (!success) {
-    PetscCall(this->register_finalize());
-    PetscCall(allocate_ptr_(size, align, out_ptr));
-  }
+  if (!success) PetscCall(allocate_ptr_(size, align, out_ptr));
   if (allocated_from_pool) *allocated_from_pool = success;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -604,19 +622,19 @@ inline PetscErrorCode PoolAllocator::deallocate(void **in_ptr, size_type size, a
   PetscFunctionBegin;
   PetscAssertPointer(in_ptr, 1);
   if (auto ptr = util::exchange(*in_ptr, nullptr)) {
-    if (this->registered()) {
-      auto it = find_align_(align);
-
-      if (it == pool().end() || it->first != align) PetscCallCXX(it = pool().insert(it, {align, {}}));
-      PetscCallCXX(it->second[size].emplace_back(ptr));
-      PetscCall(PetscPoisonMemoryRegion(ptr, size));
-    } else {
+    if (locked_) {
       // This is necessary if an object is "reclaimed" within another PetscFinalize()
       // registered cleanup after this pool has returned from its finalizer. In this case,
       // instead of pushing onto the stack we just delete the pointer directly.
       //
       // However this path is *only* valid if we have already finalized!
       PetscCall(delete_ptr_(&ptr));
+    } else {
+      auto it = find_align_(align);
+
+      if (it == this->pool().end() || it->first != align) PetscCallCXX(it = this->pool().insert(it, {align, {}}));
+      PetscCallCXX(it->second[size].emplace_back(ptr));
+      PetscCall(PetscPoisonMemoryRegion(ptr, size));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -716,6 +734,11 @@ inline PetscErrorCode PoolAllocator::for_each(T &&callable) noexcept
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+inline typename PoolAllocator::LockGuard PoolAllocator::lock_guard() noexcept
+{
+  return LockGuard{this};
+}
+
 // ==========================================================================================
 // PoolAllocated
 //
@@ -731,7 +754,6 @@ inline PetscErrorCode PoolAllocator::for_each(T &&callable) noexcept
 // Returns the memory to the pool.
 // ==========================================================================================
 
-template <typename Derived>
 class PoolAllocated {
 public:
   using allocator_type = PoolAllocator;
@@ -753,21 +775,20 @@ private:
   static allocator_type pool_;
 };
 
-template <typename D>
-typename PoolAllocated<D>::allocator_type PoolAllocated<D>::pool_{};
+// ==========================================================================================
+// PoolAllocated -- Public API
+// ==========================================================================================
 
-template <typename D>
-inline void *PoolAllocated<D>::operator new(size_type size) noexcept
+inline void *PoolAllocated::operator new(size_type size) noexcept
 {
-  void *ptr = nullptr;
+  void *ptr{};
 
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, pool().allocate(&ptr, size, static_cast<align_type>(alignof(std::max_align_t))));
   PetscFunctionReturn(ptr);
 }
 
-template <typename D>
-inline void PoolAllocated<D>::operator delete(void *ptr) noexcept
+inline void PoolAllocated::operator delete(void *ptr) noexcept
 {
   PetscFunctionBegin;
   if (PetscLikely(ptr)) {
@@ -781,18 +802,16 @@ inline void PoolAllocated<D>::operator delete(void *ptr) noexcept
 }
 
 #if PETSC_CPP_VERSION >= 17
-template <typename D>
-inline void *PoolAllocated<D>::operator new(size_type size, std::align_val_t align) noexcept
+inline void *PoolAllocated::operator new(size_type size, std::align_val_t align) noexcept
 {
-  void *ptr = nullptr;
+  void *ptr{};
 
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, pool().allocate(&ptr, size, static_cast<align_type>(align)));
   PetscFunctionReturn(ptr);
 }
 
-template <typename D>
-inline void PoolAllocated<D>::operator delete(void *ptr, std::align_val_t align) noexcept
+inline void PoolAllocated::operator delete(void *ptr, std::align_val_t align) noexcept
 {
   PetscFunctionBegin;
   if (PetscLikely(ptr)) {
@@ -805,8 +824,11 @@ inline void PoolAllocated<D>::operator delete(void *ptr, std::align_val_t align)
 }
 #endif
 
-template <typename D>
-inline typename PoolAllocated<D>::allocator_type &PoolAllocated<D>::pool() noexcept
+// ==========================================================================================
+// PoolAllocated -- Protected API
+// ==========================================================================================
+
+inline typename PoolAllocated::allocator_type &PoolAllocated::pool() noexcept
 {
   return pool_;
 }
@@ -849,14 +871,14 @@ public:
   PetscErrorCode construct(value_type *ptr, Args &&...args) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(underlying().construct_(ptr, std::forward<Args>(args)...));
+    PetscCall(this->underlying().construct_(ptr, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscErrorCode destroy(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(underlying().destroy_(ptr));
+    PetscCall(this->underlying().destroy_(ptr));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -864,14 +886,14 @@ public:
   PetscErrorCode reset(value_type *val, Args &&...args) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(underlying().reset_(val, std::forward<Args>(args)...));
+    PetscCall(this->underlying().reset_(val, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscErrorCode invalidate(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(underlying().invalidate_(ptr));
+    PetscCall(this->underlying().invalidate_(ptr));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -899,14 +921,14 @@ protected:
   PetscErrorCode reset_(value_type *val, Args &&...args) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(underlying().construct(val, std::forward<Args>(args)...));
+    PetscCall(this->underlying().construct(val, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscErrorCode invalidate_(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(underlying().destroy(ptr));
+    PetscCall(this->underlying().destroy(ptr));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -969,17 +991,21 @@ template <typename T, typename Constructor>
 inline PetscErrorCode ObjectPool<T, Constructor>::finalize_() noexcept
 {
   PetscFunctionBegin;
-  // clang-format off
-  PetscCall(
-    this->allocator().for_each([&, this](void *ptr)
-    {
-      PetscFunctionBegin;
-      PetscCall(this->constructor().destroy(static_cast<value_type *>(ptr)));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    })
-  );
-  // clang-format on
-  PetscCall(this->allocator().register_finalize());
+  {
+    auto _ = this->allocator().lock_guard();
+
+    // clang-format off
+    PetscCall(
+      this->allocator().for_each([&, this](void *ptr)
+      {
+        PetscFunctionBegin;
+        PetscCall(this->constructor().destroy(static_cast<value_type *>(ptr)));
+        PetscFunctionReturn(PETSC_SUCCESS);
+      })
+    );
+    // clang-format on
+  }
+  PetscCall(this->allocator().clear_());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1018,8 +1044,8 @@ inline PetscErrorCode ObjectPool<T, Constructor>::allocate(value_type **obj, Arg
   PetscAssertPointer(obj, 1);
   // order is deliberate! We register our finalizer before the pool does so since we need to
   // destroy the objects within it before it deletes their memory.
-  PetscCall(this->register_finalize());
   PetscCall(this->allocator().allocate(&mem, sizeof(value_type), static_cast<align_type>(alignof(value_type)), &allocated_from_pool));
+  PetscCall(this->register_finalize());
   *obj = static_cast<value_type *>(mem);
   if (allocated_from_pool) {
     // if the allocation reused memory from the pool then this indicates the object is resettable.
@@ -1045,11 +1071,8 @@ inline PetscErrorCode ObjectPool<T, Constructor>::deallocate(value_type **obj) n
 {
   PetscFunctionBegin;
   PetscAssertPointer(obj, 1);
-  if (this->registered()) {
-    PetscCall(this->constructor().invalidate(*obj));
-  } else {
-    PetscCall(this->constructor().destroy(*obj));
-  }
+  PetscCall(this->register_finalize());
+  PetscCall(this->constructor().invalidate(*obj));
   PetscCall(this->allocator().deallocate(reinterpret_cast<void **>(obj), sizeof(value_type), static_cast<align_type>(alignof(value_type))));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
