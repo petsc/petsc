@@ -866,6 +866,7 @@ PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, Pet
 PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   pc->failedreason = reason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -885,14 +886,15 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
 
    Note:
    This is the maximum over reason over all ranks in the PC communicator. It is only valid after
-   a call `KSPCheckDot()` or  `KSPCheckNorm()` inside a `KSPSolve()`. It is not valid immediately after a `PCSetUp()`
-   or `PCApply()`, then use `PCGetFailedReasonRank()`
+   a call `KSPCheckDot()` or  `KSPCheckNorm()` inside a `KSPSolve()` or `PCReduceFailedReason()`.
+   It is not valid immediately after a `PCSetUp()` or `PCApply()`, then use `PCGetFailedReasonRank()`
 
 .seealso: PC`, ``PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
 @*/
 PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
   else *reason = pc->failedreason;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -914,13 +916,42 @@ PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
    Note:
      Different ranks may have different reasons or no reason, see `PCGetFailedReason()`
 
-.seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`
+.seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`, `PCReduceFailedReason()`
 @*/
 PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
   else *reason = pc->failedreason;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+   PCReduceFailedReason - Reduce the failed reason among the MPI processes that share the `PC`
+
+   Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Level: advanced
+
+   Note:
+     Different MPI ranks may have different reasons or no reason, see `PCGetFailedReason()`. This routine
+     makes them have a common value (failure if any MPI process had a failure).
+
+.seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`
+@*/
+PetscErrorCode PCReduceFailedReason(PC pc)
+{
+  PetscInt buf;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  buf = (PetscInt)pc->failedreason;
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &buf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
+  pc->failedreason = (PCFailedReason)buf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

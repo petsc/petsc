@@ -1570,13 +1570,10 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
 
   if (PetscIsInfOrNanReal(rnorm)) {
     PCFailedReason pcreason;
-    PetscInt       sendbuf, recvbuf;
-    PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason));
-    sendbuf = (PetscInt)pcreason;
-    PetscCall(MPIU_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp)));
-    if (recvbuf) {
+    PetscCall(PCReduceFailedReason(ksp->pc));
+    PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
+    if (pcreason) {
       *reason = KSP_DIVERGED_PC_FAILED;
-      PetscCall(PCSetFailedReason(ksp->pc, (PCFailedReason)recvbuf));
       PetscCall(PetscInfo(ksp, "Linear solver pcsetup fails, declaring divergence \n"));
     } else {
       *reason = KSP_DIVERGED_NANORINF;
@@ -2099,7 +2096,7 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP)
    Level: developer
 
    Note:
-   This is called within `KSPSolve()` and `PCApply()` to check if an error has been detected on any particular MPI ranks. By initializing the vector
+   This is called within `PCApply()` implementations to check if an error has been detected on any particular MPI ranks. By initializing the vector
    with Inf the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI ranks that an error occurred on
    at least one of the ranks.
 

@@ -67,6 +67,7 @@ Changes: Development
 .. rubric:: PC:
 
 - Add ``PCMatGetApplyOperation()`` and ``PCMatSetApplyOperation()``
+- Add ``PCReduceFailedReason()``
 
 .. rubric:: KSP:
 

@@ -829,14 +829,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
         PCFailedReason pcreason;
 
         PetscCall(KSPGetIterationNumber(cheb->kspest, &its));
-        if (ksp->normtype == KSP_NORM_NONE) {
-          PetscInt sendbuf, recvbuf;
-
-          PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason));
-          sendbuf = (PetscInt)pcreason;
-          PetscCall(MPIU_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp)));
-          PetscCall(PCSetFailedReason(ksp->pc, (PCFailedReason)recvbuf));
-        }
+        if (ksp->normtype == KSP_NORM_NONE) PetscCall(PCReduceFailedReason(ksp->pc));
         PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
         ksp->reason = KSP_DIVERGED_PC_FAILED;
         PetscCall(PetscInfo(ksp, "Eigen estimator failed: %s %s at iteration %" PetscInt_FMT, KSPConvergedReasons[reason], PCFailedReasons[pcreason], its));
