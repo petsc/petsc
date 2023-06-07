@@ -499,12 +499,9 @@ M*/
         PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to Nan or Inf inner product"); \
         { \
           PCFailedReason pcreason; \
-          PetscInt       sendbuf, recvbuf; \
+          PetscCall(PCReduceFailedReason(ksp->pc)); \
           PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
-          sendbuf = (PetscInt)pcreason; \
-          PetscCall(MPIU_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp))); \
-          if (recvbuf) { \
-            PetscCall(PCSetFailedReason(ksp->pc, (PCFailedReason)recvbuf)); \
+          if (pcreason) { \
             ksp->reason = KSP_DIVERGED_PC_FAILED; \
             PetscCall(VecSetInf(ksp->vec_sol)); \
           } else { \
@@ -542,17 +539,13 @@ M*/
         PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to Nan or Inf norm"); \
         { \
           PCFailedReason pcreason; \
-          PetscInt       sendbuf, recvbuf; \
+          PetscCall(PCReduceFailedReason(ksp->pc)); \
           PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
-          sendbuf = (PetscInt)pcreason; \
-          PetscCall(MPIU_Allreduce(&sendbuf, &recvbuf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)ksp))); \
-          if (recvbuf) { \
-            PetscCall(PCSetFailedReason(ksp->pc, (PCFailedReason)recvbuf)); \
+          if (pcreason) { \
             ksp->reason = KSP_DIVERGED_PC_FAILED; \
             PetscCall(VecSetInf(ksp->vec_sol)); \
             ksp->rnorm = beta; \
           } else { \
-            PetscCall(PCSetFailedReason(ksp->pc, PC_NOERROR)); \
             ksp->reason = KSP_DIVERGED_NANORINF; \
             ksp->rnorm  = beta; \
           } \

@@ -19,15 +19,18 @@ static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
                you probably want a KSP type of Richardson");
   ksp->its = 0;
   PetscCall(KSP_PCApply(ksp, ksp->vec_rhs, ksp->vec_sol));
-  PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason));
-  /* Note: only some ranks may have this set; this may lead to problems if the caller assumes ksp->reason is set on all processes or just uses the result */
+
+  PetscCall(PCReduceFailedReason(ksp->pc));
+  PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
   if (pcreason) {
+    PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged with PCFailedReason %s", PCFailedReasons[pcreason]);
     PetscCall(VecSetInf(ksp->vec_sol));
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   } else {
     ksp->its    = 1;
     ksp->reason = KSP_CONVERGED_ITS;
   }
+
   if (ksp->numbermonitors) {
     Vec       v;
     PetscReal norm;

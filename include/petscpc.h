@@ -52,6 +52,7 @@ PETSC_DEPRECATED_FUNCTION("Use PCGetFailedReason() (since version 3.11)") static
   return PCGetFailedReason(pc, reason);
 }
 PETSC_EXTERN PetscErrorCode PCGetFailedReasonRank(PC, PCFailedReason *);
+PETSC_EXTERN PetscErrorCode PCReduceFailedReason(PC);
 
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC, Vec, Vec);
