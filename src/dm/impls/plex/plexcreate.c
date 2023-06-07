@@ -1396,13 +1396,14 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
   PetscInt i;
 
   PetscFunctionBegin;
+  // TODO Now we can support periodicity
   for (i = 0; i < 3; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Periodicity not yet supported");
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &bdm));
   PetscCall(DMSetType(bdm, DMPLEX));
   PetscCall(DMSetDimension(bdm, 2));
   PetscCall(PetscLogEventBegin(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMPlexCreateBoxMesh_Simplex_Internal(bdm, 2, faces, lower, upper, periodicity, PETSC_TRUE));
-  PetscCall(DMPlexExtrude(bdm, faces[2], upper[2] - lower[2], PETSC_TRUE, PETSC_FALSE, NULL, NULL, &vol));
+  PetscCall(DMPlexExtrude(bdm, faces[2], upper[2] - lower[2], PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, &vol));
   PetscCall(PetscLogEventEnd(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMDestroy(&bdm));
   PetscCall(DMPlexReplace_Internal(dm, &vol));

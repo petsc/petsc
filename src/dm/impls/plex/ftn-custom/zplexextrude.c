@@ -8,9 +8,9 @@
 #endif
 
 /* Definitions of Fortran Wrapper routines */
-PETSC_EXTERN void dmplexextrude_(DM *dm, PetscInt *layers, PetscReal *thickness, PetscBool *tensor, PetscBool *symmetric, PetscReal normal[], PetscReal thicknesses[], DM *edm, int *ierr)
+PETSC_EXTERN void dmplexextrude_(DM *dm, PetscInt *layers, PetscReal *thickness, PetscBool *tensor, PetscBool *symmetric, PetscBool *periodic, PetscReal normal[], PetscReal thicknesses[], DM *edm, int *ierr)
 {
   CHKFORTRANNULLREAL(normal);
   CHKFORTRANNULLREAL(thicknesses);
-  *ierr = DMPlexExtrude(*dm, *layers, *thickness, *tensor, *symmetric, normal, thicknesses, edm);
+  *ierr = DMPlexExtrude(*dm, *layers, *thickness, *tensor, *symmetric, *periodic, normal, thicknesses, edm);
 }

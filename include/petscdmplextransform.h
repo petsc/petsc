@@ -70,6 +70,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform, Pet
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetPeriodic(DMPlexTransform, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetPeriodic(DMPlexTransform, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform, PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
