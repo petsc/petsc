@@ -7361,7 +7361,7 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
 }
 
 /*@C
-  DMCompareLabels - Compare labels of two `DMPLEX` meshes
+  DMCompareLabels - Compare labels between two `DM` objects
 
   Collective; No Fortran Support
 
