@@ -2534,7 +2534,6 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscSectionDestroy(&mesh->subdomainSection));
   PetscCall(PetscFree(mesh->supports));
   PetscCall(DMPlexTransformDestroy(&mesh->tr));
-  PetscCall(PetscFree(mesh->facesTmp));
   PetscCall(PetscFree(mesh->tetgenOpts));
   PetscCall(PetscFree(mesh->triangleOpts));
   PetscCall(PetscFree(mesh->transformType));
@@ -3080,19 +3079,23 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
 PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscInt pStart, pEnd;
   PetscInt dof, off, c;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
   PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
   if (dof) PetscValidIntPointer(cone, 3);
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-  PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
-  for (c = 0; c < dof; ++c) {
-    PetscCheck(!(cone[c] < pStart) && !(cone[c] >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", cone[c], pStart, pEnd);
-    mesh->cones[off + c] = cone[c];
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt pStart, pEnd;
+    PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
+    PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+    for (c = 0; c < dof; ++c) {
+      PetscCheck(!(cone[c] < pStart) && !(cone[c] >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", cone[c], pStart, pEnd);
+      mesh->cones[off + c] = cone[c];
+    }
+  } else {
+    for (c = 0; c < dof; ++c) mesh->cones[off + c] = cone[c];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3169,17 +3172,21 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
   PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
   if (dof) PetscValidIntPointer(coneOrientation, 3);
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-  PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
-  for (c = 0; c < dof; ++c) {
-    PetscInt cdof, o = coneOrientation[c];
+  if (PetscDefined(USE_DEBUG)) {
+    PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd));
+    PetscCheck(!(p < pStart) && !(p >= pEnd), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+    for (c = 0; c < dof; ++c) {
+      PetscInt cdof, o = coneOrientation[c];
 
-    PetscCall(PetscSectionGetDof(mesh->coneSection, mesh->cones[off + c], &cdof));
-    PetscCheck(!o || (o >= -(cdof + 1) && o < cdof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone orientation %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ". %" PetscInt_FMT ")", o, -(cdof + 1), cdof);
-    mesh->coneOrientations[off + c] = o;
+      PetscCall(PetscSectionGetDof(mesh->coneSection, mesh->cones[off + c], &cdof));
+      PetscCheck(!o || (o >= -(cdof + 1) && o < cdof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone orientation %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ". %" PetscInt_FMT ")", o, -(cdof + 1), cdof);
+      mesh->coneOrientations[off + c] = o;
+    }
+  } else {
+    for (c = 0; c < dof; ++c) mesh->coneOrientations[off + c] = coneOrientation[c];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5192,7 +5199,7 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
   By default, cell types will be automatically computed using `DMPlexComputeCellTypes()` before this function
   is executed. This function will override the computed type. However, if automatic classification will not succeed
   and a user wants to manually specify all types, the classification must be disabled by calling
-  DMCreaateLabel(dm, "celltype") before getting or setting any cell types.
+  DMCreateLabel(dm, "celltype") before getting or setting any cell types.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexComputeCellTypes()`, `DMCreateLabel()`
 @*/
