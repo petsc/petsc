@@ -5093,9 +5093,10 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, P
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMPlexGetDepthLabel(dm, &label));
-  PetscCheck(label, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
-  PetscCall(DMLabelGetNumValues(label, &depth));
-  PetscCall(DMLabelGetStratumBounds(label, depth - 1 - height, start, end));
+  if (label) PetscCall(DMLabelGetNumValues(label, &depth));
+  else PetscCall(DMGetDimension(dm, &depth));
+  PetscCheck(depth >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Depth not yet computed");
+  PetscCall(DMPlexGetDepthStratum(dm, depth - 1 - height, start, end));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
