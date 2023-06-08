@@ -273,7 +273,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
     PetscCall(VecRestoreArray(coordinates, &array));
   }
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(dm, &gcStart, NULL));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &gcStart, NULL));
   if (gcStart >= 0) cEnd = gcStart;
 
   in.numberofcorners   = 3;

@@ -64,7 +64,7 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
   Note:
   This just gives the first range of cells found. If the mesh has several cell types, it will only give the first.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetCellTypeStratum()`
 @*/
 PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
 {
@@ -1433,7 +1433,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (cellHeight) PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells are at height %" PetscInt_FMT "\n", cellHeight));
     PetscCall(DMPlexGetDepth(dm, &locDepth));
     PetscCall(MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
-    PetscCall(DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd));
+    PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &gcStart, &gcEnd));
     gcNum = gcEnd - gcStart;
     if (size < maxSize) PetscCall(PetscCalloc3(size, &sizes, size, &hybsizes, size, &ghostsizes));
     else PetscCall(PetscCalloc3(3, &sizes, 3, &hybsizes, 3, &ghostsizes));
@@ -5015,7 +5015,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
   often "vertices".  If the mesh is "interpolated" (see `DMPlexInterpolate()`), then depth stratum 1 contains the next
   higher dimension, e.g., "edges".
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetHeightStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, PetscInt *end)
 {
@@ -5070,7 +5070,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
   points, often called "cells" or "elements".  If the mesh is "interpolated" (see `DMPlexInterpolate()`), then height
   stratum 1 contains the boundary of these "cells", often called "faces" or "facets".
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetDepthStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetDepthStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, PetscInt *end)
 {
@@ -8351,29 +8351,45 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 }
 
 /*@
-  DMPlexGetGhostCellStratum - Get the range of cells which are used to enforce FV boundary conditions
+  DMPlexGetCellTypeStratum - Get the range of cells of a given celltype
 
-  Input Parameter:
-. dm - The `DMPLEX` object
+  Input Parameters:
++ dm - The `DMPLEX` object
+- ct - The `DMPolytopeType` of the cell
 
   Output Parameters:
-+ gcStart - The first ghost cell, or `NULL`
-- gcEnd   - The upper bound on ghost cells, or `NULL`
++ start - The first cell of this type, or `NULL`
+- end   - The upper bound on this celltype, or `NULL`
 
   Level: advanced
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`
 @*/
-PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
+PetscErrorCode DMPlexGetCellTypeStratum(DM dm, DMPolytopeType ct, PetscInt *start, PetscInt *end)
 {
-  DMLabel ctLabel;
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+  DMLabel  label;
+  PetscInt pStart, pEnd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
-  PetscCall(DMLabelGetStratumBounds(ctLabel, DM_POLYTOPE_FV_GHOST, gcStart, gcEnd));
-  // Reset label for fast lookup
-  PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
+  if (start) {
+    PetscValidIntPointer(start, 3);
+    *start = 0;
+  }
+  if (end) {
+    PetscValidIntPointer(end, 4);
+    *end = 0;
+  }
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  if (pStart == pEnd) PetscFunctionReturn(PETSC_SUCCESS);
+  if (mesh->tr) {
+    PetscCall(DMPlexTransformGetCellTypeStratum(mesh->tr, ct, start, end));
+  } else {
+    PetscCall(DMPlexGetCellTypeLabel(dm, &label));
+    PetscCheck(label, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named celltype was found");
+    PetscCall(DMLabelGetStratumBounds(label, ct, start, end));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
