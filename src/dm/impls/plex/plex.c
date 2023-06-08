@@ -2755,11 +2755,9 @@ PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
 PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscInt pStartO, pEndO;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, &pStartO, &pEndO));
   PetscCall(PetscSectionSetChart(mesh->coneSection, pStart, pEnd));
   PetscCall(PetscSectionSetChart(mesh->supportSection, pStart, pEnd));
   PetscCall(PetscFree(mesh->cellTypes));
