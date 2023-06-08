@@ -77,9 +77,8 @@ static PetscErrorCode CreateTransform(DM dm, DMLabel active, const char prefix[]
 static PetscErrorCode CreateEphemeralMesh(DMPlexTransform tr, DM *tdm)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexCreateEphemeral(tr, tdm));
+  PetscCall(DMPlexCreateEphemeral(tr, "eph_", tdm));
   PetscCall(PetscObjectSetName((PetscObject)*tdm, "Ephemeral Mesh"));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*tdm, "eph_"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -108,6 +107,7 @@ static PetscErrorCode CreateConcreteMesh(DMPlexTransform tr, DM *rdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// dmA is concrete and dmB is ephemeral
 static PetscErrorCode CompareMeshes(DM dmA, DM dmB, DM dm)
 {
   PetscInt dim, dimB, pStart, pEnd, pStartB, pEndB;
