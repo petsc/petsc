@@ -71,36 +71,8 @@ PC Object: 8 MPI processes
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object: 8 MPI processes
-          type: mg
+          type not yet set
           PC has not been set up so information may be incomplete
-            type is MULTIPLICATIVE, levels=2 cycles=v
-              Cycles per PCApply=1
-              Using Galerkin computed coarse grid matrices
-          Coarse grid solver -- level 0 -------------------------------
-            KSP Object: (mg_coarse_) 8 MPI processes
-              type: preonly
-              maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-              left preconditioning
-              using DEFAULT norm type for convergence test
-            PC Object: (mg_coarse_) 8 MPI processes
-              type: redundant
-              PC has not been set up so information may be incomplete
-                Not yet setup
-          Down solver (pre-smoother) on level 1 -------------------------------
-            KSP Object: (mg_levels_1_) 8 MPI processes
-              type: chebyshev
-                Chebyshev polynomial of first kind
-                eigenvalue targets used: min 0., max 0.
-              maximum iterations=2, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-              left preconditioning
-              using NONE norm type for convergence test
-            PC Object: (mg_levels_1_) 8 MPI processes
-              type: sor
-              PC has not been set up so information may be incomplete
-                type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-          Up solver (post-smoother) same as down solver (pre-smoother)
         estimating eigenvalues using noisy right hand side
       maximum iterations=2, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.

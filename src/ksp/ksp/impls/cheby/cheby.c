@@ -806,6 +806,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       KSPConvergedReason reason;
 
       PetscCall(KSPSetPC(cheb->kspest, ksp->pc));
+      PetscCall(KSPSetSkipPCSetFromOptions(cheb->kspest, PETSC_TRUE));
       if (cheb->usenoisy) {
         B = ksp->work[1];
         PetscCall(KSPSetNoisy_Private(B));
