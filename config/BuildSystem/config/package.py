@@ -1010,7 +1010,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           for libdir in self.libDirs:
             flibdir = os.path.join(directory, libdir)
             if os.path.isdir(flibdir):
-              self.logPrint('Contents '+os.path.join(flibdir)+': '+str(os.listdir(os.path.join(directory,flibdir))))
+              self.logPrint('Contents '+flibdir+': '+str(os.listdir(flibdir)))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 

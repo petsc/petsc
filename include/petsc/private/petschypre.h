@@ -42,7 +42,7 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PETSC_PKG_HYPRE_VERSION_GT(2, 28, 0) || (PETSC_PKG_HYPRE_VERSION_EQ(2, 28, 0) && HYPRE_DEVELOP_NUMBER >= 22)
+#if PETSC_PKG_HYPRE_VERSION_GT(2, 28, 0) || (PETSC_PKG_HYPRE_VERSION_EQ(2, 28, 0) && defined(HYPRE_DEVELOP_NUMBER) && HYPRE_DEVELOP_NUMBER >= 22)
 static inline PetscErrorCode PetscHYPREFinalize_Private(void)
 {
   if (HYPRE_Initialized() && !HYPRE_Finalized()) PetscCallExternal(HYPRE_Finalize, );
