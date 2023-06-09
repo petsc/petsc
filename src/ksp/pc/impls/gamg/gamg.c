@@ -1399,7 +1399,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 -  type - `PCGAMGAGG`, `PCGAMGGEO`, or `PCGAMGCLASSICAL`
 
    Options Database Key:
-.  -pc_gamg_type <agg,geo,classical> - type of algebraic multigrid to apply
+.  -pc_gamg_type <agg,geo,classical> - type of algebraic multigrid to apply - only agg supported
 
    Level: intermediate
 
@@ -1507,7 +1507,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG options");
-  PetscCall(PetscOptionsFList("-pc_gamg_type", "Type of AMG method", "PCGAMGSetType", GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag));
+  PetscCall(PetscOptionsFList("-pc_gamg_type", "Type of AMG method (only 'agg' supported and useful)", "PCGAMGSetType", GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag));
   if (flag) PetscCall(PCGAMGSetType(pc, tname));
   PetscCall(PetscOptionsBool("-pc_gamg_repartition", "Repartion coarse grids", "PCGAMGSetRepartition", pc_gamg->repart, &pc_gamg->repart, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_use_sa_esteig", "Use eigen estimate from smoothed aggregation for smoother", "PCGAMGSetUseSAEstEig", pc_gamg->use_sa_esteig, &pc_gamg->use_sa_esteig, NULL));
@@ -1559,7 +1559,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
      PCGAMG - Geometric algebraic multigrid (AMG) preconditioner
 
    Options Database Keys:
-+   -pc_gamg_type <type,default=agg> - one of agg, geo, or classical
++   -pc_gamg_type <type,default=agg> - one of agg, geo, or classical (only smoothed aggregation, agg, supported)
 .   -pc_gamg_repartition  <bool,default=false> - repartition the degrees of freedom across the coarse grids as they are determined
 .   -pc_gamg_asm_use_agg <bool,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
 .   -pc_gamg_process_eq_limit <limit, default=50> - `PCGAMG` will reduce the number of MPI ranks used directly on the coarse grids so that there are around <limit>
