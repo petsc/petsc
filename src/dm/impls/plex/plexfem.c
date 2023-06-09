@@ -5843,9 +5843,6 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
     PetscCall(VecGetDM(locS[2], &dmScale[2]));
     PetscCall(DMGetCellDS(dmScale[2], cells ? cells[cStart] : cStart, &dsScale[2], NULL));
-    locS[1] = locS[0] = locS[2];
-    dmScale[1] = dmScale[0] = dmScale[2];
-    dsScale[1] = dsScale[0] = dsScale[2];
     PetscCall(PetscDSGetTotalDimension(dsScale[2], &totDimScale[2]));
     // BRAD: This is not set correctly
     key[2].field = 2;
@@ -5899,7 +5896,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   /* NOTE This needs the end cap faces to have identical orientations */
   PetscCall(DMPlexGetHybridCellFields(dm, cellIS, locX, locX_t, locA[2], &u, &u_t, &a[2]));
   PetscCall(DMPlexGetHybridFields(dm, dmAux, dsAux, cellIS, locA, PETSC_TRUE, a));
-  PetscCall(DMPlexGetHybridFields(dm, dmScale, dsScale, cellIS, locS, PETSC_FALSE, s));
+  PetscCall(DMPlexGetHybridFields(dm, dmScale, dsScale, cellIS, locS, PETSC_TRUE, s));
   PetscCall(DMGetWorkArray(dm, hasBdJac ? cellChunkSize * totDim * totDim : 0, MPIU_SCALAR, &elemMatNeg));
   PetscCall(DMGetWorkArray(dm, hasBdJac ? cellChunkSize * totDim * totDim : 0, MPIU_SCALAR, &elemMatPos));
   PetscCall(DMGetWorkArray(dm, hasBdJac ? cellChunkSize * totDim * totDim : 0, MPIU_SCALAR, &elemMatCoh));
@@ -6010,20 +6007,27 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
           if (fieldI == key[2].field) {
             PetscCheck(cohesive, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Scaling should not happen for face fields");
-            // No cohesive scaling field is currently input
-            for (i = 0; i < Nb; ++i)
+            for (i = 0; i < Nb; ++i) {
               for (j = 0; j < totDim; ++j) elemMatCoh[coff + (off + i) * totDim + j] += s[0][soff + i] * elemMatNeg[coff + (off + i) * totDim + j] + s[1][soff + i] * elemMatPos[coff + (off + i) * totDim + j];
+              if (hasBdPrec)
+                for (j = 0; j < totDim; ++j) elemMatCohP[coff + (off + i) * totDim + j] += s[0][soff + i] * elemMatNegP[coff + (off + i) * totDim + j] + s[1][soff + i] * elemMatPosP[coff + (off + i) * totDim + j];
+            }
             off += Nb;
           } else {
             const PetscInt N = cohesive ? Nb : Nb * 2;
 
-            for (i = 0; i < N; ++i)
+            for (i = 0; i < N; ++i) {
               for (j = 0; j < totDim; ++j) elemMatCoh[coff + (off + i) * totDim + j] += elemMatNeg[coff + (off + i) * totDim + j] + elemMatPos[coff + (off + i) * totDim + j];
+              if (hasBdPrec)
+                for (j = 0; j < totDim; ++j) elemMatCohP[coff + (off + i) * totDim + j] += elemMatNegP[coff + (off + i) * totDim + j] + elemMatPosP[coff + (off + i) * totDim + j];
+            }
             off += N;
           }
         }
       } else {
         for (i = 0; i < totDim * totDim; ++i) elemMatCoh[coff + i] += elemMatNeg[coff + i] + elemMatPos[coff + i];
+        if (hasBdPrec)
+          for (i = 0; i < totDim * totDim; ++i) elemMatCohP[coff + i] += elemMatNegP[coff + i] + elemMatPosP[coff + i];
       }
       if (hasBdPrec) {
         if (hasBdJac) {
