@@ -21,7 +21,7 @@ PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom, size_t, 
 PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
-  size_t              nn     = n < 0 ? (size_t)(-2 * n) : n; /* handle complex case */
+  size_t              nn     = n < 0 ? (size_t)(-2 * n) : (size_t)n; /* handle complex case */
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)
