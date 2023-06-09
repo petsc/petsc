@@ -233,7 +233,10 @@ Abstracts
 
 .. _`Luc Berger-Vergiat`:
 
-.. topic:: *Luc Berger-Vergiat*, **Using Kokkos Ecosystem with PETSc on modern architectures**
+.. topic:: **Using Kokkos Ecosystem with PETSc on modern architectures**
+
+    | **Luc Berger-Vergiat**
+    | Sandia National Laboratories
 
     Supercomputers increasingly rely on GPUs to achieve high
     throughput while maintaining a reasonable power consumption. Consequently,
@@ -246,7 +249,10 @@ Abstracts
 
 .. _`Blaise Bourdin`:
 
-.. topic:: *Blaise Bourdin*, **From the trenches: porting mef90**
+.. topic:: **From the trenches: porting mef90**
+
+    | **Blaise Bourdin**
+    | McMaster University
 
     mef90 is a distributed three-dimensional unstructured finite-element
     implementation of various phase-field models of fracture. In this talk,
@@ -254,7 +260,10 @@ Abstracts
 
 .. _`Sara Calandrini`:
 
-.. topic:: *Sara Calandrini*, Darren Engwirda, Luke Van Roekel, **A new non-hydrostatic capability for MPAS-Ocean**
+.. topic:: **A new non-hydrostatic capability for MPAS-Ocean**
+
+    | **Sara Calandrini**, Darren Engwirda, Luke Van Roekel
+    | Los Alamos National Laboratory
 
     The Model for Prediction Across Scales-Ocean (MPAS-Ocean) is an
     open-source, global ocean model and is one component within the Department
@@ -274,7 +283,10 @@ Abstracts
 
 .. _`Justin Chang`:
 
-.. topic:: *Justin Chang*, **AMD GPU benchmarking, documentation, and roadmap**
+.. topic:: **AMD GPU benchmarking, documentation, and roadmap**
+
+    | **Justin Chang**
+    | AMD Inc.
 
     This talk comprises three parts. First, we present an overview of some
     relatively new training documentation like the "AMD lab notes" to enable
@@ -288,7 +300,10 @@ Abstracts
 
 .. _`Mohamad Ibrahim Cheikh`:
 
-.. topic:: *Mohamad Ibrahim Cheikh*, Konstantin Doubrovinski, **An Immersed Boundary method for Elastic Bodies Using PETSc**
+.. topic::  **An Immersed Boundary method for Elastic Bodies Using PETSc**
+
+    | **Mohamad Ibrahim Cheikh**, Konstantin Doubrovinski
+    | Doubrovinski Lab, The University of Texas Southwestern Medical Center
 
     This study presents a parallel implementation of an immersed boundary
     method code using the PETSc distributed memory module. This work aims to simulate a complex developmental process that occurs in the
@@ -305,7 +320,10 @@ Abstracts
 
 .. _`Jacob Faibussowitsch`:
 
-.. topic:: *Jacob Faibussowitch*, **Transparent Asynchronous Compute Made Easy With PETSc**
+.. topic:: **Transparent Asynchronous Compute Made Easy With PETSc**
+
+    | **Jacob Faibussowitch**
+    | Argonne National Laboratory
 
     Asynchronous GPU computing has historically been difficult to integrate scalably at the library level. We provide an update on recent work
     implementing a fully asynchronous framework in PETSc. We give detailed
@@ -314,7 +332,10 @@ Abstracts
 
 .. _`Daniel Finn`:
 
-.. topic:: *Daniel Finn*, **PETSc-PIC: A Structure-Preserving Particle-In-Cell Method for Electrostatic Solves**
+.. topic:: **PETSc-PIC: A Structure-Preserving Particle-In-Cell Method for Electrostatic Solves**
+
+    | **Daniel Finn**
+    | University at Buffalo
 
     Numerical solutions to the Vlasov-Poisson equations have important
     applications in the fields of plasma physics, solar physics, and cosmology.
@@ -334,7 +355,10 @@ Abstracts
 
 .. _`Derek Gaston`:
 
-.. topic:: *Derek Gaston*, **Multiscale, Multiphysics Simulation Through Application Composition Using MOOSE**
+.. topic:: **Multiscale, Multiphysics Simulation Through Application Composition Using MOOSE**
+
+    | **Derek Gaston**
+    | Idaho National Laboratory
 
     Eight years ago, at the PETSc 20 meeting, I introduced the idea of
     "Simplifying Multiphysics Through Application Composition" -- the idea
@@ -348,7 +372,10 @@ Abstracts
 
 .. _`Alex Grant`:
 
-.. topic:: *Alex Grant*, Karthik Chockalingam, Xiaohu Guo, **High-order FEM implementation in AMReX using PETSc**
+.. topic:: **High-order FEM implementation in AMReX using PETSc**
+
+    | **Alex Grant**, Karthik Chockalingam, Xiaohu Guo
+    | Science and Technology Facilities Council (STFC), UK
 
     AMReX is a C++ block-structured framework for adaptive mesh refinement,
     typically used for finite difference or finite volume codes.  We describe
@@ -375,7 +402,10 @@ Abstracts
 
 .. _`Aidan Hamilton`:
 
-.. topic:: *Aidan Hamilton*, Jing-Mei Qiu, Hong Zhang, **Scalable Riemann Solvers with the Discontinuous Galerkin Method for Hyperbolic Network Simulation**
+.. topic:: **Scalable Riemann Solvers with the Discontinuous Galerkin Method for Hyperbolic Network Simulation**
+
+    | **Aidan Hamilton**, Jing-Mei Qiu, Hong Zhang
+    | University of Delaware
 
     We develop highly efficient and effective computational algorithms
     and simulation tools for fluid simulations on a network. The mathematical
@@ -398,7 +428,10 @@ Abstracts
 
 .. _`Zakariae Jorti`:
 
-.. topic:: *Zakariae Jorti*, Qi Tang, Konstantin Lipnikov, Xianzhu Tang, **A mimetic finite difference based quasi-static magnetohydrodynamic solver for force-free plasmas in tokamak disruptions**
+.. topic:: **A mimetic finite difference based quasi-static magnetohydrodynamic solver for force-free plasmas in tokamak disruptions**
+
+    | **Zakariae Jorti**, Qi Tang, Konstantin Lipnikov, Xianzhu Tang
+    | Los Alamos National Laboratory
 
     Force-free plasmas are a good approximation in the low-beta case, where the
     plasma pressure is tiny compared with the magnetic pressure. On time scales
@@ -427,7 +460,10 @@ Abstracts
 
 .. _`Jakub Kruzik`:
 
-.. topic:: *Jakub Kruzik*, Marek Pecha, David Horak, **PERMON library for quadratic programming**
+.. topic:: **PERMON library for quadratic programming**
+
+    | **Jakub Kruzik**, Marek Pecha, David Horak
+    | VSB - Technical University of Ostrava, Czechia
 
     PERMON (Parallel, Efficient, Robust, Modular, Object-oriented, Numerical)
     is a library based on PETSc for solving quadratic programming (QP)
@@ -443,7 +479,10 @@ Abstracts
 
 .. _`Vanessa Lopez-Marrero`:
 
-.. topic:: *Vanessa Lopez-Marrero*, Kwangmin Yu, Tao Zhang, Mohammad Atif, Abdullah Al Muti Sharfuddin, Fan Yang, Yangang Liu, Meifeng Lin, Foluso Ladeinde, Lingda Li, **Towards enabling digital twins capabilities for a cloud chamber**
+.. topic:: **Towards enabling digital twins capabilities for a cloud chamber**
+
+    | **Vanessa Lopez-Marrero**, Kwangmin Yu, Tao Zhang, Mohammad Atif, Abdullah Al Muti Sharfuddin, Fan Yang, Yangang Liu, Meifeng Lin, Foluso Ladeinde, Lingda Li
+    | Brookhaven National Laboratory
 
     Particle-resolved direct numerical simulations (PR-DNS), which resolve not
     only the smallest turbulent eddies but also track the development and
@@ -462,7 +501,10 @@ Abstracts
 
 .. _`David May`:
 
-.. topic:: *David May*, **PETSc ROCKS**
+.. topic:: **PETSc ROCKS**
+
+    | **David May**
+    | University of California, San Diego
 
     The field of Geodynamics is concerned with understanding
     the deformation history of the solid Earth over millions to billions of
@@ -480,7 +522,10 @@ Abstracts
 
 .. _`Heeho Park`:
 
-.. topic:: *Heeho Park*, Glenn Hammond, Albert Valocchi, **PETSc Newton Trust-Region for Simulating Large-scale Engineered Subsurface Systems with PFLOTRAN**
+.. topic:: **PETSc Newton Trust-Region for Simulating Large-scale Engineered Subsurface Systems with PFLOTRAN**
+
+    | **Heeho Park**, Glenn Hammond, Albert Valocchi
+    | Sandia National Laboratories
 
     Modeling large-scale engineered subsurface systems entails significant
     additional numerical challenges. For nuclear waste repository, the
@@ -506,7 +551,10 @@ Abstracts
 
 .. _`Ashish Patel`:
 
-.. topic:: *Ashish Patel*, Jeremy Theler, Francesc Levrero-Florencio, Nabil Abboud, Mohammad Sarraf Joshaghani, Scott McClennan, **Scalable cloud-native thermo-mechanical solvers using PETSc**
+.. topic:: **Scalable cloud-native thermo-mechanical solvers using PETSc**
+
+    | **Ashish Patel**, Jeremy Theler, Francesc Levrero-Florencio, Nabil Abboud, Mohammad Sarraf Joshaghani, Scott McClennan
+    | Ansys, Inc.
 
     This talk presents how the Ansys OnScale team uses PETSc to
     develop finite element-based thermo-mechanical solvers for scalable
@@ -521,7 +569,10 @@ Abstracts
 
 .. _`Spencer Patty`:
 
-.. topic:: *Spencer Patty*, **Intel oneAPI Math Kernel Library, what’s new and what’s next?**
+.. topic:: **Intel oneAPI Math Kernel Library, what’s new and what’s next?**
+
+    | **Spencer Patty**
+    | Intel Corporation
 
     This talk provides an overview of Intel® oneAPI Math Kernel Library (oneMKL)
     product and software for supporting optimized math routines for both Intel
@@ -534,7 +585,10 @@ Abstracts
 
 .. _`Marek Pecha`:
 
-.. topic:: *Marek Pecha*, David Horak, Richard Tran Mills, Zachary Langford, **Distributed Machine Learning for Natural Hazard Applications Using PERMON**
+.. topic:: **Distributed Machine Learning for Natural Hazard Applications Using PERMON**
+
+    | **Marek Pecha**, David Horak, Richard Tran Mills, Zachary Langford
+    | VSB – Technical University of Ostrava, Czechia
 
     We will present a software solution for distributed machine learning
     supporting computation on multiple GPUs running on the top of the PETSc
@@ -551,7 +605,10 @@ Abstracts
 
 .. _`Joseph Pusztay`:
 
-.. topic:: *Joseph Pusztay*, Matt Knepley, Mark Adams, **Landau Collisions in the Particle Basis with PETSc-PIC**
+.. topic:: **Landau Collisions in the Particle Basis with PETSc-PIC**
+
+    | **Joseph Pusztay**, Matt Knepley, Mark Adams
+    | University at Buffalo
 
     The kinetic description of plasma encompasses the fine scale interaction of
     the various bodies that it is comprised of, and applies to a litany of
@@ -568,7 +625,10 @@ Abstracts
 
 .. _`Jose E. Roman`:
 
-.. topic:: *Jose E. Roman*, **Experiences in solving nonlinear eigenvalue problems with SLEPc**
+.. topic:: **Experiences in solving nonlinear eigenvalue problems with SLEPc**
+
+    | **Jose E. Roman**
+    | Universitat Politècnica de València
 
     One of the unique features of SLEPc is the module for the general nonlinear
     eigenvalue problem (NEP), where we want to compute a few eigenvalues and
@@ -580,7 +640,10 @@ Abstracts
 
 .. _`Barry Smith`:
 
-.. topic:: *Barry Smith*, **Some thoughts on the future of PETSc**:
+.. topic:: **Some thoughts on the future of PETSc**:
+
+    | **Barry Smith**
+    | Flatiron Institute
 
     How will PETSc evolve and grow in the future? How can PETSc algorithms and
     simulations be integrated into the emerging world of machine learning and
@@ -589,7 +652,10 @@ Abstracts
 
 .. _`Tim Steinhoff`:
 
-.. topic:: *Tim Steinhoff*, Volker Jacht, **Software Development and Deployment Including PETSc**
+.. topic:: **Software Development and Deployment Including PETSc**
+
+    | **Tim Steinhoff**, Volker Jacht
+    | Gesellschaft für Anlagen- und Reaktorsicherheit (GRS), Germany
 
     Once it is decided that PETSc shall handle certain numerical subtasks in
     your software the question may arise about how to smoothly incorporate PETSc
@@ -605,7 +671,10 @@ Abstracts
 
 .. _`Hansol Suh`:
 
-.. topic:: *Hansol Suh*, **TaoADMM**
+.. topic:: **TaoADMM**
+
+    | **Hansol Suh**
+    | Argonne National Laboratory
 
     In this tutorial, we will be giving an introduction to ADMM algorithm on
     TAO. It will include walking through ADMM algorithm with some real-life
@@ -613,7 +682,10 @@ Abstracts
 
 .. _`Maria Vasilyeva`:
 
-.. topic:: *Maria Vasilyeva*, **Numerical upscaling of network models using PETSc**
+.. topic:: **Numerical upscaling of network models using PETSc**
+
+    | **Maria Vasilyeva**
+    | Texas A&M University-Corpus Christi
 
     Multiphysics models on large networks are used in many applications, for
     example, pore network models in reservoir simulation, epidemiological
@@ -628,7 +700,10 @@ Abstracts
 
 .. _`Berend van Wachem`:
 
-.. topic:: *Berend van Wachem*, Fabien Evrard, **MultiFlow: A coupled balanced-force framework to solve multiphase flows in arbitrary domains**
+.. topic:: **MultiFlow: A coupled balanced-force framework to solve multiphase flows in arbitrary domains**
+
+    | **Berend van Wachem**, Fabien Evrard
+    | University of Magdeburg, Germany
 
     Since 2000, we have been working on a finite-volume numerical framework
     “MultiFlow ” to predict multiphase flows in arbitrary domains by solving
@@ -657,7 +732,10 @@ Abstracts
 
 .. _`Matt Young`:
 
-.. topic:: *Matt Young*, **PETSc in the Ionosphere**
+.. topic:: **PETSc in the Ionosphere**
+
+    | **Matt Young**
+    | University of New Hampshire
 
     A planet's ionosphere is the region of its atmosphere where a fraction
     of the constituent atoms or molecules have separated into positive ions and
@@ -700,7 +778,10 @@ Abstracts
 
 .. _`Chonglin Zhang`:
 
-.. topic:: *Chonglin Zhang*, Cameron W. Smith, Mark S. Shephard, **XGCm: An Unstructured Mesh Gyrokinetic Particle-in-cell Code for Exascale Fusion Plasma Simulations**
+.. topic:: **XGCm: An Unstructured Mesh Gyrokinetic Particle-in-cell Code for Exascale Fusion Plasma Simulations**
+
+    | **Chonglin Zhang**, Cameron W. Smith, Mark S. Shephard
+    | Rensselaer Polytechnic Institute (RPI)
 
     We report the development of XGCm, a new distributed unstructured mesh
     gyrokinetic particle-in-cell (PIC) code, short for x-point included
@@ -723,7 +804,10 @@ Abstracts
 
 .. _`Hong Zhang (Ms.)`:
 
-.. topic:: *Hong Zhang*, **PETSc DMNetwork: A Library for Scalable Network PDE-Based Multiphysics Simulation**
+.. topic:: **PETSc DMNetwork: A Library for Scalable Network PDE-Based Multiphysics Simulation**
+
+    | **Hong Zhang**
+    | Argonne National Laboratory, Illinois Institute of Technology
 
     We present DMNetwork, a high-level set of routines included in the PETSc
     library for the simulation of multiphysics phenomena over large-scale
@@ -737,7 +821,10 @@ Abstracts
 
 .. _`Hui Zhou`:
 
-.. topic:: *Hui Zhou*, **MPI Multiply Threads**
+.. topic:: **MPI Multiply Threads**
+
+    | **Hui Zhou**
+    | Argonne National Laboratory
 
     In the traditional MPI+Thread programming paradigm, MPI and OpenMP each
     form their own parallelization. MPI is unaware of the thread
