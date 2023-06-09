@@ -74,6 +74,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalGatherGraph;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalPartition;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalScatterPart;
+PETSC_EXTERN PetscLogEvent DMPLEX_Uninterpolate;
 
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {

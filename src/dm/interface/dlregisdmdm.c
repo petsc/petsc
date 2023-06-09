@@ -143,6 +143,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("RebalPartition", DM_CLASSID, &DMPLEX_RebalPartition));
   PetscCall(PetscLogEventRegister("RebalScatterPart", DM_CLASSID, &DMPLEX_RebalScatterPart));
   PetscCall(PetscLogEventRegister("RebalRewriteSF", DM_CLASSID, &DMPLEX_RebalRewriteSF));
+  PetscCall(PetscLogEventRegister("DMPlexUninterp", DM_CLASSID, &DMPLEX_Uninterpolate));
 
   PetscCall(PetscLogEventRegister("DMSwarmMigrate", DM_CLASSID, &DMSWARM_Migrate));
   PetscCall(PetscLogEventRegister("DMSwarmDETSetup", DM_CLASSID, &DMSWARM_DataExchangerTopologySetup));
