@@ -7,6 +7,7 @@
 *************************
 
 June 5-7, 2023, at the `Hermann Hall Conference Center <https://www.iit.edu/event-services/meeting-spaces/hermann-hall-conference-center>`__
+in the Hermann Ballroom (when you enter the Hermann Hall building through the main entrance walk straight back to the rear of the building and take a right)
 (3241 South Federal Street, Chicago, IL)
 on the campus of `The Illinois Institute of Technology (IIT) <https://www.iit.edu>`__ in Chicago.
 Easy access from the hotels via the Chicago Elevated `Green <https://www.transitchicago.com/greenline>`__ or `Red <https://www.transitchicago.com/redline>`__ Lines.
@@ -76,7 +77,7 @@ Monday, June 5
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | Time       | Title                                                                                                                                                                       | Speaker                   |
 +============+=============================================================================================================================================================================+===========================+
-| 10:00 am   | Newbie tutorial (optional)                                                                                                                                                  |                           |
+| 10:00 am   | `Newbie tutorial <https://petsc.gitlab.io/annual-meetings/2023/tutorials/petsc_annual_meeting_2023_tutorial.pdf>`__  (optional)                                             |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 11:30 am   | Follow-up questions and meetings                                                                                                                                            |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
@@ -88,7 +89,8 @@ Monday, June 5
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 2:00 pm    | `MultiFlow: A coupled balanced-force framework to solve multiphase flows in arbitrary domains <https://petsc.gitlab.io/annual-meetings/2023/slides/BerendvanWachem.pdf>`__  | `Berend van Wachem`_      |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| 2:30 pm    | Mini tutorial: `PNODE, PyTorch, and petsc4py <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.pdf>`__                                                       | Hong Zhang (Mr.)          |
+| 2:30 pm    | Mini tutorial: `PETSc and PyTorch interoperability <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.pdf>`__                                                 | Hong Zhang (Mr.)          |
+|            | :download:`IPython code <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.ipynb>`                                                                            |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 2:45 pm    | **Coffee Break**                                                                                                                                                            |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
@@ -178,11 +180,11 @@ Wednesday, June 7
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
 | 1:00 pm    | `PETSc in the Ionosphere <https://petsc.gitlab.io/annual-meetings/2023/slides/MattYoung.pdf>`__                                                                                 | `Matt Young`_      |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
-| 1:30 pm    | `PERMON library for quadratic programming <https://petsc.gitlab.io/annual-meetings/2023/slides/JakubKruzik.pdf>`__                                                              | `Jakub Kruzik`_    |
+| 1:30 pm    | `From the trenches: porting mef90 <https://petsc.gitlab.io/annual-meetings/2023/slides/BlaiseBourdin.pdf>`__                                                                    | `Blaise Bourdin`_  |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
-| 1:52 pm    | `Distributed Machine Learning for Natural Hazard Applications Using PERMON <https://petsc.gitlab.io/annual-meetings/2023/slides/MarekPecha.pdf>`__                              | `Marek Pecha`_     |
+| 2:00 pm    | `PERMON library for quadratic programming <https://petsc.gitlab.io/annual-meetings/2023/slides/JakubKruzik.pdf>`__                                                              | `Jakub Kruzik`_    |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
-| 2:15 pm    | `From the trenches: porting mef90 <https://petsc.gitlab.io/annual-meetings/2023/slides/BlaiseBourdin.pdf>`__                                                                    | `Blaise Bourdin`_  |
+| 2:22 pm    | `Distributed Machine Learning for Natural Hazard Applications Using PERMON <https://petsc.gitlab.io/annual-meetings/2023/slides/MarekPecha.pdf>`__                              | `Marek Pecha`_     |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
 | 2:45 pm    | Wrap up                                                                                                                                                                         |                    |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+

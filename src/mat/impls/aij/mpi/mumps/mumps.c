@@ -108,9 +108,10 @@ static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems *Pets
          an easy translation between omp_comm and petsc_comm). See MUMPS-5.1.2 manual p82.                   \
          omp_comm is a small shared memory communicator, hence doing multiple Bcast as shown below is OK. \
       */ \
-        PetscCallMPI(MPI_Bcast(mumps->id.infog, 40, MPIU_MUMPSINT, 0, mumps->omp_comm)); \
-        PetscCallMPI(MPI_Bcast(mumps->id.rinfog, 20, MPIU_REAL, 0, mumps->omp_comm)); \
-        PetscCallMPI(MPI_Bcast(mumps->id.info, 1, MPIU_MUMPSINT, 0, mumps->omp_comm)); \
+        PetscCallMPI(MPI_Bcast(mumps->id.infog, PETSC_STATIC_ARRAY_LENGTH(mumps->id.infog), MPIU_MUMPSINT, 0, mumps->omp_comm)); \
+        PetscCallMPI(MPI_Bcast(mumps->id.rinfog, PETSC_STATIC_ARRAY_LENGTH(mumps->id.rinfog), MPIU_REAL, 0, mumps->omp_comm)); \
+        PetscCallMPI(MPI_Bcast(mumps->id.info, PETSC_STATIC_ARRAY_LENGTH(mumps->id.info), MPIU_MUMPSINT, 0, mumps->omp_comm)); \
+        PetscCallMPI(MPI_Bcast(mumps->id.rinfo, PETSC_STATIC_ARRAY_LENGTH(mumps->id.rinfo), MPIU_REAL, 0, mumps->omp_comm)); \
       } else { \
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
         PetscStackCallExternalVoid(PetscStringize(MUMPS_c), MUMPS_c(&mumps->id)); \
@@ -1448,12 +1449,13 @@ PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
 
 PetscErrorCode MatSolveTranspose_MUMPS(Mat A, Vec b, Vec x)
 {
-  Mat_MUMPS *mumps = (Mat_MUMPS *)A->data;
+  Mat_MUMPS          *mumps = (Mat_MUMPS *)A->data;
+  const PetscMUMPSInt value = mumps->id.ICNTL(9);
 
   PetscFunctionBegin;
   mumps->id.ICNTL(9) = 0;
   PetscCall(MatSolve_MUMPS(A, b, x));
-  mumps->id.ICNTL(9) = 1;
+  mumps->id.ICNTL(9) = value;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1702,13 +1704,13 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
 
 PetscErrorCode MatMatSolveTranspose_MUMPS(Mat A, Mat B, Mat X)
 {
-  Mat_MUMPS    *mumps    = (Mat_MUMPS *)A->data;
-  PetscMUMPSInt oldvalue = mumps->id.ICNTL(9);
+  Mat_MUMPS          *mumps = (Mat_MUMPS *)A->data;
+  const PetscMUMPSInt value = mumps->id.ICNTL(9);
 
   PetscFunctionBegin;
   mumps->id.ICNTL(9) = 0;
   PetscCall(MatMatSolve_MUMPS(A, B, X));
-  mumps->id.ICNTL(9) = oldvalue;
+  mumps->id.ICNTL(9) = value;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2262,7 +2264,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F, Mat A, IS r, IS c, const Mat
 
   PetscFunctionBegin;
   if (mumps->matstruc == SAME_NONZERO_PATTERN) {
-    /* F is assembled by a previous call of MatLUFactorSymbolic_AIJMUMPS() */
+    /* F is assembled by a previous call of MatLUFactorSymbolic_BAIJMUMPS() */
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -2317,7 +2319,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F, Mat A, IS r, const MatFact
 
   PetscFunctionBegin;
   if (mumps->matstruc == SAME_NONZERO_PATTERN) {
-    /* F is assembled by a previous call of MatLUFactorSymbolic_AIJMUMPS() */
+    /* F is assembled by a previous call of MatCholeskyFactorSymbolic_MUMPS() */
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

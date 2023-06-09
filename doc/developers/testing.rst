@@ -179,6 +179,8 @@ With this background, these keywords are as follows.
 
    -  Inputs sometimes require external matrices that are found in the
       directory given by the environmental variable ``DATAFILESPATH``.
+      The repository `datafiles <https://gitlab.com/petsc/datafiles>`__
+      contains all the test files needed for the test suite.
       For these tests ``requires: datafilespath`` can be
       specifed.
 
