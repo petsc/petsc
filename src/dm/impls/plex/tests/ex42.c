@@ -401,7 +401,7 @@ int main(int argc, char **argv)
   testset:
     args: -dm_plex_simplex 0 -petscspace_degree 3 -dm_view -dm_petscds_view \
           -petscfe_default_quadrature_order 4 -cdm_default_quadrature_order 4
-    filter: sed "s /cpu/self/xsmm /cpu/self/avx "
+    filter: sed -e "s /cpu/self/xsmm /cpu/self/opt " -e "s /cpu/self/avx /cpu/self/opt "
 
     test:
       suffix: cube_3
