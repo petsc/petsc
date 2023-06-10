@@ -1664,7 +1664,18 @@ PetscErrorCode DMGetWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, void *m
   } else {
     PetscCall(PetscNew(&link));
   }
-  PetscCallMPI(MPI_Type_size(dtype, &dsize));
+  /* Avoid MPI_Type_size for most used datatypes
+     Get size directly */
+  if (dtype == MPIU_INT) dsize = sizeof(PetscInt);
+  else if (dtype == MPIU_REAL) dsize = sizeof(PetscReal);
+#if defined(PETSC_USE_64BIT_INDICES)
+  else if (dtype == MPI_INT) dsize = sizeof(int);
+#endif
+#if defined(PETSC_USE_COMPLEX)
+  else if (dtype == MPIU_SCALAR) dsize = sizeof(PetscScalar);
+#endif
+  else PetscCallMPI(MPI_Type_size(dtype, &dsize));
+
   if (((size_t)dsize * count) > link->bytes) {
     PetscCall(PetscFree(link->mem));
     PetscCall(PetscMalloc(dsize * count, &link->mem));
