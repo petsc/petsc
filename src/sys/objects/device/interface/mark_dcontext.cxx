@@ -495,7 +495,7 @@ PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext dc
 // update the existing version and possibly appeand ourselves to the dependency list
 
 template <bool use_debug>
-static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &marked, PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> &frame, const char *PETSC_UNUSED name, bool *update_object_dependencies)
+static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &marked, PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> &frame, PETSC_UNUSED const char *name, bool *update_object_dependencies)
 {
   const auto dctx_id             = PetscObjectCast(dctx)->id;
   auto      &object_dependencies = marked.dependencies;
@@ -524,7 +524,7 @@ static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &m
 }
 
 template <bool use_debug>
-static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectMap::mapped_type &marked, PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> &frame, const char *PETSC_UNUSED name, bool *update_object_dependencies)
+static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectMap::mapped_type &marked, PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> &frame, PETSC_UNUSED const char *name, bool *update_object_dependencies)
 {
   const auto      dctx_id    = PetscObjectCast(dctx)->id;
   auto           &last_write = marked.last_write;

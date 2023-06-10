@@ -80,7 +80,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     PetscBLASInt lierr;
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("A", "A", &nb, &nb, a, &nb, d, u, &nb, v, &nb, work, &lwork, &lierr));
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "gesv() error %" PetscBLASInt_FMT, lierr);
+    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "gesvd() error %" PetscBLASInt_FMT, lierr);
     PetscCall(PetscFPTrapPop());
   }
 #else

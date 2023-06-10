@@ -20,6 +20,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_N_inplace(Mat A, Vec bb, Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
+  PetscCheck(bs > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected bs %" PetscInt_FMT " > 0", bs);
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
   t = a->solve_work;
@@ -97,6 +98,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(const PetscInt *ai, co
   PetscScalar     *xk, *xj, *xk_tmp;
 
   PetscFunctionBegin;
+  PetscCheck(bs > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected bs %" PetscInt_FMT " > 0", bs);
   PetscCall(PetscMalloc1(bs, &xk_tmp));
   for (k = 0; k < mbs; k++) {
     v  = aa + bs2 * ai[k];

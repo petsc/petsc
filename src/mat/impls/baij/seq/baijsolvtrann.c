@@ -13,6 +13,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A, Vec bb, Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
+  PetscCheck(bs > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected bs %" PetscInt_FMT " > 0", bs);
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
   t = a->solve_work;
@@ -78,6 +79,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A, Vec bb, Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
+  PetscCheck(bs > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected bs %" PetscInt_FMT " > 0", bs);
   PetscCall(VecGetArrayRead(bb, &b));
   PetscCall(VecGetArray(xx, &x));
   t = a->solve_work;
