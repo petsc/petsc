@@ -87,6 +87,7 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp, PetscReal a, Pets
       /* use PetscObjectSet/AppendOptionsPrefix() instead of KSPSet/AppendOptionsPrefix() so that the PC prefix is not changed */
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)cheb->kspest, ((PetscObject)ksp)->prefix));
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)cheb->kspest, "esteig_"));
+      PetscCall(KSPSetSkipPCSetFromOptions(cheb->kspest, PETSC_TRUE));
 
       PetscCall(KSPSetComputeEigenvalues(cheb->kspest, PETSC_TRUE));
 
@@ -806,7 +807,6 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       KSPConvergedReason reason;
 
       PetscCall(KSPSetPC(cheb->kspest, ksp->pc));
-      PetscCall(KSPSetSkipPCSetFromOptions(cheb->kspest, PETSC_TRUE));
       if (cheb->usenoisy) {
         B = ksp->work[1];
         PetscCall(KSPSetNoisy_Private(B));
