@@ -6,6 +6,10 @@
 2023 Annual PETSc Meeting
 *************************
 
+.. image:: https://petsc.gitlab.io/annual-meetings/2023/GroupPhoto.jpg
+  :width: 800
+  :alt: PETSc User Meeting 2023 group photo (Hermann Hall, 06/06/2023)
+
 June 5-7, 2023, at the `Hermann Hall Conference Center <https://www.iit.edu/event-services/meeting-spaces/hermann-hall-conference-center>`__
 in the Hermann Ballroom (when you enter the Hermann Hall building through the main entrance walk straight back to the rear of the building and take a right)
 (3241 South Federal Street, Chicago, IL)
@@ -68,7 +72,7 @@ Suggested hotels
 
   * `Hilton Garden Inn Chicago Downtown South Loop <https://www.hilton.com/en/hotels/chidlgi-hilton-garden-inn-chicago-downtown-south-loop/?SEO_id=GMB-AMER-GI-CHIDLGI&y_source=1_MTI2NDg5NzktNzE1LWxvY2F0aW9uLndlYnNpdGU%3D>`__ 55 E 11th St, Chicago
 
-Tentative Agenda
+Agenda
 ----------------
 
 Monday, June 5
@@ -89,7 +93,7 @@ Monday, June 5
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 2:00 pm    | `MultiFlow: A coupled balanced-force framework to solve multiphase flows in arbitrary domains <https://petsc.gitlab.io/annual-meetings/2023/slides/BerendvanWachem.pdf>`__  | `Berend van Wachem`_      |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| 2:30 pm    | Mini tutorial: `PETSc and PyTorch interoperability <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.pdf>`__                                                 | Hong Zhang (Mr.)          |
+| 2:30 pm    | Mini tutorial: `PETSc and PyTorch interoperability <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.pdf>`__                                                 | `Hong Zhang (Mr.)`_       |
 |            | :download:`IPython code <https://petsc.gitlab.io/annual-meetings/2023/slides/HongZhangMr.ipynb>`                                                                            |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 2:45 pm    | **Coffee Break**                                                                                                                                                            |                           |
@@ -123,13 +127,13 @@ Tuesday, June 6
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 10:45 am   | `MPI Multiply Threads <https://petsc.gitlab.io/annual-meetings/2023/slides/HuiZhou.pdf>`__                                                                                                          | `Hui Zhou`_               |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| 11:15 am   | Mini tutorial: `PETSc on the GPU <https://petsc.gitlab.io/annual-meetings/2023/slides/JunchaoZhang.pdf>`__                                                                                          | Junchao Zhang             |
+| 11:15 am   | Mini tutorial: `PETSc on the GPU <https://petsc.gitlab.io/annual-meetings/2023/slides/JunchaoZhang.pdf>`__                                                                                          | `Junchao Zhang`_          |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 11:30 am   | `AMD GPU benchmarking, documentation, and roadmap <https://petsc.gitlab.io/annual-meetings/2023/slides/JustinChang.pdf>`__                                                                          | `Justin Chang`_           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 12:00 pm   | **Lunch**                                                                                                                                                                                           |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| 1:00 pm    | Mini tutorial: *petsc4py*                                                                                                                                                                           | Stefano Zampini           |
+| 1:00 pm    | Mini tutorial: *petsc4py*                                                                                                                                                                           | `Stefano Zampini`_        |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 1:15 pm    | `Transparent Asynchronous Compute Made Easy With PETSc <https://petsc.gitlab.io/annual-meetings/2023/slides/JacobFaibussowitsch.pdf>`__                                                             | `Jacob Faibussowitsch`_   |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
@@ -137,7 +141,7 @@ Tuesday, June 6
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 2:15 pm    | `Intel oneAPI Math Kernel Library, what’s new and what’s next? <https://petsc.gitlab.io/annual-meetings/2023/slides/SpencerPatty.pdf>`__                                                            | `Spencer Patty`_          |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
-| 2:45 pm    | Mini tutorial: *DMPlex*                                                                                                                                                                             | Matt Knepley              |
+| 2:45 pm    | Mini tutorial: *DMPlex*                                                                                                                                                                             | `Matt Knepley`_           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
 | 3:00 pm    | **Coffee Break**                                                                                                                                                                                    |                           |
 +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+
@@ -168,7 +172,7 @@ Wednesday, June 7
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
 | 10:15 am   | **Coffee Break**                                                                                                                                                                |                    |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
-| 10:30 am   | Mini tutorial: `DMSwarm <https://petsc.gitlab.io/annual-meetings/2023/slides/JosephPusztayDMSwarm.pdf>`__                                                                       | Joseph Pusztay     |
+| 10:30 am   | Mini tutorial: `DMSwarm <https://petsc.gitlab.io/annual-meetings/2023/slides/JosephPusztayDMSwarm.pdf>`__                                                                       | `Joseph Pusztay*`_ |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
 | 10:45 am   | `Scalable Riemann Solvers with the Discontinuous Galerkin Method for Hyperbolic Network Simulation <https://petsc.gitlab.io/annual-meetings/2023/slides/AidanHamilton.pdf>`__   | `Aidan Hamilton`_  |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
@@ -806,7 +810,7 @@ Abstracts
 
 .. topic:: **PETSc DMNetwork: A Library for Scalable Network PDE-Based Multiphysics Simulation**
 
-    | **Hong Zhang**
+    | **Hong Zhang (Ms.)**
     | Argonne National Laboratory, Illinois Institute of Technology
 
     We present DMNetwork, a high-level set of routines included in the PETSc
@@ -843,3 +847,50 @@ Abstracts
 
     Instead of MPI+Thread, we refer to this new pattern as MPI x Thread.
 
+.. _`Junchao Zhang`:
+
+.. topic:: **PETSc on the GPU**
+
+    | **Junchao Zhang**
+    | Argonne National Laboratory
+
+    In this mini-tutorial, we will briefly introduce the GPU backends of PETSc and how to configure, build, run
+    and profile PETSc on GPUs. We also talk about how to port your PETSc code to GPUs.
+
+.. _`Hong Zhang (Mr.)`:
+
+.. topic:: **PETSc and PyTorch Interoperability**
+
+    | **Hong Zhang (Mr.)**
+    | Argonne National Laboratory
+
+    In this mini-tutorial, we will introduce: How to convert between PETSc vectors/matrices and PyTorch tensors;
+    How to generate Jacobian or action of Jacobian with PyTorch and use it in PETSc; How to use PETSc and PyTorch
+    for solving ODEs and training neural ODEs.
+
+.. _`Stefano Zampini`:
+
+.. topic:: **petsc4py**
+
+    | **Stefano Zampini**
+    | King Abdullah University of Science and Technology (KAUST)
+
+    In this mini-tutorial, we will introduce the Python binding of PETSc.
+
+.. _`Matt Knepley`:
+
+.. topic:: **DMPlex**
+
+    | **Matt Knepley**
+    | University at Buffalo
+
+    In this mini-tutorial, we will introduce the DMPlex class in PETSc.
+
+.. _`Joseph Pusztay*`:
+
+.. topic:: **DMSwarm**
+
+    | **Joseph Pusztay**
+    | University at Buffalo
+
+    In this mini-tutorial, we will introduce the DMSwarm class in PETSc.
