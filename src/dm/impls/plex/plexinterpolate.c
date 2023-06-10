@@ -45,17 +45,30 @@ PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugpro
 */
 PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, DMPolytopeType ct, const PetscInt cone[], PetscInt *numFaces, const DMPolytopeType *faceTypes[], const PetscInt *faceSizes[], const PetscInt *faces[])
 {
-  DMPolytopeType *typesTmp;
-  PetscInt       *sizesTmp, *facesTmp;
-  PetscInt        maxConeSize, maxSupportSize;
+  DMPolytopeType *typesTmp = NULL;
+  PetscInt       *sizesTmp = NULL, *facesTmp = NULL;
+  PetscInt       *tmp;
+  PetscInt        maxConeSize, maxSupportSize, maxSize;
+  PetscInt        getSize = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (cone) PetscValidIntPointer(cone, 3);
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
-  if (faceTypes) PetscCall(DMGetWorkArray(dm, PetscMax(maxConeSize, maxSupportSize), MPIU_INT, &typesTmp));
-  if (faceSizes) PetscCall(DMGetWorkArray(dm, PetscMax(maxConeSize, maxSupportSize), MPIU_INT, &sizesTmp));
-  if (faces) PetscCall(DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), MPIU_INT, &facesTmp));
+  maxSize = PetscMax(maxConeSize, maxSupportSize);
+  if (faceTypes) getSize += maxSize;
+  if (faceSizes) getSize += maxSize;
+  if (faces) getSize += PetscSqr(maxSize);
+  PetscCall(DMGetWorkArray(dm, getSize, MPIU_INT, &tmp));
+  if (faceTypes) {
+    typesTmp = (DMPolytopeType *)tmp;
+    tmp += maxSize;
+  }
+  if (faceSizes) {
+    sizesTmp = tmp;
+    tmp += maxSize;
+  }
+  if (faces) facesTmp = tmp;
   switch (ct) {
   case DM_POLYTOPE_POINT:
     if (numFaces) *numFaces = 0;
@@ -465,8 +478,11 @@ PetscErrorCode DMPlexRestoreRawFaces_Internal(DM dm, DMPolytopeType ct, const Pe
 {
   PetscFunctionBegin;
   if (faceTypes) PetscCall(DMRestoreWorkArray(dm, 0, MPIU_INT, (void *)faceTypes));
-  if (faceSizes) PetscCall(DMRestoreWorkArray(dm, 0, MPIU_INT, (void *)faceSizes));
-  if (faces) PetscCall(DMRestoreWorkArray(dm, 0, MPIU_INT, (void *)faces));
+  else if (faceSizes) PetscCall(DMRestoreWorkArray(dm, 0, MPIU_INT, (void *)faceSizes));
+  else if (faces) PetscCall(DMRestoreWorkArray(dm, 0, MPIU_INT, (void *)faces));
+  if (faceTypes) *faceTypes = NULL;
+  if (faceSizes) *faceSizes = NULL;
+  if (faces) *faces = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

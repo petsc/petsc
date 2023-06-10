@@ -714,7 +714,7 @@ PetscErrorCode DMDestroy(DM *dm)
   /* Destroy the work arrays */
   {
     DMWorkLink link, next;
-    PetscCheck(!(*dm)->workout, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Work array still checked out");
+    PetscCheck(!(*dm)->workout, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Work array still checked out %p %p", (*dm)->workout, (*dm)->workout->mem);
     for (link = (*dm)->workin; link; link = next) {
       next = link->next;
       PetscCall(PetscFree(link->mem));
@@ -1654,6 +1654,10 @@ PetscErrorCode DMGetWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, void *m
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(mem, 4);
+  if (!count) {
+    *(void **)mem = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   if (dm->workin) {
     link       = dm->workin;
     dm->workin = dm->workin->next;
@@ -1703,6 +1707,7 @@ PetscErrorCode DMRestoreWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, voi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(mem, 4);
+  if (!*(void **)mem) PetscFunctionReturn(PETSC_SUCCESS);
   for (p = &dm->workout; (link = *p); p = &link->next) {
     if (link->mem == *(void **)mem) {
       *p            = link->next;
