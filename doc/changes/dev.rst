@@ -95,6 +95,8 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Add ``DMPlexTransformExtrudeGetPeriodic()`` and ``DMPlexTransformExtrudeSetPeriodic()``
+
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:

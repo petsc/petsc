@@ -10,6 +10,7 @@
 . thickness   - The total thickness of the extruded layers, or `PETSC_DETERMINE`
 . tensor      - Flag to create tensor produt cells
 . symmetric   - Flag to extrude symmetrically about the surface
+. periodic    - Flag to extrude periodically
 . normal      - Surface normal vector, or NULL
 - thicknesses - Thickness of each layer, or NULL
 
@@ -20,6 +21,7 @@
 + -dm_plex_transform_extrude_thickness <t>           - The total thickness of extruded layers
 . -dm_plex_transform_extrude_use_tensor <bool>       - Use tensor cells when extruding
 . -dm_plex_transform_extrude_symmetric <bool>        - Extrude layers symmetrically about the surface
+. -dm_plex_transform_extrude_periodic <bool>         - Extrude layers periodically
 . -dm_plex_transform_extrude_normal <n0,...,nd>      - Specify the extrusion direction
 - -dm_plex_transform_extrude_thicknesses <t0,...,tl> - Specify thickness of each layer
 
@@ -46,7 +48,7 @@ would v1, v2, e1 and e2.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMExtrude()`, `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeSetTensor()`
 @*/
-PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, const PetscReal normal[], const PetscReal thicknesses[], DM *edm)
+PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, PetscBool periodic, const PetscReal normal[], const PetscReal thicknesses[], DM *edm)
 {
   DMPlexTransform tr;
   DM              cdm;
@@ -67,6 +69,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   if (thickness > 0.) PetscCall(DMPlexTransformExtrudeSetThickness(tr, thickness));
   PetscCall(DMPlexTransformExtrudeSetTensor(tr, tensor));
   PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, symmetric));
+  PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, periodic));
   if (normal) PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
   if (thicknesses) PetscCall(DMPlexTransformExtrudeSetThicknesses(tr, layers, thicknesses));
   PetscCall(DMPlexTransformSetFromOptions(tr));
@@ -99,7 +102,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
 PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, NULL, NULL, edm));
+  PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, edm));
   PetscCall(DMViewFromOptions(*edm, NULL, "-check_extrude"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

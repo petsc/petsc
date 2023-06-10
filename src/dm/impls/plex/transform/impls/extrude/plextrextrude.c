@@ -16,6 +16,7 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
     PetscCall(PetscViewerASCIIPrintf(viewer, "Extrusion transformation %s\n", name ? name : ""));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of layers: %" PetscInt_FMT "\n", ex->layers));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  create tensor cells: %s\n", ex->useTensor ? "YES" : "NO"));
+    if (ex->periodic) PetscCall(PetscViewerASCIIPrintf(viewer, "  periodic\n"));
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }
@@ -27,7 +28,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, 
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscReal                th, normal[3], *thicknesses;
   PetscInt                 nl, Nc;
-  PetscBool                tensor, sym, flg;
+  PetscBool                tensor, sym, per, flg;
   char                     funcname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -40,6 +41,8 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, 
   if (flg) PetscCall(DMPlexTransformExtrudeSetTensor(tr, tensor));
   PetscCall(PetscOptionsBool("-dm_plex_transform_extrude_symmetric", "Extrude layers symmetrically about the surface", "", ex->symmetric, &sym, &flg));
   if (flg) PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, sym));
+  PetscCall(PetscOptionsBool("-dm_plex_transform_extrude_periodic", "Extrude layers periodically about the surface", "", ex->periodic, &per, &flg));
+  if (flg) PetscCall(DMPlexTransformExtrudeSetPeriodic(tr, per));
   Nc = 3;
   PetscCall(PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "DMPlexTransformExtrudeSetNormal", normal, &Nc, &flg));
   if (flg) {
@@ -124,6 +127,314 @@ static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, D
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* DM_POLYTOPE_POINT produces
+     Nl+1 points, or Nl points periodically and
+     Nl segments, or tensor segments
+*/
+static PetscErrorCode DMPlexTransformExtrudeSetUp_Point(DMPlexTransform_Extrude *ex, PetscInt Nl)
+{
+  const DMPolytopeType ct = DM_POLYTOPE_POINT;
+  const PetscInt       Np = ex->periodic ? Nl : Nl + 1;
+  PetscInt             Nc, No;
+
+  PetscFunctionBegin;
+  ex->Nt[ct] = 2;
+  Nc         = 6 * Nl;
+  No         = 2 * Nl;
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  ex->target[ct][0] = DM_POLYTOPE_POINT;
+  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_POINT_PRISM_TENSOR : DM_POLYTOPE_SEGMENT;
+  ex->size[ct][0]   = Np;
+  ex->size[ct][1]   = Nl;
+  /*   cones for segments/tensor segments */
+  for (PetscInt i = 0; i < Nl; ++i) {
+    ex->cone[ct][6 * i + 0] = DM_POLYTOPE_POINT;
+    ex->cone[ct][6 * i + 1] = 0;
+    ex->cone[ct][6 * i + 2] = i;
+    ex->cone[ct][6 * i + 3] = DM_POLYTOPE_POINT;
+    ex->cone[ct][6 * i + 4] = 0;
+    ex->cone[ct][6 * i + 5] = (i + 1) % Np;
+  }
+  for (PetscInt i = 0; i < No; ++i) ex->ornt[ct][i] = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* DM_POLYTOPE_SEGMENT produces
+     Nl+1 segments, or Nl segments periodically and
+     Nl quads, or tensor quads
+*/
+static PetscErrorCode DMPlexTransformExtrudeSetUp_Segment(DMPlexTransform_Extrude *ex, PetscInt Nl)
+{
+  const DMPolytopeType ct = DM_POLYTOPE_SEGMENT;
+  const PetscInt       Np = ex->periodic ? Nl : Nl + 1;
+  PetscInt             Nc, No, coff, ooff;
+
+  PetscFunctionBegin;
+  ex->Nt[ct] = 2;
+  Nc         = 8 * Np + 14 * Nl;
+  No         = 2 * Np + 4 * Nl;
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  ex->target[ct][0] = DM_POLYTOPE_SEGMENT;
+  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_SEG_PRISM_TENSOR : DM_POLYTOPE_QUADRILATERAL;
+  ex->size[ct][0]   = Np;
+  ex->size[ct][1]   = Nl;
+  /*   cones for segments */
+  for (PetscInt i = 0; i < Np; ++i) {
+    ex->cone[ct][8 * i + 0] = DM_POLYTOPE_POINT;
+    ex->cone[ct][8 * i + 1] = 1;
+    ex->cone[ct][8 * i + 2] = 0;
+    ex->cone[ct][8 * i + 3] = i;
+    ex->cone[ct][8 * i + 4] = DM_POLYTOPE_POINT;
+    ex->cone[ct][8 * i + 5] = 1;
+    ex->cone[ct][8 * i + 6] = 1;
+    ex->cone[ct][8 * i + 7] = i;
+  }
+  for (PetscInt i = 0; i < 2 * Np; ++i) ex->ornt[ct][i] = 0;
+  /*   cones for quads/tensor quads */
+  coff = 8 * Np;
+  ooff = 2 * Np;
+  for (PetscInt i = 0; i < Nl; ++i) {
+    if (ex->useTensor) {
+      ex->cone[ct][coff + 14 * i + 0]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[ct][coff + 14 * i + 1]  = 0;
+      ex->cone[ct][coff + 14 * i + 2]  = i;
+      ex->cone[ct][coff + 14 * i + 3]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[ct][coff + 14 * i + 4]  = 0;
+      ex->cone[ct][coff + 14 * i + 5]  = (i + 1) % Np;
+      ex->cone[ct][coff + 14 * i + 6]  = DM_POLYTOPE_POINT_PRISM_TENSOR;
+      ex->cone[ct][coff + 14 * i + 7]  = 1;
+      ex->cone[ct][coff + 14 * i + 8]  = 0;
+      ex->cone[ct][coff + 14 * i + 9]  = i;
+      ex->cone[ct][coff + 14 * i + 10] = DM_POLYTOPE_POINT_PRISM_TENSOR;
+      ex->cone[ct][coff + 14 * i + 11] = 1;
+      ex->cone[ct][coff + 14 * i + 12] = 1;
+      ex->cone[ct][coff + 14 * i + 13] = i;
+      ex->ornt[ct][ooff + 4 * i + 0]   = 0;
+      ex->ornt[ct][ooff + 4 * i + 1]   = 0;
+      ex->ornt[ct][ooff + 4 * i + 2]   = 0;
+      ex->ornt[ct][ooff + 4 * i + 3]   = 0;
+    } else {
+      ex->cone[ct][coff + 14 * i + 0]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[ct][coff + 14 * i + 1]  = 0;
+      ex->cone[ct][coff + 14 * i + 2]  = i;
+      ex->cone[ct][coff + 14 * i + 3]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[ct][coff + 14 * i + 4]  = 1;
+      ex->cone[ct][coff + 14 * i + 5]  = 1;
+      ex->cone[ct][coff + 14 * i + 6]  = i;
+      ex->cone[ct][coff + 14 * i + 7]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[ct][coff + 14 * i + 8]  = 0;
+      ex->cone[ct][coff + 14 * i + 9]  = (i + 1) % Np;
+      ex->cone[ct][coff + 14 * i + 10] = DM_POLYTOPE_SEGMENT;
+      ex->cone[ct][coff + 14 * i + 11] = 1;
+      ex->cone[ct][coff + 14 * i + 12] = 0;
+      ex->cone[ct][coff + 14 * i + 13] = i;
+      ex->ornt[ct][ooff + 4 * i + 0]   = 0;
+      ex->ornt[ct][ooff + 4 * i + 1]   = 0;
+      ex->ornt[ct][ooff + 4 * i + 2]   = -1;
+      ex->ornt[ct][ooff + 4 * i + 3]   = -1;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* DM_POLYTOPE_TRIANGLE produces
+     Nl+1 triangles, or Nl triangles periodically and
+     Nl triangular prisms/tensor triangular prisms
+*/
+static PetscErrorCode DMPlexTransformExtrudeSetUp_Triangle(DMPlexTransform_Extrude *ex, PetscInt Nl)
+{
+  const DMPolytopeType ct = DM_POLYTOPE_TRIANGLE;
+  const PetscInt       Np = ex->periodic ? Nl : Nl + 1;
+  PetscInt             Nc, No, coff, ooff;
+
+  PetscFunctionBegin;
+  ex->Nt[ct] = 2;
+  Nc         = 12 * Np + 18 * Nl;
+  No         = 3 * Np + 5 * Nl;
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  ex->target[ct][0] = DM_POLYTOPE_TRIANGLE;
+  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_TRI_PRISM_TENSOR : DM_POLYTOPE_TRI_PRISM;
+  ex->size[ct][0]   = Np;
+  ex->size[ct][1]   = Nl;
+  /*   cones for triangles */
+  for (PetscInt i = 0; i < Np; ++i) {
+    ex->cone[ct][12 * i + 0]  = DM_POLYTOPE_SEGMENT;
+    ex->cone[ct][12 * i + 1]  = 1;
+    ex->cone[ct][12 * i + 2]  = 0;
+    ex->cone[ct][12 * i + 3]  = i;
+    ex->cone[ct][12 * i + 4]  = DM_POLYTOPE_SEGMENT;
+    ex->cone[ct][12 * i + 5]  = 1;
+    ex->cone[ct][12 * i + 6]  = 1;
+    ex->cone[ct][12 * i + 7]  = i;
+    ex->cone[ct][12 * i + 8]  = DM_POLYTOPE_SEGMENT;
+    ex->cone[ct][12 * i + 9]  = 1;
+    ex->cone[ct][12 * i + 10] = 2;
+    ex->cone[ct][12 * i + 11] = i;
+  }
+  for (PetscInt i = 0; i < 3 * Np; ++i) ex->ornt[ct][i] = 0;
+  /*   cones for triangular prisms/tensor triangular prisms */
+  coff = 12 * Np;
+  ooff = 3 * Np;
+  for (PetscInt i = 0; i < Nl; ++i) {
+    if (ex->useTensor) {
+      ex->cone[ct][coff + 18 * i + 0]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[ct][coff + 18 * i + 1]  = 0;
+      ex->cone[ct][coff + 18 * i + 2]  = i;
+      ex->cone[ct][coff + 18 * i + 3]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[ct][coff + 18 * i + 4]  = 0;
+      ex->cone[ct][coff + 18 * i + 5]  = (i + 1) % Np;
+      ex->cone[ct][coff + 18 * i + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[ct][coff + 18 * i + 7]  = 1;
+      ex->cone[ct][coff + 18 * i + 8]  = 0;
+      ex->cone[ct][coff + 18 * i + 9]  = i;
+      ex->cone[ct][coff + 18 * i + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[ct][coff + 18 * i + 11] = 1;
+      ex->cone[ct][coff + 18 * i + 12] = 1;
+      ex->cone[ct][coff + 18 * i + 13] = i;
+      ex->cone[ct][coff + 18 * i + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[ct][coff + 18 * i + 15] = 1;
+      ex->cone[ct][coff + 18 * i + 16] = 2;
+      ex->cone[ct][coff + 18 * i + 17] = i;
+      ex->ornt[ct][ooff + 5 * i + 0]   = 0;
+      ex->ornt[ct][ooff + 5 * i + 1]   = 0;
+      ex->ornt[ct][ooff + 5 * i + 2]   = 0;
+      ex->ornt[ct][ooff + 5 * i + 3]   = 0;
+      ex->ornt[ct][ooff + 5 * i + 4]   = 0;
+    } else {
+      ex->cone[ct][coff + 18 * i + 0]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[ct][coff + 18 * i + 1]  = 0;
+      ex->cone[ct][coff + 18 * i + 2]  = i;
+      ex->cone[ct][coff + 18 * i + 3]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[ct][coff + 18 * i + 4]  = 0;
+      ex->cone[ct][coff + 18 * i + 5]  = (i + 1) % Np;
+      ex->cone[ct][coff + 18 * i + 6]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 18 * i + 7]  = 1;
+      ex->cone[ct][coff + 18 * i + 8]  = 0;
+      ex->cone[ct][coff + 18 * i + 9]  = i;
+      ex->cone[ct][coff + 18 * i + 10] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 18 * i + 11] = 1;
+      ex->cone[ct][coff + 18 * i + 12] = 1;
+      ex->cone[ct][coff + 18 * i + 13] = i;
+      ex->cone[ct][coff + 18 * i + 14] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 18 * i + 15] = 1;
+      ex->cone[ct][coff + 18 * i + 16] = 2;
+      ex->cone[ct][coff + 18 * i + 17] = i;
+      ex->ornt[ct][ooff + 5 * i + 0]   = -2;
+      ex->ornt[ct][ooff + 5 * i + 1]   = 0;
+      ex->ornt[ct][ooff + 5 * i + 2]   = 0;
+      ex->ornt[ct][ooff + 5 * i + 3]   = 0;
+      ex->ornt[ct][ooff + 5 * i + 4]   = 0;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* DM_POLYTOPE_QUADRILATERAL produces
+     Nl+1 quads, or Nl quads periodically and
+     Nl hexes/tensor hexes
+*/
+static PetscErrorCode DMPlexTransformExtrudeSetUp_Quadrilateral(DMPlexTransform_Extrude *ex, PetscInt Nl)
+{
+  const DMPolytopeType ct = DM_POLYTOPE_QUADRILATERAL;
+  const PetscInt       Np = ex->periodic ? Nl : Nl + 1;
+  PetscInt             Nc, No, coff, ooff;
+
+  PetscFunctionBegin;
+  ex->Nt[ct] = 2;
+  Nc         = 16 * Np + 22 * Nl;
+  No         = 4 * Np + 6 * Nl;
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  ex->target[ct][0] = DM_POLYTOPE_QUADRILATERAL;
+  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_QUAD_PRISM_TENSOR : DM_POLYTOPE_HEXAHEDRON;
+  ex->size[ct][0]   = Np;
+  ex->size[ct][1]   = Nl;
+  /*   cones for quads */
+  for (PetscInt i = 0; i < Np; ++i) {
+    ex->cone[ct][16 * i + 0]  = DM_POLYTOPE_SEGMENT;
+    ex->cone[ct][16 * i + 1]  = 1;
+    ex->cone[ct][16 * i + 2]  = 0;
+    ex->cone[ct][16 * i + 3]  = i;
+    ex->cone[ct][16 * i + 4]  = DM_POLYTOPE_SEGMENT;
+    ex->cone[ct][16 * i + 5]  = 1;
+    ex->cone[ct][16 * i + 6]  = 1;
+    ex->cone[ct][16 * i + 7]  = i;
+    ex->cone[ct][16 * i + 8]  = DM_POLYTOPE_SEGMENT;
+    ex->cone[ct][16 * i + 9]  = 1;
+    ex->cone[ct][16 * i + 10] = 2;
+    ex->cone[ct][16 * i + 11] = i;
+    ex->cone[ct][16 * i + 12] = DM_POLYTOPE_SEGMENT;
+    ex->cone[ct][16 * i + 13] = 1;
+    ex->cone[ct][16 * i + 14] = 3;
+    ex->cone[ct][16 * i + 15] = i;
+  }
+  for (PetscInt i = 0; i < 4 * Np; ++i) ex->ornt[ct][i] = 0;
+  /*   cones for hexes/tensor hexes */
+  coff = 16 * Np;
+  ooff = 4 * Np;
+  for (PetscInt i = 0; i < Nl; ++i) {
+    if (ex->useTensor) {
+      ex->cone[ct][coff + 22 * i + 0]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 1]  = 0;
+      ex->cone[ct][coff + 22 * i + 2]  = i;
+      ex->cone[ct][coff + 22 * i + 3]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 4]  = 0;
+      ex->cone[ct][coff + 22 * i + 5]  = (i + 1) % Np;
+      ex->cone[ct][coff + 22 * i + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[ct][coff + 22 * i + 7]  = 1;
+      ex->cone[ct][coff + 22 * i + 8]  = 0;
+      ex->cone[ct][coff + 22 * i + 9]  = i;
+      ex->cone[ct][coff + 22 * i + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[ct][coff + 22 * i + 11] = 1;
+      ex->cone[ct][coff + 22 * i + 12] = 1;
+      ex->cone[ct][coff + 22 * i + 13] = i;
+      ex->cone[ct][coff + 22 * i + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[ct][coff + 22 * i + 15] = 1;
+      ex->cone[ct][coff + 22 * i + 16] = 2;
+      ex->cone[ct][coff + 22 * i + 17] = i;
+      ex->cone[ct][coff + 22 * i + 18] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[ct][coff + 22 * i + 19] = 1;
+      ex->cone[ct][coff + 22 * i + 20] = 3;
+      ex->cone[ct][coff + 22 * i + 21] = i;
+      ex->ornt[ct][ooff + 6 * i + 0]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 1]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 2]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 3]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 4]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 5]   = 0;
+    } else {
+      ex->cone[ct][coff + 22 * i + 0]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 1]  = 0;
+      ex->cone[ct][coff + 22 * i + 2]  = i;
+      ex->cone[ct][coff + 22 * i + 3]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 4]  = 0;
+      ex->cone[ct][coff + 22 * i + 5]  = (i + 1) % Np;
+      ex->cone[ct][coff + 22 * i + 6]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 7]  = 1;
+      ex->cone[ct][coff + 22 * i + 8]  = 0;
+      ex->cone[ct][coff + 22 * i + 9]  = i;
+      ex->cone[ct][coff + 22 * i + 10] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 11] = 1;
+      ex->cone[ct][coff + 22 * i + 12] = 2;
+      ex->cone[ct][coff + 22 * i + 13] = i;
+      ex->cone[ct][coff + 22 * i + 14] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 15] = 1;
+      ex->cone[ct][coff + 22 * i + 16] = 1;
+      ex->cone[ct][coff + 22 * i + 17] = i;
+      ex->cone[ct][coff + 22 * i + 18] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[ct][coff + 22 * i + 19] = 1;
+      ex->cone[ct][coff + 22 * i + 20] = 3;
+      ex->cone[ct][coff + 22 * i + 21] = i;
+      ex->ornt[ct][ooff + 6 * i + 0]   = -2;
+      ex->ornt[ct][ooff + 6 * i + 1]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 2]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 3]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 4]   = 0;
+      ex->ornt[ct][ooff + 6 * i + 5]   = 1;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   The refine types for extrusion are:
 
@@ -135,8 +446,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   DM                       dm;
   DMLabel                  active;
-  DMPolytopeType           ct;
-  PetscInt                 Nl = ex->layers, l, i, ict, Nc, No, coff, ooff;
+  PetscInt                 Nl = ex->layers, l, ict;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformExtrudeComputeExtrusionDim(tr));
@@ -169,266 +479,10 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
     ex->cone[ict]   = NULL;
     ex->ornt[ict]   = NULL;
   }
-  /* DM_POLYTOPE_POINT produces Nl+1 points and Nl segments/tensor segments */
-  ct         = DM_POLYTOPE_POINT;
-  ex->Nt[ct] = 2;
-  Nc         = 6 * Nl;
-  No         = 2 * Nl;
-  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
-  ex->target[ct][0] = DM_POLYTOPE_POINT;
-  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_POINT_PRISM_TENSOR : DM_POLYTOPE_SEGMENT;
-  ex->size[ct][0]   = Nl + 1;
-  ex->size[ct][1]   = Nl;
-  /*   cones for segments/tensor segments */
-  for (i = 0; i < Nl; ++i) {
-    ex->cone[ct][6 * i + 0] = DM_POLYTOPE_POINT;
-    ex->cone[ct][6 * i + 1] = 0;
-    ex->cone[ct][6 * i + 2] = i;
-    ex->cone[ct][6 * i + 3] = DM_POLYTOPE_POINT;
-    ex->cone[ct][6 * i + 4] = 0;
-    ex->cone[ct][6 * i + 5] = i + 1;
-  }
-  for (i = 0; i < No; ++i) ex->ornt[ct][i] = 0;
-  /* DM_POLYTOPE_SEGMENT produces Nl+1 segments and Nl quads/tensor quads */
-  ct         = DM_POLYTOPE_SEGMENT;
-  ex->Nt[ct] = 2;
-  Nc         = 8 * (Nl + 1) + 14 * Nl;
-  No         = 2 * (Nl + 1) + 4 * Nl;
-  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
-  ex->target[ct][0] = DM_POLYTOPE_SEGMENT;
-  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_SEG_PRISM_TENSOR : DM_POLYTOPE_QUADRILATERAL;
-  ex->size[ct][0]   = Nl + 1;
-  ex->size[ct][1]   = Nl;
-  /*   cones for segments */
-  for (i = 0; i < Nl + 1; ++i) {
-    ex->cone[ct][8 * i + 0] = DM_POLYTOPE_POINT;
-    ex->cone[ct][8 * i + 1] = 1;
-    ex->cone[ct][8 * i + 2] = 0;
-    ex->cone[ct][8 * i + 3] = i;
-    ex->cone[ct][8 * i + 4] = DM_POLYTOPE_POINT;
-    ex->cone[ct][8 * i + 5] = 1;
-    ex->cone[ct][8 * i + 6] = 1;
-    ex->cone[ct][8 * i + 7] = i;
-  }
-  for (i = 0; i < 2 * (Nl + 1); ++i) ex->ornt[ct][i] = 0;
-  /*   cones for quads/tensor quads */
-  coff = 8 * (Nl + 1);
-  ooff = 2 * (Nl + 1);
-  for (i = 0; i < Nl; ++i) {
-    if (ex->useTensor) {
-      ex->cone[ct][coff + 14 * i + 0]  = DM_POLYTOPE_SEGMENT;
-      ex->cone[ct][coff + 14 * i + 1]  = 0;
-      ex->cone[ct][coff + 14 * i + 2]  = i;
-      ex->cone[ct][coff + 14 * i + 3]  = DM_POLYTOPE_SEGMENT;
-      ex->cone[ct][coff + 14 * i + 4]  = 0;
-      ex->cone[ct][coff + 14 * i + 5]  = i + 1;
-      ex->cone[ct][coff + 14 * i + 6]  = DM_POLYTOPE_POINT_PRISM_TENSOR;
-      ex->cone[ct][coff + 14 * i + 7]  = 1;
-      ex->cone[ct][coff + 14 * i + 8]  = 0;
-      ex->cone[ct][coff + 14 * i + 9]  = i;
-      ex->cone[ct][coff + 14 * i + 10] = DM_POLYTOPE_POINT_PRISM_TENSOR;
-      ex->cone[ct][coff + 14 * i + 11] = 1;
-      ex->cone[ct][coff + 14 * i + 12] = 1;
-      ex->cone[ct][coff + 14 * i + 13] = i;
-      ex->ornt[ct][ooff + 4 * i + 0]   = 0;
-      ex->ornt[ct][ooff + 4 * i + 1]   = 0;
-      ex->ornt[ct][ooff + 4 * i + 2]   = 0;
-      ex->ornt[ct][ooff + 4 * i + 3]   = 0;
-    } else {
-      ex->cone[ct][coff + 14 * i + 0]  = DM_POLYTOPE_SEGMENT;
-      ex->cone[ct][coff + 14 * i + 1]  = 0;
-      ex->cone[ct][coff + 14 * i + 2]  = i;
-      ex->cone[ct][coff + 14 * i + 3]  = DM_POLYTOPE_SEGMENT;
-      ex->cone[ct][coff + 14 * i + 4]  = 1;
-      ex->cone[ct][coff + 14 * i + 5]  = 1;
-      ex->cone[ct][coff + 14 * i + 6]  = i;
-      ex->cone[ct][coff + 14 * i + 7]  = DM_POLYTOPE_SEGMENT;
-      ex->cone[ct][coff + 14 * i + 8]  = 0;
-      ex->cone[ct][coff + 14 * i + 9]  = i + 1;
-      ex->cone[ct][coff + 14 * i + 10] = DM_POLYTOPE_SEGMENT;
-      ex->cone[ct][coff + 14 * i + 11] = 1;
-      ex->cone[ct][coff + 14 * i + 12] = 0;
-      ex->cone[ct][coff + 14 * i + 13] = i;
-      ex->ornt[ct][ooff + 4 * i + 0]   = 0;
-      ex->ornt[ct][ooff + 4 * i + 1]   = 0;
-      ex->ornt[ct][ooff + 4 * i + 2]   = -1;
-      ex->ornt[ct][ooff + 4 * i + 3]   = -1;
-    }
-  }
-  /* DM_POLYTOPE_TRIANGLE produces Nl+1 triangles and Nl triangular prisms/tensor triangular prisms */
-  ct         = DM_POLYTOPE_TRIANGLE;
-  ex->Nt[ct] = 2;
-  Nc         = 12 * (Nl + 1) + 18 * Nl;
-  No         = 3 * (Nl + 1) + 5 * Nl;
-  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
-  ex->target[ct][0] = DM_POLYTOPE_TRIANGLE;
-  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_TRI_PRISM_TENSOR : DM_POLYTOPE_TRI_PRISM;
-  ex->size[ct][0]   = Nl + 1;
-  ex->size[ct][1]   = Nl;
-  /*   cones for triangles */
-  for (i = 0; i < Nl + 1; ++i) {
-    ex->cone[ct][12 * i + 0]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[ct][12 * i + 1]  = 1;
-    ex->cone[ct][12 * i + 2]  = 0;
-    ex->cone[ct][12 * i + 3]  = i;
-    ex->cone[ct][12 * i + 4]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[ct][12 * i + 5]  = 1;
-    ex->cone[ct][12 * i + 6]  = 1;
-    ex->cone[ct][12 * i + 7]  = i;
-    ex->cone[ct][12 * i + 8]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[ct][12 * i + 9]  = 1;
-    ex->cone[ct][12 * i + 10] = 2;
-    ex->cone[ct][12 * i + 11] = i;
-  }
-  for (i = 0; i < 3 * (Nl + 1); ++i) ex->ornt[ct][i] = 0;
-  /*   cones for triangular prisms/tensor triangular prisms */
-  coff = 12 * (Nl + 1);
-  ooff = 3 * (Nl + 1);
-  for (i = 0; i < Nl; ++i) {
-    if (ex->useTensor) {
-      ex->cone[ct][coff + 18 * i + 0]  = DM_POLYTOPE_TRIANGLE;
-      ex->cone[ct][coff + 18 * i + 1]  = 0;
-      ex->cone[ct][coff + 18 * i + 2]  = i;
-      ex->cone[ct][coff + 18 * i + 3]  = DM_POLYTOPE_TRIANGLE;
-      ex->cone[ct][coff + 18 * i + 4]  = 0;
-      ex->cone[ct][coff + 18 * i + 5]  = i + 1;
-      ex->cone[ct][coff + 18 * i + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
-      ex->cone[ct][coff + 18 * i + 7]  = 1;
-      ex->cone[ct][coff + 18 * i + 8]  = 0;
-      ex->cone[ct][coff + 18 * i + 9]  = i;
-      ex->cone[ct][coff + 18 * i + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-      ex->cone[ct][coff + 18 * i + 11] = 1;
-      ex->cone[ct][coff + 18 * i + 12] = 1;
-      ex->cone[ct][coff + 18 * i + 13] = i;
-      ex->cone[ct][coff + 18 * i + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-      ex->cone[ct][coff + 18 * i + 15] = 1;
-      ex->cone[ct][coff + 18 * i + 16] = 2;
-      ex->cone[ct][coff + 18 * i + 17] = i;
-      ex->ornt[ct][ooff + 5 * i + 0]   = 0;
-      ex->ornt[ct][ooff + 5 * i + 1]   = 0;
-      ex->ornt[ct][ooff + 5 * i + 2]   = 0;
-      ex->ornt[ct][ooff + 5 * i + 3]   = 0;
-      ex->ornt[ct][ooff + 5 * i + 4]   = 0;
-    } else {
-      ex->cone[ct][coff + 18 * i + 0]  = DM_POLYTOPE_TRIANGLE;
-      ex->cone[ct][coff + 18 * i + 1]  = 0;
-      ex->cone[ct][coff + 18 * i + 2]  = i;
-      ex->cone[ct][coff + 18 * i + 3]  = DM_POLYTOPE_TRIANGLE;
-      ex->cone[ct][coff + 18 * i + 4]  = 0;
-      ex->cone[ct][coff + 18 * i + 5]  = i + 1;
-      ex->cone[ct][coff + 18 * i + 6]  = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 18 * i + 7]  = 1;
-      ex->cone[ct][coff + 18 * i + 8]  = 0;
-      ex->cone[ct][coff + 18 * i + 9]  = i;
-      ex->cone[ct][coff + 18 * i + 10] = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 18 * i + 11] = 1;
-      ex->cone[ct][coff + 18 * i + 12] = 1;
-      ex->cone[ct][coff + 18 * i + 13] = i;
-      ex->cone[ct][coff + 18 * i + 14] = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 18 * i + 15] = 1;
-      ex->cone[ct][coff + 18 * i + 16] = 2;
-      ex->cone[ct][coff + 18 * i + 17] = i;
-      ex->ornt[ct][ooff + 5 * i + 0]   = -2;
-      ex->ornt[ct][ooff + 5 * i + 1]   = 0;
-      ex->ornt[ct][ooff + 5 * i + 2]   = 0;
-      ex->ornt[ct][ooff + 5 * i + 3]   = 0;
-      ex->ornt[ct][ooff + 5 * i + 4]   = 0;
-    }
-  }
-  /* DM_POLYTOPE_QUADRILATERAL produces Nl+1 quads and Nl hexes/tensor hexes */
-  ct         = DM_POLYTOPE_QUADRILATERAL;
-  ex->Nt[ct] = 2;
-  Nc         = 16 * (Nl + 1) + 22 * Nl;
-  No         = 4 * (Nl + 1) + 6 * Nl;
-  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
-  ex->target[ct][0] = DM_POLYTOPE_QUADRILATERAL;
-  ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_QUAD_PRISM_TENSOR : DM_POLYTOPE_HEXAHEDRON;
-  ex->size[ct][0]   = Nl + 1;
-  ex->size[ct][1]   = Nl;
-  /*   cones for quads */
-  for (i = 0; i < Nl + 1; ++i) {
-    ex->cone[ct][16 * i + 0]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[ct][16 * i + 1]  = 1;
-    ex->cone[ct][16 * i + 2]  = 0;
-    ex->cone[ct][16 * i + 3]  = i;
-    ex->cone[ct][16 * i + 4]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[ct][16 * i + 5]  = 1;
-    ex->cone[ct][16 * i + 6]  = 1;
-    ex->cone[ct][16 * i + 7]  = i;
-    ex->cone[ct][16 * i + 8]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[ct][16 * i + 9]  = 1;
-    ex->cone[ct][16 * i + 10] = 2;
-    ex->cone[ct][16 * i + 11] = i;
-    ex->cone[ct][16 * i + 12] = DM_POLYTOPE_SEGMENT;
-    ex->cone[ct][16 * i + 13] = 1;
-    ex->cone[ct][16 * i + 14] = 3;
-    ex->cone[ct][16 * i + 15] = i;
-  }
-  for (i = 0; i < 4 * (Nl + 1); ++i) ex->ornt[ct][i] = 0;
-  /*   cones for hexes/tensor hexes */
-  coff = 16 * (Nl + 1);
-  ooff = 4 * (Nl + 1);
-  for (i = 0; i < Nl; ++i) {
-    if (ex->useTensor) {
-      ex->cone[ct][coff + 22 * i + 0]  = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 1]  = 0;
-      ex->cone[ct][coff + 22 * i + 2]  = i;
-      ex->cone[ct][coff + 22 * i + 3]  = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 4]  = 0;
-      ex->cone[ct][coff + 22 * i + 5]  = i + 1;
-      ex->cone[ct][coff + 22 * i + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
-      ex->cone[ct][coff + 22 * i + 7]  = 1;
-      ex->cone[ct][coff + 22 * i + 8]  = 0;
-      ex->cone[ct][coff + 22 * i + 9]  = i;
-      ex->cone[ct][coff + 22 * i + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-      ex->cone[ct][coff + 22 * i + 11] = 1;
-      ex->cone[ct][coff + 22 * i + 12] = 1;
-      ex->cone[ct][coff + 22 * i + 13] = i;
-      ex->cone[ct][coff + 22 * i + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-      ex->cone[ct][coff + 22 * i + 15] = 1;
-      ex->cone[ct][coff + 22 * i + 16] = 2;
-      ex->cone[ct][coff + 22 * i + 17] = i;
-      ex->cone[ct][coff + 22 * i + 18] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-      ex->cone[ct][coff + 22 * i + 19] = 1;
-      ex->cone[ct][coff + 22 * i + 20] = 3;
-      ex->cone[ct][coff + 22 * i + 21] = i;
-      ex->ornt[ct][ooff + 6 * i + 0]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 1]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 2]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 3]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 4]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 5]   = 0;
-    } else {
-      ex->cone[ct][coff + 22 * i + 0]  = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 1]  = 0;
-      ex->cone[ct][coff + 22 * i + 2]  = i;
-      ex->cone[ct][coff + 22 * i + 3]  = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 4]  = 0;
-      ex->cone[ct][coff + 22 * i + 5]  = i + 1;
-      ex->cone[ct][coff + 22 * i + 6]  = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 7]  = 1;
-      ex->cone[ct][coff + 22 * i + 8]  = 0;
-      ex->cone[ct][coff + 22 * i + 9]  = i;
-      ex->cone[ct][coff + 22 * i + 10] = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 11] = 1;
-      ex->cone[ct][coff + 22 * i + 12] = 2;
-      ex->cone[ct][coff + 22 * i + 13] = i;
-      ex->cone[ct][coff + 22 * i + 14] = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 15] = 1;
-      ex->cone[ct][coff + 22 * i + 16] = 1;
-      ex->cone[ct][coff + 22 * i + 17] = i;
-      ex->cone[ct][coff + 22 * i + 18] = DM_POLYTOPE_QUADRILATERAL;
-      ex->cone[ct][coff + 22 * i + 19] = 1;
-      ex->cone[ct][coff + 22 * i + 20] = 3;
-      ex->cone[ct][coff + 22 * i + 21] = i;
-      ex->ornt[ct][ooff + 6 * i + 0]   = -2;
-      ex->ornt[ct][ooff + 6 * i + 1]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 2]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 3]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 4]   = 0;
-      ex->ornt[ct][ooff + 6 * i + 5]   = 1;
-    }
-  }
+  PetscCall(DMPlexTransformExtrudeSetUp_Point(ex, Nl));
+  PetscCall(DMPlexTransformExtrudeSetUp_Segment(ex, Nl));
+  PetscCall(DMPlexTransformExtrudeSetUp_Triangle(ex, Nl));
+  PetscCall(DMPlexTransformExtrudeSetUp_Quadrilateral(ex, Nl));
   /* Layers positions */
   if (!ex->Nth) {
     if (ex->symmetric)
@@ -683,6 +737,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
   ex->thickness = 1.;
   ex->useTensor = PETSC_TRUE;
   ex->symmetric = PETSC_FALSE;
+  ex->periodic  = PETSC_FALSE;
   ex->useNormal = PETSC_FALSE;
   ex->layerPos  = NULL;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
@@ -877,7 +932,7 @@ PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool use
 
   Level: intermediate
 
-.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetSymmetric()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetSymmetric()`, `DMPlexTransformExtrudeGetPeriodic()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool *symmetric)
 {
@@ -901,7 +956,7 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
 
   Level: intermediate
 
-.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetSymmetric()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetSymmetric()`, `DMPlexTransformExtrudeSetPeriodic()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool symmetric)
 {
@@ -910,6 +965,55 @@ PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->symmetric = symmetric;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformExtrudeGetPeriodic - Get the flag to extrude periodically from the initial surface
+
+  Not Collective
+
+  Input Parameter:
+. tr  - The `DMPlexTransform`
+
+  Output Parameter:
+. periodic - The flag to extrude periodically
+
+  Level: intermediate
+
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeSetPeriodic()`, `DMPlexTransformExtrudeGetSymmetric()`
+@*/
+PetscErrorCode DMPlexTransformExtrudeGetPeriodic(DMPlexTransform tr, PetscBool *periodic)
+{
+  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  PetscValidBoolPointer(periodic, 2);
+  *periodic = ex->periodic;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformExtrudeSetPeriodic - Set the flag to extrude periodically from the initial surface
+
+  Not Collective
+
+  Input Parameters:
++ tr  - The `DMPlexTransform`
+- periodic - The flag to extrude periodically
+
+  Level: intermediate
+
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetPeriodic()`, `DMPlexTransformExtrudeSetSymmetric()`
+@*/
+PetscErrorCode DMPlexTransformExtrudeSetPeriodic(DMPlexTransform tr, PetscBool periodic)
+{
+  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  ex->periodic = periodic;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
