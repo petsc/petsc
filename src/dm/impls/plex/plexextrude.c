@@ -69,7 +69,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   if (thickness > 0.) PetscCall(DMPlexTransformExtrudeSetThickness(tr, thickness));
   PetscCall(DMPlexTransformExtrudeSetTensor(tr, tensor));
   PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, symmetric));
-  PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, periodic));
+  PetscCall(DMPlexTransformExtrudeSetPeriodic(tr, periodic));
   if (normal) PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
   if (thicknesses) PetscCall(DMPlexTransformExtrudeSetThicknesses(tr, layers, thicknesses));
   PetscCall(DMPlexTransformSetFromOptions(tr));
