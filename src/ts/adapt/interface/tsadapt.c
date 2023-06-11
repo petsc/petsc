@@ -979,15 +979,19 @@ PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt)
 PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, PetscBool *accept)
 {
   SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING;
+  PetscBool           func_accept, snes_div_func;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidBoolPointer(accept, 5);
 
+  PetscCall(TSFunctionDomainError(ts, t, Y, &func_accept));
   if (ts->snes) PetscCall(SNESGetConvergedReason(ts->snes, &snesreason));
-  if (snesreason < 0) {
+  snes_div_func = (PetscBool)(snesreason == SNES_DIVERGED_FUNCTION_DOMAIN);
+  if (func_accept && snesreason < 0 && !snes_div_func) {
     *accept = PETSC_FALSE;
+    PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failure: %s\n", ts->steps, SNESConvergedReasons[snesreason]));
     if (++ts->num_snes_failures >= ts->max_snes_failures && ts->max_snes_failures > 0) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
@@ -999,17 +1003,17 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
       }
     }
   } else {
-    *accept = PETSC_TRUE;
-    PetscCall(TSFunctionDomainError(ts, t, Y, accept));
-    if (*accept && adapt->checkstage) {
-      PetscCall((*adapt->checkstage)(adapt, ts, t, Y, accept));
-      if (!*accept) {
-        PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", solution rejected by user function provided by TSSetFunctionDomainError()\n", ts->steps));
-        if (adapt->monitor) {
-          PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-          PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected by user function provided by TSSetFunctionDomainError()\n", ((PetscObject)adapt)->type_name, ts->steps));
-          PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-        }
+    *accept = (PetscBool)(func_accept && !snes_div_func);
+    if (*accept && adapt->checkstage) PetscCall((*adapt->checkstage)(adapt, ts, t, Y, accept));
+    if (!*accept) {
+      const char *user_func = !func_accept ? "TSSetFunctionDomainError()" : "TSAdaptSetCheckStage";
+      const char *snes_err  = "SNES invalid function domain";
+      const char *err_msg   = snes_div_func && func_accept ? snes_err : user_func;
+      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", solution rejected by %s\n", ts->steps, err_msg));
+      if (adapt->monitor) {
+        PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
+        PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected by %s\n", ((PetscObject)adapt)->type_name, ts->steps, err_msg));
+        PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
       }
     }
   }
@@ -1022,7 +1026,8 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
     adapt->timestepjustdecreased += adapt->timestepjustdecreased_delay;
     if (adapt->monitor) {
       PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected (%s) t=%-11g+%10.3e retrying with dt=%-10.3e\n", ((PetscObject)adapt)->type_name, ts->steps, SNESConvergedReasons[snesreason], (double)ts->ptime, (double)dt, (double)new_dt));
+      PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt %s step %3" PetscInt_FMT " stage rejected (SNES reason %s) t=%-11g+%10.3e retrying with dt=%-10.3e\n", ((PetscObject)adapt)->type_name, ts->steps, SNESConvergedReasons[snesreason],
+                                       (double)ts->ptime, (double)dt, (double)new_dt));
       PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
     }
   }
