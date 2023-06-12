@@ -4124,6 +4124,9 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   PetscCall(PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMInterpolate", PETSC_FALSE, &mesh->useHashLocation, NULL));
   /* Partitioning and distribution */
   PetscCall(PetscOptionsBool("-dm_plex_partition_balance", "Attempt to evenly divide points on partition boundary between processes", "DMPlexSetPartitionBalance", PETSC_FALSE, &mesh->partitionBalance, NULL));
+  /* Reordering */
+  PetscCall(PetscOptionsBool("-dm_plex_reorder_section", "Compute point permutation for local section", "DMPlexReorderSectionSetDefault", PETSC_FALSE, &flg2, &flg));
+  if (flg) PetscCall(DMPlexReorderSectionSetDefault(dm, flg2 ? DMPLEX_REORDER_DEFAULT_TRUE : DMPLEX_REORDER_DEFAULT_FALSE));
   /* Generation and remeshing */
   PetscCall(PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMAdapt", PETSC_FALSE, &mesh->remeshBd, NULL));
   /* Projection behavior */
@@ -4646,6 +4649,8 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeSetDefault_C", DMPlexDistributeSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderGetDefault_C", DMPlexReorderGetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", DMPlexReorderSetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionGetDefault_C", DMPlexReorderSectionGetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionSetDefault_C", DMPlexReorderSectionSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMInterpolateSolution_C", DMInterpolateSolution_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", DMPlexSetOverlap_Plex));
@@ -4688,6 +4693,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_remesh_bd                 - Allow changes to the boundary on remeshing
 . -dm_plex_max_projection_height     - Maximum mesh point height used to project locally
 . -dm_plex_regular_refinement        - Use special nested projection algorithm for regular refinement
+. -dm_plex_reorder_section           - Use specialized blocking if available
 . -dm_plex_check_all                 - Perform all checks below
 . -dm_plex_check_symmetry            - Check that the adjacency information in the mesh is symmetric
 . -dm_plex_check_skeleton <celltype> - Check that each cell has the correct number of vertices
@@ -4721,6 +4727,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->refinementLimit        = -1.0;
   mesh->distDefault            = PETSC_TRUE;
   mesh->reorderDefault         = DMPLEX_REORDER_DEFAULT_NOTSET;
+  mesh->reorderSection         = DMPLEX_REORDER_DEFAULT_NOTSET;
   mesh->distributionName       = NULL;
   mesh->interpolated           = DMPLEX_INTERPOLATED_INVALID;
   mesh->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID;

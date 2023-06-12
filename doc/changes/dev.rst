@@ -106,6 +106,7 @@ Changes: Development
 - Change protototype of ``DMPlexSetSNESLocalFEM()``. Now it accepts a single context and a Boolean indicating to use the objective function callback
 - Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
 - Add argument to ``DMPlexCreateCoordinateSpace()``
+- Add ``DMPlexReorderSectionGetDefault()`` and ``DMPlexReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
 
 .. rubric:: FE/FV:
 

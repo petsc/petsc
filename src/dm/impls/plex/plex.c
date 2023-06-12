@@ -2682,6 +2682,8 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderGetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionGetDefault_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionSetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetUseCeed_C", NULL));
@@ -2726,7 +2728,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
 
 PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 {
-  PetscSection           sectionGlobal;
+  PetscSection           sectionGlobal, sectionLocal;
   PetscInt               bs = -1, mbs;
   PetscInt               localSize, localStart = 0;
   PetscBool              isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isMatIS;
@@ -2736,6 +2738,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   mtype = dm->mattype;
+  PetscCall(DMGetLocalSection(dm, &sectionLocal));
   PetscCall(DMGetGlobalSection(dm, &sectionGlobal));
   /* PetscCall(PetscSectionGetStorageSize(sectionGlobal, &localSize)); */
   PetscCall(PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize));
@@ -2772,7 +2775,9 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
         PetscCall(PetscSectionGetDof(sectionGlobal, p, &dof));
         PetscCall(PetscSectionGetOffset(sectionGlobal, p, &offset));
         PetscCall(PetscSectionGetConstraintDof(sectionGlobal, p, &cdof));
-        for (PetscInt i = 0; i < dof - cdof; i++) pblocks[offset - localStart + i] = dof - cdof;
+        for (PetscInt i = 0; i < dof - cdof; ++i) pblocks[offset - localStart + i] = dof - cdof;
+        // Signal block concatenation
+        if (dof - cdof && sectionLocal->blockStarts && !PetscBTLookup(sectionLocal->blockStarts, p)) pblocks[offset - localStart] = -(dof - cdof);
         dof  = dof < 0 ? -(dof + 1) : dof;
         bdof = cdof && (dof - cdof) ? 1 : dof;
         if (dof) {
@@ -2827,7 +2832,13 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       PetscInt nblocks = 0;
       for (PetscInt i = 0; i < localSize; i += PetscMax(1, pblocks[i])) {
         if (pblocks[i] == 0) continue;
-        pblocks[nblocks++] = pblocks[i]; // nblocks always <= i
+        // Negative block size indicates the blocks should be concatenated
+        if (pblocks[i] < 0) {
+          pblocks[i] = -pblocks[i];
+          pblocks[nblocks - 1] += pblocks[i];
+        } else {
+          pblocks[nblocks++] = pblocks[i]; // nblocks always <= i
+        }
         for (PetscInt j = 1; j < pblocks[i]; j++) PetscCheck(pblocks[i + j] == pblocks[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Block of size %" PetscInt_FMT " mismatches entry %" PetscInt_FMT, pblocks[i], pblocks[i + j]);
       }
       PetscCall(MatSetVariableBlockSizes(*J, nblocks, pblocks));

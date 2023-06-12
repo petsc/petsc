@@ -155,7 +155,9 @@ typedef struct {
   DMPlexInterpolatedFlag interpolated;
   DMPlexInterpolatedFlag interpolatedCollective;
 
+  /* Ordering */
   DMPlexReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
+  DMPlexReorderDefaultFlag reorderSection; /* Reorder the local section by default */
 
   /* Distribution */
   PetscBool distDefault;      /* Distribute the DM by default */
@@ -377,6 +379,8 @@ PETSC_INTERN PetscErrorCode DMPlexReorderGetDefault_Plex(DM, DMPlexReorderDefaul
 PETSC_INTERN PetscErrorCode DMPlexReorderSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
 PETSC_INTERN PetscErrorCode DMPlexGetUseCeed_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexSetUseCeed_Plex(DM, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexReorderSectionGetDefault_Plex(DM, DMPlexReorderDefaultFlag *);
+PETSC_INTERN PetscErrorCode DMPlexReorderSectionSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
 
 #if 1
 static inline PetscInt DihedralInvert(PetscInt N, PetscInt a)
@@ -839,3 +843,4 @@ PETSC_INTERN PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const 
 PETSC_INTERN PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm);
 PETSC_INTERN PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
 PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_Plex(DM, PetscInt *, char ***, IS **, IS **, DM **);
+PETSC_INTERN PetscErrorCode DMPlexCreateSectionPermutation_Internal(DM dm, IS *permutation, PetscBT *blockStarts);

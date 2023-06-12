@@ -451,7 +451,8 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 {
   PetscSection section;
   DMLabel     *labels;
-  IS          *bcPoints, *bcComps;
+  IS          *bcPoints, *bcComps, permIS;
+  PetscBT      blockStarts;
   PetscBool   *isFE;
   PetscInt    *bcFields, *numComp, *numDof;
   PetscInt     depth, dim, numBC = 0, Nf, Nds, s, bc = 0, f;
@@ -610,7 +611,10 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     PetscInt d;
     for (d = 1; d < dim; ++d) PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
   }
-  PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, NULL, &section));
+  PetscCall(DMPlexCreateSectionPermutation_Internal(dm, &permIS, &blockStarts));
+  PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, permIS, &section));
+  section->blockStarts = blockStarts;
+  PetscCall(ISDestroy(&permIS));
   for (f = 0; f < Nf; ++f) {
     PetscFE     fe;
     const char *name;

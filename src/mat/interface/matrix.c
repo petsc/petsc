@@ -7738,8 +7738,8 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsi
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscCheck(nblocks >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of local blocks must be great than or equal to zero");
   PetscCall(MatGetLocalSize(mat, &nlocal, NULL));
+  PetscCheck(nblocks >= 0 && nblocks <= nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of local blocks %" PetscInt_FMT " is not in [0, %" PetscInt_FMT "]", nblocks, nlocal);
   for (i = 0; i < nblocks; i++) ncnt += bsizes[i];
   PetscCheck(ncnt == nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local block sizes %" PetscInt_FMT " does not equal local size of matrix %" PetscInt_FMT, ncnt, nlocal);
   PetscCall(PetscFree(mat->bsizes));
