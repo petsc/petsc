@@ -681,18 +681,22 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     PetscFE        fe, fe_coord;
     PetscClassId   ds_id;
     PetscDualSpace dual_space, dual_space_coord;
-    PetscInt       num_fields, field_order, field_order_coord;
+    PetscInt       num_fields, field_order = -1, field_order_coord;
     PetscBool      is_simplex;
     PetscCall(DMGetNumFields(dm, &num_fields));
     if (num_fields > 0) {
       PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
       PetscCall(PetscObjectGetClassId((PetscObject)fe, &ds_id));
-      if (ds_id != PETSCFE_CLASSID) fe = NULL;
+      if (ds_id != PETSCFE_CLASSID) {
+        fe = NULL;
+        if (ds_id == PETSCFV_CLASSID) field_order = -1; // use whatever is present for coords; field will be CellCenter
+        else field_order = 1;                           // assume vertex-based linear elements
+      }
     } else fe = NULL;
     if (fe) {
       PetscCall(PetscFEGetDualSpace(fe, &dual_space));
       PetscCall(PetscDualSpaceGetOrder(dual_space, &field_order));
-    } else field_order = 1;
+    }
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *)&fe_coord));
     {
@@ -704,7 +708,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCall(PetscFEGetDualSpace(fe_coord, &dual_space_coord));
       PetscCall(PetscDualSpaceGetOrder(dual_space_coord, &field_order_coord));
     } else field_order_coord = 1;
-    if (field_order != field_order_coord) {
+    if (field_order > 0 && field_order != field_order_coord) {
       PetscInt quadrature_order = field_order;
       PetscCall(DMClone(dm, &colloc_dm));
       { // Inform the new colloc_dm that it is a coordinate DM so isoperiodic affine corrections can be applied
