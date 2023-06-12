@@ -721,7 +721,7 @@ PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
 
   The data in the `PetscSection` are permuted but the access via `PetscSectionGetFieldOffset()` and `PetscSectionGetOffset()` is not changed
 
-  Compart to `PetscSectionPermute()`
+  Compare to `PetscSectionPermute()`
 
 .seealso: [](sec_scatter), `IS`, `PetscSection`, `PetscSectionSetUp()`, `PetscSectionGetPermutation()`, `PetscSectionPermute()`, `PetscSectionCreate()`
 @*/
@@ -737,6 +737,66 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
       s->perm = perm;
       PetscCall(PetscObjectReference((PetscObject)s->perm));
     }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscSectionGetBlockStarts - Returns a table indicating which points start new blocks
+
+  Not Collective
+
+  Input Parameter:
+. s - the `PetscSection`
+
+  Output Parameter:
+. blockStarts - The `PetscBT` with a 1 for each point that begins a block
+
+  Notes:
+  The table is on [0, `pEnd` - `pStart`).
+
+  This information is used by `DMCreateMatrix()` to create a variable block size description which is set using `MatSetVariableBlockSizes()`.
+
+  Level: intermediate
+
+.seealso: [](sec_scatter), `IS`, `PetscSection`, `PetscSectionSetBlockStarts()`, `PetscSectionCreate()`, `DMCreateMatrix()`, `MatSetVariableBlockSizes()`
+@*/
+PetscErrorCode PetscSectionGetBlockStarts(PetscSection s, PetscBT *blockStarts)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  if (blockStarts) {
+    PetscAssertPointer(blockStarts, 2);
+    *blockStarts = s->blockStarts;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscSectionSetBlockStarts - Sets a table indicating which points start new blocks
+
+  Not Collective
+
+  Input Parameters:
++ s           - the `PetscSection`
+- blockStarts - The `PetscBT` with a 1 for each point that begins a block
+
+  Level: intermediate
+
+  Notes:
+  The table is on [0, `pEnd` - `pStart`). PETSc takes ownership of the `PetscBT` when it is passed in and will destroy it. The user should not destroy it.
+
+  This information is used by `DMCreateMatrix()` to create a variable block size description which is set using `MatSetVariableBlockSizes()`.
+
+.seealso: [](sec_scatter), `IS`, `PetscSection`, `PetscSectionGetBlockStarts()`, `PetscSectionCreate()`, `DMCreateMatrix()`, `MatSetVariableBlockSizes()`
+@*/
+PetscErrorCode PetscSectionSetBlockStarts(PetscSection s, PetscBT blockStarts)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  if (s->blockStarts != blockStarts) {
+    PetscCall(PetscBTDestroy(&s->blockStarts));
+    s->blockStarts = blockStarts;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2503,6 +2563,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   PetscCall(PetscSectionDestroy(&s->clSection));
   PetscCall(ISDestroy(&s->clPoints));
   PetscCall(ISDestroy(&s->perm));
+  PetscCall(PetscBTDestroy(&s->blockStarts));
   PetscCall(PetscSectionResetClosurePermutation(s));
   PetscCall(PetscSectionSymDestroy(&s->sym));
   PetscCall(PetscSectionDestroy(&s->clSection));

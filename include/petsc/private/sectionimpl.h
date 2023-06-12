@@ -28,7 +28,8 @@ PETSC_HASH_MAP(ClPerm, PetscSectionClosurePermKey, PetscSectionClosurePermVal, P
 struct _p_PetscSection {
   PETSCHEADER(int);
   PetscInt     pStart, pEnd;        /* The chart: all points are contained in [pStart, pEnd) */
-  IS           perm;                /* A permutation of [0, pEnd-pStart) */
+  IS           perm;                /* A permutation of [0, pEnd-pStart), so perm[i] is the ith permuted point */
+  PetscBT      blockStarts;         /* If present, bit is high for each point that starts a block */
   PetscBool    pointMajor;          /* True if the offsets are point major, otherwise they are fieldMajor */
   PetscBool    includesConstraints; /* True if constrained dofs are included when computing offsets */
   PetscInt    *atlasDof;            /* Describes layout of storage, point --> # of values */
