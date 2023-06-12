@@ -66,6 +66,9 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
   #endif
 #endif
     PetscCallCXX(Kokkos::initialize(args));
+    PetscBeganKokkos = PETSC_TRUE;
+  }
+  if (!PetscKokkosExecutionSpacePtr) { // No matter Kokkos is init'ed by petsc or by user, we need to init PetscKokkosExecutionSpacePtr
 #if defined(PETSC_HAVE_CUDA)
     extern cudaStream_t PetscDefaultCudaStream;
     PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultCudaStream));
@@ -75,7 +78,6 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
 #else
     PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace());
 #endif
-    PetscBeganKokkos = PETSC_TRUE;
   }
   PetscKokkosInitialized = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
