@@ -14,20 +14,16 @@ PETSc is developed as :ref:`open-source <doc_license>`, requests and contributio
 
 News
 ====
-.. admonition:: News: PETSc 2023 Annual Meeting
+.. admonition:: News: PETSc 2024 Annual Meeting
 
-  Registration now open for :any:`The PETSc 2023 Annual Meeting<2023_meeting>`, June 5-7 on the campus of IIT in Chicago.
+  The :any:`PETSc 2024 Annual Meeting <meetings>` will take place May 23, 24 in Cologne, Germany
 
-.. admonition:: News: New Book on PETSc
+.. admonition:: News: Book on numerical methods using PETSc
 
   **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler, is available.
 
   - `Book from SIAM Press <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
   - `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__
-
-.. admonition:: News: New paper on PETSc community
-
-  `The Community is the Infrastructure  <https://arxiv.org/abs/2201.00967>`__
 
 Main Topics
 ===========
