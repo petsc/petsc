@@ -81,7 +81,7 @@ class Package(config.base.Configure):
                                          # language, but can have multiple, such as ['FC', 'Cxx']. In PETSc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
                                          # We use the first language in the list to check include headers, library functions and versions.
     self.noMPIUni               = 0    # 1 means requires a real MPI
-    self.libDirs                = ['lib']   # locations of libraries in the package directory tree; self.libDir is self.installDir + self.libDirs[0]
+    self.libDirs                = ['lib', 'lib64']   # search locations of libraries in the package directory tree; self.libDir is self.installDir + self.libDirs[0]
     self.includedir             = 'include' # location of includes in the package directory tree
     self.license                = None # optional license text
     self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
