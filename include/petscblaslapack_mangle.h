@@ -177,6 +177,10 @@
   #define LAPACKsteqr_     PETSCBLAS(steqr, STEQR) /* eigenvalues and eigenvectors of symm tridiagonal */
   #define LAPACKREALsteqr_ PETSCBLASREAL(steqr, STEQR)
 #endif
+#if !defined(PETSC_MISSING_LAPACK_STEV)
+  #define LAPACKstev_     PETSCBLAS(stev, STEV) /* eigenvalues and eigenvectors of symm tridiagonal */
+  #define LAPACKREALstev_ PETSCBLASREAL(stev, STEV)
+#endif
 #if !defined(PETSC_MISSING_LAPACK_HSEQR)
   #define LAPACKhseqr_ PETSCBLAS(hseqr, HSEQR)
 #endif
