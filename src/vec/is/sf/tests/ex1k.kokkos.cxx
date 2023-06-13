@@ -47,6 +47,7 @@ int main(int argc, char **argv)
   MPI_Op         op = MPI_REPLACE;
 
   PetscFunctionBeginUser;
+  Kokkos::initialize(argc, argv); // Test initializing kokkos before petsc
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscKokkosInitializeCheck());
 
@@ -158,6 +159,7 @@ int main(int argc, char **argv)
   }
   PetscCall(PetscFree(iremote));
   PetscCall(PetscFinalize());
+  Kokkos::finalize();
   return 0;
 }
 
