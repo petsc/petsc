@@ -99,7 +99,7 @@ struct SolverInterfaceImpl<DeviceType::CUDA> : BlasInterface<DeviceType::CUDA> {
   //   hipsolverHandle_t handle, hipsolverFillMode_t uplo, int n, int nrhs, double *A, int lda,
   //   double *B, int ldb, double *work, int lwork, int *devInfo
   // )
-  PETSC_NODISCARD static constexpr cupmSolverError_t cupmSolverXpotrs_bufferSize(cupmSolverHandle_t /* handle */, cupmSolverFillMode_t /* uplo */, cupmBlasInt_t /* n */, cupmBlasInt_t /* nrhs */, cupmScalar_t * /* A */, cupmBlasInt_t /* lda */, cupmScalar_t * /* B */, cupmBlasInt_t /* ldb */, cupmBlasInt_t *lwork) noexcept
+  PETSC_NODISCARD static cupmSolverError_t cupmSolverXpotrs_bufferSize(cupmSolverHandle_t /* handle */, cupmSolverFillMode_t /* uplo */, cupmBlasInt_t /* n */, cupmBlasInt_t /* nrhs */, cupmScalar_t * /* A */, cupmBlasInt_t /* lda */, cupmScalar_t * /* B */, cupmBlasInt_t /* ldb */, cupmBlasInt_t *lwork) noexcept
   {
     *lwork = 0;
     return CUPMSOLVER_STATUS_SUCCESS;
@@ -142,7 +142,7 @@ struct SolverInterfaceImpl<DeviceType::CUDA> : BlasInterface<DeviceType::CUDA> {
   //   hipsolverHandle_t handle, hipsolverOperation_t trans, int n, int nrhs, double *A,
   //   int lda, int *devIpiv, double *B, int ldb, double *work, int lwork, int *devInfo
   // )
-  PETSC_NODISCARD static constexpr cupmSolverError_t cupmSolverXgetrs_bufferSize(cupmSolverHandle_t /* handle */, cupmSolverOperation_t /* op */, cupmBlasInt_t /* n */, cupmBlasInt_t /* nrhs */, cupmScalar_t * /* A */, cupmBlasInt_t /* lda */, cupmBlasInt_t * /* devIpiv */, cupmScalar_t * /* B */, cupmBlasInt_t /* ldb */, cupmBlasInt_t *lwork) noexcept
+  PETSC_NODISCARD static cupmSolverError_t cupmSolverXgetrs_bufferSize(cupmSolverHandle_t /* handle */, cupmSolverOperation_t /* op */, cupmBlasInt_t /* n */, cupmBlasInt_t /* nrhs */, cupmScalar_t * /* A */, cupmBlasInt_t /* lda */, cupmBlasInt_t * /* devIpiv */, cupmScalar_t * /* B */, cupmBlasInt_t /* ldb */, cupmBlasInt_t *lwork) noexcept
   {
     *lwork = 0;
     return CUPMSOLVER_STATUS_SUCCESS;

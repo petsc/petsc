@@ -309,7 +309,8 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
       PetscBool domainerror; \
       PetscCall(MPIU_Allreduce(&snes->jacobiandomainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
       if (domainerror) { \
-        snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN; \
+        snes->reason              = SNES_DIVERGED_JACOBIAN_DOMAIN; \
+        snes->jacobiandomainerror = PETSC_FALSE; \
         PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Jacobian domain error"); \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \

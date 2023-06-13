@@ -1,5 +1,6 @@
 
 #include <petsc/private/snesimpl.h> /*I  "petscsnes.h"  I*/
+#include <petsc/private/vecimpl.h>  /* for Vec->ops->setvalues */
 #include <petscdm.h>
 
 /*@C
@@ -112,7 +113,12 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
       if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;
       dx *= epsilon;
       wscale = 1.0 / dx;
-      PetscCall(VecSetValues(x2, 1, &i, &dx, ADD_VALUES));
+      if (x2->ops->setvalues) PetscCall(VecSetValues(x2, 1, &i, &dx, ADD_VALUES));
+      else {
+        PetscCall(VecGetArray(x2, &y));
+        y[i - start] += dx;
+        PetscCall(VecRestoreArray(x2, &y));
+      }
     } else {
       wscale = 0.0;
     }
