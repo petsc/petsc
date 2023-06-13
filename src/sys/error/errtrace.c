@@ -173,6 +173,8 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
   if (rank == 0 && (!PetscCIEnabledPortableErrorOutput || PetscGlobalRank == 0)) {
     static int cnt = 1;
 
+    /* reset counter to one in case a new error is thrown */
+    if (p == PETSC_ERROR_INITIAL) cnt = 1;
     if (cnt == 1) {
       PetscErrorPrintfHilight();
       ierr = (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
