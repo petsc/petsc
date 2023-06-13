@@ -1227,7 +1227,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
     }
   } else PetscCall(VecRestoreArray(x, &array));
 
-  PetscCall(PetscLogFlops(2.0 * mumps->id.RINFO(3)));
+  PetscCall(PetscLogFlops(2.0 * PetscMax(0, (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1482,7 +1482,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     }
   }
   PetscCall(VecScatterDestroy(&scat_sol));
-  PetscCall(PetscLogFlops(2.0 * nrhs * mumps->id.RINFO(3)));
+  PetscCall(PetscLogFlops(nrhs * PetscMax(0, (2.0 * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n))));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2312,8 +2312,8 @@ PetscErrorCode MatGetInfo_MUMPS(Mat A, MatInfoType flag, MatInfo *info)
 
   PetscFunctionBegin;
   info->block_size        = 1.0;
-  info->nz_allocated      = mumps->id.INFOG(20);
-  info->nz_used           = mumps->id.INFOG(20);
+  info->nz_allocated      = mumps->id.INFOG(20) >= 0 ? mumps->id.INFOG(20) : -1000000 * mumps->id.INFOG(20);
+  info->nz_used           = mumps->id.INFOG(20) >= 0 ? mumps->id.INFOG(20) : -1000000 * mumps->id.INFOG(20);
   info->nz_unneeded       = 0.0;
   info->assemblies        = 0.0;
   info->mallocs           = 0.0;
