@@ -147,3 +147,18 @@
    fun:MPII_Init_thread
    ...
 }
+
+{
+   <Fedora FlexiBLAS>
+   Memcheck:Leak
+   ...
+   fun:flexiblas_init
+   ...
+}
+{
+   <Fedora XInit>
+   Memcheck:Leak
+   ...
+   fun:XInitThreads
+   ...
+}
