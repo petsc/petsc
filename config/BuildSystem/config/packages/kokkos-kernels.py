@@ -65,7 +65,6 @@ class Configure(config.package.CMakePackage):
       elif self.scalarTypes.precision == 'single':
         args.append('-DKokkosKernels_INST_COMPLEX_FLOAT=ON')
 
-    # By default it installs in lib64, change it to lib
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
       args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
