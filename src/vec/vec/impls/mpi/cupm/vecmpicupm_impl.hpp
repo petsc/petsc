@@ -155,7 +155,6 @@ inline PetscErrorCode VecMPI_CUPM<T>::BindToCPU(Vec v, PetscBool usehost) noexce
   VecSetOp_CUPM(placearray, VecPlaceArray_MPI, base_type::template PlaceArray<PETSC_MEMTYPE_HOST>);
   VecSetOp_CUPM(max, VecMax_MPI, Max);
   VecSetOp_CUPM(min, VecMin_MPI, Min);
-  VecSetOp_CUPM(errorwnorm, nullptr, ErrorWnorm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
