@@ -1,4 +1,5 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
+#include <petsc/private/vecimpl.h> /* for Vec->ops->setvalues */
 
 PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype, MatReuse reuse, Mat *newmat)
 {
@@ -6,12 +7,12 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype, MatReuse reuse, Mat
   Vec          in, out;
   PetscScalar *array;
   PetscInt    *dnnz, *onnz, *dnnzu, *onnzu;
-  PetscInt     cst, Nbs, mbs, nbs, rbs, cbs;
+  PetscInt     cst, cen, Nbs, mbs, nbs, rbs, cbs;
   PetscInt     im, i, m, n, M, N, *rows, start;
 
   PetscFunctionBegin;
   PetscCall(MatGetOwnershipRange(oldmat, &start, NULL));
-  PetscCall(MatGetOwnershipRangeColumn(oldmat, &cst, NULL));
+  PetscCall(MatGetOwnershipRangeColumn(oldmat, &cst, &cen));
   PetscCall(MatCreateVecs(oldmat, &in, &out));
   PetscCall(MatGetLocalSize(oldmat, &m, &n));
   PetscCall(MatGetSize(oldmat, &M, &N));
@@ -45,7 +46,15 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype, MatReuse reuse, Mat
     PetscInt j;
 
     PetscCall(VecZeroEntries(in));
-    PetscCall(VecSetValue(in, i, 1., INSERT_VALUES));
+    if (in->ops->setvalues) {
+      PetscCall(VecSetValue(in, i, 1., INSERT_VALUES));
+    } else {
+      if (i >= cst && i < cen) {
+        PetscCall(VecGetArray(in, &array));
+        array[i - cst] = 1.0;
+        PetscCall(VecRestoreArray(in, &array));
+      }
+    }
     PetscCall(VecAssemblyBegin(in));
     PetscCall(VecAssemblyEnd(in));
     PetscCall(MatMult(oldmat, in, out));
