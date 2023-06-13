@@ -1088,12 +1088,12 @@ and then constructs a ``PCMG`` with Galerkin coarse grid operator
 construction. GAMG is designed from the beginning to be modular, to
 allow for new components to be added easily and also populates a
 multigrid preconditioner ``PCMG`` so generic multigrid parameters are
-used. PETSc provides a fully supported (smoothed) aggregation AMG,
+used. PETSc provides a fully supported (smoothed) aggregation AMG, but supports the addition of new methods
 (``-pc_type gamg -pc_gamg_type agg`` or ``PCSetType(pc,PCGAMG)`` and
-``PCGAMGSetType(pc,PCGAMGAGG)``, as well as reference implementations of
-a classical AMG method (``-pc_gamg_type classical``), a hybrid geometric
-AMG method (``-pc_gamg_type geo``), and a 2.5D AMG method DofColumns
-:cite:`IsaacStadlerGhattas2015`. GAMG does require the use
+``PCGAMGSetType(pc,PCGAMGAGG)``. Examples of extension are a reference implementations of
+a classical AMG method (``-pc_gamg_type classical``), a (2D) hybrid geometric
+AMG method (``-pc_gamg_type geo``) that are not supported. A 2.5D AMG method DofColumns
+:cite:`IsaacStadlerGhattas2015` supports 2D coarsenings extruded in the third dimension. GAMG does require the use
 of (MPI)AIJ matrices. For instance, BAIJ matrices are not supported. One
 can use AIJ instead of BAIJ without changing any code other than the
 constructor (or the ``-mat_type`` from the command line). For instance,
