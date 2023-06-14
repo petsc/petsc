@@ -53,7 +53,7 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, PCHYPRE, &flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHYPRE, &flg));
   if (flg && PetscDefined(HAVE_HYPRE_DEVICE)) {
 #if defined(HYPRE_USING_HIP)
     PetscCall(MatConvert(B, MATDENSEHIP, MAT_INPLACE_MATRIX, &B));
