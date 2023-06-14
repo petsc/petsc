@@ -3473,11 +3473,11 @@ static PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat fact, Mat A, const MatFac
 
   for (i = 0; i < n; i++) {
     /* initialize rtmp array */
-    nzl   = bi[i + 1] - bi[i]; /* num of nozeros in L(i,:) */
+    nzl   = bi[i + 1] - bi[i]; /* num of nonzeros in L(i,:) */
     bjtmp = bj + bi[i];
     for (j = 0; j < nzl; j++) rtmp[*bjtmp++] = 0.0;
     rtmp[i] = 0.0;
-    nzu     = bdiag[i] - bdiag[i + 1]; /* num of nozeros in U(i,:) */
+    nzu     = bdiag[i] - bdiag[i + 1]; /* num of nonzeros in U(i,:) */
     bjtmp   = bj + bdiag[i + 1] + 1;
     for (j = 0; j < nzu; j++) rtmp[*bjtmp++] = 0.0;
 

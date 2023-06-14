@@ -1265,7 +1265,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A, NormType type, PetscReal *norm)
       for (j = 0; j < bs; j++) sum[j] = 0.0;
       /*-- col sum --*/
       i = jl[k]; /* first |A(i,k)| to be added */
-      /* jl[k]=i: first nozero element in row i for submatrix A(1:k,k:n) (active window)
+      /* jl[k]=i: first nonzero element in row i for submatrix A(1:k,k:n) (active window)
                   at step k */
       while (i < mbs) {
         nexti = jl[i]; /* next block row to be added */
