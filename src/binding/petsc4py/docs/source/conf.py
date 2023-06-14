@@ -145,17 +145,18 @@ def _mangle_petsc_intersphinx():
 
     This function downloads their object inventory and strips the leading path
     elements so that references to PETSc names actually resolve."""
-    website = intersphinx_mapping['petsc'][0].partition('/release/')[0]
-    branch = get_doc_branch()
-    base_doc_url = f"{website}/{branch}/"
 
-    running_on_ci = False  # os.environ.get("CI", "false") == "true"
-    if running_on_ci:
-        local_petsc_docs = "path/to/petsc/documentation" # TODO
-        local_inventory_filename = os.path.join(local_petsc_docs, "objects.inv")
-        inventory = sphobjinv.Inventory(local_inventory_filename)
+    if 'LOC' in os.environ and os.path.isfile(os.path.join(os.environ['LOC'],'objects.inv')):
+      base_doc_url = os.environ['LOC']
+      url=f"file://" + os.path.join(base_doc_url,'objects.inv')
     else:
-        inventory = sphobjinv.Inventory(url=f"{base_doc_url}objects.inv")
+      website = intersphinx_mapping['petsc'][0].partition('/release/')[0]
+      branch = get_doc_branch()
+      base_doc_url = f"{website}/{branch}/"
+      url=f"{base_doc_url}objects.inv"
+    print("Using PETSC inventory from "+url)
+    inventory = sphobjinv.Inventory(url=url)
+    print(inventory)
 
     for obj in inventory.objects:
         if obj.name.startswith("manualpages"):
