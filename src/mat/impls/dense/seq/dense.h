@@ -93,6 +93,7 @@ PETSC_INTERN PetscErrorCode MatCopy_SeqDense(Mat, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatZeroEntries_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatSetUp_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatSetRandom_SeqDense(Mat, PetscRandom);
+PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqDense(Mat, Vec);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat);

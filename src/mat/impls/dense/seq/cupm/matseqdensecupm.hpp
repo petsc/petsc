@@ -170,6 +170,8 @@ public:
 
   static PetscErrorCode GetSubMatrix(Mat, PetscInt, PetscInt, PetscInt, PetscInt, Mat *) noexcept;
   static PetscErrorCode RestoreSubMatrix(Mat, Mat *) noexcept;
+
+  static PetscErrorCode GetDiagonal(Mat, Vec) noexcept;
 };
 
 } // namespace impl
@@ -1061,6 +1063,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatSetOp_CUPM(to_host, A, zeroentries, MatZeroEntries_SeqDense, ZeroEntries);
   MatSetOp_CUPM(to_host, A, setup, MatSetUp_SeqDense, SetUp);
   MatSetOp_CUPM(to_host, A, setrandom, MatSetRandom_SeqDense, SetRandom);
+  MatSetOp_CUPM(to_host, A, getdiagonal, MatGetDiagonal_SeqDense, GetDiagonal);
   // seemingly always the same
   A->ops->productsetfromoptions = MatProductSetFromOptions_SeqDense;
 
@@ -1432,14 +1435,12 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noex
 template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::Shift(Mat A, PetscScalar alpha) noexcept
 {
-  const auto         m = A->rmap->n;
-  const auto         n = A->cmap->n;
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
   PetscCall(GetHandles_(&dctx));
-  PetscCall(PetscInfo(A, "Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
-  PetscCall(DiagonalUnaryTransform(A, 0, m, n, dctx, device::cupm::functors::make_plus_equals(alpha)));
+  PetscCall(PetscInfo(A, "Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", A->rmap->n, A->cmap->n));
+  PetscCall(DiagonalUnaryTransform(A, dctx, device::cupm::functors::make_plus_equals(alpha)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1793,6 +1794,14 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::RestoreSubMatrix(Mat A, Mat *m) noex
 
   cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   *m                = nullptr;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::GetDiagonal(Mat A, Vec v) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(GetDiagonal_CUPMBase(A, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
