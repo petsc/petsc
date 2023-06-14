@@ -7,6 +7,7 @@ Community
 .. toctree::
    :maxdepth: 2
 
+   CODE_OF_CONDUCT
    roadmap
    governance
    bugs
