@@ -28,6 +28,8 @@ Changes: Development
 
 .. rubric:: PetscViewer:
 
+- Add ``PetscViewerASCIIOpenWithFileUnit()`` and ``PetscViewerASCIISetFileUnit()``
+
 .. rubric:: PetscDraw:
 
 .. rubric:: AO:

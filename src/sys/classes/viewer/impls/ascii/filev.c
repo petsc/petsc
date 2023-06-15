@@ -503,6 +503,131 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(PETSC_USE_FORTRAN_BINDINGS)
+
+  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+    #define petscviewerasciiopenwithfileunit_ PETSCVIEWERASCIIOPENWITHFILEUNIT
+    #define petscviewerasciisetfilefileunit_  PETSCVIEWERASCIISETFILEUNIT
+    #define petscfortranprinttounit_          PETSCFORTRANPRINTTOUNIT
+  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+    #define petscviewerasciiopenwithfileunit_ petscviewerasciiopenwithfileunit
+    #define petscviewerasciisetfileunit_      petscviewerasciisetfileunit
+    #define petscfortranprinttounit_          petscfortranprinttounit
+  #endif
+
+  #if defined(__cplusplus)
+extern "C" void petscfortranprinttounit_(PetscInt *, const char *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T);
+  #else
+extern void petscfortranprinttounit_(PetscInt *, const char *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T);
+  #endif
+
+  #define PETSCDEFAULTBUFFERSIZE 8 * 1024
+
+/*@M
+     PetscViewerASCIISetFileUnit - sets the `PETSCASCIIVIEWER` to write to a Fortan IO unit
+
+     Fortran Synopsis:
+     void PetscViewerASCIISetFileUnit(PetscViewer lab, PetscInt unit, PetscErrorCode ierr)
+
+     Input Parameters:
++   lab - the viewer
+-   unit - the unit number
+
+     Output Parameter:
+.   ierr - the error code
+
+    Note:
+    `PetscViewerDestroy()` does not close the unit for this `PetscViewer`
+
+    Fortran Note:
+    Only for Fortran, use  `PetscViewerASCIISetFILE()` for C
+
+.seealso: `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`, `PetscViewerASCIIOpenWithFileUnit()`
+@*/
+PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, PetscInt *unit, PetscErrorCode *ierr)
+{
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)(*lab)->data;
+
+  if (vascii->mode == FILE_MODE_READ) {
+    *ierr = PETSC_ERR_ARG_WRONGSTATE;
+    return;
+  }
+  vascii->fileunit = *unit;
+}
+
+/*@M
+     PetscViewerASCIIOpenWithFileUnit - opens a `PETSCASCIIVIEWER` to write to a Fortan IO unit
+
+     Fortran Synopsis:
+     void PetscViewerASCIIOpenWithFileUnit(MPI_Comm comm, PetscInt unit, PetscViewer viewer, PetscErrorCode ierr)
+
+     Input Parameters:
++   comm - the `MPI_Comm` to share the viewer
+-   unit - the unit number
+
+     Output Parameters:
++   lab - the viewer
+-   ierr - the error code
+
+    Note:
+    `PetscViewerDestroy()` does not close the unit for this `PetscViewer`
+
+    Fortran Note:
+    Only for Fortran, use  `PetscViewerASCIIOpenWithFILE()` for C
+
+.seealso: `PetscViewerASCIISetFileUnit()`, `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`, `PetscViewerASCIIOpenWithFILE()`
+@*/
+PETSC_EXTERN void petscviewerasciiopenwithfileunit_(MPI_Comm *comm, PetscInt *unit, PetscViewer *lab, PetscErrorCode *ierr)
+{
+  *ierr = PetscViewerCreate(MPI_Comm_f2c(*(MPI_Fint *)&*comm), lab);
+  if (*ierr) return;
+  *ierr = PetscViewerSetType(*lab, PETSCVIEWERASCII);
+  if (*ierr) return;
+  *ierr = PetscViewerFileSetMode(*lab, FILE_MODE_WRITE);
+  if (*ierr) return;
+  petscviewerasciisetfileunit_(lab, unit, ierr);
+}
+
+static PetscErrorCode PetscVFPrintfFortran(PetscInt unit, const char format[], va_list Argp)
+{
+  PetscErrorCode ierr;
+  char           str[PETSCDEFAULTBUFFERSIZE];
+  size_t         len;
+
+  PetscFunctionBegin;
+  PetscCall(PetscVSNPrintf(str, sizeof(str), format, NULL, Argp));
+  PetscCall(PetscStrlen(str, &len));
+  petscfortranprinttounit_(&unit, str, &ierr, (int)len);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscFPrintfFortran(PetscInt unit, const char str[])
+{
+  PetscErrorCode ierr;
+  size_t         len;
+
+  PetscFunctionBegin;
+  PetscCall(PetscStrlen(str, &len));
+  petscfortranprinttounit_(&unit, str, &ierr, (int)len);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+#else
+
+/* these will never be used; but are needed to link with */
+static PetscErrorCode PetscVFPrintfFortran(PetscInt unit, const char format[], va_list Argp)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscFPrintfFortran(PetscInt unit, const char str[])
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif
+
 /*@C
     PetscViewerASCIIPrintf - Prints to a file, only from the first
     processor in the `PetscViewer` of type `PETSCVIEWERASCII`
@@ -557,7 +682,8 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     PrintfQueue next = ascii->petsc_printfqueuebase, previous;
     PetscInt    i;
     for (i = 0; i < ascii->petsc_printfqueuelength; i++) {
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "%s", next->string));
+      if (!ascii->fileunit) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "%s", next->string));
+      else PetscCall(PetscFPrintfFortran(ascii->fileunit, next->string));
       previous = next;
       next     = next->next;
       PetscCall(PetscFree(previous->string));
@@ -566,20 +692,16 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     ascii->petsc_printfqueue       = NULL;
     ascii->petsc_printfqueuelength = 0;
     tab                            = intab;
-    while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "  "));
+    while (tab--) {
+      if (!ascii->fileunit) PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "  "));
+      else PetscCall(PetscFPrintfFortran(ascii->fileunit, "   "));
+    }
 
     va_start(Argp, format);
-    PetscCall((*PetscVFPrintf)(fd, format, Argp));
+    if (!ascii->fileunit) PetscCall((*PetscVFPrintf)(fd, format, Argp));
+    else PetscCall(PetscVFPrintfFortran(ascii->fileunit, format, Argp));
     va_end(Argp);
     PetscCall(PetscFFlush(fd));
-    if (petsc_history) {
-      tab = intab;
-      while (tab--) PetscCall(PetscFPrintf(PETSC_COMM_SELF, petsc_history, "  "));
-      va_start(Argp, format);
-      PetscCall((*PetscVFPrintf)(petsc_history, format, Argp));
-      va_end(Argp);
-      PetscCall(PetscFFlush(petsc_history));
-    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
