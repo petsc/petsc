@@ -741,6 +741,7 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
     PetscCall(VecDuplicate(ksp->vec_rhs, &t));
     PetscCall(KSP_MatMult(ksp, A, ksp->vec_sol, t));
     PetscCall(VecAYPX(t, -1.0, ksp->vec_rhs));
+    PetscCall(VecViewFromOptions(t, (PetscObject)ksp, "-ksp_view_final_residual_vec"));
     PetscCall(VecNorm(t, NORM_2, &norm));
     PetscCall(VecDestroy(&t));
     PetscCall(PetscViewerASCIIPrintf(viewer, "KSP final norm of residual %g\n", (double)norm));
