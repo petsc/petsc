@@ -1,59 +1,139 @@
 #!/usr/bin/env python3
+import math
+
+def clamp(x, maxval, minval):
+	if x > maxval:
+		return maxval
+	elif x < minval:
+		return minval
+	else:
+		return x
 
 global nextWindowOffset
 nextWindowOffset = 50
 
-# Parses a color string into an RGBA tuple to use with matplotlib
-def parseColor(color, defaultValue = (0, 0, 0, 1)):
-	# We only accept string values for parsing
-	if not isinstance(color, str):
-		return defaultValue
+def parseRGBColor(color, defaultValue = (0.2, 0.2, 0.2, 1)):
+	# A '#' denotes the use of HTML colors
+	if isinstance(color, str) and color[0] == '#':
+		rgb = tuple(int(color[i:i+2], 16) for i in (1, 3, 5))
+		return (rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, 1)
 	else:
-		# Currently only HTML format colors are accepted, ie. #RRGGBB
-		if color[0] == '#':
-			rgb = tuple(int(color[i:i+2], 16) for i in (1, 3, 5))
-			return (rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, 1)
-		else:
-			return defaultValue
+		return defaultValue
 
-# Parses an ID value to a string *consistently*
-def parseID(idval):
-	# If float has no fractional part format it as an integer instead of leaving trailing zeros
-	if isinstance(idval, float):
-		if idval % 1 == 0:
-			return str(int(idval))
-	return str(idval)
+class ColorParser:
+	def __init__(self, datasets):
+		self.colormap = plt.get_cmap('brg')
+
+		hasNormRange = False
+		normMaxVal = None
+		normMinVal = None
+		# Preprocess the datasets
+		for data in datasets:
+			for i,row in data.iterrows():
+				# For each node entry try to parse the color
+				if row['Type'] == 'Node':
+					color = row['Color']
+					try:
+						# If the color gets parsed as a float correctly use it to find the normalization range
+						color = float(color)
+						if not math.isnan(color):
+							hasNormRange = True
+							if normMaxVal is None or color > normMaxVal:
+								normMaxVal = color
+							if normMinVal is None or color < normMinVal:
+								normMinVal = color
+					except:
+						pass
+		
+		if hasNormRange:
+			self.hasColorBar = True
+
+			# Clamp the minimum between negative infinity and zero and the corresponding for maximum
+			if normMinVal >= 0:
+				normMinVal = None
+			if normMaxVal <= 0:
+				normMaxVal = None			
+
+			class BiasNorm(matplotlib.colors.Normalize):
+				def __init__(self, vmin, vmax, minbias = 0, maxbias = 0):
+					matplotlib.colors.Normalize.__init__(self, vmin, vmax)
+					self.minbias = minbias
+					self.maxbias = maxbias
+
+				def __call__(self, value, clip=None):
+					value = super(BiasNorm, self).__call__(value, clip)
+					value *= (1 - self.maxbias) - self.minbias
+					return value + self.minbias
+
+			# Four cases; Both min and max defined, one but not the either, or all values are uniform
+			if normMinVal is not None and normMaxVal is not None:
+				self.norm = matplotlib.colors.TwoSlopeNorm(0, normMinVal, normMaxVal)
+			elif normMinVal is not None:
+				self.norm = BiasNorm(normMinVal, 0, maxbias=0.5)
+			elif normMaxVal is not None:
+				self.norm = BiasNorm(0, normMaxVal, minbias=0.5)
+			else:
+				self.norm = None
+			
+			self.normMinVal = normMinVal
+			self.normMaxVal = normMaxVal
+		else:
+			self.hasColorBar = False
+
+	# Parses a color value into an RGBA tuple to use with matplotlib
+	def getRGB(self, color, defaultValue = (0.2, 0.2, 0.2, 1)):
+		# Try to do the basic color parsing first
+		explicitColor = parseRGBColor(color, None)
+		if explicitColor is not None:
+			return explicitColor
+		
+		# Try to parse as a number
+		try:
+			color = float(color)
+
+			# Normalize to [0,1], either by converting from [-1,1] or using a generated normalization range
+			if self.norm is not None:
+				color = self.norm(color)
+			else:
+				color = (color + 1) * 0.5 
+
+			# Get the color from the color map
+			return self.colormap(color)
+		except:
+			return defaultValue
 
 
 class DisplayOptions:
-	def __init__(self,args):
-	# Parse any set node or edge colors
+	def __init__(self,args,datasets):
+		# Parse any set node or edge colors
 		self.nodeColor = None
 		self.edgeColor = None
 		self.nodeTitleColor = None
 		self.edgeTitleColor = None
 
 		if 'set_node_color' in args:
-			self.nodeColor = parseColor(args.set_node_color, None)
+			self.nodeColor = parseRGBColor(args.set_node_color, None)
 		if 'set_edge_color' in args:
-			self.edgeColor = parseColor(args.set_edge_color, None)
+			self.edgeColor = parseRGBColor(args.set_edge_color, None)
 
 		if 'set_node_title_color' in args:
-			self.nodeTitleColor = parseColor(args.set_node_title_color, (1, 1, 1, 1))
+			self.nodeTitleColor = parseRGBColor(args.set_node_title_color, (1, 1, 1, 1))
 		if 'set_edge_title_color' in args:
-			self.edgeTitleColor = parseColor(args.set_edge_title_color)
+			self.edgeTitleColor = parseRGBColor(args.set_edge_title_color)
 
 		self.noNodes = 'no_nodes' in args and args.no_nodes
 		self.setTitle = args.set_title if 'set_title' in args else None
 		self.noNodeLabels = 'no_node_labels' in args and args.no_node_labels
 		self.noEdgeLabels = 'no_edge_labels' in args and args.no_edge_labels
 
+		self.nodeColorParser = ColorParser(datasets)
+
 
 # Class for holding the properties of a node
 class Node:
 	def __init__(self, row, opts: DisplayOptions):
 		# Set our ID and rank
-		self.id = parseID(row['ID'])
+		self.id = row['ID']
 		self.rank = int(row['Rank'])
 		
 		# Set our position
@@ -70,40 +150,30 @@ class Node:
 
 		# Set name and color, defaulting to a None name if not specified
 		self.name = row['Name']
-		if not isinstance(self.name, str):
-			if np.isnan(self.name):
-				self.name = None
-			else:
-				self.name = str(self.name)
 
-		self.color = opts.nodeColor or parseColor(row['Color'])
+		self.color = opts.nodeColor or opts.nodeColorParser.getRGB(row['Color'])
 
 # Class for holding the properties of an edge
 class Edge:
 	def __init__(self, row, opts: DisplayOptions, nodes):
 		# Set our ID and rank
-		self.id = parseID(row['ID'])
+		self.id = row['ID']
 		self.rank = int(row['Rank'])
 
 		# Determine our starting and ending nodes from the X and Y properties
-		start = parseID(row['X'])
+		start = row['X']
 		if not start in nodes:
 			raise KeyError("No such node \'" + str(start) + "\' for start of edge \'" + str(self.id) + '\'')
 		self.startNode = nodes[start]
-		end = parseID(row['Y'])
+		end = row['Y']
 		if not end in nodes:
 			raise KeyError ("No such node \'" + str(end) + "\' for end of edge \'" + str(self.id) + '\'')
 		self.endNode = nodes[end]
 
 		# Set name and color, defaulting to a None name if not specified
 		self.name = row['Name']
-		if not isinstance(self.name, str):
-			if np.isnan(self.name):
-				self.name = None
-			else:
-				self.name = str(self.name)
 
-		self.color = opts.edgeColor or parseColor(row['Color'], (0.5, 0.5, 0.5, 1))
+		self.color = opts.edgeColor or parseRGBColor(row['Color'], (0.5, 0.5, 0.5, 1))
 
 
 # Class for holding the data for a rank
@@ -215,16 +285,59 @@ class Rank:
 
 		# Scale the plot to the content
 		axis.autoscale()
+		
+		# Draw the colorbar if allowed by options
+		colors = opts.nodeColorParser
+		if colors.hasColorBar:
+			norm = colors.norm
+			ylow = colors.normMinVal or 0
+			yhigh = colors.normMaxVal or 0
+			# If the actual range is zero
+			if ylow == yhigh:
+				# Clamp to the correct normalized extreme based on positive, negative, or zero
+				if ylow > 0:
+					ylow = yhigh = 1
+				elif ylow < 0:
+					ylow = yhigh = 0
+				else:
+					ylow = yhigh = 0.5
+				# Shift the low and high limits by an epsilon to make sure the 
+				epsilon = ylow * 0.00001
+				cbar = plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=colors.colormap), ax=axis)
+				cbar.ax.set_ylim([ylow - epsilon, yhigh + epsilon])
+			else:
+				cbar = plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=colors.colormap), ax=axis)
+				cbar.ax.set_ylim([ylow, yhigh])
 
 def main(args):
-	# Parse display options from arguments
-	opts = DisplayOptions(args)
+	datasets = []
+
+	# Read each file passed in arguments
+	for filename in args.filenames:
+		try:
+			# Read the data from the supplied CSV file
+			data = pd.read_csv(filename, skipinitialspace=True, dtype=str)
+			# Append to the list of datasets
+			datasets.append(data)
+		except Exception as e:
+			print("Warning! Could not read file \"" + filename + "\": " + str(e))
+			traceback.print_exc(file=sys.stdout)
+			exit(-1)
+
+	
+	# Parse display options from arguments and datasets
+	opts = DisplayOptions(args, datasets)
+
+
+	# Variable storing a title to use or None
+	title = None
 
 	# The set of ranks
 	ranks = { -1: Rank(-1) }
+	#The global rank assigned to index -1
+	globalRank = ranks[-1]
 
-	maxRank = None
-
+	# Function to get the specified rank
 	def getRank(rank: int):
 		if rank in ranks:
 			return ranks[rank]
@@ -232,47 +345,35 @@ def main(args):
 			r = Rank(rank)
 			ranks[rank] = r
 			return r
-		
-	globalRank = ranks[-1]
 
-	# Global variable storing a title to use or None
-	title = None
-
-	# Read each file passed in arguments
-	for filename in args.filenames:
-		try:
-			# Read the data from the supplied CSV file
-			data = pd.read_csv(filename, skipinitialspace=True)
-			# Iterate each row of data in the file
-			for i,row in data.iterrows():
-				# Switch based on the type of the entry
-				type = row['Type']
-				if type == 'Type':
-					# If we encounter 'Type' again it is a duplicate header and should be skipped
-					continue
-				elif type == 'Title':
-					# Set the title based on name and color
-					titleColor = parseColor(row['Color'])
-					title = (row['Name'], titleColor)
-				elif type == 'Node':
-					# Register a new node
-					node = Node(row, opts)
-					globalRank.nodes[node.id] = node
-					r = getRank(node.rank)
-					if r is not None:
-						r.nodes[node.id] = node
-				elif type == 'Edge':
-					# Register a new edge
-					edge = Edge(row, opts, globalRank.nodes)
-					globalRank.edges[edge.id] = edge
-					r = getRank(node.rank)
-					if r is not None:
-						edge = Edge(row, opts, r.nodes)
-						r.edges[edge.id] = edge
-		except Exception as e:
-			print("Warning! Could not read file \"" + filename + "\": " + str(e))
-			traceback.print_exc(file=sys.stdout)
-			exit(-1)
+	# Now process the actual data
+	for data in datasets:
+		# Iterate each row of data in the file
+		for i,row in data.iterrows():
+			# Switch based on the type of the entry
+			type = row['Type']
+			if type == 'Type':
+				# If we encounter 'Type' again it is a duplicate header and should be skipped
+				continue
+			elif type == 'Title':
+				# Set the title based on name and color
+				titleColor = parseRGBColor(row['Color'])
+				title = (row['Name'], titleColor)
+			elif type == 'Node':
+				# Register a new node
+				node = Node(row, opts)
+				globalRank.nodes[node.id] = node
+				r = getRank(node.rank)
+				if r is not None:
+					r.nodes[node.id] = node
+			elif type == 'Edge':
+				# Register a new edge
+				edge = Edge(row, opts, globalRank.nodes)
+				globalRank.edges[edge.id] = edge
+				r = getRank(node.rank)
+				if r is not None:
+					edge = Edge(row, opts, r.nodes)
+					r.edges[edge.id] = edge
 
 	# Show the plot
 	if not args.no_display:
@@ -295,7 +396,6 @@ def main(args):
 			for rank in ranks:
 				if rank != -1:
 					ranks[rank].display(opts, title)
-			
 
 		# Delay based on options
 		if args.display_time is not None:

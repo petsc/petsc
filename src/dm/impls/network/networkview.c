@@ -15,22 +15,29 @@
 static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
 {
   DM              dmcoords;
-  PetscInt        nsubnets, i, subnet, nvertices, nedges, vertex, edge;
+  PetscInt        nsubnets, i, subnet, nvertices, nedges, vertex, edge, gidx, ncomp;
   PetscInt        vertexOffsets[2], globalEdgeVertices[2];
-  PetscScalar     vertexCoords[2];
+  PetscScalar     vertexCoords[2], *color_ptr, color;
   const PetscInt *vertices, *edges, *edgeVertices;
   Vec             allVertexCoords;
   PetscMPIInt     rank;
   MPI_Comm        comm;
 
   PetscFunctionBegin;
-  // Get the network containing coordinate information
+  // Get the coordinate information from dmcoords
+  PetscCheck(dm->coordinates[0].dm, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "CoordinateDM not created");
   PetscCall(DMGetCoordinateDM(dm, &dmcoords));
-  // Get the coordinate vector for the network
+
+  PetscCall(DMGetCoordinateDim(dmcoords, &i));
+  PetscCheck(i == 2, PETSC_COMM_WORLD, PETSC_ERR_SUP, "dim %" PetscInt_FMT " != 2 is not supporte yet", i);
+
+  // Get the coordinate vector from dm
   PetscCall(DMGetCoordinatesLocal(dm, &allVertexCoords));
+
   // Get the MPI communicator and this process' rank
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)dmcoords, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
+
   // Start synchronized printing
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
 
@@ -38,33 +45,41 @@ static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Type,Rank,ID,X,Y,Z,Name,Color\n"));
 
   // Iterate each subnetwork (Note: We need to get the global number of subnets apparently)
-  PetscCall(DMNetworkGetNumSubNetworks(dm, NULL, &nsubnets));
+  PetscCall(DMNetworkGetNumSubNetworks(dmcoords, NULL, &nsubnets));
   for (subnet = 0; subnet < nsubnets; subnet++) {
     // Get the subnetwork's vertices and edges
-    PetscCall(DMNetworkGetSubnetwork(dm, subnet, &nvertices, &nedges, &vertices, &edges));
+    PetscCall(DMNetworkGetSubnetwork(dmcoords, subnet, &nvertices, &nedges, &vertices, &edges));
 
     // Write out each vertex
     for (i = 0; i < nvertices; i++) {
       vertex = vertices[i];
+
       // Get the offset into the coordinate vector for the vertex
       PetscCall(DMNetworkGetLocalVecOffset(dmcoords, vertex, ALL_COMPONENTS, vertexOffsets));
       vertexOffsets[1] = vertexOffsets[0] + 1;
       // Remap vertex to the global value
-      PetscCall(DMNetworkGetGlobalVertexIndex(dm, vertex, &vertex));
+      PetscCall(DMNetworkGetGlobalVertexIndex(dmcoords, vertex, &gidx));
       // Get the vertex position from the coordinate vector
       PetscCall(VecGetValues(allVertexCoords, 2, vertexOffsets, vertexCoords));
 
-      // TODO: Determine vertex color/name
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Node,%" PetscInt_FMT ",%" PetscInt_FMT ",%lf,%lf,0,%" PetscInt_FMT "\n", (PetscInt)rank, vertex, (double)PetscRealPart(vertexCoords[0]), (double)PetscRealPart(vertexCoords[1]), vertex));
+      // Get vertex color; TODO: name
+      PetscCall(DMNetworkGetNumComponents(dmcoords, vertex, &ncomp));
+      PetscCheck(ncomp <= 1, PETSC_COMM_WORLD, PETSC_ERR_SUP, "num of components %" PetscInt_FMT " must be <= 1", ncomp);
+      color = 0.0;
+      if (ncomp == 1) {
+        PetscCall(DMNetworkGetComponent(dmcoords, vertex, 0, NULL, (void **)&color_ptr, NULL));
+        color = *color_ptr;
+      }
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Node,%" PetscInt_FMT ",%" PetscInt_FMT ",%lf,%lf,0,%" PetscInt_FMT ",%lf\n", (PetscInt)rank, gidx, (double)PetscRealPart(vertexCoords[0]), (double)PetscRealPart(vertexCoords[1]), gidx, (double)PetscRealPart(color)));
     }
 
     // Write out each edge
     for (i = 0; i < nedges; i++) {
       edge = edges[i];
-      PetscCall(DMNetworkGetConnectedVertices(dm, edge, &edgeVertices));
-      PetscCall(DMNetworkGetGlobalVertexIndex(dm, edgeVertices[0], &globalEdgeVertices[0]));
-      PetscCall(DMNetworkGetGlobalVertexIndex(dm, edgeVertices[1], &globalEdgeVertices[1]));
-      PetscCall(DMNetworkGetGlobalEdgeIndex(dm, edge, &edge));
+      PetscCall(DMNetworkGetConnectedVertices(dmcoords, edge, &edgeVertices));
+      PetscCall(DMNetworkGetGlobalVertexIndex(dmcoords, edgeVertices[0], &globalEdgeVertices[0]));
+      PetscCall(DMNetworkGetGlobalVertexIndex(dmcoords, edgeVertices[1], &globalEdgeVertices[1]));
+      PetscCall(DMNetworkGetGlobalEdgeIndex(dmcoords, edge, &edge));
 
       // TODO: Determine edge color/name
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Edge,%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",0,%" PetscInt_FMT "\n", (PetscInt)rank, edge, globalEdgeVertices[0], globalEdgeVertices[1], edge));
