@@ -1560,7 +1560,7 @@ PetscErrorCode PetscFinalize(void)
 
   flg3 = PETSC_FALSE; /* default value is required */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-options_left", &flg3, &flg1));
-  if (PetscUnlikelyDebug(!flg1)) flg3 = PETSC_TRUE;
+  if (!flg1) flg3 = PETSC_TRUE;
   if (flg3) {
     if (!flg2 && flg1) { /* have not yet printed the options */
       PetscViewer viewer;
