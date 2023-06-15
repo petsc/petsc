@@ -1,8 +1,8 @@
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
-
-#include <petscsys.h> /*I   "petscsys.h"   I*/
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() */
+#include <petscsys.h>                    /*I   "petscsys.h"   I*/
 #include <signal.h>
 #if defined(PETSC_HAVE_UNISTD_H)
   #include <unistd.h>
@@ -213,20 +213,24 @@ PetscErrorCode PetscAttachDebugger(void)
   PETSCABORT(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS);
 #else
   if (PetscUnlikely(PetscGetDisplay(display, sizeof(display)))) {
-    ierr = (*PetscErrorPrintf)("Cannot determine display\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine display\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(PetscGetProgramName(program, sizeof(program)))) {
-    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(!program[0])) {
-    ierr = (*PetscErrorPrintf)("Cannot determine program name needed to attach debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
+    return PETSC_ERR_SYS;
+  }
+  if (PetscUnlikely(!isatty(fileno(stdin)))) {
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: stdin is not a tty, hence unable to attach debugger, consider -stop_for_debugger\n");
     return PETSC_ERR_SYS;
   }
   child = (int)fork();
   if (PetscUnlikely(child < 0)) {
-    ierr = (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
+    ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Error in fork() prior to attaching debugger\n");
     return PETSC_ERR_SYS;
   }
   petscindebugger = PETSC_TRUE;
