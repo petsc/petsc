@@ -6109,17 +6109,9 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
   PetscBool       hasDyn;
 
   PetscFunctionBegin;
+  if (!cellIS) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM, dm, 0, 0, 0));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
-  if (!cellIS) {
-    PetscInt depth;
-
-    PetscCall(DMPlexGetDepth(plex, &depth));
-    PetscCall(DMGetStratumIS(plex, "dim", depth, &cellIS));
-    if (!cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, &cellIS));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject)cellIS));
-  }
   PetscCall(ISGetLocalSize(cellIS, &numCells));
   PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(DMGetLocalSection(dm, &section));
@@ -6239,7 +6231,6 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
   }
   PetscCall(ISRestorePointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(PetscFree(a));
-  PetscCall(ISDestroy(&cellIS));
   PetscCall(DMDestroy(&plexAux));
   PetscCall(DMDestroy(&plex));
   PetscCall(PetscLogEventEnd(DMPLEX_JacobianFEM, dm, 0, 0, 0));
