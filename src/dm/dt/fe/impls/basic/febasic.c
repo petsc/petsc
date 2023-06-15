@@ -619,8 +619,9 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscDS d
   PetscCheck(fgeom->dim == qdim, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %" PetscInt_FMT " != %" PetscInt_FMT " quadrature dim", fgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom;
-    const PetscInt face[2] = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][2]};
-    const PetscInt ornt[2] = {fgeom->face[e * 2 + 0][1], fgeom->face[e * 2 + 1][3]};
+    const PetscInt face[2]  = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][2]};
+    const PetscInt ornt[2]  = {fgeom->face[e * 2 + 0][1], fgeom->face[e * 2 + 1][3]};
+    const PetscInt cornt[2] = {fgeom->face[e * 2 + 0][3], fgeom->face[e * 2 + 1][1]};
 
     fegeom.v = x; /* Workspace */
     PetscCall(PetscArrayzero(f0, Nq * NcS));
@@ -630,8 +631,8 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscDS d
       PetscReal w;
       PetscInt  c, d;
 
-      PetscCall(PetscDSPermuteQuadPoint(ds, ornt[0], field, q, &qpt[0]));
-      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, ornt[1], 0), field, q, &qpt[1]));
+      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, cornt[0], ornt[0]), field, q, &qpt[0]));
+      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, ornt[1], cornt[1]), field, q, &qpt[1]));
       PetscCall(PetscFEGeomGetPoint(fgeom, e * 2, q, &quadPoints[q * fgeom->dim], &fegeom));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < fgeom->numPoints) {
@@ -1052,8 +1053,9 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscDS dsIn, Pe
   PetscCheck(qNc == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom;
-    const PetscInt face[2] = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][2]};
-    const PetscInt ornt[2] = {fgeom->face[e * 2 + 0][1], fgeom->face[e * 2 + 1][3]};
+    const PetscInt face[2]  = {fgeom->face[e * 2 + 0][0], fgeom->face[e * 2 + 1][2]};
+    const PetscInt ornt[2]  = {fgeom->face[e * 2 + 0][1], fgeom->face[e * 2 + 1][3]};
+    const PetscInt cornt[2] = {fgeom->face[e * 2 + 0][3], fgeom->face[e * 2 + 1][1]};
 
     fegeom.v = x; /* Workspace */
     for (q = 0; q < Nq; ++q) {
@@ -1061,8 +1063,8 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscDS dsIn, Pe
       PetscReal w;
       PetscInt  c;
 
-      PetscCall(PetscDSPermuteQuadPoint(ds, ornt[0], fieldI, q, &qpt[0]));
-      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, ornt[1], 0), fieldI, q, &qpt[1]));
+      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, cornt[0], ornt[0]), fieldI, q, &qpt[0]));
+      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, ornt[1], cornt[1]), fieldI, q, &qpt[1]));
       PetscCall(PetscFEGeomGetPoint(fgeom, e * 2, q, &quadPoints[q * fgeom->dim], &fegeom));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < fgeom->numPoints) {
@@ -1106,20 +1108,21 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscDS dsIn, Pe
         PetscCall(PetscFEUpdateElementMat_Hybrid_Internal(feI, isCohesiveFieldI, feJ, isCohesiveFieldJ, 0, s, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &fegeom, g0, g1, g2, g3, eOffset, totDim, offsetI, offsetJ, elemMat));
     }
     if (debug > 1) {
-      PetscInt fc, f, gc, g;
+      const PetscInt fS = 0 + (isCohesiveFieldI ? 0 : (s == 2 ? 0 : s * T[fieldI]->Nb));
+      const PetscInt fE = T[fieldI]->Nb + (isCohesiveFieldI ? 0 : (s == 2 ? T[fieldI]->Nb : s * T[fieldI]->Nb));
+      const PetscInt gS = 0 + (isCohesiveFieldJ ? 0 : (s == 2 ? 0 : s * T[fieldJ]->Nb));
+      const PetscInt gE = T[fieldJ]->Nb + (isCohesiveFieldJ ? 0 : (s == 2 ? T[fieldJ]->Nb : s * T[fieldJ]->Nb));
+      PetscInt       f, g;
 
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %" PetscInt_FMT " and %" PetscInt_FMT "\n", fieldI, fieldJ));
-      for (fc = 0; fc < NcI; ++fc) {
-        for (f = 0; f < T[fieldI]->Nb; ++f) {
-          const PetscInt i = offsetI + f * NcI + fc;
-          for (gc = 0; gc < NcJ; ++gc) {
-            for (g = 0; g < T[fieldJ]->Nb; ++g) {
-              const PetscInt j = offsetJ + g * NcJ + gc;
-              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "]: %g\n", f, fc, g, gc, (double)PetscRealPart(elemMat[eOffset + i * totDim + j])));
-            }
-          }
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %" PetscInt_FMT " and %" PetscInt_FMT " s %s totDim %" PetscInt_FMT " offsets (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", fieldI, fieldJ, s ? (s > 1 ? "Coh" : "Pos") : "Neg", totDim, eOffset, offsetI, offsetJ));
+      for (f = fS; f < fE; ++f) {
+        const PetscInt i = offsetI + f;
+        for (g = gS; g < gE; ++g) {
+          const PetscInt j = offsetJ + g;
+          PetscCheck(i < totDim && j < totDim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Fuck up %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", f, i, g, j);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "]: %g\n", f / NcI, f % NcI, g / NcJ, g % NcJ, (double)PetscRealPart(elemMat[eOffset + i * totDim + j])));
         }
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
       }
     }
     cOffset += totDim;

@@ -781,10 +781,10 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       PetscCall(DMPlexGetOrientedCone(dm, supp[s], &cone, &ornt));
       for (c = 0; c < coneSize; ++c)
         if (cone[c] == point) break;
-      PetscCall(DMPlexRestoreOrientedCone(dm, supp[s], &cone, &ornt));
-      PetscCheck(c != coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %" PetscInt_FMT " not found in cone of support point %" PetscInt_FMT, point, supp[s]);
       geom->face[p][s * 2 + 0] = c;
       geom->face[p][s * 2 + 1] = ornt[c];
+      PetscCall(DMPlexRestoreOrientedCone(dm, supp[s], &cone, &ornt));
+      PetscCheck(c != coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %" PetscInt_FMT " not found in cone of support point %" PetscInt_FMT, point, supp[s]);
     }
     if (geom->face[p][1] < 0) {
       PetscInt Np = geom->numPoints, q, dE = geom->dimEmbed, d;
