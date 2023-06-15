@@ -1435,9 +1435,13 @@ class Configure(config.base.Configure):
     if not hasattr(self, 'CC'):
       raise RuntimeError('Could not locate a functional C compiler')
     try:
-      self.executeShellCommand(self.CC+' --version', log = self.log)
+      (output,error,status) = self.executeShellCommand(self.CC+' --version', log = self.log)
     except:
       pass
+    else:
+      if self.isDarwin(self.log) and self.isARM(self.log) and output.find('x86_64-apple-darwin') > -1:
+        raise RuntimeError('Running on a macOS arm system but your compilers are configured for Intel processors\n' + output + '\n')
+
     (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
     output = output + error
     if '(gcc version 4.8.5 compatibility)' in output or re.match('^Selected GCC installation:.*4.8.5$', output):
