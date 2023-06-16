@@ -153,25 +153,23 @@ class Cursor:
       # the code. Perhaps this should have some sort of recursion check
       name = cls_get_name_from_cursor_safe_call(castee[0])
     elif (cursor.type.get_canonical().kind == clx.TypeKind.POINTER) or (cursor.kind == clx.CursorKind.UNEXPOSED_EXPR):
-      if cursor.type.get_pointee().kind == clx.TypeKind.CHAR_S:
+      if clx.CursorKind.ARRAY_SUBSCRIPT_EXPR in {c.kind for c in cursor.get_children()}:
+        # in the form of obj[i], so we try and weed out the iterator variable
+        pointees = [
+          c for c in cursor.walk_preorder() if c.type.get_canonical().kind in clx_pointer_type_kinds
+        ]
+      elif cursor.type.get_pointee().kind == clx.TypeKind.CHAR_S:
         # For some reason preprocessor macros that contain strings don't propagate
         # their spelling up to the primary cursor, so we need to plumb through
         # the various sub-cursors to find it.
         pointees = [c for c in cursor.walk_preorder() if c.kind in clx_literal_cursor_kinds]
-      elif clx.CursorKind.ARRAY_SUBSCRIPT_EXPR in {c.kind for c in cursor.get_children()}:
-        # in the form of obj[i], so we try and weed out the iterator variable
-        pointees = [
-          c for c in cursor.walk_preorder() if c.type.get_canonical().kind in clx_array_type_kinds
-        ]
-        if not pointees:
-          # wasn't a pure array, so we try pointer
-          pointees = [c for c in cursor.walk_preorder() if c.type.kind == clx.TypeKind.POINTER]
       else:
         pointees = []
       pointees = list({p.spelling: p for p in pointees}.values())
       if len(pointees) > 1:
         # sometimes array subscripts can creep in
-        pointees = [c for c in pointees if c.kind not in clx_math_cursor_kinds]
+        subscript_operator_kinds = clx_math_cursor_kinds | {clx.CursorKind.ARRAY_SUBSCRIPT_EXPR}
+        pointees                 = [c for c in pointees if c.kind not in subscript_operator_kinds]
       if len(pointees) == 1:
         name = cls_get_name_from_cursor_safe_call(pointees[0])
     elif cursor.kind == clx.CursorKind.ENUM_DECL:

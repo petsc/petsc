@@ -90,6 +90,8 @@ clx_array_type_kinds = {
   clx.TypeKind.VARIABLEARRAY
 }
 
+clx_pointer_type_kinds = clx_array_type_kinds | {clx.TypeKind.POINTER}
+
 # Specific types
 clx_enum_type_kinds   = {clx.TypeKind.ENUM}
 # because PetscBool is an enum...
